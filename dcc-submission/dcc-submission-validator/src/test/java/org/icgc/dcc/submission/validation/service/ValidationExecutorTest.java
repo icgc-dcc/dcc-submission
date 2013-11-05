@@ -17,11 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.service;
 
+import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.concurrent.CancellationException;
+
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +36,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class ValidationExecutorTest {
 
@@ -50,17 +57,27 @@ public class ValidationExecutorTest {
 
   @Test
   public void testExecute() {
+    val futures = Lists.<ListenableFuture<Validation>> newArrayList();
     for (int i = 1; i <= MAX_VALIDATING; i++) {
       val projectKey = "project" + i;
       val validation = createValidation(projectKey);
 
-      executor.execute(validation);
+      // Exercise: should "immediately" start asynchronously
+      val future = executor.execute(validation);
+      futures.add(future);
     }
+
+    // Wait for tasks to start running
     sleepUninterruptibly(1, SECONDS);
 
-    val cancelled = executor.cancel("project1");
-    assertThat(cancelled).isTrue();
-    sleepUninterruptibly(1, SECONDS);
+    // Verify: Ensure that things are running concurrently
+    assertThat(executor.getActiveCount()).isEqualTo(MAX_VALIDATING);
+
+    // Verify: Ensure all futures produced are in flight
+    for (val future : futures) {
+      assertThat(future.isDone()).isFalse();
+      assertThat(future.isCancelled()).isFalse();
+    }
   }
 
   @Test(expected = ValidationRejectedException.class)
@@ -70,8 +87,44 @@ public class ValidationExecutorTest {
       val projectKey = "project" + i;
       val validation = createValidation(projectKey);
 
+      // Exercise: should be rejected on the last iteration
       executor.execute(validation);
     }
+  }
+
+  @Test
+  public void testCancel() {
+    // Stimulus
+    val projectKey = "project";
+    val validation = createValidation(projectKey);
+
+    // Setup: start async validation
+    val future = executor.execute(validation);
+
+    // Exercise: should succeed
+    val firstCancelled = executor.cancel(projectKey);
+    assertThat(firstCancelled).isTrue();
+    assertThat(future.isCancelled()).isTrue();
+
+    // Exercise: should fail to find it
+    val secondCancelled = executor.cancel(projectKey);
+    assertThat(secondCancelled).isFalse();
+    assertThat(future.isCancelled()).isTrue();
+
+    // Verify: this
+    addCallback(future, new FutureCallback<Validation>() {
+
+      @Override
+      public void onSuccess(Validation result) {
+        fail("Validation should not have succeeded after it has been cancelled");
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        assertThat(t).isInstanceOf(CancellationException.class).as("Unexpected exception type");
+      }
+
+    });
   }
 
   private static Validation createValidation(String projectKey) {
@@ -94,13 +147,11 @@ public class ValidationExecutorTest {
 
     @SneakyThrows
     @Override
-    public void validate(ValidationContext context) {
+    synchronized public void validate(ValidationContext context) {
       log.info("Executing '{}'...", context.getProjectKey());
-      for (;;) {
-        if (Thread.currentThread().isInterrupted()) {
-          throw new InterruptedException("Task '" + context.getProjectKey() + "' was interrupted");
-        }
-      }
+
+      // Wait forever, but allow interruption
+      wait();
     }
 
   }

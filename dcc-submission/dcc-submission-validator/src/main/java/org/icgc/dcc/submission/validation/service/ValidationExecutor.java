@@ -64,6 +64,13 @@ public class ValidationExecutor {
   }
 
   /**
+   * Returns the number of active validation "slots".
+   */
+  public int getActiveCount() {
+    return executor.getActiveCount();
+  }
+
+  /**
    * Execute a validation job asynchronously.
    * <p>
    * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
