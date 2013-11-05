@@ -52,9 +52,10 @@ public class Submission implements Serializable {
     super();
   }
 
-  public Submission(String projectKey) {
+  public Submission(String projectKey, String projectName) {
     super();
     this.projectKey = projectKey;
+    this.projectName = projectName;
     this.state = SubmissionState.NOT_VALIDATED;
     this.lastUpdated = new Date();
   }
@@ -128,6 +129,14 @@ public class Submission implements Serializable {
         .add("state", this.state) //
         .add("report", this.report) // TODO: toString for SubmissionReport
         .toString();
+  }
+
+  /**
+   * @return
+   */
+  public String getProjectName() {
+    // TODO Auto-generated method stub
+    return this.projectName;
   }
 
 }

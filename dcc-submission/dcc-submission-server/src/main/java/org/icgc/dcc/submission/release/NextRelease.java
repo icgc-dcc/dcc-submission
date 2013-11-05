@@ -138,7 +138,7 @@ public class NextRelease extends BaseRelease {
     nextRelease.setDictionaryVersion(dictionaryVersion);
     nextRelease.setState(ReleaseState.OPENED);
     for (Submission submission : oldRelease.getSubmissions()) {
-      Submission newSubmission = new Submission(submission.getProjectKey());
+      Submission newSubmission = new Submission(submission.getProjectKey(), submission.getProjectName());
       if (submission.getState() == SubmissionState.SIGNED_OFF) {
         newSubmission.setState(SubmissionState.NOT_VALIDATED);
       } else {

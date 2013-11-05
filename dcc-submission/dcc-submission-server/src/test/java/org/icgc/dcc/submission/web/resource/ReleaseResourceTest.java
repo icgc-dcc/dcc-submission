@@ -35,8 +35,8 @@ public class ReleaseResourceTest extends ResourceTest {
     release.setName("ICGC13");
     release.setReleaseDate();
     release.setTransitioning(true);
-    release.addSubmission(new Submission("project1"));
-    release.addSubmission(new Submission("project2"));
+    release.addSubmission(new Submission("project1", "project one"));
+    release.addSubmission(new Submission("project2", "project two"));
 
     mockReleaseService = mock(ReleaseService.class);
     when(mockReleaseService.getReleasesBySubject(any(Subject.class))).thenReturn(newArrayList(release));
