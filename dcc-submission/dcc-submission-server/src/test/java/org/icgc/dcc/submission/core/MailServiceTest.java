@@ -22,6 +22,7 @@ import static org.elasticsearch.common.collect.Sets.newHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.core.MailService.MAIL_ADMIN_RECIPIENT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_AUTOMATIC_SUPPORT_RECIPIENT;
+import static org.icgc.dcc.submission.core.MailService.MAIL_ENABLED;
 import static org.icgc.dcc.submission.core.MailService.MAIL_ERROR_BODY;
 import static org.icgc.dcc.submission.core.MailService.MAIL_INVALID_BODY;
 import static org.icgc.dcc.submission.core.MailService.MAIL_MANUAL_SUPPORT_RECIPIENT;
@@ -131,16 +132,22 @@ public class MailServiceTest {
   private static Config mockConfig() {
     Config config = mock(Config.class);
 
+    when(config.hasPath(MAIL_ENABLED)).thenReturn(true);
+    when(config.getBoolean(MAIL_ENABLED)).thenReturn(true);
     for (val name : new String[] { MAIL_SMTP_HOST, MAIL_NORMAL_FROM, MAIL_PROBLEM_FROM, MAIL_ADMIN_RECIPIENT, MAIL_MANUAL_SUPPORT_RECIPIENT, MAIL_AUTOMATIC_SUPPORT_RECIPIENT }) {
+      when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn(name);
     }
     for (val name : new String[] { MAIL_VALIDATION_SUBJECT, MAIL_ERROR_BODY }) {
+      when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn("%s:%s");
     }
     for (val name : new String[] { MAIL_SIGNOFF_BODY }) {
+      when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn("%s:%s:%s");
     }
     for (val name : new String[] { MAIL_VALID_BODY, MAIL_INVALID_BODY }) {
+      when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn("%s:%s:%s:%s");
     }
 

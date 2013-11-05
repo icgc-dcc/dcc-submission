@@ -124,7 +124,7 @@ public class MailService {
   }
 
   public void sendValidated(String releaseName, String projectKey, SubmissionState state, Set<Address> addresses) {
-    if (isEnabled()) {
+    if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
     }
@@ -165,7 +165,7 @@ public class MailService {
   }
 
   private void send(String from, String recipient, String subject, String text) {
-    if (isEnabled()) {
+    if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
     }
