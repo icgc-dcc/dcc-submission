@@ -66,7 +66,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
         getValidationContext().reportError(
             filename,
             COMPRESSION_CODEC_ERROR,
-            new Object[] { getFileSchemaName(filename) });
+            getFileSchemaName(filename));
       }
     } catch (IOException e) {
       log.info("Exception caught in reading file (corruption): {}", filename, e);
@@ -99,7 +99,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       context.reportError(
           filename,
           COMPRESSION_CODEC_ERROR,
-          new Object[] { getFileSchemaName(filename) });
+          getFileSchemaName(filename));
     }
   }
 
@@ -120,7 +120,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       context.reportError(
           filename,
           COMPRESSION_CODEC_ERROR,
-          new Object[] { getFileSchemaName(filename) });
+          getFileSchemaName(filename));
     }
   }
 

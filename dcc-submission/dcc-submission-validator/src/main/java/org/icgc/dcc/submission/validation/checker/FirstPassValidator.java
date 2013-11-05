@@ -22,6 +22,8 @@ import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_L
 
 import java.util.regex.Pattern;
 
+import javax.validation.constraints.NotNull;
+
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -36,14 +38,29 @@ import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.icgc.dcc.submission.validation.service.ValidationExecutor;
 import org.icgc.dcc.submission.validation.service.Validator;
 
+import com.google.common.annotations.VisibleForTesting;
+
 @Slf4j
 @NoArgsConstructor
 public class FirstPassValidator implements Validator {
 
+  @NotNull
+  private FileChecker fileChecker;
+  @NotNull
+  private RowChecker rowChecker;
+
+  /**
+   * For testing purposes only.
+   */
+  @VisibleForTesting
+  FirstPassValidator(FileChecker fileChecker, RowChecker rowChecker) {
+    this.fileChecker = fileChecker;
+    this.rowChecker = rowChecker;
+  }
+
   @Override
   public void validate(ValidationContext validationContext) {
-    val fileChecker = FileCheckers.getDefaultFileChecker(validationContext);
-    val rowChecker = RowCheckers.getDefaultRowChecker(validationContext);
+    lazyLoadCheckers(validationContext);
 
     for (String filename : validationContext.getSubmissionDirectory().listFile()) {
       String fileSchemaName = getFileSchemaName(validationContext.getDictionary(), filename);
@@ -59,6 +76,15 @@ public class FirstPassValidator implements Validator {
           verifyState();
         }
       }
+    }
+  }
+
+  private void lazyLoadCheckers(ValidationContext validationContext) {
+    if (this.fileChecker == null) {
+      this.fileChecker = FileCheckers.getDefaultFileChecker(validationContext);
+    }
+    if (this.rowChecker == null) {
+      this.rowChecker = RowCheckers.getDefaultRowChecker(validationContext);
     }
   }
 

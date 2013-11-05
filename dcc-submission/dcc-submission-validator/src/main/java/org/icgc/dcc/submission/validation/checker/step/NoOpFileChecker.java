@@ -49,14 +49,13 @@ public class NoOpFileChecker implements FileChecker {
   @Getter
   @NotNull
   private final ValidationContext validationContext;
+  @Getter
+  private final boolean failFast;
 
   /**
    * TODO: remove, see {@link #cacheFileSchemaNames()}
    */
   private Map<String, String> cachedFileNames;
-
-  @Getter
-  private final boolean failFast;
 
   public NoOpFileChecker(ValidationContext validationContext) {
     this(validationContext, false);
