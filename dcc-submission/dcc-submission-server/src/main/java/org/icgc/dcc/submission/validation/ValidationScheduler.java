@@ -153,7 +153,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    * Polls for an enqueued project to become available
    */
   private void pollQueue() {
-    log.debug("Polling queue...");
+    log.debug("Polling validation queue...");
     Optional<QueuedProject> nextProject = absent();
 
     try {
@@ -187,7 +187,7 @@ public class ValidationScheduler extends AbstractScheduledService {
 
     // If we made it here then the validation was accepted
     log.info("Validating next project in queue: '{}'", project);
-    startValidation(project);
+    acceptValidation(project);
 
     // Add callbacks to handle execution outcomes
     addCallback(future, new FutureCallback<Validation>() {
@@ -209,7 +209,7 @@ public class ValidationScheduler extends AbstractScheduledService {
        */
       @Override
       public void onFailure(Throwable t) {
-        log.error("onFailure - Exception occurred in '{}' validation: {}", project.getKey(), t);
+        log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
 
         val state = t instanceof CancellationException ? NOT_VALIDATED : ERROR;
         val submissionReport = validation.getContext().getSubmissionReport();
@@ -241,12 +241,14 @@ public class ValidationScheduler extends AbstractScheduledService {
 
   }
 
-  private void startValidation(QueuedProject project) {
+  private void acceptValidation(QueuedProject project) {
+    log.info("Validation for '{}' accepted", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
     releaseService.dequeueToValidating(project);
   }
 
   private void completeValidation(QueuedProject project, SubmissionState state, SubmissionReport submissionReport) {
+    log.info("Validation for '{}' completed with state '{}'", project, state);
     try {
       storeSubmissionReport(project.getKey(), submissionReport);
     } finally {

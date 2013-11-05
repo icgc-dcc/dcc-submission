@@ -40,7 +40,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
-import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -55,7 +54,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
    * Test data.
    */
   private static final String ROOTDIR = "/fixtures/validation/external";
-  private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null);
+  private static final String PROJECT_KEY = "dummyProject";
 
   @Before
   public void setUp() throws JsonProcessingException, IOException {
@@ -176,7 +175,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
 
     PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = planner.plan(QUEUED_PROJECT, submissionDirectory, platformStrategy, dictionary);
+    Plan plan = planner.plan(PROJECT_KEY, platformStrategy, dictionary);
     plan.connect(platformStrategy);
     assertEquals(5, plan.getCascade().getFlows().size());
 

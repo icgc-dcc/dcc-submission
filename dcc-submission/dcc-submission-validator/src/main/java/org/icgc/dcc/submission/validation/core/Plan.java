@@ -35,8 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.MissingFileException;
 import org.icgc.dcc.submission.validation.planner.ExternalFlowPlanner;
 import org.icgc.dcc.submission.validation.planner.FileSchemaFlowPlanner;
@@ -56,13 +54,11 @@ public class Plan {
    * Inputs.
    */
   @NonNull
-  private final QueuedProject queuedProject;
+  private final String projectKey;
   @NonNull
   private final Dictionary dictionary;
   @NonNull
   private final PlatformStrategy cascadingStrategy;
-  @NonNull
-  private final SubmissionDirectory submissionDirectory;
 
   /**
    * Metadata.
@@ -80,10 +76,28 @@ public class Plan {
     return cascadingStrategy.path(schema).getName();
   }
 
+  public void connect(PlatformStrategy platformStrategy) {
+    val cascadeDef = new CascadeDef().setName(projectKey + " validation cascade");
+    for (val planner : getPlanners()) {
+      val flow = planner.connect(platformStrategy);
+      if (flow != null) {
+        cascadeDef.addFlow(flow);
+      }
+    }
+
+    cascade = new CascadeConnector().connect(cascadeDef);
+  }
+
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
     plannedSchema.add(fileSchema);
     internalPlanners.put(fileSchema.getName(), internal);
     externalPlanners.put(fileSchema.getName(), external);
+  }
+
+  public void collect(ReportContext reportContext) {
+    for (val planner : getPlanners()) {
+      planner.collect(cascadingStrategy, reportContext);
+    }
   }
 
   public FileSchema getFileSchema(String name) {
@@ -98,14 +112,6 @@ public class Plan {
 
   public Dictionary getDictionary() {
     return dictionary;
-  }
-
-  public QueuedProject getQueuedProject() {
-    return queuedProject;
-  }
-
-  public String getProjectKey() {
-    return queuedProject.getKey();
   }
 
   public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
@@ -148,26 +154,8 @@ public class Plan {
     }
   }
 
-  public void connect(PlatformStrategy platformStrategy) {
-    val cascadeDef = new CascadeDef().setName(queuedProject.getKey() + " validation cascade");
-    for (val planner : getPlanners()) {
-      val flow = planner.connect(platformStrategy);
-      if (flow != null) {
-        cascadeDef.addFlow(flow);
-      }
-    }
-
-    cascade = new CascadeConnector().connect(cascadeDef);
-  }
-
   public Cascade getCascade() {
     return cascade;
-  }
-
-  public void collect(ReportContext reportContext) {
-    for (val planner : getPlanners()) {
-      planner.collect(cascadingStrategy, reportContext);
-    }
   }
 
   private Iterable<FileSchemaFlowPlanner> getPlanners() {

@@ -24,10 +24,10 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
+import org.icgc.dcc.submission.validation.service.ValidationExecutor;
 import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.inject.Inject;
@@ -48,46 +48,56 @@ public class PrimaryValidator implements Validator {
   @Override
   @SneakyThrows
   public void validate(ValidationContext context) {
-    log.info("Preparing cascade for project '{}'", context.getProjectKey());
-
     // Shorthands
     val projectKey = context.getProjectKey();
     val dictionary = context.getDictionary();
-    val submissionDirectory = context.getSubmissionDirectory();
-    val queuedProject = new QueuedProject(context.getProjectKey(), context.getEmails());
     val platformStrategy = context.getPlatformStrategy();
 
     // Plan
     log.info("Planning cascade for project '{}'", projectKey);
-    Plan plan = planner.plan(queuedProject, submissionDirectory, platformStrategy, dictionary);
+    Plan plan = planner.plan(projectKey, platformStrategy, dictionary);
     log.info("Planned cascade for project '{}', # of internal flows: {}, # of external flows: {}",
         new Object[] { projectKey, size(plan.getInternalFlows()), size(plan.getExternalFlows()) });
 
     // Connect
-    log.info("Connecting cascade for project {}", projectKey);
+    log.info("Connecting cascade for project '{}'", projectKey);
     plan.connect(platformStrategy);
-    log.info("Connected cascade for project {}", projectKey);
+    log.info("Connected cascade for project '{}'", projectKey);
 
     try {
       // Start (blocking)
-      log.info("Starting cascade for project {}", projectKey);
+      log.info("Starting cascade for project '{}'", projectKey);
       plan.getCascade().complete();
-      log.info("Finished cascade for project {}", projectKey);
+      log.info("Finished cascade for project '{}'", projectKey);
+      verifyState();
 
       // Report
-      log.info("Collecting report for project {}", projectKey);
+      log.info("Collecting report for project '{}'", projectKey);
       plan.collect(context);
-      log.info("Finished collecting report for project {}", projectKey);
+      log.info("Finished collecting report for project '{}'", projectKey);
     } catch (Throwable t) {
-      log.info("Exception completing cascade for project {}", projectKey, t);
+      log.info("Exception completing cascade for project '{}'", projectKey, t);
 
       // Stop (blocking)
-      log.info("Stopping cascade for project {}", projectKey);
+      log.info("Stopping cascade for project '{}'", projectKey);
       plan.getCascade().stop();
-      log.info("Stopped cascade for project {}", projectKey);
+      log.info("Stopped cascade for project '{}'", projectKey);
 
       // Rethrow for {@link Validator}
       throw t;
+    }
+  }
+
+  /**
+   * Checks if the validation has been cancelled.
+   * 
+   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
+   */
+  @SneakyThrows
+  private void verifyState() {
+    val cancelled = Thread.currentThread().isInterrupted();
+    if (cancelled) {
+      throw new InterruptedException("Reference genome validation was interrupted");
     }
   }
 

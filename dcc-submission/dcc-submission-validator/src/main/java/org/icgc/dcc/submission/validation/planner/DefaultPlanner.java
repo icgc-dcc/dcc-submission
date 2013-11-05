@@ -22,13 +22,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.PlanElement;
@@ -58,20 +56,14 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Plan plan(QueuedProject queuedProject, SubmissionDirectory submissionDirectory, PlatformStrategy strategy,
-      Dictionary dictionary) {
-    checkArgument(strategy != null);
-    checkArgument(dictionary != null);
+  public Plan plan(@NonNull String projectKey, @NonNull PlatformStrategy strategy, @NonNull Dictionary dictionary) {
+    val plan = new Plan(projectKey, dictionary, strategy);
 
-    FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
+    log.info("Including flow planners for '{}'", projectKey);
+    includePlanners(plan, projectKey, strategy, dictionary);
 
-    val plan = new Plan(queuedProject, dictionary, strategy, submissionDirectory);
-
-    log.info("Including flow planners for '{}'", queuedProject);
-    includePlanners(queuedProject, strategy, dictionary, systemDirectory, plan);
-
-    log.info("Applying planning visitors for '{}'", queuedProject);
-    applyVisitors(queuedProject, plan);
+    log.info("Applying planning visitors for '{}'", projectKey);
+    applyVisitors(plan, projectKey);
 
     return plan;
   }
@@ -93,28 +85,29 @@ public class DefaultPlanner implements Planner {
         new ErrorPlanningVisitor(FlowType.EXTERNAL));
   }
 
-  private static void includePlanners(QueuedProject queuedProject, PlatformStrategy strategy, Dictionary dictionary,
-      FileSchemaDirectory systemDirectory, Plan plan) {
+  private static void includePlanners(Plan plan, String projectKey, PlatformStrategy strategy, Dictionary dictionary) {
+    val systemDirectory = strategy.getSystemDirectory();
+
     for (val fileSchema : dictionary.getFiles()) {
       val fileSchemaDirectory = strategy.getFileSchemaDirectory();
       val fileSchemaName = fileSchema.getName();
 
       val include = fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema);
       if (include) {
-        log.info("Including file schema '{}' flow planners for '{}'", fileSchemaName, queuedProject);
+        log.info("Including file schema '{}' flow planners for '{}'", fileSchemaName, projectKey);
         plan.include(fileSchema,
             new DefaultInternalFlowPlanner(fileSchema),
             new DefaultExternalFlowPlanner(plan, fileSchema));
       } else {
         log.info("File schema '{}' has no matching datafile in submission directory '{}' for '{}'",
-            new Object[] { fileSchemaName, fileSchemaDirectory.getDirectoryPath(), queuedProject });
+            new Object[] { fileSchemaName, fileSchemaDirectory.getDirectoryPath(), projectKey });
       }
     }
   }
 
-  private void applyVisitors(QueuedProject queuedProject, Plan plan) {
+  private void applyVisitors(Plan plan, String projectKey) {
     for (val visitor : planningVisitors) {
-      log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), queuedProject);
+      log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), projectKey);
       visitor.apply(plan);
     }
   }
