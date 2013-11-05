@@ -55,7 +55,12 @@ public class FirstPassValidator implements Validator {
 
   @Override
   public void validate(ValidationContext validationContext) {
-    lazyLoadCheckers(validationContext);
+    FileChecker fileChecker = this.fileChecker == null ?
+        FileCheckers.getDefaultFileChecker(validationContext) :
+        this.fileChecker;
+    RowChecker rowChecker = this.rowChecker == null ?
+        RowCheckers.getDefaultRowChecker(validationContext) :
+        this.rowChecker;
 
     for (String filename : listRelevantFiles(validationContext)) {
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, filename);
@@ -68,15 +73,6 @@ public class FirstPassValidator implements Validator {
         rowChecker.check(filename);
         verifyState();
       }
-    }
-  }
-
-  private void lazyLoadCheckers(ValidationContext validationContext) {
-    if (this.fileChecker == null) {
-      this.fileChecker = FileCheckers.getDefaultFileChecker(validationContext);
-    }
-    if (this.rowChecker == null) {
-      this.rowChecker = RowCheckers.getDefaultRowChecker(validationContext);
     }
   }
 
