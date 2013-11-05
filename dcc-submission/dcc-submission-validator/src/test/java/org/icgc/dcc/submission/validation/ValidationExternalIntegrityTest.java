@@ -100,11 +100,13 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     String content = validate(dictionary, ROOTDIR);
     assertTrue(content, content.isEmpty());
 
-    String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
+    String donorTrim =
+        getUnsortedFileContent(ROOTDIR, "/.validation/donor" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_donor_trim.tsv");
     assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
-    String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
+    String specimenTrim =
+        getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_specimen_trim.tsv");
     assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
@@ -133,7 +135,8 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     testErrorType("fk_1");
 
     String donorTrim =
-        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + FILE_NAME_SEPARATOR + "donor_id-fakecolumn-offset.tsv");
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + FILE_NAME_SEPARATOR
+            + "donor_id-fakecolumn-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_donor_trim.tsv");
     assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
@@ -171,11 +174,10 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    PlatformStrategy cascadingStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
+    PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan =
-        validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
-            null);
+    Plan plan = planner.plan(QUEUED_PROJECT, submissionDirectory, platformStrategy, dictionary);
+    plan.connect(platformStrategy);
     assertEquals(5, plan.getCascade().getFlows().size());
 
     plan.getCascade().complete();

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import lombok.val;
+
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -36,13 +38,15 @@ import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
-import org.icgc.dcc.submission.validation.service.ValidationService;
+import org.icgc.dcc.submission.validation.service.ValidationExecutor;
 import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
+import com.typesafe.config.Config;
 
 /**
  * Module for the validation subsystem.
@@ -61,31 +65,50 @@ public class ValidationModule extends AbstractDccModule {
 
   @Override
   protected void configure() {
-    // TODO: Remove when integration is complete
-    bindService(ValidationQueueService.class);
-    bind(ValidationService.class);
+    bindService();
+    bindPrimaryValidation();
+    bindValidators();
+  }
 
-    // TODO: uncomment when integration is complete
-    // bindService(ValidationScheduler.class);
-    // bind(ValidationExecutor.class);
-    // bind(ValidationExecutor.class).toProvider(new Provider<ValidationExecutor>() {
-    //
-    // @Inject
-    // private Config config;
-    //
-    // @Override
-    // public ValidationExecutor get() {
-    // return new ValidationExecutor(getMaxValidating());
-    // }
-    //
-    // private int getMaxValidating() {
-    // return config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
-    // config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
-    // DEFAULT_MAX_VALIDATING;
-    // }
-    //
-    // }).in(Singleton.class);
+  /**
+   * Binds service level components.
+   */
+  private void bindService() {
+    // The outer most validation abstraction
+    bindService(ValidationScheduler.class);
 
+    // Execution facility
+    bind(ValidationExecutor.class).toProvider(new Provider<ValidationExecutor>() {
+
+      @Inject
+      private Config config;
+
+      @Override
+      public ValidationExecutor get() {
+        return new ValidationExecutor(getMaxValidating());
+      }
+
+      private int getMaxValidating() {
+        return config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
+            config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
+            DEFAULT_MAX_VALIDATING;
+      }
+
+    }).in(Singleton.class);
+  }
+
+  /**
+   * Binds primary validation components.
+   */
+  private void bindPrimaryValidation() {
+    // Builder of plans
+    bind(Planner.class).to(DefaultPlanner.class);
+    bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
+
+    // Primary restrictions
+    bindRestrictionTypes();
+
+    // Helper
     bind(RestrictionContext.class).toInstance(new RestrictionContext() {
 
       @Inject
@@ -97,40 +120,41 @@ public class ValidationModule extends AbstractDccModule {
       }
 
     });
-    bind(Planner.class).to(DefaultPlanner.class);
-    bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
-    bindRestrictionTypes();
 
-    // TODO: Enable when integration is complete
-    // bindValidators();
   }
 
   /**
    * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
    */
   private void bindRestrictionTypes() {
-    Multibinder<RestrictionType> types = Multibinder.newSetBinder(binder(), RestrictionType.class);
+    // Set binder will preserve bind order as iteration order for injectees
+    val types = Multibinder.newSetBinder(binder(), RestrictionType.class);
+
     bindRestriction(types, DiscreteValuesRestriction.Type.class);
     bindRestriction(types, RangeFieldRestriction.Type.class);
     bindRestriction(types, RequiredRestriction.Type.class);
     bindRestriction(types, CodeListRestriction.Type.class);
     bindRestriction(types, RegexRestriction.Type.class);
     bindRestriction(types, ScriptRestriction.Type.class);
+
     requestStaticInjection(ByteOffsetToLineNumber.class);
   }
 
-  private void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
+  private static void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
     types.addBinding().to(type).in(Singleton.class);
   }
 
   private void bindValidators() {
-    Multibinder<Validator> validators = Multibinder.newSetBinder(binder(), Validator.class);
+    // Set binder will preserve bind order as iteration order for injectees
+    val validators = Multibinder.newSetBinder(binder(), Validator.class);
+
+    // Order: Syntactic, primary then semantic
     bindValidator(validators, FirstPassValidator.class);
-    bindValidator(validators, PrimaryValidator.class);
     bindValidator(validators, ReferenceGenomeValidator.class);
+    bindValidator(validators, PrimaryValidator.class);
   }
 
-  private void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {
+  private static void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {
     validators.addBinding().to(validator).in(Singleton.class);
   }
 

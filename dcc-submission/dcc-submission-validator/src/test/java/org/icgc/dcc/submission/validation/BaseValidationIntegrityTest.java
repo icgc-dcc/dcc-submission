@@ -35,18 +35,16 @@ import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.core.RestrictionContext;
+import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.planner.DefaultPlanner;
 import org.icgc.dcc.submission.validation.planner.Planner;
-import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -93,11 +91,6 @@ public abstract class BaseValidationIntegrityTest {
   Dictionary dictionary;
   Planner planner;
 
-  /**
-   * Class under test.
-   */
-  ValidationService validationService;
-
   @Before
   public void before() {
     this.planner = new DefaultPlanner(ImmutableSet.<RestrictionType> builder()
@@ -110,7 +103,6 @@ public abstract class BaseValidationIntegrityTest {
         .build());
 
     this.dictionary = getDictionary();
-    this.validationService = new ValidationService(planner, dccFileSystem, new LocalPlatformStrategyFactory());
   }
 
   protected static FileSchema getFileSchemaByName(Dictionary dictionary, String name) {

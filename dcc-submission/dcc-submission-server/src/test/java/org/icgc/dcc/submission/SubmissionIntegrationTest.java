@@ -149,7 +149,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECTS_TO_ENQUEUE = "["
       + "{\"key\": \"" + PROJECT1_KEY + "\", \"emails\": [\"project1@example.org\"]}, "
       + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}, "
       + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}]";
   private static final String PROJECTS_TO_ENQUEUE2 = "["
       + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "

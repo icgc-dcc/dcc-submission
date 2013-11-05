@@ -58,6 +58,7 @@ public class ValidationExecutor {
    * @param maxConcurrentValidations - The maximum number of concurrently executing validation tasks.
    */
   public ValidationExecutor(int maxConcurrentValidations) {
+    log.info("Initializing executor with {} maximum concurrent validations", maxConcurrentValidations);
     this.executor = createExecutor(maxConcurrentValidations);
   }
 
@@ -92,7 +93,7 @@ public class ValidationExecutor {
         }
 
         // Make available for {@link ListeningFuture#onSuccess()}
-        log.info("call: Exiting validation without error'{}'... {}", id, getStats());
+        log.info("call: Exiting validation '{}' without error... {}", id, getStats());
         return validation;
       }
 

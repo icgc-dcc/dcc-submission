@@ -110,8 +110,9 @@ public class ReferenceGenomeValidator implements Validator {
     val ssmPrimaryFile = optionalSsmPrimaryFile.get();
     val reader = getLineReader(ssmPrimaryFile, context.getFileSystem());
 
-    log.info("Performing reference renome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
+    log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
     validate(context, ssmPrimaryFile.getName(), reader);
+    log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
   }
 
   private void validate(ReportContext context, String fileName, LineReader reader)

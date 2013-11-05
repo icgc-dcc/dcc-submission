@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.service;
 
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.commons.lang.StringUtils.repeat;
 
 import java.util.List;
 
@@ -76,12 +77,19 @@ public class Validation {
   public void execute() throws InterruptedException {
     watch.start();
     try {
-      log.info("Executing validation '{}'...", getId());
+      log.info(repeat("#", 80));
+      log.info("  Executing validation '{}'...", getId());
+      log.info(repeat("#", 80));
       verifyState();
 
+      val n = validators.size();
+      int i = 1;
       for (val validator : validators) {
         val name = validator.getClass().getSimpleName();
-        log.info("Executing '{}' validator for '{}'...", name, getId());
+
+        log.info(repeat("-", 80));
+        log.info("[" + i++ + "/" + n + "] Executing '{}' validator for '{}'...", name, getId());
+        log.info(repeat("-", 80));
         validator.validate(context);
         log.info("Finished executing '{}' validator for '{}'...", name, getId());
 

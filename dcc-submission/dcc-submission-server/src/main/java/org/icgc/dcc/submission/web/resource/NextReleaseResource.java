@@ -62,7 +62,7 @@ import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.ValidationQueueService;
+import org.icgc.dcc.submission.validation.ValidationScheduler;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
@@ -85,13 +85,12 @@ public class NextReleaseResource {
   @Inject
   protected ReleaseService releaseService;
   @Inject
-  protected ValidationQueueService validationQueueService;
+  protected ValidationScheduler validationScheduler;
 
   @GET
   public Response getNextRelease(
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -120,8 +119,7 @@ public class NextReleaseResource {
   @Path("dictionary")
   public Response getDictionary(
 
-      @Context
-      Request request
+      @Context Request request
 
       )
   {
@@ -136,11 +134,9 @@ public class NextReleaseResource {
 
       Release nextRelease,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -192,14 +188,11 @@ public class NextReleaseResource {
   @Path("queue")
   public Response queue(
 
-      @Valid
-      List<QueuedProject> queuedProjects,
+      @Valid List<QueuedProject> queuedProjects,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -248,8 +241,7 @@ public class NextReleaseResource {
   @Path("queue")
   public Response removeAllQueued(
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -267,11 +259,9 @@ public class NextReleaseResource {
   @SneakyThrows
   public Response cancelValidation(
 
-      @PathParam("projectKey")
-      String projectKey,
+      @PathParam("projectKey") String projectKey,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -281,7 +271,7 @@ public class NextReleaseResource {
     }
 
     try {
-      validationQueueService.killValidation(projectKey);
+      validationScheduler.cancelValidation(projectKey);
     } catch (InvalidStateException e) {
       ServerErrorCode code = e.getCode();
       log.error(code.getFrontEndString(), e);
@@ -310,11 +300,9 @@ public class NextReleaseResource {
 
       List<String> projectKeys,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -355,14 +343,11 @@ public class NextReleaseResource {
   @Path("update")
   public Response update(
 
-      @Valid
-      Release release,
+      @Valid Release release,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {

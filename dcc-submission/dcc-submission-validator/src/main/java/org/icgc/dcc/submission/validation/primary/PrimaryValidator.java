@@ -57,28 +57,31 @@ public class PrimaryValidator implements Validator {
     val queuedProject = new QueuedProject(context.getProjectKey(), context.getEmails());
     val platformStrategy = context.getPlatformStrategy();
 
-    log.info("Planning cascade for project {}", projectKey);
+    // Plan
+    log.info("Planning cascade for project '{}'", projectKey);
     Plan plan = planner.plan(queuedProject, submissionDirectory, platformStrategy, dictionary);
+    log.info("Planned cascade for project '{}', # of internal flows: {}, # of external flows: {}",
+        new Object[] { projectKey, size(plan.getInternalFlows()), size(plan.getExternalFlows()) });
 
-    log.info("Planned cascade for project {}", projectKey);
-    log.info("# internal flows: {}", size(plan.getInternalFlows()));
-    log.info("# external flows: {}", size(plan.getExternalFlows()));
-
+    // Connect
     log.info("Connecting cascade for project {}", projectKey);
     plan.connect(platformStrategy);
     log.info("Connected cascade for project {}", projectKey);
 
     try {
+      // Start (blocking)
       log.info("Starting cascade for project {}", projectKey);
       plan.getCascade().complete();
       log.info("Finished cascade for project {}", projectKey);
 
+      // Report
       log.info("Collecting report for project {}", projectKey);
       plan.collect(context.getSubmissionReport());
       log.info("Finished collecting report for project {}", projectKey);
     } catch (Throwable t) {
       log.info("Exception completing cascade for project {}", projectKey, t);
 
+      // Stop (blocking)
       log.info("Stopping cascade for project {}", projectKey);
       plan.getCascade().stop();
       log.info("Stopped cascade for project {}", projectKey);

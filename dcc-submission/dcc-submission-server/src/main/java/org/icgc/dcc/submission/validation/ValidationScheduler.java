@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.util.concurrent.AbstractScheduledService.Scheduler.newFixedDelaySchedule;
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
@@ -59,6 +58,7 @@ import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
@@ -185,32 +185,33 @@ public class ValidationScheduler extends AbstractScheduledService {
 
     // If we made it here then the validation was accepted
     log.info("Validating next project in queue: '{}'", project);
-    mailService.sendProcessingStarted(project.getKey(), project.getEmails());
-    releaseService.dequeueToValidating(project);
+    startValidation(project);
 
     // Add callbacks to handle execution outcomes
     addCallback(future, new FutureCallback<Validation>() {
 
+      /**
+       * Called when validation has completed (may not be VALID)
+       */
       @Override
       public void onSuccess(Validation validation) {
-        log.info("Finished validation for '{}'", project.getKey());
+        log.info("onSuccess - Finished validation for '{}'", project.getKey());
 
-        try {
-          storeSubmissionReport(project.getKey(), validation.getContext().getSubmissionReport());
-        } finally {
-          resolveSubmission(project, validation.getContext().hasErrors() ? INVALID : VALID);
-        }
+        val state = validation.getContext().hasErrors() ? INVALID : VALID;
+        val submissionReport = validation.getContext().getSubmissionReport();
+        completeValidation(project, state, submissionReport);
       }
 
+      /**
+       * Called when validation has completed (will not be VALID)
+       */
       @Override
       public void onFailure(Throwable t) {
-        log.error("Exception occurred in '{}' validation: {}", project.getKey(), t);
+        log.error("onFailure - Exception occurred in '{}' validation: {}", project.getKey(), t);
 
-        try {
-          storeSubmissionReport(project.getKey(), null);
-        } finally {
-          resolveSubmission(project, ERROR);
-        }
+        val state = ERROR;
+        val submissionReport = null;
+        completeValidation(project, state, (SubmissionReport) submissionReport);
       }
 
     });
@@ -235,6 +236,20 @@ public class ValidationScheduler extends AbstractScheduledService {
         platformStrategyFactory);
 
     return context;
+
+  }
+
+  private void startValidation(QueuedProject project) {
+    mailService.sendProcessingStarted(project.getKey(), project.getEmails());
+    releaseService.dequeueToValidating(project);
+  }
+
+  private void completeValidation(QueuedProject project, SubmissionState state, SubmissionReport submissionReport) {
+    try {
+      storeSubmissionReport(project.getKey(), submissionReport);
+    } finally {
+      resolveSubmission(project, state);
+    }
   }
 
   private Release resolveOpenRelease() {
@@ -267,13 +282,13 @@ public class ValidationScheduler extends AbstractScheduledService {
   private void notifyRecipients(QueuedProject project, SubmissionState state) {
     val release = resolveOpenRelease();
 
-    Set<Address> addresses = newHashSet();
+    val addresses = Sets.<Address> newHashSet();
     for (val email : project.getEmails()) {
       try {
         val address = new InternetAddress(email);
         addresses.add(address);
       } catch (AddressException e) {
-        log.error("Illegal Address: " + e);
+        log.error("Illegal Address: " + e + " in " + project);
       }
     }
 

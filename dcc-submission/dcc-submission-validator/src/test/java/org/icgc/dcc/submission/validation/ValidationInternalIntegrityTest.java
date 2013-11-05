@@ -45,15 +45,14 @@ import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.submission.validation.core.Plan;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.icgc.dcc.submission.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
@@ -95,7 +94,7 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
 
   @Test
   public void test_validate_valid() {
-    String content = validate(validationService, dictionary, ROOT_DIR);
+    String content = validate(dictionary, ROOT_DIR);
     assertTrue(content, content.isEmpty());
   }
 
@@ -198,14 +197,14 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
 
   private void testErrorType(String errorType) {
     val submissionFilePath = "/fixtures/validation/internal/error/" + errorType;
-    val content = validate(validationService, dictionary, submissionFilePath);
+    val content = validate(dictionary, submissionFilePath);
 
     val expected = getResource("/fixtures/validation/reference/" + errorType + ".json");
     assertEquals("errorType = " + errorType + ", content = " + content, expected.trim(), content.trim());
   }
 
   @SneakyThrows
-  private String validate(ValidationService validationService, Dictionary dictionary, String submissionFilePath) {
+  private String validate(Dictionary dictionary, String submissionFilePath) {
     String rootDirString = this.getClass().getResource(submissionFilePath).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     String errorFileString = outputDirString + "/" + "donor.internal" + FILE_NAME_SEPARATOR + "errors.json";
@@ -218,11 +217,10 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    PlatformStrategy cascadingStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
+    PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = validationService.planValidation(
-        QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary, null);
-    assertEquals(1, plan.getCascade().getFlows().size());
+    Plan plan = planner.plan(QUEUED_PROJECT, submissionDirectory, platformStrategy, dictionary);
+    plan.connect(platformStrategy);
 
     plan.getCascade().complete();
 
