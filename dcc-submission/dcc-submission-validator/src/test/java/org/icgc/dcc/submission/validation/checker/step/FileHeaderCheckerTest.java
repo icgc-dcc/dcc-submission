@@ -65,6 +65,7 @@ public class FileHeaderCheckerTest {
     Optional<FileSchema> option = Optional.of(fileSchema);
     when(fileSchema.getFieldNames()).thenReturn(ImmutableList.of("a", "b"));
     when(dict.fileSchema(anyString())).thenReturn(option);
+    when(dict.getFileSchema(anyString())).thenReturn(Optional.of(fileSchema));
 
     when(validationContext.getDccFileSystem()).thenReturn(fs);
     when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);

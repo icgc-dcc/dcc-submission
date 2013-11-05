@@ -64,6 +64,8 @@ public class RowColumnCheckerTest {
     String paramString = "testfile1";
     when(testSchema.getPattern()).thenReturn(paramString);
     when(dict.fileSchema(anyString())).thenReturn(Optional.of(testSchema));
+    when(dict.getFileSchema(anyString())).thenReturn(Optional.of(testSchema));
+
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
 
     FileSchema fileSchema = mock(FileSchema.class);
@@ -100,7 +102,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkErrorReported(validationContext, 2);
   }
 
   @Test
@@ -111,7 +113,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkErrorReported(validationContext, 2);
   }
 
   @Test

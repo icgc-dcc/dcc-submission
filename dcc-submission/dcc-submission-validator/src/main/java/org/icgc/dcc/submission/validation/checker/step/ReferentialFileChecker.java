@@ -53,42 +53,37 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   }
 
   private void referencedCheck(String filename) {
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
-    if (fileSchema.isPresent()) {
-      for (val relation : fileSchema.get().getRelations()) {
-        Optional<FileSchema> otherFileSchema = getDictionary().fileSchema(relation.getOther());
-        if (otherFileSchema.isPresent()) {
-          String pattern = otherFileSchema.get().getPattern();
-          List<String> files = getFiles(pattern);
-          if (files.size() == 0) {
-            log.info("Fail referenced check: missing referenced file (" + relation.getOther());
+    FileSchema fileSchema = getFileSchema(filename);
+    for (val relation : fileSchema.getRelations()) {
+      Optional<FileSchema> otherFileSchema = getDictionary().fileSchema(relation.getOther());
+      if (otherFileSchema.isPresent()) {
+        String pattern = otherFileSchema.get().getPattern();
+        List<String> files = getFiles(pattern);
+        if (files.size() == 0) {
+          log.info("Fail referenced check: missing referenced file (" + relation.getOther());
 
-            incrementCheckErrorCount();
-            getValidationContext().reportError(
-                filename,
-                RELATION_FILE_ERROR,
-                fileSchema.get().getName());
-          }
+          incrementCheckErrorCount();
+          getValidationContext().reportError(
+              filename,
+              RELATION_FILE_ERROR,
+              fileSchema.getName());
         }
       }
     }
   }
 
   private void referencingCheck(String filename) {
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
+    FileSchema fileSchema = getFileSchema(filename);
+    for (val otherFileSchema : fileSchema.getBidirectionalAfferentFileSchemata(getDictionary())) {
+      List<String> files = getFiles(otherFileSchema.getPattern());
+      if (files.size() == 0) {
+        log.info("Fail referencing check: missing referencing file (" + otherFileSchema.getName());
 
-    if (fileSchema.isPresent()) {
-      for (val otherFileSchema : fileSchema.get().getBidirectionalAfferentFileSchemata(getDictionary())) {
-        List<String> files = getFiles(otherFileSchema.getPattern());
-        if (files.size() == 0) {
-          log.info("Fail referencing check: missing referencing file (" + otherFileSchema.getName());
-
-          incrementCheckErrorCount();
-          getValidationContext().reportError(
-              filename,
-              REVERSE_RELATION_FILE_ERROR,
-              fileSchema.get().getName());
-        }
+        incrementCheckErrorCount();
+        getValidationContext().reportError(
+            filename,
+            REVERSE_RELATION_FILE_ERROR,
+            fileSchema.getName());
       }
     }
   }

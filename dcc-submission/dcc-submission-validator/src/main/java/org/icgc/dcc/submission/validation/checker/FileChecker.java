@@ -34,11 +34,6 @@ public interface FileChecker extends Checker {
 
   void check(String filename);
 
-  /**
-   * TODO: remove
-   */
-  String getFileSchemaName(String filename);
-
   SubmissionDirectory getSubmissionDirectory();
 
   Dictionary getDictionary();

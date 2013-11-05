@@ -42,10 +42,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 @RunWith(PowerMockRunner.class)
@@ -65,11 +67,13 @@ public class FirstPassValidatorTest {
     mockStatic(Util.class);
 
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("anyfile"));
+    when(submissionDir.listFiles(Mockito.anyListOf(String.class))).thenReturn(ImmutableList.of("anyfile"));
     when(submissionDir.getDataFilePath(anyString())).thenReturn("/tmp/anyfile");
 
     FileSchema schema = new FileSchema("anyfile");
     schema.setPattern("anyfile");
     when(dict.getFiles()).thenReturn(newArrayList(schema));
+    when(dict.getFileSchema(anyString())).thenReturn(Optional.of(schema));
 
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);

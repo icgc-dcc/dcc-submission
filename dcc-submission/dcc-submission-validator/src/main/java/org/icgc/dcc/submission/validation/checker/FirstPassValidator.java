@@ -20,8 +20,6 @@ package org.icgc.dcc.submission.validation.checker;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
 
-import java.util.regex.Pattern;
-
 import javax.validation.constraints.NotNull;
 
 import lombok.NoArgsConstructor;
@@ -29,11 +27,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.FileChecker.FileCheckers;
 import org.icgc.dcc.submission.validation.checker.RowChecker.RowCheckers;
-import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.icgc.dcc.submission.validation.service.ValidationExecutor;
 import org.icgc.dcc.submission.validation.service.Validator;
@@ -62,19 +57,16 @@ public class FirstPassValidator implements Validator {
   public void validate(ValidationContext validationContext) {
     lazyLoadCheckers(validationContext);
 
-    for (String filename : validationContext.getSubmissionDirectory().listFile()) {
-      String fileSchemaName = getFileSchemaName(validationContext.getDictionary(), filename);
-      if (fileSchemaName != null) {
-        log.info("Validate '{}' level well-formedness for file schema: {}", FILE_LEVEL, fileSchemaName);
+    for (String filename : listRelevantFiles(validationContext)) {
+      log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, filename);
 
-        fileChecker.check(filename);
+      fileChecker.check(filename);
+      verifyState();
+
+      if (fileChecker.canContinue()) {
+        log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, filename);
+        rowChecker.check(filename);
         verifyState();
-
-        if (fileChecker.canContinue()) {
-          log.info("Validating '{}' well-formedness for file schema: '{}'", ROW_LEVEL, fileSchemaName);
-          rowChecker.check(filename);
-          verifyState();
-        }
       }
     }
   }
@@ -88,17 +80,13 @@ public class FirstPassValidator implements Validator {
     }
   }
 
-  /**
-   * TODO: Move to proper {@link SubmissionDirectory} or {@link FileSchemaDirectory} abstraction.
-   */
-  private static String getFileSchemaName(Dictionary dictionary, String fileName) {
-    for (val schema : dictionary.getFiles()) {
-      if (Pattern.matches(schema.getPattern(), fileName)) {
-        return schema.getName();
-      }
-    }
-
-    return null;
+  private Iterable<String> listRelevantFiles(ValidationContext validationContext) {
+    return validationContext
+        .getSubmissionDirectory()
+        .listFiles(
+            validationContext
+                .getDictionary()
+                .getFilePatterns());
   }
 
   /**

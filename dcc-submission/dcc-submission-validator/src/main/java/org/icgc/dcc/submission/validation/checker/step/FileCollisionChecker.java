@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.checker.step;
 
-import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_FILES_ERROR;
 
 import java.util.List;
@@ -29,7 +28,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.FileChecker;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 @Slf4j
@@ -45,12 +43,10 @@ public class FileCollisionChecker extends CompositeFileChecker {
 
   @Override
   public void performSelfCheck(String filename) {
-
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
-    checkState(fileSchema.isPresent(), "TODO");
+    FileSchema fileSchema = getFileSchema(filename);
 
     // more than 1 file that match the same pattern
-    String pattern = fileSchema.get().getPattern();
+    String pattern = fileSchema.getPattern();
     List<String> fileNames = listMatchingFiles(pattern);
     if (collisions(fileNames)) {
       log.info("More than 1 file matching the file pattern: " + pattern);
@@ -59,7 +55,7 @@ public class FileCollisionChecker extends CompositeFileChecker {
       getValidationContext().reportError(
           filename,
           TOO_MANY_FILES_ERROR,
-          fileSchema.get().getName(),
+          fileSchema.getName(),
           ImmutableList.of(fileNames));
     }
   }

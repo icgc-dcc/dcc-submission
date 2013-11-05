@@ -17,12 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.checker.step;
 
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.validation.core.ErrorType.FILE_HEADER_ERROR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Dictionary;
 import java.util.List;
 
 import lombok.Cleanup;
@@ -30,13 +32,9 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory.SubmissionDirectoryFile;
 import org.icgc.dcc.submission.validation.checker.FileChecker;
 import org.icgc.dcc.submission.validation.checker.Util;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 
 @Slf4j
 public class FileHeaderChecker extends CompositeFileChecker {
@@ -65,15 +63,9 @@ public class FileHeaderChecker extends CompositeFileChecker {
     }
   }
 
-  /**
-   * TODO: this class should be passed this as parameter, it shouldn't know about the {@link Dictionary}.
-   */
   private final List<String> retrieveExpectedHeader(String filename) {
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
-    if (fileSchema.isPresent()) {
-      return ImmutableList.copyOf(fileSchema.get().getFieldNames());
-    }
-    return ImmutableList.of(); // TODO: this is never a valid case
+    return newArrayList(getFileSchema(filename)
+        .getFieldNames());
   }
 
   /**
@@ -87,9 +79,7 @@ public class FileHeaderChecker extends CompositeFileChecker {
     @Cleanup
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
     String header = reader.readLine();
-
-    // Double slash is required!
-    return ImmutableList.copyOf(header.split("\\t"));
+    return copyOf(FIELD_SPLITTER.split(header));
   }
 
   private boolean isExactMatch(List<String> expectedHeader, List<String> actualHeader) {

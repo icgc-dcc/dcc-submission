@@ -48,10 +48,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 
@@ -104,6 +107,7 @@ public class FirstPassValidatorClientTest {
   @Mock
   Config config;
 
+  @Spy
   Dictionary dict;
 
   DccFileSystem fs;
@@ -132,17 +136,23 @@ public class FirstPassValidatorClientTest {
         new FileOutputStream(
             file3));
 
-    dict = new Dictionary();
     Schema.TESTFILE1.getSchema().setPattern(file1.getName());
     Schema.TESTFILE2.getSchema().setPattern(file2.getName());
     Schema.TESTFILE3.getSchema().setPattern(file3.getName());
     dict.addFile(Schema.TESTFILE1.getSchema());
     dict.addFile(Schema.TESTFILE2.getSchema());
     dict.addFile(Schema.TESTFILE3.getSchema());
+    when(dict.getFileSchema(anyString()))
+        .thenReturn(Optional.of(Schema.TESTFILE1.getSchema()))
+        .thenReturn(Optional.of(Schema.TESTFILE2.getSchema()))
+        .thenReturn(Optional.of(Schema.TESTFILE3.getSchema()));
 
     when(config.getString(FsConfig.FS_ROOT)).thenReturn(file1.getParent());
     fs = new DccFileSystem(config, FileSystem.getLocal(new Configuration()));
-    when(submissionDir.listFile()).thenReturn(ImmutableList.of(file1.getName(), file2.getName(), file3.getName()));
+
+    ImmutableList<String> files = ImmutableList.of(file1.getName(), file2.getName(), file3.getName());
+    when(submissionDir.listFile()).thenReturn(files);
+    when(submissionDir.listFiles(Mockito.anyListOf(String.class))).thenReturn(files);
     when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new Answer<Iterable<String>>() {
 
       @Override

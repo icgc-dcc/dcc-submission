@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import lombok.Cleanup;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -32,8 +33,6 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.checker.RowChecker;
 import org.icgc.dcc.submission.validation.checker.Util;
 import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
-
-import com.google.common.base.Optional;
 
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
@@ -61,7 +60,8 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     log.info("Start performing {} validation...", this.getClass().getSimpleName());
 
     String filePathname = getSubmissionDirectory().getDataFilePath(filename);
-    FileSchema fileSchema = getFileSchema(filename);
+    val fileSchema = getFileSchema(filename);
+
     try {
       @Cleanup
       BufferedReader reader =
@@ -120,15 +120,5 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   @Override
   public DccFileSystem getDccFileSystem() {
     return delegate.getDccFileSystem();
-  }
-
-  /**
-   * TODO: remove
-   */
-  private FileSchema getFileSchema(String filename) {
-    Optional<FileSchema> option = getDictionary().fileSchema(getFileSchemaName(filename));
-    if (option.isPresent()) return option.get();
-    else
-      throw new RuntimeException("File Schema for filename: " + filename + " does not exist.");
   }
 }

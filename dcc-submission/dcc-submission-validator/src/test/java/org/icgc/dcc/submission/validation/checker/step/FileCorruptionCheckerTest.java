@@ -61,6 +61,7 @@ public class FileCorruptionCheckerTest {
     String paramString = "testfile1";
     when(testSchema.getPattern()).thenReturn(paramString);
     when(dict.fileSchema(anyString())).thenReturn(Optional.of(testSchema));
+    when(dict.getFileSchema(anyString())).thenReturn(Optional.of(testSchema));
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
 
     when(validationContext.getDccFileSystem()).thenReturn(fs);

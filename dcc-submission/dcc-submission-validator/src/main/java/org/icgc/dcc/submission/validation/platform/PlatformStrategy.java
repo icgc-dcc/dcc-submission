@@ -31,9 +31,16 @@ import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+
 public interface PlatformStrategy {
 
   String FIELD_SEPARATOR = "\t";
+
+  Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
+
+  Joiner FIELD_JOINER = Joiner.on(FIELD_SEPARATOR);
 
   String FILE_NAME_SEPARATOR = "--";
 

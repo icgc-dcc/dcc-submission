@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.checker.step;
 
+import static com.google.common.base.Preconditions.checkState;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.Checker;
@@ -86,11 +89,6 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public String getFileSchemaName(String filename) {
-    return delegate.getFileSchemaName(filename);
-  }
-
-  @Override
   public Dictionary getDictionary() {
     return delegate.getDictionary();
   }
@@ -108,5 +106,11 @@ public abstract class CompositeFileChecker implements FileChecker {
   @Override
   public ValidationContext getValidationContext() {
     return delegate.getValidationContext();
+  }
+
+  protected FileSchema getFileSchema(String filename) {
+    val optional = getDictionary().getFileSchema(filename);
+    checkState(optional.isPresent(), "At this stage, there should be a file schema matching '%s'", filename);
+    return optional.get();
   }
 }
