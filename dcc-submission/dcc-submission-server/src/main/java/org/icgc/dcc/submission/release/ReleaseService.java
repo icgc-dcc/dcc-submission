@@ -26,8 +26,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
+import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
 import java.util.ArrayList;
@@ -440,10 +443,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   public void resolve(final String projectKey, final SubmissionState destinationState) { // TODO: avoid code duplication
-    checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
-        || SubmissionState.ERROR == destinationState);
+    checkArgument(
+    /**/VALID == destinationState ||
+        INVALID == destinationState ||
+        ERROR == destinationState ||
+        NOT_VALIDATED == destinationState /* Cancelled */);
 
-    final SubmissionState expectedState = SubmissionState.VALIDATING;
+    val expectedState = VALIDATING;
 
     String description = format("resolve project '%s' with destination state '%s')", projectKey, destinationState);
     log.info("Attempting to {}", description);

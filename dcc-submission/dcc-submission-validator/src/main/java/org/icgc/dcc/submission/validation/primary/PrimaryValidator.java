@@ -28,6 +28,7 @@ import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
+import org.icgc.dcc.submission.validation.service.ValidationExecutor;
 import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.inject.Inject;
@@ -73,6 +74,7 @@ public class PrimaryValidator implements Validator {
       log.info("Starting cascade for project {}", projectKey);
       plan.getCascade().complete();
       log.info("Finished cascade for project {}", projectKey);
+      verifyState();
 
       // Report
       log.info("Collecting report for project {}", projectKey);
@@ -88,6 +90,19 @@ public class PrimaryValidator implements Validator {
 
       // Rethrow for {@link Validator}
       throw t;
+    }
+  }
+
+  /**
+   * Checks if the validation has been cancelled.
+   * 
+   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
+   */
+  @SneakyThrows
+  private void verifyState() {
+    val cancelled = Thread.currentThread().isInterrupted();
+    if (cancelled) {
+      throw new InterruptedException("Reference genome validation was interrupted");
     }
   }
 

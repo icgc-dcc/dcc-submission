@@ -35,6 +35,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,7 @@ public class MailService {
   /**
    * Server property names.
    */
+  public static final String MAIL_ENABLED = "mail.enabled";
   public static final String MAIL_SMTP_HOST = "mail.smtp.host";
   public static final String MAIL_SMTP_PORT = "mail.smtp.port";
   public static final String MAIL_SMTP_SERVER = "smtp.oicr.on.ca";
@@ -86,6 +88,7 @@ public class MailService {
   /**
    * Application config.
    */
+  @NonNull
   private final Config config;
 
   public void sendAdminProblem(String message) {
@@ -121,6 +124,11 @@ public class MailService {
   }
 
   public void sendValidated(String releaseName, String projectKey, SubmissionState state, Set<Address> addresses) {
+    if (isEnabled()) {
+      log.info("Mail not enabled. Skipping...");
+      return;
+    }
+
     try {
       if (state == ERROR) {
         // Always send an email to admin when an error occurs
@@ -157,6 +165,11 @@ public class MailService {
   }
 
   private void send(String from, String recipient, String subject, String text) {
+    if (isEnabled()) {
+      log.info("Mail not enabled. Skipping...");
+      return;
+    }
+
     try {
       val message = message();
       message.setFrom(address(from));
@@ -189,6 +202,10 @@ public class MailService {
 
   private String get(String name, String defaultValue) {
     return config.hasPath(name) ? config.getString(name) : defaultValue;
+  }
+
+  private boolean isEnabled() {
+    return config.hasPath(MAIL_ENABLED) ? config.getBoolean(MAIL_ENABLED) : true;
   }
 
   private static InternetAddress address(String email) throws UnsupportedEncodingException {
