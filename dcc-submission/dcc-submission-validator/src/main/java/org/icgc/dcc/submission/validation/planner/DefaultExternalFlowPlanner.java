@@ -25,14 +25,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.MissingFileException;
-import org.icgc.dcc.submission.validation.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.core.ExternalPlanElement;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.Key;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.MissingFileException;
+import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.visitor.RelationPlanningVisitor.RelationPlanElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

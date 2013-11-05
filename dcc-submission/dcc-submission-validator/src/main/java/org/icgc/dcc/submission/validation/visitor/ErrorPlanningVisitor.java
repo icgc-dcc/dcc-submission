@@ -31,11 +31,11 @@ import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.PlanExecutionException;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.PlanExecutionException;
 import org.icgc.dcc.submission.validation.report.ReportCollector;
 import org.icgc.dcc.submission.validation.report.ReportContext;
 

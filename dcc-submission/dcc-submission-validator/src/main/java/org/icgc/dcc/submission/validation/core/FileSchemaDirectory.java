@@ -33,7 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
-import org.icgc.dcc.submission.validation.PlanningFileLevelException;
+import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
 
 import com.google.common.collect.Lists;
 

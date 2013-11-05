@@ -35,11 +35,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.MissingFileException;
 import org.icgc.dcc.submission.validation.planner.ExternalFlowPlanner;
 import org.icgc.dcc.submission.validation.planner.FileSchemaFlowPlanner;
 import org.icgc.dcc.submission.validation.planner.InternalFlowPlanner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.MissingFileException;
 import org.icgc.dcc.submission.validation.report.ReportContext;
 
 import cascading.cascade.Cascade;
