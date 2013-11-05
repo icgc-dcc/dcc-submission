@@ -103,7 +103,7 @@ public class SftpContext {
   }
 
   public Path getReleasePath() {
-    String releasePath = fs.buildReleaseStringPath(getNextRelease());
+    String releasePath = fs.buildReleaseStringPath(getNextRelease().getName());
     return new Path(releasePath);
   }
 

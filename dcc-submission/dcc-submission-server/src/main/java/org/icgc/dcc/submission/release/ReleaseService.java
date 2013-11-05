@@ -705,7 +705,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
-    Path buildProjectStringPath = new Path(this.fs.buildProjectStringPath(release, projectKey));
+    Path buildProjectStringPath = new Path(this.fs.buildProjectStringPath(release.getName(), projectKey));
     for (Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), buildProjectStringPath)) { // TODO: use DccFileSystem
                                                                                             // abstraction instead
       submissionFileList.add(new SubmissionFile(path, fs.getFileSystem(), dict));

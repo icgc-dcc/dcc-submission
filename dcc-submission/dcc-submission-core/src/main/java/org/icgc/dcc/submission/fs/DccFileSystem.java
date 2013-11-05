@@ -109,16 +109,16 @@ public class DccFileSystem {
   public void ensureReleaseFilesystem(Release release, Set<String> projectKeyList) {
 
     // create path for release
-    String releaseStringPath = this.buildReleaseStringPath(release);
+    String releaseStringPath = this.buildReleaseStringPath(release.getName());
     log.info("release path = " + releaseStringPath);
 
     // check for pre-existence
     boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
     if (exists) {
-      log.info("filesystem for release " + release.getName() + " already exists");
-      ensureSubmissionDirectories(release, projectKeyList);
+      log.info("filesystem for release " + release + " already exists");
+      ensureSubmissionDirectories(release.getName(), projectKeyList);
     } else {
-      log.info("creating filesystem for release " + release.getName());
+      log.info("creating filesystem for release " + release);
       this.createReleaseFilesystem(release, projectKeyList);
     }
 
@@ -133,7 +133,7 @@ public class DccFileSystem {
    * @param release the new release
    */
   public void createReleaseFilesystem(Release release, Set<String> projectKeyList) {// TODO: make private?
-    String releaseStringPath = this.buildReleaseStringPath(release);
+    String releaseStringPath = this.buildReleaseStringPath(release.getName());
 
     // check for pre-existence (at this point we expect it not to)
     boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
@@ -143,7 +143,7 @@ public class DccFileSystem {
 
     // create corresponding release directory
     HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
-    ensureSubmissionDirectories(release, projectKeyList);
+    ensureSubmissionDirectories(release.getName(), projectKeyList);
 
     // create system files for release directory
     ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
@@ -157,7 +157,7 @@ public class DccFileSystem {
   /**
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
-  public void mkdirProjectDirectory(Release release, String projectKey) {
+  public void mkdirProjectDirectory(String release, String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
 
@@ -189,26 +189,26 @@ public class DccFileSystem {
     }
   }
 
-  public String buildReleaseStringPath(Release release) {
+  public String buildReleaseStringPath(String release) {
     checkArgument(release != null);
-    return concatPath(this.rootStringPath, release.getName());
+    return concatPath(this.rootStringPath, release);
   }
 
-  public String buildProjectStringPath(Release release, String projectKey) {
+  public String buildProjectStringPath(String release, String projectKey) {
     checkArgument(projectKey != null);
     return concatPath(this.buildReleaseStringPath(release), projectKey);
   }
 
-  public String buildFileStringPath(Release release, String projectKey, String filename) {
+  public String buildFileStringPath(String release, String projectKey, String filename) {
     checkArgument(filename != null);
     return concatPath(this.buildProjectStringPath(release, projectKey), filename);
   }
 
-  public String buildValidationDirStringPath(Release release, String projectKey) {
+  public String buildValidationDirStringPath(String release, String projectKey) {
     return concatPath(this.buildProjectStringPath(release, projectKey), VALIDATION_DIRNAME);
   }
 
-  private void ensureSubmissionDirectories(Release release, Set<String> projectKeyList) {
+  private void ensureSubmissionDirectories(String release, Set<String> projectKeyList) {
     // create sub-directory for each project
     checkState(projectKeyList != null);
     log.info("# of projects = " + projectKeyList.size());

@@ -72,7 +72,7 @@ public class FileHdfsSshFileTest {
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
 
     // Mock file system
-    when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
+    when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(release, null)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(createFileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);

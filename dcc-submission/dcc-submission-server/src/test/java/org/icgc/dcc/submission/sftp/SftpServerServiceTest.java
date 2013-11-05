@@ -155,7 +155,7 @@ public class SftpServerServiceTest {
     when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(newArrayList(project));
 
     // Mock file system
-    when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
+    when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(release, subject)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(fileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
