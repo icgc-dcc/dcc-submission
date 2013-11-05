@@ -42,6 +42,7 @@ import org.icgc.dcc.submission.fs.FsConfig;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.Util.CodecType;
 import org.icgc.dcc.submission.validation.checker.step.FileCorruptionCheckerTest;
+import org.icgc.dcc.submission.validation.checker.step.TestUtils;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -169,6 +170,7 @@ public class FirstPassValidatorClientTest {
   public void sanity() throws IOException {
     FirstPassValidator fpc = new FirstPassValidator();
     fpc.validate(validationContext);
+    TestUtils.checkNoErrorsReported(validationContext);
   }
 
 }
