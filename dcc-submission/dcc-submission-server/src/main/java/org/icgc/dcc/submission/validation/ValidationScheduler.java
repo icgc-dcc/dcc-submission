@@ -100,7 +100,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     val cancelled = validationExecutor.cancel(projectKey);
     if (cancelled) {
       // TODO: Determine when this should / needs to be called
-      log.info("Resetting database and file system state for killed project validation: {}...", projectKey);
+      log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
       releaseService.deleteQueuedRequest(projectKey);
     }
   }
@@ -280,7 +280,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       notifyRecipients(queuedProject, state);
     }
 
-    log.info("Resolved {}", projectKey);
+    log.info("Resolved project '{}'", projectKey);
   }
 
   private void notifyRecipients(QueuedProject project, SubmissionState state) {
