@@ -98,7 +98,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   protected Path reportPath(FileSchema schema, FlowType type, String reportName) {
-    return new Path(output, String.format("%s.%s%s%s.json", schema.getName(), type, FIELD_SEPARATOR, reportName));
+    return new Path(output, String.format("%s.%s%s%s.json", schema.getName(), type, FILE_NAME_SEPARATOR, reportName));
   }
 
   protected abstract Tap<?, ?, ?> tap(Path path);

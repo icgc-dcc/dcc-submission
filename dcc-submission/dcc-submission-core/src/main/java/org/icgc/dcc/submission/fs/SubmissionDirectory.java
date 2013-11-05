@@ -135,18 +135,11 @@ public class SubmissionDirectory {
    * There's already a "SubmissionFile" class (for the UI)...
    */
   @Value
-  public final class SubmissionDirectoryFile {
+  public class SubmissionDirectoryFile {
 
     String fileName;
     SubmissionFileType type;
     Pattern pattern;
   }
-  @Value
-  public final class SubmissionDirectoryFile {
 
-    List<SubmissionDirectoryFile>
-    String fileName;
-    SubmissionFileType type;
-    Pattern pattern;
-  }
 }

@@ -34,7 +34,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory.SubmissionDirectoryFile;
 import org.icgc.dcc.submission.validation.checker.FileChecker;
 import org.icgc.dcc.submission.validation.checker.Util;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -88,7 +87,9 @@ public class FileHeaderChecker extends CompositeFileChecker {
     @Cleanup
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
     String header = reader.readLine();
-    return ImmutableList.copyOf(header.split(PlatformStrategy.FIELD_SEPARATOR));
+
+    // Double slash is required!
+    return ImmutableList.copyOf(header.split("\\t"));
   }
 
   private boolean isExactMatch(List<String> expectedHeader, List<String> actualHeader) {
