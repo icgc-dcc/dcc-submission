@@ -41,7 +41,7 @@ public class ProjectServiceTest {
   }
 
   @Test
-  public void testFindProjects() throws Exception {
+  public void testFindAll() throws Exception {
     val expected = Sets.newHashSet(projectOne, projectTwo);
     when(projectRepository.findAll()).thenReturn(expected);
 
@@ -52,7 +52,7 @@ public class ProjectServiceTest {
   }
 
   @Test
-  public void testFindProjectsForUser() throws Exception {
+  public void testFindAllForUser() throws Exception {
     val expected = Sets.newHashSet(projectOne);
     when(projectRepository.findAllForUser(any(String.class))).thenReturn(expected);
 
@@ -63,7 +63,7 @@ public class ProjectServiceTest {
   }
 
   @Test
-  public void testFindProject() throws Exception {
+  public void testFind() throws Exception {
     val expected = projectOne;
     when(projectRepository.find(projectOne.getKey())).thenReturn(expected);
 
@@ -74,7 +74,7 @@ public class ProjectServiceTest {
   }
 
   @Test
-  public void testFindProjectForUser() throws Exception {
+  public void testFindForUser() throws Exception {
     val expected = projectOne;
     when(projectRepository.findForUser(projectOne.getKey(), "username")).thenReturn(expected);
 
@@ -85,11 +85,11 @@ public class ProjectServiceTest {
   }
 
   @Test
-  public void testUpsertProject() throws Exception {
+  public void testUpdateProject() throws Exception {
     val expected = new Key<Project>(Project.class, new ObjectId());
     when(projectRepository.upsert(projectOne)).thenReturn(expected);
 
-    val response = projectService.upsert(projectOne);
+    val response = projectService.update(projectOne);
 
     verify(projectRepository).upsert(projectOne);
     assertThat(response).isEqualTo(expected);

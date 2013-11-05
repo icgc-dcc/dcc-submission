@@ -8,5 +8,6 @@ public class RepositoryModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(ProjectRepository.class).in(Singleton.class);
+    bind(ReleaseRepository.class).in(Singleton.class);
   }
 }

@@ -68,7 +68,7 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindProjects() {
+  public void testFindAll() {
     val expected = Sets.newHashSet(projectOne, projectTwo);
     val actual = projectRepository.findAll();
     val bare = ImmutableSet.copyOf(bareMorphiaQuery.list());
@@ -78,7 +78,7 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindProjectsForUser() {
+  public void testFindAllForUser() {
     val expected = Sets.newHashSet(projectOne);
     val actual = projectRepository.findAllForUser(AUTH_ALLOWED_USER);
     val bare = ImmutableSet.copyOf(bareMorphiaQuery.where(QProject.project.users.contains(AUTH_ALLOWED_USER)).list());
@@ -88,7 +88,7 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindProject() {
+  public void testFind() {
     val expected = projectOne;
     val actual = projectRepository.find(projectOne.getKey());
     val bare = bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey())).singleResult();
@@ -98,7 +98,7 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindProjectForAllowedUser() {
+  public void testFindForUserAllowed() {
     val expected = projectOne;
     val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_ALLOWED_USER);
     val bare =
@@ -110,7 +110,7 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindProjectForNotAllowedUser() {
+  public void testFindForUserNotAllowed() {
     val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_NOT_ALLOWED_USER);
     val bare =
         bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))

@@ -30,13 +30,12 @@ import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.web.WebModule;
-import org.junit.Before;
-import org.mockito.MockitoAnnotations;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 public abstract class ResourceTest extends JerseyTest {
 
@@ -47,11 +46,6 @@ public abstract class ResourceTest extends JerseyTest {
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
   protected Injector injector;
-
-  @Before
-  public void initMocks() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Override
   public TestContainerFactory getTestContainerFactory() {
@@ -74,9 +68,9 @@ public abstract class ResourceTest extends JerseyTest {
         // Business modules
         (Module) new ValidationModule());
 
-    modules.addAll(configureModules());
+    // modules.addAll(configureModules());
 
-    injector = Guice.createInjector(modules);
+    injector = Guice.createInjector(Modules.override(modules).with(configureModules()));
 
     return injector.getInstance(ResourceConfig.class);
   }

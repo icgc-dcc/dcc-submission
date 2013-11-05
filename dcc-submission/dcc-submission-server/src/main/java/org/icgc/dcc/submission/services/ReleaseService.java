@@ -15,29 +15,68 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.icgc.dcc.submission.services;
 
-package org.icgc.dcc.submission.repository;
+import java.util.Set;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
-import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.QDictionary;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
-@Data
-@EqualsAndHashCode(callSuper = false)
-public class DictionaryRepository extends BaseMorphiaService<Dictionary> {
+@Slf4j
+@NoArgsConstructor
+@RequiredArgsConstructor
+public class ReleaseService {
 
+  @NonNull
   @Inject
-  public DictionaryRepository(Morphia morphia, Datastore datastore, MailService mailService) {
-    super(morphia, datastore, QDictionary.dictionary, mailService);
-    registerModelClasses(Dictionary.class, CodeList.class);
+  private ReleaseRepository releaseRepository;
+
+  public Release find(String releaseName) {
+    log.info("Passing on request for Release {}", releaseName);
+    return releaseRepository.find(releaseName);
+  }
+
+  public Set<Release> findAll() {
+    log.info("Passing on request to find all Releases");
+    return releaseRepository.findAll();
+  }
+
+  /**
+   * Query for {@code Release} with state {@code OPENED}
+   * 
+   * @return Current Open Release
+   */
+  public Release findOpen() {
+    log.info("Passing on request for current Open Release");
+    return releaseRepository.findOpen();
+  }
+
+  /**
+   * Creates a new {@code Submission} and adds it to the current open {@code Release}
+   * 
+   * @param projectKey
+   * 
+   * @param projectName
+   * 
+   * @return Current Open Release
+   */
+  public Release addSubmission(String projectKey, String projectName) {
+    log.info("Creating Submission for Project {} in current open Release", projectKey);
+
+    val submission = new Submission(projectKey, projectName);
+    log.info("Created Submission {}", submission);
+
+    val release = releaseRepository.addSubmission(submission);
+
+    return release;
   }
 }

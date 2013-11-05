@@ -52,7 +52,7 @@ public class ReleaseResourceTest extends ResourceTest {
         .isEqualTo(
             "[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
                 + release.getReleaseDate().getTime()
-                + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\"},{\"projectKey\":\"project2\"}]}]");
+                + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\",\"projectName\":\"project one\"},{\"projectKey\":\"project2\",\"projectName\":\"project two\"}]}]");
   }
 
   @Override

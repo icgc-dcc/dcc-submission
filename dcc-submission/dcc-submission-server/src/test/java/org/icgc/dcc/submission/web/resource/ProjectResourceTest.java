@@ -20,13 +20,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 
-import javax.ws.rs.core.Application;
-
 import lombok.val;
 
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.services.ProjectService;
+import org.icgc.dcc.submission.services.ReleaseService;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -54,26 +55,17 @@ public class ProjectResourceTest extends ResourceTest {
 
   private ProjectService projectService;
 
+  private ReleaseService releaseService;
+
+  private DccFileSystem dccFileSystem;
+
   private Project projectOne;
 
   private Project projectTwo;
 
-  @Override
-  protected Application configure() {
+  private Release release;
 
-    projectOne = new Project("PRJ1", "Project One");
-    projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
-
-    projectTwo = new Project("PRJ2", "Project Two");
-
-    projectService = mock(ProjectService.class);
-    when(projectService.find(projectOne.getKey())).thenReturn(projectOne);
-    when(projectService.findForUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
-    when(projectService.findAllForUser(any(String.class))).thenReturn(Sets.newHashSet(projectOne));
-    when(projectService.findAll()).thenReturn(Sets.newHashSet(projectOne, projectTwo));
-
-    return super.configure();
-  }
+  private final String PATH = "path/to/release/project";
 
   @Override
   protected Collection<? extends Module> configureModules() {
@@ -81,7 +73,29 @@ public class ProjectResourceTest extends ResourceTest {
 
       @Override
       protected void configure() {
+        dccFileSystem = mock(DccFileSystem.class);
+        when(dccFileSystem.mkdirProjectDirectory(any(String.class), any(String.class))).thenReturn(PATH);
+
+        projectOne = new Project("PRJ1", "Project One");
+        projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
+
+        projectTwo = new Project("PRJ2", "Project Two");
+
+        projectService = mock(ProjectService.class);
+        when(projectService.find(projectOne.getKey())).thenReturn(projectOne);
+        when(projectService.findForUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
+        when(projectService.findAllForUser(any(String.class))).thenReturn(Sets.newHashSet(projectOne));
+        when(projectService.findAll()).thenReturn(Sets.newHashSet(projectOne, projectTwo));
+
+        release = new Release("REL1");
+
+        releaseService = mock(ReleaseService.class);
+        when(releaseService.findOpen()).thenReturn(release);
+        when(releaseService.addSubmission(any(String.class), any(String.class))).thenReturn(release);
+
         bind(ProjectService.class).toInstance(projectService);
+        bind(ReleaseService.class).toInstance(releaseService);
+        bind(DccFileSystem.class).toInstance(dccFileSystem);
       }
 
     });
@@ -181,7 +195,7 @@ public class ProjectResourceTest extends ResourceTest {
   }
 
   @Test
-  public void testAddProjectWithSymbolsInProjectKey() throws Exception {
+  public void testAddProjectWithInvalidSymbolsInProjectKey() throws Exception {
     val projectJson = json("{\"key\":\"P#$%^&*RJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
     verifyZeroInteractions(projectService);
@@ -204,7 +218,9 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER))
             .post(projectJson);
-    verify(projectService, never()).upsert(any(Project.class));
+
+    verify(projectService, never()).add(any(Project.class));
+
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"Unauthorized\",\"parameters\":[]}");
   }
@@ -213,27 +229,26 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWhenAdmin() throws Exception {
     val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectService).upsert(any(Project.class));
+
+    verify(projectService).add(any(Project.class));
+    verify(releaseService).addSubmission("PRJ1", "Project One");
+    verify(dccFileSystem).mkdirProjectDirectory("REL1", "PRJ1");
+    assertThat(dccFileSystem.mkdirProjectDirectory("REL1", "PRJ1")).isEqualTo(PATH);
+
     assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
     assertThat(reponse.getLocation().toString()).isEqualTo("projects/PRJ1");
   }
 
   @Test
-  public void testAddProjectWithValidProjectKeyCharacters() throws Exception {
-    val projectJson = json("{\"key\":\"ABC.abc_12-3\",\"name\":\"Project One\"}");
-    val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectService).upsert(any(Project.class));
-    assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
-    assertThat(reponse.getLocation().toString()).isEqualTo("projects/ABC.abc_12-3");
-  }
-
-  @Test
   public void testAddProjectThatAlreadyExists() throws Exception {
-    doThrow(new DuplicateKey(mock(CommandResult.class))).when(projectService).upsert(any(Project.class));
+    doThrow(new DuplicateKey(mock(CommandResult.class))).when(projectService).add(any(Project.class));
 
     val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectService).upsert(any(Project.class));
+
+    verify(projectService).add(any(Project.class));
+    verifyZeroInteractions(releaseService);
+
     assertThat(reponse.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"AlreadyExists\",\"parameters\":[\"PRJ1\"]}");
   }

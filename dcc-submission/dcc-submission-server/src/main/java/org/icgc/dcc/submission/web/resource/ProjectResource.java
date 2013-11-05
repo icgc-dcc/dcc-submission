@@ -40,7 +40,9 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.services.ProjectService;
+import org.icgc.dcc.submission.services.ReleaseService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 
@@ -56,19 +58,25 @@ public class ProjectResource {
   @Inject
   private ProjectService projectService;
 
+  @Inject
+  private ReleaseService releaseService;
+
+  @Inject
+  private DccFileSystem dccFileSystem;
+
   @GET
   public Response getProjects(@Context
   SecurityContext securityContext) {
     val user = getSubject(securityContext);
-    log.info("Request for all Projects from User [{}]", user.getPrincipal());
+    log.info("Request for all Projects from User {}", user.getPrincipal());
 
     Set<Project> projects;
 
     if (isSuperUser(securityContext)) {
-      log.info("[{}] is super user", user.getPrincipal());
+      log.info("{} is super user", user.getPrincipal());
       projects = projectService.findAll();
     } else {
-      log.info("[{}] is not super user", user.getPrincipal());
+      log.info("{} is not super user", user.getPrincipal());
       projects = projectService.findAllForUser(user.getPrincipal().toString());
     }
 
@@ -80,23 +88,35 @@ public class ProjectResource {
   SecurityContext securityContext, @Valid
   Project project) {
     val user = getSubject(securityContext);
-    log.info("Request to add Project [{}] from [{}]", project, user.getPrincipal());
+    log.info("Request to add Project {} from {}", project, user.getPrincipal());
 
     if (isSuperUser(securityContext) == false) {
-      log.info("[{}] is not super user", user.getPrincipal());
+      log.info("{} is not super user", user.getPrincipal());
       return Responses.unauthorizedResponse();
     }
-    log.info("[{}] is super user", user.getPrincipal());
+    log.info("{} is super user", user.getPrincipal());
 
+    Response response;
     try {
-      projectService.upsert(project);
+      // Save Project to DB
+      projectService.add(project);
 
-      val url = UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build();
-      return Response.created(url).build();
+      // Update Release and save to DB
+      val release = releaseService.addSubmission(project.getKey(), project.getName());
+
+      // Add directory for submission
+      dccFileSystem.mkdirProjectDirectory(release.getName(), project.getKey());
+
+      response =
+          Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
+      log.info("Project {} added!", project.getKey());
     } catch (DuplicateKey e) {
-      return Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
+      response = Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
           .build();
+      log.info("Project {} already exists! Could NOT be added.", project.getKey());
     }
+
+    return response;
   }
 
   @GET
@@ -105,19 +125,20 @@ public class ProjectResource {
   String projectKey, @Context
   SecurityContext securityContext) {
     val user = getSubject(securityContext);
-    log.info("Request for Project [{}] from User [{}]", projectKey, user.getPrincipal());
+    log.info("Request for Project {} from User {}", projectKey, user.getPrincipal());
 
     Project project;
 
     if (isSuperUser(securityContext)) {
-      log.info("[{}] is super user", user.getPrincipal());
+      log.info("{} is super user", user.getPrincipal());
       project = projectService.find(projectKey);
     } else {
-      log.info("[{}] is not super user", user.getPrincipal());
+      log.info("{} is not super user", user.getPrincipal());
       project = projectService.findForUser(projectKey, user.getPrincipal().toString());
     }
 
     if (project == null) {
+      log.info("Project {} not found", projectKey);
       return Responses.notFound(projectKey);
     }
 
