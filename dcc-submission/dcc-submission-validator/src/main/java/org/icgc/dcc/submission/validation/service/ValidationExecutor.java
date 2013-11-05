@@ -176,10 +176,12 @@ public class ValidationExecutor {
 
           @Override
           public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            log.warn("Rejecting... {}", getStats());
+            val message = format("Pool limit of %s concurrent validations reached. Validation rejected. %s",
+                poolSize, getStats());
+            log.warn(message);
 
             // Raison d'être
-            throw new ValidationRejectedException("Validation rejected: " + getStats());
+            throw new ValidationRejectedException(message);
           }
 
         });

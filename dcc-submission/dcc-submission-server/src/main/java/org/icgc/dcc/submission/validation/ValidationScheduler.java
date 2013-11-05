@@ -165,7 +165,8 @@ public class ValidationScheduler extends AbstractScheduledService {
         tryValidation(release, nextProject.get());
       }
     } catch (ValidationRejectedException e) {
-      log.info("Valdiation for '{}' was rejected:", nextProject.get());
+      // No available slots
+      log.info("Validation for '{}' was rejected:", nextProject.get());
     } catch (Throwable t) {
       log.error("Caught an unexpected exception: {}", t);
     }
