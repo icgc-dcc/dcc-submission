@@ -106,8 +106,6 @@ public class ReleaseRepositoryTest {
     val submission = new Submission("PRJ3", "Project Three");
     val getOpenReleaseQuery =
         bareMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
-    // TODO this would be better but submission is Serializable?
-    // .where(QRelease.release.submissions.contains(submission));
 
     // Check that Release in DB does not have Submission
     val bare = getOpenReleaseQuery.singleResult();
@@ -125,6 +123,35 @@ public class ReleaseRepositoryTest {
 
     // Confirm that Release in DB has Submission
     val actual = getOpenReleaseQuery.singleResult();
+    assertThat(actual.getSubmissions()).contains(submission);
+  }
+
+  @Test
+  public void testUpdate() throws Exception {
+    val submission = new Submission("PRJ3", "Project Three");
+    val getOpenReleaseQuery =
+        bareMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
+
+    // Check that Release in DB does not have Submission
+    val release = getOpenReleaseQuery.singleResult();
+    try {
+      release.getSubmission(submission.getProjectKey());
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(ReleaseException.class);
+    }
+
+    // Add Submission
+    release.addSubmission(submission);
+
+    // Check that Release has Submission
+    assertThat(release.getSubmissions()).contains(submission);
+
+    // Save to DB
+    releaseRepository.update(release);
+
+    // Confirm that Release in DB has Submission
+    val actual = getOpenReleaseQuery.singleResult();
+    assertThat(actual).isEqualTo(release);
     assertThat(actual.getSubmissions()).contains(submission);
   }
 

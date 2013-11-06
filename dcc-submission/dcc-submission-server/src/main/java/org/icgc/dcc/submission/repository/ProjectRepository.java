@@ -116,7 +116,7 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
    */
   public Key<Project> upsert(Project project) {
     log.info("Upserting {}", project);
-    val response = this.datastore().save(project, WriteConcern.ACKNOWLEDGED);
+    val response = datastore().save(project, WriteConcern.ACKNOWLEDGED);
 
     log.info("Upsert Successful! {}", response);
     return response;

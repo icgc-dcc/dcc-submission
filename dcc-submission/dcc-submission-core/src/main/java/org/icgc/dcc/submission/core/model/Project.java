@@ -38,7 +38,7 @@ import com.google.code.morphia.annotations.Indexed;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
-@Entity
+@Entity(noClassnameStored = true)
 @Data
 @NoArgsConstructor
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)

@@ -31,9 +31,11 @@ import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Key;
 import com.google.code.morphia.Morphia;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import com.mongodb.WriteConcern;
 
 /**
  * 
@@ -80,7 +82,10 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   }
 
   /**
-   * Adds {@code Submission} to the current open {@code Release}
+   * Adds {@code Submission} to the current open {@code Release} <br>
+   * <br>
+   * This method is should be used instead of {@link #update(Release)} since it does not overwrite the Release object in
+   * the DB.
    * 
    * @param submission
    * 
@@ -96,5 +101,22 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
 
     log.info("Submission {} added!", submission.getProjectKey());
     return modifiedRelease;
+  }
+
+  /**
+   * Updates Release with new Release object. <br>
+   * <br>
+   * This will overwrite any changes that might have happened between initially getting the release and updating.
+   * 
+   * @param release Release
+   * 
+   * @return Response object from Mongo
+   */
+  public Key<Release> update(Release release) {
+    log.info("Updating Release {}", release.getName());
+
+    val response = datastore().save(release, WriteConcern.ACKNOWLEDGED);
+
+    return response;
   }
 }
