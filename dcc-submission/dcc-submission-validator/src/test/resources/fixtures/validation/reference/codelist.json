@@ -1,0 +1,19 @@
+{
+  "offset" : 2,
+  "errors" : [ {
+    "type" : "CODELIST_ERROR",
+    "columnNames" : [ "donor_vital_status" ],
+    "value" : "3",
+    "line" : 2,
+    "parameters" : { }
+  } ]
+}{
+  "offset" : 3,
+  "errors" : [ {
+    "type" : "CODELIST_ERROR",
+    "columnNames" : [ "donor_vital_status" ],
+    "value" : "4",
+    "line" : 3,
+    "parameters" : { }
+  } ]
+}

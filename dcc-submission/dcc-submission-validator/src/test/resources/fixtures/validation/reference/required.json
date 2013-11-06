@@ -1,0 +1,40 @@
+{
+  "offset" : 1,
+  "errors" : [ {
+    "type" : "MISSING_VALUE_ERROR",
+    "columnNames" : [ "donor_region_of_residence" ],
+    "value" : "",
+    "line" : 1,
+    "parameters" : { }
+  } ]
+}{
+  "offset" : 2,
+  "errors" : [ {
+    "type" : "MISSING_VALUE_ERROR",
+    "columnNames" : [ "donor_region_of_residence" ],
+    "value" : "",
+    "line" : 2,
+    "parameters" : { }
+  }, {
+    "type" : "MISSING_VALUE_ERROR",
+    "columnNames" : [ "donor_vital_status" ],
+    "value" : "",
+    "line" : 2,
+    "parameters" : { }
+  } ]
+}{
+  "offset" : 3,
+  "errors" : [ {
+    "type" : "MISSING_VALUE_ERROR",
+    "columnNames" : [ "donor_region_of_residence" ],
+    "value" : "",
+    "line" : 3,
+    "parameters" : { }
+  }, {
+    "type" : "MISSING_VALUE_ERROR",
+    "columnNames" : [ "donor_vital_status" ],
+    "value" : "",
+    "line" : 3,
+    "parameters" : { }
+  } ]
+}

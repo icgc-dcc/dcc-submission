@@ -19,26 +19,28 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.toFilenameList;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
+@Slf4j
 public class DccFileSystem {
-
-  private static final Logger log = LoggerFactory.getLogger(DccFileSystem.class);
 
   public static final String VALIDATION_DIRNAME = ".validation";
 
@@ -62,7 +64,7 @@ public class DccFileSystem {
     this.fileSystem = fileSystem;
 
     // grab root directory
-    this.rootStringPath = this.config.getString(FsConfig.FS_ROOT);
+    this.rootStringPath = this.config.getString(FS_ROOT);
     checkState(this.rootStringPath != null);
 
     log.info("fileSystem = " + this.fileSystem.getClass().getSimpleName());
@@ -112,7 +114,7 @@ public class DccFileSystem {
 
     // check for pre-existence
     boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
-    if(exists) {
+    if (exists) {
       log.info("filesystem for release " + release.getName() + " already exists");
       ensureSubmissionDirectories(release, projectKeyList);
     } else {
@@ -135,7 +137,7 @@ public class DccFileSystem {
 
     // check for pre-existence (at this point we expect it not to)
     boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
-    if(exists) {
+    if (exists) {
       throw new DccFileSystemException("release directory " + releaseStringPath + " already exists");
     }
 
@@ -147,7 +149,7 @@ public class DccFileSystem {
     ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
     Path systemFilePath = releaseFS.getSystemDirectory();
     exists = HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString());
-    if(exists == false) {
+    if (exists == false) {
       HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
     }
   }
@@ -171,7 +173,7 @@ public class DccFileSystem {
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
   void createDirIfDoesNotExist(final String stringPath) {
-    if(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
+    if (HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
       HadoopUtils.mkdirs(this.fileSystem, stringPath);
       checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath));
     }
@@ -181,7 +183,7 @@ public class DccFileSystem {
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
   void removeDirIfExist(final String stringPath) {
-    if(HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
+    if (HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
       HadoopUtils.rmr(this.fileSystem, stringPath);
       checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false);
     }
@@ -210,7 +212,7 @@ public class DccFileSystem {
     // create sub-directory for each project
     checkState(projectKeyList != null);
     log.info("# of projects = " + projectKeyList.size());
-    for(String project : projectKeyList) {
+    for (String project : projectKeyList) {
       this.mkdirProjectDirectory(release, project);
     }
   }
@@ -225,11 +227,20 @@ public class DccFileSystem {
   private void mkdirsRootDirectory() {
     // create root dir if it does not exist
     boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.rootStringPath);
-    if(!rootExists) {
+    if (!rootExists) {
       log.info(this.rootStringPath + " does not exist");
       HadoopUtils.mkdirs(this.fileSystem, this.rootStringPath);
       log.info("created " + this.rootStringPath);
     }
+  }
+
+  /**
+   * @param filePath
+   * @throws IOException
+   */
+  public DataInputStream open(String filePathname) throws IOException {
+    checkArgument(filePathname != null);
+    return fileSystem.open(new Path(filePathname));
   }
 
 }

@@ -63,10 +63,6 @@ import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpContext;
-import org.icgc.dcc.submission.sftp.SftpServerService;
-import org.icgc.dcc.submission.sftp.SshServerProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -153,7 +149,7 @@ public class SftpServerServiceTest {
     when(project.getKey()).thenReturn(PROJECT_KEY);
     when(release.getName()).thenReturn(RELEASE_NAME);
     when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.getNextRelease()).thenReturn(nextRelease);
+    when(releaseService.resolveNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new ProjectServiceException(""));
     when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(newArrayList(project));
@@ -172,14 +168,14 @@ public class SftpServerServiceTest {
     service = createService();
 
     // Start CUT
-    service.startAndWait();
+    service.startAsync().awaitRunning();
 
     sftp.connect();
   }
 
   @After
   public void tearDown() {
-    service.stop();
+    service.stopAsync().awaitTerminated();
     sftp.disconnect();
   }
 

@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
-import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,8 +34,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.val;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.User;
@@ -57,127 +58,176 @@ import com.google.inject.Inject;
 public class SeedResource {
 
   @Context
-  HttpHeaders requestHeaders;
+  private HttpHeaders requestHeaders;
 
   @Inject
   private Datastore datastore;
 
   @Inject
-  private DccFileSystem dccfs;
+  private DccFileSystem fileSystem;
 
   @POST
   @Path("users")
-  public Response seedUsers(@Context
-  SecurityContext securityContext, @Valid
-  User[] users,
-      @DefaultValue("false")
-      @QueryParam("delete")
-      boolean delete) {
+  public Response seedUsers(
 
-    if (isOmnipotentUser(securityContext) == false) {
+      @Context
+      SecurityContext securityContext,
+
+      @Valid
+      User[] users,
+
+      @QueryParam("delete")
+      @DefaultValue("false")
+      boolean delete
+
+      )
+  {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
     if (delete) {
-      this.datastore.getCollection(User.class).drop();
+      datastore.getCollection(User.class).drop();
     }
-    this.datastore.save(users);
+    datastore.save(users);
     return Response.status(Status.CREATED).build();
   }
 
   @POST
   @Path("projects")
-  public Response seedProjects(@Context
-  SecurityContext securityContext, @Valid
-  Project[] projects,
-      @DefaultValue("false")
+  public Response seedProjects(
+
+      @Context
+      SecurityContext securityContext,
+
+      @Valid
+      Project[] projects,
+
       @QueryParam("delete")
-      boolean delete) {
-    if (isOmnipotentUser(securityContext) == false) {
+      @DefaultValue("false")
+      boolean delete
+
+      )
+  {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
     if (delete) {
-      this.datastore.getCollection(Project.class).drop();
+      datastore.getCollection(Project.class).drop();
     }
-    this.datastore.save(projects);
+    datastore.save(projects);
     return Response.status(Status.CREATED).build();
   }
 
   @POST
   @Path("releases")
-  public Response seedReleases(@Context
-  SecurityContext securityContext, @Valid
-  Release[] releases,
-      @DefaultValue("false")
+  public Response seedReleases(
+
+      @Context
+      SecurityContext securityContext,
+
+      @Valid
+      Release[] releases,
+
       @QueryParam("delete")
-      boolean delete) {
-    if (isOmnipotentUser(securityContext) == false) {
+      @DefaultValue("false")
+      boolean delete
+
+      )
+  {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
     if (delete) {
-      this.datastore.getCollection(Release.class).drop();
+      datastore.getCollection(Release.class).drop();
     }
-    this.datastore.save(releases);
+    datastore.save(releases);
     return Response.status(Status.CREATED).build();
   }
 
   @POST
   @Path("dictionaries")
-  public Response seedDictionaries(@Context
-  SecurityContext securityContext, @Valid
-  Dictionary[] dictionaries,
-      @DefaultValue("false")
-      @QueryParam("delete")
-      boolean delete) {
+  public Response seedDictionaries(
 
-    if (isOmnipotentUser(securityContext) == false) {
+      @Context
+      SecurityContext securityContext,
+
+      @Valid
+      Dictionary[] dictionaries,
+
+      @QueryParam("delete")
+      @DefaultValue("false")
+      boolean delete
+
+      )
+  {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
     if (delete) {
-      this.datastore.getCollection(Dictionary.class).drop();
+      datastore.getCollection(Dictionary.class).drop();
     }
-    this.datastore.save(dictionaries);
+
+    datastore.save(dictionaries);
+
     return Response.status(Status.CREATED).build();
   }
 
   @POST
   @Path("codelists")
-  public Response seedCodeLists(@Context
-  SecurityContext securityContext, @Valid
-  CodeList[] codelists,
-      @DefaultValue("false")
+  public Response seedCodeLists(
+
+      @Context
+      SecurityContext securityContext,
+
+      @Valid
+      CodeList[] codelists,
+
       @QueryParam("delete")
-      boolean delete) {
-    if (isOmnipotentUser(securityContext) == false) {
+      @DefaultValue("false")
+      boolean delete
+
+      )
+  {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
     if (delete) {
-      this.datastore.getCollection(CodeList.class).drop();
+      datastore.getCollection(CodeList.class).drop();
     }
-    this.datastore.save(codelists);
+
+    datastore.save(codelists);
+
     return Response.status(Status.CREATED).build();
   }
 
   @POST
   @Path("fs/{filepath: .*}")
-  public Response seedFileSystem(@Context
-  SecurityContext securityContext, @PathParam("filepath")
-  String filename,
-      InputStream fileContents) {
-    if (isOmnipotentUser(securityContext) == false) {
+  public Response seedFileSystem(
+
+      @Context
+      SecurityContext securityContext,
+
+      @PathParam("filepath")
+      String filename,
+
+      InputStream fileContents
+
+      )
+  {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
-    FileSystem fs = this.dccfs.getFileSystem();
-    org.apache.hadoop.fs.Path destinationPath =
-        new org.apache.hadoop.fs.Path(dccfs.getRootStringPath() + "/" + filename);
+    FileSystem fs = this.fileSystem.getFileSystem();
+    val destinationPath = new org.apache.hadoop.fs.Path(fileSystem.getRootStringPath() + "/" + filename);
 
     try {
-      FSDataOutputStream fileDestination = fs.create(destinationPath);
+      val fileDestination = fs.create(destinationPath);
 
       IOUtils.copy(fileContents, fileDestination);
       fileDestination.flush();
@@ -188,4 +238,5 @@ public class SeedResource {
 
     return Response.status(Status.CREATED).build();
   }
+
 }

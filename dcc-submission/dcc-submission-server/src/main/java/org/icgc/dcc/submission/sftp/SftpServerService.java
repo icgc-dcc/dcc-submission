@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.core.session.IoSession;
@@ -42,6 +44,7 @@ import com.google.inject.Inject;
  * Service abstraction to the SFTP sub-system.
  */
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class SftpServerService extends AbstractService {
 
   /**
@@ -53,16 +56,11 @@ public class SftpServerService extends AbstractService {
   /**
    * Service state.
    */
+  @NonNull
   private final SshServer sshd;
+  @NonNull
   private final EventBus eventBus;
   private volatile boolean enabled = true;
-
-  @Inject
-  public SftpServerService(SshServer ssd, EventBus eventBus) {
-    super();
-    this.sshd = ssd;
-    this.eventBus = eventBus;
-  }
 
   public Status getActiveSessions() {
     Status status = new Status(enabled, state());

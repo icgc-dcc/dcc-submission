@@ -22,6 +22,7 @@
 
 
 Release = require 'models/release'
+Validation = require 'models/validation'
 
 module.exports = class NextRelease extends Release
   urlKey: "id"
@@ -30,6 +31,15 @@ module.exports = class NextRelease extends Release
 
   initialize: ->
     #console.debug? 'NextRelease#initialize', @
+
+  cancel: (attributes, options)->
+    #console.debug "Cancelling"
+
+    # Although the end point is DELETE, cancelling is really
+    # a revert of status back to not_validated
+    @attributes = attributes
+    validation = new Validation {'id': @attributes?.key}
+    validation.destroy(options)
 
   queue: (attributes, options)->
     @urlPath = ->

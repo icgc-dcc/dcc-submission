@@ -44,8 +44,11 @@
       <outputDirectory>/conf</outputDirectory>
     </file>
     <file>
-      <source>src/main/conf/application.hadoop.conf</source>
-      <destName>application.conf</destName>
+      <source>src/main/conf/logback.xml</source>
+      <outputDirectory>/conf</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/conf/application.conf</source>
       <outputDirectory>/conf</outputDirectory>
     </file>
   </files>

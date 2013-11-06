@@ -19,8 +19,19 @@ package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static org.icgc.dcc.submission.dictionary.model.DictionaryState.OPENED;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.MISSING_REQUIRED_DATA;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.NAME_MISMATCH;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.RESOURCE_CLOSED;
+import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.web.util.Responses.UNPROCESSABLE_ENTITY;
+import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -32,110 +43,213 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.dictionary.DictionaryService;
+import org.icgc.dcc.submission.dictionary.DictionaryValidator;
+import org.icgc.dcc.submission.dictionary.DictionaryValidator.DictionaryConstraintViolations;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.DictionaryState;
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
-import org.icgc.dcc.submission.web.util.Responses;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
+@Slf4j
 @Path("dictionaries")
 public class DictionaryResource {
 
-  private static final Logger log = LoggerFactory.getLogger(DictionaryResource.class);
+  /**
+   * Custom HTTP headers for validation.
+   */
+  private static final String VALIDATION_ERROR_HEADER = "X-Validation-Error";
+  private static final String VALIDATION_WARNING_HEADER = "X-Validation-Warning";
 
   @Inject
-  private DictionaryService dictionaries;
+  private DictionaryService dictionaryService;
 
-  /**
-   * See {@link DictionaryService#addDictionary(Dictionary)} for details.
-   */
-  @POST
-  public Response addDictionary(@Valid
-  Dictionary dict, @Context
-  SecurityContext securityContext) {
-    log.info("Adding dictionary: {}", dict == null ? null : dict.getVersion());
-    if (isOmnipotentUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
-    this.dictionaries.addDictionary(dict);
-
-    return Response.created(UriBuilder.fromResource(DictionaryResource.class).path(dict.getVersion()).build()).build();
-  }
+  private final boolean validate = true;
 
   @GET
-  public Response getDictionaries() {
-    /* no authorization check necessary */
-
-    log.debug("Getting dictionaries");
-    List<Dictionary> dictionaries = this.dictionaries.list();
+  public Response getDictionaryService() {
+    // No authorization check necessary
+    log.debug("Getting dictionaryService");
+    List<Dictionary> dictionaries = dictionaryService.list();
     if (dictionaries == null) {
       dictionaries = newArrayList();
     }
+
     return Response.ok(dictionaries).build();
   }
 
   @GET
   @Path("{version}")
-  public Response getDictionary(@PathParam("version")
-  String version) {
-    /* no authorization check necessary */
+  public Response getDictionary(
 
+      @PathParam("version")
+      String version
+
+      )
+  {
+    // No authorization check necessary
     log.debug("Getting dictionary: {}", version);
-    Dictionary dict = this.dictionaries.getFromVersion(version);
+    Dictionary dict = this.dictionaryService.getFromVersion(version);
     if (dict == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, version)).build();
+      return Response.status(NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(NO_SUCH_ENTITY, version)).build();
     }
+
     return ResponseTimestamper.ok(dict).build();
+  }
+
+  /**
+   * See {@link DictionaryService#addDictionary(Dictionary)} for details.
+   */
+  @POST
+  public Response addDictionary(
+
+      @Valid
+      Dictionary dict,
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
+    log.info("Adding dictionary: {}", dict == null ? null : dict.getVersion());
+    if (isSuperUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
+    val violations = validateDictionary(dict);
+    if (violations.hasErrors()) {
+      val errors = new StringBuilder("The request entity had the following errors:\n");
+      for (val error : violations.getErrors()) {
+        errors.append("  * ").append(error).append('\n');
+      }
+
+      return Response
+          .status(UNPROCESSABLE_ENTITY)
+          .header(VALIDATION_ERROR_HEADER, errors)
+          .build();
+    }
+
+    dictionaryService.addDictionary(dict);
+
+    val url = UriBuilder.fromResource(DictionaryResource.class).path(dict.getVersion()).build();
+
+    if (violations.hasWarnings()) {
+      val warnings = new StringBuilder("Created, but request entity had the following warnings:\n");
+      for (val error : violations.getErrors()) {
+        warnings.append("  * ").append(error).append('\n');
+      }
+
+      return Response
+          .created(url)
+          .header(VALIDATION_WARNING_HEADER, warnings)
+          .build();
+    }
+
+    return Response.created(url).build();
   }
 
   @PUT
   @Path("{version}")
-  public Response updateDictionary(@PathParam("version")
-  String version, @Valid
-  Dictionary newDictionary,
+  public Response updateDictionary(
+
+      @PathParam("version")
+      String version,
+
+      @Valid
+      Dictionary newDictionary,
+
       @Context
-      Request req, @Context
-      SecurityContext securityContext) {
+      Request request,
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
     checkArgument(version != null);
     checkArgument(newDictionary != null);
     checkArgument(newDictionary.getVersion() != null);
 
     log.info("Updating dictionary: {} with {}", version, newDictionary.getVersion());
-    if (isOmnipotentUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
+    if (isSuperUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
 
-    Dictionary oldDictionary = this.dictionaries.getFromVersion(version);
+    val oldDictionary = dictionaryService.getFromVersion(version);
     if (oldDictionary == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, version)).build();
-    } else if (oldDictionary.getState() != DictionaryState.OPENED) { // TODO: move check to dictionaries.update()
-                                                                     // instead
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.RESOURCE_CLOSED, version)).build();
+      return Response
+          .status(NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(NO_SUCH_ENTITY, version))
+          .build();
+    } else if (oldDictionary.getState() != OPENED) {
+      // TODO: move check to dictionaryService.update() instead
+      return Response
+          .status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(RESOURCE_CLOSED, version))
+          .build();
     } else if (newDictionary.getVersion() == null) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.MISSING_REQUIRED_DATA, "dictionary version")).build();
+      return Response
+          .status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(MISSING_REQUIRED_DATA, "dictionary version"))
+          .build();
     } else if (newDictionary.getVersion().equals(version) == false) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NAME_MISMATCH, version, newDictionary.getVersion()))
+      return Response
+          .status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(NAME_MISMATCH, version, newDictionary.getVersion()))
           .build();
     }
-    ResponseTimestamper.evaluate(req, oldDictionary);
-    this.dictionaries.update(newDictionary);
 
-    return Response.status(Status.NO_CONTENT).build(); // http://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something
+    ResponseTimestamper.evaluate(request, oldDictionary);
+
+    val violations = validateDictionary(newDictionary);
+    if (violations.hasErrors()) {
+      val errors = new StringBuilder("The request entity had the following errors:\n");
+      for (val error : violations.getErrors()) {
+        errors.append("  * ").append(error).append('\n');
+      }
+
+      return Response
+          .status(UNPROCESSABLE_ENTITY)
+          .header(VALIDATION_ERROR_HEADER, errors)
+          .build();
+    }
+
+    dictionaryService.update(newDictionary);
+
+    if (violations.hasWarnings()) {
+      val warnings = new StringBuilder("Created, but request entity had the following warnings:\n");
+      for (val error : violations.getErrors()) {
+        warnings.append("  * ").append(error).append('\n');
+      }
+
+      return Response
+          .status(NO_CONTENT)
+          .header(VALIDATION_WARNING_HEADER, warnings)
+          .build();
+    }
+
+    // http://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something
+    return Response
+        .status(NO_CONTENT)
+        .build();
   }
+
+  private DictionaryConstraintViolations validateDictionary(Dictionary dictionary) {
+    if (validate) {
+      val validator = new DictionaryValidator(dictionary, dictionaryService.listCodeList());
+      return validator.validate();
+    } else {
+      val empty = Collections.<DictionaryValidator.DictionaryConstraintViolation> emptySet();
+      return new DictionaryConstraintViolations(empty, empty);
+    }
+  }
+
 }

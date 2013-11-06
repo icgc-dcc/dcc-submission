@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-submission</artifactId>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>2.0.4-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -52,12 +52,8 @@
               <executable>brunch</executable>
               <arguments>
                 <argument>b</argument>
-                <argument>m</argument>
+                <argument>-o</argument>
               </arguments>
-              <successCodes>
-                <successCode>0</successCode>
-                <successCode>1</successCode>
-              </successCodes>
             </configuration>
           </execution>
         </executions>

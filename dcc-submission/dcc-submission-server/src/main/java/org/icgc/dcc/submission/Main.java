@@ -17,10 +17,28 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.padEnd;
+import static com.google.common.io.Resources.getResource;
+import static com.google.common.io.Resources.readLines;
+import static com.google.inject.Guice.createInjector;
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.core.util.VersionUtils.getScmInfo;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.HADOOP_USER_NAME_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.HDFS_USERNAME_PROPERTY_VALUE;
+
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.List;
+import java.util.Map.Entry;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
@@ -35,98 +53,170 @@ import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.web.WebModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+/**
+ * Main class for the submission system.
+ */
+@Slf4j
 public class Main {
-  private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-  private static final String HADOOP_USER_NAME_PARAM = "HADOOP_USER_NAME";
+  static {
+    // DCC-572: Set systems properties
+    System.setProperty(HADOOP_USER_NAME_PROPERTY_NAME, HDFS_USERNAME_PROPERTY_VALUE);
+  }
 
-  private static final String HADOOP_USER_NAME = "hdfs";
+  /**
+   * Application instance.
+   */
+  private static Main instance;
 
-  private static enum CONFIG {
-    qa("application_qa"), dev("application_dev"), local("application"), external(null);
+  /**
+   * Services handle.
+   */
+  @Inject
+  private DccRuntime dccRuntime;
 
-    String filename;
+  /**
+   * Main method for the submission system.
+   */
+  public static void main(String... args) {
+    instance = new Main(args);
 
-    private CONFIG(String filename) {
-      this.filename = filename;
-    }
+    instance.start();
+    log.info("Exiting main method.");
+  }
 
-    public static String listValues() {
-      return Arrays.asList(CONFIG.values()).toString();
-    }
-  };
+  private Main(String[] args) {
+    val config = loadConfig(args);
+    logBanner(args, config);
 
-  private static Injector injector;
+    inject(config);
+    registerShutdownHook();
+  }
 
-  public static void main(String[] args) throws IOException {
-
-    Config parsedConfig = loadConfig(args);
-
-    System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
-    Main.injector = Guice.createInjector(new ConfigModule(parsedConfig) //
-        // Infrastructure modules
-        , new CoreModule()//
-        , new HttpModule()//
-        , new JerseyModule()//
-        , new WebModule()//
-        , new MorphiaModule()//
-        , new ShiroModule()//
-        , new FileSystemModule()//
-        , new SftpModule()//
-
-        // Business modules
-        , new DictionaryModule()//
-        , new ReleaseModule()//
-        , new ValidationModule());
-
+  private void registerShutdownHook() {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
       @Override
       public void run() {
-        // No one call shutdown?
-        boolean running = injector != null;
-        if(running) {
-          injector.getInstance(DccRuntime.class).stop();
+        if (isRunning()) {
+          stop();
         }
       }
 
     }, "Shutdown-thread"));
-
-    injector.getInstance(DccRuntime.class).start();
   }
 
-  private static Config loadConfig(String[] args) throws FileNotFoundException {
-    CONFIG configType;
+  @SneakyThrows
+  private void start() {
     try {
-      configType = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]) : CONFIG.local;
-    } catch(IllegalArgumentException e) {
-      throw new IllegalArgumentException(args[0] + " is not a valid argument. Valid arguments are "
-          + CONFIG.listValues());
+      dccRuntime.start();
+    } catch (Throwable t) {
+      log.error("An unknown error was caught starting:", t);
+      throw t;
     }
-    log.info("Using config type {}", configType);
-    Config parsedConfig;
-    if(configType == CONFIG.external) {
-      if(args.length < 2) {
-        throw new IllegalArgumentException("The argument 'external' requires a filename as an additional parameter");
-      }
-      File configFile = new File(args[1]);
-      log.info("Using config file {}", configFile.getAbsoluteFile());
-      if(configFile.exists() == false) {
-        throw new FileNotFoundException(args[1]);
-      }
-      parsedConfig = ConfigFactory.parseFile(configFile).resolve();
-    } else {
-      parsedConfig = ConfigFactory.load(configType.filename);
+  }
+
+  @SneakyThrows
+  private void stop() {
+    try {
+      dccRuntime.stop();
+
+      // Allow GC to cleanup
+      dccRuntime = null;
+      instance = null;
+    } catch (Throwable t) {
+      log.error("An unknown error was caught stopping:", t);
+      throw t;
     }
-    return parsedConfig;
+  }
+
+  private boolean isRunning() {
+    return dccRuntime != null;
+  }
+
+  @SneakyThrows
+  private static Config loadConfig(String[] args) {
+    checkArgument(args.length >= 2, "The argument 'external' requires a filename as an additional parameter");
+
+    val configFile = new File(args[1]);
+    checkArgument(configFile.exists(), "Configuration file '%s' not found", configFile.getAbsolutePath());
+
+    log.info("Using config file {}", configFile.getAbsoluteFile());
+    return ConfigFactory.parseFile(configFile).resolve();
+  }
+
+  private void inject(Config config) {
+    val injector = createInjector(
+        // Config module
+        new ConfigModule(config),
+
+        // Infrastructure modules
+        new CoreModule(),
+        new HttpModule(),
+        new JerseyModule(),
+        new WebModule(),
+        new MorphiaModule(),
+        new ShiroModule(),
+        new FileSystemModule(),
+        new SftpModule(),
+
+        // Business modules
+        new DictionaryModule(),
+        new ReleaseModule(),
+        new ValidationModule());
+
+    injector.injectMembers(this);
+  }
+
+  @SneakyThrows
+  private void logBanner(String[] args, Config config) {
+    log.info("{}", repeat("-", 100));
+    for (String line : readLines(getResource("banner.txt"), UTF_8)) {
+      log.info(line);
+    }
+    log.info("{}", repeat("-", 100));
+    log.info("Version: {}", getVersion());
+    log.info("Built:   {}", getBuildTimestamp());
+    log.info("SCM:");
+    for (Entry<String, String> entry : getScmInfo().entrySet()) {
+      String key = entry.getKey();
+      String value = firstNonNull(entry.getValue(), "").replaceAll("\n", " ");
+
+      log.info("         {}: {}", padEnd(key, 24, ' '), value);
+    }
+
+    log.info("Command: {}", formatArguments(args));
+    log.info("Config:  {}", config);
+  }
+
+  private String getVersion() {
+    String version = getClass().getPackage().getImplementationVersion();
+    return version == null ? "[unknown version]" : version;
+  }
+
+  private String getBuildTimestamp() {
+    String buildTimestamp = getClass().getPackage().getSpecificationVersion();
+    return buildTimestamp == null ? "[unknown build timestamp]" : buildTimestamp;
+  }
+
+  private String getJarName() {
+    String jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+    File jarFile = new File(jarPath);
+
+    return jarFile.getName();
+  }
+
+  private String formatArguments(String[] args) {
+    RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+    List<String> inputArguments = runtime.getInputArguments();
+
+    return "java " + join(inputArguments, ' ') + " -jar " + getJarName() + " " + join(args, ' ');
   }
 
   /**
@@ -134,8 +224,7 @@ public class Main {
    */
   @VisibleForTesting
   public static void shutdown() {
-    injector.getInstance(DccRuntime.class).stop();
-    injector = null;
+    instance.stop();
   }
 
 }

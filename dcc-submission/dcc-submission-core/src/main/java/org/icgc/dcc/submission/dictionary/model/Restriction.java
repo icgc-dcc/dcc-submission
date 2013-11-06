@@ -19,13 +19,16 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import java.io.Serializable;
 
+import javax.validation.constraints.NotNull;
+
 import lombok.ToString;
 
-import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType.RestrictionTypeConverter;
 import org.icgc.dcc.submission.dictionary.model.validation.CheckRestriction;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 
+import com.google.code.morphia.annotations.Converters;
 import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 
@@ -37,13 +40,14 @@ import com.mongodb.BasicDBObject;
 @Embedded
 @CheckRestriction
 @ToString
+@Converters(RestrictionTypeConverter.class)
 public class Restriction implements DictionaryElement, Serializable {
 
   public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
                                                            // comma-separated list of values
 
-  @NotBlank
-  private String type; // TODO: enforce provided (DCC-904) + make enum? predefined all restrictions + one custom?
+  @NotNull
+  private RestrictionType type;
 
   // TODO: enforce that if codelist, a name is provided (DCC-904)
   private BasicDBObject config;
@@ -57,11 +61,11 @@ public class Restriction implements DictionaryElement, Serializable {
     dictionaryVisitor.visit(this);
   }
 
-  public String getType() {
+  public RestrictionType getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(RestrictionType type) {
     this.type = type;
   }
 
