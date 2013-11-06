@@ -18,13 +18,14 @@
 package org.icgc.dcc.submission.validation.semantic;
 
 import static com.google.common.io.ByteStreams.copy;
+import static com.google.common.io.Files.getFileExtension;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-import static org.icgc.dcc.submission.validation.core.ErrorCode.REFERENCE_GENOME_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
+import static org.icgc.dcc.submission.validation.core.Validators.checkState;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,10 +45,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
-import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ReportContext;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.Validator;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Optional;
 import com.google.common.io.LineReader;
 
 /**
@@ -58,8 +60,9 @@ import com.google.common.io.LineReader;
  */
 @Slf4j
 @NoArgsConstructor
-public class ReferenceGenomeValidator {
+public class ReferenceGenomeValidator implements Validator {
 
+  public static final String REFERENCE_GENOME_VERSION = "GrCh37";
   public static final String REFERENCE_GENOME_BASE_URL = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference";
   public static final String REFERENCE_GENOME_DATA_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.gz";
   public static final String REFERENCE_GENOME_INDEX_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.fai";
@@ -72,8 +75,9 @@ public class ReferenceGenomeValidator {
 
   private IndexedFastaSequenceFile sequenceFile;
 
-  public ReferenceGenomeValidator(File fastaFile) throws FileNotFoundException {
-    sequenceFile = new IndexedFastaSequenceFile(fastaFile);
+  @Override
+  public String getName() {
+    return "Reference Genome Validator";
   }
 
   /**
@@ -99,9 +103,26 @@ public class ReferenceGenomeValidator {
    * Validate genome reference aligns with reference genome of submitted primary file. We assume at this stage the file
    * is well-formed, and that each individual field is sane.
    */
-  public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) throws IOException {
-    LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
+  @SneakyThrows
+  @Override
+  public void validate(ValidationContext context) {
+    ensureDownload();
 
+    Optional<Path> optionalSsmPrimaryFile = context.getSsmPrimaryFile();
+    if (!optionalSsmPrimaryFile.isPresent()) {
+      log.info("No ssm_p file for '{}'", context.getProjectKey());
+    }
+
+    val ssmPrimaryFile = optionalSsmPrimaryFile.get();
+    val reader = getLineReader(ssmPrimaryFile, context.getFileSystem());
+
+    log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
+    validate(context, ssmPrimaryFile.getName(), reader);
+    log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
+  }
+
+  private void validate(ReportContext context, String fileName, LineReader reader)
+      throws IOException {
     long lineNumber = 1;
     int chromosomeIdx = -1;
     int startIdx = -1;
@@ -109,7 +130,6 @@ public class ReferenceGenomeValidator {
     int referenceAlleleIdx = -1;
     String line;
 
-    val errors = new ImmutableList.Builder<TupleError>();
     while ((line = reader.readLine()) != null) {
       val fields = parseLine(line);
 
@@ -127,14 +147,22 @@ public class ReferenceGenomeValidator {
         val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
 
         if (!isMatch(referenceAllele, referenceSequence)) {
-          errors.add(createError(lineNumber, referenceAllele, referenceSequence));
+          context.reportError(
+              fileName,
+              lineNumber,
+              SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
+              formatValue(referenceSequence, referenceAllele),
+              REFERENCE_GENOME_ERROR,
+
+              // Params
+              REFERENCE_GENOME_VERSION);
         }
       }
 
+      checkState(getName());
+
       lineNumber++;
     }
-
-    return errors.build();
   }
 
   public String getReferenceGenomeSequence(String chromosome, String start, String end) {
@@ -174,36 +202,30 @@ public class ReferenceGenomeValidator {
     return asList(line.split(FIELD_SEPARATOR));
   }
 
-  private static TupleError createError(long lineNumber, String referenceAllele, String referenceSequence) {
-    return TupleState.createTupleError(
-        REFERENCE_GENOME_ERROR,
-        SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
-        referenceAllele,
-        lineNumber,
-
-        // Params
-        referenceSequence);
-  }
-
   private static boolean isMatch(String controlAllele, String refSequence) {
     return controlAllele.equalsIgnoreCase(refSequence);
+  }
+
+  private static String formatValue(String expected, String actual) {
+    return String.format("Expected: %s, Actual: %s", expected, actual);
   }
 
   /**
    * Returns a LineReader capable of reading gz, bzip2 or plain text files
    */
   private static LineReader getLineReader(Path path, FileSystem fileSystem) throws IOException {
-    LineReader reader = null;
-    if (path.getName().endsWith(".gz")) {
-      reader = new LineReader(new InputStreamReader(new GZIPInputStream(fileSystem.open(path))));
-    } else if (path.getName().endsWith(".bz2")) {
-      BZip2Codec codec = new BZip2Codec();
-      reader = new LineReader(new InputStreamReader(codec.createInputStream((fileSystem.open(path)))));
-    } else {
-      reader = new LineReader(new InputStreamReader(fileSystem.open(path)));
-    }
+    val extension = getFileExtension(path.getName());
+    val gzip = extension.equals("gz");
+    val bzip2 = extension.equals("bz2");
 
-    return reader;
+    // @formatter:off
+    val inputStream = fileSystem.open(path);
+    return new LineReader(new InputStreamReader(
+        gzip  ? new GZIPInputStream(inputStream)                : 
+        bzip2 ? new BZip2Codec().createInputStream(inputStream) :
+                inputStream
+        ));
+    // @formatter:on
   }
 
 }

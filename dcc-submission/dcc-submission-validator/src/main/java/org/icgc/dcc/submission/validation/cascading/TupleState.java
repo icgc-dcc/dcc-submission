@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
-import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
+import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -58,23 +58,23 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
-  public void reportError(ErrorCode code, List<String> columnNames, Object values, Object... params) {
-    checkArgument(code != null);
-    ensureErrors().add(new TupleError(code, columnNames, values, this.getOffset(), code.build(params)));
-    structurallyValid = code.isStructural() == false;
+  public void reportError(ErrorType type, List<String> columnNames, Object values, Object... params) {
+    checkArgument(type != null);
+    ensureErrors().add(new TupleError(type, columnNames, values, this.getOffset(), type.build(params)));
+    structurallyValid = type.isStructural() == false;
   }
 
-  public void reportError(ErrorCode code, String columnName, Object value, Object... params) {
-    checkArgument(code != null);
+  public void reportError(ErrorType type, String columnName, Object value, Object... params) {
+    checkArgument(type != null);
     List<String> columnNames = Lists.newArrayList(columnName);
-    ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
-    structurallyValid = code.isStructural() == false;
+    ensureErrors().add(new TupleError(type, columnNames, value, this.getOffset(), type.build(params)));
+    structurallyValid = type.isStructural() == false;
   }
 
   // TODO: this is just temporary until a nicer error reporting is in place
-  public static TupleError createTupleError(ErrorCode code, String columnName, Object value, long lineNumber,
+  public static TupleError createTupleError(ErrorType type, String columnName, Object value, long lineNumber,
       Object... params) {
-    return new TupleError(code, Lists.newArrayList(columnName), value, lineNumber, code.build(params));
+    return new TupleError(type, Lists.newArrayList(columnName), value, lineNumber, type.build(params));
   }
 
   public Iterable<TupleError> getErrors() {
@@ -123,12 +123,12 @@ public class TupleState implements Serializable {
   }
 
   /**
-   * Holds an error. The {@code code} uniquely identifies the error (e.g.: range error) and the {@code parameters}
+   * Holds an error. The {@code type} uniquely identifies the error (e.g.: range error) and the {@code parameters}
    * capture the error details (e.g.: the expected range; min and max).
    */
   public static final class TupleError implements Serializable {
 
-    private final ErrorCode code;
+    private final ErrorType type;
 
     private final List<String> columnNames;
 
@@ -139,24 +139,24 @@ public class TupleState implements Serializable {
     private final Map<ErrorParameterKey, Object> parameters;
 
     public TupleError() {
-      this.code = null;
+      this.type = null;
       this.columnNames = Lists.newArrayList();
       this.value = null;
       this.line = null;
       this.parameters = new LinkedHashMap<ErrorParameterKey, Object>();
     }
 
-    private TupleError(ErrorCode code, List<String> columnNames, Object value, Long line,
+    private TupleError(ErrorType type, List<String> columnNames, Object value, Long line,
         Map<ErrorParameterKey, Object> parameters) {
-      this.code = code;
+      this.type = type;
       this.columnNames = columnNames;
       this.value = firstNonNull(value, "");
       this.line = line;
       this.parameters = parameters;
     }
 
-    public ErrorCode getCode() {
-      return this.code;
+    public ErrorType getType() {
+      return this.type;
     }
 
     public List<String> getColumnNames() {
@@ -177,12 +177,12 @@ public class TupleState implements Serializable {
 
     @JsonIgnore
     public String getMessage() {
-      return code.format(getParameters());
+      return type.format(getParameters());
     }
 
     @Override
     public String toString() {
-      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", parameters).toString();
+      return Objects.toStringHelper(TupleError.class).add("type", type).add("parameters", parameters).toString();
     }
 
   }

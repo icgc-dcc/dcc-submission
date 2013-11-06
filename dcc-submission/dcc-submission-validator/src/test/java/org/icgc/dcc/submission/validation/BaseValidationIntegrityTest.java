@@ -34,19 +34,16 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.core.RestrictionType;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.planner.DefaultPlanner;
-import org.icgc.dcc.submission.validation.planner.Planner;
-import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategyFactory;
-import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
-import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.service.ValidationService;
+import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
+import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
+import org.icgc.dcc.submission.validation.primary.planner.DefaultPlanner;
+import org.icgc.dcc.submission.validation.primary.planner.Planner;
+import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -81,22 +78,15 @@ public abstract class BaseValidationIntegrityTest {
   @Mock
   CodeList codeList5;
   @Mock
-  ValidationContext context;
+  RestrictionContext context;
   @Mock
   DccFileSystem dccFileSystem;
-  @Mock
-  SubmissionDirectory submissionDirectory;
 
   /**
    * Integration dependencies.
    */
   Dictionary dictionary;
   Planner planner;
-
-  /**
-   * Class under test.
-   */
-  ValidationService validationService;
 
   @Before
   public void before() {
@@ -110,7 +100,6 @@ public abstract class BaseValidationIntegrityTest {
         .build());
 
     this.dictionary = getDictionary();
-    this.validationService = new ValidationService(planner, dccFileSystem, new LocalPlatformStrategyFactory());
   }
 
   protected static FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
