@@ -41,33 +41,43 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 public class ValidationExecutorTest {
 
+  /**
+   * Represents {@code validation.max_simutaneous}.
+   */
   static final int MAX_VALIDATING = 3;
 
+  /**
+   * Class under test.
+   */
   ValidationExecutor executor;
 
   @Before
   public void setUp() {
+    // Roll-up sleeves
     executor = new ValidationExecutor(MAX_VALIDATING);
   }
 
   @After
   public void tearDown() {
+    // Wash hands
     executor.shutdown();
   }
 
   @Test
   public void testExecute() {
+    // "Promises" for results
     val futures = Lists.<ListenableFuture<Validation>> newArrayList();
     for (int i = 1; i <= MAX_VALIDATING; i++) {
+      // Setup: Create the ith validation container
       val projectKey = "project" + i;
       val validation = createValidation(projectKey);
 
-      // Exercise: should "immediately" start asynchronously
+      // Exercise: Should "immediately" begin asynchronously
       val future = executor.execute(validation);
       futures.add(future);
     }
 
-    // Wait for tasks to start running
+    // Sync: Wait for tasks to start running (timing not guaranteed)
     sleepUninterruptibly(1, SECONDS);
 
     // Verify: Ensure that things are running concurrently
@@ -84,43 +94,46 @@ public class ValidationExecutorTest {
   public void testRejected() {
     int oneMoreThanMax = MAX_VALIDATING + 1;
     for (int i = 1; i <= oneMoreThanMax; i++) {
+      // Setup: Create the ith validation container
       val projectKey = "project" + i;
       val validation = createValidation(projectKey);
 
-      // Exercise: should be rejected on the last iteration
+      // Exercise: Should be rejected on the last iteration
       executor.execute(validation);
     }
   }
 
   @Test
   public void testCancel() {
-    // Stimulus
+    // Setup: Create the validation container
     val projectKey = "project";
     val validation = createValidation(projectKey);
 
-    // Setup: start async validation
+    // Setup: Start async validation
     val future = executor.execute(validation);
 
-    // Exercise: should succeed
+    // Exercise: Should succeed
     val firstCancelled = executor.cancel(projectKey);
     assertThat(firstCancelled).isTrue();
     assertThat(future.isCancelled()).isTrue();
 
-    // Exercise: should fail to find it
+    // Exercise: Should fail to find it
     val secondCancelled = executor.cancel(projectKey);
     assertThat(secondCancelled).isFalse();
     assertThat(future.isCancelled()).isTrue();
 
-    // Verify: this
+    // Verify: Things that happen upon "completion"
     addCallback(future, new FutureCallback<Validation>() {
 
       @Override
       public void onSuccess(Validation result) {
+        // Nope
         fail("Validation should not have succeeded after it has been cancelled");
       }
 
       @Override
       public void onFailure(Throwable t) {
+        // Yep
         assertThat(t).isInstanceOf(CancellationException.class).as("Unexpected exception type");
       }
 
@@ -128,6 +141,7 @@ public class ValidationExecutorTest {
   }
 
   private static Validation createValidation(String projectKey) {
+    // Very real
     val context = createValidationContext(projectKey);
     val validator = new TestValidator();
     val validators = Lists.<Validator> newArrayList(validator);
@@ -136,12 +150,16 @@ public class ValidationExecutorTest {
   }
 
   private static ValidationContext createValidationContext(String projectKey) {
-    ValidationContext context = mock(ValidationContext.class);
+    // Can't use @Mock since we are 1:m
+    val context = mock(ValidationContext.class);
     when(context.getProjectKey()).thenReturn(projectKey);
 
     return context;
   }
 
+  /**
+   * A simple "interruptable" validator.
+   */
   @Slf4j
   private static class TestValidator implements Validator {
 
@@ -150,7 +168,7 @@ public class ValidationExecutorTest {
     synchronized public void validate(ValidationContext context) {
       log.info("Executing '{}'...", context.getProjectKey());
 
-      // Wait forever, but allow interruption
+      // Wait forever with monitor, but allow interruption
       wait();
     }
 

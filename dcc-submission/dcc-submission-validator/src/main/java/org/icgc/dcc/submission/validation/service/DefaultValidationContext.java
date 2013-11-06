@@ -52,7 +52,7 @@ import com.google.common.base.Optional;
 public class DefaultValidationContext implements ValidationContext {
 
   /**
-   * Fulfills the {@link ReportContext} contract.
+   * Fulfills the {@link ReportContext} contract via delegation.
    */
   @Delegate
   @NonNull
@@ -116,7 +116,7 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public PlatformStrategy getPlatformStrategy() {
-    // Inputs and outputs
+    // Round about way to get the inputs and outputs
     Path inputDir = getSubmissionDirectory().getSubmissionDirPath();
     log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
     Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
@@ -124,6 +124,7 @@ public class DefaultValidationContext implements ValidationContext {
     Path systemDir = getReleaseFileSystem().getSystemDirectory();
     log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
 
+    // Abstractions to support local / Hadoop
     log.info("Creating platform strategy for project {}", projectKey);
     val platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
 
