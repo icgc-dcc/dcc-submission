@@ -44,10 +44,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
-import org.icgc.dcc.submission.validation.report.ReportContext;
-import org.icgc.dcc.submission.validation.service.ValidationContext;
-import org.icgc.dcc.submission.validation.service.ValidationExecutor;
-import org.icgc.dcc.submission.validation.service.Validator;
+import org.icgc.dcc.submission.validation.ValidationExecutor;
+import org.icgc.dcc.submission.validation.core.ReportContext;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.Validator;
 
 import com.google.common.base.Optional;
 import com.google.common.io.LineReader;

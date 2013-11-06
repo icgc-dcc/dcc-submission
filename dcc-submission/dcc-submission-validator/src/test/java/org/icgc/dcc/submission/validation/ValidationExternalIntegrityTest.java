@@ -40,9 +40,9 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
-import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -18,19 +18,19 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.DESCRIPTION;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.EXPECTED;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.FIELDS;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.FILES;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.MAX;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.MIN;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.OTHER_FIELDS;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.OTHER_SCHEMA;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.SCHEMA;
-import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.VALUE;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.CELL_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.DESCRIPTION;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.EXPECTED;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.FIELDS;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.FILES;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.MAX;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.MIN;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.OTHER_FIELDS;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.OTHER_SCHEMA;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.SCHEMA;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.VALUE;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +44,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey;
 
 import com.google.common.collect.ImmutableMap;
 

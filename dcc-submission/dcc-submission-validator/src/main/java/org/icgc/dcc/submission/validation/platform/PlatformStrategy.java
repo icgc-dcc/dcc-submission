@@ -23,9 +23,9 @@ import java.io.InputStream;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
-import org.icgc.dcc.submission.validation.core.FlowType;
-import org.icgc.dcc.submission.validation.core.Key;
+import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.flow.FlowConnector;
 import cascading.tap.Tap;

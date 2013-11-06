@@ -31,9 +31,9 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
-import org.icgc.dcc.submission.validation.core.FlowType;
-import org.icgc.dcc.submission.validation.core.Key;
+import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.tap.Tap;
 import cascading.tuple.Fields;

@@ -25,7 +25,7 @@ import static org.icgc.dcc.submission.validation.core.ErrorType.FORBIDDEN_VALUE_
 import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

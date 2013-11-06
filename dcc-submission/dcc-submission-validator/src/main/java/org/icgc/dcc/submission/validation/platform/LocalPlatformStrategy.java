@@ -31,8 +31,8 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;

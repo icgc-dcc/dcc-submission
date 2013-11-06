@@ -24,11 +24,11 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.core.Plan;
-import org.icgc.dcc.submission.validation.planner.Planner;
-import org.icgc.dcc.submission.validation.service.ValidationContext;
-import org.icgc.dcc.submission.validation.service.ValidationExecutor;
-import org.icgc.dcc.submission.validation.service.Validator;
+import org.icgc.dcc.submission.validation.ValidationExecutor;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.primary.core.Plan;
+import org.icgc.dcc.submission.validation.primary.planner.Planner;
 
 import com.google.inject.Inject;
 
