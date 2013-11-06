@@ -5,6 +5,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
@@ -251,6 +252,39 @@ public class ProjectResourceTest extends ResourceTest {
 
     assertThat(reponse.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"AlreadyExists\",\"parameters\":[\"PRJ1\"]}");
+  }
+
+  @Test
+  public void testUpdateProjectWhenNotAdmin() throws Exception {
+    val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
+    val reponse =
+        target().path("projects/PRJ1").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER))
+            .post(projectJson);
+
+    verify(projectService, never()).update(any(Project.class));
+
+    assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
+    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"Unauthorized\",\"parameters\":[]}");
+  }
+
+  @Test
+  public void testUpdateProjectWhenAdmin() throws Exception {
+    val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
+    val reponse = target().path("projects/PRJ1").request(MIME_TYPE).post(projectJson);
+
+    verify(projectService).update(any(Project.class));
+
+    assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
+  }
+
+  @Test
+  public void testUpdateProjectWrongKey() throws Exception {
+    val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
+    val reponse = target().path("projects/PRJ2").request(MIME_TYPE).post(projectJson);
+
+    verify(projectService, never()).update(any(Project.class));
+
+    assertThat(reponse.getStatus()).isEqualTo(PRECONDITION_FAILED.getStatusCode());
   }
 
 }

@@ -18,8 +18,10 @@
 package org.icgc.dcc.submission.web.resource;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_EXISTS;
 import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 
 import java.util.Set;
@@ -41,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.services.ProjectService;
 import org.icgc.dcc.submission.services.ReleaseService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
@@ -67,9 +70,9 @@ public class ProjectResource {
   @GET
   public Response getProjects(@Context
   SecurityContext securityContext) {
-    val user = getSubject(securityContext);
-    log.info("Request for all Projects from User {}", user.getPrincipal());
+    log.info("Request for all Projects");
 
+    val user = getSubject(securityContext);
     Set<Project> projects;
 
     if (isSuperUser(securityContext)) {
@@ -87,9 +90,9 @@ public class ProjectResource {
   public Response addProject(@Context
   SecurityContext securityContext, @Valid
   Project project) {
-    val user = getSubject(securityContext);
-    log.info("Request to add Project {} from {}", project, user.getPrincipal());
+    log.info("Request to add Project {}", project);
 
+    val user = getSubject(securityContext);
     if (isSuperUser(securityContext) == false) {
       log.info("{} is not super user", user.getPrincipal());
       return Responses.unauthorizedResponse();
@@ -124,10 +127,15 @@ public class ProjectResource {
   public Response getProject(@PathParam("projectKey")
   String projectKey, @Context
   SecurityContext securityContext) {
-    val user = getSubject(securityContext);
-    log.info("Request for Project {} from User {}", projectKey, user.getPrincipal());
+    log.info("Request for Project {}", projectKey);
 
+    val user = getSubject(securityContext);
     Project project;
+
+    if (hasAccess(securityContext, projectKey) == false) {
+      log.info("Project {} not visible to {}", projectKey, user.getPrincipal());
+      return Responses.notFound(projectKey);
+    }
 
     if (isSuperUser(securityContext)) {
       log.info("{} is super user", user.getPrincipal());
@@ -143,5 +151,65 @@ public class ProjectResource {
     }
 
     return Response.ok(project).build();
+  }
+
+  @POST
+  @Path("{projectKey}")
+  public Response updateProject(
+      @PathParam("projectKey")
+      String projectKey,
+      @Valid
+      Project project,
+      @Context
+      SecurityContext securityContext) {
+    log.info("Request to update Project {} with {}", projectKey, project);
+
+    val user = getSubject(securityContext);
+    if (isSuperUser(securityContext) == false) {
+      log.info("{} is not super user", user.getPrincipal());
+      return Responses.unauthorizedResponse();
+    }
+    log.info("{} is super user", user.getPrincipal());
+
+    if (!projectKey.equals(project.getKey())) {
+      log.info("Project key {} does not match endpoint for {}", project.getKey(), projectKey);
+      return Response.status(PRECONDITION_FAILED).entity("Project Key Missmatch").build();
+    }
+
+    val result = projectService.update(project);
+
+    return Response.ok(result).build();
+  }
+
+  @GET
+  @Path("{projectKey}/releases")
+  public Response getProjectSubmissions(
+      @PathParam("projectKey")
+      String projectKey,
+      @Context
+      SecurityContext securityContext) {
+    log.info("Request for all Submissions from Project {}", projectKey);
+
+    val user = getSubject(securityContext);
+    Set<Submission> submissions;
+
+    if (hasAccess(securityContext, projectKey) == false) {
+      log.info("Project {} not visible to {}", projectKey, user.getPrincipal());
+      return Responses.notFound(projectKey);
+    }
+
+    if (isSuperUser(securityContext)) {
+      log.info("{} is super user", user.getPrincipal());
+      submissions = projectService.findSubmissions(projectKey);
+    } else {
+      log.info("{} is not super user", user.getPrincipal());
+      submissions = projectService.findSubmissionsForUser(user.getPrincipal().toString());
+    }
+
+    return Response.ok().build();
+  }
+
+  private boolean hasAccess(SecurityContext securityContext, String projectKey) {
+    return projectKey != null && hasSpecificProjectPrivilege(securityContext, projectKey);
   }
 }

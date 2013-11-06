@@ -85,6 +85,17 @@ public class ProjectServiceTest {
   }
 
   @Test
+  public void testAddProject() throws Exception {
+    val expected = new Key<Project>(Project.class, new ObjectId());
+    when(projectRepository.upsert(projectOne)).thenReturn(expected);
+
+    val response = projectService.add(projectOne);
+
+    verify(projectRepository).upsert(projectOne);
+    assertThat(response).isEqualTo(expected);
+  }
+
+  @Test
   public void testUpdateProject() throws Exception {
     val expected = new Key<Project>(Project.class, new ObjectId());
     when(projectRepository.upsert(projectOne)).thenReturn(expected);
@@ -94,4 +105,20 @@ public class ProjectServiceTest {
     verify(projectRepository).upsert(projectOne);
     assertThat(response).isEqualTo(expected);
   }
+
+  @Test
+  public void testClean() throws Exception {
+    val dirty = new Project("PK", "PN");
+    dirty.setAlias("PA");
+    dirty.setGroups(Sets.newHashSet("group1", "group2"));
+    dirty.setUsers(Sets.newHashSet("group1", "group2"));
+
+    val expected = new Project("PK", "PN");
+    expected.setAlias("PA");
+
+    val actual = projectService.clean(dirty);
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
 }
