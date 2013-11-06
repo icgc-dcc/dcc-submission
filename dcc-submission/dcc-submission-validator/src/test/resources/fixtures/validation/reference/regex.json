@@ -1,7 +1,7 @@
 {
   "offset" : 2,
   "errors" : [ {
-    "code" : "REGEX_ERROR",
+    "type" : "REGEX_ERROR",
     "columnNames" : [ "donor_tumour_stage_at_diagnosis" ],
     "value" : "A2 N2 M0",
     "line" : 2,

@@ -29,7 +29,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;
@@ -66,7 +66,7 @@ public class TupleStateSerializationTest extends CascadingTestCase {
         new HadoopTupleOutputStream(new FileOutputStream(file, false), tupleSerialization.getElementWriter());
 
     TupleState testState = new TupleState(1L);
-    testState.reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, "string", 4L, 1L, 10L);
+    testState.reportError(ErrorType.OUT_OF_RANGE_ERROR, "string", 4L, 1L, 10L);
 
     Tuple outputTuple = new Tuple(testState);
     output.writeTuple(outputTuple);

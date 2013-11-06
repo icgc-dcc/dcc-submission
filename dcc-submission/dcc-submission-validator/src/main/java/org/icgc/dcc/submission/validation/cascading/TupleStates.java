@@ -88,7 +88,7 @@ public final class TupleStates {
 
   /**
    * Returns a {@code Filter} that will only keep {@code structurally valid} tuples based on its {@code TupleState} (if
-   * it DOESN'T contain {@code ValidationErrorCode#STRUCTURALLY_INVALID_ROW_ERROR}). Note that the
+   * it DOESN'T contain {@code ErrorType#STRUCTURALLY_INVALID_ROW_ERROR}). Note that the
    * {@code ValidationFields#STATE_FIELD} must be one of the operation's arguments.
    * 
    * @return a {@code Filter} instance usable to keep {@code structurally valid} tuples only
@@ -100,7 +100,7 @@ public final class TupleStates {
 
   /**
    * Returns a {@code Filter} that will only keep {@code structurally invalid} tuples based on its {@code TupleState}
-   * (if it DOES contain {@code ValidationErrorCode#STRUCTURALLY_INVALID_ROW_ERROR}). Note that the
+   * (if it DOES contain {@code ErrorType#STRUCTURALLY_INVALID_ROW_ERROR}). Note that the
    * {@code ValidationFields#STATE_FIELD} must be one of the operation's arguments.
    * 
    * @return a {@code Filter} instance usable to keep {@code structurally valid} tuples only

@@ -263,6 +263,8 @@ public final class FieldNames {
       "experimental_analysis_performed_donor_count";
   public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_SAMPLE_COUNT =
       "experimental_analysis_performed_sample_count";
+  public static final String AVAILABLE_EXPERIMENTAL_ANALYSIS_PERFORMED =
+      "available_experimental_analysis_performed";
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;

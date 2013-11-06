@@ -18,17 +18,24 @@
 package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.regex.Pattern.compile;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.Value;
+
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 public class SubmissionDirectory {
 
@@ -64,6 +71,24 @@ public class SubmissionDirectory {
 
   public Iterable<String> listFile() {
     return this.listFile(null);
+  }
+
+  /**
+   * Returns the list of files that match a file pattern in the dictionary.
+   */
+  public Iterable<String> listFiles(final List<String> filePatterns) {
+    return Iterables.filter(listFile(), new Predicate<String>() {
+
+      @Override
+      public boolean apply(String input) {
+        for (String filePattern : filePatterns) {
+          if (compile(filePattern).matcher(input).matches()) {
+            return true;
+          }
+        }
+        return false;
+      }
+    });
   }
 
   public String addFile(String filename, InputStream data) {
@@ -123,4 +148,20 @@ public class SubmissionDirectory {
   public void createEmptyValidationDir() {
     dccFileSystem.createDirIfDoesNotExist(getValidationDirPath());
   }
+
+  public List<SubmissionDirectoryFile> getSubmissionFiles() {
+    return null;
+  }
+
+  /**
+   * There's already a "SubmissionFile" class (for the UI)...
+   */
+  @Value
+  public class SubmissionDirectoryFile {
+
+    String fileName;
+    SubmissionFileType type;
+    Pattern pattern;
+  }
+
 }

@@ -23,17 +23,26 @@ import java.io.InputStream;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
-import org.icgc.dcc.submission.validation.core.FlowType;
-import org.icgc.dcc.submission.validation.core.Key;
+import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+
 public interface PlatformStrategy {
 
-  public static final String SEPARATOR = "--";
+  String FIELD_SEPARATOR = "\t";
+
+  Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
+
+  Joiner FIELD_JOINER = Joiner.on(FIELD_SEPARATOR);
+
+  String FILE_NAME_SEPARATOR = "--";
 
   public FlowConnector getFlowConnector();
 

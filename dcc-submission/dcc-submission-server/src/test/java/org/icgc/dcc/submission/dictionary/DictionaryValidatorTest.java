@@ -32,7 +32,7 @@ import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.junit.Test;
 
 import com.mongodb.BasicDBObject;

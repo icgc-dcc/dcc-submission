@@ -1,7 +1,7 @@
 {
   "offset" : 2,
   "errors" : [ {
-    "code" : "SCRIPT_ERROR",
+    "type" : "SCRIPT_ERROR",
     "columnNames" : [ "donor_sex" ],
     "value" : "donor_sex = 2",
     "line" : 2,

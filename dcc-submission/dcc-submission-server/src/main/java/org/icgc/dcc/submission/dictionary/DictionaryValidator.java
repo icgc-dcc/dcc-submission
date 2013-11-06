@@ -27,7 +27,10 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.split;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ASSEMBLY_VERSION;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,6 +42,7 @@ import java.util.regex.PatternSyntaxException;
 
 import lombok.Value;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.BusinessKeys;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -49,15 +53,16 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
-import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction.InvalidScriptException;
+import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.InvalidScriptException;
 
 import com.google.common.base.Function;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
@@ -66,6 +71,7 @@ import com.google.common.collect.Table;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 
+@Slf4j
 public class DictionaryValidator {
 
   private final Dictionary dictionary;
@@ -82,8 +88,13 @@ public class DictionaryValidator {
     Set<DictionaryConstraintViolation> errors = newLinkedHashSet();
     Set<DictionaryConstraintViolation> warnings = newLinkedHashSet();
 
-    validateSchemata(errors, warnings);
-    validateCodeLists(errors, warnings);
+    try {
+      validateSchemata(errors, warnings);
+      validateCodeLists(errors, warnings);
+    } catch (Exception e) {
+      log.error("Exception validating:", e);
+      errors.add(new DictionaryConstraintViolation("Exception validating", e.getMessage()));
+    }
 
     return new DictionaryConstraintViolations(warnings, errors);
   }
@@ -237,20 +248,37 @@ public class DictionaryValidator {
 
   private void validateRelations(Set<DictionaryConstraintViolation> errors, FileSchema schema) {
     for (val relation : schema.getRelations()) {
+      if (relation.getFields().isEmpty()) {
+        errors
+            .add(new DictionaryConstraintViolation("Missing schema fields for relation", schema, relation));
+      }
+
+      if (relation.getOtherFields().isEmpty()) {
+        errors
+            .add(new DictionaryConstraintViolation("Missing other schema fields for relation", schema, relation));
+      }
+
+      if (relation.getFields().size() != relation.getOtherFields().size()) {
+        errors
+            .add(new DictionaryConstraintViolation(
+                "Mismatching field count between schema and other schema for relation", schema, relation,
+                relation.getFields().size(), relation.getOtherFields().size()));
+      }
+
       for (val fieldName : relation.getFields()) {
         if (!dictionaryIndex.hasField(schema.getName(), fieldName)) {
           errors
-              .add(new DictionaryConstraintViolation("Missing schema field for relation", schema, relation, fieldName));
+              .add(new DictionaryConstraintViolation("Invalid schema field for relation", schema, relation, fieldName));
         }
       }
       if (!dictionaryIndex.hasSchema(relation.getOther())) {
-        errors.add(new DictionaryConstraintViolation("Missing other schema for relation", schema, relation, relation
+        errors.add(new DictionaryConstraintViolation("Invalid other schema for relation", schema, relation, relation
             .getOther()));
       }
       for (val otherFieldName : relation.getOtherFields()) {
         if (!dictionaryIndex.hasField(schema.getName(), otherFieldName)) {
           errors
-              .add(new DictionaryConstraintViolation("Missing other schema field for relation", schema, relation,
+              .add(new DictionaryConstraintViolation("Invalid other schema field for relation", schema, relation,
                   otherFieldName));
         }
       }
@@ -273,20 +301,19 @@ public class DictionaryValidator {
       errors.add(new DictionaryConstraintViolation(
           "'ssm_p' schema is missing but is required for required business key field validation"));
     } else {
-      for (val keyField : BusinessKeys.MUTATION) {
-        val required = dictionaryIndex.hasRestrictionType(ssm_p.getName(), keyField, RestrictionType.REQUIRED);
-        val assemblyVersion = SUBMISSION_OBSERVATION_ASSEMBLY_VERSION.equals(keyField);
-        if (!required && !assemblyVersion) {
-          errors.add(new DictionaryConstraintViolation(
-              "'ssm_p' schema field is required for business key field", keyField, BusinessKeys.MUTATION));
-        }
+      // See BusinessKeys.MUTATION_KEY
+      // TODO: Add the full set after the dictionary is created
+      val relaxedMutationKey = ImmutableList.<String> of(
+          SUBMISSION_OBSERVATION_CHROMOSOME,
+          SUBMISSION_OBSERVATION_CHROMOSOME_START,
+          SUBMISSION_OBSERVATION_CHROMOSOME_END,
+          SUBMISSION_OBSERVATION_MUTATION_TYPE);
 
-        // TODO: Make this an error when the dictionary has been fixed!
-        if (!required && assemblyVersion) {
-          warnings
-              .add(new DictionaryConstraintViolation(
-                  "'ssm_p' schema field is required downstream for business key field. Currently not error for backwards compatibility.",
-                  keyField, BusinessKeys.MUTATION));
+      for (val keyField : relaxedMutationKey) {
+        val required = dictionaryIndex.hasRestrictionType(ssm_p.getName(), keyField, RestrictionType.REQUIRED);
+        if (!required) {
+          errors.add(new DictionaryConstraintViolation(
+              "'ssm_p' schema field is required for downstream processing", keyField, BusinessKeys.MUTATION));
         }
       }
     }

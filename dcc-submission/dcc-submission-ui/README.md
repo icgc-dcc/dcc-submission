@@ -4,34 +4,44 @@ ICGC DCC - Submission UI
 Setup
 ---
 
-Install [npm](http://nodejs.org/#download)
+Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are using a package manager such as `apt`, `brew` or `macports` please ensure the correct version has been installed.
 
-Install brunch:
+Install brunch and required modules:
 
-	sudo npm install -g coffee-script brunch
+	sudo npm install -g brunch coffee-script 
 	cd dcc/dcc-submission/dcc-submission-ui
 	npm install
-Run
+	
+Ensure that `brunch` has been added to your `PATH` by typing:
+
+	brunch
+	
+Development
 ---
 
 Start brunch (in another console):
 
 	cd dcc/dcc-submission/dcc-submission-ui
-	brunch w
+	brunch w -s
 
 Start the proxy (in yet another console)
 
 	cd dcc/dcc-submission/dcc-submission-ui
 	cake proxy
 
+Start the [dcc-submission-server](../dcc-submission-server/README.md)
+
 Point your browser to:
 
 [http://localhost:3334/](http://localhost:3334/)
 
+	
 Build
 ---
 
-Translate coffee script and minify. Results in `./public`:
+For CI builds. Required to translate coffee script and minify. This is also required if you intend to run the `dcc-submission-server` without `cake` in development (for non-UI developers). Results are put in `./public`:
 
 	cd dcc/dcc-submission/dcc-submission-ui
-	brunch b m
+	mvn	
+
+*Note:* If not using the proxy above you will need to run this command and restart the `dcc-submission-server` every time a file is modified. 

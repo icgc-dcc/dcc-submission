@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.dictionary.model;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.regex.Pattern.compile;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
 import lombok.ToString;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -204,6 +206,17 @@ public class FileSchema implements DictionaryElement, Serializable {
         return input.getName();
       }
     });
+  }
+
+  /**
+   * Returns whether or not the provided file name matches the pattern for the current {@link FileSchema}.
+   */
+  public boolean matches(
+      @NonNull
+      String fileName) {
+    return compile(pattern) // TODO: lazy-load
+        .matcher(fileName)
+        .matches();
   }
 
   /**
