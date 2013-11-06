@@ -51,9 +51,9 @@ public class ValidationExecutor {
   private final ConcurrentMap<String, Future<?>> futures = newConcurrentMap();
 
   /**
-   * The executor used to execute validation tasks.
+   * The pool used to execute validation tasks.
    */
-  private final ThreadPoolExecutor executor;
+  private final ThreadPoolExecutor pool;
 
   /**
    * Creates a validator with the supplied number of validation "slots".
@@ -61,15 +61,15 @@ public class ValidationExecutor {
    * @param maxConcurrentValidations The maximum number of concurrently executing validation tasks.
    */
   public ValidationExecutor(int maxConcurrentValidations) {
-    log.info("Initializing executor with a maximum of {} concurrent validations", maxConcurrentValidations);
-    this.executor = createExecutor(maxConcurrentValidations);
+    log.info("Initializing pool with a maximum of {} concurrent validations", maxConcurrentValidations);
+    this.pool = createExecutor(maxConcurrentValidations);
   }
 
   /**
    * Returns the number of active validation "slots".
    */
   public int getActiveCount() {
-    return executor.getActiveCount();
+    return pool.getActiveCount();
   }
 
   /**
@@ -83,8 +83,9 @@ public class ValidationExecutor {
   public ListenableFuture<Validation> execute(final Validation validation) {
     val id = validation.getId();
 
+    // Need to apply listening decorator here because we still need access to pool methods later
     log.info("execute: Submitting validation '{}' ... {}", id, getStats());
-    val future = listeningDecorator(executor).submit(new Callable<Validation>() {
+    val future = listeningDecorator(pool).submit(new Callable<Validation>() {
 
       @Override
       @SneakyThrows
@@ -147,15 +148,15 @@ public class ValidationExecutor {
   }
 
   /**
-   * Shuts down the internal executor.
+   * Shuts down the internal pool.
    */
   public void shutdown() {
-    log.info("Shutting down executor...");
-    executor.shutdownNow();
+    log.info("Shutting down pool...");
+    pool.shutdownNow();
   }
 
   /**
-   * Creates the internal executor with the appropriate application semantics.
+   * Creates the internal pool with the appropriate application semantics.
    * 
    * @param maxConcurrentValidations
    * @return
@@ -199,13 +200,13 @@ public class ValidationExecutor {
   }
 
   /**
-   * Gets basic task statistics about the underlying executor.
+   * Gets basic task statistics about the underlying pool.
    * 
    * @return a formatted stats string
    */
   private String getStats() {
     return format("taskCount: %s, activeCount: %s, completedCount: %s",
-        executor.getTaskCount(), executor.getActiveCount(), executor.getCompletedTaskCount());
+        pool.getTaskCount(), pool.getActiveCount(), pool.getCompletedTaskCount());
   }
 
 }

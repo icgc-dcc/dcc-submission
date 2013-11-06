@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static com.google.common.base.Stopwatch.createUnstarted;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.submission.validation.core.Validators.checkState;
 
 import java.util.List;
 
@@ -56,7 +56,7 @@ public class Validation {
   /**
    * Timer to record overall validation duration.
    */
-  private final Stopwatch watch = createUnstarted();
+  private final Stopwatch duration = createUnstarted();
 
   /**
    * The identifier used to {@code submit} and {@code cancel} with the {@link ValidationExecutor}.
@@ -66,40 +66,35 @@ public class Validation {
   }
 
   /**
-   * The duration of the validation.
-   */
-  public long getDuration() {
-    return watch.elapsed(MILLISECONDS);
-  }
-
-  /**
    * Executes the sequence of {@link #validators}
    */
   @SneakyThrows
   public void execute() throws InterruptedException {
-    watch.start();
+    duration.start();
     try {
-      log.info(repeat("#", 80));
-      log.info("  Executing validation '{}'...", getId());
-      log.info(repeat("#", 80));
+      log.info(repeat("=", 80));
+      log.info("");
+      log.info("BEGIN VALIDATION: '{}'", getId());
+      log.info("");
+      log.info(repeat("=", 80));
 
       // Cooperate
-      verifyState();
+      checkState(getClass().getSimpleName());
 
       val n = validators.size();
       int i = 1;
       for (val validator : validators) {
-        val name = validator.getClass().getSimpleName();
+        val name = validator.getName();
 
         log.info(repeat("-", 80));
-        log.info("[" + i++ + "/" + n + "] Executing '{}' validator for '{}'...", name, getId());
+        log.info("[" + i++ + "/" + n + "] Executing '{}' for '{}'...", name, getId());
         log.info(repeat("-", 80));
         validator.validate(context);
-        log.info("Finished executing '{}' validator for '{}'...", name, getId());
+        log.info("Finished executing '{}' for '{}'...", name, getId());
 
         val failure = context.hasErrors();
         if (failure) {
-          log.info("Execution of '{}' validator for '{}' has validation '{}' errors",
+          log.warn("Execution of '{}' for '{}' has '{}' errors",
               new Object[] { name, getId(), context.getErrorCount() });
 
           // Fail fast
@@ -107,7 +102,7 @@ public class Validation {
         }
 
         // Cooperate
-        verifyState();
+        checkState(getClass().getSimpleName());
       }
     } catch (Throwable t) {
       log.error("Exception running validation for '{}': {}", getId(), t);
@@ -115,19 +110,13 @@ public class Validation {
       // For {@link ListeningFuture#onError()}
       throw t;
     } finally {
-      watch.stop();
-    }
-  }
+      duration.stop();
 
-  /**
-   * Checks if the validation has been cancelled.
-   * 
-   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
-   */
-  private void verifyState() throws InterruptedException {
-    val cancelled = Thread.currentThread().isInterrupted();
-    if (cancelled) {
-      throw new InterruptedException("Validation '" + getId() + "' was interrupted");
+      log.info(repeat("=", 80));
+      log.info("");
+      log.info("FINISHED VALIDATION: '{}' in {}", getId(), duration);
+      log.info("");
+      log.info(repeat("=", 80));
     }
   }
 

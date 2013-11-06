@@ -21,7 +21,8 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.util.concurrent.AbstractScheduledService.Scheduler.newFixedDelaySchedule;
 import static com.google.common.util.concurrent.Futures.addCallback;
-import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
+import static java.lang.Thread.sleep;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
@@ -63,6 +64,11 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
 
+/**
+ * Coordinator that runs periodically to dispatch validations for execution. It pulls from the "queue" as input and
+ * pushes to the "executor" as output. Also responsible for mediating validation cancellation requests coming from the
+ * web layer.
+ */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ValidationScheduler extends AbstractScheduledService {
@@ -78,7 +84,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   @NonNull
   private final ReleaseService releaseService;
   @NonNull
-  private final ValidationExecutor validationExecutor;
+  private final ValidationExecutor executor;
   @NonNull
   private final MailService mailService;
   @NonNull
@@ -95,7 +101,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @throws InvalidStateException
    */
   public void cancelValidation(String projectKey) throws InvalidStateException {
-    val cancelled = validationExecutor.cancel(projectKey);
+    val cancelled = executor.cancel(projectKey);
     if (cancelled) {
       // TODO: Determine when this should / needs to be called
       log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
@@ -130,16 +136,20 @@ public class ValidationScheduler extends AbstractScheduledService {
    */
   @Override
   protected void shutDown() throws Exception {
-    validationExecutor.shutdown();
+    executor.shutdown();
   }
 
   /**
    * Polls for an open release to become available.
+   * @throws InterruptedException
    */
-  private void pollOpenRelease() {
+  private void pollOpenRelease() throws InterruptedException {
     long count;
     do {
-      sleepUninterruptibly(POLLING_PERIOD_SECONDS, SECONDS);
+      // Allow for interruption
+      sleep(MILLISECONDS.convert(POLLING_PERIOD_SECONDS, SECONDS));
+
+      // Should almost always be 1
       count = releaseService.countOpenReleases();
     } while (count == 0);
 
@@ -155,6 +165,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     Optional<QueuedProject> nextProject = absent();
 
     try {
+      // Try to find a queued validation
       val release = resolveOpenRelease();
       nextProject = release.nextInQueue();
 
@@ -182,7 +193,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     val validation = createValidation(release, project);
 
     // Submit validation asynchronously for execution
-    val future = validationExecutor.execute(validation);
+    val future = executor.execute(validation);
 
     // If we made it here then the validation was accepted
     log.info("Validating next project in queue: '{}'", project);
@@ -218,14 +229,28 @@ public class ValidationScheduler extends AbstractScheduledService {
     });
   }
 
+  /**
+   * Internal {@code Validation} factory method.
+   * 
+   * @param release the current release
+   * @param project the project to create a validation for
+   * @return
+   */
   private Validation createValidation(Release release, QueuedProject project) {
-    val validators = ImmutableList.<Validator> copyOf(this.validators);
     val context = createValidationContext(release, project);
+    val validators = ImmutableList.<Validator> copyOf(this.validators);
     val validation = new Validation(context, validators);
 
     return validation;
   }
 
+  /**
+   * Intenal {@code ValidationContext} factory method.
+   * 
+   * @param release the current release
+   * @param project the project to create a validation for
+   * @return
+   */
   private ValidationContext createValidationContext(Release release, QueuedProject project) {
     val dictionary = releaseService.getNextDictionary();
     val context = new DefaultValidationContext(
@@ -237,15 +262,26 @@ public class ValidationScheduler extends AbstractScheduledService {
         platformStrategyFactory);
 
     return context;
-
   }
 
+  /**
+   * Called after a successful submission to affect the queue state and notify end users that validation has begun.
+   * 
+   * @param project
+   */
   private void acceptValidation(QueuedProject project) {
     log.info("Validation for '{}' accepted", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
     releaseService.dequeueToValidating(project);
   }
 
+  /**
+   * Always called after validation has completed to record the submission report and update the submission's state.
+   * 
+   * @param project the project to complete
+   * @param state completion state
+   * @param submissionReport the report produced through the validation process
+   */
   private void completeValidation(QueuedProject project, SubmissionState state, SubmissionReport submissionReport) {
     log.info("Validation for '{}' completed with state '{}'", project, state);
     try {

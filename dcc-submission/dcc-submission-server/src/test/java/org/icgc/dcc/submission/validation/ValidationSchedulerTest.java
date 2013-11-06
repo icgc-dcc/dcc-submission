@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.validation;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
+import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static org.elasticsearch.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
@@ -55,7 +57,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ValidationSchedulerTest {
@@ -115,93 +116,87 @@ public class ValidationSchedulerTest {
   @Test
   @SneakyThrows
   public void test_runOneIteration_success_valid() {
-    // Add a no-op validator
+    // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Create returned future with context that has no errors
+    // Setup: Create returned future with context that has no errors
     when(context.hasErrors()).thenReturn(false);
-    val future = createSetFuture(context, validator);
+    val future = createSuccessfulFuture(context, validator);
 
-    // When submitted we will return the "valid" future
+    // Setup: When submitted we will return the "valid" future
     when(executor.execute(any(Validation.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();
 
-    // Ensure valid
+    // Verify: Ensure "valid"
     verify(releaseService).resolve(queuedProject.getKey(), VALID);
   }
 
   @Test
   @SneakyThrows
   public void test_runOneIteration_success_invalid() {
-    // Add a no-op validator
+    // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Create returned future with context that has errors
+    // Setup: Create returned future with context that has errors
     when(context.hasErrors()).thenReturn(true);
-    val future = createSetFuture(context, validator);
+    val future = createSuccessfulFuture(context, validator);
 
-    // When submitted we will return the "invalid" future
+    // Setup: When submitted we will return the "invalid" future
     when(executor.execute(any(Validation.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();
 
-    // Ensure valid
+    // Verify: Ensure "invalid"
     verify(releaseService).resolve(queuedProject.getKey(), INVALID);
   }
 
   @Test
   @SneakyThrows
   public void test_runOneIteration_failure_cancel() {
-    // Add a no-op validator
+    // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Create returned future with context that has errors
-    val future = createExceptionFuture(new CancellationException());
+    // Setup: Create returned future with context that has errors
+    val future = createFailedFuture(new CancellationException());
 
-    // When submitted we will return the "invalid" future
+    // Setup: When submitted we will return the "invalid" future
     when(executor.execute(any(Validation.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();
 
-    // Ensure valid
+    // Verify: Ensure reset
     verify(releaseService).resolve(queuedProject.getKey(), NOT_VALIDATED);
   }
 
   @Test
   @SneakyThrows
   public void test_runOneIteration_failure_error() {
-    // Add a no-op validator
+    // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Create returned future with context that has errors
-    val future = createExceptionFuture(new RuntimeException());
+    // Setup: Create returned future with context that has errors
+    val future = createFailedFuture(new RuntimeException());
 
-    // When submitted we will return the "invalid" future
+    // Setup: When submitted we will return the "invalid" future
     when(executor.execute(any(Validation.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();
 
-    // Ensure valid
+    // Verify: Ensure "error"
     verify(releaseService).resolve(queuedProject.getKey(), ERROR);
   }
 
-  private static ListenableFuture<Validation> createSetFuture(ValidationContext context, Validator validator) {
-    val future = SettableFuture.<Validation> create();
-    future.set(new Validation(context, newArrayList(validator)));
-
-    return future;
+  private static ListenableFuture<Validation> createSuccessfulFuture(ValidationContext context, Validator validator) {
+    return immediateFuture(new Validation(context, newArrayList(validator)));
   }
 
-  private static ListenableFuture<Validation> createExceptionFuture(Throwable throwable) {
-    val future = SettableFuture.<Validation> create();
-    future.setException(throwable);
-
-    return future;
+  private static ListenableFuture<Validation> createFailedFuture(Throwable throwable) {
+    return immediateFailedFuture(throwable);
   }
 
 }

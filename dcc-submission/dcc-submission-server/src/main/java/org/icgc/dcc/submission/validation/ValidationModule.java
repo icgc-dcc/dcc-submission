@@ -48,7 +48,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.typesafe.config.Config;
 
 /**
- * Module for the validation subsystem.
+ * Module that wires together components of the validation subsystem.
  */
 public class ValidationModule extends AbstractDccModule {
 
