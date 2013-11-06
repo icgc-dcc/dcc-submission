@@ -17,22 +17,30 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+
+import org.icgc.dcc.submission.validation.ValidationExecutor;
+
 /**
- * Unit of validation execution used with a {@link Validation}.
+ * Utility methods for {@link Validator}s.
  */
-public interface Validator {
+@NoArgsConstructor(access = PRIVATE)
+public final class Validators {
 
   /**
-   * Returns the informal name of the validator.
-   */
-  String getName();
-
-  /**
-   * Validation strategy method.
+   * Checks if the validation has been cancelled.
    * 
-   * @param context the encapsulated context of the validation execution
-   * @throws InterruptedException thrown if the validation process is cancelled
+   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
    */
-  void validate(ValidationContext context) throws InterruptedException;
+  @SneakyThrows
+  public static void checkState(String name) {
+    val cancelled = Thread.currentThread().isInterrupted();
+    if (cancelled) {
+      throw new InterruptedException("'" + name + "' was interrupted");
+    }
+  }
 
 }

@@ -19,15 +19,13 @@ package org.icgc.dcc.submission.validation.first;
 
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
+import static org.icgc.dcc.submission.validation.core.Validators.checkState;
 
 import javax.validation.constraints.NotNull;
 
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FileChecker.FileCheckers;
@@ -54,6 +52,11 @@ public class FirstPassValidator implements Validator {
   }
 
   @Override
+  public String getName() {
+    return "First-pass Validator";
+  }
+
+  @Override
   public void validate(ValidationContext validationContext) {
     FileChecker fileChecker = this.fileChecker == null ?
         FileCheckers.getDefaultFileChecker(validationContext) :
@@ -66,12 +69,12 @@ public class FirstPassValidator implements Validator {
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, filename);
 
       fileChecker.check(filename);
-      verifyState();
+      checkState(getName());
 
       if (fileChecker.canContinue()) {
         log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, filename);
         rowChecker.check(filename);
-        verifyState();
+        checkState(getName());
       }
     }
   }
@@ -83,19 +86,6 @@ public class FirstPassValidator implements Validator {
             validationContext
                 .getDictionary()
                 .getFilePatterns());
-  }
-
-  /**
-   * Checks if the validation has been cancelled.
-   * 
-   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
-   */
-  @SneakyThrows
-  private void verifyState() {
-    val cancelled = Thread.currentThread().isInterrupted();
-    if (cancelled) {
-      throw new InterruptedException("First pass validation was interrupted");
-    }
   }
 
 }

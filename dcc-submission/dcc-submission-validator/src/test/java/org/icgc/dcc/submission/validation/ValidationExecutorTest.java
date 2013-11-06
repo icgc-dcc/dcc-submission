@@ -34,8 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.ValidationExecutor;
-import org.icgc.dcc.submission.validation.ValidationRejectedException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -167,6 +165,11 @@ public class ValidationExecutorTest {
    */
   @Slf4j
   private static class TestValidator implements Validator {
+
+    @Override
+    public String getName() {
+      return "Test Validator";
+    }
 
     @SneakyThrows
     @Override

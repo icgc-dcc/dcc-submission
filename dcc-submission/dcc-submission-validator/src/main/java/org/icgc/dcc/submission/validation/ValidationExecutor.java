@@ -30,11 +30,11 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.icgc.dcc.submission.validation.core.Validation;
-
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.validation.core.Validation;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -179,7 +179,7 @@ public class ValidationExecutor {
         0, SECONDS, // Arbitrary when both pool sizes are the same
         queue,
 
-        // Name the threads for logging and diagnositics
+        // Name the threads for logging and diagnostics
         new ThreadFactoryBuilder().setNameFormat("Validation Slot %s").build(),
 
         // Need this to get a customized exception when "slots" are full

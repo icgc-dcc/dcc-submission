@@ -18,13 +18,13 @@
 package org.icgc.dcc.submission.validation.primary;
 
 import static com.google.common.collect.Iterables.size;
+import static org.icgc.dcc.submission.validation.core.Validators.checkState;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
@@ -44,6 +44,11 @@ public class PrimaryValidator implements Validator {
 
   @NonNull
   private final Planner planner;
+
+  @Override
+  public String getName() {
+    return "Primary Validator";
+  }
 
   @Override
   @SneakyThrows
@@ -69,7 +74,7 @@ public class PrimaryValidator implements Validator {
       log.info("Starting cascade for project '{}'", projectKey);
       plan.getCascade().complete();
       log.info("Finished cascade for project '{}'", projectKey);
-      verifyState();
+      checkState(getName());
 
       // Report
       log.info("Collecting report for project '{}'", projectKey);
@@ -85,19 +90,6 @@ public class PrimaryValidator implements Validator {
 
       // Rethrow for {@link Validator}
       throw t;
-    }
-  }
-
-  /**
-   * Checks if the validation has been cancelled.
-   * 
-   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
-   */
-  @SneakyThrows
-  private void verifyState() {
-    val cancelled = Thread.currentThread().isInterrupted();
-    if (cancelled) {
-      throw new InterruptedException("Reference genome validation was interrupted");
     }
   }
 

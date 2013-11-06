@@ -22,6 +22,7 @@ import static com.google.common.io.Files.getFileExtension;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
+import static org.icgc.dcc.submission.validation.core.Validators.checkState;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -44,7 +45,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
-import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -74,6 +74,11 @@ public class ReferenceGenomeValidator implements Validator {
   private static final String FIELD_SEPARATOR = "\t";
 
   private IndexedFastaSequenceFile sequenceFile;
+
+  @Override
+  public String getName() {
+    return "Reference Genome Validator";
+  }
 
   /**
    * Currently this is for testing only. For production it makes more sense to have the files setup in-place instead of
@@ -154,7 +159,7 @@ public class ReferenceGenomeValidator implements Validator {
         }
       }
 
-      verifyState();
+      checkState(getName());
 
       lineNumber++;
     }
@@ -221,19 +226,6 @@ public class ReferenceGenomeValidator implements Validator {
                 inputStream
         ));
     // @formatter:on
-  }
-
-  /**
-   * Checks if the validation has been cancelled.
-   * 
-   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
-   */
-  @SneakyThrows
-  private void verifyState() {
-    val cancelled = Thread.currentThread().isInterrupted();
-    if (cancelled) {
-      throw new InterruptedException("Reference genome validation was interrupted");
-    }
   }
 
 }
