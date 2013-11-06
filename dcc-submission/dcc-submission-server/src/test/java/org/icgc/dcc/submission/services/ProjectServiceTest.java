@@ -8,6 +8,8 @@ import lombok.val;
 
 import org.bson.types.ObjectId;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -117,6 +119,25 @@ public class ProjectServiceTest {
     expected.setAlias("PA");
 
     val actual = projectService.clean(dirty);
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testExtractSubmissions() throws Exception {
+    val releaseOne = new Release("R1");
+    val releaseTwo = new Release("R2");
+    val releaseThree = new Release("R3");
+    val submission = new Submission(projectOne.getKey(), projectOne.getName());
+
+    releaseOne.addSubmission(submission);
+    releaseTwo.addSubmission(submission);
+
+    val releases = Sets.newHashSet(releaseOne, releaseTwo, releaseThree);
+
+    val expected = Sets.newHashSet(submission, submission);
+
+    val actual = projectService.extractSubmissions(releases, projectOne.getKey());
 
     assertThat(actual).isEqualTo(expected);
   }

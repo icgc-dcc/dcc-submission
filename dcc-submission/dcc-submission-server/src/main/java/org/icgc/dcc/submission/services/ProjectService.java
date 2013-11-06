@@ -8,7 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.elasticsearch.common.collect.Sets;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.release.ReleaseException;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 
@@ -65,21 +68,17 @@ public class ProjectService {
     return clean;
   }
 
-  /**
-   * @param string
-   * @return
-   */
-  public Set<Submission> findSubmissionsForUser(String string) {
-    // TODO Auto-generated method stub
-    return null;
-  }
+  public Set<Submission> extractSubmissions(Set<Release> releases, String projectKey) {
+    Set<Submission> submissions = Sets.newHashSet();
 
-  /**
-   * @param projectKey
-   * @return
-   */
-  public Set<Submission> findSubmissions(String projectKey) {
-    // TODO Auto-generated method stub
-    return null;
+    for (val release : releases) {
+      try {
+        submissions.add(release.getSubmission(projectKey));
+      } catch (ReleaseException e) {
+        log.info("Submission for Project {} not found in Release {}", projectKey, release.getName());
+      }
+    }
+
+    return submissions;
   }
 }

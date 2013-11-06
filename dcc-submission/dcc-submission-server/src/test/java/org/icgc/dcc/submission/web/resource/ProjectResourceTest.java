@@ -20,6 +20,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.Set;
 
 import lombok.val;
 
@@ -27,6 +28,7 @@ import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.services.ProjectService;
 import org.icgc.dcc.submission.services.ReleaseService;
 import org.junit.Rule;
@@ -66,6 +68,14 @@ public class ProjectResourceTest extends ResourceTest {
 
   private Release release;
 
+  private Set<Release> releases;
+
+  private Submission submissionOne;
+
+  private Submission submissionTwo;
+
+  private Set<Submission> submissions;
+
   private final String PATH = "path/to/release/project";
 
   @Override
@@ -77,22 +87,28 @@ public class ProjectResourceTest extends ResourceTest {
         dccFileSystem = mock(DccFileSystem.class);
         when(dccFileSystem.mkdirProjectDirectory(any(String.class), any(String.class))).thenReturn(PATH);
 
+        release = new Release("REL1");
+        releases = Sets.newHashSet(release);
+
+        releaseService = mock(ReleaseService.class);
+        when(releaseService.findOpen()).thenReturn(release);
+        when(releaseService.findAll()).thenReturn(releases);
+        when(releaseService.addSubmission(any(String.class), any(String.class))).thenReturn(release);
+
         projectOne = new Project("PRJ1", "Project One");
         projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
-
         projectTwo = new Project("PRJ2", "Project Two");
+
+        submissionOne = new Submission("PRJ1", "Project One");
+        submissionTwo = new Submission("PRJ2", "Project Two");
+        submissions = Sets.newHashSet(submissionOne, submissionTwo);
 
         projectService = mock(ProjectService.class);
         when(projectService.find(projectOne.getKey())).thenReturn(projectOne);
         when(projectService.findForUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
         when(projectService.findAllForUser(any(String.class))).thenReturn(Sets.newHashSet(projectOne));
         when(projectService.findAll()).thenReturn(Sets.newHashSet(projectOne, projectTwo));
-
-        release = new Release("REL1");
-
-        releaseService = mock(ReleaseService.class);
-        when(releaseService.findOpen()).thenReturn(release);
-        when(releaseService.addSubmission(any(String.class), any(String.class))).thenReturn(release);
+        when(projectService.extractSubmissions(releases, projectOne.getKey())).thenReturn(submissions);
 
         bind(ProjectService.class).toInstance(projectService);
         bind(ReleaseService.class).toInstance(releaseService);
@@ -155,15 +171,6 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
-    verify(projectService).findForUser(projectOne.getKey(), AUTH_ALLOWED_USER);
-    assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
-  }
-
-  @Test
-  public void testGetProjectWhenAuthorizedAsAdmin() {
-    val reponse =
-        target().path("projects/" + projectOne.getKey()).request(MIME_TYPE).get();
     verify(projectService).find(projectOne.getKey());
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
@@ -287,4 +294,45 @@ public class ProjectResourceTest extends ResourceTest {
     assertThat(reponse.getStatus()).isEqualTo(PRECONDITION_FAILED.getStatusCode());
   }
 
+  @Test
+  public void testGetProjectSubmissionsWhenNotAuthorized() throws Exception {
+    val reponse =
+        target().path("projects/" + projectOne.getKey() + "/releases").request(MIME_TYPE)
+            .header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).get();
+
+    verifyZeroInteractions(releaseService);
+    verifyZeroInteractions(projectService);
+
+    assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
+    assertThat(reponse.readEntity(String.class)).isEqualTo("");
+  }
+
+  @Test
+  public void testGetProjectSubmissionsWhenAuthorizedWithoutAccess() {
+    val reponse =
+        target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
+            .header(AUTH_HEADER, getAuthValue(AUTH_NOT_ALLOWED_USER)).get();
+
+    verifyZeroInteractions(releaseService);
+    verify(projectService, never()).find(any(String.class));
+
+    assertThat(reponse.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
+    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"NoSuchEntity\",\"parameters\":[\"PRJ1\"]}");
+  }
+
+  @Test
+  public void testGetProjectSubmissions() throws Exception {
+    val reponse = target().path("projects/" + projectOne.getKey() + "/releases").request(MIME_TYPE).get();
+
+    verify(releaseService).findAll();
+    verify(projectService).extractSubmissions(releases, projectOne.getKey());
+
+    assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
+    assertThat(reponse.readEntity(String.class))
+        .isEqualTo(
+            "[{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"lastUpdated\":"
+                + submissionTwo.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null},"
+                + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"lastUpdated\":"
+                + submissionOne.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null}]");
+  }
 }

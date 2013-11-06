@@ -53,8 +53,6 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
    * @param projectKey
    * 
    * @return Project or null if none found
-   * 
-   * @see #findForUser(String, String)
    */
   public Project find(String projectKey) {
     log.info("Finding Project {}", projectKey);

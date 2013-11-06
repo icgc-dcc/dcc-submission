@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.services.ProjectService;
 import org.icgc.dcc.submission.services.ReleaseService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
@@ -137,13 +136,7 @@ public class ProjectResource {
       return Responses.notFound(projectKey);
     }
 
-    if (isSuperUser(securityContext)) {
-      log.info("{} is super user", user.getPrincipal());
-      project = projectService.find(projectKey);
-    } else {
-      log.info("{} is not super user", user.getPrincipal());
-      project = projectService.findForUser(projectKey, user.getPrincipal().toString());
-    }
+    project = projectService.find(projectKey);
 
     if (project == null) {
       log.info("Project {} not found", projectKey);
@@ -191,22 +184,16 @@ public class ProjectResource {
     log.info("Request for all Submissions from Project {}", projectKey);
 
     val user = getSubject(securityContext);
-    Set<Submission> submissions;
 
     if (hasAccess(securityContext, projectKey) == false) {
       log.info("Project {} not visible to {}", projectKey, user.getPrincipal());
       return Responses.notFound(projectKey);
     }
 
-    if (isSuperUser(securityContext)) {
-      log.info("{} is super user", user.getPrincipal());
-      submissions = projectService.findSubmissions(projectKey);
-    } else {
-      log.info("{} is not super user", user.getPrincipal());
-      submissions = projectService.findSubmissionsForUser(user.getPrincipal().toString());
-    }
+    val releases = releaseService.findAll();
+    val submissions = projectService.extractSubmissions(releases, projectKey);
 
-    return Response.ok().build();
+    return Response.ok(submissions).build();
   }
 
   private boolean hasAccess(SecurityContext securityContext, String projectKey) {
