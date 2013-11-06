@@ -29,10 +29,10 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.DuplicateHeaderException;
 import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.core.FlowType;
+import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
@@ -74,12 +74,12 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   protected Tap<?, ?, ?> tap(Path path) {
-    return new FileTap(new TextDelimited(true, "\t"), path.toUri().getPath());
+    return new FileTap(new TextDelimited(true, FIELD_SEPARATOR), path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    return new FileTap(new TextDelimited(fields, true, "\t"), path.toUri().getPath());
+    return new FileTap(new TextDelimited(fields, true, FIELD_SEPARATOR), path.toUri().getPath());
   }
 
   @Override
@@ -108,7 +108,7 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
     InputStreamReader isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
     LineReader lineReader = new LineReader(isr);
     String firstLine = lineReader.readLine();
-    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    Iterable<String> header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
     List<String> dupHeader = this.checkDuplicateHeader(header);
     if (!dupHeader.isEmpty()) {
       throw new DuplicateHeaderException(dupHeader);

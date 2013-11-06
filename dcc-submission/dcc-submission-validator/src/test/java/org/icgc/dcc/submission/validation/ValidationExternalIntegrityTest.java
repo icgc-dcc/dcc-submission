@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FILE_NAME_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -40,10 +40,9 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
-import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.validation.core.Plan;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,7 +54,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
    * Test data.
    */
   private static final String ROOTDIR = "/fixtures/validation/external";
-  private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null);
+  private static final String PROJECT_KEY = "dummyProject";
 
   @Before
   public void setUp() throws JsonProcessingException, IOException {
@@ -96,21 +95,23 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
   }
 
   @Test
-  public void test_validate_valid() throws IOException, FilePresenceException {
+  public void test_validate_valid() throws IOException {
     String content = validate(dictionary, ROOTDIR);
     assertTrue(content, content.isEmpty());
 
-    String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor" + SEPARATOR + "donor_id-offset.tsv");
+    String donorTrim =
+        getUnsortedFileContent(ROOTDIR, "/.validation/donor" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_donor_trim.tsv");
     assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
-    String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + SEPARATOR + "donor_id-offset.tsv");
+    String specimenTrim =
+        getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_specimen_trim.tsv");
     assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
   @Test
-  public void test_validate_invalidCompositeKeys() throws IOException, FilePresenceException {
+  public void test_validate_invalidCompositeKeys() throws IOException {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
     FileSchema specimen = getFileSchemaByName(dictionary, "specimen");
 
@@ -133,23 +134,23 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     testErrorType("fk_1");
 
     String donorTrim =
-        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + SEPARATOR + "donor_id-fakecolumn-offset.tsv");
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + FILE_NAME_SEPARATOR
+            + "donor_id-fakecolumn-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_donor_trim.tsv");
     assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
-        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + SEPARATOR
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + FILE_NAME_SEPARATOR
             + "donor_id-fakecolumn-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_specimen_trim.tsv");
     assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
-  @Test(expected = FilePresenceException.class)
-  public void test_validate_missingFile() throws IOException, FilePresenceException {
+  public void test_validate_missingFile() throws IOException {
     testErrorType("fk_2");
   }
 
-  private void testErrorType(String errorType) throws IOException, FilePresenceException {
+  private void testErrorType(String errorType) throws IOException {
     String content = validate(dictionary, ROOTDIR + "/error/" + errorType);
     String expected =
         FileUtils
@@ -158,11 +159,11 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     assertEquals(content, expected.trim(), content.trim());
   }
 
-  private String validate(Dictionary dictionary, String relative) throws IOException, FilePresenceException {
+  private String validate(Dictionary dictionary, String relative) throws IOException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     System.err.println(outputDirString);
-    String errorFileString = outputDirString + "/" + "specimen.external" + SEPARATOR + "errors.json";
+    String errorFileString = outputDirString + "/" + "specimen.external" + FILE_NAME_SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
@@ -172,11 +173,10 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    PlatformStrategy cascadingStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
+    PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan =
-        validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
-            null);
+    Plan plan = planner.plan(PROJECT_KEY, platformStrategy, dictionary);
+    plan.connect(platformStrategy);
     assertEquals(5, plan.getCascade().getFlows().size());
 
     plan.getCascade().complete();
