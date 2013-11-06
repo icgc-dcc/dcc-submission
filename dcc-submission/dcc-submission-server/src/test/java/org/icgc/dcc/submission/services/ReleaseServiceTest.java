@@ -1,7 +1,6 @@
 package org.icgc.dcc.submission.services;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import lombok.val;
@@ -74,13 +73,14 @@ public class ReleaseServiceTest {
   @Test
   public void testAddSubmission() throws Exception {
     val expected = release;
-    val submission = new Submission("key", "value");
+    val submission = new Submission("key", "value", release.getName());
 
-    when(releaseRepository.addSubmission(any(Submission.class))).thenReturn(expected);
+    when(releaseRepository.addSubmission(submission, release.getName())).thenReturn(expected);
+    when(releaseRepository.findOpen()).thenReturn(expected);
 
     val actual = releaseService.addSubmission(submission.getProjectKey(), submission.getProjectName());
 
-    verify(releaseRepository).addSubmission(submission);
+    verify(releaseRepository).addSubmission(submission, release.getName());
 
     assertThat(actual).isEqualTo(expected);
   }

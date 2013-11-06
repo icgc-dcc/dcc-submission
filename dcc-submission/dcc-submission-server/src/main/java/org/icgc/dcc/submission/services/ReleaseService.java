@@ -41,12 +41,12 @@ public class ReleaseService {
   private ReleaseRepository releaseRepository;
 
   public Release find(String releaseName) {
-    log.info("Passing on request for Release {}", releaseName);
+    log.info("Request for Release {}", releaseName);
     return releaseRepository.find(releaseName);
   }
 
   public Set<Release> findAll() {
-    log.info("Passing on request to find all Releases");
+    log.info("Request to find all Releases");
     return releaseRepository.findAll();
   }
 
@@ -56,7 +56,7 @@ public class ReleaseService {
    * @return Current Open Release
    */
   public Release findOpen() {
-    log.info("Passing on request for current Open Release");
+    log.info("Request for current Open Release");
     return releaseRepository.findOpen();
   }
 
@@ -71,11 +71,11 @@ public class ReleaseService {
    */
   public Release addSubmission(String projectKey, String projectName) {
     log.info("Creating Submission for Project {} in current open Release", projectKey);
-
-    val submission = new Submission(projectKey, projectName);
+    val openRelease = releaseRepository.findOpen();
+    val submission = new Submission(projectKey, projectName, openRelease.getName());
     log.info("Created Submission {}", submission);
 
-    val release = releaseRepository.addSubmission(submission);
+    val release = releaseRepository.addSubmission(submission, openRelease.getName());
 
     return release;
   }

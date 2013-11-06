@@ -17,15 +17,17 @@
  */
 package org.icgc.dcc.submission.release.model;
 
-import com.google.code.morphia.annotations.Embedded;
-import com.google.common.base.Objects;
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.validation.Valid;
+
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 
-import javax.validation.Valid;
-import java.io.Serializable;
-import java.util.Date;
+import com.google.code.morphia.annotations.Embedded;
+import com.google.common.base.Objects;
 
 @Embedded
 public class Submission implements Serializable {
@@ -37,6 +39,10 @@ public class Submission implements Serializable {
   @NotBlank
   @JsonView(Digest.class)
   protected String projectName;
+
+  @NotBlank
+  @JsonView(Digest.class)
+  protected String releaseName;
 
   protected Date lastUpdated;
 
@@ -51,10 +57,11 @@ public class Submission implements Serializable {
     super();
   }
 
-  public Submission(String projectKey, String projectName) {
+  public Submission(String projectKey, String projectName, String releaseName) {
     super();
     this.projectKey = projectKey;
     this.projectName = projectName;
+    this.releaseName = releaseName;
     this.state = SubmissionState.NOT_VALIDATED;
     this.lastUpdated = new Date();
   }

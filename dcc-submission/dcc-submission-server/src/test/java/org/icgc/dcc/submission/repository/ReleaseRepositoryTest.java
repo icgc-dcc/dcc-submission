@@ -103,32 +103,33 @@ public class ReleaseRepositoryTest {
 
   @Test
   public void testAddSubmission() throws Exception {
-    val submission = new Submission("PRJ3", "Project Three");
+    val submission = new Submission("PRJ3", "Project Three", releaseOne.getName());
     val getOpenReleaseQuery =
         bareMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
 
     // Check that Release in DB does not have Submission
-    val bare = getOpenReleaseQuery.singleResult();
+    val openRelease = getOpenReleaseQuery.singleResult();
     try {
-      bare.getSubmission(submission.getProjectKey());
+      openRelease.getSubmission(submission.getProjectKey());
     } catch (Exception e) {
       assertThat(e).isInstanceOf(ReleaseException.class);
     }
 
     // Add Submission
-    val modifiedRelease = releaseRepository.addSubmission(submission);
+    val modifiedRelease = releaseRepository.addSubmission(submission, openRelease.getName());
 
     // Check that Release has Submission
     assertThat(modifiedRelease.getSubmissions()).contains(submission);
 
     // Confirm that Release in DB has Submission
     val actual = getOpenReleaseQuery.singleResult();
+    assertThat(actual).isEqualTo(modifiedRelease);
     assertThat(actual.getSubmissions()).contains(submission);
   }
 
   @Test
   public void testUpdate() throws Exception {
-    val submission = new Submission("PRJ3", "Project Three");
+    val submission = new Submission("PRJ3", "Project Three", releaseOne.getName());
     val getOpenReleaseQuery =
         bareMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
 

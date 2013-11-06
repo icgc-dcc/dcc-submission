@@ -91,10 +91,9 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
    * 
    * @return Current Open Release
    */
-  public Release addSubmission(Submission submission) {
-    log.info("Adding Submission for Project {}", submission.getProjectKey());
-    val openRelease = findOpen();
-    val q = datastore().createQuery(Release.class).field("name").equal(openRelease.getName());
+  public Release addSubmission(Submission submission, String releaseName) {
+    log.info("Adding Submission for Project {} to Release {}", submission.getProjectKey(), releaseName);
+    val q = datastore().createQuery(Release.class).field("name").equal(releaseName);
     val ops =
         datastore().createUpdateOperations(Release.class).add("submissions", submission);
     val modifiedRelease = this.datastore().findAndModify(q, ops);

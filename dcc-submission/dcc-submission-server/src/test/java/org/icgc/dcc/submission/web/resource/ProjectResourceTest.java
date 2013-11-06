@@ -99,8 +99,8 @@ public class ProjectResourceTest extends ResourceTest {
         projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
         projectTwo = new Project("PRJ2", "Project Two");
 
-        submissionOne = new Submission("PRJ1", "Project One");
-        submissionTwo = new Submission("PRJ2", "Project Two");
+        submissionOne = new Submission("PRJ1", "Project One", release.getName());
+        submissionTwo = new Submission("PRJ2", "Project Two", release.getName());
         submissions = Sets.newHashSet(submissionOne, submissionTwo);
 
         projectService = mock(ProjectService.class);
@@ -330,9 +330,9 @@ public class ProjectResourceTest extends ResourceTest {
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class))
         .isEqualTo(
-            "[{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"lastUpdated\":"
+            "[{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"releaseName\":\"REL1\",\"lastUpdated\":"
                 + submissionTwo.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null},"
-                + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"lastUpdated\":"
+                + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"releaseName\":\"REL1\",\"lastUpdated\":"
                 + submissionOne.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null}]");
   }
 }

@@ -128,14 +128,15 @@ public class ProjectServiceTest {
     val releaseOne = new Release("R1");
     val releaseTwo = new Release("R2");
     val releaseThree = new Release("R3");
-    val submission = new Submission(projectOne.getKey(), projectOne.getName());
+    val submissionOne = new Submission(projectOne.getKey(), projectOne.getName(), releaseOne.getName());
+    val submissionTwo = new Submission(projectOne.getKey(), projectOne.getName(), releaseTwo.getName());
 
-    releaseOne.addSubmission(submission);
-    releaseTwo.addSubmission(submission);
+    releaseOne.addSubmission(submissionOne);
+    releaseTwo.addSubmission(submissionTwo);
 
     val releases = Sets.newHashSet(releaseOne, releaseTwo, releaseThree);
 
-    val expected = Sets.newHashSet(submission, submission);
+    val expected = Sets.newHashSet(submissionOne, submissionTwo);
 
     val actual = projectService.extractSubmissions(releases, projectOne.getKey());
 
