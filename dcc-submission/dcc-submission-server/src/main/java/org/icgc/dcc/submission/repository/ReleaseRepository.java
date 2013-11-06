@@ -84,7 +84,7 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   /**
    * Adds {@code Submission} to the current open {@code Release} <br>
    * <br>
-   * This method is should be used instead of {@link #update(Release)} since it does not overwrite the Release object in
+   * This method should be used instead of {@link #update(Release)} since it does not overwrite the Release object in
    * the DB.
    * 
    * @param submission

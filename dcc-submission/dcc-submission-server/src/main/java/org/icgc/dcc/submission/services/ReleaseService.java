@@ -71,6 +71,7 @@ public class ReleaseService {
    */
   public Release addSubmission(String projectKey, String projectName) {
     log.info("Creating Submission for Project {} in current open Release", projectKey);
+
     val openRelease = releaseRepository.findOpen();
     val submission = new Submission(projectKey, projectName, openRelease.getName());
     log.info("Created Submission {}", submission);
