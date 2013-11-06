@@ -18,11 +18,7 @@
 package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
-import static com.google.common.base.Joiner.on;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
-import lombok.val;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
@@ -32,67 +28,52 @@ import cascading.operation.Function;
 import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
-import com.google.common.base.Joiner;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
- * TODO
+ * 
  */
-public final class MutationRebuilding implements NormalizationStep {
-
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "mutation";
-
-  /**
-   * 
-   */
-  private static final Joiner MUTATION_JOINER = on(">");
+@RequiredArgsConstructor
+public final class PreMasking implements NormalizationStep {
 
   @Override
   public String shortName() {
-    return SHORT_NAME;
+    return "pre-masking";
   }
 
   @Override
   public Pipe extend(Pipe pipe) {
-
-    /**
-     * TODO
-     */
-    final class MutationRebuilder extends BaseOperation<Void> implements Function<Void> {
-
-      private MutationRebuilder() {
-        super(new Fields(NORMALIZER_MUTATION));
-      }
-
-      /**
-       * Rebuild 'mutation' from 'control_genotype' and 'tumour_genotype' and TODO
-       */
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        val entry = functionCall.getArguments();
-        val mutatedFromAllele = entry.getString(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
-        val mutatedToAllele = entry.getString(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
-        val mutation = MUTATION_JOINER.join(mutatedFromAllele, mutatedToAllele);
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(mutation));
-      }
-    }
-
     return new Each(
         pipe,
         ALL,
-        new MutationRebuilder(),
+        new PreMaskingMarker(),
         ALL);
   }
 
+  /**
+   * 
+   */
+  @VisibleForTesting
+  static final class PreMaskingMarker extends BaseOperation<Void> implements Function<Void> {
+
+    @VisibleForTesting
+    PreMaskingMarker() {
+      super(Masking.NORMALIZER_MASKING_FIELD);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+
+      functionCall
+          .getOutputCollector()
+          .add(
+              // Until specified otherwise (if applicable as it can be turned off)
+              new Tuple(Masking.OPEN)
+          );
+    }
+  }
 }

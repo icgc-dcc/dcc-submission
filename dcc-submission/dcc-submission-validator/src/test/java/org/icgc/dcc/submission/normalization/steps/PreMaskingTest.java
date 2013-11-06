@@ -17,61 +17,44 @@
  */
 package org.icgc.dcc.submission.normalization.steps;
 
-import static cascading.tuple.Fields.ALL;
-import lombok.RequiredArgsConstructor;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import java.util.Iterator;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
+import org.icgc.dcc.submission.normalization.steps.PreMasking.PreMaskingMarker;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.junit.Test;
+
+import cascading.CascadingTestCase;
 import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
+import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-/**
- * TODO
- */
-@RequiredArgsConstructor
-public final class PreMasking implements NormalizationStep {
+public class PreMaskingTest extends CascadingTestCase {
 
-  @Override
-  public String shortName() {
-    return "pre-masking";
-  }
+  @Test
+  public void test_cascading_PreMaskingMarker() {
+    Function<?> function = new PreMaskingMarker();
 
-  @Override
-  public Pipe extend(Pipe pipe) {
+    Fields inputFields = new Fields("f1", "f2");
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
+    };
+    Fields resultFields = Masking.NORMALIZER_MASKING_FIELD;
 
-    /**
-     * TODO
-     */
-    final class PreMaskingMarker extends BaseOperation<Void> implements Function<Void> {
-
-      private PreMaskingMarker() {
-        super(Masking.NORMALIZER_MASKING_FIELD);
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        functionCall
-            .getOutputCollector()
-            .add(
-                // Until specified otherwise (if applicable as it can be turned off)
-                new Tuple(Masking.OPEN)
-            );
-      }
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    for (int i = 0; i < 3; i++) {
+      assertThat(iterator.hasNext());
+      TupleEntry entry = iterator.next();
+      Object object = entry.getObject(resultFields);
+      assertThat(object)
+          .isEqualTo(Masking.OPEN);
     }
-
-    return new Each(
-        pipe,
-        ALL,
-        new PreMaskingMarker(),
-        ALL);
+    assertFalse(iterator.hasNext());
   }
+
 }

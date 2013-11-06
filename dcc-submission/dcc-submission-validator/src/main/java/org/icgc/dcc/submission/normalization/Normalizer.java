@@ -27,7 +27,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
-import org.icgc.dcc.submission.validation.report.SubmissionReport;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -74,7 +73,7 @@ public final class Normalizer {
   /**
    * 
    */
-  public void normalize(SubmissionReport report) { // TODO: add platform strategy
+  public void normalize() { // TODO: add platform strategy
     val pipes = planCascade();
     val connected = connectCascade(pipes);
     connected.completeCascade();

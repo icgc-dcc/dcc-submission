@@ -30,6 +30,8 @@ import java.util.Set;
 
 import lombok.SneakyThrows;
 
+import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.normalization.Normalizer;
 import org.icgc.dcc.submission.normalization.steps.AlleleMasking;
 import org.icgc.dcc.submission.normalization.steps.FinalCounting;
 import org.icgc.dcc.submission.normalization.steps.InitialCounting;
@@ -309,7 +311,7 @@ public class NormalizerTest {
 
             .build(),
         config)
-        .normalize(null); // TODO: actually report
+        .normalize(); // TODO: actually report
 
     List<String> result = readLines(new File("/tmp/deleteme"), UTF_8); // TODO: improve
     List<String> ref = readLines(new File("/home/tony/git/git0/data-submission/ref"), UTF_8); // TODO: improve

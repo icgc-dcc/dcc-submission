@@ -17,64 +17,38 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
-import java.util.ArrayList;
-import java.util.List;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.junit.Test;
+
 import cascading.tuple.Tuple;
 
-/**
- * Utility class to help with the {@link Tuple} object from cascading.
- */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Tuples2 {
+public class Tuples2Test {
 
-  /**
-   * Nests a tuple within a tuple.
-   */
-  public static Tuple nestTuple(Tuple tuple) {
-    Tuple nestedTuple = new Tuple();
-    nestedTuple.add(tuple);
+  @Test
+  public void test_sameContent() {
+    assertFalse(Tuples2.sameContent(
+        null,
+        null));
+    assertFalse(Tuples2.sameContent(
+        new Tuple("a", "b"),
+        new Tuple("a", "c")));
+    assertFalse(Tuples2.sameContent(
+        new Tuple("a", "b", null),
+        new Tuple("a", "c", null)));
 
-    return nestedTuple;
-  }
-
-  public static boolean isNullField(Tuple tuple, int fieldIndex) {
-    return tuple.getObject(fieldIndex) == null;
-  }
-
-  public static List<Object> getObjects(Tuple tuple) {
-    List<Object> objects = new ArrayList<Object>();
-    for (int i = 0; i < tuple.size(); i++) {
-      objects.add(tuple.getObject(i));
-    }
-    return objects;
-  }
-
-  /**
-   * Determines whether or not 2 non-null tuples have the same content, with nulls matching nulls in terms of values.
-   * <p>
-   * This is mostly useful for tests.
-   * <p>
-   * TODO: consider handling nested tuples.
-   */
-  public static boolean sameContent(Tuple tuple1, Tuple tuple2) {
-    if (tuple1 == null || tuple2 == null) {
-      return false;
-    }
-    if (tuple1.size() != tuple2.size()) {
-      return false;
-    }
-    for (int i = 0; i < tuple1.size(); i++) {
-      Object object1 = tuple1.getObject(i);
-      Object object2 = tuple2.getObject(i);
-      if ((object1 == null && object2 != null) ||
-          (object1 != null && object2 == null) ||
-          (object1 != null && object2 != null && !object1.equals(object2))) {
-        return false;
-      }
-    }
-    return true;
+    assertTrue(Tuples2.sameContent(
+        new Tuple(),
+        new Tuple()));
+    assertTrue(Tuples2.sameContent(
+        new Tuple((String) null),
+        new Tuple((String) null)));
+    assertTrue(Tuples2.sameContent(
+        new Tuple("a", "b"),
+        new Tuple("a", "b")));
+    assertTrue(Tuples2.sameContent(
+        new Tuple("a", "b", null),
+        new Tuple("a", "b", null)));
   }
 }

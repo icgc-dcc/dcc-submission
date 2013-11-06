@@ -15,66 +15,72 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading;
+package org.icgc.dcc.submission.normalization.steps;
 
-import java.util.ArrayList;
-import java.util.List;
+import static cascading.tuple.Fields.ALL;
+import static java.util.UUID.randomUUID;
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
+import lombok.val;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.icgc.dcc.submission.normalization.NormalizationStep;
+
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
+import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
- * Utility class to help with the {@link Tuple} object from cascading.
+ * TODO
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Tuples2 {
+public final class PrimaryKeyGeneration implements NormalizationStep {
+
+  static final Fields OBSERVATION_ID_FIELD = new Fields(NORMALIZER_OBSERVATION_ID);
 
   /**
-   * Nests a tuple within a tuple.
+   * Short name for the step.
    */
-  public static Tuple nestTuple(Tuple tuple) {
-    Tuple nestedTuple = new Tuple();
-    nestedTuple.add(tuple);
+  private static final String SHORT_NAME = "pk";
 
-    return nestedTuple;
+  @Override
+  public String shortName() {
+    return SHORT_NAME;
   }
 
-  public static boolean isNullField(Tuple tuple, int fieldIndex) {
-    return tuple.getObject(fieldIndex) == null;
-  }
-
-  public static List<Object> getObjects(Tuple tuple) {
-    List<Object> objects = new ArrayList<Object>();
-    for (int i = 0; i < tuple.size(); i++) {
-      objects.add(tuple.getObject(i));
-    }
-    return objects;
+  @Override
+  public Pipe extend(Pipe pipe) {
+    return new Each(
+        pipe,
+        ALL,
+        new PrimaryKeyGenerator(),
+        ALL);
   }
 
   /**
-   * Determines whether or not 2 non-null tuples have the same content, with nulls matching nulls in terms of values.
-   * <p>
-   * This is mostly useful for tests.
-   * <p>
-   * TODO: consider handling nested tuples.
+   * 
    */
-  public static boolean sameContent(Tuple tuple1, Tuple tuple2) {
-    if (tuple1 == null || tuple2 == null) {
-      return false;
+  @VisibleForTesting
+  static final class PrimaryKeyGenerator extends BaseOperation<Void> implements Function<Void> {
+
+    @VisibleForTesting
+    PrimaryKeyGenerator() {
+      super(OBSERVATION_ID_FIELD);
     }
-    if (tuple1.size() != tuple2.size()) {
-      return false;
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+
+      val observationId = randomUUID().toString(); // Sub-optimal but approved by Bob for the time being
+      functionCall
+          .getOutputCollector()
+          .add(new Tuple(observationId));
     }
-    for (int i = 0; i < tuple1.size(); i++) {
-      Object object1 = tuple1.getObject(i);
-      Object object2 = tuple2.getObject(i);
-      if ((object1 == null && object2 != null) ||
-          (object1 != null && object2 == null) ||
-          (object1 != null && object2 != null && !object1.equals(object2))) {
-        return false;
-      }
-    }
-    return true;
   }
 }

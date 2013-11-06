@@ -17,67 +17,44 @@
  */
 package org.icgc.dcc.submission.normalization.steps;
 
-import static cascading.tuple.Fields.ALL;
-import static java.util.UUID.randomUUID;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_PRIMARY_KEY;
-import lombok.val;
+import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
 
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import java.util.Iterator;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.junit.Test;
+
 import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-/**
- * TODO
- */
-public final class PrimaryKeyGeneration implements NormalizationStep {
+public class MutationRebuildingTest {
 
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "pk";
+  @Test
+  public void test_cascading_MutationRebuilder() {
+    Function<?> function = new MutationRebuilding.MutationRebuilder();
 
-  @Override
-  public String shortName() {
-    return SHORT_NAME;
+    Fields inputFields =
+        new Fields("f1", "f2")
+            .append(MutationRebuilding.MUTATED_FROM_ALLELE_FIELD)
+            .append(MutationRebuilding.MUTATED_TO_ALLELE_FIELD);
+
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "C")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C"))
+    };
+    Fields resultFields = MutationRebuilding.MUTATION_FIELD;
+
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("A>G"),
+        new Tuple("A>C"),
+        new Tuple("T>C")
+    };
+
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    checkOperationResults(iterator, resultTuples);
   }
-
-  @Override
-  public Pipe extend(Pipe pipe) {
-
-    /**
-     * TODO
-     */
-    final class PrimaryKeyGenerator extends BaseOperation<Void> implements Function<Void> {
-
-      private PrimaryKeyGenerator() {
-        super(new Fields(NORMALIZER_PRIMARY_KEY));
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        val primaryKey = randomUUID(); // Sub-optimal but approved by Bob for the time being
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(primaryKey));
-      }
-    }
-
-    return new Each(
-        pipe,
-        ALL,
-        new PrimaryKeyGenerator(),
-        ALL);
-  }
-
 }

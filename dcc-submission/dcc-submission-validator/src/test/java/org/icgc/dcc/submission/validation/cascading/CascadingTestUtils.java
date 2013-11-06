@@ -15,66 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading;
+package org.icgc.dcc.submission.validation.cascading;
 
-import java.util.ArrayList;
-import java.util.List;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.hadoop.cascading.Tuples2.sameContent;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.Iterator;
+
+import cascading.CascadingTestCase;
+import cascading.operation.Buffer;
+import cascading.operation.Function;
+import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-/**
- * Utility class to help with the {@link Tuple} object from cascading.
- */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Tuples2 {
+public class CascadingTestUtils {
 
-  /**
-   * Nests a tuple within a tuple.
-   */
-  public static Tuple nestTuple(Tuple tuple) {
-    Tuple nestedTuple = new Tuple();
-    nestedTuple.add(tuple);
-
-    return nestedTuple;
+  public static Iterator<TupleEntry> invokeFunction(Function<?> function, TupleEntry[] entries, Fields resultFields) {
+    return CascadingTestCase
+        .invokeFunction(
+            function,
+            entries,
+            resultFields)
+        .entryIterator();
   }
 
-  public static boolean isNullField(Tuple tuple, int fieldIndex) {
-    return tuple.getObject(fieldIndex) == null;
+  public static Iterator<TupleEntry> invokeBuffer(Buffer<?> buffer, TupleEntry[] entries, Fields resultFields) {
+    return CascadingTestCase
+        .invokeBuffer(
+            buffer,
+            entries,
+            resultFields)
+        .entryIterator();
   }
 
-  public static List<Object> getObjects(Tuple tuple) {
-    List<Object> objects = new ArrayList<Object>();
-    for (int i = 0; i < tuple.size(); i++) {
-      objects.add(tuple.getObject(i));
+  public static void checkOperationResults(Iterator<TupleEntry> iterator, Tuple[] resultTuples) {
+    for (int i = 0; i < resultTuples.length; i++) {
+      assertThat(iterator.hasNext());
+      TupleEntry entry = iterator.next();
+      Tuple actualTuple = entry.getTuple();
+      Tuple expectedTuple = resultTuples[i];
+      assertTrue(
+          String.format("%s != %s",
+              actualTuple,
+              expectedTuple),
+          sameContent(
+              entry.getTuple(),
+              expectedTuple));
     }
-    return objects;
-  }
-
-  /**
-   * Determines whether or not 2 non-null tuples have the same content, with nulls matching nulls in terms of values.
-   * <p>
-   * This is mostly useful for tests.
-   * <p>
-   * TODO: consider handling nested tuples.
-   */
-  public static boolean sameContent(Tuple tuple1, Tuple tuple2) {
-    if (tuple1 == null || tuple2 == null) {
-      return false;
-    }
-    if (tuple1.size() != tuple2.size()) {
-      return false;
-    }
-    for (int i = 0; i < tuple1.size(); i++) {
-      Object object1 = tuple1.getObject(i);
-      Object object2 = tuple2.getObject(i);
-      if ((object1 == null && object2 != null) ||
-          (object1 != null && object2 == null) ||
-          (object1 != null && object2 != null && !object1.equals(object2))) {
-        return false;
-      }
-    }
-    return true;
+    assertFalse(iterator.hasNext());
   }
 }

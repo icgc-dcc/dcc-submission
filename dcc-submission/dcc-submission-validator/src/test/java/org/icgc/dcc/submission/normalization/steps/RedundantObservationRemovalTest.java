@@ -15,66 +15,38 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading;
+package org.icgc.dcc.submission.normalization.steps;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.junit.Test;
+
+import cascading.operation.Buffer;
+import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-/**
- * Utility class to help with the {@link Tuple} object from cascading.
- */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Tuples2 {
+public class RedundantObservationRemovalTest {
 
-  /**
-   * Nests a tuple within a tuple.
-   */
-  public static Tuple nestTuple(Tuple tuple) {
-    Tuple nestedTuple = new Tuple();
-    nestedTuple.add(tuple);
+  @Test
+  public void test_cascading_FilterRedundantObservationBuffer() {
+    Buffer<?> buffer = new RedundantObservationRemoval.FilterRedundantObservationBuffer();
 
-    return nestedTuple;
-  }
+    Fields inputFields = new Fields("f1", "f2");
 
-  public static boolean isNullField(Tuple tuple, int fieldIndex) {
-    return tuple.getObject(fieldIndex) == null;
-  }
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy1")),
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy2")),
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy3"))
+    };
+    Fields resultFields = inputFields;
 
-  public static List<Object> getObjects(Tuple tuple) {
-    List<Object> objects = new ArrayList<Object>();
-    for (int i = 0; i < tuple.size(); i++) {
-      objects.add(tuple.getObject(i));
-    }
-    return objects;
-  }
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("dummy", "dummy1") // Only one left
+    };
 
-  /**
-   * Determines whether or not 2 non-null tuples have the same content, with nulls matching nulls in terms of values.
-   * <p>
-   * This is mostly useful for tests.
-   * <p>
-   * TODO: consider handling nested tuples.
-   */
-  public static boolean sameContent(Tuple tuple1, Tuple tuple2) {
-    if (tuple1 == null || tuple2 == null) {
-      return false;
-    }
-    if (tuple1.size() != tuple2.size()) {
-      return false;
-    }
-    for (int i = 0; i < tuple1.size(); i++) {
-      Object object1 = tuple1.getObject(i);
-      Object object2 = tuple2.getObject(i);
-      if ((object1 == null && object2 != null) ||
-          (object1 != null && object2 == null) ||
-          (object1 != null && object2 != null && !object1.equals(object2))) {
-        return false;
-      }
-    }
-    return true;
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeBuffer(buffer, entries, resultFields);
+    CascadingTestUtils.checkOperationResults(iterator, resultTuples);
   }
 }

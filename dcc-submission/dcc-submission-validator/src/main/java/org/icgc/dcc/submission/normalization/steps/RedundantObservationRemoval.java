@@ -44,6 +44,7 @@ import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 
@@ -92,41 +93,6 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    */
   @Override
   public Pipe extend(Pipe pipe) {
-    final class FilterRedundantObservationBuffer extends BaseOperation<Void> implements Buffer<Void> {
-
-      private FilterRedundantObservationBuffer() {
-        super(ARGS);
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          BufferCall<Void> bufferCall) {
-
-        val group = bufferCall.getGroup();
-        val tuples = bufferCall.getArgumentsIterator();
-        checkState(tuples.hasNext(), "There should always be at least one item for a given group, none for '{}'", group);
-        val first = tuples.next().getTupleCopy();
-
-        val duplicates = tuples.hasNext();
-        if (duplicates) {
-          while (tuples.hasNext()) {
-            val duplicate = tuples.next().getTuple();
-            log.info("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
-                new Object[] { first, group, duplicate });
-            flowProcess.increment(DROPPED, COUNT_INCREMENT);
-          }
-        } else {
-          log.debug("No duplicates found for '{}'", group);
-        }
-
-        bufferCall
-            .getOutputCollector()
-            .add(first);
-      }
-    }
-
     pipe =
         new GroupBy(
             pipe,
@@ -155,6 +121,42 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
 
   private Fields secondarySortFields() {
     return new Fields(secondarySortFieldName);
+  }
+
+  @VisibleForTesting
+  static final class FilterRedundantObservationBuffer extends BaseOperation<Void> implements Buffer<Void> {
+
+    @VisibleForTesting
+    FilterRedundantObservationBuffer() {
+      super(ARGS);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        BufferCall<Void> bufferCall) {
+
+      val group = bufferCall.getGroup();
+      val tuples = bufferCall.getArgumentsIterator();
+      checkState(tuples.hasNext(), "There should always be at least one item for a given group, none for '{}'", group);
+      val first = tuples.next().getTupleCopy();
+
+      val duplicates = tuples.hasNext();
+      if (duplicates) {
+        while (tuples.hasNext()) {
+          val duplicate = tuples.next().getTuple();
+          log.info("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
+              new Object[] { first, group, duplicate });
+          flowProcess.increment(DROPPED, COUNT_INCREMENT);
+        }
+      } else {
+        log.debug("No duplicates found for '{}'", group);
+      }
+
+      bufferCall
+          .getOutputCollector()
+          .add(first);
+    }
   }
 
 }

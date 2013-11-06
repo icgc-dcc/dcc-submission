@@ -68,7 +68,10 @@ public final class FieldNames {
   @NoArgsConstructor(access = PRIVATE)
   public static class NormalizerFieldNames {
 
-    public static final String NORMALIZER_PRIMARY_KEY = "primary_key";
+    /**
+     * Field to act as primary key between primary and secondary files.
+     */
+    public static final String NORMALIZER_OBSERVATION_ID = "observation_id";
     public static final String NORMALIZER_MASKING = "masking";
 
     /**

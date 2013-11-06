@@ -21,7 +21,6 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MASKING;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CONTROL_GENOTYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
@@ -56,6 +55,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 
 /**
@@ -64,6 +64,12 @@ import com.typesafe.config.Config;
 @Slf4j
 @RequiredArgsConstructor
 public final class AlleleMasking implements NormalizationStep, OptionalStep, ConfigurableStep {
+
+  static final Fields REFERENCE_GENOME_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
+  static final Fields CONTROL_GENOTYPE_FIELD = new Fields(SUBMISSION_OBSERVATION_CONTROL_GENOTYPE);
+  static final Fields TUMOUR_GENOTYPE_FIELD = new Fields(SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE);
+  static final Fields MUTATED_FROM_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
+  static final Fields MUTATED_TO_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
 
   private final Config config;
 
@@ -100,136 +106,10 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
   @Override
   public Pipe extend(Pipe pipe) {
 
-    /**
-     * TODO expects flag already
-     */
-    final class SensitiveRowMarker extends BaseOperation<Void> implements Function<Void> {
-
-      private SensitiveRowMarker() {
-        super(ARGS);
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        val entry = functionCall.getArguments();
-
-        {
-          val existingMasking = entry.getObject(Masking.NORMALIZER_MASKING_FIELD);
-          checkState(
-              existingMasking instanceof Masking
-                  && (Masking) existingMasking == OPEN,
-              "Masking flag is expected to have been set to '{}' already", OPEN);
-        }
-
-        val referenceGenomeAllele = entry.getString(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
-        val mutatedFromAllele = entry.getString(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
-
-        final Masking masking;
-        if (isSensitive(
-            referenceGenomeAllele,
-            mutatedFromAllele)) {
-          log.info("Marking sensitive row: '{}'", entry); // Should be rare enough
-          masking = CONTROLLED;
-
-          flowProcess.increment(MARKED_AS_CONTROLLED, COUNT_INCREMENT);
-        } else {
-          log.debug("Marking open-access row: '{}'", entry);
-          masking = OPEN;
-        }
-
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(referenceGenomeAllele, mutatedFromAllele, masking));
-      }
-
-      private boolean isSensitive(String referenceGenomeAllele, String mutatedFromAllele) {
-        return !referenceGenomeAllele.equals(mutatedFromAllele);
-      }
-
-    }
-
-    /**
-     * TODO
-     */
-    final class MaskedRowGenerator extends BaseOperation<Void> implements Function<Void> {
-
-      private MaskedRowGenerator() {
-        super(ARGS);
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        val entry = functionCall.getArguments();
-
-        functionCall
-            .getOutputCollector()
-            .add(entry.getTupleCopy());
-
-        // Create masked counterpart if sensitive and mask is non trivial (see
-        // https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component?focusedCommentId=53182773#comment-53182773)
-        if (getMaskingState(entry) == CONTROLLED) {
-          val referenceGenomeAllele = entry.getString(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
-          val mutatedToAllele = entry.getString(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
-          if (!isTrivialMaskedMutation(
-              referenceGenomeAllele,
-              mutatedToAllele)) {
-            log.info("Creating mask for '{}'", entry); // Rare enough that we can log
-            val mask = mask(
-                TupleEntries.clone(entry),
-                referenceGenomeAllele);
-
-            log.info("Resulting mask for '{}': '{}'", entry, mask); // Rare enough that we can log
-            functionCall
-                .getOutputCollector()
-                .add(mask);
-
-            flowProcess.increment(MASKED, COUNT_INCREMENT);
-          } else {
-            log.info("Skipping trivial mask for '{}'", entry); // Rare enough that we can log
-          }
-        }
-      }
-
-      /**
-       * 
-       */
-      private Tuple mask(TupleEntry copy, String referenceGenomeAllele) {
-        copy.set(NORMALIZER_MASKING, MASKED);
-        copy.set(SUBMISSION_OBSERVATION_CONTROL_GENOTYPE, NO_VALUE);
-        copy.set(SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE, NO_VALUE);
-        copy.setString(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE, referenceGenomeAllele);
-        return copy.getTuple();
-      }
-
-      /**
-       * Returns the value for masking as set by the previous step.
-       */
-      private Masking getMaskingState(TupleEntry entry) {
-        String maskingString = entry.getString(NORMALIZER_MASKING);
-        return Masking.valueOf(maskingString);
-      }
-
-      /**
-       * We don't want to create a masked copy that would be result in a mutation like 'A>A' (useless).
-       */
-      private boolean isTrivialMaskedMutation(String referenceGenomeAllele, String mutatedToAllele) {
-        return referenceGenomeAllele.equals(mutatedToAllele);
-      }
-    }
-
     {
       Fields argumentSelector =
-          new Fields(
-              SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
-              SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE)
+          REFERENCE_GENOME_ALLELE_FIELD
+              .append(MUTATED_FROM_ALLELE_FIELD)
               .append(NORMALIZER_MASKING_FIELD);
       pipe =
           new Each(
@@ -253,5 +133,131 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
   private boolean isMarkOnly() {
     String configuredMode = getParameterValue(ParameterType.ALLELE_MASKING_MODE);
     return AlleleMaskingMode.MARK_ONLY == AlleleMaskingMode.valueOf(configuredMode);
+  }
+
+  /**
+   * TODO expects flag already
+   */
+  @VisibleForTesting
+  static final class SensitiveRowMarker extends BaseOperation<Void> implements Function<Void> {
+
+    @VisibleForTesting
+    SensitiveRowMarker() {
+      super(ARGS);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+
+      val entry = functionCall.getArguments();
+
+      {
+        val existingMasking = entry.getObject(Masking.NORMALIZER_MASKING_FIELD);
+        checkState(
+            existingMasking instanceof Masking
+                && (Masking) existingMasking == OPEN,
+            "Masking flag is expected to have been set to '{}' already", OPEN);
+      }
+
+      val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
+      val mutatedFromAllele = entry.getString(MUTATED_FROM_ALLELE_FIELD);
+
+      final Masking masking;
+      if (isSensitive(
+          referenceGenomeAllele,
+          mutatedFromAllele)) {
+        log.info("Marking sensitive row: '{}'", entry); // Should be rare enough
+        masking = CONTROLLED;
+
+        flowProcess.increment(MARKED_AS_CONTROLLED, COUNT_INCREMENT);
+      } else {
+        log.debug("Marking open-access row: '{}'", entry);
+        masking = OPEN;
+      }
+
+      functionCall
+          .getOutputCollector()
+          .add(new Tuple(referenceGenomeAllele, mutatedFromAllele, masking));
+    }
+
+    private boolean isSensitive(String referenceGenomeAllele, String mutatedFromAllele) {
+      return !referenceGenomeAllele.equals(mutatedFromAllele);
+    }
+  }
+
+  /**
+   * 
+   */
+  @VisibleForTesting
+  static final class MaskedRowGenerator extends BaseOperation<Void> implements Function<Void> {
+
+    @VisibleForTesting
+    MaskedRowGenerator() {
+      super(ARGS);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+
+      val entry = functionCall.getArguments();
+
+      functionCall
+          .getOutputCollector()
+          .add(entry.getTupleCopy());
+
+      // Create masked counterpart if sensitive and mask is non trivial (see
+      // https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component?focusedCommentId=53182773#comment-53182773)
+      if (getMaskingState(entry) == CONTROLLED) {
+        val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
+        val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
+        if (!isTrivialMaskedMutation(
+            referenceGenomeAllele,
+            mutatedToAllele)) {
+          log.info("Creating mask for '{}'", entry); // Rare enough that we can log
+          val mask = mask(
+              TupleEntries.clone(entry),
+              referenceGenomeAllele);
+
+          log.info("Resulting mask for '{}': '{}'", entry, mask); // Rare enough that we can log
+          functionCall
+              .getOutputCollector()
+              .add(mask);
+
+          flowProcess.increment(MASKED, COUNT_INCREMENT);
+        } else {
+          log.info("Skipping trivial mask for '{}'", entry); // Rare enough that we can log
+        }
+      }
+    }
+
+    /**
+     * 
+     */
+    private Tuple mask(TupleEntry copy, String referenceGenomeAllele) {
+      copy.set(NORMALIZER_MASKING_FIELD, Masking.MASKED);
+      copy.set(CONTROL_GENOTYPE_FIELD, NO_VALUE);
+      copy.set(TUMOUR_GENOTYPE_FIELD, NO_VALUE);
+      copy.setString(MUTATED_FROM_ALLELE_FIELD, referenceGenomeAllele);
+      return copy.getTuple();
+    }
+
+    /**
+     * Returns the value for masking as set by the previous step.
+     */
+    private Masking getMaskingState(TupleEntry entry) {
+      String maskingString = entry.getString(NORMALIZER_MASKING_FIELD);
+      return Masking.valueOf(maskingString);
+    }
+
+    /**
+     * We don't want to create a masked copy that would be result in a mutation like 'A>A' (useless).
+     */
+    private boolean isTrivialMaskedMutation(String referenceGenomeAllele, String mutatedToAllele) {
+      return referenceGenomeAllele.equals(mutatedToAllele);
+    }
   }
 }
