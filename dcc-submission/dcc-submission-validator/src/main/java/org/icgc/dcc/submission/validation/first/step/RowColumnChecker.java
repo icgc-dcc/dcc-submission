@@ -48,13 +48,14 @@ public class RowColumnChecker extends CompositeRowChecker {
         expectedNumColumns,
         actualNumColumns)) {
 
-      log.debug("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
-          + actualNumColumns);
+      log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
+          + actualNumColumns + " at line " + lineNumber);
 
       incrementCheckErrorCount();
       getValidationContext().reportError(
           filename,
           lineNumber,
+          actualNumColumns,
           STRUCTURALLY_INVALID_ROW_ERROR,
           expectedNumColumns);
     }
