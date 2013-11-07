@@ -18,24 +18,28 @@
 package org.icgc.dcc.submission.normalization;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Files.readLines;
+import static java.lang.String.format;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.normalization.NormalizationValidator.COMPONENT_NAME;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.List;
 import java.util.UUID;
 
 import lombok.SneakyThrows;
 
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGenerationTest;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,12 +49,26 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import cascading.flow.local.LocalFlowConnector;
+import cascading.scheme.local.TextDelimited;
+import cascading.tap.Tap;
+import cascading.tap.local.FileTap;
+
 import com.google.common.base.Optional;
+import com.google.common.io.Resources;
 import com.typesafe.config.Config;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ PrimaryKeyGeneration.class })
+@PrepareForTest({ PrimaryKeyGeneration.class, DccFileSystem2.class })
 public class NormalizationValidatorTest {
+
+  private static final String OUTPUT_FILE_NAME = "output.tsv";
+
+  private static final String INPUT_FILE =
+      Resources.getResource(format("fixtures/validation/%s/input.tsv", COMPONENT_NAME)).getFile();
+  private static final String REFERENCE_FILE =
+      Resources.getResource(format("fixtures/validation/%s/reference.tsv", COMPONENT_NAME)).getFile();
+  private static final String OUTPUT_FILE = format("/tmp/dcc_root_dir/%s/%s", COMPONENT_NAME, OUTPUT_FILE_NAME);
 
   @Mock
   private ValidationContext mockValidationContext;
@@ -59,18 +77,26 @@ public class NormalizationValidatorTest {
   private SubmissionDirectory mockSubmissionDirectory;
 
   @Mock
+  private PlatformStrategy mockPlatformStrategy;
+
+  @Mock
+  private Release mockRelease;
+
+  @Mock
   private Dictionary mockDictionary;
 
   @Mock
   private FileSchema mockFileSchema;
 
   @Mock
-  Config config;
+  Config mockConfig;
 
   @Before
   public void setUp() {
-    when(config.hasPath(Mockito.anyString()))
+    when(mockConfig.hasPath(Mockito.anyString()))
         .thenReturn(false);
+    when(mockRelease.getName())
+        .thenReturn("dummy_release");
     when(mockFileSchema.getFieldNames())
         .thenReturn(
             newArrayList(
@@ -84,13 +110,28 @@ public class NormalizationValidatorTest {
         .thenReturn(
             Optional.<FileSchema> of(mockFileSchema));
     when(mockSubmissionDirectory.getFile(Mockito.anyString()))
-        .thenReturn(Optional.<String> of("deleteme"));
+        .thenReturn(Optional.<String> of("output.tsv"));
+
+    mockSourceTap();
+    when(mockPlatformStrategy.getFlowConnector())
+        .thenReturn(new LocalFlowConnector());
+
     when(mockValidationContext.getDictionary())
         .thenReturn(mockDictionary);
     when(mockValidationContext.getSubmissionDirectory())
         .thenReturn(mockSubmissionDirectory);
+    when(mockValidationContext.getRelease())
+        .thenReturn(mockRelease);
     when(mockValidationContext.getProjectKey())
         .thenReturn("dummy_project");
+    when(mockValidationContext.getPlatformStrategy())
+        .thenReturn(mockPlatformStrategy);
+
+    PowerMockito.mockStatic(DccFileSystem2.class); // Won't be needed after DCC-1876
+    PowerMockito.when(DccFileSystem2.usesHadoop(Mockito.any(Config.class))).thenReturn(false);
+    mockOutputTap();
+    PowerMockito.when(DccFileSystem2.getNormalizationOutput(Mockito.anyString(), Mockito.anyString()))
+        .thenReturn(OUTPUT_FILE);
 
     mockUUID();
   }
@@ -98,27 +139,16 @@ public class NormalizationValidatorTest {
   @SneakyThrows
   @Test
   public void test_normalize() {
-    new File("/tmp/deleteme").delete(); // TODO: improve
+    new File(OUTPUT_FILE).delete();
 
     NormalizationValidator
-        .getDefaultInstance(config)
+        .getDefaultInstance(mockConfig)
         .validate(mockValidationContext);
 
-    List<String> result = readLines(new File("/tmp/deleteme"), UTF_8); // TODO: improve
-    List<String> ref = readLines(new File("/home/tony/git/git0/data-submission/ref"), UTF_8); // TODO: improve
-    int refSize = ref.size();
-    int resultSize = result.size();
-
-    checkState(resultSize == refSize, resultSize + ", " + refSize);
-    for (int i = 0; i < refSize; i++) {
-      String resultLine = removeRandomUUID(result.get(i));
-      String refLine = removeRandomUUID(ref.get(i));
-      checkState(resultLine.equals(refLine), "\n\t" + resultLine + "\n\t" + refLine);
-    }
-  }
-
-  private String removeRandomUUID(String row) {
-    return row;// .replaceAll("\t[^\t]*$", ""); // TODO: improve
+    assertThat(readLines(new File(OUTPUT_FILE), UTF_8))
+        .isEqualTo(
+            readLines(new File(REFERENCE_FILE), UTF_8)
+        );
   }
 
   /**
@@ -140,6 +170,40 @@ public class NormalizationValidatorTest {
 
     PowerMockito.when(UUID.randomUUID())
         .thenReturn(mockUuid);
+  }
+
+  // ===========================================================================
+
+  // TODO: Shouldn't have to do that
+  @SuppressWarnings("unchecked")
+  private void mockSourceTap() {
+    when(mockPlatformStrategy.getSourceTap(mockFileSchema))
+        .thenReturn(getInputTap());
+  }
+
+  // TODO: Shouldn't have to do that
+  @SuppressWarnings("rawtypes")
+  private Tap getInputTap() {
+    return new FileTap(
+        new TextDelimited(
+            true,
+            PlatformStrategy.FIELD_SEPARATOR),
+        INPUT_FILE);
+  }
+
+  // TODO: Shouldn't have to do that
+  @SuppressWarnings("unchecked")
+  private void mockOutputTap() {
+    PowerMockito.when(
+        DccFileSystem2.getNormalizationOutputTap(
+            Mockito.any(Config.class), Mockito.anyString(), Mockito.anyString()))
+        .thenReturn(getOutputTap());
+  }
+
+  // TODO: Shouldn't have to do that
+  @SuppressWarnings("rawtypes")
+  private Tap getOutputTap() {
+    return new FileTap(new TextDelimited(true, "\t"), "/tmp/dcc_root_dir/normalizer/output.tsv");
   }
 
 }

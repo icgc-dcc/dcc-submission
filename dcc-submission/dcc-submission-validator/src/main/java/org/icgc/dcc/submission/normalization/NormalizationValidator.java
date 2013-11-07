@@ -24,12 +24,22 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.hadoop.fs.DccFileSystem2.getNormalizationOutputTap;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_FILTERED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
+import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
@@ -44,15 +54,13 @@ import org.icgc.dcc.submission.normalization.steps.hacks.HackFieldDiscarding;
 import org.icgc.dcc.submission.normalization.steps.hacks.HackNewFieldsSynthesis;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.flow.Flow;
-import cascading.flow.FlowDef;
-import cascading.flow.local.LocalFlowConnector;
 import cascading.pipe.Pipe;
-import cascading.scheme.local.TextDelimited;
-import cascading.tap.local.FileTap;
+import cascading.tap.Tap;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -65,17 +73,17 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor(access = PRIVATE)
 public final class NormalizationValidator implements Validator {
 
-  private static final String COMPONENT_NAME = NormalizationValidator.class.getSimpleName();
-
-  private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
-  private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
-  private static final String START_PIPE_NAME = format("%s-start", COMPONENT_NAME);
-  private static final String END_PIPE_NAME = format("%s-end", COMPONENT_NAME);
+  public static final String COMPONENT_NAME = "normalizer";
 
   /**
    * 
    */
   private static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
+
+  private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
+  private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
+  private static final String START_PIPE_NAME = format("%s-start", COMPONENT_NAME);
+  private static final String END_PIPE_NAME = format("%s-end", COMPONENT_NAME);
 
   /**
    * Subset...TODO
@@ -117,37 +125,50 @@ public final class NormalizationValidator implements Validator {
   }
 
   @Override
-  public String getName() {
-    return COMPONENT_NAME;
-  }
-
-  @Override
   public void validate(ValidationContext validationContext) {
-    val ssmPFile = grabSubmissionFile(FOCUS_TYPE, validationContext);
+    val optional = grabSubmissionFile(FOCUS_TYPE, validationContext);
 
-    if (ssmPFile.isPresent()) {
-      log.info("Starting normalization for {} file: '{}'", FOCUS_TYPE, ssmPFile.get());
-      normalize(validationContext);
-      log.info("Finished normalization for {} file: '{}'", FOCUS_TYPE, ssmPFile.get());
+    if (optional.isPresent()) {
+      String ssmPFile = optional.get();
+      log.info("Starting normalization for {} file: '{}'", FOCUS_TYPE, ssmPFile);
+      normalize(ssmPFile, validationContext);
+      log.info("Finished normalization for {} file: '{}'", FOCUS_TYPE, ssmPFile);
     } else {
       log.info(
           "Skipping normalization for {}, no matching file in submission: '{}'",
-          new Object[] { FOCUS_TYPE, ssmPFile.get(), validationContext.getSubmissionDirectory().listFile() });
+          new Object[] { FOCUS_TYPE, optional.get(), validationContext.getSubmissionDirectory().listFile() });
     }
   }
 
   /**
    * 
    */
-  private void normalize(ValidationContext validationContext) {
+  private void normalize(String fileName, ValidationContext validationContext) {
+
+    // Plan cascade
     val pipes = planCascade(
         DefaultNormalizationContext.getNormalizationContext(
             validationContext.getDictionary(),
             FOCUS_TYPE));
-    val connected = connectCascade(pipes);
-    connected.completeCascade();
-    report(connected, validationContext);
-    sanityChecks(connected);
+
+    // Connect cascade
+    val connectedCascade = connectCascade(
+        pipes,
+        validationContext.getPlatformStrategy(),
+        getFileSchema(
+            validationContext.getDictionary(),
+            FOCUS_TYPE),
+        validationContext.getRelease().getName(),
+        validationContext.getProjectKey());
+
+    // Run cascade synchronously
+    connectedCascade.completeCascade();
+
+    // Perform sanity check on counters
+    performSanityChecks(connectedCascade);
+
+    // Report results
+    report(fileName, connectedCascade, validationContext);
   }
 
   /**
@@ -173,21 +194,26 @@ public final class NormalizationValidator implements Validator {
   /**
    * 
    */
-  private ConnectedCascade connectCascade(Pipes pipes) {
-    FlowDef flowDef =
+  private ConnectedCascade connectCascade(
+      Pipes pipes,
+      PlatformStrategy platformStrategy, FileSchema fileSchema,
+      String releaseName, String projectKey) {
+
+    val flowDef =
         flowDef()
             .setName(FLOW_NAME)
             .addSource(
                 pipes.getStartPipe(),
-                inputTap())
+                getInputTap(platformStrategy, fileSchema))
             .addTailSink(
                 pipes.getEndPipe(),
-                outputTap());
+                getOutputTap(releaseName, projectKey));
 
-    Flow<?> flow = new LocalFlowConnector() // FIXME
+    Flow<?> flow = platformStrategy
+        .getFlowConnector()
         .connect(flowDef);
 
-    Cascade cascade = new CascadeConnector()
+    val cascade = new CascadeConnector()
         .connect(
         cascadeDef()
             .setName(CASCADE_NAME)
@@ -197,32 +223,30 @@ public final class NormalizationValidator implements Validator {
   }
 
   /**
-   * 
+   * Well-formedness validation has already ensured that we have a properly formatted TSV file.
    */
-  private void report(ConnectedCascade connectedCascade, ValidationContext validationContext) {
-    validationContext
-        .reportNormalization(
-            "ssm__p.txt",
-            NormalizationReport
-                .builder()
-                .projectKey(
-                    validationContext.getProjectKey())
-                .counters(
-                    NormalizationCounter.report(connectedCascade))
-                .build());
+  private Tap<?, ?, ?> getInputTap(PlatformStrategy platformStrategy, FileSchema fileSchema) {
+    return platformStrategy.getSourceTap(fileSchema);
   }
 
   /**
    * 
    */
-  private void sanityChecks(ConnectedCascade connectedCascade) {
-    long totalEnd = connectedCascade.getCounterValue(NormalizationCounter.TOTAL_END);
-    long totalStart = connectedCascade.getCounterValue(NormalizationCounter.TOTAL_START);
-    long masked = connectedCascade.getCounterValue(NormalizationCounter.MASKED);
-    long markedAsControlled = connectedCascade.getCounterValue(NormalizationCounter.MARKED_AS_CONTROLLED);
-    long dropped = connectedCascade.getCounterValue(NormalizationCounter.DROPPED);
-    long uniqueStart = connectedCascade.getCounterValue(NormalizationCounter.UNIQUE_START);
-    long uniqueFiltered = connectedCascade.getCounterValue(NormalizationCounter.UNIQUE_FILTERED);
+  private Tap<?, ?, ?> getOutputTap(String releaseName, String projectKey) {
+    return getNormalizationOutputTap(config, releaseName, projectKey);
+  }
+
+  /**
+   * 
+   */
+  private void performSanityChecks(ConnectedCascade connectedCascade) {
+    long totalEnd = connectedCascade.getCounterValue(TOTAL_END);
+    long totalStart = connectedCascade.getCounterValue(TOTAL_START);
+    long masked = connectedCascade.getCounterValue(MASKED);
+    long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
+    long dropped = connectedCascade.getCounterValue(DROPPED);
+    long uniqueStart = connectedCascade.getCounterValue(UNIQUE_START);
+    long uniqueFiltered = connectedCascade.getCounterValue(UNIQUE_FILTERED);
 
     checkState(
         totalEnd == (totalStart + masked - dropped),
@@ -243,18 +267,19 @@ public final class NormalizationValidator implements Validator {
   }
 
   /**
-   * Well-formedness validation has already ensured that we have a properly formatted TSV file.
-   */
-  private FileTap inputTap() {
-    return new FileTap(new TextDelimited(true, "\t"), "/home/tony/git/git0/data-submission/input"); // TODO: actually
-                                                                                                    // plug platform
-  }
-
-  /**
    * 
    */
-  private FileTap outputTap() {
-    return new FileTap(new TextDelimited(true, "\t"), "/tmp/deleteme"); // TODO: actually plug platform
+  private void report(String fileName, ConnectedCascade connectedCascade, ValidationContext validationContext) {
+    validationContext
+        .reportNormalization(
+            fileName,
+            NormalizationReport
+                .builder()
+                .projectKey(
+                    validationContext.getProjectKey())
+                .counters(
+                    NormalizationCounter.report(connectedCascade))
+                .build());
   }
 
   /**
@@ -275,6 +300,11 @@ public final class NormalizationValidator implements Validator {
             validationContext
                 .getDictionary()
                 .getFilePattern(type));
+  }
+
+  @Override
+  public String getName() {
+    return COMPONENT_NAME;
   }
 
   @Value

@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -64,6 +65,9 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
   }
 
+  /**
+   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}.
+   */
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     try {
@@ -101,6 +105,9 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     return new Path(output, String.format("%s.%s%s%s.json", schema.getName(), type, FILE_NAME_SEPARATOR, reportName));
   }
 
+  /**
+   * Returns a tap for the given path.
+   */
   protected abstract Tap<?, ?, ?> tap(Path path);
 
   protected abstract Tap<?, ?, ?> tap(Path path, Fields fields);
