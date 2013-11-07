@@ -86,16 +86,20 @@ public class ReferenceGenomeValidator implements Validator {
    */
   @SneakyThrows
   public void ensureDownload() {
+    log.info("Checking if '{}' and '{}' exist", LOCAL_DATA_FILE, LOCAL_INDEX_FILE);
     val downloaded = new File(LOCAL_DATA_FILE).exists() && new File(LOCAL_INDEX_FILE).exists();
     if (downloaded) {
+      log.info("Files exist");
       sequenceFile = new IndexedFastaSequenceFile(new File(LOCAL_DATA_FILE));
 
       return;
     }
 
+    log.warn("Missing '{}' and / or '{}'", LOCAL_INDEX_FILE, LOCAL_DATA_FILE);
     download(REFERENCE_GENOME_INDEX_URL, LOCAL_INDEX_FILE, false);
     download(REFERENCE_GENOME_DATA_URL, LOCAL_DATA_FILE, true);
 
+    log.info("Download successful");
     sequenceFile = new IndexedFastaSequenceFile(new File(LOCAL_DATA_FILE));
   }
 
@@ -106,30 +110,38 @@ public class ReferenceGenomeValidator implements Validator {
   @SneakyThrows
   @Override
   public void validate(ValidationContext context) {
+    log.info("Starting...");
     ensureDownload();
 
+    // This validation is only applicable if ssm_p is available
     Optional<Path> optionalSsmPrimaryFile = context.getSsmPrimaryFile();
     if (!optionalSsmPrimaryFile.isPresent()) {
       log.info("No ssm_p file for '{}'", context.getProjectKey());
     }
 
+    // Create a streaming reader
     val ssmPrimaryFile = optionalSsmPrimaryFile.get();
     val reader = getLineReader(ssmPrimaryFile, context.getFileSystem());
 
+    // Get to work
     log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
     validate(context, ssmPrimaryFile.getName(), reader);
     log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
+    log.info("Finished");
   }
 
-  private void validate(ReportContext context, String fileName, LineReader reader)
-      throws IOException {
-    long lineNumber = 1;
+  private void validate(ReportContext context, String fileName, LineReader reader) throws IOException {
+    // Field indexes
     int chromosomeIdx = -1;
     int startIdx = -1;
     int endIdx = -1;
     int referenceAlleleIdx = -1;
+
+    // Line state (one-based)
+    long lineNumber = 1;
     String line;
 
+    // Read all lines
     while ((line = reader.readLine()) != null) {
       val fields = parseLine(line);
 
@@ -142,11 +154,16 @@ public class ReferenceGenomeValidator implements Validator {
       } else {
         val start = fields.get(startIdx);
         val end = fields.get(endIdx);
+
+        // FIXME: This needs to be converted from CodeList "code" to "value", which means this class needs at least the
+        // CodeList to be injected, by using the context
         val chromosome = fields.get(chromosomeIdx);
+
         val referenceAllele = fields.get(referenceAlleleIdx);
         val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
 
-        if (!isMatch(referenceAllele, referenceSequence)) {
+        boolean mismatch = !isMatch(referenceAllele, referenceSequence);
+        if (mismatch) {
           context.reportError(
               fileName,
               lineNumber,
@@ -159,8 +176,10 @@ public class ReferenceGenomeValidator implements Validator {
         }
       }
 
+      // Cooperate
       checkState(getName());
 
+      // Book-keeping
       lineNumber++;
     }
   }
@@ -181,12 +200,12 @@ public class ReferenceGenomeValidator implements Validator {
 
   @SneakyThrows
   private static void download(String source, String target, boolean compressed) {
+    log.info("Downloading '{}' to '{}'...", source, target);
     @Cleanup
     val inputStream = new BufferedInputStream(createUrlStream(source, compressed));
     @Cleanup
     val outputStream = new FileOutputStream(target);
 
-    log.info("Downloading '{}' to '{}'...", source, target);
     copy(inputStream, outputStream);
     log.info("Finished downloading '{}' to '{}'", source, target);
   }
