@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.normalization.steps.hacks;
 
 import static cascading.tuple.Fields.ALL;
 
+import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
 import cascading.flow.FlowProcess;
@@ -50,7 +51,7 @@ public class HackNewFieldsSynthesis implements NormalizationStep {
   }
 
   @Override
-  public Pipe extend(Pipe pipe) {
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
 
     final class NewFieldsFakerFunction extends BaseOperation<Void> implements Function<Void> {
 
@@ -60,8 +61,7 @@ public class HackNewFieldsSynthesis implements NormalizationStep {
 
       @Override
       public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
           FunctionCall<Void> functionCall) {
 
         TupleEntry entry = functionCall.getArguments();

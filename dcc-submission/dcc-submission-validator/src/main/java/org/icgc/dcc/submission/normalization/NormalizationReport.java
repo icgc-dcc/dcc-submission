@@ -17,11 +17,37 @@
  */
 package org.icgc.dcc.submission.normalization;
 
+import lombok.Value;
+import lombok.val;
+import lombok.experimental.Builder;
+
+import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
+
+import com.google.common.collect.ImmutableMap;
+
 /**
  * 
  */
-public enum NormalizationCounter {
-  TOTAL_START, TOTAL_END, UNIQUE_START, UNIQUE_FILTERED, DROPPED, MARKED_AS_CONTROLLED, MASKED;
+@Builder
+@Value
+public final class NormalizationReport {
 
-  public static final long COUNT_INCREMENT = 1;
+  private final String projectKey;
+  private final ImmutableMap<NormalizationCounter, Long> counters;
+
+  public enum NormalizationCounter {
+    TOTAL_START, TOTAL_END, UNIQUE_START, UNIQUE_FILTERED, DROPPED, MARKED_AS_CONTROLLED, MASKED;
+
+    public static final long COUNT_INCREMENT = 1;
+
+    static ImmutableMap<NormalizationCounter, Long> report(ConnectedCascade connected) {
+      val counters = new ImmutableMap.Builder<NormalizationCounter, Long>();
+      for (val counter : values()) {
+        counters.put(
+            counter,
+            connected.getCounterValue(counter));
+      }
+      return counters.build();
+    }
+  }
 }

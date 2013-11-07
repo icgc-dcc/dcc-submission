@@ -21,16 +21,22 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.DROPPED;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.UNIQUE_FILTERED;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch.ENABLED;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.normalization.NormalizationContext;
+import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
 import org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch;
@@ -55,16 +61,29 @@ import com.typesafe.config.Config;
 @Slf4j
 public final class RedundantObservationRemoval implements NormalizationStep, OptionalStep {
 
-  /**
-   * The list of field names on which the GROUP BY should take place, and that will allow detecting duplicate
-   * observations.
-   */
-  private final ImmutableList<String> group;
+  private static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
 
   /**
    * Name of the field on which to perform the secondary sort.
    */
   private final String secondarySortFieldName;
+
+  /**
+   * 
+   */
+  public static ImmutableList<String> getObservationUniqueFields(Dictionary dictionary, SubmissionFileType type) {
+    val optional = dictionary.getFileSchema(type);
+    checkState(optional.isPresent(), "TODO");
+    FileSchema ssmP = optional.get();
+
+    val observationUniqueFields = newArrayList(
+        ssmP.getFieldNames());
+    observationUniqueFields.remove(
+        getFieldName(ANALYSIS_ID_FIELD));
+    observationUniqueFields.remove("mutation"); // Hack
+
+    return ImmutableList.<String> copyOf(observationUniqueFields);
+  }
 
   @Override
   public String shortName() {
@@ -92,11 +111,11 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    * them.
    */
   @Override
-  public Pipe extend(Pipe pipe) {
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
     pipe =
         new GroupBy(
             pipe,
-            groupByFields(),
+            groupByFields(context),
             secondarySortFields());
 
     pipe = new Every(
@@ -108,15 +127,19 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
     pipe = new CountUnique( // Will leave the pipe unaltered
         pipe,
         shortName(),
-        new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID),
-        UNIQUE_FILTERED,
+        ANALYSIS_ID_FIELD,
+        NormalizationCounter.UNIQUE_FILTERED,
         COUNT_INCREMENT);
 
     return pipe;
   }
 
-  private Fields groupByFields() {
-    return fields(group);
+  /**
+   * Returns the {@link Fields} on which the GROUP BY should take place, and that will allow detecting duplicate
+   * observations.
+   */
+  private Fields groupByFields(NormalizationContext context) {
+    return fields(context.getObservationUniqueFields());
   }
 
   private Fields secondarySortFields() {

@@ -19,9 +19,10 @@ package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.TOTAL_END;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
 
+import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
 
@@ -44,7 +45,7 @@ public class FinalCounting implements NormalizationStep {
   }
 
   @Override
-  public Pipe extend(Pipe pipe) {
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
     return new Each(
         pipe,
         ALL,

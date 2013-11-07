@@ -109,7 +109,7 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   protected FileSchema getFileSchema(String filename) {
-    val optional = getDictionary().getFileSchema(filename);
+    val optional = getDictionary().getFileSchemaByFileName(filename);
     checkState(optional.isPresent(), "At this stage, there should be a file schema matching '%s'", filename);
     return optional.get();
   }

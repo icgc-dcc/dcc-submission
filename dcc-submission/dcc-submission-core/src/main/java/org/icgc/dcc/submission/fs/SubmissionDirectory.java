@@ -34,6 +34,7 @@ import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -89,6 +90,10 @@ public class SubmissionDirectory {
         return false;
       }
     });
+  }
+
+  public Optional<String> getFile(String filePattern) {
+    return null;
   }
 
   public String addFile(String filename, InputStream data) {

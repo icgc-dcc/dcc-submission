@@ -22,6 +22,7 @@ import static java.util.UUID.randomUUID;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
 import lombok.val;
 
+import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
 import cascading.flow.FlowProcess;
@@ -53,7 +54,7 @@ public final class PrimaryKeyGeneration implements NormalizationStep {
   }
 
   @Override
-  public Pipe extend(Pipe pipe) {
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
     return new Each(
         pipe,
         ALL,

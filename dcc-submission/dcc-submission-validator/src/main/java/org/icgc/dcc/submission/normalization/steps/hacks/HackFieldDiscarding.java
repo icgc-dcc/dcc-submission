@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.normalization.steps.hacks;
 
+import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
 import cascading.pipe.Pipe;
@@ -40,7 +41,7 @@ public class HackFieldDiscarding implements NormalizationStep {
   }
 
   @Override
-  public Pipe extend(Pipe pipe) {
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
     return new Discard(pipe, new Fields(fieldName));
   }
 

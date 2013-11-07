@@ -17,11 +17,13 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.NORMALIZER_CONFIG_PARAM;
 import lombok.val;
 
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.normalization.NormalizationValidator;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
@@ -151,10 +153,25 @@ public class ValidationModule extends AbstractDccModule {
     bindValidator(validators, FirstPassValidator.class);
     bindValidator(validators, ReferenceGenomeValidator.class);
     bindValidator(validators, PrimaryValidator.class);
+    bindValidator(validators, new Provider<NormalizationValidator>() {
+
+      @Inject
+      Config config;
+
+      @Override
+      public NormalizationValidator get() {
+        return NormalizationValidator.getDefaultInstance(
+            config.getConfig(NORMALIZER_CONFIG_PARAM));
+      }
+    });
   }
 
   private static void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {
     validators.addBinding().to(validator).in(Singleton.class);
+  }
+
+  private static void bindValidator(Multibinder<Validator> validators, Provider<? extends Validator> provider) {
+    validators.addBinding().toProvider(provider).in(Singleton.class);
   }
 
 }

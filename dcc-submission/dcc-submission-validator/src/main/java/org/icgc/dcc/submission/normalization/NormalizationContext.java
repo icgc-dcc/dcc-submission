@@ -17,20 +17,40 @@
  */
 package org.icgc.dcc.submission.normalization;
 
-import cascading.pipe.Pipe;
+import java.util.List;
+
+import lombok.Value;
+import lombok.experimental.Builder;
+
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * 
  */
-public interface NormalizationStep {
+public interface NormalizationContext {
 
-  /**
-   * Returns a short name for the step.
-   */
-  String shortName();
+  List<String> getObservationUniqueFields();
 
-  /**
-   * 
-   */
-  Pipe extend(Pipe pipe, NormalizationContext context);
+  @Builder
+  @Value
+  static final class DefaultNormalizationContext implements NormalizationContext {
+
+    private final ImmutableList<String> observationUniqueFields;
+
+    /**
+     * 
+     */
+    static NormalizationContext getNormalizationContext(Dictionary dictionary, SubmissionFileType type) {
+      return DefaultNormalizationContext.builder()
+          .observationUniqueFields(
+              RedundantObservationRemoval.getObservationUniqueFields(
+                  dictionary,
+                  type))
+          .build();
+    }
+  }
 }

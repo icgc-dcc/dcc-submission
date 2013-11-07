@@ -65,8 +65,8 @@ public class RowColumnCheckerTest {
     FileSchema testSchema = mock(FileSchema.class);
     String paramString = "testfile1";
     when(testSchema.getPattern()).thenReturn(paramString);
-    when(dict.fileSchema(anyString())).thenReturn(Optional.of(testSchema));
-    when(dict.getFileSchema(anyString())).thenReturn(Optional.of(testSchema));
+    when(dict.getFileSchemaByName(anyString())).thenReturn(Optional.of(testSchema));
+    when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(testSchema));
 
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
 
@@ -77,7 +77,7 @@ public class RowColumnCheckerTest {
     Field f2 = new Field();
     f2.setName("b");
     when(fileSchema.getFields()).thenReturn(ImmutableList.of(f1, f2));
-    when(dict.fileSchema(anyString())).thenReturn(option);
+    when(dict.getFileSchemaByName(anyString())).thenReturn(option);
 
     when(validationContext.getDccFileSystem()).thenReturn(fs);
     when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);

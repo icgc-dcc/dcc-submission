@@ -21,7 +21,7 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
 import static java.lang.String.format;
 
-import org.icgc.dcc.submission.normalization.NormalizationCounter;
+import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
 import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.EmitNothing;
 

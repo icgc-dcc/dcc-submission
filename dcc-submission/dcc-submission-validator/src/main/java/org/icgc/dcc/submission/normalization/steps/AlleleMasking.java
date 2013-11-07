@@ -26,9 +26,9 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.MARKED_AS_CONTROLLED;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.MASKED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.CONTROLLED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MASKING_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.Masking.OPEN;
@@ -39,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep;
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
 import org.icgc.dcc.submission.normalization.configuration.ParameterType;
@@ -104,8 +105,7 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
   }
 
   @Override
-  public Pipe extend(Pipe pipe) {
-
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
     {
       Fields argumentSelector =
           REFERENCE_GENOME_ALLELE_FIELD
