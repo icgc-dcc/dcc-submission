@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.SneakyThrows;
 
@@ -32,18 +33,23 @@ import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
+import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGenerationTest;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ PrimaryKeyGeneration.class })
 public class NormalizationValidatorTest {
 
   @Mock
@@ -85,6 +91,8 @@ public class NormalizationValidatorTest {
         .thenReturn(mockSubmissionDirectory);
     when(mockValidationContext.getProjectKey())
         .thenReturn("dummy_project");
+
+    mockUUID();
   }
 
   @SneakyThrows
@@ -110,7 +118,28 @@ public class NormalizationValidatorTest {
   }
 
   private String removeRandomUUID(String row) {
-    return row.replaceAll("\t[^\t]*$", ""); // TODO: improve
+    return row;// .replaceAll("\t[^\t]*$", ""); // TODO: improve
+  }
+
+  /**
+   * Copied from {@link PrimaryKeyGenerationTest#mockUUID()}, somehow we can't seem to be able to use it directly
+   * (probably because of powermock).
+   */
+  public void mockUUID() {
+    PowerMockito.mockStatic(UUID.class);
+    UUID mockUuid = PowerMockito.mock(UUID.class);
+    PowerMockito.when(mockUuid.toString())
+        .thenReturn("v1")
+        .thenReturn("v2")
+        .thenReturn("v3")
+        .thenReturn("v4")
+        .thenReturn("v5")
+        .thenReturn("v6")
+        .thenReturn("v7")
+        .thenReturn("v8");
+
+    PowerMockito.when(UUID.randomUUID())
+        .thenReturn(mockUuid);
   }
 
 }

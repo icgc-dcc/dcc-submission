@@ -22,6 +22,7 @@ import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.ch
 import java.util.Iterator;
 import java.util.UUID;
 
+import org.icgc.dcc.submission.normalization.NormalizationValidatorTest;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,15 +41,7 @@ public class PrimaryKeyGenerationTest {
 
   @Test
   public void test_cascading_PrimaryKeyGenerator() {
-    PowerMockito.mockStatic(UUID.class);
-    UUID mockUuid = PowerMockito.mock(UUID.class);
-    PowerMockito.when(mockUuid.toString())
-        .thenReturn("1")
-        .thenReturn("2")
-        .thenReturn("3");
-
-    PowerMockito.when(UUID.randomUUID())
-        .thenReturn(mockUuid);
+    mockUUID();
 
     Function<?> function = new PrimaryKeyGeneration.PrimaryKeyGenerator();
 
@@ -66,12 +59,28 @@ public class PrimaryKeyGenerationTest {
     Fields resultFields = PrimaryKeyGeneration.OBSERVATION_ID_FIELD;
 
     Tuple[] resultTuples = new Tuple[] {
-        new Tuple("1"),
-        new Tuple("2"),
-        new Tuple("3")
+        new Tuple("v1"),
+        new Tuple("v2"),
+        new Tuple("v3")
     };
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
     checkOperationResults(iterator, resultTuples);
+  }
+
+  /**
+   * If updating this method, also update its clone in {@link NormalizationValidatorTest#mockUUID()} (see comment on
+   * it).
+   */
+  public void mockUUID() {
+    PowerMockito.mockStatic(UUID.class);
+    UUID mockUuid = PowerMockito.mock(UUID.class);
+    PowerMockito.when(mockUuid.toString())
+        .thenReturn("v1")
+        .thenReturn("v2")
+        .thenReturn("v3");
+
+    PowerMockito.when(UUID.randomUUID())
+        .thenReturn(mockUuid);
   }
 }
