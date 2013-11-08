@@ -26,7 +26,6 @@ import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +40,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -109,8 +107,19 @@ public final class TestUtils {
     return "[" + resourceToString(resourcePath) + "]";
   }
 
+  public static CodeList getChromosomeCodeList() {
+    val targetCodeListName = "GLOBAL.0.chromosome.v1";
+    for (val codeList : codeLists()) {
+      if (targetCodeListName.equals(codeList.getName())) {
+        return codeList;
+      }
+    }
+
+    throw new IllegalStateException("Code list '" + targetCodeListName + "' is not available");
+  }
+
   @SneakyThrows
-  public static List<CodeList> codeLists() throws IOException, JsonProcessingException {
+  public static List<CodeList> codeLists() {
     Iterator<CodeList> codeLists = MAPPER.reader(CodeList.class).readValues(getDccResource("CodeList.json"));
     return newArrayList(codeLists);
   }

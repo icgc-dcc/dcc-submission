@@ -53,11 +53,11 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
-import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction.InvalidScriptException;
+import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.InvalidScriptException;
 
 import com.google.common.base.Function;
 import com.google.common.collect.HashBasedTable;

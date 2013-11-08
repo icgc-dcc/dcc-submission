@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.val;
 
@@ -132,7 +133,9 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   /**
    * TODO: phase out in favor of {@link #fileSchema(SubmissionFileType)}.
    */
-  public Optional<FileSchema> fileSchema(final String fileSchemaName) {
+  public Optional<FileSchema> fileSchema(
+      @NonNull
+      final String fileSchemaName) {
     return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
 
       @Override
@@ -140,6 +143,20 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
         return input.getName().equals(fileSchemaName);
       }
     });
+  }
+
+  /**
+   * Optionally returns a {@link FileSchema} for which the file name provided would be matching the pattern.
+   */
+  @JsonIgnore
+  public Optional<FileSchema> getFileSchema(String fileName) {
+    val optional = Optional.<FileSchema> absent();
+    for (FileSchema fileSchema : files) {
+      if (fileSchema.matches(fileName)) {
+        return Optional.of(fileSchema);
+      }
+    }
+    return optional;
   }
 
   /**
@@ -153,6 +170,22 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       @Override
       public String apply(FileSchema input) {
         return input.getName();
+      }
+    }));
+  }
+
+  /**
+   * Returns the list of {@code FileSchema} file patterns.
+   * 
+   * @return the list of {@code FileSchema} file patterns.
+   */
+  @JsonIgnore
+  public List<String> getFilePatterns() {
+    return newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
+
+      @Override
+      public String apply(FileSchema input) {
+        return input.getPattern();
       }
     }));
   }

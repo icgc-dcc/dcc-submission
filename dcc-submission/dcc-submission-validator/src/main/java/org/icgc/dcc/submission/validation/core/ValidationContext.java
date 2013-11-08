@@ -17,25 +17,82 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
-import org.icgc.dcc.submission.dictionary.model.CodeList;
+import java.util.List;
+
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.ReleaseFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import com.google.common.base.Optional;
 
 /**
- * "Encapsulated Context Object" class that insulates and decouples the validation subsystem from submission
- * abstractions.
- * 
- * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
- * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
+ * The umbilical cord to the rest of the system provided to {@link Validator}s to act as a "façade" that reduces
+ * coupling.
+ * <p>
+ * Its interface should be minimized over time as per "LoD". A context instance gets passed from a {@link Validator} in
+ * a {@link Validation} and validators are expected to call inherited {@link ReportContext} methods to add errors and
+ * statistics. In this sense, it simultaneously an "accumulating parameter".
  */
-public interface ValidationContext {
+public interface ValidationContext extends ReportContext {
 
   /**
-   * Get the {@link CodeList} with {@code name} {@code codeListName}
-   * 
-   * @param codeListName
-   * @return
+   * Gets the project key of the project under validation.
    */
-  Optional<CodeList> getCodeList(String codeListName);
+  String getProjectKey();
+
+  /**
+   * Gets the email addresses of whom to email after validation.
+   */
+  List<String> getEmails();
+
+  /**
+   * Gets the current release.
+   */
+  Release getRelease();
+
+  /**
+   * Gets the current release dictionary.
+   */
+  Dictionary getDictionary();
+
+  /**
+   * Gets the submission directory of the associated project under validation.
+   */
+  SubmissionDirectory getSubmissionDirectory();
+
+  /**
+   * Gets the optionally available SSM primary file of the associated project under validation.
+   */
+  Optional<Path> getSsmPrimaryFile();
+
+  /**
+   * Gets the root DCC filesystem.
+   */
+  DccFileSystem getDccFileSystem();
+
+  /**
+   * Gets the platform abstracted file system.
+   */
+  FileSystem getFileSystem();
+
+  /**
+   * Gets the current release file system.
+   */
+  ReleaseFileSystem getReleaseFileSystem();
+
+  /**
+   * Gets the cascading platform strategy for cascading-based {@link Validator}s.
+   */
+  PlatformStrategy getPlatformStrategy();
+
+  /**
+   * Gets the submission report of the associated project under validation.
+   */
+  SubmissionReport getSubmissionReport();
 
 }
