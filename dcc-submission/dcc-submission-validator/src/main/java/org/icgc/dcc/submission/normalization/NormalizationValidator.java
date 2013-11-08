@@ -19,18 +19,10 @@ package org.icgc.dcc.submission.normalization;
 
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
-import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_FILTERED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -173,11 +165,16 @@ public final class NormalizationValidator implements Validator {
     connectedCascade.completeCascade();
 
     // Perform sanity check on counters
-    performSanityChecks(connectedCascade);
+    NormalizationReporter.performSanityChecks(connectedCascade);
 
     // Report results
-    internalReport(connectedCascade);
-    externalReport(fileName, connectedCascade, validationContext);
+    val errors = NormalizationReporter.collectPotentialErrors(connectedCascade, fileName);
+    if (errors.isPresent()) {
+      NormalizationReporter.reportError(validationContext, errors.get());
+    } else {
+      internalStatisticsReport(connectedCascade);
+      externalStatisticsReport(fileName, connectedCascade, validationContext);
+    }
   }
 
   /**
@@ -248,37 +245,7 @@ public final class NormalizationValidator implements Validator {
   /**
    * 
    */
-  private void performSanityChecks(ConnectedCascade connectedCascade) {
-    long totalEnd = connectedCascade.getCounterValue(TOTAL_END);
-    long totalStart = connectedCascade.getCounterValue(TOTAL_START);
-    long masked = connectedCascade.getCounterValue(MASKED);
-    long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
-    long dropped = connectedCascade.getCounterValue(DROPPED);
-    long uniqueStart = connectedCascade.getCounterValue(UNIQUE_START);
-    long uniqueFiltered = connectedCascade.getCounterValue(UNIQUE_FILTERED);
-
-    checkState(
-        totalEnd == (totalStart + masked - dropped),
-        "Invalid counts encoutered: %s != (%s + %s - %s)",
-        totalEnd, totalStart, masked, dropped);
-    checkState(
-        masked <= markedAsControlled,
-        "Invalid counts encoutered: %s > %s",
-        masked, markedAsControlled);
-    checkState(
-        uniqueStart <= totalStart,
-        "Invalid counts encoutered: %s > %s",
-        uniqueStart, totalStart);
-    checkState(
-        uniqueFiltered <= uniqueStart,
-        "Invalid counts encoutered: %s > %s",
-        uniqueFiltered, uniqueStart);
-  }
-
-  /**
-   * 
-   */
-  private void internalReport(ConnectedCascade connectedCascade) {
+  private void internalStatisticsReport(ConnectedCascade connectedCascade) {
     dccFileSystem2.writeNormalizationReport(
         connectedCascade.getReleaseName(),
         connectedCascade.getProjectKey(),
@@ -288,7 +255,8 @@ public final class NormalizationValidator implements Validator {
   /**
    * 
    */
-  private void externalReport(String fileName, ConnectedCascade connectedCascade, ValidationContext validationContext) {
+  private void externalStatisticsReport(String fileName, ConnectedCascade connectedCascade,
+      ValidationContext validationContext) {
     validationContext
         .reportNormalization(
             fileName,

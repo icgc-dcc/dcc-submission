@@ -347,7 +347,22 @@ public enum ErrorType {
       checkArgument(params[0] instanceof String);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
+  },
+
+  /**
+   * TODO
+   */
+  TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR(FILE_LEVEL, "TODO") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
   };
+  ;
 
   /**
    * Metadata.
@@ -357,8 +372,7 @@ public enum ErrorType {
   private final String message;
   private final boolean structural;
 
-  public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable
-  Object... params);
+  public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable Object... params);
 
   ErrorType(ErrorLevel level, String message) {
     this(level, message, false);
@@ -374,8 +388,7 @@ public enum ErrorType {
     return structural;
   }
 
-  public static String format(@NonNull
-  TupleError error) {
+  public static String format(@NonNull TupleError error) {
     checkArgument(error != null);
     return error.getType().format(error.getParameters());
   }

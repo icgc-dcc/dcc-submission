@@ -77,6 +77,8 @@ public class NormalizationValidatorTest {
       Resources.getResource(format("fixtures/validation/%s/%s", COMPONENT_NAME, REFERENCE_FILE_NAME)).getFile();
   private static final String OUTPUT_FILE = format("/tmp/dcc_root_dir/%s/%s", COMPONENT_NAME, OUTPUT_FILE_NAME);
 
+  private NormalizationValidator normalizationValidator;
+
   @Mock
   private ValidationContext mockValidationContext;
 
@@ -110,7 +112,7 @@ public class NormalizationValidatorTest {
     when(mockConfig.getString("duplicates.switch"))
         .thenReturn("enabled");
     when(mockConfig.getString("masking.allele_masking_mode"))
-        .thenReturn("zob");
+        .thenReturn("all");
 
     when(mockRelease.getName())
         .thenReturn(RELEASE_NAME);
@@ -153,9 +155,9 @@ public class NormalizationValidatorTest {
   public void test_normalize() {
     new File(OUTPUT_FILE).delete();
 
-    NormalizationValidator
-        .getDefaultInstance(mockDccFileSystem2, mockConfig)
-        .validate(mockValidationContext);
+    normalizationValidator = NormalizationValidator
+        .getDefaultInstance(mockDccFileSystem2, mockConfig);
+    normalizationValidator.validate(mockValidationContext);
 
     // Check data output
     assertThat(readLines(new File(OUTPUT_FILE), UTF_8))
