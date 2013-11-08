@@ -65,7 +65,7 @@ public class ByteOffsetToLineNumberTest {
       log.info("Expected: {}", expected);
 
       // Exercise
-      val actual = ByteOffsetToLineNumber.convert(path, offsets);
+      val actual = ByteOffsetToLineNumber.convert(path, offsets, false);
 
       assertThat(actual).isEqualTo(expected);
     }

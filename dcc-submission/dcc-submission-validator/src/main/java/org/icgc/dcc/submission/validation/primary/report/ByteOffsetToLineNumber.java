@@ -54,6 +54,15 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
   protected static FileSystem fileSystem;
 
   public static Map<Long, Long> convert(@NonNull Path file, @NonNull Collection<Long> offsets) {
+    return convert(file, offsets, true);
+  }
+
+  public static Map<Long, Long> convert(@NonNull Path file, @NonNull Collection<Long> offsets, boolean check) {
+    if (check && !isHdfs()) {
+      log.info("Local filesystem: not remapping line numbers for path: {}" + file);
+      return null;
+    }
+
     log.info("Hdfs: remapping line numbers for path " + file.toString());
     checkNotNull(fileSystem);
 
@@ -158,6 +167,10 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     } catch (IOException e) {
       throw new RuntimeException(file.toString());
     }
+  }
+
+  private static boolean isHdfs() {
+    return fileSystem.getScheme().equals("hdfs");
   }
 
 }
