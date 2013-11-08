@@ -24,7 +24,6 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
-import static org.icgc.dcc.hadoop.fs.DccFileSystem2.getNormalizationOutputTap;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
@@ -39,6 +38,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
@@ -86,6 +86,11 @@ public final class NormalizationValidator implements Validator {
   private static final String END_PIPE_NAME = format("%s-end", COMPONENT_NAME);
 
   /**
+   * 
+   */
+  private final DccFileSystem2 dccFileSystem2;
+
+  /**
    * Subset...TODO
    */
   private final Config config;
@@ -95,8 +100,9 @@ public final class NormalizationValidator implements Validator {
    */
   private final ImmutableList<NormalizationStep> steps;
 
-  public static NormalizationValidator getDefaultInstance(Config config) {
+  public static NormalizationValidator getDefaultInstance(DccFileSystem2 dccFileSystem2, Config config) {
     return new NormalizationValidator(
+        dccFileSystem2,
         config,
         new ImmutableList.Builder<NormalizationStep>() // Order matters for some steps
 
@@ -144,6 +150,8 @@ public final class NormalizationValidator implements Validator {
    * 
    */
   private void normalize(String fileName, ValidationContext validationContext) {
+    String releaseName = validationContext.getRelease().getName();
+    String projectKey = validationContext.getProjectKey();
 
     // Plan cascade
     val pipes = planCascade(
@@ -158,8 +166,8 @@ public final class NormalizationValidator implements Validator {
         getFileSchema(
             validationContext.getDictionary(),
             FOCUS_TYPE),
-        validationContext.getRelease().getName(),
-        validationContext.getProjectKey());
+        releaseName,
+        projectKey);
 
     // Run cascade synchronously
     connectedCascade.completeCascade();
@@ -168,7 +176,8 @@ public final class NormalizationValidator implements Validator {
     performSanityChecks(connectedCascade);
 
     // Report results
-    report(fileName, connectedCascade, validationContext);
+    internalReport(connectedCascade);
+    externalReport(fileName, connectedCascade, validationContext);
   }
 
   /**
@@ -219,7 +228,7 @@ public final class NormalizationValidator implements Validator {
             .setName(CASCADE_NAME)
             .addFlow(flow));
 
-    return new ConnectedCascade(flow, cascade);
+    return new ConnectedCascade(releaseName, projectKey, flow, cascade);
   }
 
   /**
@@ -233,7 +242,7 @@ public final class NormalizationValidator implements Validator {
    * 
    */
   private Tap<?, ?, ?> getOutputTap(String releaseName, String projectKey) {
-    return getNormalizationOutputTap(config, releaseName, projectKey);
+    return dccFileSystem2.getNormalizationDataOutputTap(releaseName, projectKey);
   }
 
   /**
@@ -269,7 +278,17 @@ public final class NormalizationValidator implements Validator {
   /**
    * 
    */
-  private void report(String fileName, ConnectedCascade connectedCascade, ValidationContext validationContext) {
+  private void internalReport(ConnectedCascade connectedCascade) {
+    dccFileSystem2.writeNormalizationReport(
+        connectedCascade.getReleaseName(),
+        connectedCascade.getProjectKey(),
+        NormalizationReporter.createInternalReportContent(connectedCascade));
+  }
+
+  /**
+   * 
+   */
+  private void externalReport(String fileName, ConnectedCascade connectedCascade, ValidationContext validationContext) {
     validationContext
         .reportNormalization(
             fileName,
@@ -317,6 +336,8 @@ public final class NormalizationValidator implements Validator {
   @Value
   static final class ConnectedCascade {
 
+    private final String releaseName;
+    private final String projectKey;
     private final Flow<?> flow;
     private final Cascade cascade;
 

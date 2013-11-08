@@ -17,51 +17,36 @@
  */
 package org.icgc.dcc.submission.normalization;
 
-import static java.lang.String.format;
-import static org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import static com.google.common.collect.Lists.newArrayList;
 import lombok.val;
-import lombok.experimental.Builder;
 
+import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * 
  */
-@Builder
-@Value
-public final class NormalizationReport {
+public class NormalizationReporter {
 
-  private final String projectKey;
-  private final ImmutableMap<NormalizationCounter, Long> counters;
+  private static final String TAB = "\t";
+  private static final String NEWLINE = System.getProperty("line.separator");
 
-  @RequiredArgsConstructor
-  public enum NormalizationCounter {
-    TOTAL_START("TODO"),
-    TOTAL_END("TODO"),
-    UNIQUE_START(format("Number of unique '%s' before filtering", ANALYSIS_ID_FIELD)),
-    DROPPED("Number of observations dropped due to redundancy"),
-    UNIQUE_FILTERED(format("Number of unique '%s' remaining after filtering", ANALYSIS_ID_FIELD)),
-    MARKED_AS_CONTROLLED("TODO"),
-    MASKED("TODO");
-
-    public static final long COUNT_INCREMENT = 1;
-
-    @Getter
-    private final String displayName;
-
-    static ImmutableMap<NormalizationCounter, Long> report(ConnectedCascade connected) {
-      val counters = new ImmutableMap.Builder<NormalizationCounter, Long>();
-      for (val counter : values()) {
-        counters.put(
-            counter,
-            connected.getCounterValue(counter));
-      }
-      return counters.build();
+  /**
+   * 
+   */
+  public static String createInternalReportContent(ConnectedCascade connectedCascade) {
+    val sb = new StringBuilder();
+    sb.append("Statistics for the dropping of observations:");
+    sb.append(NEWLINE);
+    for (val counter : newArrayList(
+        NormalizationCounter.DROPPED,
+        NormalizationCounter.UNIQUE_FILTERED)) {
+      long counterValue = connectedCascade.getCounterValue(counter);
+      sb.append(counterValue);
+      sb.append(TAB);
+      sb.append(counter.getDisplayName());
+      sb.append(NEWLINE);
     }
+    return sb.toString();
   }
 }

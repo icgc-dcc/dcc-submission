@@ -39,6 +39,12 @@
       <groupId>com.typesafe</groupId>
       <artifactId>config</artifactId>
     </dependency>
+
+    <!-- Dependency injection -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
     
     <!-- Hadoop -->
     <dependency>

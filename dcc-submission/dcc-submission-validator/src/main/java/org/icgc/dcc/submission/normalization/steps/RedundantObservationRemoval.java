@@ -62,7 +62,7 @@ import com.typesafe.config.Config;
 @Slf4j
 public final class RedundantObservationRemoval implements NormalizationStep, OptionalStep {
 
-  private static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
+  public static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
 
   /**
    * Name of the field on which to perform the secondary sort.

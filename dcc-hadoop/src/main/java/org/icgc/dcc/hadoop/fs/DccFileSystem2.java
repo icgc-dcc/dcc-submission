@@ -17,36 +17,71 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import lombok.Cleanup;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.local.FileTap;
 
-import com.google.common.base.Preconditions;
-import com.typesafe.config.Config;
-
 /**
  * Very low-tech replacement for {@link DccFileSystem}, as discussed with @Bob Tiernay around 13/11/07 (see DCC-1876).
  * This is a temporary solution until a proper re-modelling of the file operations related objects can happen.
+ * <p>
+ * Requirements:<br/>
+ * - Junjun's tool to re-write specimen file<br/>
+ * 
  */
+@RequiredArgsConstructor
 public class DccFileSystem2 {
 
-  public static Tap<?, ?, ?> getNormalizationOutputTap(Config config, String releaseName, String projectKey) {
-    String path = getNormalizationOutput(releaseName, projectKey);
-    System.out.println(path);
-    return usesHadoop(config) ?
+  private final FileSystem fileSystem;
+
+  private final boolean hadoopMode;
+
+  public Tap<?, ?, ?> getNormalizationDataOutputTap(String releaseName, String projectKey) {
+    String path = getNormalizationDataOutput(releaseName, projectKey);
+    return getTap(path);
+  }
+
+  public Tap<?, ?, ?> getNormalizationReportOutputTap(String releaseName, String projectKey) {
+    String path = getNormalizationReportOutput(releaseName, projectKey);
+    return getTap(path);
+  }
+
+  public String getNormalizationDataOutput(String releaseName, String projectKey) {
+    return String.format("/icgc/%s/projects/%s/normalization/data/ssm__p.txt", releaseName, projectKey);
+  }
+
+  private Tap<?, ?, ?> getTap(String path) {
+    return hadoopMode ?
         new Hfs(new cascading.scheme.hadoop.TextDelimited(true, "\t"), path) :
         new FileTap(new cascading.scheme.local.TextDelimited(true, "\t"), path);
   }
 
-  public static String getNormalizationOutput(String releaseName, String projectKey) {
-    return String.format("/icgc/%s/projects/%s/normalization/ssm__p.txt", releaseName, projectKey);
+  public void writeNormalizationReport(String releaseName, String projectKey, String content) {
+    writeFile(
+        getNormalizationReportOutput(
+            releaseName,
+            projectKey),
+        content);
   }
 
-  public static boolean usesHadoop(Config config) {
-    Preconditions.checkState(
-        config.hasPath("fs.url"),
-        "fs.url should be present in the config");
-    return config.getString("fs.url")
-        .startsWith("hdfs");
+  private String getNormalizationReportOutput(String releaseName, String projectKey) {
+    return String.format("/icgc/%s/projects/%s/normalization/reports/filtering.txt", releaseName, projectKey);
+  }
+
+  @SneakyThrows
+  private void writeFile(String file, String content) {
+    @Cleanup
+    FSDataOutputStream create = fileSystem
+        .create(
+        new Path(file));
+    create.writeUTF(content);
   }
 }

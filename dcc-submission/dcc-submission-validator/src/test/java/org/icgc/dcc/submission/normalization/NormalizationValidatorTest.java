@@ -23,6 +23,7 @@ import static com.google.common.io.Files.readLines;
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.normalization.NormalizationValidator.COMPONENT_NAME;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -59,8 +60,11 @@ import com.google.common.io.Resources;
 import com.typesafe.config.Config;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ PrimaryKeyGeneration.class, DccFileSystem2.class })
+@PrepareForTest({ PrimaryKeyGeneration.class })
 public class NormalizationValidatorTest {
+
+  private static final String RELEASE_NAME = "dummy_release";
+  private static final String PROJECT_NAME = "dummy_project";
 
   private static final String OUTPUT_FILE_NAME = "output.tsv";
 
@@ -80,6 +84,9 @@ public class NormalizationValidatorTest {
   private PlatformStrategy mockPlatformStrategy;
 
   @Mock
+  private DccFileSystem2 mockDccFileSystem2;
+
+  @Mock
   private Release mockRelease;
 
   @Mock
@@ -89,14 +96,14 @@ public class NormalizationValidatorTest {
   private FileSchema mockFileSchema;
 
   @Mock
-  Config mockConfig;
+  private Config mockConfig;
 
   @Before
   public void setUp() {
     when(mockConfig.hasPath(Mockito.anyString()))
         .thenReturn(false);
     when(mockRelease.getName())
-        .thenReturn("dummy_release");
+        .thenReturn(RELEASE_NAME);
     when(mockFileSchema.getFieldNames())
         .thenReturn(
             newArrayList(
@@ -110,11 +117,12 @@ public class NormalizationValidatorTest {
         .thenReturn(
             Optional.<FileSchema> of(mockFileSchema));
     when(mockSubmissionDirectory.getFile(Mockito.anyString()))
-        .thenReturn(Optional.<String> of("output.tsv"));
+        .thenReturn(Optional.<String> of(OUTPUT_FILE_NAME));
 
-    mockSourceTap();
     when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(new LocalFlowConnector());
+    mockInputTap();
+    mockOutputTap();
 
     when(mockValidationContext.getDictionary())
         .thenReturn(mockDictionary);
@@ -123,15 +131,9 @@ public class NormalizationValidatorTest {
     when(mockValidationContext.getRelease())
         .thenReturn(mockRelease);
     when(mockValidationContext.getProjectKey())
-        .thenReturn("dummy_project");
+        .thenReturn(PROJECT_NAME);
     when(mockValidationContext.getPlatformStrategy())
         .thenReturn(mockPlatformStrategy);
-
-    PowerMockito.mockStatic(DccFileSystem2.class); // Won't be needed after DCC-1876
-    PowerMockito.when(DccFileSystem2.usesHadoop(Mockito.any(Config.class))).thenReturn(false);
-    mockOutputTap();
-    PowerMockito.when(DccFileSystem2.getNormalizationOutput(Mockito.anyString(), Mockito.anyString()))
-        .thenReturn(OUTPUT_FILE);
 
     mockUUID();
   }
@@ -142,7 +144,7 @@ public class NormalizationValidatorTest {
     new File(OUTPUT_FILE).delete();
 
     NormalizationValidator
-        .getDefaultInstance(mockConfig)
+        .getDefaultInstance(mockDccFileSystem2, mockConfig)
         .validate(mockValidationContext);
 
     assertThat(readLines(new File(OUTPUT_FILE), UTF_8))
@@ -176,7 +178,7 @@ public class NormalizationValidatorTest {
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
-  private void mockSourceTap() {
+  private void mockInputTap() {
     when(mockPlatformStrategy.getSourceTap(mockFileSchema))
         .thenReturn(getInputTap());
   }
@@ -186,24 +188,26 @@ public class NormalizationValidatorTest {
   private Tap getInputTap() {
     return new FileTap(
         new TextDelimited(
-            true,
-            PlatformStrategy.FIELD_SEPARATOR),
+            true, // headers
+            FIELD_SEPARATOR),
         INPUT_FILE);
   }
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
   private void mockOutputTap() {
-    PowerMockito.when(
-        DccFileSystem2.getNormalizationOutputTap(
-            Mockito.any(Config.class), Mockito.anyString(), Mockito.anyString()))
+    when(mockDccFileSystem2.getNormalizationDataOutputTap(RELEASE_NAME, PROJECT_NAME))
         .thenReturn(getOutputTap());
   }
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
   private Tap getOutputTap() {
-    return new FileTap(new TextDelimited(true, "\t"), "/tmp/dcc_root_dir/normalizer/output.tsv");
+    return new FileTap(
+        new TextDelimited(
+            true, // headers
+            FIELD_SEPARATOR),
+        OUTPUT_FILE);
   }
 
 }

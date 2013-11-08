@@ -20,6 +20,8 @@ package org.icgc.dcc.submission.validation;
 import static org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.NORMALIZER_CONFIG_PARAM;
 import lombok.val;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -43,6 +45,7 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -146,6 +149,9 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   private void bindValidators() {
+    // TODO: Shouldn't be bound here, see DCC-1876
+    bindNewTemporaryFileSystemAbstraction();
+
     // Set binder will preserve bind order as iteration order for injectees
     val validators = Multibinder.newSetBinder(binder(), Validator.class);
 
@@ -156,11 +162,15 @@ public class ValidationModule extends AbstractDccModule {
     bindValidator(validators, new Provider<NormalizationValidator>() {
 
       @Inject
-      Config config;
+      private Config config;
+
+      @Inject
+      private DccFileSystem2 dccFileSystem2;
 
       @Override
       public NormalizationValidator get() {
         return NormalizationValidator.getDefaultInstance(
+            dccFileSystem2,
             config.getConfig(NORMALIZER_CONFIG_PARAM));
       }
     });
@@ -172,6 +182,35 @@ public class ValidationModule extends AbstractDccModule {
 
   private static void bindValidator(Multibinder<Validator> validators, Provider<? extends Validator> provider) {
     validators.addBinding().toProvider(provider).in(Singleton.class);
+  }
+
+  /**
+   * TODO: See DCC-1876.
+   */
+  private void bindNewTemporaryFileSystemAbstraction() {
+    bind(DccFileSystem2.class).toProvider(new Provider<DccFileSystem2>() {
+
+      @Inject
+      private FileSystem fileSystem;
+
+      @Inject
+      private Config config;
+
+      @Override
+      public DccFileSystem2 get() {
+        return new DccFileSystem2(
+            fileSystem,
+            usesHadoop(config));
+      }
+
+      public boolean usesHadoop(Config config) {
+        Preconditions.checkState(
+            config.hasPath("fs.url"),
+            "fs.url should be present in the config");
+        return config.getString("fs.url")
+            .startsWith("hdfs");
+      }
+    });
   }
 
 }
