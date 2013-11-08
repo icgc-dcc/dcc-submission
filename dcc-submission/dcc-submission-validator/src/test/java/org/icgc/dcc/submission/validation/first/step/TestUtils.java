@@ -38,6 +38,10 @@ public class TestUtils {
     verify(validationContext, times(times)).reportError(anyString(), any(ErrorType.class), any(), any());
   }
 
+  public static void checkRowCharsetErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(anyString(), anyLong(), any(), any(ErrorType.class), any());
+  }
+
   public static void checkReferentialErrorReported(ValidationContext validationContext, int times) {
     verify(validationContext, times(times)).reportError(anyString(), any(ErrorType.class), any());
   }
