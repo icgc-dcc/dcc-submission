@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
-import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.ConfigurableSteps;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 
 import com.google.common.base.Optional;
@@ -106,7 +105,7 @@ public class NormalizationReporter {
 
     long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
     long totalStart = connectedCascade.getCounterValue(TOTAL_START);
-    float threshold = ConfigurableSteps.getConfidentialErrorThreshold(config);
+    float threshold = NormalizationConfig.getConfidentialErrorThreshold(config);
 
     NormalizationError normalizationError = NormalizationError.builder()
         .fileName(fileName)

@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.NORMALIZER_CONFIG_PARAM;
 import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -25,6 +24,7 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.normalization.NormalizationConfig;
 import org.icgc.dcc.submission.normalization.NormalizationValidator;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
@@ -171,7 +171,7 @@ public class ValidationModule extends AbstractDccModule {
       public NormalizationValidator get() {
         return NormalizationValidator.getDefaultInstance(
             dccFileSystem2,
-            config.getConfig(NORMALIZER_CONFIG_PARAM));
+            config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM));
       }
     });
   }

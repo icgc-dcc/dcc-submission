@@ -107,12 +107,12 @@ public class NormalizationValidatorTest {
   public void setUp() {
     when(mockConfig.hasPath(Mockito.anyString()))
         .thenReturn(true);
-    when(mockConfig.getString("masking.switch"))
-        .thenReturn("enabled");
-    when(mockConfig.getString("duplicates.switch"))
-        .thenReturn("enabled");
-    when(mockConfig.getString("masking.allele_masking_mode"))
-        .thenReturn("all");
+    when(mockConfig.getBoolean("masking.enabled"))
+        .thenReturn(true);
+    when(mockConfig.getBoolean("duplicates.enabled"))
+        .thenReturn(true);
+    when(mockConfig.getBoolean("masking.marking_only"))
+        .thenReturn(false);
     when(mockConfig.getNumber("masking.error_threshold"))
         .thenReturn(0.5f); // instead of 10% normally
 

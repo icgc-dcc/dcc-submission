@@ -38,13 +38,10 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
+import org.icgc.dcc.submission.normalization.NormalizationConfig;
+import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
-import org.icgc.dcc.submission.normalization.configuration.ConfigKey;
-import org.icgc.dcc.submission.normalization.configuration.ConfigKey.AlleleMaskingModeValue;
-import org.icgc.dcc.submission.normalization.configuration.ConfigKey.SwitchValue;
-import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep;
-import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -57,7 +54,6 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
 /**
@@ -65,7 +61,9 @@ import com.typesafe.config.Config;
  */
 @Slf4j
 @RequiredArgsConstructor
-public final class AlleleMasking implements NormalizationStep, OptionalStep, ConfigurableStep {
+public final class AlleleMasking implements NormalizationStep, OptionalStep {
+
+  public static final String STEP_NAME = "masking";
 
   static final Fields REFERENCE_GENOME_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
   static final Fields CONTROL_GENOTYPE_FIELD = new Fields(SUBMISSION_OBSERVATION_CONTROL_GENOTYPE);
@@ -77,32 +75,7 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
 
   @Override
   public String shortName() {
-    return "masking";
-  }
-
-  @Override
-  public boolean isEnabled(Config config) {
-    return OptionalSteps.isEnabled(config, this);
-  }
-
-  @Override
-  public SwitchValue getDefaultSwitchValue() {
-    return SwitchValue.ENABLED;
-  }
-
-  @Override
-  public String getParameterValue(ConfigKey configKey) {
-    return ConfigurableSteps.getParameterValue(config, configKey, (ConfigurableStep) this);
-  }
-
-  @Override
-  public String getOptionalStepKey() {
-    return shortName();
-  }
-
-  @Override
-  public String getConfigurableStepKey() {
-    return shortName();
+    return STEP_NAME;
   }
 
   @Override
@@ -120,7 +93,7 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
               REPLACE);
     }
 
-    if (!isMarkOnly()) {
+    if (!NormalizationConfig.isMarkOnly(config)) {
       pipe = new Each(
           pipe,
           ALL,
@@ -129,20 +102,6 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
     }
 
     return pipe;
-  }
-
-  private boolean isMarkOnly() {
-    String configuredMode = getParameterValue(ConfigKey.ALLELE_MASKING_MODE);
-
-    Optional<? extends Enum<?>> match = ConfigurableSteps.getMatchingValueEnum(
-        AlleleMaskingModeValue.getAnyInstance(),
-        configuredMode);
-
-    Enum<?> value = match.isPresent() ?
-        match.get() :
-        AlleleMaskingModeValue.getAnyInstance().getGlobalDefaultValue();
-
-    return AlleleMaskingModeValue.MARK_ONLY == value;
   }
 
   /**

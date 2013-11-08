@@ -28,7 +28,6 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
-import static org.icgc.dcc.submission.normalization.configuration.ConfigKey.SwitchValue.ENABLED;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
-import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
-import org.icgc.dcc.submission.normalization.configuration.ConfigKey.SwitchValue;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -53,7 +51,6 @@ import cascading.tuple.Fields;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.typesafe.config.Config;
 
 /**
  * TODO
@@ -61,6 +58,8 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor
 @Slf4j
 public final class RedundantObservationRemoval implements NormalizationStep, OptionalStep {
+
+  public static final String STEP_NAME = "duplicates";
 
   public static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
 
@@ -86,22 +85,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
 
   @Override
   public String shortName() {
-    return "duplicates";
-  }
-
-  @Override
-  public boolean isEnabled(Config config) {
-    return OptionalSteps.isEnabled(config, this);
-  }
-
-  @Override
-  public SwitchValue getDefaultSwitchValue() {
-    return ENABLED;
-  }
-
-  @Override
-  public String getOptionalStepKey() {
-    return shortName();
+    return STEP_NAME;
   }
 
   /**

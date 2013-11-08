@@ -34,7 +34,6 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
 import org.icgc.dcc.submission.normalization.steps.AlleleMasking;
 import org.icgc.dcc.submission.normalization.steps.FinalCounting;
 import org.icgc.dcc.submission.normalization.steps.InitialCounting;
@@ -185,7 +184,7 @@ public final class NormalizationValidator implements Validator {
 
     Pipe pipe = startPipe;
     for (NormalizationStep step : steps) {
-      if (isEnabled(step, config)) {
+      if (NormalizationConfig.isEnabled(step, config)) {
         log.info("Adding step '{}'", step.shortName());
         pipe = step.extend(pipe, normalizationContext);
       } else {
@@ -267,14 +266,6 @@ public final class NormalizationValidator implements Validator {
                 .counters(
                     NormalizationCounter.report(connectedCascade))
                 .build());
-  }
-
-  /**
-   * 
-   */
-  private boolean isEnabled(NormalizationStep step, Config config) {
-    return !(step instanceof OptionalStep)
-        || ((OptionalStep) step).isEnabled(config);
   }
 
   /**
