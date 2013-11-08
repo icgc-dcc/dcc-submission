@@ -96,4 +96,13 @@ public class RowCharsetCheckerTest {
     assertFalse(errors.isEmpty());
   }
 
+  @Test
+  public void invalidCedillaCharacter() throws Exception {
+    byte[] invalidBytes = new byte[] { (byte) 0xc3, (byte) 0xa7 };
+    String test_string = new String(invalidBytes);
+    // System.out.println(test_string);
+    RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
+    val errors = checker.performSelfCheck(fileSchema, test_string, 1);
+    assertFalse(errors.isEmpty());
+  }
 }
