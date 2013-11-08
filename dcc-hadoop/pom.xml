@@ -33,18 +33,6 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
-
-    <!-- Configuration - TODO: remove after DCC-1876 -->
-    <dependency>
-      <groupId>com.typesafe</groupId>
-      <artifactId>config</artifactId>
-    </dependency>
-
-    <!-- Dependency injection -->
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-    </dependency>
     
     <!-- Hadoop -->
     <dependency>
