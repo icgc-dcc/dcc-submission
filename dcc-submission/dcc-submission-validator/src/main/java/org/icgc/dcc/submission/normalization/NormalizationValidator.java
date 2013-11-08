@@ -218,7 +218,7 @@ public final class NormalizationValidator implements Validator {
                 pipes.getEndPipe(),
                 getOutputTap(releaseName, projectKey));
 
-    Flow<?> flow = platformStrategy
+    Flow<?> flow = dccFileSystem2
         .getFlowConnector()
         .connect(flowDef);
 

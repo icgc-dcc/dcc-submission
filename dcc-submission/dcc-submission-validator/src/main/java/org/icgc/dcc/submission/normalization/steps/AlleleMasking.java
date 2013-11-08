@@ -38,13 +38,13 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
+import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.normalization.configuration.ConfigKey;
+import org.icgc.dcc.submission.normalization.configuration.ConfigKey.AlleleMaskingModeValue;
+import org.icgc.dcc.submission.normalization.configuration.ConfigKey.SwitchValue;
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep;
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
-import org.icgc.dcc.submission.normalization.configuration.ParameterType;
-import org.icgc.dcc.submission.normalization.configuration.ParameterType.AlleleMaskingMode;
-import org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -57,6 +57,7 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
 /**
@@ -85,13 +86,13 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
   }
 
   @Override
-  public Switch getDefaultSwitchValue() {
-    return Switch.ENABLED;
+  public SwitchValue getDefaultSwitchValue() {
+    return SwitchValue.ENABLED;
   }
 
   @Override
-  public String getParameterValue(ParameterType paramType) {
-    return ConfigurableSteps.getParameterValue(config, paramType, (ConfigurableStep) this);
+  public String getParameterValue(ConfigKey configKey) {
+    return ConfigurableSteps.getParameterValue(config, configKey, (ConfigurableStep) this);
   }
 
   @Override
@@ -131,8 +132,17 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep, Con
   }
 
   private boolean isMarkOnly() {
-    String configuredMode = getParameterValue(ParameterType.ALLELE_MASKING_MODE);
-    return AlleleMaskingMode.MARK_ONLY == AlleleMaskingMode.valueOf(configuredMode);
+    String configuredMode = getParameterValue(ConfigKey.ALLELE_MASKING_MODE);
+
+    Optional<? extends Enum<?>> match = ConfigurableSteps.getMatchingValueEnum(
+        AlleleMaskingModeValue.getAnyInstance(),
+        configuredMode);
+
+    Enum<?> value = match.isPresent() ?
+        match.get() :
+        AlleleMaskingModeValue.getAnyInstance().getGlobalDefaultValue();
+
+    return AlleleMaskingModeValue.MARK_ONLY == value;
   }
 
   /**

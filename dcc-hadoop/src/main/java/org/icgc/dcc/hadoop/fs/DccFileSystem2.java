@@ -25,13 +25,16 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.flow.local.LocalFlowConnector;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.local.FileTap;
 
 /**
- * Very low-tech replacement for {@link DccFileSystem}, as discussed with @Bob Tiernay around 13/11/07 (see DCC-1876).
- * This is a temporary solution until a proper re-modelling of the file operations related objects can happen.
+ * Very basic replacement for {@link DccFileSystem}, as discussed with @Bob Tiernay around 13/11/07 (see DCC-1876). This
+ * is a temporary solution until a proper re-modelling of the file operations related objects can happen.
  * <p>
  * Requirements:<br/>
  * - Junjun's tool to re-write specimen file<br/>
@@ -43,6 +46,12 @@ public class DccFileSystem2 {
   private final FileSystem fileSystem;
 
   private final boolean hadoopMode;
+
+  public FlowConnector getFlowConnector() {
+    return hadoopMode ?
+        new HadoopFlowConnector() :
+        new LocalFlowConnector();
+  }
 
   public Tap<?, ?, ?> getNormalizationDataOutputTap(String releaseName, String projectKey) {
     String path = getNormalizationDataOutput(releaseName, projectKey);

@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.submission.normalization.configuration;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -24,13 +28,12 @@ import lombok.RequiredArgsConstructor;
  * 
  */
 @RequiredArgsConstructor
-public enum ParameterType {
-
-  ALLELE_MASKING_MODE(AlleleMaskingMode.ALL),
-  SWITCH(Switch.ENABLED); // This default value isn't really used (TODO: make optional?)
+public enum ConfigKey {
+  ALLELE_MASKING_MODE(AlleleMaskingModeValue.getAnyInstance()),
+  SWITCH(SwitchValue.getAnyInstance());
 
   @Getter
-  private final ParameterValue defaultValue;
+  private final ConfigValueEnum<? extends Enum<?>> configValueEnum;
 
   /**
    * Returns the sub key for the configuration parameter, for instance "switch" in "normalizer.mutation.switch".
@@ -39,54 +42,107 @@ public enum ParameterType {
     return name().toLowerCase();
   }
 
-  public String getDefaultValueString() {
-    return defaultValue.getStringValue();
-  }
-
   /**
    * 
    */
   @RequiredArgsConstructor
-  public enum Switch implements ParameterValue {
+  public enum SwitchValue implements ConfigValueEnum<SwitchValue> {
     ENABLED,
     DISABLED;
 
     @Override
     public String getStringValue() {
-      return NormalizerConfigurationParameters.getStringValue(this);
+      return ConfigValues.getStringValue(this);
+    }
+
+    @Override
+    public SwitchValue enumValueOf(String value) {
+      return valueOf(value.toUpperCase());
+    }
+
+    @Override
+    public List<SwitchValue> enumValues() {
+      return newArrayList(values());
+    }
+
+    /**
+     * TODO!!
+     */
+    public static SwitchValue getAnyInstance() {
+      return ENABLED;
     }
   }
 
   /**
    * 
    */
-  public enum AlleleMaskingMode implements ParameterValue {
+  public enum AlleleMaskingModeValue implements GloballyDefaultable<AlleleMaskingModeValue>, ConfigValueEnum<AlleleMaskingModeValue> {
     ALL, MARK_ONLY;
 
     @Override
     public String getStringValue() {
-      return NormalizerConfigurationParameters.getStringValue(this);
+      return ConfigValues.getStringValue(this);
+    }
+
+    @Override
+    public AlleleMaskingModeValue enumValueOf(String value) {
+      return valueOf(value.toUpperCase());
+    }
+
+    @Override
+    public List<AlleleMaskingModeValue> enumValues() {
+      return newArrayList(values());
+    }
+
+    @Override
+    public AlleleMaskingModeValue getGlobalDefaultValue() {
+      return ALL;
+    }
+
+    /**
+     * TODO!!
+     */
+    public static AlleleMaskingModeValue getAnyInstance() {
+      return ALL;
     }
   }
 
   /**
    * 
    */
-  static final class NormalizerConfigurationParameters {
+  public interface GloballyDefaultable<T> {
 
-    public static String getStringValue(Enum<?> enuM) {
-      return enuM.name();
-    }
+    T getGlobalDefaultValue();
   }
 
   /**
    * 
    */
-  private interface ParameterValue {
+  public interface ConfigValueEnum<T extends Enum<?>> {
 
     /**
      * 
      */
     String getStringValue();
+
+    /**
+     * 
+     */
+    T enumValueOf(String value);
+
+    /**
+     * 
+     */
+    List<T> enumValues();
+
+    /**
+     * 
+     */
+    static final class ConfigValues {
+
+      public static String getStringValue(Enum<?> enumInstance) {
+        return enumInstance.name();
+      }
+    }
   }
 }

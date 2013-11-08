@@ -28,7 +28,7 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
-import static org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch.ENABLED;
+import static org.icgc.dcc.submission.normalization.configuration.ConfigKey.SwitchValue.ENABLED;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
-import org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch;
+import org.icgc.dcc.submission.normalization.configuration.ConfigKey.SwitchValue;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -95,7 +95,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
   }
 
   @Override
-  public Switch getDefaultSwitchValue() {
+  public SwitchValue getDefaultSwitchValue() {
     return ENABLED;
   }
 

@@ -67,12 +67,14 @@ public class NormalizationValidatorTest {
   private static final String RELEASE_NAME = "dummy_release";
   private static final String PROJECT_NAME = "dummy_project";
 
+  private static final String INPUT_FILE_NAME = "input.tsv";
   private static final String OUTPUT_FILE_NAME = "output.tsv";
+  private static final String REFERENCE_FILE_NAME = "reference.tsv";
 
   private static final String INPUT_FILE =
-      Resources.getResource(format("fixtures/validation/%s/input.tsv", COMPONENT_NAME)).getFile();
+      Resources.getResource(format("fixtures/validation/%s/%s", COMPONENT_NAME, INPUT_FILE_NAME)).getFile();
   private static final String REFERENCE_FILE =
-      Resources.getResource(format("fixtures/validation/%s/reference.tsv", COMPONENT_NAME)).getFile();
+      Resources.getResource(format("fixtures/validation/%s/%s", COMPONENT_NAME, REFERENCE_FILE_NAME)).getFile();
   private static final String OUTPUT_FILE = format("/tmp/dcc_root_dir/%s/%s", COMPONENT_NAME, OUTPUT_FILE_NAME);
 
   @Mock
@@ -102,7 +104,14 @@ public class NormalizationValidatorTest {
   @Before
   public void setUp() {
     when(mockConfig.hasPath(Mockito.anyString()))
-        .thenReturn(false);
+        .thenReturn(true);
+    when(mockConfig.getString("masking.switch"))
+        .thenReturn("enabled");
+    when(mockConfig.getString("duplicates.switch"))
+        .thenReturn("enabled");
+    when(mockConfig.getString("masking.allele_masking_mode"))
+        .thenReturn("zob");
+
     when(mockRelease.getName())
         .thenReturn(RELEASE_NAME);
     when(mockFileSchema.getFieldNames())
@@ -120,10 +129,10 @@ public class NormalizationValidatorTest {
     when(mockSubmissionDirectory.getFile(Mockito.anyString()))
         .thenReturn(Optional.<String> of(OUTPUT_FILE_NAME));
 
-    when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(new LocalFlowConnector());
     mockInputTap();
     mockOutputTap();
+    when(mockDccFileSystem2.getFlowConnector())
+        .thenReturn(new LocalFlowConnector());
 
     when(mockValidationContext.getDictionary())
         .thenReturn(mockDictionary);
@@ -148,6 +157,13 @@ public class NormalizationValidatorTest {
         .getDefaultInstance(mockDccFileSystem2, mockConfig)
         .validate(mockValidationContext);
 
+    // Check data output
+    assertThat(readLines(new File(OUTPUT_FILE), UTF_8))
+        .isEqualTo(
+            readLines(new File(REFERENCE_FILE), UTF_8)
+        );
+
+    // Check internal report
     Mockito.verify(mockDccFileSystem2, Mockito.times(1))
         .writeNormalizationReport(
             Mockito.anyString(),
@@ -157,11 +173,6 @@ public class NormalizationValidatorTest {
                     "4\t" + NormalizationCounter.DROPPED.getDisplayName() + "\n" +
                     "5\t" + NormalizationCounter.UNIQUE_FILTERED.getDisplayName() + "\n"
                 ));
-
-    assertThat(readLines(new File(OUTPUT_FILE), UTF_8))
-        .isEqualTo(
-            readLines(new File(REFERENCE_FILE), UTF_8)
-        );
   }
 
   /**

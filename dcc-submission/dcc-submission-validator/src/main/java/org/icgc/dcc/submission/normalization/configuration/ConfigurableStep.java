@@ -18,10 +18,13 @@
 package org.icgc.dcc.submission.normalization.configuration;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.normalization.configuration.ParameterType.SWITCH;
+import static org.icgc.dcc.submission.normalization.configuration.ConfigKey.SWITCH;
+import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch;
+import org.icgc.dcc.submission.normalization.configuration.ConfigKey.ConfigValueEnum;
+import org.icgc.dcc.submission.normalization.configuration.ConfigKey.SwitchValue;
 
+import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
 /**
@@ -39,11 +42,12 @@ public interface ConfigurableStep {
   /**
    * 
    */
-  String getParameterValue(ParameterType paramType);
+  String getParameterValue(ConfigKey configKey);
 
   /**
    * 
    */
+  @Slf4j
   static final class ConfigurableSteps {
 
     /**
@@ -51,13 +55,12 @@ public interface ConfigurableStep {
      */
     public static String getParameterValue(
         Config config,
-        ParameterType paramType,
+        ConfigKey configKey,
         ConfigurableStep configurableStep) {
 
       return getParameterValue(
           config,
-          paramType.getSubKey(),
-          paramType.getDefaultValueString(),
+          configKey.getSubKey(),
           configurableStep.getConfigurableStepKey());
     }
 
@@ -66,13 +69,12 @@ public interface ConfigurableStep {
      */
     public static String getParameterValue(
         Config config,
-        ParameterType paramType,
+        ConfigKey paramType,
         OptionalStep optionalStep) {
 
       return getParameterValue(
           config,
           paramType.getSubKey(),
-          String.valueOf(optionalStep.getDefaultSwitchValue()),
           optionalStep.getOptionalStepKey());
     }
 
@@ -82,23 +84,41 @@ public interface ConfigurableStep {
     private static String getParameterValue(
         Config config,
         String subKey,
-        String defaultValue,
         String stepShortName) {
 
       String paramKey =
           buildParamKey(
-              buildParamKey(
-                  NORMALIZER_CONFIG_PARAM,
-                  stepShortName),
+              stepShortName,
               subKey);
 
-      return config.hasPath(paramKey) ?
-          config.getString(paramKey) :
-          defaultValue;
+      return config.getString(paramKey);
     }
 
     private static String buildParamKey(String parentKey, String subKey) {
       return format("%s.%s", parentKey, subKey);
+    }
+
+    /**
+     * 
+     */
+    public static Optional<? extends Enum<?>> getMatchingValueEnum(
+        ConfigValueEnum<? extends Enum<?>> configValueEnum,
+        String configuredValue) {
+
+      Optional<? extends Enum<?>> match = null;
+      try {
+        Enum<?> enumValueOf = configValueEnum.enumValueOf(configuredValue.toUpperCase());
+
+        match = Optional.of(
+            enumValueOf);
+      } catch (IllegalArgumentException e) {
+        log.error(
+            "Unknown configuration value specified: '{}', valid ones are: '{}' (case insensitive)",
+            configuredValue,
+            SwitchValue.values());
+        match = Optional.<Enum<?>> absent();
+      }
+      return match;
     }
   }
 
@@ -115,7 +135,7 @@ public interface ConfigurableStep {
     /**
      * 
      */
-    Switch getDefaultSwitchValue();
+    SwitchValue getDefaultSwitchValue();
 
     /**
      * @return
@@ -136,7 +156,15 @@ public interface ConfigurableStep {
             SWITCH,
             optionalStep);
 
-        return Switch.ENABLED == Switch.valueOf(configuredValue);
+        Optional<? extends Enum<?>> match = ConfigurableSteps.getMatchingValueEnum(
+            SwitchValue.getAnyInstance(),
+            configuredValue);
+
+        Enum<?> value = match.isPresent() ?
+            match.get() :
+            optionalStep.getDefaultSwitchValue();
+
+        return SwitchValue.ENABLED == value;
       }
     }
   }
