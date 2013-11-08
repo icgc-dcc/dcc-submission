@@ -36,6 +36,7 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGenerationTest;
 import org.icgc.dcc.submission.release.model.Release;
@@ -146,6 +147,16 @@ public class NormalizationValidatorTest {
     NormalizationValidator
         .getDefaultInstance(mockDccFileSystem2, mockConfig)
         .validate(mockValidationContext);
+
+    Mockito.verify(mockDccFileSystem2, Mockito.times(1))
+        .writeNormalizationReport(
+            Mockito.anyString(),
+            Mockito.anyString(),
+            Mockito.eq(
+                NormalizationReporter.MESSAGE + "\n" +
+                    "4\t" + NormalizationCounter.DROPPED.getDisplayName() + "\n" +
+                    "5\t" + NormalizationCounter.UNIQUE_FILTERED.getDisplayName() + "\n"
+                ));
 
     assertThat(readLines(new File(OUTPUT_FILE), UTF_8))
         .isEqualTo(

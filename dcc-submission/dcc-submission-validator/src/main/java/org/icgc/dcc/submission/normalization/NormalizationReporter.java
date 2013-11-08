@@ -31,12 +31,14 @@ public class NormalizationReporter {
   private static final String TAB = "\t";
   private static final String NEWLINE = System.getProperty("line.separator");
 
+  static final String MESSAGE = "Statistics for the dropping of observations:";
+
   /**
    * 
    */
   public static String createInternalReportContent(ConnectedCascade connectedCascade) {
     val sb = new StringBuilder();
-    sb.append("Statistics for the dropping of observations:");
+    sb.append(MESSAGE);
     sb.append(NEWLINE);
     for (val counter : newArrayList(
         NormalizationCounter.DROPPED,
