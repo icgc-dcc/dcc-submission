@@ -168,7 +168,7 @@ public final class NormalizationValidator implements Validator {
     NormalizationReporter.performSanityChecks(connectedCascade);
 
     // Report results
-    val errors = NormalizationReporter.collectPotentialErrors(connectedCascade, fileName);
+    val errors = NormalizationReporter.collectPotentialErrors(config, connectedCascade, fileName);
     if (errors.isPresent()) {
       NormalizationReporter.reportError(validationContext, errors.get());
     } else {

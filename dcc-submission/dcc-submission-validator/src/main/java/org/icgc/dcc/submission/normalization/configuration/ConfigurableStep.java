@@ -48,7 +48,7 @@ public interface ConfigurableStep {
    * 
    */
   @Slf4j
-  static final class ConfigurableSteps {
+  public static final class ConfigurableSteps {
 
     /**
      * 
@@ -119,6 +119,15 @@ public interface ConfigurableStep {
         match = Optional.<Enum<?>> absent();
       }
       return match;
+    }
+
+    /**
+     * 
+     */
+    public static float getConfidentialErrorThreshold(Config config) {
+      return config
+          .getNumber("masking.error_threshold")
+          .floatValue();
     }
   }
 

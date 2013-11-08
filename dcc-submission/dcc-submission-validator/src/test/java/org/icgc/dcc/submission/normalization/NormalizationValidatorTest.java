@@ -113,6 +113,8 @@ public class NormalizationValidatorTest {
         .thenReturn("enabled");
     when(mockConfig.getString("masking.allele_masking_mode"))
         .thenReturn("all");
+    when(mockConfig.getNumber("masking.error_threshold"))
+        .thenReturn(0.5f); // instead of 10% normally
 
     when(mockRelease.getName())
         .thenReturn(RELEASE_NAME);

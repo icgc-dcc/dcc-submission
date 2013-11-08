@@ -35,9 +35,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
+import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.ConfigurableSteps;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 
 import com.google.common.base.Optional;
+import com.typesafe.config.Config;
 
 /**
  * 
@@ -100,24 +102,28 @@ public class NormalizationReporter {
    * 
    */
   public static Optional<NormalizationError> collectPotentialErrors(
-      ConnectedCascade connectedCascade,
-      String fileName) {
+      Config config, ConnectedCascade connectedCascade, String fileName) {
+
     long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
     long totalStart = connectedCascade.getCounterValue(TOTAL_START);
-    if (NormalizationError.isLikelyErroneous(
-        markedAsControlled,
-        totalStart)) {
-      log.info("here");
-      return Optional.of(
-          NormalizationError.builder()
-              .fileName(fileName)
-              .count(markedAsControlled)
-              .total(totalStart)
-              .build());
+    float threshold = ConfigurableSteps.getConfidentialErrorThreshold(config);
+
+    NormalizationError normalizationError = NormalizationError.builder()
+        .fileName(fileName)
+        .count(markedAsControlled)
+        .total(totalStart)
+        .threshold(threshold)
+        .build();
+
+    if (normalizationError.isLikelyErroneous()) {
+      log.info("TODO");
     } else {
-      log.info("");
-      return Optional.<NormalizationError> absent();
+      log.info("TODO");
+      normalizationError = null;
     }
+    return normalizationError == null ?
+        Optional.<NormalizationError> absent() :
+        Optional.of(normalizationError);
   }
 
   /**
@@ -136,15 +142,14 @@ public class NormalizationReporter {
   @Builder
   static final class NormalizationError {
 
-    private final static float THRESHOLD = 0.50f;
-
     @NonNull
     private final String fileName;
     private final long count;
     private final long total;
+    private final float threshold;
 
-    private static boolean isLikelyErroneous(long count, long total) {
-      return count > total * THRESHOLD;
+    private boolean isLikelyErroneous() {
+      return count > total * threshold;
     }
   }
 }
