@@ -74,7 +74,7 @@ public class RowCharsetCheckerTest {
     }
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
     checker.performSelfCheck("myfile", fileSchema, sb.toString(), 1);
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
   }
 
   @Test
@@ -92,7 +92,7 @@ public class RowCharsetCheckerTest {
     String test_string = Character.toString(nullChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
     checker.performSelfCheck("myfile", fileSchema, test_string, 1);
-    TestUtils.checkNoErrorsReported(validationContext);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
   }
 
   @Test
@@ -101,7 +101,7 @@ public class RowCharsetCheckerTest {
     String test_string = Character.toString(carriageReturnChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
     checker.performSelfCheck("myfile", fileSchema, test_string, 1);
-    TestUtils.checkNoErrorsReported(validationContext);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
   }
 
   @Test
@@ -111,6 +111,6 @@ public class RowCharsetCheckerTest {
     // System.out.println(test_string);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
     checker.performSelfCheck("myfile", fileSchema, test_string, 1);
-    TestUtils.checkNoErrorsReported(validationContext);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
   }
 }
