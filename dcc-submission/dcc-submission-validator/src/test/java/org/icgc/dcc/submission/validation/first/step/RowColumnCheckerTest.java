@@ -34,8 +34,6 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.Util;
-import org.icgc.dcc.submission.validation.first.step.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.step.RowColumnChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,7 +102,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 2);
+    TestUtils.checkRowColumnErrorReported(validationContext, 2);
   }
 
   @Test
@@ -115,7 +113,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 2);
+    TestUtils.checkRowColumnErrorReported(validationContext, 2);
   }
 
   @Test
@@ -126,7 +124,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 2);
+    TestUtils.checkRowColumnErrorReported(validationContext, 2);
   }
 
   @Test
@@ -138,7 +136,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 3);
+    TestUtils.checkRowColumnErrorReported(validationContext, 3);
   }
 
   @Test
