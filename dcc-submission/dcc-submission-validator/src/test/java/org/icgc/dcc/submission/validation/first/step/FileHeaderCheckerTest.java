@@ -32,8 +32,6 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 import org.icgc.dcc.submission.validation.first.Util;
-import org.icgc.dcc.submission.validation.first.step.FileHeaderChecker;
-import org.icgc.dcc.submission.validation.first.step.NoOpFileChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,7 +91,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
   }
 
   @Test
@@ -104,7 +102,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
   }
 
   @Test
@@ -115,7 +113,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
   }
 
   @Test
@@ -126,7 +124,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
 
@@ -138,7 +136,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
 
@@ -150,7 +148,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
 
@@ -162,7 +160,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
 

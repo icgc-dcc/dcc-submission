@@ -42,6 +42,14 @@ public class TestUtils {
     verify(validationContext, times(times)).reportError(anyString(), anyLong(), any(), any(ErrorType.class), any());
   }
 
+  public static void checkRowColumnErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(anyString(), anyLong(), any(), any(ErrorType.class), any());
+  }
+
+  public static void checkFileHeaderErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(anyString(), any(ErrorType.class), any(), any());
+  }
+
   public static void checkReferentialErrorReported(ValidationContext validationContext, int times) {
     verify(validationContext, times(times)).reportError(anyString(), any(ErrorType.class), any());
   }
