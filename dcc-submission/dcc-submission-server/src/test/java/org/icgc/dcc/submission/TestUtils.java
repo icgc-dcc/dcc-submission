@@ -44,11 +44,15 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 
 import com.google.common.io.Resources;
+import com.mongodb.BasicDBObject;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -132,6 +136,31 @@ public final class TestUtils {
   @SneakyThrows
   public static Dictionary dictionary() {
     return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+  }
+
+  @SneakyThrows
+  public static Dictionary addScript(Dictionary dictionary, String fileSchemaName, String fieldName, String script,
+      String description) {
+    for (val fileSchema : dictionary.getFiles()) {
+      if (fileSchema.getName().equals(fileSchemaName)) {
+        for (val field : fileSchema.getFields()) {
+          if (field.getName().equals(fieldName)) {
+            val config = new BasicDBObject();
+            config.put(ScriptRestriction.PARAM, script);
+            config.put(ScriptRestriction.PARAM_DESCRIPTION, description);
+
+            val restriction = new Restriction();
+            restriction.setType(RestrictionType.SCRIPT);
+            restriction.setConfig(config);
+
+            val restrictions = field.getRestrictions();
+            restrictions.add(restriction);
+          }
+        }
+      }
+    }
+
+    return dictionary;
   }
 
   @SneakyThrows
