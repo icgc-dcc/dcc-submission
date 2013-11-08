@@ -18,10 +18,12 @@
 package org.icgc.dcc.submission.validation.primary.report;
 
 import static com.google.common.io.ByteStreams.toByteArray;
+import static com.google.common.io.Files.getFileExtension;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.lsAll;
 
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -71,15 +73,11 @@ public class ByteOffsetToLineNumberTest {
 
   @SneakyThrows
   private static Map<Long, Long> getMapping(Path path) {
-    @Cleanup
-    val input = TEST_FILE_SYSTEM.open(path);
-    val bytes = toByteArray(input);
-
     val mapping = ImmutableMap.<Long, Long> builder();
     long offset = 0;
     long lineNumber = 1;
 
-    for (val b : bytes) {
+    for (val b : getBytes(path)) {
       offset++;
       if ((char) b == '\n') {
         lineNumber++;
@@ -90,6 +88,19 @@ public class ByteOffsetToLineNumberTest {
     }
 
     return mapping.build();
+  }
+
+  @SneakyThrows
+  private static byte[] getBytes(Path path) {
+    @Cleanup
+    val input = TEST_FILE_SYSTEM.open(path);
+    val bytes = toByteArray(isGzip(path) ? new GZIPInputStream(input) : input);
+
+    return bytes;
+  }
+
+  private static boolean isGzip(Path path) {
+    return getFileExtension(path.getName()).equals("gz");
   }
 
   @SneakyThrows
