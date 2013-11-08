@@ -125,6 +125,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       _("{\"name\":\"Project Four\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
           PROJECT4_KEY);
 
+  private static final String PROJECT5_KEY = "project.5";
+  private static final String PROJECT5 =
+      _("{\"name\":\"Project Five\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
+          PROJECT5_KEY);
+
   /**
    * Releases.
    */
@@ -150,11 +155,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       + "{\"key\": \"" + PROJECT1_KEY + "\", \"emails\": [\"project1@example.org\"]}, "
       + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
       + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}]";
+      + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT5_KEY + "\", \"emails\": [\"project5@example.org\"]}]";
+
   private static final String PROJECTS_TO_ENQUEUE2 = "["
       + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
       + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}]";
+      + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT5_KEY + "\", \"emails\": [\"project5@example.org\"]}]";
 
   private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/fs";
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
@@ -260,7 +268,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding projects...");
     addProjects();
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
@@ -318,9 +326,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Checking validated submission 4...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, INVALID);
 
+    status("admin", "Checking validated submission 5...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
+
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -328,7 +339,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
         hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
@@ -344,7 +355,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void adminUpdatesRelease() throws Exception {
     updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
     checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void createInitialRelease() throws Exception {
@@ -371,6 +382,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding project 4...");
     val response4 = post(client, PROJECTS_ENDPOINT, PROJECT4);
     assertEquals(CREATED.getStatusCode(), response4.getStatus());
+
+    status("admin", "Adding project 5...");
+    val response5 = post(client, PROJECTS_ENDPOINT, PROJECT5);
+    assertEquals(CREATED.getStatusCode(), response5.getStatus());
+
   }
 
   private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
@@ -419,7 +435,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -430,7 +446,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void releaseInitialRelease() {

@@ -18,93 +18,88 @@
 package org.icgc.dcc.submission.validation.primary.report;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
+@Slf4j
 public class ByteOffsetToLineNumber {// TODO: make non-static class
-
-  private static final Logger log = LoggerFactory.getLogger(ByteOffsetToLineNumber.class);
 
   private static final int BUFFER_SIZE = 1000000; // in bytes
 
   @Inject
-  private static FileSystem fs;
+  protected static FileSystem fileSystem;
 
-  public static Map<Long, Long> convert(Path file, Collection<Long> offsets) {
-    checkNotNull(file);
-    checkNotNull(fs);
+  public static Map<Long, Long> convert(@NonNull Path file, @NonNull Collection<Long> offsets) {
+    return convert(file, offsets, true);
+  }
 
-    if(fs.getScheme().equals("hdfs") == false) {
-      log.info("Local filesystem: not remapping line numbers for path " + file.toString());
+  public static Map<Long, Long> convert(@NonNull Path file, @NonNull Collection<Long> offsets, boolean check) {
+    if (check && !isHdfs()) {
+      log.info("Local filesystem: not remapping line numbers for path: {}" + file);
       return null;
     }
-    log.info("Hdfs: remapping line numbers for path " + file.toString());
 
-    List<Long> sortedOffsets = new ArrayList<Long>(offsets);
-    Collections.sort(sortedOffsets); // e.g. [11277, 11511, 11744, 11976, 32434, 32668, 32901, 33135]
-    Map<Long, Long> byteToLineOffsetMap = buildByteToLineOffsetMap(file, sortedOffsets);
+    log.info("Hdfs: remapping line numbers for path " + file.toString());
+    checkNotNull(fileSystem);
+
+    // Need to sort offsets to ensure correct iteration order
+    val sortedOffsets = sortOffsets(offsets);
+    log.info("Offsets: {}", sortedOffsets);
+
+    val byteToLineOffsetMap = buildByteToLineOffsetMap(file, sortedOffsets);
+
     return byteToLineOffsetMap;
   }
 
+  @SneakyThrows
   private static Map<Long, Long> buildByteToLineOffsetMap(Path file, List<Long> sortedOffsets) {
-    InputStream is = null;
-    Configuration conf = fs.getConf();
-    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
-    try {
-      CompressionCodec codec = factory.getCodec(file);
-      is = (codec == null) ? fs.open(file) : codec.createInputStream(fs.open(file));
-    } catch(IOException e) {
-      throw new RuntimeException( // TODO: replace with our own
-          String.format("%s", file));
-    }
-    DataInputStream dis = new DataInputStream(is);
+    @Cleanup
+    val inputStream = createInputStream(file);
 
-    Map<Long, Long> offsetMap = Maps.newLinkedHashMap();
-
+    val offsetMap = Maps.<Long, Long> newLinkedHashMap();
     long previousOffset = 0;
     long lineOffset = 1; // 1-based
-    for(Long byteOffset : sortedOffsets) {
-      long currentOffset = byteOffset.longValue(); // TODO: make non-static class out of it so as store those in members
-      if(currentOffset == -1L) {
+
+    for (Long byteOffset : sortedOffsets) {
+      long currentOffset = byteOffset.longValue();
+      if (currentOffset == -1L) {
+        // File level error maybe? Dunno...
         offsetMap.put(-1L, -1L);
       } else {
-        // and log useful error messages
-        Preconditions.checkState(currentOffset >= 0, "Current offset is negative: %s", currentOffset);
-        Preconditions.checkState(currentOffset > previousOffset,
+        checkState(currentOffset >= 0, "Current offset is negative: %s", currentOffset);
+        checkState(currentOffset > previousOffset,
             "Current offset %s is greater than previous offset %s", currentOffset, previousOffset); // no two same
                                                                                                     // offsets
 
-        lineOffset += countLinesInInterval(dis, previousOffset, currentOffset);
+        lineOffset += countLinesInInterval(inputStream, previousOffset, currentOffset);
         offsetMap.put(byteOffset, lineOffset);
 
         previousOffset = byteOffset;
       }
-    }
-
-    try {
-      is.close();
-    } catch(IOException e) {
-      throw new RuntimeException( // TODO: replace with our own
-          String.format("%s", file));
     }
 
     return offsetMap;
@@ -116,10 +111,10 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     int remainder = (int) (difference % BUFFER_SIZE);
 
     long lines = 0;
-    for(int i = 0; i < quotient; i++) {
+    for (int i = 0; i < quotient; i++) {
       lines += countLinesInChunk(is, BUFFER_SIZE, false); // can be zero
     }
-    if(remainder > 0) {
+    if (remainder > 0) {
       lines += countLinesInChunk(is, remainder, true); // at least one
     }
 
@@ -128,27 +123,54 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
 
   private static final long countLinesInChunk(DataInputStream is, int size, boolean lastChunk) {
     byte[] buffer = readBuffer(is, size);
-    if(lastChunk && buffer[size - 1] != '\n') {
+    if (lastChunk && buffer[size - 1] != '\n') {
       throw new RuntimeException( // TODO: replace with our own
           String.format("expected '\\n' instead of %s for last chunk: %s", buffer[size - 1], new String(buffer)));
     }
 
     long lines = 0;
-    for(int i = 0; i < size; i++) {
-      if(buffer[i] == '\n') { // simply ignore '\r'
+    for (int i = 0; i < size; i++) {
+      if (buffer[i] == '\n') { // simply ignore '\r'
         lines++;
       }
     }
     return lines;
   }
 
+  private static List<java.lang.Long> sortOffsets(Collection<Long> offsets) {
+    val sortedOffsets = new ArrayList<Long>(offsets);
+    Collections.sort(sortedOffsets); // e.g. [11277, 11511, 11744, 11976, 32434, 32668, 32901, 33135]
+
+    return sortedOffsets;
+  }
+
   private static byte[] readBuffer(DataInputStream is, int size) {
     byte[] buffer = new byte[size];
     try {
       is.readFully(buffer);
-    } catch(IOException e) {
-      throw new RuntimeException(String.format("%s", size));
+    } catch (IOException e) {
+      throw new RuntimeException("Error reading " + size + " bytes into buffer: " + Arrays.toString(buffer));
     }
+
     return buffer;
   }
+
+  private static DataInputStream createInputStream(Path file) {
+    Configuration conf = fileSystem.getConf();
+    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
+
+    try {
+      CompressionCodec codec = factory.getCodec(file);
+      InputStream inputStream =
+          (codec == null) ? fileSystem.open(file) : codec.createInputStream(fileSystem.open(file));
+      return new DataInputStream(inputStream);
+    } catch (IOException e) {
+      throw new RuntimeException(file.toString());
+    }
+  }
+
+  private static boolean isHdfs() {
+    return fileSystem.getScheme().equals("hdfs");
+  }
+
 }

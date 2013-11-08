@@ -142,6 +142,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     STRUCTURALLY_INVALID_ROW_ERROR:
       name: "Invalid row structure"
       description: (source) ->
+        console.log source
         """
         Field counts in all lines are expected to match that of the file
         header. Offending lines
@@ -155,6 +156,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     TOO_MANY_FILES_ERROR:
       name: "Filename collision"
       description: (source) ->
+        console.log source
         """
         More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
         filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
@@ -179,6 +181,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
         Different from the expected header
         <em>#{source.parameters?.EXPECTED}</em>
+        <br><br>
+        <em>#{source.parameters?.VALUE}</em>
         """
     REFERENCE_GENOME_ERROR:
       name: "Reference genome error"
@@ -189,11 +193,21 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
 
   details: (source) ->
+    console.log source
+
+    # There are generally two types of errors: file level errors
+    # with no line details, and row level errors
     if source.errorType in [
+      "COMPRESSION_CODEC_ERROR"
+      "TOO_MANY_FILES_ERROR"
+      "FILE_HEADER_ERROR"
+      ]
+      return ""
+    else if source.errorType in [
       "MISSING_VALUE_ERROR"
       "OUT_OF_RANGE_ERROR"
       "NOT_A_NUMBER_ERROR"
-      "STRUCTURALLY_INVALID_ROW_ERROR"
+      #"STRUCTURALLY_INVALID_ROW_ERROR"
       ]
       return source.lines.join ', '
     else if source.columnNames[0] is "FileLevelError"

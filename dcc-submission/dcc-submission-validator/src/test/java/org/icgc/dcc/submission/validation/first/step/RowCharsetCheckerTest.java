@@ -21,8 +21,6 @@ import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.step.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.step.RowCharsetChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,7 +74,7 @@ public class RowCharsetCheckerTest {
     }
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
     checker.performSelfCheck("myfile", fileSchema, sb.toString(), 1);
-    TestUtils.checkErrorReported(validationContext, 1);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
   }
 
   @Test
@@ -94,7 +92,7 @@ public class RowCharsetCheckerTest {
     String test_string = Character.toString(nullChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
     checker.performSelfCheck("myfile", fileSchema, test_string, 1);
-    TestUtils.checkNoErrorsReported(validationContext);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
   }
 
   @Test
@@ -103,6 +101,16 @@ public class RowCharsetCheckerTest {
     String test_string = Character.toString(carriageReturnChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
     checker.performSelfCheck("myfile", fileSchema, test_string, 1);
-    TestUtils.checkNoErrorsReported(validationContext);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
+  }
+
+  @Test
+  public void invalidCedillaCharacter() throws Exception {
+    byte[] invalidBytes = new byte[] { (byte) 0xc3, (byte) 0xa7 };
+    String test_string = new String(invalidBytes);
+    // System.out.println(test_string);
+    RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
+    checker.performSelfCheck("myfile", fileSchema, test_string, 1);
+    TestUtils.checkRowCharsetErrorReported(validationContext, 1);
   }
 }
