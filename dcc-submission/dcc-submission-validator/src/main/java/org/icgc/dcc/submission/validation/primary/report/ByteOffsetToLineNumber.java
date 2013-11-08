@@ -23,6 +23,7 @@ import static java.util.Collections.sort;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -161,7 +162,8 @@ public class ByteOffsetToLineNumber {
 
     try {
       val codec = factory.getCodec(file);
-      val inputStream = (codec == null) ? fileSystem.open(file) : codec.createInputStream(fileSystem.open(file));
+      InputStream inputStream =
+          (codec == null) ? fileSystem.open(file) : codec.createInputStream(fileSystem.open(file));
       return new DataInputStream(inputStream);
     } catch (IOException e) {
       throw new RuntimeException("Error reading: '" + file.toString() + "'", e);
