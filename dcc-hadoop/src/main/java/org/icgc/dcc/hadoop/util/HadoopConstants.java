@@ -15,6 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// @formatter:off
 package org.icgc.dcc.hadoop.util;
 
 import static java.lang.Boolean.FALSE;
@@ -25,13 +26,15 @@ import lombok.NoArgsConstructor;
 /**
  * Constants for hadoop, do not include any actual hadoop objects in here.
  */
-// @formatter:off
 @NoArgsConstructor(access = PRIVATE)
 public final class HadoopConstants {
   
   public static final char PROPERTY_VALUES_SEPARATOR = ',';
   
-  // Property names
+  /*
+   * Property names.
+   */
+
   public static final String JAVA_LIBRARY_PATH_PROPERTY_NAME = "java.library.path";
   public static final String HADOOP_USER_NAME_PROPERTY_NAME = "HADOOP_USER_NAME";
   
@@ -46,7 +49,10 @@ public final class HadoopConstants {
   public static final String MAPRED_MAP_TASKS_SPECULATIVE_EXECUTION =    "mapred.map.tasks.speculative.execution";
   public static final String MAPRED_REDUCE_TASKS_SPECULATIVE_EXECUTION = "mapred.reduce.tasks.speculative.execution";
   
-  // Property values
+  /*
+   * Property values.
+   */
+
   public static final String JAVA_LIBRARY_PATH_PROPERTY_NATIVE_VALUE = "/usr/lib/hadoop/lib/native";
   public static final String HDFS_USERNAME_PROPERTY_VALUE = "hdfs";
   
@@ -63,5 +69,5 @@ public final class HadoopConstants {
   
   public static final String CASCADING_DOT_FILE_PATH = "";
   public static final String CASCADING_ERROR_DOT_FILE_NAME = "stream-error.dot";
+  
 }
-//@formatter:on
