@@ -87,9 +87,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     this.hadoopConfig = hadoopConfig;
   }
 
-  /**
-   * TODO: bring together with the loader's counterpart (create a dcc-hadoop module).
-   */
   @Override
   public FlowConnector getFlowConnector() {
     Map<Object, Object> flowProperties = newHashMap();
@@ -102,35 +99,37 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
       flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
-    // Specify available compression codecs
-    flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
-        on(PROPERTY_VALUES_SEPARATOR)
-            .join(
-                DEFAULT_CODEC_PROPERTY_VALUE,
-                GZIP_CODEC_PROPERTY_VALUE,
-                BZIP2_CODEC_PROPERTY_VALUE));
-
-    // Enable compression on intermediate map outputs
-    flowProperties.put(
-        MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
-        ENABLED_COMPRESSION);
-    flowProperties.put(
-        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
-        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
-    flowProperties.put(
-        MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
-        SNAPPY_CODEC_PROPERTY_VALUE);
-
-    // Enable compression on job outputs
-    flowProperties.put(
-        MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
-        ENABLED_COMPRESSION);
-    flowProperties.put(
-        MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
-        GZIP_CODEC_PROPERTY_VALUE);
-
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, this.getClass());
+
+    if (isProduction()) {
+      // Specify available compression codecs
+      flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
+          on(PROPERTY_VALUES_SEPARATOR)
+              .join(
+                  DEFAULT_CODEC_PROPERTY_VALUE,
+                  GZIP_CODEC_PROPERTY_VALUE,
+                  BZIP2_CODEC_PROPERTY_VALUE));
+
+      // Enable compression on intermediate map outputs
+      flowProperties.put(
+          MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
+          ENABLED_COMPRESSION);
+      flowProperties.put(
+          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
+          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+      flowProperties.put(
+          MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
+          SNAPPY_CODEC_PROPERTY_VALUE);
+
+      // Enable compression on job outputs
+      flowProperties.put(
+          MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
+          ENABLED_COMPRESSION);
+      flowProperties.put(
+          MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
+          GZIP_CODEC_PROPERTY_VALUE);
+    }
 
     return new HadoopFlowConnector(flowProperties);
   }
@@ -218,7 +217,15 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     }
 
     return new Fields(Iterables.toArray(header, String.class));
+  }
 
+  /**
+   * Simple mechanism to avoid configuring hadoop properties that will not work when running in pseudo-distributed mode
+   * due to the lack of native libraries.
+   */
+  private boolean isProduction() {
+    // See SubmissionIntegrationTest#setUp
+    return System.getProperty("dcc.hadoop.test") == null;
   }
 
 }

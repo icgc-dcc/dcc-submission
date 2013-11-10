@@ -58,7 +58,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
           checkBZip2(filename, getValidationContext());
           break;
         case PLAIN_TEXT:
-          // No check
+          // Do nothing
           break;
         }
       } else {

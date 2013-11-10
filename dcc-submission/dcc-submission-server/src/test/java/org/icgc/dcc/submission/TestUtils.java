@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -185,22 +186,30 @@ public final class TestUtils {
 
   @SneakyThrows
   public static Response get(Client client, String endPoint) {
+    banner();
     log.info("GET {}", endPoint);
+    banner();
     return build(client, endPoint).get();
   }
 
   public static Response post(Client client, String endPoint, String payload) {
+    banner();
     log.info("POST {} {}", endPoint, abbreviate(payload, 1000));
+    banner();
     return build(client, endPoint).post(Entity.entity(payload, APPLICATION_JSON));
   }
 
   public static Response put(Client client, String endPoint, String payload) {
+    banner();
     log.info("PUT {} {}", endPoint, abbreviate(payload, 1000));
+    banner();
     return build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON));
   }
 
   public static Response delete(Client client, String endPoint) {
+    banner();
     log.info("DELETE {}", endPoint);
+    banner();
     return build(client, endPoint).delete();
   }
 
@@ -225,6 +234,10 @@ public final class TestUtils {
 
   private static URL getDccResource(String resourceName) {
     return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
+
+  private static void banner() {
+    log.info("{}", repeat("\u00B7", 80));
   }
 
 }

@@ -20,8 +20,6 @@ import java.io.OutputStream;
 import java.util.Random;
 import java.util.zip.GZIPOutputStream;
 
-import lombok.Cleanup;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -186,8 +184,7 @@ public class FileCorruptionCheckerTest {
 
   public static DataInputStream getTestInputStream(String content, CodecType type) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    
-    @Cleanup
+
     OutputStream out = bytes;
     switch (type) {
     case GZIP:
@@ -197,10 +194,11 @@ public class FileCorruptionCheckerTest {
       out = new BZip2CompressorOutputStream(bytes);
       break;
     case PLAIN_TEXT:
-      // Already configured above
+      // Do nothing
       break;
     }
     IOUtils.write(content.getBytes(), out);
+    IOUtils.closeQuietly(out);
     return new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
   }
 

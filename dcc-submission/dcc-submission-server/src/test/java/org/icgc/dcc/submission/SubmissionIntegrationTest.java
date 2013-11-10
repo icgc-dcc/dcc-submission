@@ -25,8 +25,6 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.commons.io.FileUtils.copyDirectory;
-import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
@@ -76,9 +74,13 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
@@ -124,7 +126,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT4 =
       _("{\"name\":\"Project Four\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
           PROJECT4_KEY);
-
   private static final String PROJECT5_KEY = "project.5";
   private static final String PROJECT5 =
       _("{\"name\":\"Project Five\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
@@ -164,12 +165,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}, "
       + "{\"key\": \"" + PROJECT5_KEY + "\", \"emails\": [\"project5@example.org\"]}]";
 
-  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/fs";
-  private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
+  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/dcc_root_dir";
   private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
 
-  private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/" + INITITAL_RELEASE_NAME
-      + "/SystemFiles";
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
 
   /**
@@ -177,13 +175,21 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    */
   private static final String FIRST_DICTIONARY_VERSION = dictionaryVersion(resourceToString(FIRST_DICTIONARY_RESOURCE));
   private static final String SECOND_DICTIONARY_VERSION = dictionaryVersion(dictionaryToString());
-
   private int dictionaryUpdateCount = 0;
 
+  /**
+   * Switch that will change environments from "local" if {@code true} and "hadoop" if {@code false}.
+   */
+  private static final boolean LOCAL = true;
+
+  /**
+   * Test utilities.
+   */
   @Inject
   private Datastore datastore;
-
   private SimpleSmtpServer smtpServer;
+  private MiniHadoop hadoop;
+  private FileSystem fileSystem;
 
   @Before
   public void setUp() throws IOException {
@@ -191,8 +197,25 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     log.info("Setting up ...");
     log.info(repeat("-", 100));
 
-    status("init", "Deleting filesystem...");
-    deleteDirectory(new File(DCC_ROOT_DIR));
+    if (LOCAL) {
+      status("init", "Setting up local environment...");
+      fileSystem = FileSystem.get(new Configuration());
+
+      status("init", "Deleting local root filesystem...");
+      fileSystem.delete(new Path(DCC_ROOT_DIR), true);
+    } else {
+      // Setup hadoop infrastructure
+      status("init", "Setting up Hadoop environment...");
+      hadoop = new MiniHadoop(new Configuration(), 1, 1, new File("/tmp/hadoop"));
+      fileSystem = hadoop.getFileSystem();
+
+      // Config overrides for {@code Main} consumption
+      val jobConf = hadoop.createJobConf();
+      System.setProperty("fs.url", jobConf.get("fs.defaultFS"));
+      System.setProperty("hadoop.fs.defaultFS", jobConf.get("fs.defaultFS"));
+      System.setProperty("hadoop.mapred.job.tracker", jobConf.get("mapred.job.tracker"));
+      System.setProperty("dcc.hadoop.test", "true"); // See HadoopPlatformStrategy#isProduction
+    }
 
     status("init", "Dropping database...");
     datastore.getDB().dropDatabase();
@@ -205,6 +228,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   }
 
   @After
+  @SneakyThrows
   public void tearDown() {
     log.info(repeat("-", 100));
     log.info("Tearing down ...");
@@ -221,6 +245,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("shutdown", "Shutting down submission server...");
     Main.shutdown();
     status("shutdown", "Submission server shut down.");
+
+    if (hadoop != null) {
+      status("shutdown", "Shutting down hadoop...");
+      hadoop.close();
+    }
   }
 
   @Test
@@ -254,9 +283,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("seed", "Seeding code lists...");
     post(client, SEED_CODELIST_ENDPOINT, codeListsToString());
-
-    status("seed", "Seeding system files...");
-    copyDirectory(new File(SYSTEM_FILES_DIR), new File(INITIAL_RELEASE_SYSTEM_FILES_DIR));
   }
 
   private void adminCreatesRelease() throws Exception, IOException {
@@ -275,9 +301,18 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
   }
 
+  @SneakyThrows
   private void userSubmitsFiles() throws IOException {
-    status("user", "\"Submitting\" files...");
-    copyDirectory(new File(FS_DIR), new File(DCC_ROOT_DIR));
+    val source = new Path(FS_DIR);
+    val destination = new Path(DCC_ROOT_DIR);
+    status("user", "\"Submitting\" files from '{}' to '{}'...", source, destination);
+    fileSystem.delete(destination, true);
+    fileSystem.copyFromLocalFile(source, destination);
+
+    val list = fileSystem.listFiles(destination, true);
+    while (list.hasNext()) {
+      log.info("Copied: {}", list.next().getPath());
+    }
   }
 
   private void userValidates() throws Exception {
@@ -531,9 +566,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
 
     // check no errors for project 1
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR + "errors.json");
+    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR
+        + "errors.json");
+    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR
+        + "errors.json");
+    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR
+        + "errors.json");
     // TODO add more
   }
 
