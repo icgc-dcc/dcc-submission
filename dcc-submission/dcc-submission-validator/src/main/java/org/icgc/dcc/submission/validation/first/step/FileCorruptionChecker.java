@@ -57,6 +57,9 @@ public class FileCorruptionChecker extends CompositeFileChecker {
         case BZIP2:
           checkBZip2(filename, getValidationContext());
           break;
+        case PLAIN_TEXT:
+          // No check
+          break;
         }
       } else {
         log.info("Content type does not match the extension for file: " + filename);
