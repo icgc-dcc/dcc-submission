@@ -41,6 +41,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -58,7 +60,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 /**
- * Utility class for integration test (to help un-clutter it).
+ * Utility class for integration test (to help declutter it).
  */
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
@@ -67,7 +69,9 @@ public final class TestUtils {
   /**
    * Jackson constants.
    */
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
   /**
    * Endpoint path constants.
@@ -193,6 +197,8 @@ public final class TestUtils {
   }
 
   public static Response post(Client client, String endPoint, String payload) {
+    payload = normalize(payload);
+
     banner();
     log.info("POST {} {}", endPoint, abbreviate(payload, 1000));
     banner();
@@ -200,6 +206,8 @@ public final class TestUtils {
   }
 
   public static Response put(Client client, String endPoint, String payload) {
+    payload = normalize(payload);
+
     banner();
     log.info("PUT {} {}", endPoint, abbreviate(payload, 1000));
     banner();
@@ -215,6 +223,16 @@ public final class TestUtils {
 
   public static String asString(Response response) {
     return response.readEntity(String.class);
+  }
+
+  @SneakyThrows
+  public static JsonNode $(String json) {
+    return MAPPER.readTree(json);
+  }
+
+  @SneakyThrows
+  public static JsonNode $(Response response) {
+    return $(asString(response));
   }
 
   @SneakyThrows
@@ -234,6 +252,13 @@ public final class TestUtils {
 
   private static URL getDccResource(String resourceName) {
     return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
+
+  @SneakyThrows
+  private static String normalize(String json) {
+    val node = MAPPER.readTree(json);
+    val writer = MAPPER.writerWithDefaultPrettyPrinter();
+    return writer.writeValueAsString(node);
   }
 
   private static void banner() {
