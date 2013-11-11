@@ -1,0 +1,4 @@
+analysis_id	analyzed_sample_id	matched_sample_id	assembly_version	platform	experimental_protocol	base_calling_algorithm	alignment_algorithm	variation_calling_algorithm	other_analysis_algorithm	sequencing_strategy	seq_coverage	raw_data_repository	raw_data_accession	uri	db_xref	note
+0040	00312	00301	3	28	http://www.icgc.org	-777	http://www.icgc.org	-888		27	24.13092593874892	2	EGAD0		00:a	qnZKIwxHVX
+0041	00312	00301	14	31	http://www.icgc.org	-888	http://www.icgc.org	http://www.icgc.org	BN CT NYYT	22	32.55649423034649	6	EGAD0	http://www.icgc.org	00:a	dual_depth_peeling
+0042	00312	00301	13	9	http://www.icgc.org	http://www.icgc.org	http://www.icgc.org	-888	MyUs UBkgj	20		6	EGAD0	http://www.icgc.org	00:a	dual_depth_peeling
