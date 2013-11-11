@@ -1,0 +1,14 @@
+analyzed_sample_id	specimen_id	analyzed_sample_type	analyzed_sample_type_other	analyzed_sample_interval	uri	db_xref	analyzed_sample_notes
+tumor_4142267	tumor_4142267	7	-999	262	-888	-888	-999
+control_4142267	control_4142267	4	-999	249	-888	-888	-999
+tumor_4163639	tumor_4163639	7	-999	850	-888	-888	-999
+control_4163639	control_4163639	1	-999	26	-888	-888	-999
+tumor_4159170	tumor_4159170	7	-999	1477	-888	-888	-999
+control_4159170	control_4159170	1	-999	45	-888	-888	-999
+tumor_4175837	tumor_4175837	7	-999	444	-888	-888	-999
+control_4175837	control_4175837	1	-999	9	-888	-888	-999
+tumor_4177376	tumor_4177376	7	-999	191	-888	-888	-999
+control_4177376	control_4177376	1	-999	37	-888	-888	-999
+tumor_4135099	tumor_4135099	7	-999	657	-888	-888	-999
+control_4135099	control_4135099	1	-999	5	-888	-888	-999
+control_4191799	control_4191799	4	-999	728	-999	-888	-888

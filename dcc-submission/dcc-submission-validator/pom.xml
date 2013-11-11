@@ -117,10 +117,29 @@
       <version>${mvel.version}</version>
     </dependency>
 
+    <!-- Genomics -->
+    <dependency>
+      <groupId>org.utgenome.thirdparty</groupId>
+      <artifactId>picard</artifactId>
+      <version>${picard.version}</version>
+    </dependency>
+
     <!-- Testing - DCC -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-resources</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Testing - Hadoop -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-minicluster</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -132,11 +151,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.utgenome.thirdparty</groupId>
-      <artifactId>picard</artifactId>
-      <version>${picard.version}</version>
-    </dependency>
   </dependencies>
 
   <properties>

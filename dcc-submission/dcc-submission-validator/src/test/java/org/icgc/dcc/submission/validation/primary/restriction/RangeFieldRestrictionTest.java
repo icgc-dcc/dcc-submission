@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.primary.restriction;
 import java.util.Iterator;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction.RangeFunction;
 import org.junit.Test;
 

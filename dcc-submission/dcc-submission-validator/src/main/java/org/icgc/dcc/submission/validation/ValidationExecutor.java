@@ -35,6 +35,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.Validation;
+import org.icgc.dcc.submission.validation.util.NamingCallable;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -85,7 +86,7 @@ public class ValidationExecutor {
 
     // Need to apply listening decorator here because we still need access to pool methods later
     log.info("execute: Submitting validation '{}' ... {}", id, getStats());
-    val future = listeningDecorator(pool).submit(new Callable<Validation>() {
+    val future = listeningDecorator(pool).submit(new NamingCallable<Validation>(id, new Callable<Validation>() {
 
       @Override
       @SneakyThrows
@@ -109,7 +110,7 @@ public class ValidationExecutor {
         return validation;
       }
 
-    });
+    }));
 
     // Track it for cancellation
     futures.put(id, future);
@@ -181,7 +182,7 @@ public class ValidationExecutor {
         queue,
 
         // Name the threads for logging and diagnostics
-        new ThreadFactoryBuilder().setNameFormat("Validation Slot %s").build(),
+        new ThreadFactoryBuilder().setNameFormat("validation-%s").build(),
 
         // Need this to get a customized exception when "slots" are full
         new RejectedExecutionHandler() {

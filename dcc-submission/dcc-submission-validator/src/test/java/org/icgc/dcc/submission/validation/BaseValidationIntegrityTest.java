@@ -60,7 +60,7 @@ public abstract class BaseValidationIntegrityTest {
    */
   private static final ObjectMapper MAPPER = new ObjectMapper();
   protected static final Path SYSTEM_DIR = new Path(
-      "../dcc-submission-server/src/test/resources/fixtures/submission/fs/SystemFiles");
+      "../dcc-submission-server/src/test/resources/fixtures/submission/dcc_root_dir/release1/SystemFiles");
 
   /**
    * Mocks.

@@ -56,7 +56,7 @@ public class FileCollisionChecker extends CompositeFileChecker {
           filename,
           TOO_MANY_FILES_ERROR,
           fileSchema.getName(),
-          ImmutableList.of(fileNames));
+          ImmutableList.copyOf(fileNames));
     }
   }
 
