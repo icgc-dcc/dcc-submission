@@ -35,7 +35,7 @@ public class ProjectRepositoryTest {
 
   private ProjectRepository projectRepository;
 
-  private MorphiaQuery<Project> bareMorphiaQuery;
+  private MorphiaQuery<Project> morphiaQuery;
 
   private final Project projectOne = new Project("PRJ1", "Project One");
 
@@ -60,7 +60,7 @@ public class ProjectRepositoryTest {
 
     projectRepository = new ProjectRepository(morphia, datastore, mailService);
 
-    bareMorphiaQuery = new MorphiaQuery<Project>(morphia, datastore, QProject.project);
+    morphiaQuery = new MorphiaQuery<Project>(morphia, datastore, QProject.project);
   }
 
   @After
@@ -71,53 +71,54 @@ public class ProjectRepositoryTest {
   public void testFindAll() {
     val expected = Sets.newHashSet(projectOne, projectTwo);
     val actual = projectRepository.findAll();
-    val bare = ImmutableSet.copyOf(bareMorphiaQuery.list());
+    val morphiaResponse = ImmutableSet.copyOf(morphiaQuery.list());
 
     assertThat(actual).isEqualTo(expected);
-    assertThat(bare).isEqualTo(expected);
+    assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
   public void testFindAllForUser() {
     val expected = Sets.newHashSet(projectOne);
     val actual = projectRepository.findAllForUser(AUTH_ALLOWED_USER);
-    val bare = ImmutableSet.copyOf(bareMorphiaQuery.where(QProject.project.users.contains(AUTH_ALLOWED_USER)).list());
+    val morphiaResponse =
+        ImmutableSet.copyOf(morphiaQuery.where(QProject.project.users.contains(AUTH_ALLOWED_USER)).list());
 
     assertThat(actual).isEqualTo(expected);
-    assertThat(bare).isEqualTo(expected);
+    assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
   public void testFind() {
     val expected = projectOne;
     val actual = projectRepository.find(projectOne.getKey());
-    val bare = bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey())).singleResult();
+    val morphiaResponse = morphiaQuery.where(QProject.project.key.eq(projectOne.getKey())).singleResult();
 
     assertThat(actual).isEqualTo(expected);
-    assertThat(bare).isEqualTo(expected);
+    assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
   public void testFindForUserAllowed() {
     val expected = projectOne;
     val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_ALLOWED_USER);
-    val bare =
-        bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
+    val morphiaResponse =
+        morphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
             .where(QProject.project.users.contains(AUTH_ALLOWED_USER)).singleResult();
 
     assertThat(actual).isEqualTo(expected);
-    assertThat(bare).isEqualTo(expected);
+    assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
   public void testFindForUserNotAllowed() {
     val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_NOT_ALLOWED_USER);
-    val bare =
-        bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
+    val morphiaResponse =
+        morphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
             .where(QProject.project.users.contains(AUTH_NOT_ALLOWED_USER)).singleResult();
 
     assertThat(actual).isNull();
-    assertThat(bare).isNull();
+    assertThat(morphiaResponse).isNull();
   }
 
   @Test
@@ -131,7 +132,7 @@ public class ProjectRepositoryTest {
     assertThat(response).isNotNull();
 
     assertThat(projectRepository.find(projectThree.getKey())).isEqualTo(projectThree);
-    assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
+    assertThat(morphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
         projectThree);
   }
 
@@ -148,7 +149,7 @@ public class ProjectRepositoryTest {
     assertThat(first).isEqualTo(second);
 
     assertThat(projectRepository.find(projectThree.getKey())).isEqualTo(projectThree);
-    assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
+    assertThat(morphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
         projectThree);
   }
 

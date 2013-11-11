@@ -37,7 +37,7 @@ public class ReleaseRepositoryTest {
 
   private ReleaseRepository releaseRepository;
 
-  private MorphiaQuery<Release> bareMorphiaQuery;
+  private MorphiaQuery<Release> morphiaQuery;
 
   private Datastore datastore;
 
@@ -63,7 +63,7 @@ public class ReleaseRepositoryTest {
 
     releaseRepository = new ReleaseRepository(morphia, datastore, mailService);
 
-    bareMorphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
+    morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }
 
   @After
@@ -74,38 +74,38 @@ public class ReleaseRepositoryTest {
   public void testFindAll() {
     val expected = Sets.newHashSet(releaseOne, releaseTwo);
     val actual = releaseRepository.findAll();
-    val bare = ImmutableSet.copyOf(bareMorphiaQuery.list());
+    val morphiaResponse = ImmutableSet.copyOf(morphiaQuery.list());
 
     assertThat(actual).isEqualTo(expected);
-    assertThat(bare).isEqualTo(expected);
+    assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
   public void testFind() {
     val expected = releaseOne;
     val actual = releaseRepository.find(releaseOne.getName());
-    val bare = bareMorphiaQuery.where(QRelease.release.name.eq(releaseOne.getName())).singleResult();
+    val morphiaResponse = morphiaQuery.where(QRelease.release.name.eq(releaseOne.getName())).singleResult();
 
     assertThat(actual).isEqualTo(expected);
-    assertThat(bare).isEqualTo(expected);
+    assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
   public void testFindOpen() {
     val expected = releaseTwo;
     val actual = releaseRepository.findOpen();
-    val bare =
-        bareMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
+    val morphiaResponse =
+        morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
 
     assertThat(actual).isEqualTo(expected);
-    assertThat(bare).isEqualTo(expected);
+    assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
   public void testAddSubmission() throws Exception {
     val submission = new Submission("PRJ3", "Project Three", releaseOne.getName());
     val getOpenReleaseQuery =
-        bareMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
+        morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
 
     // Check that Release in DB does not have Submission
     val openRelease = getOpenReleaseQuery.singleResult();
@@ -131,7 +131,7 @@ public class ReleaseRepositoryTest {
   public void testUpdate() throws Exception {
     val submission = new Submission("PRJ3", "Project Three", releaseOne.getName());
     val getOpenReleaseQuery =
-        bareMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
+        morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
 
     // Check that Release in DB does not have Submission
     val release = getOpenReleaseQuery.singleResult();
