@@ -3,6 +3,7 @@
   "errors" : [ {
     "type" : "REGEX_ERROR",
     "columnNames" : [ "donor_tumour_stage_at_diagnosis" ],
+    "number" : 0,
     "value" : "A2 N2 M0",
     "line" : 2,
     "parameters" : {
