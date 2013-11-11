@@ -68,6 +68,6 @@ module.exports = class SchemaReport extends Model
 
     response.errors = new SchemaReportErrors errors
     response.fieldReports = new SchemaReportFieldReports response.fieldReports
-    response.summaryReports = new SchemaReportSummaryReports response.summaryReports
-    #response.summaryReports = new SchemaReportSummaryReports ["name":"test name", "value":"test value"]
+    response.summaryReports =
+      new SchemaReportSummaryReports response.summaryReports
     response

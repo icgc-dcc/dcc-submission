@@ -271,7 +271,7 @@ public final class NormalizationValidator implements Validator {
       NormalizationCounter counter = entry.getKey();
       Long count = entry.getValue();
       validationContext.reportSummary(
-          fileName, counter.name(), count);
+          fileName, counter.name(), String.valueOf(count));
     }
   }
 

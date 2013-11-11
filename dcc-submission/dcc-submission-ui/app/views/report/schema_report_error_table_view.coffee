@@ -214,7 +214,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Excessive amount of sensitive data error"
       description: (source) ->
         """
-        An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of 
+        An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of
         <em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
         observations has been dectected and most likely indicates an error
         in the data. The maximum threshold allowed is

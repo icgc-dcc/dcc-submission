@@ -19,11 +19,16 @@ package org.icgc.dcc.submission.validation.core;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import com.google.code.morphia.annotations.Embedded;
 
 /**
  * Represents a name-value summary metric.
  */
 @Data
+@Embedded
+@NoArgsConstructor
 @AllArgsConstructor
 public class SummaryReport {
 
@@ -35,6 +40,6 @@ public class SummaryReport {
   /**
    * The value of the metric
    */
-  private Object value;
+  private String value;
 
 }

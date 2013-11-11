@@ -43,7 +43,7 @@ public interface ReportContext {
   /**
    * Reports on summary statistics.
    */
-  void reportSummary(String fileName, String name, Object value);
+  void reportSummary(String fileName, String name, String value);
 
   /**
    * Reports on field statistics.
