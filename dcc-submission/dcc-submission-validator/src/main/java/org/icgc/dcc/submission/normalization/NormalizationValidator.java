@@ -268,8 +268,8 @@ public final class NormalizationValidator implements Validator {
         .build()
         .getExternalReportCounters()) {
 
-      NormalizationCounter counter = entry.getKey();
-      Long count = entry.getValue();
+      val counter = entry.getKey();
+      val count = entry.getValue();
       validationContext.reportSummary(
           fileName, counter.name(), String.valueOf(count));
     }

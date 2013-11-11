@@ -30,7 +30,6 @@ import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
-import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.planner.DefaultPlanner;
@@ -158,7 +157,7 @@ public class ValidationModule extends AbstractDccModule {
     // Order: Syntactic, primary then semantic
     bindValidator(validators, FirstPassValidator.class);
     bindValidator(validators, ReferenceGenomeValidator.class);
-    bindValidator(validators, PrimaryValidator.class);
+    // bindValidator(validators, PrimaryValidator.class);
     bindValidator(validators, new Provider<NormalizationValidator>() {
 
       @Inject

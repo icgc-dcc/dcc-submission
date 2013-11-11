@@ -182,7 +182,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   /**
    * Switch that will change environments from "local" if {@code true} and "hadoop" if {@code false}.
    */
-  private static final boolean LOCAL = true;
+  private static final boolean LOCAL = false;
 
   /**
    * Test utilities.

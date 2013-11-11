@@ -192,10 +192,13 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   protected Tap<?, ?, ?> tapSource(Path path) {
-    val textLine = new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line"));
-    textLine.setSinkCompression(Compress.ENABLE);
-
-    return new Hfs(textLine, path.toUri().getPath());
+    val scheme = new TextLine(
+        new Fields(ValidationFields.OFFSET_FIELD_NAME,
+            "line"));
+    scheme.setSinkCompression(Compress.ENABLE);
+    return new Hfs(
+        scheme,
+        path.toUri().getPath());
   }
 
   @Override

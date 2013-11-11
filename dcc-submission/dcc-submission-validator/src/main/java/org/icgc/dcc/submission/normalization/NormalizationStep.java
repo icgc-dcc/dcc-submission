@@ -17,12 +17,14 @@
  */
 package org.icgc.dcc.submission.normalization;
 
+import java.io.Serializable;
+
 import cascading.pipe.Pipe;
 
 /**
  * 
  */
-public interface NormalizationStep {
+public interface NormalizationStep extends Serializable {
 
   /**
    * Returns a short name for the step.

@@ -128,7 +128,7 @@ public class DccFileSystem2 {
     FSDataOutputStream create = fileSystem
         .create(
         new Path(file));
-    create.writeUTF(content);
+    create.writeBytes(content.toString());
   }
 
   private String lazyDirCreation(String dir) {
