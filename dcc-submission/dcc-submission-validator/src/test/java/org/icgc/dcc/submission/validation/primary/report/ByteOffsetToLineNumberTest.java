@@ -20,8 +20,9 @@ package org.icgc.dcc.submission.validation.primary.report;
 import static com.google.common.io.ByteStreams.toByteArray;
 import static com.google.common.io.Files.getFileExtension;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.lsAll;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
@@ -33,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.validation.MiniHadoop;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,24 +48,34 @@ public class ByteOffsetToLineNumberTest {
    * Test configuration.
    */
   private static final String TEST_DIR = "src/test/resources/fixtures/validation/line-numbers";
-  private static final Path TEST_PATH = new Path(TEST_DIR);
-  private static final FileSystem TEST_FILE_SYSTEM = createFileSystem();
+
+  MiniHadoop hadoop;
 
   @Before
   @SneakyThrows
   public void setUp() {
-    ByteOffsetToLineNumber.fileSystem = TEST_FILE_SYSTEM;
+    hadoop = new MiniHadoop(new Configuration(), 1, 1, new File("/tmp/hadoop"));
+
+    ByteOffsetToLineNumber.fileSystem = hadoop.getFileSystem();
+  }
+
+  @After
+  @SneakyThrows
+  public void tearDown() {
+    hadoop.close();
   }
 
   @Test
   @SneakyThrows
   public void testConvert() {
-    val paths = lsAll(TEST_FILE_SYSTEM, TEST_PATH);
-    for (val path : paths) {
-      log.info("Processing '{}'", path.getName());
-      val expected = getMapping(path);
+    for (val file : new File(TEST_DIR).listFiles()) {
+      log.info("Processing '{}'", file.getName());
+      val expected = getMapping(file);
       val offsets = expected.keySet();
       log.info("Expected: {}", expected);
+
+      Path path = new Path("/hdfs/" + file.getName());
+      hadoop.getFileSystem().copyFromLocalFile(new Path(file.toURI()), path);
 
       // Exercise
       val actual = ByteOffsetToLineNumber.convert(path, offsets, false);
@@ -72,12 +85,12 @@ public class ByteOffsetToLineNumberTest {
   }
 
   @SneakyThrows
-  private static Map<Long, Long> getMapping(Path path) {
+  private static Map<Long, Long> getMapping(File file) {
     val mapping = ImmutableMap.<Long, Long> builder();
     long offset = 0;
     long lineNumber = 1;
 
-    for (val b : getBytes(path)) {
+    for (val b : getBytes(file)) {
       offset++;
       if ((char) b == '\n') {
         lineNumber++;
@@ -91,16 +104,16 @@ public class ByteOffsetToLineNumberTest {
   }
 
   @SneakyThrows
-  private static byte[] getBytes(Path path) {
+  private static byte[] getBytes(File file) {
     @Cleanup
-    val input = TEST_FILE_SYSTEM.open(path);
-    val bytes = toByteArray(isGzip(path) ? new GZIPInputStream(input) : input);
+    val input = new FileInputStream(file);
+    val bytes = toByteArray(isGzip(file) ? new GZIPInputStream(input) : input);
 
     return bytes;
   }
 
-  private static boolean isGzip(Path path) {
-    return getFileExtension(path.getName()).equals("gz");
+  private static boolean isGzip(File file) {
+    return getFileExtension(file.getName()).equals("gz");
   }
 
   @SneakyThrows

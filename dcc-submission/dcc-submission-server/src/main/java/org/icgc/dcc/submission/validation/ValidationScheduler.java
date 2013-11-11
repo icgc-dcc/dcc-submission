@@ -65,16 +65,16 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
 
 /**
- * Coordinator that runs periodically to dispatch validations for execution. It pulls from the "queue" as input and
- * pushes to the "executor" as output. Also responsible for mediating validation cancellation requests coming from the
- * web layer.
+ * Coordinator task that runs periodically to dispatch validations for execution. It pulls from the web request "queue"
+ * as input and pushes to the validation "executor" as output. Also responsible for mediating validation cancellation
+ * requests coming from the web layer.
  */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ValidationScheduler extends AbstractScheduledService {
 
   /**
-   * Period at which the service polls for an open release and for enqueued projects there is one.
+   * Period at which the service polls for an open release and for an enqueued project if there is one.
    */
   private static final int POLLING_PERIOD_SECONDS = 1;
 
@@ -291,6 +291,9 @@ public class ValidationScheduler extends AbstractScheduledService {
     }
   }
 
+  /**
+   * Utility method to give the current "next release" object and confirms open state.
+   */
   private Release resolveOpenRelease() {
     val release = releaseService.resolveNextRelease().getRelease();
     checkState(release.getState() == OPENED, "Release is expected to be '%s'", OPENED);
@@ -305,6 +308,12 @@ public class ValidationScheduler extends AbstractScheduledService {
     log.info("Finished storing validation submission report for project '{}'", projectKey);
   }
 
+  /**
+   * "Resolves" the submission of specified {@code queuedProject} to the supplied submission {@code state}.
+   * 
+   * @param queuedProject the project to resolve
+   * @param state the destination state of the resolution
+   */
   private void resolveSubmission(QueuedProject queuedProject, SubmissionState state) {
     val projectKey = queuedProject.getKey();
     log.info("Resolving project '{}' to submission state '{}'", projectKey, state);
@@ -318,21 +327,27 @@ public class ValidationScheduler extends AbstractScheduledService {
     log.info("Resolved project '{}'", projectKey);
   }
 
-  private void notifyRecipients(QueuedProject project, SubmissionState state) {
+  /**
+   * Notifies recipients by email that the validation has been "resolved".
+   * 
+   * @param queuedProject the project to resolve
+   * @param state the destination state of the resolution
+   */
+  private void notifyRecipients(QueuedProject queuedProject, SubmissionState state) {
     val release = resolveOpenRelease();
 
     val addresses = Sets.<Address> newHashSet();
-    for (val email : project.getEmails()) {
+    for (val email : queuedProject.getEmails()) {
       try {
         val address = new InternetAddress(email);
         addresses.add(address);
       } catch (AddressException e) {
-        log.error("Illegal Address: " + e + " in " + project);
+        log.error("Illegal Address: " + e + " in " + queuedProject);
       }
     }
 
     if (!addresses.isEmpty()) {
-      mailService.sendValidated(release.getName(), project.getKey(), state, addresses);
+      mailService.sendValidated(release.getName(), queuedProject.getKey(), state, addresses);
     }
   }
 

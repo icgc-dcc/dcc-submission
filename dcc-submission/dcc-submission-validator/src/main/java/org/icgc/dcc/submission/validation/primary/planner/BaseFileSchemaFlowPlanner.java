@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Map;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ReportContext;
@@ -29,8 +30,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
@@ -38,9 +37,8 @@ import cascading.pipe.Pipe;
 
 import com.google.common.collect.Maps;
 
+@Slf4j
 public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner {
-
-  private static final Logger log = LoggerFactory.getLogger(BaseFileSchemaFlowPlanner.class);
 
   private final FileSchema fileSchema;
 
@@ -91,8 +89,11 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
     // Make a flow only if there's something to do
     if (def.getSinks().size() > 0 && def.getSources().size() > 0) {
-      return strategy.getFlowConnector().connect(def);
+      Flow<?> flow = strategy.getFlowConnector().connect(def);
+
+      return flow;
     }
+
     return null;
   }
 
