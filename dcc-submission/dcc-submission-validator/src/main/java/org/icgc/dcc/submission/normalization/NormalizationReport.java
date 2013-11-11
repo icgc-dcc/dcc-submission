@@ -17,8 +17,13 @@
  */
 package org.icgc.dcc.submission.normalization;
 
+import static com.google.common.collect.ImmutableSet.copyOf;
+import static com.google.common.collect.Iterables.filter;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
+
+import java.util.Map.Entry;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -27,7 +32,9 @@ import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * 
@@ -36,23 +43,44 @@ import com.google.common.collect.ImmutableMap;
 @Value
 public final class NormalizationReport {
 
+  private static final boolean EXTERNAL = true;
+  private static final boolean INTERNAL = false;
+
   private final String projectKey;
   private final ImmutableMap<NormalizationCounter, Long> counters;
 
+  public ImmutableSet<Entry<NormalizationCounter, Long>> getExternalReportCounters() {
+    return copyOf(filter(
+        counters.entrySet(),
+        new Predicate<Entry<NormalizationCounter, Long>>() {
+
+          @Override
+          public boolean apply(Entry<NormalizationCounter, Long> input) {
+            NormalizationCounter counter = input.getKey();
+            return counter.externalReport;
+          }
+        }));
+  }
+
   @RequiredArgsConstructor
   public enum NormalizationCounter {
-    TOTAL_START("TODO"),
-    TOTAL_END("TODO"),
-    UNIQUE_START(format("Number of unique '%s' before filtering", ANALYSIS_ID_FIELD)),
-    DROPPED("Number of observations dropped due to redundancy"),
-    UNIQUE_FILTERED(format("Number of unique '%s' remaining after filtering", ANALYSIS_ID_FIELD)),
-    MARKED_AS_CONTROLLED("TODO"),
-    MASKED("TODO");
+    TOTAL_START("TODO", EXTERNAL),
+    TOTAL_END("TODO", EXTERNAL),
+    UNIQUE_START(format("Number of unique '%s' before filtering", ANALYSIS_ID_FIELD), INTERNAL),
+    DROPPED("Number of observations dropped due to redundancy", INTERNAL),
+    UNIQUE_FILTERED(format("Number of unique '%s' remaining after filtering", ANALYSIS_ID_FIELD), INTERNAL),
+    MARKED_AS_CONTROLLED("TODO", EXTERNAL),
+    MASKED("TODO", EXTERNAL);
 
     public static final long COUNT_INCREMENT = 1;
 
     @Getter
     private final String displayName;
+
+    /**
+     * Whether the counter is to be used for external reporting or not.
+     */
+    private final boolean externalReport;
 
     static ImmutableMap<NormalizationCounter, Long> report(ConnectedCascade connected) {
       val counters = new ImmutableMap.Builder<NormalizationCounter, Long>();

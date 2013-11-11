@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.core;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.normalization.NormalizationReport;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
 /**
@@ -50,8 +49,6 @@ public interface ReportContext {
    * Reports on field statistics.
    */
   void reportField(String fileName, FieldReport fieldReport);
-
-  void reportNormalization(String fileName, NormalizationReport normalizationReport);
 
   void reportError(String fileName, TupleError tupleError);
 

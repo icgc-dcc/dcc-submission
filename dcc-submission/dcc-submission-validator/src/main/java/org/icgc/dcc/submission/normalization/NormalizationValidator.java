@@ -254,18 +254,25 @@ public final class NormalizationValidator implements Validator {
   /**
    * 
    */
-  private void externalStatisticsReport(String fileName, ConnectedCascade connectedCascade,
+  private void externalStatisticsReport(
+      String fileName,
+      ConnectedCascade connectedCascade,
       ValidationContext validationContext) {
-    validationContext
-        .reportNormalization(
-            fileName,
-            NormalizationReport
-                .builder()
-                .projectKey(
-                    validationContext.getProjectKey())
-                .counters(
-                    NormalizationCounter.report(connectedCascade))
-                .build());
+
+    for (val entry : NormalizationReport
+        .builder()
+        .projectKey(
+            validationContext.getProjectKey())
+        .counters(
+            NormalizationCounter.report(connectedCascade))
+        .build()
+        .getExternalReportCounters()) {
+
+      NormalizationCounter counter = entry.getKey();
+      Long count = entry.getValue();
+      validationContext.reportSummary(
+          fileName, counter.name(), count);
+    }
   }
 
   /**

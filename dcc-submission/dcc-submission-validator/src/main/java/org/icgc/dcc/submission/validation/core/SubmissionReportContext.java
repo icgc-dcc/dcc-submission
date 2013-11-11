@@ -30,7 +30,6 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.normalization.NormalizationReport;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
 /**
@@ -68,11 +67,6 @@ public class SubmissionReportContext implements ReportContext {
   @Override
   public void reportField(String fileName, FieldReport fieldReport) {
     addFieldReport(fileName, fieldReport);
-  }
-
-  @Override
-  public void reportNormalization(String fileName, NormalizationReport normalizationReport) {
-    log.info("Reporting: '{}'", normalizationReport); // TODO
   }
 
   @Override

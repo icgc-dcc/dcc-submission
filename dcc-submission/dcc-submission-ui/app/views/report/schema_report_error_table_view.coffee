@@ -210,7 +210,16 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         Submitted reference genome allele does not match allele in
          <em>#{source.parameters?.EXPECTED}</em>
         """
-
+    TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR:
+      name: "Excessive amount of sensitive data error"
+      description: (source) ->
+        """
+        An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of 
+        <em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
+        observations has been dectected and most likely indicates an error
+        in the data. The maximum threshold allowed is
+        <em>#{source.parameters?.EXPECTED}</em>.
+        """
   details: (source) ->
 
     # There are generally two types of errors: file level errors
