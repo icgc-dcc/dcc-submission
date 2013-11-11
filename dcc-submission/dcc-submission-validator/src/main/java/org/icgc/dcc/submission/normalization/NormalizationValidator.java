@@ -231,7 +231,7 @@ public final class NormalizationValidator implements Validator {
    * Well-formedness validation has already ensured that we have a properly formatted TSV file.
    */
   private Tap<?, ?, ?> getInputTap(PlatformStrategy platformStrategy, FileSchema fileSchema) {
-    return platformStrategy.getSourceTap(fileSchema);
+    return platformStrategy.getSourceTap2(fileSchema);
   }
 
   /**

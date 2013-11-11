@@ -40,7 +40,7 @@ public final class NormalizationConfig {
   /**
    * TODO
    */
-  public static final String NORMALIZER_CONFIG_PARAM = "normalizer";
+  public static final String NORMALIZER_CONFIG_PARAM = NormalizationValidator.COMPONENT_NAME;
 
   public static final String ENABLED = "enabled";
   public static final String ERROR_THRESHOLD = "error_threshold";

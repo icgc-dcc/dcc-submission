@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
+import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -189,6 +190,17 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     TextLine textLine = new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line"));
     textLine.setSinkCompression(Compress.ENABLE);
     return new Hfs(textLine, path.toUri().getPath());
+  }
+
+  @Override
+  protected Tap<?, ?, ?> tapSource2(Path path) {
+    val scheme = new TextDelimited(
+        true, // headers
+        FIELD_SEPARATOR);
+    scheme.setSinkCompression(Compress.ENABLE);
+    return new Hfs(
+        scheme,
+        path.toUri().getPath());
   }
 
   /**

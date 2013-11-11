@@ -69,11 +69,26 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
    * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}.
    */
   @Override
+  @Deprecated
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     try {
       Path path = path(schema);
       Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
       return tapSource(resolvedPath);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}.
+   */
+  @Override
+  public Tap<?, ?, ?> getSourceTap2(FileSchema schema) {
+    try {
+      Path path = path(schema);
+      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+      return tapSource2(resolvedPath);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -112,7 +127,16 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   protected abstract Tap<?, ?, ?> tap(Path path, Fields fields);
 
+  /**
+   * See {@link #getSourceTap(FileSchema)} comment
+   */
+  @Deprecated
   protected abstract Tap<?, ?, ?> tapSource(Path path);
+
+  /**
+   * See {@link #getSourceTap(FileSchema)} comment
+   */
+  protected abstract Tap<?, ?, ?> tapSource2(Path path);
 
   @Override
   public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {

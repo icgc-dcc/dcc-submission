@@ -205,7 +205,7 @@ public class NormalizationValidatorTest {
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
   private void mockInputTap() {
-    when(mockPlatformStrategy.getSourceTap(mockFileSchema))
+    when(mockPlatformStrategy.getSourceTap2(mockFileSchema))
         .thenReturn(getInputTap());
   }
 
