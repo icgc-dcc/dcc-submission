@@ -24,6 +24,7 @@
 Model = require 'models/base/model'
 SchemaReportErrors = require 'models/schema_report_errors'
 SchemaReportFieldReports = require 'models/schema_report_field_reports'
+SchemaReportSummaryReports = require 'models/schema_report_summary_reports'
 
 module.exports = class SchemaReport extends Model
 
@@ -49,6 +50,7 @@ module.exports = class SchemaReport extends Model
 
     @set "errors", new SchemaReportErrors errors
     @set "fieldReports", new SchemaReportFieldReports @get "fieldReports"
+    @set "summaryReports", new SchemaReportSummaryReports @get "summaryReports"
 
   parse: (response) ->
     response.state =
@@ -66,4 +68,6 @@ module.exports = class SchemaReport extends Model
 
     response.errors = new SchemaReportErrors errors
     response.fieldReports = new SchemaReportFieldReports response.fieldReports
+    response.summaryReports = new SchemaReportSummaryReports response.summaryReports
+    #response.summaryReports = new SchemaReportSummaryReports ["name":"test name", "value":"test value"]
     response
