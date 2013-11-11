@@ -174,6 +174,11 @@ public final class TestUtils {
   }
 
   @SneakyThrows
+  public static String dictionaryToString(Dictionary dict) {
+    return MAPPER.writeValueAsString(dict);
+  }
+
+  @SneakyThrows
   public static String dictionaryVersion(String dictionaryJson) {
     val dictionaryNode = MAPPER.readTree(dictionaryJson);
 

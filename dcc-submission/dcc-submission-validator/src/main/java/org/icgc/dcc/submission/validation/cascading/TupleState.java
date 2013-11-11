@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.ToString;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey;
@@ -71,10 +74,18 @@ public class TupleState implements Serializable {
     structurallyValid = type.isStructural() == false;
   }
 
+  public void reportError(int number, ErrorType type, String columnName, Object value, Object... params) {
+    checkArgument(type != null);
+    List<String> columnNames = Lists.newArrayList(columnName);
+    ensureErrors().add(new TupleError(type, columnNames, number, value, this.getOffset(), type.build(params)));
+    structurallyValid = type.isStructural() == false;
+  }
+
   // TODO: this is just temporary until a nicer error reporting is in place
-  public static TupleError createTupleError(ErrorType type, String columnName, Object value, long lineNumber,
+  public static TupleError createTupleError(ErrorType type, int number, String columnName, Object value,
+      long lineNumber,
       Object... params) {
-    return new TupleError(type, Lists.newArrayList(columnName), value, lineNumber, type.build(params));
+    return new TupleError(type, Lists.newArrayList(columnName), number, value, lineNumber, type.build(params));
   }
 
   public Iterable<TupleError> getErrors() {
@@ -126,11 +137,15 @@ public class TupleState implements Serializable {
    * Holds an error. The {@code type} uniquely identifies the error (e.g.: range error) and the {@code parameters}
    * capture the error details (e.g.: the expected range; min and max).
    */
+  @Getter
+  @ToString
   public static final class TupleError implements Serializable {
 
     private final ErrorType type;
 
     private final List<String> columnNames;
+
+    private final int number;
 
     private final Object value;
 
@@ -139,50 +154,27 @@ public class TupleState implements Serializable {
     private final Map<ErrorParameterKey, Object> parameters;
 
     public TupleError() {
-      this.type = null;
-      this.columnNames = Lists.newArrayList();
-      this.value = null;
-      this.line = null;
-      this.parameters = new LinkedHashMap<ErrorParameterKey, Object>();
+      this(null, Lists.<String> newArrayList(), null, null, new LinkedHashMap<ErrorParameterKey, Object>());
     }
 
     private TupleError(ErrorType type, List<String> columnNames, Object value, Long line,
         Map<ErrorParameterKey, Object> parameters) {
+      this(type, columnNames, 0, value, line, parameters);
+    }
+
+    private TupleError(ErrorType type, List<String> columnNames, int number, Object value, Long line,
+        Map<ErrorParameterKey, Object> parameters) {
       this.type = type;
+      this.number = number;
       this.columnNames = columnNames;
       this.value = firstNonNull(value, "");
       this.line = line;
       this.parameters = parameters;
     }
 
-    public ErrorType getType() {
-      return this.type;
-    }
-
-    public List<String> getColumnNames() {
-      return this.columnNames;
-    }
-
-    public Object getValue() {
-      return this.value;
-    }
-
-    public Long getLine() {
-      return this.line;
-    }
-
-    public Map<ErrorParameterKey, Object> getParameters() {
-      return this.parameters;
-    }
-
     @JsonIgnore
     public String getMessage() {
       return type.format(getParameters());
-    }
-
-    @Override
-    public String toString() {
-      return Objects.toStringHelper(TupleError.class).add("type", type).add("parameters", parameters).toString();
     }
 
   }

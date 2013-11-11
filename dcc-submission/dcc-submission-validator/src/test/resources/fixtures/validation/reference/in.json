@@ -3,6 +3,7 @@
   "errors" : [ {
     "type" : "DISCRETE_VALUES_ERROR",
     "columnNames" : [ "donor_region_of_residence" ],
+    "number" : 0,
     "value" : "GLL",
     "line" : 2,
     "parameters" : {
@@ -14,6 +15,7 @@
   "errors" : [ {
     "type" : "DISCRETE_VALUES_ERROR",
     "columnNames" : [ "donor_region_of_residence" ],
+    "number" : 0,
     "value" : "FMM",
     "line" : 3,
     "parameters" : {
