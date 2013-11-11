@@ -63,7 +63,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     SCRIPT_ERROR:
       name: "Failed script expression"
       description: (source) ->
-        # Note we don't have an mvel formatter/highlighter, this is 
+        # Note we don't have an mvel formatter/highlighter, this is
         # currently simulated with javascript formatter and java highlighter
         errorRaw = source.parameters?.EXPECTED
         errorPretty = hljs.highlight('java', js_beautify(errorRaw)).value
