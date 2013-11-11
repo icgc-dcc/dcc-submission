@@ -109,12 +109,12 @@ public class NormalizationValidatorTest {
         .thenReturn(true);
     when(mockConfig.getBoolean("masking.enabled"))
         .thenReturn(true);
-    when(mockConfig.getBoolean("duplicates.enabled"))
-        .thenReturn(true);
     when(mockConfig.getBoolean("masking.marking_only"))
         .thenReturn(false);
     when(mockConfig.getNumber("masking.error_threshold"))
         .thenReturn(0.5f); // instead of 10% normally
+    when(mockConfig.getBoolean("duplicates.enabled"))
+        .thenReturn(true);
 
     when(mockRelease.getName())
         .thenReturn(RELEASE_NAME);

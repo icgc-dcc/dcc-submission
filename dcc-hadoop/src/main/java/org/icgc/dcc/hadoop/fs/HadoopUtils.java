@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs.hdfs;
+package org.icgc.dcc.hadoop.fs;
 
 import static com.google.common.io.ByteStreams.copy;
 
@@ -39,8 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 /**
- * Handles all hadoop API related methods - TODO: change to use proxy or
- * decorator pattern?
+ * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
  */
 public class HadoopUtils {
 

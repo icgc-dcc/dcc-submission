@@ -200,7 +200,15 @@ public class ValidationModule extends AbstractDccModule {
       public DccFileSystem2 get() {
         return new DccFileSystem2(
             fileSystem,
+            getRootDir(config),
             usesHadoop(config));
+      }
+
+      public String getRootDir(Config config) {
+        Preconditions.checkState(
+            config.hasPath("fs.root2"),
+            "fs.root2 should be present in the config");
+        return config.getString("fs.root2");
       }
 
       public boolean usesHadoop(Config config) {

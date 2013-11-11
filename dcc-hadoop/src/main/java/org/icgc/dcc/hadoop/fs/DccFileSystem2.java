@@ -17,9 +17,13 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static java.lang.String.format;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.mkdirs;
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,9 +45,12 @@ import cascading.tap.local.FileTap;
  * 
  */
 @RequiredArgsConstructor
+@Slf4j
 public class DccFileSystem2 {
 
   private final FileSystem fileSystem;
+
+  private final String rootDir;
 
   private final boolean hadoopMode;
 
@@ -54,17 +61,13 @@ public class DccFileSystem2 {
   }
 
   public Tap<?, ?, ?> getNormalizationDataOutputTap(String releaseName, String projectKey) {
-    String path = getNormalizationDataOutput(releaseName, projectKey);
+    String path = getNormalizationDataOutputFile(releaseName, projectKey);
     return getTap(path);
   }
 
   public Tap<?, ?, ?> getNormalizationReportOutputTap(String releaseName, String projectKey) {
-    String path = getNormalizationReportOutput(releaseName, projectKey);
+    String path = getNormalizationReportOutputFile(releaseName, projectKey);
     return getTap(path);
-  }
-
-  public String getNormalizationDataOutput(String releaseName, String projectKey) {
-    return String.format("/icgc/%s/projects/%s/normalization/data/ssm__p.txt", releaseName, projectKey);
   }
 
   private Tap<?, ?, ?> getTap(String path) {
@@ -73,16 +76,50 @@ public class DccFileSystem2 {
         new FileTap(new cascading.scheme.local.TextDelimited(true, "\t"), path);
   }
 
+  private String getReleasesDir() {
+    return format("%s/releases", rootDir);
+  }
+
+  private String getReleaseDir(String releaseName) {
+    return format("%s/%s", getReleasesDir(), releaseName);
+  }
+
+  private String getProjectsDir(String releaseName) {
+    return format("%s/projects", getReleaseDir(releaseName));
+  }
+
+  private String getProjectDir(String releaseName, String projectKey) {
+    return format("%s/%s", getProjectsDir(releaseName), projectKey);
+  }
+
+  private String getNormalizationDir(String releaseName, String projectKey) {
+    return format("%s/normalization", getProjectDir(releaseName, projectKey));
+  }
+
+  private String getNormalizationReportsDir(String releaseName, String projectKey) {
+    return format("%s/reports", getNormalizationDir(releaseName, projectKey));
+  }
+
+  private String getNormalizationDataDir(String releaseName, String projectKey) {
+    return format("%s/data", getNormalizationDir(releaseName, projectKey));
+  }
+
+  private String getNormalizationReportOutputFile(String releaseName, String projectKey) {
+    return format("%s/filtering.txt",
+        lazyDirCreation(getNormalizationReportsDir(releaseName, projectKey)));
+  }
+
+  public String getNormalizationDataOutputFile(String releaseName, String projectKey) {
+    return format("%s/ssm__p.txt",
+        lazyDirCreation(getNormalizationDataDir(releaseName, projectKey)));
+  }
+
   public void writeNormalizationReport(String releaseName, String projectKey, String content) {
     writeFile(
-        getNormalizationReportOutput(
+        getNormalizationReportOutputFile(
             releaseName,
             projectKey),
         content);
-  }
-
-  private String getNormalizationReportOutput(String releaseName, String projectKey) {
-    return String.format("/icgc/%s/projects/%s/normalization/reports/filtering.txt", releaseName, projectKey);
   }
 
   @SneakyThrows
@@ -92,5 +129,13 @@ public class DccFileSystem2 {
         .create(
         new Path(file));
     create.writeUTF(content);
+  }
+
+  private String lazyDirCreation(String dir) {
+    if (!checkExistence(fileSystem, dir)) {
+      log.info("Creating directory '{}'", dir);
+      mkdirs(fileSystem, dir);
+    }
+    return dir;
   }
 }

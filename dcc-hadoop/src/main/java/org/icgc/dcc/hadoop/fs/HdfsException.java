@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs.hdfs;
+package org.icgc.dcc.hadoop.fs;
 
 public class HdfsException extends RuntimeException {
   private static final long serialVersionUID = -2204845409873632221L;

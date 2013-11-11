@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission;
 
-import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.checkExistence;
-import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.getFileStatus;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.getFileStatus;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;

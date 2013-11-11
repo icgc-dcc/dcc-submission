@@ -115,9 +115,9 @@ public class NormalizationReporter {
         .build();
 
     if (normalizationError.isLikelyErroneous()) {
-      log.info("TODO");
+      log.warn("The submission is erroneous from the normalization standpoint: '{}'", normalizationError);
     } else {
-      log.info("TODO");
+      log.info("No errors were encountered during normalization");
       normalizationError = null;
     }
     return normalizationError == null ?
@@ -134,7 +134,8 @@ public class NormalizationReporter {
             normalizationError.getFileName(),
             TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR,
             normalizationError.getCount(),
-            normalizationError.getTotal());
+            normalizationError.getTotal(),
+            normalizationError.getThreshold());
   }
 
   @Value
