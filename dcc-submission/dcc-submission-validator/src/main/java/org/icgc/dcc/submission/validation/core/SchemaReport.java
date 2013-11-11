@@ -39,8 +39,13 @@ public class SchemaReport implements Serializable {
 
   @Getter
   protected String name;
+  protected List<SummaryReport> summaryReports = newArrayList();
   protected List<FieldReport> fieldReports = newArrayList();
   protected List<ErrorReport> errors = newArrayList();
+
+  public List<SummaryReport> getSummaryReports() {
+    return ImmutableList.copyOf(summaryReports);
+  }
 
   public List<FieldReport> getFieldReports() {
     return ImmutableList.copyOf(fieldReports);
@@ -67,6 +72,10 @@ public class SchemaReport implements Serializable {
       }
 
     });
+  }
+
+  public void addSummaryReport(SummaryReport summaryReport) {
+    summaryReports.add(summaryReport);
   }
 
   public void addFieldReport(FieldReport fieldReport) {

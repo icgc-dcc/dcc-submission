@@ -57,6 +57,14 @@ public class SubmissionReportContext implements ReportContext {
   }
 
   @Override
+  public void reportSummary(String fileName, String name, Object value) {
+    val schemaReport = resolveSchemaReport(fileName);
+    val summaryReport = new SummaryReport(name, value);
+
+    schemaReport.addSummaryReport(summaryReport);
+  }
+
+  @Override
   public void reportField(String fileName, FieldReport fieldReport) {
     addFieldReport(fileName, fieldReport);
   }

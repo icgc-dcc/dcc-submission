@@ -17,54 +17,24 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
- * "Encapsulated Context Object" class that insulates and decouples the validation logic from report collection and
- * storage. Implementations should manage memory so that excessive reporting doesn't produce unstable memory pressure.
- * This is a "role partition" in the first link below.
- * 
- * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
- * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
+ * Represents a name-value summary metric.
  */
-public interface ReportContext {
+@Data
+@AllArgsConstructor
+public class SummaryReport {
 
   /**
-   * Indicates that at least one error was reported.
+   * The short name of the summary metric.
    */
-  boolean hasErrors();
+  private String name;
 
   /**
-   * Returns the total number of errors encountered so far.
+   * The value of the metric
    */
-  int getErrorCount();
-
-  /**
-   * Reports on summary statistics.
-   */
-  void reportSummary(String fileName, String name, Object value);
-
-  /**
-   * Reports on field statistics.
-   */
-  void reportField(String fileName, FieldReport fieldReport);
-
-  void reportError(String fileName, TupleError tupleError);
-
-  void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type, Object... params);
-
-  void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params);
-
-  void reportError(String fileName, Object value, ErrorType type, Object... params);
-
-  void reportError(String fileName, ErrorType type, Object... params);
-
-  void reportError(String fileName, ErrorType type);
-
-  /**
-   * Allows the context an opportunity to update line numbers referenced in report elements.
-   */
-  void reportLineNumbers(Path path);
+  private Object value;
 
 }
