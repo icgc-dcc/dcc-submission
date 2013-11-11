@@ -50,11 +50,13 @@ public class ErrorReport implements Serializable {
   public static final int MAX_ERROR_COUNT = 50;
 
   private ErrorType errorType;
+  private int number;
   private String description;
   private final List<ColumnErrorReport> columns = newLinkedList();
 
   public ErrorReport(TupleError error) {
     this.setErrorType(error.getType());
+    this.setNumber(error.getNumber());
     this.setDescription(error.getMessage());
     this.addColumn(error);
   }

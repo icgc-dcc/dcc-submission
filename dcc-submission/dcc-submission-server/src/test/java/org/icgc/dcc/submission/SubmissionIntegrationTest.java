@@ -82,8 +82,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionFileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
@@ -126,6 +128,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT5_KEY = "project.5";
   private static final String PROJECT5 = _("{name:'Project Five',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT5_KEY);
+  private static final String PROJECT6_KEY = "project.6";
+  private static final String PROJECT6 = _("{name:'Project Six',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT6_KEY);
 
   /**
    * Releases.
@@ -153,7 +158,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org']},"
       + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org']},"
       + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org']},"
-      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']}]";
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']},"
+      + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org']}]";
 
   private static final String PROJECTS_TO_ENQUEUE2 = "["
       + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org']},"
@@ -290,7 +296,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding projects...");
     addProjects();
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
@@ -360,9 +366,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Checking validated submission 5...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
 
+    status("admin", "Checking validated submission 6...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
+
+    status("admin", "!!!!!!!!!!!!!!");
+
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -370,7 +381,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
         hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID, VALID));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
@@ -381,12 +392,30 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Updating OPENED dictionary...");
     updateDictionary(
         dictionaryToString(), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
+
+    status("admin", "Adding Script restriction #1 to OPENED dictionary");
+    Dictionary dict =
+        TestUtils.addScript(TestUtils.dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
+            "note",
+            "note != \"script_error_here\"",
+            "Note field cannot be 'script_error_here'");
+
+    status("admin", "Adding Script restriction #2 to OPENED dictionary");
+    dict =
+        TestUtils.addScript(dict, SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
+            "note",
+            "! (note.indexOf('_') > 0)",
+            "Note field cannot contain the underscore(_) character");
+
+    status("admin", "Updating to new dictionary with script restrictions");
+    updateDictionary(
+        dictionaryToString(dict), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
   }
 
   private void adminUpdatesRelease() throws Exception {
     updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
     checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void createInitialRelease() throws Exception {
@@ -417,6 +446,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding project 5...");
     val response5 = post(client, PROJECTS_ENDPOINT, PROJECT5);
     assertEquals(CREATED.getStatusCode(), response5.getStatus());
+
+    status("admin", "Adding project 6...");
+    val response6 = post(client, PROJECTS_ENDPOINT, PROJECT6);
+    assertEquals(CREATED.getStatusCode(), response6.getStatus());
 
   }
 
@@ -466,7 +499,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -477,7 +510,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, VALID));
   }
 
   private void releaseInitialRelease() {
@@ -558,17 +591,24 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("user", "Checking validated submission 2...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
 
-    status("user", "Checking validated submission 2...");
+    status("user", "Checking validated submission 3...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
 
-    // check no errors for project 1
+    status("user", "Checking validated submission 4...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, INVALID);
+
+    status("user", "Checking validated submission 5...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
+
+    status("user", "Checking validated submission 6...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
+
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR
         + "errors.json");
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR
         + "errors.json");
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR
         + "errors.json");
-    // TODO add more
   }
 
   private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState)

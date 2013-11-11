@@ -58,6 +58,14 @@ public class SubmissionReportContext implements ReportContext {
   }
 
   @Override
+  public void reportSummary(String fileName, String name, Object value) {
+    val schemaReport = resolveSchemaReport(fileName);
+    val summaryReport = new SummaryReport(name, value);
+
+    schemaReport.addSummaryReport(summaryReport);
+  }
+
+  @Override
   public void reportField(String fileName, FieldReport fieldReport) {
     addFieldReport(fileName, fieldReport);
   }
@@ -75,7 +83,7 @@ public class SubmissionReportContext implements ReportContext {
   @Override
   public void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
       Object... params) {
-    val tupleError = createTupleError(type, columnName, value, lineNumber, params);
+    val tupleError = createTupleError(type, 0, columnName, value, lineNumber, params);
     reportError(fileName, tupleError);
   }
 
@@ -127,8 +135,10 @@ public class SubmissionReportContext implements ReportContext {
   private void addErrorTuple(SchemaReport schemaReport, TupleError tupleError) {
     val errorReports = schemaReport.getErrors();
     for (val errorReport : errorReports) {
-      val errorTypeExists = errorReport.getErrorType() == tupleError.getType();
-      if (errorTypeExists) {
+      val exists = errorReport.getErrorType() == tupleError.getType() &&
+          errorReport.getNumber() == tupleError.getNumber();
+
+      if (exists) {
         // Reuse, no need to continue
         errorReport.updateReport(tupleError);
 

@@ -42,6 +42,11 @@ public interface ReportContext {
   int getErrorCount();
 
   /**
+   * Reports on summary statistics.
+   */
+  void reportSummary(String fileName, String name, Object value);
+
+  /**
    * Reports on field statistics.
    */
   void reportField(String fileName, FieldReport fieldReport);

@@ -24,6 +24,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import lombok.ToString;
+import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -111,7 +112,9 @@ public class Field implements DictionaryElement, Serializable {
   }
 
   public void addRestriction(Restriction restriction) {
-    if (this.getRestriction(restriction.getType()).isPresent()) {
+    val type = restriction.getType();
+    val present = getRestriction(type).isPresent();
+    if (!type.isMulti() && present) {
       throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + restriction.getType());
     }
     this.restrictions.add(restriction);

@@ -15,55 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.model;
+package org.icgc.dcc.submission.validation.core;
 
-import java.io.Serializable;
-
-import javax.validation.constraints.NotNull;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
-import org.icgc.dcc.submission.dictionary.model.RestrictionType.RestrictionTypeConverter;
-import org.icgc.dcc.submission.dictionary.model.validation.CheckRestriction;
-import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
-import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
-
-import com.google.code.morphia.annotations.Converters;
-import com.google.code.morphia.annotations.Embedded;
-import com.mongodb.BasicDBObject;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
- * Describes a restriction that applies to a {@code Field}.
+ * Represents a name-value summary metric.
  */
-@Embedded
-@CheckRestriction
-@Converters(RestrictionTypeConverter.class)
-@Getter
-@Setter
-@ToString
-public class Restriction implements DictionaryElement, Serializable {
+@Data
+@AllArgsConstructor
+public class SummaryReport {
 
   /**
-   * Simple key-value pair for now, so the value can hold a comma-separated list of values.
+   * The short name of the summary metric.
    */
-  public static final String CONFIG_VALUE_SEPARATOR = ",";
+  private String name;
 
   /**
-   * The "type code" of the restriction.
+   * The value of the metric
    */
-  @NotNull
-  private RestrictionType type;
-
-  /**
-   * Dynamic configuration element.
-   */
-  private BasicDBObject config;
-
-  @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
-    dictionaryVisitor.visit(this);
-  }
+  private Object value;
 
 }

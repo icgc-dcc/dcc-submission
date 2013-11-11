@@ -27,7 +27,6 @@ import java.util.List;
 import lombok.val;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.InvalidScriptException;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.ScriptFunction;
 import org.junit.Test;
@@ -38,9 +37,11 @@ import cascading.tuple.TupleEntry;
 
 public class ScriptRestrictionTest extends BaseRestrictionTest {
 
+  final static int NUMBER = 0;
+
   @Test
   public void test_ScriptRestriction_describe() {
-    ScriptRestriction restriction = new ScriptRestriction("x", "x > 0", "Positive values for x");
+    ScriptRestriction restriction = new ScriptRestriction("x", NUMBER, "x > 0", "Positive values for x");
 
     assertThat(restriction.describe()).isEqualTo("script[x:x > 0]");
   }
@@ -146,7 +147,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     // Simulate a singleton tuple stream
     val tupleEntry = new TupleEntry(fields, tuple);
     val tuples = new TupleEntry[] { tupleEntry };
-    val function = new ScriptFunction("fieldName", script, description);
+    val function = new ScriptFunction("fieldName", NUMBER, script, description);
     val results = invokeFunction(function, tuples, fields);
 
     return newArrayList(results.iterator());
