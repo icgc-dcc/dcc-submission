@@ -32,7 +32,6 @@ import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 
 import com.google.code.morphia.annotations.Converters;
 import com.google.code.morphia.annotations.Embedded;
-import com.google.code.morphia.annotations.Transient;
 import com.mongodb.BasicDBObject;
 
 /**
@@ -56,12 +55,6 @@ public class Restriction implements DictionaryElement, Serializable {
    */
   @NotNull
   private RestrictionType type;
-
-  /**
-   * Used to distinguish different instances of the same restriction {@link #type}.
-   */
-  @Transient
-  private int number;
 
   /**
    * Dynamic configuration element.

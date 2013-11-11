@@ -91,7 +91,6 @@ public class DictionaryCloneVisitor extends BaseDictionaryVisitor {
 
     Restriction cloneRestriction = new Restriction();
     cloneRestriction.setType(restriction.getType());
-    cloneRestriction.setNumber(restriction.getNumber());
     cloneRestriction.setConfig(new BasicDBObject(restriction.getConfig()));
 
     currentField.addRestriction(cloneRestriction);
