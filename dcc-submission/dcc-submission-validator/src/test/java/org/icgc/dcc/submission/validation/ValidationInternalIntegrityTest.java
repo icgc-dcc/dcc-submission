@@ -58,6 +58,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 
 public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest {
@@ -169,29 +170,27 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
   }
 
   @Test
-  public void test_validate_invalidScriptValues() {
-    BasicDBObject config = new BasicDBObject();
-    config.put(ScriptRestriction.PARAM, "donor_sex == 1");
-    config.put(ScriptRestriction.PARAM_DESCRIPTION, "Donor's sex must be male");
-
-    Restriction restriction = new Restriction();
-    restriction.setType(RestrictionType.SCRIPT);
-    restriction.setConfig(config);
-
-    FileSchema donor = getFileSchemaByName(dictionary, "donor");
-    Field stage = getFieldByName(donor, "donor_sex");
-    stage.setRestrictions(new ArrayList<Restriction>());
-    stage.addRestriction(restriction);
-
-    testErrorType(ScriptRestriction.NAME);
-  }
-
-  @Test
   public void test_validate_invalidUniqueFieldsCombination() {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
     donor.setUniqueFields(Arrays.asList("donor_sex", "donor_region_of_residence", "donor_vital_status"));
 
     testErrorType(UniqueFieldsPlanningVisitor.NAME);
+  }
+
+  @Test
+  public void test_validate_invalidScriptValues() {
+    // Create restrictions
+    val restriction1 = createScriptRestriction("donor_sex == 1", "Donor's sex must be male");
+    val restriction2 = createScriptRestriction("donor_sex != 2", "Donor's sex must not equal two");
+    val restrictions = Lists.<Restriction> newArrayList(restriction1, restriction2);
+
+    // Create container
+    val donor = getFileSchemaByName(dictionary, "donor");
+    val donorSex = getFieldByName(donor, "donor_sex");
+    donorSex.setRestrictions(restrictions);
+
+    // Execute and verify
+    testErrorType(ScriptRestriction.NAME);
   }
 
   private void testErrorType(String errorType) {
@@ -225,6 +224,18 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
 
     assertTrue(errorFileString, errorFile.exists());
     return readFileToString(errorFile);
+  }
+
+  private static Restriction createScriptRestriction(String script, String description) {
+    val config = new BasicDBObject();
+    config.put(ScriptRestriction.PARAM, script);
+    config.put(ScriptRestriction.PARAM_DESCRIPTION, description);
+
+    val restriction = new Restriction();
+    restriction.setType(RestrictionType.SCRIPT);
+    restriction.setConfig(config);
+
+    return restriction;
   }
 
 }

@@ -21,6 +21,8 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotNull;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import org.icgc.dcc.submission.dictionary.model.RestrictionType.RestrictionTypeConverter;
@@ -30,51 +32,45 @@ import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 
 import com.google.code.morphia.annotations.Converters;
 import com.google.code.morphia.annotations.Embedded;
+import com.google.code.morphia.annotations.Transient;
 import com.mongodb.BasicDBObject;
 
 /**
- * Describes a restriction that applies to some {@code Field}(s)
- * 
- * TODO: possibly to some file schemata too in the future
+ * Describes a restriction that applies to a {@code Field}.
  */
 @Embedded
 @CheckRestriction
-@ToString
 @Converters(RestrictionTypeConverter.class)
+@Getter
+@Setter
+@ToString
 public class Restriction implements DictionaryElement, Serializable {
 
-  public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
-                                                           // comma-separated list of values
+  /**
+   * Simple key-value pair for now, so the value can hold a comma-separated list of values.
+   */
+  public static final String CONFIG_VALUE_SEPARATOR = ",";
 
+  /**
+   * The "type code" of the restriction.
+   */
   @NotNull
   private RestrictionType type;
 
-  // TODO: enforce that if codelist, a name is provided (DCC-904)
-  private BasicDBObject config;
+  /**
+   * Used to distinguish different instances of the same restriction {@link #type}.
+   */
+  @Transient
+  private int number;
 
-  public Restriction() {
-    super();
-  }
+  /**
+   * Dynamic configuration element.
+   */
+  private BasicDBObject config;
 
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
-  }
-
-  public RestrictionType getType() {
-    return type;
-  }
-
-  public void setType(RestrictionType type) {
-    this.type = type;
-  }
-
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
   }
 
 }
