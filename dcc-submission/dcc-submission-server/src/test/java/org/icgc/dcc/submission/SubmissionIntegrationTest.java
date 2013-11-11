@@ -128,11 +128,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT5_KEY = "project.5";
   private static final String PROJECT5 = _("{name:'Project Five',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT5_KEY);
-
   private static final String PROJECT6_KEY = "project.6";
-  private static final String PROJECT6 =
-      _("{\"name\":\"Project Six\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
-          PROJECT6_KEY);
+  private static final String PROJECT6 = _("{name:'Project Six',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT6_KEY);
 
   /**
    * Releases.
@@ -225,7 +223,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     datastore.getDB().dropDatabase();
 
     status("init", "Starting SMTP server...");
-    // smtpServer = SimpleSmtpServer.start(TEST_CONFIG.getInt("mail.smtp.port"));
+    smtpServer = SimpleSmtpServer.start(TEST_CONFIG.getInt("mail.smtp.port"));
 
     status("init", "Starting submission server...");
     Main.main("external", TEST_CONFIG_FILE.getAbsolutePath());
@@ -243,7 +241,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("shutdown", "REST client closed.");
 
     status("shutdown", "Shutting down SMTP server...");
-    // smtpServer.stop();
+    smtpServer.stop();
     status("shutdown", "SMTP server shut down.");
 
     status("shutdown", "Shutting down submission server...");
@@ -399,7 +397,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     Dictionary dict =
         TestUtils.addScript(TestUtils.dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "note!= \"dual_depth_peeling\"",
+            "note!= 'dual_depth_peeling'",
             "note field cannot be 'dual_depth_peeling'");
 
     updateDictionary(
@@ -594,17 +592,15 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("user", "Checking validated submission 5...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
 
-    status("user", "Checking validated submission 5...");
+    status("user", "Checking validated submission 6...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
 
-    // check no errors for project 1
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR
         + "errors.json");
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR
         + "errors.json");
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR
         + "errors.json");
-    // TODO add more
   }
 
   private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState)
