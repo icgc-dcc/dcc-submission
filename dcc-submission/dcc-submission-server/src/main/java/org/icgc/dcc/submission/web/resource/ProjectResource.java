@@ -67,18 +67,17 @@ public class ProjectResource {
   private DccFileSystem dccFileSystem;
 
   @GET
-  public Response getProjects(@Context
-  SecurityContext securityContext) {
+  public Response getProjects(@Context SecurityContext securityContext) {
     log.info("Request for all Projects");
 
     val user = getSubject(securityContext);
     Set<Project> projects;
 
     if (isSuperUser(securityContext)) {
-      log.info("{} is super user", user.getPrincipal());
+      log.info("'{}' is super user", user.getPrincipal());
       projects = projectService.findAll();
     } else {
-      log.info("{} is not super user", user.getPrincipal());
+      log.info("'{}' is not super user", user.getPrincipal());
       projects = projectService.findAllForUser(user.getPrincipal().toString());
     }
 
@@ -86,17 +85,15 @@ public class ProjectResource {
   }
 
   @POST
-  public Response addProject(@Context
-  SecurityContext securityContext, @Valid
-  Project project) {
-    log.info("Request to add Project {}", project);
+  public Response addProject(@Context SecurityContext securityContext, @Valid Project project) {
+    log.info("Request to add Project '{}'", project);
 
     val user = getSubject(securityContext);
     if (isSuperUser(securityContext) == false) {
-      log.info("{} is not super user", user.getPrincipal());
+      log.warn("'{}' is not super user", user.getPrincipal());
       return Responses.unauthorizedResponse();
     }
-    log.info("{} is super user", user.getPrincipal());
+    log.info("'{}' is super user", user.getPrincipal());
 
     Response response;
     try {
@@ -111,11 +108,11 @@ public class ProjectResource {
 
       response =
           Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
-      log.info("Project {} added!", project.getKey());
+      log.info("Project '{}' added!", project.getKey());
     } catch (DuplicateKey e) {
       response = Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
           .build();
-      log.info("Project {} already exists! Could NOT be added.", project.getKey());
+      log.warn("Project '{}' already exists! Could NOT be added.", project.getKey());
     }
 
     return response;
@@ -123,23 +120,21 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}")
-  public Response getProject(@PathParam("projectKey")
-  String projectKey, @Context
-  SecurityContext securityContext) {
-    log.info("Request for Project {}", projectKey);
+  public Response getProject(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+    log.info("Request for Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
     Project project;
 
     if (hasAccess(securityContext, projectKey) == false) {
-      log.info("Project {} not visible to {}", projectKey, user.getPrincipal());
+      log.info("Project '{}' not visible to '{}'", projectKey, user.getPrincipal());
       return Responses.notFound(projectKey);
     }
 
     project = projectService.find(projectKey);
 
     if (project == null) {
-      log.info("Project {} not found", projectKey);
+      log.info("Project '{}' not found", projectKey);
       return Responses.notFound(projectKey);
     }
 
@@ -149,23 +144,20 @@ public class ProjectResource {
   @POST
   @Path("{projectKey}")
   public Response updateProject(
-      @PathParam("projectKey")
-      String projectKey,
-      @Valid
-      Project project,
-      @Context
-      SecurityContext securityContext) {
-    log.info("Request to update Project {} with {}", projectKey, project);
+      @PathParam("projectKey") String projectKey,
+      @Valid Project project,
+      @Context SecurityContext securityContext) {
+    log.info("Request to update Project '{}' with '{}'", projectKey, project);
 
     val user = getSubject(securityContext);
     if (isSuperUser(securityContext) == false) {
-      log.info("{} is not super user", user.getPrincipal());
+      log.warn("'{}' is not super user", user.getPrincipal());
       return Responses.unauthorizedResponse();
     }
-    log.info("{} is super user", user.getPrincipal());
+    log.info("'{}' is super user", user.getPrincipal());
 
     if (!projectKey.equals(project.getKey())) {
-      log.info("Project key {} does not match endpoint for {}", project.getKey(), projectKey);
+      log.warn("Project key '{}' does not match endpoint for '{}'", project.getKey(), projectKey);
       return Response.status(PRECONDITION_FAILED).entity("Project Key Missmatch").build();
     }
 
@@ -177,16 +169,14 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}/releases")
   public Response getProjectSubmissions(
-      @PathParam("projectKey")
-      String projectKey,
-      @Context
-      SecurityContext securityContext) {
-    log.info("Request for all Submissions from Project {}", projectKey);
+      @PathParam("projectKey") String projectKey,
+      @Context SecurityContext securityContext) {
+    log.info("Request for all Submissions from Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
 
     if (hasAccess(securityContext, projectKey) == false) {
-      log.info("Project {} not visible to {}", projectKey, user.getPrincipal());
+      log.warn("Project '{}' not visible to '{}'", projectKey, user.getPrincipal());
       return Responses.notFound(projectKey);
     }
 

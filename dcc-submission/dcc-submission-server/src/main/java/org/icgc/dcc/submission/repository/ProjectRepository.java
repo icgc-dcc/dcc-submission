@@ -50,28 +50,21 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
   /**
    * Search for a Project by its key
    * 
-   * @param projectKey
-   * 
    * @return Project or null if none found
    */
   public Project find(String projectKey) {
-    log.info("Finding Project {}", projectKey);
+    log.info("Finding Project '{}'", projectKey);
     return where(QProject.project.key.eq(projectKey)).singleResult();
   }
 
   /**
    * Search for a Project by its key and whether it is accessible to the user
    * 
-   * @param projectKey
-   * 
-   * @param username
-   * 
    * @return Project or null if none found
-   * 
    * @see #find(String)
    */
   public Project findForUser(String projectKey, String username) {
-    log.info("Finding Project {} for User {}", projectKey, username);
+    log.info("Finding Project '{}' for User '{}'", projectKey, username);
     return where(QProject.project.key.eq(projectKey)).where(QProject.project.users.contains(username)).singleResult();
   }
 
@@ -79,7 +72,6 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
    * Search for all Projects
    * 
    * @return All Projects
-   * 
    * @see #findAllForUser(String)
    */
   public Set<Project> findAll() {
@@ -90,14 +82,11 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
   /**
    * Search for all Projects accessible to the user
    * 
-   * @param username
-   * 
    * @return All Projects viewable by the user
-   * 
    * @see #findAll()
    */
   public Set<Project> findAllForUser(String username) {
-    log.info("Finding all Projects for {}", username);
+    log.info("Finding all Projects for '{}'", username);
     return ImmutableSet.copyOf(where(QProject.project.users.contains(username)).list());
   }
 
@@ -110,15 +99,13 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
    * If the Project has an Id and already exists it will be updated. <br>
    * Otherwise it will be added.
    * 
-   * @param project Project used in upsert
-   * 
    * @return Response object from Mongo
    */
   public Key<Project> upsert(Project project) {
-    log.info("Upserting {}", project);
+    log.info("Upserting '{}'", project);
     val response = datastore().save(project, WriteConcern.ACKNOWLEDGED);
 
-    log.info("Upsert Successful! {}", response);
+    log.info("Upsert Successful! '{}'", response);
     return response;
   }
 }

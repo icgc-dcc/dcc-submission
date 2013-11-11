@@ -67,7 +67,7 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
    * @return Release
    */
   public Release find(String releaseName) {
-    log.info("Finding Release {}", releaseName);
+    log.info("Finding Release '{}'", releaseName);
     return where(schema.name.eq(releaseName)).singleResult();
   }
 
@@ -87,18 +87,16 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
    * This method should be used instead of {@link #update(Release)} since it does not overwrite the Release object in
    * the DB.
    * 
-   * @param submission
-   * 
    * @return Current Open Release
    */
   public Release addSubmission(Submission submission, String releaseName) {
-    log.info("Adding Submission for Project {} to Release {}", submission.getProjectKey(), releaseName);
+    log.info("Adding Submission for Project '{}' to Release '{}'", submission.getProjectKey(), releaseName);
     val q = datastore().createQuery(Release.class).field("name").equal(releaseName);
     val ops =
         datastore().createUpdateOperations(Release.class).add("submissions", submission);
     val modifiedRelease = this.datastore().findAndModify(q, ops);
 
-    log.info("Submission {} added!", submission.getProjectKey());
+    log.info("Submission '{}' added!", submission.getProjectKey());
     return modifiedRelease;
   }
 
@@ -107,12 +105,10 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
    * <br>
    * This will overwrite any changes that might have happened between initially getting the release and updating.
    * 
-   * @param release Release
-   * 
    * @return Response object from Mongo
    */
   public Key<Release> update(Release release) {
-    log.info("Updating Release {}", release.getName());
+    log.info("Updating Release '{}'", release.getName());
 
     val response = datastore().save(release, WriteConcern.ACKNOWLEDGED);
 

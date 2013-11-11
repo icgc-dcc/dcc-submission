@@ -33,15 +33,14 @@ import com.google.inject.Inject;
 
 @Slf4j
 @NoArgsConstructor
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @_({ @Inject }))
 public class ReleaseService {
 
   @NonNull
-  @Inject
   private ReleaseRepository releaseRepository;
 
   public Release find(String releaseName) {
-    log.info("Request for Release {}", releaseName);
+    log.info("Request for Release '{}'", releaseName);
     return releaseRepository.find(releaseName);
   }
 
@@ -63,18 +62,14 @@ public class ReleaseService {
   /**
    * Creates a new {@code Submission} and adds it to the current open {@code Release}
    * 
-   * @param projectKey
-   * 
-   * @param projectName
-   * 
    * @return Current Open Release
    */
   public Release addSubmission(String projectKey, String projectName) {
-    log.info("Creating Submission for Project {} in current open Release", projectKey);
+    log.info("Creating Submission for Project '{}' in current open Release", projectKey);
 
     val openRelease = releaseRepository.findOpen();
     val submission = new Submission(projectKey, projectName, openRelease.getName());
-    log.info("Created Submission {}", submission);
+    log.info("Created Submission '{}'", submission);
 
     val release = releaseRepository.addSubmission(submission, openRelease.getName());
 
