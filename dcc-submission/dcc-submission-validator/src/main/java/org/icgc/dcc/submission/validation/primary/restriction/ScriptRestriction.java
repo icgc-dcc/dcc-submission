@@ -132,13 +132,29 @@ public class ScriptRestriction implements InternalPlanElement {
 
     @Override
     public PlanElement build(Field field, Restriction restriction) {
-      val number = restriction.getNumber();
+      val number = getNumber(field, restriction);
       val script = restriction.getConfig().getString(PARAM);
       val description = restriction.getConfig().getString(PARAM_DESCRIPTION);
 
       return new ScriptRestriction(field.getName(), number, script, description);
     }
 
+    private static int getNumber(Field field, Restriction restriction) {
+      // Use the index as the number
+      int number = 0;
+      for (val r : field.getRestrictions()) {
+        val scriptType = r.getType() == org.icgc.dcc.submission.dictionary.model.RestrictionType.SCRIPT;
+        if (scriptType) {
+          if (r.equals(restriction)) {
+            return number;
+          }
+
+          number++;
+        }
+      }
+
+      throw new RuntimeException("Could not find script restriction " + restriction + " in field " + field);
+    }
   }
 
   public static class InvalidScriptException extends RuntimeException {

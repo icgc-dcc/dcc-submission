@@ -3,6 +3,7 @@
   "errors" : [ {
     "type" : "SCRIPT_ERROR",
     "columnNames" : [ "donor_sex" ],
+    "number" : 0,
     "value" : "donor_sex = 2",
     "line" : 2,
     "parameters" : {
@@ -12,6 +13,7 @@
   }, {
     "type" : "SCRIPT_ERROR",
     "columnNames" : [ "donor_sex" ],
+    "number" : 1,
     "value" : "donor_sex = 2",
     "line" : 2,
     "parameters" : {
