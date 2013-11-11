@@ -197,7 +197,7 @@ public class ValidationScheduler extends AbstractScheduledService {
 
     // If we made it here then the validation was accepted
     log.info("Validating next project in queue: '{}'", project);
-    acceptValidation(project);
+    acceptValidation(project, release);
 
     // Add callbacks to handle execution outcomes
     addCallback(future, new FutureCallback<Validation>() {
@@ -269,9 +269,10 @@ public class ValidationScheduler extends AbstractScheduledService {
    * 
    * @param project
    */
-  private void acceptValidation(QueuedProject project) {
+  private void acceptValidation(QueuedProject project, Release release) {
     log.info("Validation for '{}' accepted", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
+    releaseService.resetValidationFolder(project.getKey(), release);
     releaseService.dequeueToValidating(project);
   }
 
