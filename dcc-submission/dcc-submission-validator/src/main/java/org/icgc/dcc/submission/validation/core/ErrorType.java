@@ -329,9 +329,10 @@ public enum ErrorType {
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
-      checkArgument(params.length == 1);
+      checkArgument(params.length == 2);
       checkArgument(params[0] instanceof List);
-      return ImmutableMap.of(FIELDS, params[0]);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(EXPECTED, params[0], VALUE, params[1]);
     }
   },
 

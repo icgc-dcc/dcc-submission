@@ -38,19 +38,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.val;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
@@ -81,6 +77,11 @@ import com.typesafe.config.ConfigValue;
 
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
+  /**
+   * Prefix used with Hadoop M/R part files.
+   */
+  private static final String PART_FILE_NAME_PREFIX = "part-";
+
   private final Config hadoopConfig;
 
   public HadoopPlatformStrategy(Config hadoopConfig, FileSystem fileSystem, Path source, Path output, Path system) {
@@ -88,9 +89,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     this.hadoopConfig = hadoopConfig;
   }
 
-  /**
-   * TODO: bring together with the loader's counterpart (create a dcc-hadoop module).
-   */
   @Override
   public FlowConnector getFlowConnector() {
     Map<Object, Object> flowProperties = newHashMap();
@@ -103,64 +101,67 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
       flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
-    // Specify available compression codecs
-    flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
-        on(PROPERTY_VALUES_SEPARATOR)
-            .join(
-                DEFAULT_CODEC_PROPERTY_VALUE,
-                GZIP_CODEC_PROPERTY_VALUE,
-                BZIP2_CODEC_PROPERTY_VALUE));
-
-    // Enable compression on intermediate map outputs
-    flowProperties.put(
-        MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
-        ENABLED_COMPRESSION);
-    flowProperties.put(
-        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
-        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
-    flowProperties.put(
-        MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
-        SNAPPY_CODEC_PROPERTY_VALUE);
-
-    // Enable compression on job outputs
-    flowProperties.put(
-        MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
-        ENABLED_COMPRESSION);
-    flowProperties.put(
-        MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
-        GZIP_CODEC_PROPERTY_VALUE);
-
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, this.getClass());
+
+    if (isProduction()) {
+      // Specify available compression codecs
+      flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
+          on(PROPERTY_VALUES_SEPARATOR)
+              .join(
+                  DEFAULT_CODEC_PROPERTY_VALUE,
+                  GZIP_CODEC_PROPERTY_VALUE,
+                  BZIP2_CODEC_PROPERTY_VALUE));
+
+      // Enable compression on intermediate map outputs
+      flowProperties.put(
+          MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
+          ENABLED_COMPRESSION);
+      flowProperties.put(
+          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
+          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+      flowProperties.put(
+          MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
+          SNAPPY_CODEC_PROPERTY_VALUE);
+
+      // Enable compression on job outputs
+      flowProperties.put(
+          MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
+          ENABLED_COMPRESSION);
+      flowProperties.put(
+          MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
+          GZIP_CODEC_PROPERTY_VALUE);
+    }
 
     return new HadoopFlowConnector(flowProperties);
   }
 
   @Override
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
-    Path path = reportPath(schema, type, reportName);
-    HadoopJsonScheme scheme = new HadoopJsonScheme();
+    val reportPath = reportPath(schema, type, reportName);
+    val scheme = new HadoopJsonScheme();
     scheme.setSinkCompression(ENABLE);
-    return new Hfs(scheme, path.toUri().getPath());
+
+    return new Hfs(scheme, reportPath.toUri().getPath());
   }
 
   @Override
   public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
-    Path reportPath = reportPath(schema, type, reportName);
+    val reportPath = reportPath(schema, type, reportName);
     if (fileSystem.isFile(reportPath)) {
-      return new GZIPInputStream(fileSystem.open(reportPath));
+      return getInputStream(reportPath);
     }
 
-    List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
-    for (FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
-      final Path filePath = fileStatus.getPath();
+    val inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
+    for (val fileStatus : fileSystem.listStatus(reportPath)) {
+      val filePath = fileStatus.getPath();
 
-      if (fileStatus.isFile() && filePath.getName().startsWith("part-")) {
-        InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
+      if (fileStatus.isFile() && filePath.getName().startsWith(PART_FILE_NAME_PREFIX)) {
+        val inputSupplier = new InputSupplier<InputStream>() {
 
           @Override
           public InputStream getInput() throws IOException {
-            return new GZIPInputStream(fileSystem.open(filePath));
+            return getInputStream(filePath);
           }
         };
 
@@ -168,27 +169,32 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
       }
     }
 
-    return ByteStreams.join(inputSuppliers).getInput();
+    val combinedInputStream = ByteStreams.join(inputSuppliers).getInput();
+
+    return combinedInputStream;
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path) {
-    TextDelimited textDelimited = new TextDelimited(true, FIELD_SEPARATOR);
+    val textDelimited = new TextDelimited(true, FIELD_SEPARATOR);
     textDelimited.setSinkCompression(Compress.ENABLE);
+
     return new Hfs(textDelimited, path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    TextDelimited textDelimited = new TextDelimited(fields, true, FIELD_SEPARATOR);
+    val textDelimited = new TextDelimited(fields, true, FIELD_SEPARATOR);
     textDelimited.setSinkCompression(Compress.ENABLE);
+
     return new Hfs(textDelimited, path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tapSource(Path path) {
-    TextLine textLine = new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line"));
+    val textLine = new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line"));
     textLine.setSinkCompression(Compress.ENABLE);
+
     return new Hfs(textLine, path.toUri().getPath());
   }
 
@@ -208,29 +214,41 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
    */
   @Override
   public Fields getFileHeader(FileSchema fileSchema) throws IOException {
-    Path path = this.path(fileSchema);
-
-    Configuration conf = this.fileSystem.getConf();
-    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
-
-    Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-    CompressionCodec codec = factory.getCodec(resolvedPath);
+    val path = path(fileSchema);
 
     @Cleanup
-    InputStreamReader isr = (codec == null) ? //
-    new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : //
-    new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+    InputStreamReader isr = new InputStreamReader(getInputStream(path), Charsets.UTF_8);
 
-    LineReader lineReader = new LineReader(isr);
-    String firstLine = lineReader.readLine();
-    Iterable<String> header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
-    List<String> dupHeader = this.checkDuplicateHeader(header);
+    val lineReader = new LineReader(isr);
+    val firstLine = lineReader.readLine();
+    val header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
+    val dupHeader = checkDuplicateHeader(header);
     if (!dupHeader.isEmpty()) {
       throw new DuplicateHeaderException(dupHeader);
     }
 
     return new Fields(Iterables.toArray(header, String.class));
+  }
 
+  @SneakyThrows
+  private InputStream getInputStream(Path path) {
+    val factory = new CompressionCodecFactory(fileSystem.getConf());
+    val resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+    val codec = factory.getCodec(path);
+    val inputStream = fileSystem.open(resolvedPath);
+
+    return codec == null ? inputStream : codec.createInputStream(inputStream);
+  }
+
+  /**
+   * Simple flag to avoid configuring hadoop properties that will not work when running in pseudo-distributed mode due
+   * to the lack of native libraries.
+   * 
+   * @see https://groups.google.com/a/cloudera.org/forum/#!topic/cdh-user/oBhz-XbuSNI
+   */
+  private static boolean isProduction() {
+    // See SubmissionIntegrationTest#setUp
+    return System.getProperty("dcc.hadoop.test") == null;
   }
 
 }

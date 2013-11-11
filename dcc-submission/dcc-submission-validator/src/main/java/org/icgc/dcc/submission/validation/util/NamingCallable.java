@@ -15,62 +15,46 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.util;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.Callable;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.first.RowChecker;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.val;
 
-@Slf4j
-public class RowColumnChecker extends CompositeRowChecker {
+/**
+ * {@link Callable} that allows changing the name of the executing thread and will always restore the previous upon
+ * completion.
+ */
+@Value
+public class NamingCallable<T> implements Callable<T> {
 
-  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
-    super(rowChecker, failFast);
-  }
-
-  public RowColumnChecker(RowChecker rowChecker) {
-    this(rowChecker, false);
-  }
+  @NonNull
+  String name;
+  @NonNull
+  Callable<T> delegate;
 
   @Override
-  public void performSelfCheck(
-      String filename,
-      FileSchema fileSchema,
-      String line,
-      long lineNumber) {
+  public T call() throws Exception {
+    val originalName = getName();
+    try {
+      setName(name);
 
-    int expectedNumColumns = getExpectedCount(fileSchema);
-    int actualNumColumns = getActualCount(line);
-    if (isCountMismatch(
-        expectedNumColumns,
-        actualNumColumns)) {
-
-      log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
-          + actualNumColumns + " at line " + lineNumber);
-
-      incrementCheckErrorCount();
-      getValidationContext().reportError(
-          filename,
-          lineNumber,
-          actualNumColumns,
-          STRUCTURALLY_INVALID_ROW_ERROR,
-          expectedNumColumns);
+      // Delegate
+      return delegate.call();
+    } finally {
+      // Always called
+      setName(originalName);
     }
   }
 
-  private int getExpectedCount(FileSchema fileSchema) {
-    return fileSchema.getFields().size();
+  private String getName() {
+    return Thread.currentThread().getName();
   }
 
-  private int getActualCount(String line) {
-    return line.split(FIELD_SEPARATOR, -1).length;
-  }
-
-  private boolean isCountMismatch(int expectedNumColumns, int actualNumColumns) {
-    return actualNumColumns != expectedNumColumns;
+  private void setName(String name) {
+    Thread.currentThread().setName(name);
   }
 
 }

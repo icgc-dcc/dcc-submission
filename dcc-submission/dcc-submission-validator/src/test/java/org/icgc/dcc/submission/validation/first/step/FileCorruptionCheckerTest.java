@@ -31,8 +31,6 @@ import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.Util.CodecType;
-import org.icgc.dcc.submission.validation.first.step.FileCorruptionChecker;
-import org.icgc.dcc.submission.validation.first.step.NoOpFileChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -186,6 +184,7 @@ public class FileCorruptionCheckerTest {
 
   public static DataInputStream getTestInputStream(String content, CodecType type) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+
     OutputStream out = bytes;
     switch (type) {
     case GZIP:
@@ -193,6 +192,9 @@ public class FileCorruptionCheckerTest {
       break;
     case BZIP2:
       out = new BZip2CompressorOutputStream(bytes);
+      break;
+    case PLAIN_TEXT:
+      // Do nothing
       break;
     }
     IOUtils.write(content.getBytes(), out);
