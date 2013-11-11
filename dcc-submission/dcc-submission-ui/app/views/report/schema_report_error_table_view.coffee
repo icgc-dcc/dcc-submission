@@ -85,9 +85,22 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     REVERSE_RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
+        test = "def foo() { if (['1'] contains '1') {} } if (['1','2'] contains mutation_type) { chromosome_start " +
+               "== chromosome_end } else if (['3','4'] contains " +
+               "mutation_type) { chromosome_end - chromosome_start" +
+               " +  1 >= 200 } else { return false }"
+
+        test2 = hljs.highlight('java', js_beautify(test) ).value
         """
-        <em>#{source.parameters?.SCHEMA}</em> file is missing
+        <pre><code class='ruby'>#{test2}</code></pre>
         """
+        #if (['1','2'] contains mutation_type) { chromosome_start ==
+        #chromosome_end } else if (['3','4'] contains mutation_type) {
+        #chromosome_end - chromosome_start +  1 <= 200 } else { return false }
+
+        #"""
+        #<em>#{source.parameters?.SCHEMA}</em> file is missing
+        #"""
     RELATION_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
@@ -143,10 +156,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Invalid row structure"
       description: (source) ->
         console.log source
-        """
-        Field counts in all lines are expected to match that of the file
-        header. Offending lines
-        """
+        Field counts in all lines are expected to be
+        #"""
+        #Field counts in all lines are expected to match that of the file
+        #header. Offending lines
+        #"""
     FORBIDDEN_VALUE_ERROR:
       name: "Invalid value"
       description: (source) ->
@@ -156,17 +170,26 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     TOO_MANY_FILES_ERROR:
       name: "Filename collision"
       description: (source) ->
-        console.log source
         """
-        More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
-        filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        The following files are found matching
+        <em>#{source.parameters?.SCHEMA}</em> filename pattern, only
+        one file is allowed. <br>
+        #{source.parameters?.FILES.join '<br>'}
         """
+        #"""
+        #More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
+        #filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        #"""
     COMPRESSION_CODEC_ERROR:
       name: "Compression Error"
       description: (source) ->
         """
-        File compression type does not match file extension
+        File name extension does not match file compression type. Please use
+        <em>.gz</em> for gzip, <em>.bz2</em> for bzip2.
         """
+        #"""
+        #File compression type does not match file extension
+        #"""
     INVALID_CHARSET_ROW_ERROR:
       name: "Row contains invalid charset"
       description: (source) ->
@@ -179,11 +202,16 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "File header error"
       description: (source) ->
         """
-        Different from the expected header
-        <em>#{source.parameters?.EXPECTED}</em>
-        <br><br>
-        <em>#{source.parameters?.VALUE}</em>
+        Invalid header line. It is expected to contain the following fields
+        in the specified order separated by <em>tab</em>: <br>
+        #{source.parameters?.VALUE}
         """
+        #"""
+        #Different from the expected header
+        #<em>#{source.parameters?.EXPECTED}</em>
+        #<br><br>
+        #<em>#{source.parameters?.VALUE}</em>
+        #"""
     REFERENCE_GENOME_ERROR:
       name: "Reference genome error"
       description: (source) ->
@@ -201,6 +229,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "COMPRESSION_CODEC_ERROR"
       "TOO_MANY_FILES_ERROR"
       "FILE_HEADER_ERROR"
+      "RELATION_FILE_ERROR"
+      "REVERSE_RELATION_FILE_ERROR"
       ]
       return ""
     else if source.errorType in [
