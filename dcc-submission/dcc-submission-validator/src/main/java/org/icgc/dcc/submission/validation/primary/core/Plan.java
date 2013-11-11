@@ -81,11 +81,15 @@ public class Plan {
     for (val planner : getPlanners()) {
       val flow = planner.connect(platformStrategy);
       if (flow != null) {
+        flow.writeDOT("/tmp/validation-flow-" + flow.getName() + ".dot");
+        flow.writeStepsDOT("/tmp/validation-flow-steps-" + flow.getName() + ".dot");
+
         cascadeDef.addFlow(flow);
       }
     }
 
     cascade = new CascadeConnector().connect(cascadeDef);
+    cascade.writeDOT("/tmp/validation-cascade.dot");
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {

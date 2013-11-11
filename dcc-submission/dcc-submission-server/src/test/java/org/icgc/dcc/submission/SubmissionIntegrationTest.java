@@ -3,17 +3,17 @@
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
- * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
+ * this program. If not,see <http://www.gnu.org/licenses/>.                                                     
  *                                                                                                               
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
+ * EXPRESS OR IMPLIED WARRANTIES,INCLUDING,BUT NOT LIMITED TO,THE IMPLIED WARRANTIES                          
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
- * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED                          
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;                               
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,INDIRECT,                               
+ * INCIDENTAL,SPECIAL,EXEMPLARY,OR CONSEQUENTIAL DAMAGES (INCLUDING,BUT NOT LIMITED                          
+ * TO,PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,DATA,OR PROFITS;                               
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,WHETHER                              
+ * IN CONTRACT,STRICT LIABILITY,OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE,EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.icgc.dcc.submission;
 
@@ -25,9 +25,8 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.commons.io.FileUtils.copyDirectory;
-import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.NEXT_RELEASE_ENPOINT;
@@ -76,9 +75,13 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
@@ -105,25 +108,24 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   /**
    * Projects.
    * 
-   * If changing project names, must also change their directory counterparts under
+   * If changing project names,must also change their directory counterparts under
    * server/src/test/resources/fixtures/submission/fs/release1
    */
   private static final String PROJECT1_KEY = "project.1";
-  private static final String PROJECT1 =
-      _("{\"name\":\"Project One\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
-          PROJECT1_KEY);
+  private static final String PROJECT1 = _("{name:'Project One',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT1_KEY);
   private static final String PROJECT2_KEY = "project.2";
-  private static final String PROJECT2 =
-      _("{\"name\":\"Project Two\",\"key\":\"%s\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}",
-          PROJECT2_KEY);
+  private static final String PROJECT2 = _("{name:'Project Two',key:'%s',users:['admin','brett'],groups:['admin']}",
+      PROJECT2_KEY);
   private static final String PROJECT3_KEY = "project.3";
-  private static final String PROJECT3 =
-      _("{\"name\":\"Project Three\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
-          PROJECT3_KEY);
+  private static final String PROJECT3 = _("{name:'Project Three',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT3_KEY);
   private static final String PROJECT4_KEY = "project.4";
-  private static final String PROJECT4 =
-      _("{\"name\":\"Project Four\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
-          PROJECT4_KEY);
+  private static final String PROJECT4 = _("{name:'Project Four',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT4_KEY);
+  private static final String PROJECT5_KEY = "project.5";
+  private static final String PROJECT5 = _("{name:'Project Five',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT5_KEY);
 
   /**
    * Releases.
@@ -133,7 +135,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String INITIAL_RELEASE_SUBMISSIONS_ENDPOINT = INITIAL_RELEASE_ENDPOINT + "/submissions";
 
   private static final String NEXT_RELEASE_NAME = "release2";
-  private static final String NEXT_RELEASE = "{\"name\": \"" + NEXT_RELEASE_NAME + "\"}";
+  private static final String NEXT_RELEASE = "{name:'" + NEXT_RELEASE_NAME + "'}";
 
   /**
    * Resources.
@@ -145,23 +147,23 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/initRelease.json";
   private static final String UPDATED_INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/updatedRelease.json";
 
-  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT1_KEY + "\"]";
+  private static final String PROJECT_TO_SIGN_OFF = "['" + PROJECT1_KEY + "']";
   private static final String PROJECTS_TO_ENQUEUE = "["
-      + "{\"key\": \"" + PROJECT1_KEY + "\", \"emails\": [\"project1@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}]";
-  private static final String PROJECTS_TO_ENQUEUE2 = "["
-      + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}, "
-      + "{\"key\": \"" + PROJECT4_KEY + "\", \"emails\": [\"project4@example.org\"]}]";
+      + "{key:'" + PROJECT1_KEY + "',emails:['project1@example.org']},"
+      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org']},"
+      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org']},"
+      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org']},"
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']}]";
 
-  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/fs";
-  private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
+  private static final String PROJECTS_TO_ENQUEUE2 = "["
+      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org']},"
+      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org']},"
+      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org']},"
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']}]";
+
+  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/dcc_root_dir";
   private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
 
-  private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/" + INITITAL_RELEASE_NAME
-      + "/SystemFiles";
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
 
   /**
@@ -169,13 +171,21 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    */
   private static final String FIRST_DICTIONARY_VERSION = dictionaryVersion(resourceToString(FIRST_DICTIONARY_RESOURCE));
   private static final String SECOND_DICTIONARY_VERSION = dictionaryVersion(dictionaryToString());
-
   private int dictionaryUpdateCount = 0;
 
+  /**
+   * Switch that will change environments from "local" if {@code true} and "hadoop" if {@code false}.
+   */
+  private static final boolean LOCAL = true;
+
+  /**
+   * Test utilities.
+   */
   @Inject
   private Datastore datastore;
-
   private SimpleSmtpServer smtpServer;
+  private MiniHadoop hadoop;
+  private FileSystem fileSystem;
 
   @Before
   public void setUp() throws IOException {
@@ -183,8 +193,25 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     log.info("Setting up ...");
     log.info(repeat("-", 100));
 
-    status("init", "Deleting filesystem...");
-    deleteDirectory(new File(DCC_ROOT_DIR));
+    if (LOCAL) {
+      status("init", "Setting up local environment...");
+      fileSystem = FileSystem.get(new Configuration());
+
+      status("init", "Deleting local root filesystem...");
+      fileSystem.delete(new Path(DCC_ROOT_DIR), true);
+    } else {
+      // Setup hadoop infrastructure
+      status("init", "Setting up Hadoop environment...");
+      hadoop = new MiniHadoop(new Configuration(), 1, 1, new File("/tmp/hadoop"));
+      fileSystem = hadoop.getFileSystem();
+
+      // Config overrides for {@code Main} consumption
+      val jobConf = hadoop.createJobConf();
+      System.setProperty("fs.url", jobConf.get("fs.defaultFS"));
+      System.setProperty("hadoop.fs.defaultFS", jobConf.get("fs.defaultFS"));
+      System.setProperty("hadoop.mapred.job.tracker", jobConf.get("mapred.job.tracker"));
+      System.setProperty("dcc.hadoop.test", "true"); // See HadoopPlatformStrategy#isProduction
+    }
 
     status("init", "Dropping database...");
     datastore.getDB().dropDatabase();
@@ -197,6 +224,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   }
 
   @After
+  @SneakyThrows
   public void tearDown() {
     log.info(repeat("-", 100));
     log.info("Tearing down ...");
@@ -213,6 +241,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("shutdown", "Shutting down submission server...");
     Main.shutdown();
     status("shutdown", "Submission server shut down.");
+
+    if (hadoop != null) {
+      status("shutdown", "Shutting down hadoop...");
+      hadoop.close();
+    }
   }
 
   @Test
@@ -246,9 +279,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("seed", "Seeding code lists...");
     post(client, SEED_CODELIST_ENDPOINT, codeListsToString());
-
-    status("seed", "Seeding system files...");
-    copyDirectory(new File(SYSTEM_FILES_DIR), new File(INITIAL_RELEASE_SYSTEM_FILES_DIR));
   }
 
   private void adminCreatesRelease() throws Exception, IOException {
@@ -260,16 +290,25 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding projects...");
     addProjects();
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
         resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
   }
 
+  @SneakyThrows
   private void userSubmitsFiles() throws IOException {
-    status("user", "\"Submitting\" files...");
-    copyDirectory(new File(FS_DIR), new File(DCC_ROOT_DIR));
+    val source = new Path(FS_DIR);
+    val destination = new Path(DCC_ROOT_DIR);
+    status("user", "'Submitting' files from '{}' to '{}'...", source, destination);
+    fileSystem.delete(destination, true);
+    fileSystem.copyFromLocalFile(source, destination);
+
+    val list = fileSystem.listFiles(destination, true);
+    while (list.hasNext()) {
+      log.info("Copied: {}", list.next().getPath());
+    }
   }
 
   private void userValidates() throws Exception {
@@ -277,11 +316,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     enqueueProjects(PROJECTS_TO_ENQUEUE, NO_CONTENT);
 
     // TODO: Can't do this unless we can support verifying in either INVALID or NOT_VALIDATED states due to timing
-    // status("user", "Awaiting validation for project '{}'...", PROJECT2_KEY);
+    // status("user","Awaiting validation for project '{}'...",PROJECT2_KEY);
     // awaitValidatingState(PROJECT2_KEY);
     //
-    // status("user", "Cancelling validation for project '{}'...", PROJECT2_KEY);
-    // cancelValidation(PROJECT2_KEY, OK);
+    // status("user","Cancelling validation for project '{}'...",PROJECT2_KEY);
+    // cancelValidation(PROJECT2_KEY,OK);
 
     checkValidations();
   }
@@ -318,9 +357,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Checking validated submission 4...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, INVALID);
 
+    status("admin", "Checking validated submission 5...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
+
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -328,7 +370,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
         hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
@@ -344,7 +386,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void adminUpdatesRelease() throws Exception {
     updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
     checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void createInitialRelease() throws Exception {
@@ -371,6 +413,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding project 4...");
     val response4 = post(client, PROJECTS_ENDPOINT, PROJECT4);
     assertEquals(CREATED.getStatusCode(), response4.getStatus());
+
+    status("admin", "Adding project 5...");
+    val response5 = post(client, PROJECTS_ENDPOINT, PROJECT5);
+    assertEquals(CREATED.getStatusCode(), response5.getStatus());
+
   }
 
   private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
@@ -386,8 +433,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     response = post(client, QUEUE_ENDPOINT, projectsToEnqueue);
     assertEquals(expectedStatus.getStatusCode(), response.getStatus());
     if (expectedStatus != NO_CONTENT) {
-      assertEquals("{\"code\":\"" + INVALID_STATE.getFrontEndString() + "\",\"parameters\":[\"" + VALID + "\"]}",
-          asString(response));
+      assertEquals($("{code:'" + INVALID_STATE.getFrontEndString() + "',parameters:['" + VALID + "']}"),
+          $(response));
     }
   }
 
@@ -403,34 +450,34 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     Response response = get(client, CODELISTS_ENDPOINT);
     assertEquals(OK.getStatusCode(), response.getStatus());
     val codeListName = "appendix_B10";
-    assertTrue(asString(response).contains("\"" + codeListName + "\""));
+    assertTrue(asString(response).contains(codeListName));
 
     // Attempt to add it again
     status("admin", "Adding invalid code list...");
-    response = post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"" + codeListName + "\"}]");
+    response = post(client, CODELISTS_ENDPOINT, "[{name:'someName'},{name:'" + codeListName + "'}]");
     assertEquals(INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
   }
 
   private void addValidCodeLists() throws IOException {
     status("admin", "Adding valid code lists...");
-    val response = post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
+    val response = post(client, CODELISTS_ENDPOINT, "[{name:'someName'},{name:'someNewName'}]");
     assertEquals(CREATED.getStatusCode(), response.getStatus());
   }
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
     val codeListName = "GLOBAL.0.platform.v1/terms";
     val response = post(client, CODELISTS_ENDPOINT + "/" + codeListName,
-        "[{\"code\": \"81\", \"value\": \"new value 1\"}, {\"code\": \"82\", \"value\": \"new value 2\"}]");
+        "[{code:'81',value:'new value 1'},{code:'82',value:'new value 2'}]");
     assertEquals(CREATED.getStatusCode(), response.getStatus());
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void releaseInitialRelease() {
@@ -515,9 +562,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
 
     // check no errors for project 1
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR + "errors.json");
+    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR
+        + "errors.json");
+    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR
+        + "errors.json");
+    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR
+        + "errors.json");
     // TODO add more
   }
 

@@ -32,8 +32,6 @@ import static org.icgc.dcc.hadoop.util.HadoopConstants.HDFS_USERNAME_PROPERTY_VA
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.List;
 import java.util.Map.Entry;
 
 import lombok.SneakyThrows;
@@ -62,7 +60,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 /**
- * Main class for the submission system.
+ * Main class for the submission system. Starts the DCC Submission System daemon.
  */
 @Slf4j
 public class Main {
@@ -149,8 +147,14 @@ public class Main {
     val configFile = new File(args[1]);
     checkArgument(configFile.exists(), "Configuration file '%s' not found", configFile.getAbsolutePath());
 
+    // Overlay overrides to base to get affective configuration
     log.info("Using config file {}", configFile.getAbsoluteFile());
-    return ConfigFactory.parseFile(configFile).resolve();
+    val overrides = ConfigFactory.systemProperties();
+    val base = ConfigFactory.parseFile(configFile);
+    val effective = overrides.withFallback(base);
+
+    log.info("Overrides: {}", overrides);
+    return effective.resolve();
   }
 
   private void inject(Config config) {
@@ -189,8 +193,8 @@ public class Main {
     log.info("Built:   {}", getBuildTimestamp());
     log.info("SCM:");
     for (Entry<String, String> entry : getScmInfo().entrySet()) {
-      String key = entry.getKey();
-      String value = firstNonNull(entry.getValue(), "").replaceAll("\n", " ");
+      val key = entry.getKey();
+      val value = firstNonNull(entry.getValue(), "").replaceAll("\n", " ");
 
       log.info("         {}: {}", padEnd(key, 24, ' '), value);
     }
@@ -200,25 +204,25 @@ public class Main {
   }
 
   private String getVersion() {
-    String version = getClass().getPackage().getImplementationVersion();
+    val version = getClass().getPackage().getImplementationVersion();
     return version == null ? "[unknown version]" : version;
   }
 
   private String getBuildTimestamp() {
-    String buildTimestamp = getClass().getPackage().getSpecificationVersion();
+    val buildTimestamp = getClass().getPackage().getSpecificationVersion();
     return buildTimestamp == null ? "[unknown build timestamp]" : buildTimestamp;
   }
 
   private String getJarName() {
-    String jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-    File jarFile = new File(jarPath);
+    val jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+    val jarFile = new File(jarPath);
 
     return jarFile.getName();
   }
 
   private String formatArguments(String[] args) {
-    RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-    List<String> inputArguments = runtime.getInputArguments();
+    val runtime = ManagementFactory.getRuntimeMXBean();
+    val inputArguments = runtime.getInputArguments();
 
     return "java " + join(inputArguments, ' ') + " -jar " + getJarName() + " " + join(args, ' ');
   }

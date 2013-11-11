@@ -15,62 +15,55 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.core.util;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Iterator;
+import java.util.Map;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.first.RowChecker;
 
-@Slf4j
-public class RowColumnChecker extends CompositeRowChecker {
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 
-  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
-    super(rowChecker, failFast);
-  }
+/**
+ * Simple {@link FileSchema} file instance line parser.
+ */
+@RequiredArgsConstructor
+@ToString
+public class FileLineParser {
 
-  public RowColumnChecker(RowChecker rowChecker) {
-    this(rowChecker, false);
-  }
+  /**
+   * Separator between fields.
+   */
+  private static final String FIELD_SEPARATOR = "\t";
 
-  @Override
-  public void performSelfCheck(
-      String filename,
-      FileSchema fileSchema,
-      String line,
-      long lineNumber) {
+  /**
+   * Splits fields in to a {@code String} iterable.
+   */
+  private static final Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
 
-    int expectedNumColumns = getExpectedCount(fileSchema);
-    int actualNumColumns = getActualCount(line);
-    if (isCountMismatch(
-        expectedNumColumns,
-        actualNumColumns)) {
+  @NonNull
+  private final FileSchema schema;
 
-      log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
-          + actualNumColumns + " at line " + lineNumber);
+  public Map<String, String> parser(String line) {
+    val record = ImmutableMap.<String, String> builder();
 
-      incrementCheckErrorCount();
-      getValidationContext().reportError(
-          filename,
-          lineNumber,
-          actualNumColumns,
-          STRUCTURALLY_INVALID_ROW_ERROR,
-          expectedNumColumns);
+    val values = split(line);
+    for (val fieldName : schema.getFieldNames()) {
+      val fieldValue = values.next();
+      record.put(fieldName, fieldValue);
     }
+
+    return record.build();
   }
 
-  private int getExpectedCount(FileSchema fileSchema) {
-    return fileSchema.getFields().size();
-  }
-
-  private int getActualCount(String line) {
-    return line.split(FIELD_SEPARATOR, -1).length;
-  }
-
-  private boolean isCountMismatch(int expectedNumColumns, int actualNumColumns) {
-    return actualNumColumns != expectedNumColumns;
+  private Iterator<String> split(String line) {
+    return FIELD_SPLITTER.split(line).iterator();
   }
 
 }
