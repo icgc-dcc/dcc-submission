@@ -393,13 +393,21 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     updateDictionary(
         dictionaryToString(), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
 
-    status("admin", "Adding Script restriction to OPENED dictionary");
+    status("admin", "Adding Script restriction #1 to OPENED dictionary");
     Dictionary dict =
         TestUtils.addScript(TestUtils.dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "note!= 'dual_depth_peeling'",
-            "note field cannot be 'dual_depth_peeling'");
+            "note != \"script_error_here\"",
+            "Note field cannot be 'script_error_here'");
 
+    status("admin", "Adding Script restriction #2 to OPENED dictionary");
+    dict =
+        TestUtils.addScript(dict, SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
+            "note",
+            "! (note.indexOf('_') > 0)",
+            "Note field cannot contain the underscore(_) character");
+
+    status("admin", "Updating to new dictionary with script restrictions");
     updateDictionary(
         dictionaryToString(dict), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
   }
