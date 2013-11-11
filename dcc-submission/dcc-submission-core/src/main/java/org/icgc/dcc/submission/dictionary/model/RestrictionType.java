@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -30,14 +31,20 @@ import com.google.code.morphia.mapping.MappingException;
 @RequiredArgsConstructor
 public enum RestrictionType {
 
-  CODELIST("codelist"),
-  DISCRETE_VALUES("in"),
-  RANGE("range"),
-  REGEX("regex"),
-  REQUIRED("required"),
-  SCRIPT("script");
+  CODELIST("codelist", false),
+  DISCRETE_VALUES("in", false),
+  RANGE("range", false),
+  REGEX("regex", false),
+  REQUIRED("required", false),
+  SCRIPT("script", true);
 
   private final String id;
+
+  /**
+   * Allows multiple {@Restriction}s of the same type to be defined?
+   */
+  @Getter
+  private final boolean multi;
 
   @JsonValue
   @com.fasterxml.jackson.annotation.JsonValue

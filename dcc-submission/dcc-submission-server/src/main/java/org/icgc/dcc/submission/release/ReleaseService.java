@@ -579,7 +579,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * see DCC-901
    */
   public void resetSubmission(final String releaseName, final String projectKey) {
-    log.info("resetting submission for project {}", projectKey);
+    log.info("Resetting submission for project '{}'", projectKey);
 
     // Reset state and report in database (TODO: queue + currently validating? - DCC-906)
     Release release = datastore().findAndModify(
@@ -605,7 +605,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * TODO: only taken out of resetSubmission() until DCC-901 is done (to allow code that calls deprecated methods
    * instead of resetSubmission() to still be able to empty those directories)
    */
-  private void resetValidationFolder(final String projectKey, Release release) {
+  public void resetValidationFolder(String projectKey, Release release) {
+    log.info("Resetting validation folder for '{}' in release '{}'", projectKey, release.getName());
     fs.getReleaseFilesystem(release).resetValidationFolder(projectKey);
   }
 

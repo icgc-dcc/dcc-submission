@@ -63,11 +63,16 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     SCRIPT_ERROR:
       name: "Failed script expression"
       description: (source) ->
+        # Note we don't have an mvel formatter/highlighter, this is
+        # currently simulated with javascript formatter and java highlighter
+        errorRaw = source.parameters?.EXPECTED
+        errorPretty = hljs.highlight('java', js_beautify(errorRaw)).value
+
         """
         #{source.parameters?.DESCRIPTION}.
         Values do not pass the script expression associated with this
         this field: <br><br>
-        <code>#{source.parameters?.EXPECTED}</code>
+        <pre><code>#{errorPretty}</code></pre>
         """
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
@@ -142,11 +147,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     STRUCTURALLY_INVALID_ROW_ERROR:
       name: "Invalid row structure"
       description: (source) ->
-        console.log source
-        """
-        Field counts in all lines are expected to match that of the file
-        header. Offending lines
-        """
+        Field counts in all lines are expected to be
+        #"""
+        #Field counts in all lines are expected to match that of the file
+        #header. Offending lines
+        #"""
     FORBIDDEN_VALUE_ERROR:
       name: "Invalid value"
       description: (source) ->
@@ -156,17 +161,26 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     TOO_MANY_FILES_ERROR:
       name: "Filename collision"
       description: (source) ->
-        console.log source
         """
-        More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
-        filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        The following files are found matching
+        <em>#{source.parameters?.SCHEMA}</em> filename pattern, only
+        one file is allowed. <br>
+        #{source.parameters?.FILES.join '<br>'}
         """
+        #"""
+        #More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
+        #filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        #"""
     COMPRESSION_CODEC_ERROR:
       name: "Compression Error"
       description: (source) ->
         """
-        File compression type does not match file extension
+        File name extension does not match file compression type. Please use
+        <em>.gz</em> for gzip, <em>.bz2</em> for bzip2.
         """
+        #"""
+        #File compression type does not match file extension
+        #"""
     INVALID_CHARSET_ROW_ERROR:
       name: "Row contains invalid charset"
       description: (source) ->
@@ -179,11 +193,16 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "File header error"
       description: (source) ->
         """
-        Different from the expected header
-        <em>#{source.parameters?.EXPECTED}</em>
-        <br><br>
-        <em>#{source.parameters?.VALUE}</em>
+        Invalid header line. It is expected to contain the following fields
+        in the specified order separated by <em>tab</em>: <br>
+        #{source.parameters?.VALUE}
         """
+        #"""
+        #Different from the expected header
+        #<em>#{source.parameters?.EXPECTED}</em>
+        #<br><br>
+        #<em>#{source.parameters?.VALUE}</em>
+        #"""
     REFERENCE_GENOME_ERROR:
       name: "Reference genome error"
       description: (source) ->
@@ -193,7 +212,6 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
 
   details: (source) ->
-    console.log source
 
     # There are generally two types of errors: file level errors
     # with no line details, and row level errors
@@ -201,6 +219,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "COMPRESSION_CODEC_ERROR"
       "TOO_MANY_FILES_ERROR"
       "FILE_HEADER_ERROR"
+      "RELATION_FILE_ERROR"
+      "REVERSE_RELATION_FILE_ERROR"
       ]
       return ""
     else if source.errorType in [
