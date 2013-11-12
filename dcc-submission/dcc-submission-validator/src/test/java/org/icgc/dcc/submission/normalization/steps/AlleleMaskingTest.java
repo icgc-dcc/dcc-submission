@@ -44,10 +44,10 @@ public class AlleleMaskingTest extends CascadingTestCase {
 
     String dummyValue = "dummy";
     TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "A", Masking.OPEN)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G", Masking.OPEN)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C", Masking.OPEN)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "C", "C", Masking.OPEN))
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "A", Masking.OPEN.getTupleValue())),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G", Masking.OPEN.getTupleValue())),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C", Masking.OPEN.getTupleValue())),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "C", "C", Masking.OPEN.getTupleValue()))
     };
     Fields resultFields =
         AlleleMasking.REFERENCE_GENOME_ALLELE_FIELD
@@ -55,10 +55,10 @@ public class AlleleMaskingTest extends CascadingTestCase {
             .append(Masking.NORMALIZER_MASKING_FIELD);
 
     Tuple[] resultTuples = new Tuple[] {
-        new Tuple("A", "A", Masking.OPEN), // Untouched
-        new Tuple("A", "G", Masking.CONTROLLED), // Marked
-        new Tuple("T", "C", Masking.CONTROLLED), // Marked
-        new Tuple("C", "C", Masking.OPEN) // Untouched
+        new Tuple("A", "A", Masking.OPEN.getTupleValue()), // Untouched
+        new Tuple("A", "G", Masking.CONTROLLED.getTupleValue()), // Marked
+        new Tuple("T", "C", Masking.CONTROLLED.getTupleValue()), // Marked
+        new Tuple("C", "C", Masking.OPEN.getTupleValue()) // Untouched
     };
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
@@ -80,11 +80,11 @@ public class AlleleMaskingTest extends CascadingTestCase {
 
     String dummyValue = "dummy";
     Tuple open = // Just passed through as is
-        new Tuple(dummyValue, dummyValue, "A/A", "A/T", "A", "A", "T", Masking.OPEN);
+        new Tuple(dummyValue, dummyValue, "A/A", "A/T", "A", "A", "T", Masking.OPEN.getTupleValue());
     Tuple nonTrivial = // They differ -> masked
-        new Tuple(dummyValue, dummyValue, "A/G", "A/T", "A", "G", "T", Masking.CONTROLLED);
+        new Tuple(dummyValue, dummyValue, "A/G", "A/T", "A", "G", "T", Masking.CONTROLLED.getTupleValue());
     Tuple trivial = // reference genome allele equals mutation_to -> not masked
-        new Tuple(dummyValue, dummyValue, "A/G", "A/A", "A", "G", "A", Masking.CONTROLLED);
+        new Tuple(dummyValue, dummyValue, "A/G", "A/A", "A", "G", "A", Masking.CONTROLLED.getTupleValue());
 
     TupleEntry[] entries = new TupleEntry[] {
         new TupleEntry(inputFields, open),
@@ -104,7 +104,7 @@ public class AlleleMaskingTest extends CascadingTestCase {
             "A",
             "A", // Changed to match reference genome allele
             "T",
-            Masking.MASKED), // Marked as masked
+            Masking.MASKED.getTupleValue()), // Marked as masked
         trivial, // Untouched
     };
     checkOperationResults(iterator, resultTuples);

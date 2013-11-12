@@ -52,7 +52,7 @@ public class PreMaskingTest extends CascadingTestCase {
       TupleEntry entry = iterator.next();
       Object object = entry.getObject(resultFields);
       assertThat(object)
-          .isEqualTo(Masking.OPEN);
+          .isEqualTo(Masking.OPEN.getTupleValue());
     }
     assertFalse(iterator.hasNext());
   }

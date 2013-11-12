@@ -73,7 +73,7 @@ public final class PreMasking implements NormalizationStep {
           .getOutputCollector()
           .add(
               // Until specified otherwise (if applicable as it can be turned off)
-              new Tuple(Masking.OPEN)
+              new Tuple(Masking.OPEN.name())
           );
     }
   }

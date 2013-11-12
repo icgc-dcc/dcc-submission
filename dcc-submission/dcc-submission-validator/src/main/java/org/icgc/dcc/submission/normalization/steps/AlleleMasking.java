@@ -54,6 +54,7 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
 /**
@@ -121,13 +122,10 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep {
         FunctionCall<Void> functionCall) {
 
       val entry = functionCall.getArguments();
-
       {
-        val existingMasking = entry.getObject(Masking.NORMALIZER_MASKING_FIELD);
-        checkState(
-            existingMasking instanceof Masking
-                && (Masking) existingMasking == OPEN,
-            "Masking flag is expected to have been set to '{}' already", OPEN);
+        val existingMasking = Masking.getMasking(entry.getString(Masking.NORMALIZER_MASKING_FIELD));
+        checkState(existingMasking.isPresent() && existingMasking.get() == Masking.OPEN,
+            "Masking flag is expected to have been set to '%s' already", OPEN);
       }
 
       val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
@@ -148,7 +146,7 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep {
 
       functionCall
           .getOutputCollector()
-          .add(new Tuple(referenceGenomeAllele, mutatedFromAllele, masking));
+          .add(new Tuple(referenceGenomeAllele, mutatedFromAllele, masking.getTupleValue()));
     }
 
     private boolean isSensitive(String referenceGenomeAllele, String mutatedFromAllele) {
@@ -207,7 +205,7 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep {
      * 
      */
     private Tuple mask(TupleEntry copy, String referenceGenomeAllele) {
-      copy.set(NORMALIZER_MASKING_FIELD, Masking.MASKED);
+      copy.set(NORMALIZER_MASKING_FIELD, Masking.MASKED.getTupleValue());
       copy.set(CONTROL_GENOTYPE_FIELD, NO_VALUE);
       copy.set(TUMOUR_GENOTYPE_FIELD, NO_VALUE);
       copy.setString(MUTATED_FROM_ALLELE_FIELD, referenceGenomeAllele);
@@ -219,7 +217,9 @@ public final class AlleleMasking implements NormalizationStep, OptionalStep {
      */
     private Masking getMaskingState(TupleEntry entry) {
       String maskingString = entry.getString(NORMALIZER_MASKING_FIELD);
-      return Masking.valueOf(maskingString);
+      Optional<Masking> masking = Masking.getMasking(maskingString);
+      checkState(masking.isPresent(), "TODO");
+      return masking.get();
     }
 
     /**

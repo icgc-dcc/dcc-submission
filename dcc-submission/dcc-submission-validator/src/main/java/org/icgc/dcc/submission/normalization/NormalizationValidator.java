@@ -167,10 +167,12 @@ public final class NormalizationValidator implements Validator {
     NormalizationReporter.performSanityChecks(connectedCascade);
 
     // Report results
-    val errors = NormalizationReporter.collectPotentialErrors(config, connectedCascade, fileName);
-    if (errors.isPresent()) {
-      NormalizationReporter.reportError(validationContext, errors.get());
+    val checker = NormalizationReporter.collectPotentialErrors(config, connectedCascade, fileName);
+    if (checker.isLikelyErroneous()) {
+      log.warn("The submission is erroneous from the normalization standpoint: '{}'", checker);
+      NormalizationReporter.reportError(validationContext, checker);
     } else {
+      log.info("No errors were encountered during normalization");
       internalStatisticsReport(connectedCascade);
       externalStatisticsReport(fileName, connectedCascade, validationContext);
     }
@@ -214,7 +216,7 @@ public final class NormalizationValidator implements Validator {
                 pipes.getEndPipe(),
                 getOutputTap(releaseName, projectKey));
 
-    Flow<?> flow = dccFileSystem2
+    Flow<?> flow = platformStrategy // TODO: not re-using the submission's platform strategy
         .getFlowConnector()
         .connect(flowDef);
 
@@ -242,17 +244,19 @@ public final class NormalizationValidator implements Validator {
   }
 
   /**
-   * 
+   * TODO: externalise
    */
   private void internalStatisticsReport(ConnectedCascade connectedCascade) {
+    String report = NormalizationReporter.createInternalReportContent(connectedCascade);
+    log.info("Internal report: {}", report); // Should be small enough
     dccFileSystem2.writeNormalizationReport(
         connectedCascade.getReleaseName(),
         connectedCascade.getProjectKey(),
-        NormalizationReporter.createInternalReportContent(connectedCascade));
+        report);
   }
 
   /**
-   * 
+   * TODO: externalise
    */
   private void externalStatisticsReport(
       String fileName,
@@ -266,12 +270,14 @@ public final class NormalizationValidator implements Validator {
         .counters(
             NormalizationCounter.report(connectedCascade))
         .build()
-        .getExternalReportCounters()) {
+        .getExternalReportCounters()
+        .entrySet()) {
 
-      val counter = entry.getKey();
-      val count = entry.getValue();
+      val key = entry.getKey();
+      val value = entry.getValue();
+      log.info("External report for '{}': '{}' -> '{}'", new Object[] { fileName, key, value });
       validationContext.reportSummary(
-          fileName, counter.name(), String.valueOf(count));
+          fileName, key, value);
     }
   }
 

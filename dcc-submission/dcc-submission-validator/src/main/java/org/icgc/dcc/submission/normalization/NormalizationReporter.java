@@ -31,19 +31,18 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 
-import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
 /**
  * 
+ * <p>
+ * TODO: non-static
  */
-@Slf4j
 public class NormalizationReporter {
 
   private static final String TAB = "\t";
@@ -100,35 +99,25 @@ public class NormalizationReporter {
   /**
    * 
    */
-  public static Optional<NormalizationError> collectPotentialErrors(
+  public static NormalizationChecker collectPotentialErrors(
       Config config, ConnectedCascade connectedCascade, String fileName) {
 
     long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
     long totalStart = connectedCascade.getCounterValue(TOTAL_START);
     float threshold = NormalizationConfig.getConfidentialErrorThreshold(config);
 
-    NormalizationError normalizationError = NormalizationError.builder()
+    return NormalizationChecker.builder()
         .fileName(fileName)
         .count(markedAsControlled)
         .total(totalStart)
         .threshold(threshold)
         .build();
-
-    if (normalizationError.isLikelyErroneous()) {
-      log.warn("The submission is erroneous from the normalization standpoint: '{}'", normalizationError);
-    } else {
-      log.info("No errors were encountered during normalization");
-      normalizationError = null;
-    }
-    return normalizationError == null ?
-        Optional.<NormalizationError> absent() :
-        Optional.of(normalizationError);
   }
 
   /**
    * 
    */
-  public static void reportError(ValidationContext validationContext, NormalizationError normalizationError) {
+  public static void reportError(ValidationContext validationContext, NormalizationChecker normalizationError) {
     validationContext
         .reportError(
             normalizationError.getFileName(),
@@ -140,7 +129,7 @@ public class NormalizationReporter {
 
   @Value
   @Builder
-  static final class NormalizationError {
+  static final class NormalizationChecker {
 
     @NonNull
     private final String fileName;
@@ -148,7 +137,7 @@ public class NormalizationReporter {
     private final long total;
     private final float threshold;
 
-    private boolean isLikelyErroneous() {
+    public boolean isLikelyErroneous() {
       return count > total * threshold;
     }
   }

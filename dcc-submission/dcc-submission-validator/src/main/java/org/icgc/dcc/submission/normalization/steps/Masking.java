@@ -20,8 +20,22 @@ package org.icgc.dcc.submission.normalization.steps;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MASKING;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Optional;
+
 enum Masking {
   CONTROLLED, OPEN, MASKED;
 
+  public String getTupleValue() {
+    return name();
+  }
+
   static final Fields NORMALIZER_MASKING_FIELD = new Fields(NORMALIZER_MASKING);
+
+  public static Optional<Masking> getMasking(String value) {
+    try {
+      return Optional.<Masking> of(Masking.valueOf(value));
+    } catch (IllegalArgumentException e) {
+      return Optional.absent();
+    }
+  }
 }

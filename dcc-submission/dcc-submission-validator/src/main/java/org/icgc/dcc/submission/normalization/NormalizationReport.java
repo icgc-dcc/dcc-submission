@@ -17,14 +17,12 @@
  */
 package org.icgc.dcc.submission.normalization;
 
-import static com.google.common.collect.ImmutableSet.copyOf;
-import static com.google.common.collect.Iterables.filter;
 import static java.lang.String.format;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
 import static org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
-
-import java.util.Map.Entry;
-
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
@@ -32,9 +30,7 @@ import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * 
@@ -49,21 +45,31 @@ public final class NormalizationReport {
   private final String projectKey;
   private final ImmutableMap<NormalizationCounter, Long> counters;
 
-  public ImmutableSet<Entry<NormalizationCounter, Long>> getExternalReportCounters() {
-    return copyOf(filter(
-        counters.entrySet(),
-        new Predicate<Entry<NormalizationCounter, Long>>() {
+  public ImmutableMap<String, String> getExternalReportCounters() {
+    val builder = new ImmutableMap.Builder<String, String>();
 
-          @Override
-          public boolean apply(Entry<NormalizationCounter, Long> input) {
-            NormalizationCounter counter = input.getKey();
-            return counter.externalReport;
-          }
-        }));
+    for (val entry : counters.entrySet()) {
+      if (entry.getKey().externalReport) {
+        builder.put(
+            entry.getKey().name(),
+            String.valueOf(entry.getValue().longValue()));
+      }
+    }
+
+    val aggregate =
+        new NormalizationCounterAggregate.Ratio(
+            "RATIO", // TODO: make it more generic
+            counters.get(MARKED_AS_CONTROLLED),
+            counters.get(TOTAL_START));
+    builder.put(aggregate.getName(), aggregate.getStringValue());
+
+    return builder.build();
   }
 
   @RequiredArgsConstructor
   public enum NormalizationCounter {
+
+    // Order matters
     TOTAL_START("TODO", EXTERNAL),
     TOTAL_END("TODO", EXTERNAL),
     UNIQUE_START(format("Number of unique '%s' before filtering", ANALYSIS_ID_FIELD), INTERNAL),
@@ -90,6 +96,36 @@ public final class NormalizationReport {
             connected.getCounterValue(counter));
       }
       return counters.build();
+    }
+  }
+
+  private static interface NormalizationCounterAggregate {
+
+    String getName();
+
+    String getStringValue();
+
+    @RequiredArgsConstructor
+    static class Ratio implements NormalizationCounterAggregate {
+
+      @Getter
+      @NonNull
+      private final String name;
+
+      @NonNull
+      private final Long count;
+      @NonNull
+      private final Long total;
+
+      @Override
+      public String getStringValue() {
+        float result = 0;
+        if (total > 0) {
+          result = count.floatValue() / total.floatValue();
+
+        }
+        return String.valueOf(result);
+      }
     }
   }
 }

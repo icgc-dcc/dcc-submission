@@ -135,7 +135,7 @@ public class NormalizationValidatorTest {
 
     mockInputTap();
     mockOutputTap();
-    when(mockDccFileSystem2.getFlowConnector())
+    when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(new LocalFlowConnector());
 
     when(mockValidationContext.getDictionary())
