@@ -26,7 +26,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
-import static org.icgc.dcc.submission.validation.core.Validators.checkState;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 
 import java.io.BufferedInputStream;
@@ -171,7 +171,7 @@ public class ReferenceGenomeValidator implements Validator {
         }
 
         // Cooperate
-        checkState(getName());
+        checkInterrupted(getName());
       }
 
     });

@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.first;
 
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
-import static org.icgc.dcc.submission.validation.core.Validators.checkState;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import javax.validation.constraints.NotNull;
 
@@ -70,12 +70,12 @@ public class FirstPassValidator implements Validator {
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, filename);
 
       fileChecker.check(filename);
-      checkState(getName());
+      checkInterrupted(getName());
 
       if (fileChecker.canContinue()) {
         log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, filename);
         rowChecker.check(filename);
-        checkState(getName());
+        checkInterrupted(getName());
       }
     }
   }

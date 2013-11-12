@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.core;
 
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.validation.core.Validators.checkState;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.util.List;
 
@@ -79,7 +79,7 @@ public class Validation {
     log.info(banner());
 
     // Cooperate
-    checkState(getClass().getSimpleName());
+    checkInterrupted(getClass().getSimpleName());
 
     val n = validators.size();
     int i = 1;
@@ -113,7 +113,7 @@ public class Validation {
         }
 
         // Cooperate
-        checkState(getClass().getSimpleName());
+        checkInterrupted(getClass().getSimpleName());
 
         i++;
       }
