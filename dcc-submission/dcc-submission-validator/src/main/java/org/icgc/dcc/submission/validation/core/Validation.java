@@ -71,40 +71,58 @@ public class Validation {
   @SneakyThrows
   public void execute() throws InterruptedException {
     duration.start();
+
+    log.info(banner());
+    log.info("");
+    log.info("BEGIN VALIDATION: '{}'", getId());
+    log.info("");
+    log.info(banner());
+
+    // Cooperate
+    checkState(getClass().getSimpleName());
+
+    val n = validators.size();
+    int i = 1;
+    String name = null;
+    val watch = createUnstarted();
+
     try {
-      log.info(repeat("=", 80));
-      log.info("");
-      log.info("BEGIN VALIDATION: '{}'", getId());
-      log.info("");
-      log.info(repeat("=", 80));
-
-      // Cooperate
-      checkState(getClass().getSimpleName());
-
-      val n = validators.size();
-      int i = 1;
       for (val validator : validators) {
-        val name = validator.getName();
+        name = validator.getName();
 
-        log.info(repeat("-", 80));
-        log.info("[" + i++ + "/" + n + "] Executing '{}' for '{}'...", name, getId());
-        log.info(repeat("-", 80));
+        log.info(banner());
+        log.info("[" + i + "/" + n + "] > Starting '{}' for '{}'...", name, getId());
+        log.info(banner());
+
+        // Execute synchronously
+        watch.reset().start();
         validator.validate(context);
-        log.info("Finished executing '{}' for '{}'...", name, getId());
+        watch.stop();
+
+        log.info(banner());
+        log.info("[" + i + "/" + n + "] < Finished '{}' for '{}' in {}", new Object[] { name, getId(), watch });
+        log.info(banner());
 
         val failure = context.hasErrors();
         if (failure) {
           log.warn("Execution of '{}' for '{}' has '{}' errors",
               new Object[] { name, getId(), context.getErrorCount() });
 
-          // Fail fast
+          // Abort validation pipeline
           break;
         }
 
         // Cooperate
         checkState(getClass().getSimpleName());
+
+        i++;
       }
     } catch (Throwable t) {
+      log.error(banner());
+      log.error("[" + i + "/" + n + "] < Finished with Exception '{}' for '{}' in {}",
+          new Object[] { name, getId(), watch });
+      log.error(banner());
+
       log.error("Exception running validation for '{}': {}", getId(), t);
 
       // For {@link ListeningFuture#onError()}
@@ -112,12 +130,16 @@ public class Validation {
     } finally {
       duration.stop();
 
-      log.info(repeat("=", 80));
+      log.info(banner());
       log.info("");
       log.info("FINISHED VALIDATION: '{}' in {}", getId(), duration);
       log.info("");
-      log.info(repeat("=", 80));
+      log.info(banner());
     }
+  }
+
+  private static String banner() {
+    return repeat("-", 80);
   }
 
 }
