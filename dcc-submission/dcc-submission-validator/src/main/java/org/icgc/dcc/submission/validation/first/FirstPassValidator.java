@@ -19,11 +19,12 @@ package org.icgc.dcc.submission.validation.first;
 
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
-import static org.icgc.dcc.submission.validation.core.Validators.checkState;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import javax.validation.constraints.NotNull;
 
 import lombok.NoArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -69,23 +70,22 @@ public class FirstPassValidator implements Validator {
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, filename);
 
       fileChecker.check(filename);
-      checkState(getName());
+      checkInterrupted(getName());
 
       if (fileChecker.canContinue()) {
         log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, filename);
         rowChecker.check(filename);
-        checkState(getName());
+        checkInterrupted(getName());
       }
     }
   }
 
-  private Iterable<String> listRelevantFiles(ValidationContext validationContext) {
-    return validationContext
-        .getSubmissionDirectory()
-        .listFiles(
-            validationContext
-                .getDictionary()
-                .getFilePatterns());
+  private Iterable<String> listRelevantFiles(ValidationContext context) {
+    val dictionary = context.getDictionary();
+    val submissionDirectory = context.getSubmissionDirectory();
+    val relevantPatterns = dictionary.getFilePatterns();
+
+    return submissionDirectory.listFiles(relevantPatterns);
   }
 
 }

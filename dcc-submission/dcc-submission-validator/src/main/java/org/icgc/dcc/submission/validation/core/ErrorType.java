@@ -329,9 +329,10 @@ public enum ErrorType {
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
-      checkArgument(params.length == 1);
+      checkArgument(params.length == 2);
       checkArgument(params[0] instanceof List);
-      return ImmutableMap.of(FIELDS, params[0]);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(EXPECTED, params[0], VALUE, params[1]);
     }
   },
 
@@ -357,8 +358,7 @@ public enum ErrorType {
   private final String message;
   private final boolean structural;
 
-  public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable
-  Object... params);
+  public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable Object... params);
 
   ErrorType(ErrorLevel level, String message) {
     this(level, message, false);
@@ -374,8 +374,7 @@ public enum ErrorType {
     return structural;
   }
 
-  public static String format(@NonNull
-  TupleError error) {
+  public static String format(@NonNull TupleError error) {
     checkArgument(error != null);
     return error.getType().format(error.getParameters());
   }

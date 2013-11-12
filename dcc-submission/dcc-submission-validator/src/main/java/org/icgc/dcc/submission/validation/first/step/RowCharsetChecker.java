@@ -63,6 +63,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
       getValidationContext().reportError(
           fileName,
           lineNumber,
+          -1,
           INVALID_CHARSET_ROW_ERROR,
           US_ASCII.name()); // TODO: return actual list
     }

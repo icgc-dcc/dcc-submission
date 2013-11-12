@@ -17,15 +17,17 @@
  */
 package org.icgc.dcc.submission;
 
+import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.getFileStatus;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 public class BaseIntegrationTest {
 
@@ -41,10 +43,10 @@ public class BaseIntegrationTest {
     return String.format(format, args);
   }
 
-  protected static void assertEmptyFile(String dir, String path) throws IOException {
-    File errorFile = new File(dir, path);
-    assertTrue("Expected file does not exist: " + path, errorFile.exists());
-    assertTrue("Expected empty file: " + path, FileUtils.readFileToString(errorFile).isEmpty());
+  protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) throws IOException {
+    Path errorFile = new Path(dir, path);
+    assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
+    assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).getLen() == 0);
   }
 
 }

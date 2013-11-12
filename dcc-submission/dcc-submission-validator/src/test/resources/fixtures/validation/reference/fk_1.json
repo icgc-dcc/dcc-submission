@@ -3,6 +3,7 @@
   "errors" : [ {
     "type" : "RELATION_VALUE_ERROR",
     "columnNames" : [ "donor_id", "fakecolumn" ],
+    "number" : 0,
     "value" : [ "DN_Y20_0000", "x" ],
     "line" : 1,
     "parameters" : {
@@ -15,6 +16,7 @@
   "errors" : [ {
     "type" : "RELATION_VALUE_ERROR",
     "columnNames" : [ "donor_id", "fakecolumn" ],
+    "number" : 0,
     "value" : [ "DN_Y20_00001", "y" ],
     "line" : 2,
     "parameters" : {
@@ -27,6 +29,7 @@
   "errors" : [ {
     "type" : "RELATION_VALUE_ERROR",
     "columnNames" : [ "donor_id", "fakecolumn" ],
+    "number" : 0,
     "value" : [ "DN_Y20_0003", "y" ],
     "line" : 3,
     "parameters" : {

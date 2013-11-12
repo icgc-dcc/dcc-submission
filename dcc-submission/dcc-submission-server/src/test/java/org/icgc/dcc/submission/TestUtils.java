@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -40,20 +41,26 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 
 import com.google.common.io.Resources;
+import com.mongodb.BasicDBObject;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 /**
- * Utility class for integration test (to help un-clutter it).
+ * Utility class for integration test (to help declutter it).
  */
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
@@ -62,7 +69,9 @@ public final class TestUtils {
   /**
    * Jackson constants.
    */
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
   /**
    * Endpoint path constants.
@@ -135,8 +144,38 @@ public final class TestUtils {
   }
 
   @SneakyThrows
+  public static Dictionary addScript(Dictionary dictionary, String fileSchemaName, String fieldName, String script,
+      String description) {
+    for (val fileSchema : dictionary.getFiles()) {
+      if (fileSchema.getName().equals(fileSchemaName)) {
+        for (val field : fileSchema.getFields()) {
+          if (field.getName().equals(fieldName)) {
+            val config = new BasicDBObject();
+            config.put(ScriptRestriction.PARAM, script);
+            config.put(ScriptRestriction.PARAM_DESCRIPTION, description);
+
+            val restriction = new Restriction();
+            restriction.setType(RestrictionType.SCRIPT);
+            restriction.setConfig(config);
+
+            val restrictions = field.getRestrictions();
+            restrictions.add(restriction);
+          }
+        }
+      }
+    }
+
+    return dictionary;
+  }
+
+  @SneakyThrows
   public static String dictionaryToString() {
     return MAPPER.writeValueAsString(dictionary());
+  }
+
+  @SneakyThrows
+  public static String dictionaryToString(Dictionary dict) {
+    return MAPPER.writeValueAsString(dict);
   }
 
   @SneakyThrows
@@ -156,27 +195,49 @@ public final class TestUtils {
 
   @SneakyThrows
   public static Response get(Client client, String endPoint) {
+    banner();
     log.info("GET {}", endPoint);
+    banner();
     return build(client, endPoint).get();
   }
 
   public static Response post(Client client, String endPoint, String payload) {
+    payload = normalize(payload);
+
+    banner();
     log.info("POST {} {}", endPoint, abbreviate(payload, 1000));
+    banner();
     return build(client, endPoint).post(Entity.entity(payload, APPLICATION_JSON));
   }
 
   public static Response put(Client client, String endPoint, String payload) {
+    payload = normalize(payload);
+
+    banner();
     log.info("PUT {} {}", endPoint, abbreviate(payload, 1000));
+    banner();
     return build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON));
   }
 
   public static Response delete(Client client, String endPoint) {
+    banner();
     log.info("DELETE {}", endPoint);
+    banner();
     return build(client, endPoint).delete();
   }
 
   public static String asString(Response response) {
     return response.readEntity(String.class);
+  }
+
+  @SneakyThrows
+  public static JsonNode $(String json) {
+    return MAPPER.readTree(json);
+  }
+
+  @SneakyThrows
+  public static JsonNode $(Response response) {
+    return $(asString(response));
   }
 
   @SneakyThrows
@@ -196,6 +257,17 @@ public final class TestUtils {
 
   private static URL getDccResource(String resourceName) {
     return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
+
+  @SneakyThrows
+  private static String normalize(String json) {
+    val node = MAPPER.readTree(json);
+    val writer = MAPPER.writerWithDefaultPrettyPrinter();
+    return writer.writeValueAsString(node);
+  }
+
+  private static void banner() {
+    log.info("{}", repeat("\u00B7", 80));
   }
 
 }
