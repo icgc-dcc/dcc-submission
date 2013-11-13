@@ -30,6 +30,11 @@
       <artifactId>dcc-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency> <!-- Discussed with Bob, we may need a separate dcc-cascading module to avoid depending on cascading here -->
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-hadoop</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Security -->
     <dependency>

@@ -94,7 +94,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
    */
   private boolean isReAnnotatedFile(String fileSchemaName) {
     final String REANNOTATED_FILE_SCHEMA_NAME = "ssm_s";
-    List<String> fileSchemaNames = dictionary.fileSchemaNames();
+    List<String> fileSchemaNames = dictionary.getFileSchemaNames();
     checkState(fileSchemaNames // make sure ssm_s hasn't been renamed
         .contains(REANNOTATED_FILE_SCHEMA_NAME), "file schema names: %s", fileSchemaNames);
     return REANNOTATED_FILE_SCHEMA_NAME.equals(fileSchemaName);

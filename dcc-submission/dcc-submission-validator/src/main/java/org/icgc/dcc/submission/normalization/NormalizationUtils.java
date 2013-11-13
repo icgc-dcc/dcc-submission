@@ -15,20 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs.hdfs;
+package org.icgc.dcc.submission.normalization;
 
-public class HdfsException extends RuntimeException {
-  private static final long serialVersionUID = -2204845409873632221L;
+import static com.google.common.base.Preconditions.checkState;
+import lombok.val;
 
-  public HdfsException(Exception e) {
-    super(e);
-  }
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
-  public HdfsException(String message) {
-    super(message);
-  }
+/**
+ * 
+ */
+public class NormalizationUtils {
 
-  public HdfsException(String message, Exception e) {
-    super(message, e);
+  /**
+   * 
+   */
+  public static FileSchema getFileSchema(Dictionary dictionary, SubmissionFileType type) {
+    val optional = dictionary.getFileSchema(type);
+    checkState(optional.isPresent(), "TODO");
+    return optional.get();
   }
 }

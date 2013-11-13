@@ -34,6 +34,7 @@ public enum ErrorParameterKey {
   FIELDS,
   OTHER_FIELDS,
   VALUE,
+  VALUE2,
   DESCRIPTION;
 
 }

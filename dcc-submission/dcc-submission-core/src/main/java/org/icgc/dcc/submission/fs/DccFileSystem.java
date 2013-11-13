@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
-import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.toFilenameList;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 
 import com.google.common.base.Joiner;

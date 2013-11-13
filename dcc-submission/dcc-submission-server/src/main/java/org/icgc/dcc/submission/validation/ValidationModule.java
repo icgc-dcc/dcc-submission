@@ -19,9 +19,13 @@ package org.icgc.dcc.submission.validation;
 
 import lombok.val;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.normalization.NormalizationConfig;
+import org.icgc.dcc.submission.normalization.NormalizationValidator;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
@@ -41,6 +45,7 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -144,17 +149,76 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   private void bindValidators() {
+    // TODO: Shouldn't be bound here, see DCC-1876
+    bindNewTemporaryFileSystemAbstraction();
+
     // Set binder will preserve bind order as iteration order for injectees
     val validators = Multibinder.newSetBinder(binder(), Validator.class);
 
     // Order: Syntactic, primary then semantic
     bindValidator(validators, FirstPassValidator.class);
-    bindValidator(validators, ReferenceGenomeValidator.class);
     bindValidator(validators, PrimaryValidator.class);
+    bindValidator(validators, ReferenceGenomeValidator.class);
+    bindValidator(validators, new Provider<NormalizationValidator>() {
+
+      @Inject
+      private Config config;
+
+      @Inject
+      private DccFileSystem2 dccFileSystem2;
+
+      @Override
+      public NormalizationValidator get() {
+        return NormalizationValidator.getDefaultInstance(
+            dccFileSystem2,
+            config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM));
+      }
+    });
   }
 
   private static void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {
     validators.addBinding().to(validator).in(Singleton.class);
+  }
+
+  private static void bindValidator(Multibinder<Validator> validators, Provider<? extends Validator> provider) {
+    validators.addBinding().toProvider(provider).in(Singleton.class);
+  }
+
+  /**
+   * TODO: See DCC-1876.
+   */
+  private void bindNewTemporaryFileSystemAbstraction() {
+    bind(DccFileSystem2.class).toProvider(new Provider<DccFileSystem2>() {
+
+      @Inject
+      private FileSystem fileSystem;
+
+      @Inject
+      private Config config;
+
+      @Override
+      public DccFileSystem2 get() {
+        return new DccFileSystem2(
+            fileSystem,
+            getRootDir(config),
+            usesHadoop(config));
+      }
+
+      public String getRootDir(Config config) {
+        Preconditions.checkState(
+            config.hasPath("fs.root"),
+            "fs.root should be present in the config");
+        return config.getString("fs.root");
+      }
+
+      public boolean usesHadoop(Config config) {
+        Preconditions.checkState(
+            config.hasPath("fs.url"),
+            "fs.url should be present in the config");
+        return config.getString("fs.url")
+            .startsWith("hdfs");
+      }
+    });
   }
 
 }

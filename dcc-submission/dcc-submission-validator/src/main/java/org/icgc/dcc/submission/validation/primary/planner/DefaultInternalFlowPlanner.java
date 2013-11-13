@@ -140,7 +140,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   @Override
   protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy) {
     checkState(structuralCheck != null);
-    Tap<?, ?, ?> source = strategy.getSourceTap(getSchema());
+    Tap<?, ?, ?> source = getSourceTap(strategy);
     try {
       // TODO: address trick to know what the header contain: DCC-996
       Fields header = strategy.getFileHeader(getSchema());
@@ -217,4 +217,10 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       functionCall.getOutputCollector().add(new Tuple(state.getOffset()));
     }
   }
+
+  @SuppressWarnings("all")
+  private Tap<?, ?, ?> getSourceTap(PlatformStrategy strategy) {
+    return strategy.getSourceTap(getSchema());
+  }
+
 }

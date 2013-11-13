@@ -34,6 +34,7 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
+import cascading.operation.NoOp;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -45,6 +46,11 @@ import cascading.tuple.TupleEntry;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CascadingFunctions {
+
+  /**
+   * TODO
+   */
+  public static final Object NO_VALUE = null;
 
   /**
    * Simple function that logs the incoming tuple entries (useful for debugging).
@@ -68,6 +74,51 @@ public final class CascadingFunctions {
       TupleEntry entry = functionCall.getArguments();
       System.out.println(prefix + "\t" + org.icgc.dcc.hadoop.cascading.TupleEntries.toJson(entry));
       functionCall.getOutputCollector().add(entry);
+    }
+  }
+
+  /**
+   * TODO
+   * <p>
+   * somehow different than {@link NoOp}...
+   */
+  public static final class EmitNothing extends BaseOperation<Void> implements Function<Void> {
+
+    public EmitNothing() {
+      super(ARGS);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes")
+        FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+    }
+  }
+
+  /**
+   * TODO
+   */
+  public static final class Counter extends BaseOperation<Void> implements Function<Void> {
+
+    private final Enum<?> counter;
+    private final long increment;
+
+    public Counter(Enum<?> counter, long increment) {
+      super(ARGS);
+      this.counter = counter;
+      this.increment = increment;
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes")
+        FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+      flowProcess.increment(counter, increment);
+      functionCall
+          .getOutputCollector()
+          .add(functionCall.getArguments());
     }
   }
 
@@ -250,11 +301,6 @@ public final class CascadingFunctions {
   public static class MissingFieldsAdder extends BaseOperation<Void> implements Function<Void> {
 
     /**
-     * At the moment we just nullify it.
-     */
-    public static final String MISSING_VALUE = null;
-
-    /**
      * {@link Tuple} to add to every record.
      */
     private final Tuple missingTuple;
@@ -265,7 +311,7 @@ public final class CascadingFunctions {
       // Create tuple to be added for every records
       missingTuple = new Tuple();
       for (int i = 0; i < missingFields.size(); i++) {
-        missingTuple.add(MISSING_VALUE);
+        missingTuple.add(NO_VALUE); // At the moment we just nullify it
       }
     }
 
