@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ *                                                                                                               
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with                                  
+ * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
+ *                                                                                                               
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED                          
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;                               
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package org.icgc.dcc.submission.sftp;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.mina.util.Base64;
+import org.apache.sshd.server.PublickeyAuthenticator;
+import org.apache.sshd.server.session.ServerSession;
+
+import com.google.common.base.Charsets;
+
+/**
+ * Adds public key authentication support for a single {@link #knownKey}. This is mainly for use with deployments that
+ * require a password-less login.
+ * 
+ * @see http://caffeineiscodefuel.blogspot.ca/2013/04/apache-mina-sshd-publickeyauthenticator.html
+ */
+@Slf4j
+@RequiredArgsConstructor
+public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
+
+  @NonNull
+  private final String knownKey;
+
+  /**
+   * Returns true if the key matches our known key, this allows authentication to proceed.
+   */
+  @Override
+  public boolean authenticate(String username, PublicKey key, ServerSession session) {
+    if (key instanceof RSAPublicKey) {
+      String text1 = new String(encode((RSAPublicKey) key));
+      String text2 = new String(Base64.decodeBase64(knownKey.getBytes()));
+      val match = text1.equals(text2);
+
+      return match;
+    }
+
+    // Doesn't handle other key types currently.
+    return false;
+  }
+
+  /**
+   * Converts a Java RSA PK to SSH2 Format.s
+   * 
+   * @param key
+   * @return
+   */
+  public static byte[] encode(RSAPublicKey key) {
+    try {
+      val buffer = new ByteArrayOutputStream();
+      val name = "ssh-rsa".getBytes(Charsets.US_ASCII.name());
+
+      write(name, buffer);
+      write(key.getPublicExponent().toByteArray(), buffer);
+      write(key.getModulus().toByteArray(), buffer);
+
+      return buffer.toByteArray();
+    } catch (Exception e) {
+      log.error("Error encoding public key:", e);
+    }
+
+    return null;
+  }
+
+  private static void write(byte[] str, OutputStream os) throws IOException {
+    for (int shift = 24; shift >= 0; shift -= 8) {
+      os.write((str.length >>> shift) & 0xFF);
+    }
+
+    os.write(str);
+  }
+
+}

@@ -27,16 +27,6 @@
     </encoder>
   </appender>
 
-  <appender name="DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <File>${log.dir}/${log.debug.name}.log</File>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <FileNamePattern>${log.dir}/${log.debug.name}.%d{yyyy-MM-dd}.log</FileNamePattern>
-    </rollingPolicy>
-    <encoder>
-      <pattern>${pattern}</pattern>
-    </encoder>
-  </appender>
-
   <logger name="org.icgc.dcc.submission.core.UserService" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
