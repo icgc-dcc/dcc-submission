@@ -88,7 +88,7 @@ public class DccFileSystem2 {
   }
 
   private String getNormalizationReportOutputFile(String releaseName, String projectKey) {
-    return format("%s/filtering.txt",
+    return format("%s/summary.txt",
         lazyDirCreation(getNormalizationReportsDir(releaseName, projectKey)));
   }
 
