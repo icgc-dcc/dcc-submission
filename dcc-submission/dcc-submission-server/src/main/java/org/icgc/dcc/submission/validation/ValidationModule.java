@@ -157,8 +157,8 @@ public class ValidationModule extends AbstractDccModule {
 
     // Order: Syntactic, primary then semantic
     bindValidator(validators, FirstPassValidator.class);
-    bindValidator(validators, ReferenceGenomeValidator.class);
     bindValidator(validators, PrimaryValidator.class);
+    bindValidator(validators, ReferenceGenomeValidator.class);
     bindValidator(validators, new Provider<NormalizationValidator>() {
 
       @Inject

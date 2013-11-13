@@ -111,7 +111,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
         pipe,
         shortName(),
         ANALYSIS_ID_FIELD,
-        NormalizationCounter.UNIQUE_FILTERED,
+        NormalizationCounter.UNIQUE_REMAINING,
         COUNT_INCREMENT);
 
     return pipe;

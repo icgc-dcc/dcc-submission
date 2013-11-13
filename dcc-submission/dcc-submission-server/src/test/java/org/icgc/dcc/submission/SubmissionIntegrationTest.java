@@ -131,6 +131,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT6_KEY = "project.6";
   private static final String PROJECT6 = _("{name:'Project Six',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT6_KEY);
+  private static final String PROJECT7_KEY = "project.7";
+  private static final String PROJECT7 = _("{name:'Project Seven',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT7_KEY);
 
   /**
    * Releases.
@@ -159,13 +162,15 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org']},"
       + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org']},"
       + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']},"
-      + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org']}]";
+      + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org']},"
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org']}]";
 
   private static final String PROJECTS_TO_ENQUEUE2 = "["
       + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org']},"
       + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org']},"
       + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org']},"
-      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']}]";
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']},"
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org']}]";
 
   private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/dcc_root_dir";
   private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
@@ -295,8 +300,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Adding projects...");
     addProjects();
-    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+    checkRelease(
+        INITITAL_RELEASE_NAME,
+        FIRST_DICTIONARY_VERSION,
+        OPENED,
+        hasSubmisisonStates(
+            NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
@@ -369,11 +378,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Checking validated submission 6...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
 
+    status("admin", "Checking validated submission 7...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, INVALID);
+
     status("admin", "!!!!!!!!!!!!!!");
 
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -381,7 +393,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
         hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID, VALID));
+        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
@@ -414,8 +426,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void adminUpdatesRelease() throws Exception {
     updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
-    checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+    checkRelease(
+        NEXT_RELEASE_NAME,
+        SECOND_DICTIONARY_VERSION,
+        OPENED,
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED,
+            NOT_VALIDATED));
   }
 
   private void createInitialRelease() throws Exception {
@@ -451,6 +467,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     val response6 = post(client, PROJECTS_ENDPOINT, PROJECT6);
     assertEquals(CREATED.getStatusCode(), response6.getStatus());
 
+    status("admin", "Adding project 7...");
+    val response7 = post(client, PROJECTS_ENDPOINT, PROJECT7);
+    assertEquals(CREATED.getStatusCode(), response7.getStatus());
   }
 
   private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
@@ -499,7 +518,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -510,7 +529,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, VALID));
+        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, VALID, NOT_VALIDATED));
   }
 
   private void releaseInitialRelease() {
@@ -602,6 +621,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("user", "Checking validated submission 6...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
+
+    status("user", "Checking validated submission 7...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, INVALID);
 
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR
         + "errors.json");

@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.normalization;
 
 import static java.lang.String.format;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
 import static org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
@@ -29,6 +30,7 @@ import lombok.val;
 import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
+import org.icgc.dcc.submission.normalization.steps.Masking;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -70,13 +72,14 @@ public final class NormalizationReport {
   public enum NormalizationCounter {
 
     // Order matters
-    TOTAL_START("TODO", EXTERNAL),
-    TOTAL_END("TODO", EXTERNAL),
-    UNIQUE_START(format("Number of unique '%s' before filtering", ANALYSIS_ID_FIELD), INTERNAL),
-    DROPPED("Number of observations dropped due to redundancy", INTERNAL),
-    UNIQUE_FILTERED(format("Number of unique '%s' remaining after filtering", ANALYSIS_ID_FIELD), INTERNAL),
-    MARKED_AS_CONTROLLED("TODO", EXTERNAL),
-    MASKED("TODO", EXTERNAL);
+    TOTAL_START("Number of observations at the beginning of the process", EXTERNAL),
+    UNIQUE_START(format("Number of unique '%s' before filtering", getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
+    MARKED_AS_CONTROLLED(format("Number of observations marked as '%s'", Masking.CONTROLLED), EXTERNAL),
+    MASKED(format("Number of observations for which a '%s' counterpart was generated", Masking.MASKED), INTERNAL),
+    DROPPED(format("Number of redundant observations dropped (those only differing by their '%s')",
+        getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
+    UNIQUE_REMAINING(format("Number of unique '%s' remaining after filtering", getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
+    TOTAL_END("Number of observations at the end of the process", INTERNAL);
 
     public static final long COUNT_INCREMENT = 1;
 

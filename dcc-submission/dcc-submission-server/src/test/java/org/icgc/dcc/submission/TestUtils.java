@@ -201,6 +201,9 @@ public final class TestUtils {
     return build(client, endPoint).get();
   }
 
+  /**
+   * TODO: ensure payload is valid json and fail fast (also for other VERBS)
+   */
   public static Response post(Client client, String endPoint, String payload) {
     payload = normalize(payload);
 

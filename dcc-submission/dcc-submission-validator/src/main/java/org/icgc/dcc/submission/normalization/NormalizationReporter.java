@@ -24,9 +24,12 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_FILTERED;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR;
+
+import java.util.List;
+
 import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
@@ -41,14 +44,21 @@ import com.typesafe.config.Config;
 /**
  * 
  * <p>
- * TODO: non-static
+ * TODO: non-static + split internal/external report-related logic (or merge with {@link NormalizationReport})
  */
 public class NormalizationReporter {
 
   private static final String TAB = "\t";
   private static final String NEWLINE = System.getProperty("line.separator");
 
-  static final String MESSAGE = "Statistics for the dropping of observations:";
+  static final String INTERNAL_REPORT_MESSAGE = "Statistics for normalization:";
+
+  /**
+   * TODO
+   * <p>
+   * All of them for now.
+   */
+  private static List<NormalizationCounter> INTERNAL_REPORT_COUNTERS = newArrayList(NormalizationCounter.values());
 
   public static void performSanityChecks(ConnectedCascade connectedCascade) {
     long totalEnd = connectedCascade.getCounterValue(TOTAL_END);
@@ -57,7 +67,7 @@ public class NormalizationReporter {
     long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
     long dropped = connectedCascade.getCounterValue(DROPPED);
     long uniqueStart = connectedCascade.getCounterValue(UNIQUE_START);
-    long uniqueFiltered = connectedCascade.getCounterValue(UNIQUE_FILTERED);
+    long uniqueFiltered = connectedCascade.getCounterValue(UNIQUE_REMAINING);
 
     checkState(
         totalEnd == (totalStart + masked - dropped),
@@ -82,11 +92,9 @@ public class NormalizationReporter {
    */
   public static String createInternalReportContent(ConnectedCascade connectedCascade) {
     val sb = new StringBuilder();
-    sb.append(MESSAGE);
+    sb.append(INTERNAL_REPORT_MESSAGE);
     sb.append(NEWLINE);
-    for (val counter : newArrayList(
-        NormalizationCounter.DROPPED,
-        NormalizationCounter.UNIQUE_FILTERED)) {
+    for (val counter : INTERNAL_REPORT_COUNTERS) {
       long counterValue = connectedCascade.getCounterValue(counter);
       sb.append(counterValue);
       sb.append(TAB);

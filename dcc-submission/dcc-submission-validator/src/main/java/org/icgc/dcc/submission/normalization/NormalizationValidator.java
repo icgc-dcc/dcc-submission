@@ -24,6 +24,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
@@ -160,6 +161,9 @@ public final class NormalizationValidator implements Validator {
         releaseName,
         projectKey);
 
+    // Checks validator wasn't interrupted
+    checkInterrupted(getName());
+
     // Run cascade synchronously
     connectedCascade.completeCascade();
 
@@ -219,12 +223,15 @@ public final class NormalizationValidator implements Validator {
     Flow<?> flow = platformStrategy // TODO: not re-using the submission's platform strategy
         .getFlowConnector()
         .connect(flowDef);
+    flow.writeDOT(format("/tmp/%s.dot", flow.getName())); // TODO: refactor /tmp
+    flow.writeStepsDOT(format("/tmp/%s-steps.dot", flow.getName()));
 
     val cascade = new CascadeConnector()
         .connect(
         cascadeDef()
             .setName(CASCADE_NAME)
             .addFlow(flow));
+    cascade.writeDOT(format("/tmp/%s.dot", cascade.getName()));
 
     return new ConnectedCascade(releaseName, projectKey, flow, cascade);
   }
@@ -276,8 +283,7 @@ public final class NormalizationValidator implements Validator {
       val key = entry.getKey();
       val value = entry.getValue();
       log.info("External report for '{}': '{}' -> '{}'", new Object[] { fileName, key, value });
-      validationContext.reportSummary(
-          fileName, key, value);
+      validationContext.reportSummary(fileName, key, value);
     }
   }
 

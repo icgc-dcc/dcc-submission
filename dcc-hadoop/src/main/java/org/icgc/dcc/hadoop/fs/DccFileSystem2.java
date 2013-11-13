@@ -65,11 +65,6 @@ public class DccFileSystem2 {
     return getTap(path);
   }
 
-  public Tap<?, ?, ?> getNormalizationReportOutputTap(String releaseName, String projectKey) {
-    String path = getNormalizationReportOutputFile(releaseName, projectKey);
-    return getTap(path);
-  }
-
   private Tap<?, ?, ?> getTap(String path) {
     return hadoopMode ?
         new Hfs(new cascading.scheme.hadoop.TextDelimited(true, "\t"), path) :

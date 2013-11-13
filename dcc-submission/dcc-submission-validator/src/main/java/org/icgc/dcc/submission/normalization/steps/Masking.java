@@ -22,7 +22,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.base.Optional;
 
-enum Masking {
+public enum Masking {
   CONTROLLED, OPEN, MASKED;
 
   public String getTupleValue() {
