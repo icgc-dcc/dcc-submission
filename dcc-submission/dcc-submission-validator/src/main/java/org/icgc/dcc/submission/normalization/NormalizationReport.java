@@ -41,33 +41,46 @@ import com.google.common.collect.ImmutableMap;
 @Value
 public final class NormalizationReport {
 
+  /**
+   * Naming variables.
+   */
   private static final boolean EXTERNAL = true;
   private static final boolean INTERNAL = false;
 
   private final String projectKey;
   private final ImmutableMap<NormalizationCounter, Long> counters;
 
+  /**
+   * Returns an ordered map of key/value pairs for the front-end's consumption.
+   */
   public ImmutableMap<String, String> getExternalReportCounters() {
     val builder = new ImmutableMap.Builder<String, String>();
 
     for (val entry : counters.entrySet()) {
       if (entry.getKey().externalReport) {
+        String counterName = entry.getKey().name();
+        long count = entry.getValue().longValue();
         builder.put(
-            entry.getKey().name(),
-            String.valueOf(entry.getValue().longValue()));
+            counterName,
+            String.valueOf(count));
       }
     }
 
-    val aggregate =
-        new NormalizationCounterAggregate.Ratio(
-            "RATIO", // TODO: make it more generic
-            counters.get(MARKED_AS_CONTROLLED),
-            counters.get(TOTAL_START));
-    builder.put(aggregate.getName(), aggregate.getStringValue());
+    {
+      val aggregate =
+          new NormalizationCounterAggregate.Ratio(
+              "RATIO", // TODO: make it more generic
+              counters.get(MARKED_AS_CONTROLLED),
+              counters.get(TOTAL_START));
+      builder.put(aggregate.getName(), aggregate.getStringValue());
+    }
 
     return builder.build();
   }
 
+  /**
+   * Enum representing the various counters that are populated by the normalization process.
+   */
   public enum NormalizationCounter {
 
     // Order matters
@@ -82,19 +95,25 @@ public final class NormalizationReport {
 
     public static final long COUNT_INCREMENT = 1;
 
-    private NormalizationCounter(String displayName, boolean externalReport) {
-      this.displayName = displayName;
+    private NormalizationCounter(String internalReportDisplayName, boolean externalReport) {
+      this.internalReportDisplayName = internalReportDisplayName;
       this.externalReport = externalReport;
     }
 
+    /**
+     * Display name for the internal report.
+     */
     @Getter
-    private final String displayName;
+    private final String internalReportDisplayName;
 
     /**
      * Whether the counter is to be used for external reporting or not.
      */
     private final boolean externalReport;
 
+    /**
+     * Returns a map of counter to count.
+     */
     static ImmutableMap<NormalizationCounter, Long> report(ConnectedCascade connected) {
       val counters = new ImmutableMap.Builder<NormalizationCounter, Long>();
       for (val counter : values()) {
@@ -106,6 +125,9 @@ public final class NormalizationReport {
     }
   }
 
+  /**
+   * Interface for aggregates of {@link NormalizationCounter}.
+   */
   private static interface NormalizationCounterAggregate {
 
     String getName();

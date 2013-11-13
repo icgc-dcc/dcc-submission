@@ -22,7 +22,7 @@ import java.io.Serializable;
 import cascading.pipe.Pipe;
 
 /**
- * 
+ * Step in the normalization process. It is in charge of extending the main cascading {@link Pipe}.
  */
 public interface NormalizationStep extends Serializable {
 

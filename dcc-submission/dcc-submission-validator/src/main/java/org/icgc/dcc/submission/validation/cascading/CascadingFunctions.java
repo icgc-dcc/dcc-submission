@@ -48,7 +48,7 @@ import cascading.tuple.TupleEntry;
 public final class CascadingFunctions {
 
   /**
-   * TODO
+   * Value used to represent "nothing" in cascading {@link Tuple}s.
    */
   public static final Object NO_VALUE = null;
 
@@ -78,9 +78,8 @@ public final class CascadingFunctions {
   }
 
   /**
-   * TODO
-   * <p>
-   * somehow different than {@link NoOp}...
+   * {@link Function} that emits no {@link Tuple}s. It is different than {@link NoOp} because it still preserves the
+   * schema (TODO: unusure why NoOp doesn't, figure it out..).
    */
   public static final class EmitNothing extends BaseOperation<Void> implements Function<Void> {
 
@@ -90,8 +89,7 @@ public final class CascadingFunctions {
 
     @Override
     public void operate(
-        @SuppressWarnings("rawtypes")
-        FlowProcess flowProcess,
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
         FunctionCall<Void> functionCall) {
     }
   }
@@ -112,8 +110,7 @@ public final class CascadingFunctions {
 
     @Override
     public void operate(
-        @SuppressWarnings("rawtypes")
-        FlowProcess flowProcess,
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
         FunctionCall<Void> functionCall) {
       flowProcess.increment(counter, increment);
       functionCall
@@ -162,8 +159,7 @@ public final class CascadingFunctions {
     }
 
     @Override
-    public void operate(@SuppressWarnings("rawtypes")
-    FlowProcess flowProcess, FunctionCall<Void> functionCall) {
+    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FunctionCall<Void> functionCall) {
       TupleEntry entry = functionCall.getArguments();
       String value = entry.getString(originalField);
       String newValue = transformable.tranform(value);
@@ -222,8 +218,7 @@ public final class CascadingFunctions {
 
     @Override
     public void operate(
-        @SuppressWarnings("rawtypes")
-        FlowProcess flowProcess,
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
         FunctionCall<Void> functionCall) {
       TupleEntry entry = functionCall.getArguments();
 
@@ -252,8 +247,7 @@ public final class CascadingFunctions {
     }
 
     @Override
-    public void operate(@SuppressWarnings("rawtypes")
-    FlowProcess flowProcess, FunctionCall<Void> functionCall) {
+    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FunctionCall<Void> functionCall) {
       TupleEntry entry = functionCall.getArguments();
 
       Tuple newTuple = nestTuple(createAvailableDataTypes(entry));
@@ -317,8 +311,7 @@ public final class CascadingFunctions {
 
     @Override
     public void operate(
-        @SuppressWarnings("rawtypes")
-        FlowProcess flowProcess,
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
         FunctionCall<Void> functionCall) {
       functionCall.getOutputCollector().add(new Tuple(missingTuple));
     }

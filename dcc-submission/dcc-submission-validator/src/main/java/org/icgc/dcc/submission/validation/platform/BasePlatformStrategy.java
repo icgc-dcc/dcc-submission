@@ -81,7 +81,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   /**
-   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}.
+   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}; Temporary: see DCC-1876
    */
   @Override
   public Tap<?, ?, ?> getSourceTap2(FileSchema schema) {
@@ -138,6 +138,10 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
    */
   protected abstract Tap<?, ?, ?> tapSource2(Path path);
 
+  /**
+   * FIXME: This should not be happening in here, instead it should delegate to the filesystem abstraction (see
+   * DCC-1876).
+   */
   @Override
   public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
 
