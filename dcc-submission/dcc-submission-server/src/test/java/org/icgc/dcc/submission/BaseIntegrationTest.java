@@ -21,10 +21,10 @@ import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.getFileStatus;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
+
+import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -43,7 +43,8 @@ public class BaseIntegrationTest {
     return String.format(format, args);
   }
 
-  protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) throws IOException {
+  @SneakyThrows
+  protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {
     Path errorFile = new Path(dir, path);
     assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
     assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).getLen() == 0);
