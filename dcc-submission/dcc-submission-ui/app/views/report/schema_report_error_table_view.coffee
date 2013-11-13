@@ -218,7 +218,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         <em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
         observations has been dectected and most likely indicates an error
         in the data. The maximum threshold allowed is
-        <em>#{source.parameters?.EXPECTED}</em>.
+        <em>#{parseFloat(100*source.parameters?.EXPECTED).toFixed(2)}%</em>.
         """
   details: (source) ->
 
@@ -230,6 +230,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "FILE_HEADER_ERROR"
       "RELATION_FILE_ERROR"
       "REVERSE_RELATION_FILE_ERROR"
+      "TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR"
       ]
       return ""
     else if source.errorType in [

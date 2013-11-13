@@ -16,10 +16,10 @@
     </div>
 </div>
 
-{{#unless errors.length}}
+{{#if summaryReports.length}}
 <table width="100%" id="schema-summary-container" class="table table-striped table-bordered alert-info">
 </table>
-{{/unless}}
+{{/if}}
 
 <h2 style="margin-bottom:0;">
 {{#if errors.length}}Error{{else}}Detailed{{/if}} Report
