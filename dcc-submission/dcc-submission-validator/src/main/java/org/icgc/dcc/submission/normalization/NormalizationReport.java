@@ -68,7 +68,6 @@ public final class NormalizationReport {
     return builder.build();
   }
 
-  @RequiredArgsConstructor
   public enum NormalizationCounter {
 
     // Order matters
@@ -82,6 +81,11 @@ public final class NormalizationReport {
     TOTAL_END("Number of observations at the end of the process", INTERNAL);
 
     public static final long COUNT_INCREMENT = 1;
+
+    private NormalizationCounter(String displayName, boolean externalReport) {
+      this.displayName = displayName;
+      this.externalReport = externalReport;
+    }
 
     @Getter
     private final String displayName;
