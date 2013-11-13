@@ -71,32 +71,20 @@ public class DccFileSystem2 {
         new FileTap(new cascading.scheme.local.TextDelimited(true, "\t"), path);
   }
 
-  private String getReleasesDir() {
-    return format("%s/releases", rootDir);
-  }
-
-  private String getReleaseDir(String releaseName) {
-    return format("%s/%s", getReleasesDir(), releaseName);
-  }
-
-  private String getProjectsDir(String releaseName) {
-    return format("%s/projects", getReleaseDir(releaseName));
-  }
-
-  private String getProjectDir(String releaseName, String projectKey) {
-    return format("%s/%s", getProjectsDir(releaseName), projectKey);
-  }
-
+  /**
+   * Temporarily under .validation so that ReleaseFileSystem#resetValidationFolder() can reset it as well (TODO: address
+   * in DCC-1876)
+   */
   private String getNormalizationDir(String releaseName, String projectKey) {
-    return format("%s/normalization", getProjectDir(releaseName, projectKey));
-  }
-
-  private String getNormalizationReportsDir(String releaseName, String projectKey) {
-    return format("%s/reports", getNormalizationDir(releaseName, projectKey));
+    return format("%s/%s/%s/.validation/normalizer", rootDir, releaseName, projectKey);
   }
 
   private String getNormalizationDataDir(String releaseName, String projectKey) {
     return format("%s/data", getNormalizationDir(releaseName, projectKey));
+  }
+
+  private String getNormalizationReportsDir(String releaseName, String projectKey) {
+    return format("%s/reports", getNormalizationDir(releaseName, projectKey));
   }
 
   private String getNormalizationReportOutputFile(String releaseName, String projectKey) {

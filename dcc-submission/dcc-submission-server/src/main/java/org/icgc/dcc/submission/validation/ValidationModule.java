@@ -206,9 +206,9 @@ public class ValidationModule extends AbstractDccModule {
 
       public String getRootDir(Config config) {
         Preconditions.checkState(
-            config.hasPath("fs.root2"),
-            "fs.root2 should be present in the config");
-        return config.getString("fs.root2");
+            config.hasPath("fs.root"),
+            "fs.root should be present in the config");
+        return config.getString("fs.root");
       }
 
       public boolean usesHadoop(Config config) {
