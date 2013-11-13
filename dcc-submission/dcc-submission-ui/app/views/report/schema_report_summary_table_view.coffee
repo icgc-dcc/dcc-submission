@@ -41,10 +41,63 @@ module.exports = class SchemaReportSummaryTableView extends DataTableView
   update: ->
     @updateDataTable()
 
+
+  codeTable:
+    TOTAL_START:
+      """
+      Number of observations at the beginning of the
+      normalization process
+      """
+    TOTAL_END:
+      """
+      Number of observations at the end of the
+      normalization process
+      """
+    UNIQUE_START:
+      """
+      Number of unique analysis before filtering
+      """
+    DROPPED:
+      """
+      Number of observations dropped due to redundancy
+      """
+    UNIQUE_FILTERED:
+      """
+      Number of unique analysis remaining afer filtering
+      """
+    MARKED_AS_CONTROLLED:
+      """
+      Number of observations marked as <em>controlled</em>
+      (contains sensitivie data)
+      """
+    MASKED:
+      """
+      Number of observations for which the sensitive data
+      has been masked
+      """
+    RATIO:
+      """
+      Percentage of observations marked as <em>controlled</em>
+      """
+
   createDataTable: ->
     aoColumns = [
-        { sTitle: "Description", mData: "name"}
-        { sTitle: "Value", mData: "value"}
+        {
+          sTitle: "Description"
+          mData: (source) =>
+            if @codeTable[source.name]
+              @codeTable[source.name]
+            else
+              source.name
+        }
+        {
+          sTitle: "Value"
+          mData: (source) =>
+            if source.name in ["RATIO"]
+              parseFloat(100 * source.value).toFixed(2) + "%"
+            else
+              source.value
+        }
       ]
 
     @$el.dataTable
@@ -53,7 +106,7 @@ module.exports = class SchemaReportSummaryTableView extends DataTableView
       bPaginate: false
       oLanguage:
         "sLengthMenu": "_MENU_ submissions per page"
-      aaSorting: [[ 1, "desc" ]]
+      aaSorting: []
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""
