@@ -26,6 +26,9 @@ SchemaReportErrorTableView =
   require 'views/report/schema_report_error_table_view'
 SchemaReportDetailsTableView =
   require 'views/report/schema_report_details_table_view'
+SchemaReportSummaryTableView =
+  require 'views/report/schema_report_summary_table_view'
+
 template = require 'views/templates/report/schema_report'
 
 module.exports = class SchemaReportPageView extends View
@@ -56,5 +59,11 @@ module.exports = class SchemaReportPageView extends View
         new SchemaReportDetailsTableView {
           collection: @model.get "fieldReports"
           el: @.$("#schema-report-container")
+        }
+      )
+      @subview('SchemaReportSummaryTable'
+        new SchemaReportSummaryTableView {
+          collection: @model.get "summaryReports"
+          el: @.$("#schema-summary-container")
         }
       )

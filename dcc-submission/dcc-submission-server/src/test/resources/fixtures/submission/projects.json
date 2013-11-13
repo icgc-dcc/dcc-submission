@@ -59,5 +59,15 @@
 		"groups":[
 			"admin"
 		]
+	},
+	{
+		"name":"project7",
+		"key":"project7",
+		"users":[
+			"admin"
+		],
+		"groups":[
+			"admin"
+		]
 	}
 ]

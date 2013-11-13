@@ -55,7 +55,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   private void referencedCheck(String filename) {
     FileSchema fileSchema = getFileSchema(filename);
     for (val relation : fileSchema.getRelations()) {
-      Optional<FileSchema> otherFileSchema = getDictionary().fileSchema(relation.getOther());
+      Optional<FileSchema> otherFileSchema = getDictionary().getFileSchemaByName(relation.getOther());
       if (otherFileSchema.isPresent()) {
         String pattern = otherFileSchema.get().getPattern();
         List<String> files = getFiles(pattern);
