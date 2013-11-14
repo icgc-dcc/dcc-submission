@@ -62,8 +62,7 @@ public class ReferenceGenomeValidatorTest {
 
   @Before
   public void setup() throws Exception {
-    validator = new ReferenceGenomeValidator();
-    validator.ensureDownload();
+    validator = new ReferenceGenomeValidator("/tmp/GRCh37.fasta");
   }
 
   @Test
@@ -100,6 +99,7 @@ public class ReferenceGenomeValidatorTest {
     val fileName = "ssm_p.txt";
     val ssmPrimaryFile = Optional.<Path> of(new Path(TEST_DIR + "/" + fileName));
     when(context.getSsmPrimaryFile()).thenReturn(ssmPrimaryFile);
+    when(context.getProjectKey()).thenReturn("project.test");
 
     // Execute
     validator.validate(context);

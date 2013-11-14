@@ -59,9 +59,8 @@ public class ReferenceGenomeValidatorConcurrencyTest {
   private ReferenceGenomeValidator validator;
 
   @Before
-  public void setup() throws Exception {
-    validator = new ReferenceGenomeValidator();
-    validator.ensureDownload();
+  public void setup() {
+    validator = new ReferenceGenomeValidator("/tmp/GRCh37.fasta");
   }
 
   @Test

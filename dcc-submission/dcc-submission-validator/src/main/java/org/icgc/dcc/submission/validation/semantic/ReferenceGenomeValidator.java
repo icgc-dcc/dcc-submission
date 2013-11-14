@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.semantic;
 
 import static com.google.common.io.ByteStreams.copy;
 import static com.google.common.io.Files.getFileExtension;
+import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.google.common.primitives.Ints.tryParse;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -60,60 +61,42 @@ import com.google.common.io.LineReader;
  * <p>
  * This uses the picard utilities to query an indexed FASTA file, as a bench mark reference we can check roughly
  * 3,000,000 reference genomes in 200 seconds.
+ * 
+ * @see https://wiki.oicr.on.ca/display/DCCSOFT/Unify+genome+assembly+build+throughout+the+system
  */
 @Slf4j
-@NoArgsConstructor
 public class ReferenceGenomeValidator implements Validator {
 
   /**
-   * The GRC h37 (patch 0) standard ICGC DCC version.
+   * The reference assembly version that corresponds to the configured {@link #sequenceFile}.
    */
-  public static final String REFERENCE_GENOME_VERSION = "GrCh37" /* .0 */;
+  @NonNull
+  private final String assemblyVersion;
 
   /**
-   * Remote FASTA location
+   * The FASTA file used for validation.
    */
-  public static final String REFERENCE_GENOME_BASE_URL = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference";
-  public static final String REFERENCE_GENOME_DATA_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.gz";
-  public static final String REFERENCE_GENOME_INDEX_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.fai";
+  @NonNull
+  private final IndexedFastaSequenceFile sequenceFile;
 
   /**
-   * Local FASTA location
+   * Creates a {@code ReferenceGenomeValidator} configured with the supplied {@code fastaFilePath}.
+   * 
+   * @param fastaFilePath the fully qualified path to the the {@code .fasta} file. Expected to be placed next to
+   * {@code .fai} file with the same prefix.
    */
-  public static final String LOCAL_DIR = "/tmp";
-  public static final String LOCAL_DATA_FILE = LOCAL_DIR + "/" + "referenceGenome.fasta";
-  public static final String LOCAL_INDEX_FILE = LOCAL_DIR + "/" + "referenceGenome.fasta.fai";
+  @SneakyThrows
+  public ReferenceGenomeValidator(@NonNull String fastaFilePath) {
+    val fastaFile = new File(fastaFilePath).getAbsoluteFile();
+    this.assemblyVersion = getNameWithoutExtension(fastaFile.getName());
+    this.sequenceFile = new IndexedFastaSequenceFile(fastaFile);
 
-  private IndexedFastaSequenceFile sequenceFile;
+    log.info("Using '{}' assembly versioned FASTA file: '{}'", assemblyVersion, fastaFile);
+  }
 
   @Override
   public String getName() {
     return "Reference Genome Validator";
-  }
-
-  /**
-   * Currently this is for testing only. For production it makes more sense to have the files setup in-place instead of
-   * downloading them every time.
-   */
-  @SneakyThrows
-  public void ensureDownload() {
-    log.info("Checking if FASTA '{}' and '{}' files exist", LOCAL_DATA_FILE, LOCAL_INDEX_FILE);
-    val downloaded = new File(LOCAL_DATA_FILE).exists() && new File(LOCAL_INDEX_FILE).exists();
-    if (downloaded) {
-      // Already available
-      log.info("FASTA files exist");
-      sequenceFile = new IndexedFastaSequenceFile(new File(LOCAL_DATA_FILE));
-
-      return;
-    }
-
-    // Needs downloading. Ensure correct permissions in deployments!
-    log.warn("Missing  FASTA '{}' and / or '{}' files(s)", LOCAL_INDEX_FILE, LOCAL_DATA_FILE);
-    download(REFERENCE_GENOME_INDEX_URL, LOCAL_INDEX_FILE, false);
-    download(REFERENCE_GENOME_DATA_URL, LOCAL_DATA_FILE, true);
-
-    log.info("Download successful");
-    sequenceFile = new IndexedFastaSequenceFile(new File(LOCAL_DATA_FILE));
   }
 
   /**
@@ -124,7 +107,6 @@ public class ReferenceGenomeValidator implements Validator {
   @Override
   public void validate(ValidationContext context) {
     log.info("Starting...");
-    ensureDownload();
 
     // This validation is only applicable if ssm_p is available
     Optional<Path> optionalSsmPrimaryFile = context.getSsmPrimaryFile();
@@ -167,7 +149,7 @@ public class ReferenceGenomeValidator implements Validator {
               REFERENCE_GENOME_ERROR,
 
               // Params
-              REFERENCE_GENOME_VERSION);
+              assemblyVersion);
         }
 
         // Cooperate

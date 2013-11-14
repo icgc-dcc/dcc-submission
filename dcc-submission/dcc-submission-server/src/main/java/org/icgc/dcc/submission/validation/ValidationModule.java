@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.base.Preconditions.checkState;
 import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -45,7 +46,6 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -58,9 +58,10 @@ import com.typesafe.config.Config;
 public class ValidationModule extends AbstractDccModule {
 
   /**
-   * Config property name.
+   * Config property names.
    */
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
+  private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
 
   /**
    * Default value for maximum number of concurrent validations.
@@ -158,7 +159,17 @@ public class ValidationModule extends AbstractDccModule {
     // Order: Syntactic, primary then semantic
     bindValidator(validators, FirstPassValidator.class);
     bindValidator(validators, PrimaryValidator.class);
-    bindValidator(validators, ReferenceGenomeValidator.class);
+    bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
+
+      @Inject
+      private Config config;
+
+      @Override
+      public ReferenceGenomeValidator get() {
+        return new ReferenceGenomeValidator(config.getString(FASTA_FILE_PATH_CONFIG_PARAM));
+      }
+
+    });
     bindValidator(validators, new Provider<NormalizationValidator>() {
 
       @Inject
@@ -205,14 +216,14 @@ public class ValidationModule extends AbstractDccModule {
       }
 
       public String getRootDir(Config config) {
-        Preconditions.checkState(
+        checkState(
             config.hasPath("fs.root"),
             "fs.root should be present in the config");
         return config.getString("fs.root");
       }
 
       public boolean usesHadoop(Config config) {
-        Preconditions.checkState(
+        checkState(
             config.hasPath("fs.url"),
             "fs.url should be present in the config");
         return config.getString("fs.url")
