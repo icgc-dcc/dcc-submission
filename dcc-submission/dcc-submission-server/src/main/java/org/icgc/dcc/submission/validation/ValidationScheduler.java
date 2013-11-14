@@ -269,7 +269,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    * 
    * @param project
    */
-  private void acceptValidation(QueuedProject project, Release release) {
+  synchronized private void acceptValidation(QueuedProject project, Release release) {
     log.info("Validation for '{}' accepted", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
     releaseService.resetValidationFolder(project.getKey(), release);
@@ -283,7 +283,8 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param state completion state
    * @param submissionReport the report produced through the validation process
    */
-  private void completeValidation(QueuedProject project, SubmissionState state, SubmissionReport submissionReport) {
+  synchronized private void completeValidation(QueuedProject project, SubmissionState state,
+      SubmissionReport submissionReport) {
     log.info("Validation for '{}' completed with state '{}'", project, state);
     try {
       storeSubmissionReport(project.getKey(), submissionReport);
