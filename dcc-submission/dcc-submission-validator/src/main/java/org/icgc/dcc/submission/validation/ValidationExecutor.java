@@ -101,7 +101,7 @@ public class ValidationExecutor {
           // Propagate for {@link ListeningFuture#onError()}
           throw t;
         } finally {
-          log.info("call: Validation duration: {} ms", id, validation.getDuration());
+          log.info("call: Validation '{}' duration: {} ms", id, validation.getDuration());
           futures.remove(id);
         }
 
