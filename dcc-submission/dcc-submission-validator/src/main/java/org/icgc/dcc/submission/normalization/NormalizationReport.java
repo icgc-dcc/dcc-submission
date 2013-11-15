@@ -119,7 +119,7 @@ public final class NormalizationReport {
       for (val counter : values()) {
         counters.put(
             counter,
-            connected.getCounterValue(counter));
+            connected.getCounterValue(counter));        
       }
       return counters.build();
     }

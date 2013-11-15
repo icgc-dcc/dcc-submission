@@ -41,9 +41,11 @@ import com.typesafe.config.Config;
 public final class NormalizationConfig {
 
   /**
-   * Interface to implement for {@link NormalizationStep}s that can be enabled/disabled.
+   * Interface to implement for {@link NormalizationStep}s that can be
+   * enabled/disabled.
    */
-  public interface OptionalStep {}
+  public interface OptionalStep {
+  }
 
   /**
    * Top-level configuration key for the component.
@@ -51,7 +53,8 @@ public final class NormalizationConfig {
   public static final String NORMALIZER_CONFIG_PARAM = NormalizationValidator.COMPONENT_NAME;
 
   /**
-   * Key to enable/disable {@link NormalizationStep}s that implement {@link OptionalStep}.
+   * Key to enable/disable {@link NormalizationStep}s that implement
+   * {@link OptionalStep}.
    */
   public static final String ENABLED = "enabled";
 
@@ -68,15 +71,14 @@ public final class NormalizationConfig {
   /**
    * Key to disable the creation of "masked" controlled observations.
    */
-  private static final String MARKING_ONLY_CONFIG_KEY =
-      format("%s.%s", AlleleMasking.STEP_NAME, MARKING_ONLY);
+  private static final String MARKING_ONLY_CONFIG_KEY = format("%s.%s", AlleleMasking.STEP_NAME, MARKING_ONLY);
 
   /**
-   * Key to set the error above which errors are reported in the normalisation. It defines the maximum ratio of
-   * controlled to total observations.
+   * Key to set the error above which errors are reported in the normalisation.
+   * It defines the maximum ratio of controlled to total observations.
    */
-  private static final String CONFIDENTIAL_ERROR_THRESHOLD_CONFIG_KEY =
-      format("%s.%s", AlleleMasking.STEP_NAME, ERROR_THRESHOLD);
+  private static final String CONFIDENTIAL_ERROR_THRESHOLD_CONFIG_KEY = format("%s.%s", AlleleMasking.STEP_NAME,
+      ERROR_THRESHOLD);
 
   /**
    * Naming variables.
@@ -86,31 +88,25 @@ public final class NormalizationConfig {
   private static final boolean OFF = false;
 
   /**
-   * Default values
+   * Default values.
    */
   private static final float CONFIDENTIAL_ERROR_THRESHOLD_DEFAULT_VALUE = 0.1f;
   private static final boolean MARKING_ONLY_DEFAULT_VALUE = false;
-  private static final Map<Class<? extends OptionalStep>, Boolean> STEP_ENABLING_DEFAULT_VALUES =
-      new ImmutableMap.Builder<Class<? extends OptionalStep>, Boolean>()
-          .put(RedundantObservationRemoval.class, ON)
-          .put(AlleleMasking.class, ON)
-          .build();
+  private static final Map<Class<? extends OptionalStep>, Boolean> STEP_ENABLING_DEFAULT_VALUES = new ImmutableMap.Builder<Class<? extends OptionalStep>, Boolean>()
+      .put(RedundantObservationRemoval.class, ON).put(AlleleMasking.class, ON).build();
 
   /**
-   * Checks whether a step is enabled or not. Non-optional step are always considered enabled.
+   * Checks whether a step is enabled or not. Non-optional step are always
+   * considered enabled.
    */
   public static boolean isEnabled(NormalizationStep step, Config config) {
     if (!(step instanceof OptionalStep)) {
       return ON;
     } else {
       val clazz = step.getClass();
-      checkState(
-          STEP_ENABLING_DEFAULT_VALUES.containsKey(clazz),
-          "Could not find a default value for step '%s'", step.getClass());
-      return getBooleanValue(
-          config,
-          getStepEnablingConfigKey(step),
-          STEP_ENABLING_DEFAULT_VALUES.get(clazz));
+      checkState(STEP_ENABLING_DEFAULT_VALUES.containsKey(clazz), "Could not find a default value for step '%s'",
+          step.getClass());
+      return getBooleanValue(config, getStepEnablingConfigKey(step), STEP_ENABLING_DEFAULT_VALUES.get(clazz));
     }
   }
 
@@ -118,20 +114,14 @@ public final class NormalizationConfig {
    * See {@link #CONFIDENTIAL_ERROR_THRESHOLD_CONFIG_KEY}.
    */
   public static float getConfidentialErrorThreshold(Config config) {
-    return getFloatValue(
-        config,
-        CONFIDENTIAL_ERROR_THRESHOLD_CONFIG_KEY,
-        CONFIDENTIAL_ERROR_THRESHOLD_DEFAULT_VALUE);
+    return getFloatValue(config, CONFIDENTIAL_ERROR_THRESHOLD_CONFIG_KEY, CONFIDENTIAL_ERROR_THRESHOLD_DEFAULT_VALUE);
   }
 
   /**
    * See {@link #MARKING_ONLY_CONFIG_KEY}.
    */
   public static boolean isMarkOnly(Config config) {
-    return getBooleanValue(
-        config,
-        MARKING_ONLY_CONFIG_KEY,
-        MARKING_ONLY_DEFAULT_VALUE);
+    return getBooleanValue(config, MARKING_ONLY_CONFIG_KEY, MARKING_ONLY_DEFAULT_VALUE);
   }
 
   private static String getStepEnablingConfigKey(NormalizationStep step) {
@@ -139,16 +129,10 @@ public final class NormalizationConfig {
   }
 
   private static float getFloatValue(Config config, String key, float defaultValue) {
-    return config.hasPath(key) ?
-        config
-            .getNumber(key)
-            .floatValue() :
-        defaultValue;
+    return config.hasPath(key) ? config.getNumber(key).floatValue() : defaultValue;
   }
 
   private static boolean getBooleanValue(Config config, String key, boolean defaultValue) {
-    return config.hasPath(key) ?
-        config.getBoolean(key) :
-        defaultValue;
+    return config.hasPath(key) ? config.getBoolean(key) : defaultValue;
   }
 }
