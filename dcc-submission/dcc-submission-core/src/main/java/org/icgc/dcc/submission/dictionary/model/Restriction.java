@@ -19,58 +19,51 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import java.io.Serializable;
 
+import javax.validation.constraints.NotNull;
+
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
-import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType.RestrictionTypeConverter;
 import org.icgc.dcc.submission.dictionary.model.validation.CheckRestriction;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 
+import com.google.code.morphia.annotations.Converters;
 import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 
 /**
- * Describes a restriction that applies to some {@code Field}(s)
- * 
- * TODO: possibly to some file schemata too in the future
+ * Describes a restriction that applies to a {@code Field}.
  */
 @Embedded
 @CheckRestriction
+@Converters(RestrictionTypeConverter.class)
+@Getter
+@Setter
 @ToString
 public class Restriction implements DictionaryElement, Serializable {
 
-  public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
-                                                           // comma-separated list of values
+  /**
+   * Simple key-value pair for now, so the value can hold a comma-separated list of values.
+   */
+  public static final String CONFIG_VALUE_SEPARATOR = ",";
 
-  @NotBlank
-  private String type; // TODO: enforce provided (DCC-904) + make enum? predefined all restrictions + one custom?
+  /**
+   * The "type code" of the restriction.
+   */
+  @NotNull
+  private RestrictionType type;
 
-  // TODO: enforce that if codelist, a name is provided (DCC-904)
+  /**
+   * Dynamic configuration element.
+   */
   private BasicDBObject config;
-
-  public Restriction() {
-    super();
-  }
 
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
   }
 
 }

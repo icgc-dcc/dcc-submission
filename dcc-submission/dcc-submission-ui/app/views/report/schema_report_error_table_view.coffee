@@ -60,6 +60,20 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         Values do not match the regular expression set for
         this field: <em>#{source.parameters?.EXPECTED}</em>
         """
+    SCRIPT_ERROR:
+      name: "Failed script expression"
+      description: (source) ->
+        # Note we don't have an mvel formatter/highlighter, this is
+        # currently simulated with javascript formatter and java highlighter
+        errorRaw = source.parameters?.EXPECTED
+        errorPretty = hljs.highlight('java', js_beautify(errorRaw)).value
+
+        """
+        #{source.parameters?.DESCRIPTION}.
+        Values do not pass the script expression associated with this
+        this field: <br><br>
+        <pre><code>#{errorPretty}</code></pre>
+        """
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
       description: (source) ->
@@ -83,17 +97,19 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Relation violation"
       description: (source) ->
         """
-        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
-        do not exist in the reference file
-        <em>#{source.parameters?.SCHEMA}</em>
+        The following values have no match in the reference schema
+        <em>#{source.parameters?.OTHER_SCHEMA}</em>
+        (fields <em>#{source.parameters?.OTHER_FIELDS}</em>)
         """
     RELATION_PARENT_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
-        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
-        from the reference file do not exist in the schema
-        <em>#{source.parameters?.SCHEMA}</em>
+        The following values in referenced shema
+        <em>#{source.parameters?.OTHER_SCHEMA}</em>
+        (fields <em>#{source.parameters?.OTHER_FIELDS.join ', '}</em>)
+        have no corresponding records in the current file,
+        yet they are expected to have at least one match each.
         """
     MISSING_VALUE_ERROR:
       name: "Missing value"
@@ -131,10 +147,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     STRUCTURALLY_INVALID_ROW_ERROR:
       name: "Invalid row structure"
       description: (source) ->
-        """
-        Field counts in all lines are expected to match that of the file
-        header. Offending lines
-        """
+        Field counts in all lines are expected to be
+        #"""
+        #Field counts in all lines are expected to match that of the file
+        #header. Offending lines
+        #"""
     FORBIDDEN_VALUE_ERROR:
       name: "Invalid value"
       description: (source) ->
@@ -145,23 +162,82 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Filename collision"
       description: (source) ->
         """
-        More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
-        filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        The following files are found matching
+        <em>#{source.parameters?.SCHEMA}</em> filename pattern, only
+        one file is allowed. <br>
+        #{source.parameters?.FILES.join '<br>'}
         """
+        #"""
+        #More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
+        #filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        #"""
     COMPRESSION_CODEC_ERROR:
       name: "Compression Error"
       description: (source) ->
         """
-        File compression type does not match file extension
+        File name extension does not match file compression type. Please use
+        <em>.gz</em> for gzip, <em>.bz2</em> for bzip2.
         """
-
-
+        #"""
+        #File compression type does not match file extension
+        #"""
+    INVALID_CHARSET_ROW_ERROR:
+      name: "Row contains invalid charset"
+      description: (source) ->
+        """
+        Charset Invalid, expected charset for the line is
+        <em>#{source.parameters?.EXPECTED} with no control character except
+         tab as a delimiter </em>
+        """
+    FILE_HEADER_ERROR:
+      name: "File header error"
+      description: (source) ->
+        """
+        Invalid header line. It is expected to contain the following fields
+        in the specified order separated by <em>tab</em>: <br>
+        #{source.parameters?.VALUE}
+        """
+        #"""
+        #Different from the expected header
+        #<em>#{source.parameters?.EXPECTED}</em>
+        #<br><br>
+        #<em>#{source.parameters?.VALUE}</em>
+        #"""
+    REFERENCE_GENOME_ERROR:
+      name: "Reference genome error"
+      description: (source) ->
+        """
+        Submitted reference genome allele does not match allele in
+         <em>#{source.parameters?.EXPECTED}</em>
+        """
+    TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR:
+      name: "Excessive amount of sensitive data error"
+      description: (source) ->
+        """
+        An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of
+        <em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
+        observations has been dectected and most likely indicates an error
+        in the data. The maximum threshold allowed is
+        <em>#{parseFloat(100*source.parameters?.EXPECTED).toFixed(2)}%</em>.
+        """
   details: (source) ->
+
+    # There are generally two types of errors: file level errors
+    # with no line details, and row level errors
     if source.errorType in [
+      "COMPRESSION_CODEC_ERROR"
+      "TOO_MANY_FILES_ERROR"
+      "FILE_HEADER_ERROR"
+      "RELATION_FILE_ERROR"
+      "REVERSE_RELATION_FILE_ERROR"
+      "TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR"
+      ]
+      return ""
+    else if source.errorType in [
       "MISSING_VALUE_ERROR"
       "OUT_OF_RANGE_ERROR"
       "NOT_A_NUMBER_ERROR"
-      "STRUCTURALLY_INVALID_ROW_ERROR"
+      #"STRUCTURALLY_INVALID_ROW_ERROR"
       ]
       return source.lines.join ', '
     else if source.columnNames[0] is "FileLevelError"
@@ -175,7 +251,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
     for i in source.lines
-      out += "<tr><td style='background:none;border:none'>#{i}</td>
+      if i==-1
+        display = "N/A"
+      else
+        display = i
+      out += "<tr><td style='background:none;border:none'>#{display}</td>
       <td style='background:none;border:none'>
       #{source.lineValueMap[i]}</td></tr>"
     out += "</table>"

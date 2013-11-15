@@ -19,21 +19,22 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import java.util.Date;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Possible (data) types for a {@code Field}
  */
+@RequiredArgsConstructor
+@Getter
 public enum ValueType {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  TEXT(String.class, false),
+  INTEGER(Long.class, true),
+  DATETIME(Date.class, false),
+  DECIMAL(Double.class, true);
 
   private final Class<?> javaType;
-
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
-
-  public Class<?> getJavaType() {
-    return javaType;
-  }
+  private final boolean numeric;
 
 }

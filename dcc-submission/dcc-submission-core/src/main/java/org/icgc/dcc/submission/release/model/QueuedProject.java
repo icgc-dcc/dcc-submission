@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -41,6 +43,10 @@ public class QueuedProject { // TODO: rename as Queued is misleading (also appli
     super();
     this.key = key;
     this.emails = emails;
+  }
+
+  public QueuedProject(String key, String... emails) {
+    this(key, newArrayList(emails));
   }
 
   public ImmutableList<String> getEmails() {
@@ -78,13 +84,13 @@ public class QueuedProject { // TODO: rename as Queued is misleading (also appli
 
   @Override
   public boolean equals(Object obj) {
-    if(obj == null) {
+    if (obj == null) {
       return false;
     }
-    if(obj == this) {
+    if (obj == this) {
       return true;
     }
-    if(getClass() != obj.getClass()) {
+    if (getClass() != obj.getClass()) {
       return false;
     }
     final QueuedProject other = (QueuedProject) obj;

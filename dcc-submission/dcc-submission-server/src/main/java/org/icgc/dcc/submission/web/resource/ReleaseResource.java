@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_INITIALIZED;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.EMPTY_REQUEST;
 import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseViewPrivilege;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.util.Responses.noSuchEntityResponse;
 import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
@@ -34,7 +37,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import lombok.val;
@@ -48,10 +50,9 @@ import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.validation.report.FieldReport;
-import org.icgc.dcc.submission.validation.report.SchemaReport;
-import org.icgc.dcc.submission.validation.report.SubmissionReport;
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.validation.core.FieldReport;
+import org.icgc.dcc.submission.validation.core.SchemaReport;
+import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
@@ -71,6 +72,7 @@ public class ReleaseResource {
   @VisibleForTesting
   @PUT
   public Response initialize(
+
       @Valid
       Release release,
 
@@ -78,25 +80,34 @@ public class ReleaseResource {
       Request request,
 
       @Context
-      SecurityContext securityContext)
+      SecurityContext securityContext
+
+      )
   {
     log.info("Initializing releases with: {}", release);
-    if (isOmnipotentUser(securityContext) == false) {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
     if (release != null) {
       ResponseTimestamper.evaluate(request, release);
 
-      if (this.releaseService.list().isEmpty()) {
-        this.releaseService.createInitialRelease(release);
-        return ResponseTimestamper.ok(release).build();
+      if (releaseService.list().isEmpty()) {
+        releaseService.createInitialRelease(release);
+
+        return ResponseTimestamper
+            .ok(release)
+            .build();
       } else {
-        return Response.status(Status.BAD_REQUEST)
-            .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_INITIALIZED)).build();
+        return Response
+            .status(BAD_REQUEST)
+            .entity(new ServerErrorResponseMessage(ALREADY_INITIALIZED))
+            .build();
       }
     } else {
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(ServerErrorCode.EMPTY_REQUEST))
+      return Response
+          .status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(EMPTY_REQUEST))
           .build();
     }
   }
@@ -113,7 +124,7 @@ public class ReleaseResource {
     }
 
     Subject subject = getSubject(securityContext);
-    List<Release> visibileReleases = this.releaseService.getReleasesBySubject(subject);
+    List<Release> visibileReleases = releaseService.getReleasesBySubject(subject);
 
     return Response.ok(visibileReleases).build();
   }
@@ -156,7 +167,7 @@ public class ReleaseResource {
     }
 
     // TODO: use Optional...
-    DetailedSubmission detailedSubmission = this.releaseService.getDetailedSubmission(releaseName, projectKey);
+    DetailedSubmission detailedSubmission = releaseService.getDetailedSubmission(releaseName, projectKey);
     if (detailedSubmission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
@@ -182,7 +193,7 @@ public class ReleaseResource {
     }
 
     // TODO: use Optional...
-    Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
+    Submission submission = releaseService.getSubmission(releaseName, projectKey);
     if (submission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
@@ -280,18 +291,18 @@ public class ReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
+    Submission submission = releaseService.getSubmission(releaseName, projectKey);
     if (submission == null) { // TODO: use Optional...
       return noSuchEntityResponse(releaseName, projectKey);
     }
 
-    List<SubmissionFile> submissionFiles = this.releaseService.getSubmissionFiles(releaseName, projectKey);
+    List<SubmissionFile> submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
     return Response.ok(submissionFiles).build();
   }
 
   private Optional<SchemaReport> getSchemaReport(String releaseName, String projectKey, String schema) {
     Optional<SchemaReport> optional = Optional.absent();
-    Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
+    Submission submission = releaseService.getSubmission(releaseName, projectKey);
     if (submission != null) {
       // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
       // dcc-submission-server and dcc-submission-core.

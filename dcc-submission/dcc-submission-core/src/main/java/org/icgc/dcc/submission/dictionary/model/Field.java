@@ -17,11 +17,6 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
-import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
-import static org.icgc.dcc.submission.core.util.Constants.DiscreteValuesRestriction_NAME;
-import static org.icgc.dcc.submission.core.util.Constants.RegexRestriction_NAME;
-import static org.icgc.dcc.submission.core.util.Constants.RequiredRestriction_NAME;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +24,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import lombok.ToString;
+import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -116,18 +112,20 @@ public class Field implements DictionaryElement, Serializable {
   }
 
   public void addRestriction(Restriction restriction) {
-    if (this.getRestriction(restriction.getType()).isPresent()) {
+    val type = restriction.getType();
+    val present = getRestriction(type).isPresent();
+    if (!type.isMulti() && present) {
       throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + restriction.getType());
     }
     this.restrictions.add(restriction);
   }
 
-  public Optional<Restriction> getRestriction(final String type) {
+  public Optional<Restriction> getRestriction(final RestrictionType type) {
     return Iterables.tryFind(this.restrictions, new Predicate<Restriction>() {
 
       @Override
       public boolean apply(Restriction input) {
-        return input.getType().equals(type);
+        return input.getType() == type;
       }
     });
   }
@@ -153,24 +151,24 @@ public class Field implements DictionaryElement, Serializable {
   }
 
   public boolean hasCodeListRestriction() {
-    return hasRestriction(CodeListRestriction_NAME);
+    return hasRestriction(RestrictionType.CODELIST);
   }
 
   public boolean hasInRestriction() {
-    return hasRestriction(DiscreteValuesRestriction_NAME);
+    return hasRestriction(RestrictionType.DISCRETE_VALUES);
   }
 
   public boolean hasRequiredRestriction() {
-    return hasRestriction(RequiredRestriction_NAME);
+    return hasRestriction(RestrictionType.REQUIRED);
   }
 
   public boolean hasRegexRestriction() {
-    return hasRestriction(RegexRestriction_NAME);
+    return hasRestriction(RestrictionType.REGEX);
   }
 
-  private boolean hasRestriction(String restrictionName) {
+  private boolean hasRestriction(RestrictionType type) {
     for (Restriction restriction : restrictions) {
-      if (restrictionName.equalsIgnoreCase(restriction.getType())) {
+      if (type == restriction.getType()) {
         return true;
       }
     }

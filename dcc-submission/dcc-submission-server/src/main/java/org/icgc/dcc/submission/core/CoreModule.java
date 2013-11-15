@@ -42,6 +42,7 @@ public class CoreModule extends AbstractModule {
     bind(SystemService.class).in(Singleton.class);
     bind(ProjectService.class).in(Singleton.class);
     bind(UserService.class).in(Singleton.class);
+    bind(MailService.class).in(Singleton.class);
   }
 
 }

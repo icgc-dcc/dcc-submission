@@ -17,8 +17,12 @@
  */
 package org.icgc.dcc.submission.dictionary;
 
-import org.icgc.dcc.submission.dictionary.DictionaryService;
-import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Term;
@@ -32,11 +36,6 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.types.Predicate;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class DictionaryServiceTest {
 
@@ -58,6 +57,8 @@ public class DictionaryServiceTest {
 
   private ReleaseService mockReleaseService;
 
+  private MailService mockMailService;
+
   @Before
   @SuppressWarnings("unchecked")
   // TODO: how to mock parametized?
@@ -70,6 +71,7 @@ public class DictionaryServiceTest {
     mockTerm = mock(Term.class);
     mockQuery = mock(Query.class);
     mockReleaseService = mock(ReleaseService.class);
+    mockMailService = mock(MailService.class);
 
     when(mockDictionary.getVersion()).thenReturn("abc");
     when(mockCodeList.getName()).thenReturn("def");
@@ -80,7 +82,7 @@ public class DictionaryServiceTest {
     when(mockMongodbQuery.where(any(Predicate.class))).thenReturn(mockMongodbQuery);
     when(mockMongodbQuery.singleResult()).thenReturn(null).thenReturn(mockDictionary).thenReturn(mockDictionary);
 
-    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockReleaseService);
+    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockReleaseService, mockMailService);
   }
 
   @Test(expected = DictionaryServiceException.class)
@@ -122,6 +124,6 @@ public class DictionaryServiceTest {
   @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_addTerm_failOnExisting() {
-    dictionaryService.addTerm(mockCodeList.getName(), mockTerm);
+    dictionaryService.addCodeListTerm(mockCodeList.getName(), mockTerm);
   }
 }

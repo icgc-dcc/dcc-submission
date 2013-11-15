@@ -17,49 +17,219 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import org.icgc.dcc.submission.core.AbstractDccModule;
-import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
-import org.icgc.dcc.submission.validation.report.ByteOffsetToLineNumber;
-import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
-import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
-import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService;
-import org.icgc.dcc.submission.validation.service.ValidationService;
+import static com.google.common.base.Preconditions.checkState;
+import lombok.val;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.submission.core.AbstractDccModule;
+import org.icgc.dcc.submission.dictionary.DictionaryService;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.normalization.NormalizationConfig;
+import org.icgc.dcc.submission.normalization.NormalizationValidator;
+import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.first.FirstPassValidator;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
+import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
+import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
+import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
+import org.icgc.dcc.submission.validation.primary.planner.DefaultPlanner;
+import org.icgc.dcc.submission.validation.primary.planner.Planner;
+import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
+import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
+import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
+
+import com.google.common.base.Optional;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
+import com.typesafe.config.Config;
 
 /**
- * Module for the ({@code ValidationQueueManagerService})
+ * Module that wires together components of the validation subsystem.
  */
 public class ValidationModule extends AbstractDccModule {
 
+  /**
+   * Config property names.
+   */
+  private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
+  private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
+
+  /**
+   * Default value for maximum number of concurrent validations.
+   */
+  private static final int DEFAULT_MAX_VALIDATING = 1;
+
   @Override
   protected void configure() {
-    bindService(ValidationQueueManagerService.class);
-    bind(ValidationService.class);
+    bindService();
+    bindPrimaryValidation();
+    bindValidators();
+  }
+
+  /**
+   * Binds service level components.
+   */
+  private void bindService() {
+    // The outer most validation abstraction
+    bindService(ValidationScheduler.class);
+
+    // Execution facility
+    bind(ValidationExecutor.class).toProvider(new Provider<ValidationExecutor>() {
+
+      @Inject
+      private Config config;
+
+      @Override
+      public ValidationExecutor get() {
+        return new ValidationExecutor(getMaxValidating());
+      }
+
+      private int getMaxValidating() {
+        return config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
+            config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
+            DEFAULT_MAX_VALIDATING;
+      }
+
+    }).in(Singleton.class);
+  }
+
+  /**
+   * Binds primary validation components.
+   */
+  private void bindPrimaryValidation() {
+    // Builder of plans
     bind(Planner.class).to(DefaultPlanner.class);
-    bind(CascadingStrategyFactory.class).toProvider(CascadingStrategyFactoryProvider.class).in(Singleton.class);
+    bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
+
+    // Primary restrictions
     bindRestrictionTypes();
+
+    // Helper
+    bind(RestrictionContext.class).toInstance(new RestrictionContext() {
+
+      @Inject
+      DictionaryService dictionaryService;
+
+      @Override
+      public Optional<CodeList> getCodeList(String codeListName) {
+        return dictionaryService.getCodeList(codeListName);
+      }
+
+    });
+
   }
 
   /**
    * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
    */
   private void bindRestrictionTypes() {
-    Multibinder<RestrictionType> types = Multibinder.newSetBinder(binder(), RestrictionType.class);
+    // Set binder will preserve bind order as iteration order for injectees
+    val types = Multibinder.newSetBinder(binder(), RestrictionType.class);
+
     bindRestriction(types, DiscreteValuesRestriction.Type.class);
     bindRestriction(types, RangeFieldRestriction.Type.class);
     bindRestriction(types, RequiredRestriction.Type.class);
     bindRestriction(types, CodeListRestriction.Type.class);
     bindRestriction(types, RegexRestriction.Type.class);
+    bindRestriction(types, ScriptRestriction.Type.class);
+
     requestStaticInjection(ByteOffsetToLineNumber.class);
   }
 
-  private void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
+  private static void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
     types.addBinding().to(type).in(Singleton.class);
+  }
+
+  private void bindValidators() {
+    // TODO: Shouldn't be bound here, see DCC-1876
+    bindNewTemporaryFileSystemAbstraction();
+
+    // Set binder will preserve bind order as iteration order for injectees
+    val validators = Multibinder.newSetBinder(binder(), Validator.class);
+
+    // Order: Syntactic, primary then semantic
+    bindValidator(validators, FirstPassValidator.class);
+    bindValidator(validators, PrimaryValidator.class);
+    bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
+
+      @Inject
+      private Config config;
+
+      @Override
+      public ReferenceGenomeValidator get() {
+        return new ReferenceGenomeValidator(config.getString(FASTA_FILE_PATH_CONFIG_PARAM));
+      }
+
+    });
+    bindValidator(validators, new Provider<NormalizationValidator>() {
+
+      @Inject
+      private Config config;
+
+      @Inject
+      private DccFileSystem2 dccFileSystem2;
+
+      @Override
+      public NormalizationValidator get() {
+        return NormalizationValidator.getDefaultInstance(
+            dccFileSystem2,
+            config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM));
+      }
+    });
+  }
+
+  private static void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {
+    validators.addBinding().to(validator).in(Singleton.class);
+  }
+
+  private static void bindValidator(Multibinder<Validator> validators, Provider<? extends Validator> provider) {
+    validators.addBinding().toProvider(provider).in(Singleton.class);
+  }
+
+  /**
+   * TODO: See DCC-1876.
+   */
+  private void bindNewTemporaryFileSystemAbstraction() {
+    bind(DccFileSystem2.class).toProvider(new Provider<DccFileSystem2>() {
+
+      @Inject
+      private FileSystem fileSystem;
+
+      @Inject
+      private Config config;
+
+      @Override
+      public DccFileSystem2 get() {
+        return new DccFileSystem2(
+            fileSystem,
+            getRootDir(config),
+            usesHadoop(config));
+      }
+
+      public String getRootDir(Config config) {
+        checkState(
+            config.hasPath("fs.root"),
+            "fs.root should be present in the config");
+        return config.getString("fs.root");
+      }
+
+      public boolean usesHadoop(Config config) {
+        checkState(
+            config.hasPath("fs.url"),
+            "fs.url should be present in the config");
+        return config.getString("fs.url")
+            .startsWith("hdfs");
+      }
+    });
   }
 
 }

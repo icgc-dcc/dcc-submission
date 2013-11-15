@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
-import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +30,7 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.val;
 
@@ -126,14 +127,22 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     this.files = files;
   }
 
-  public Optional<FileSchema> fileSchema(SubmissionFileType fileSchemaType) {
-    return fileSchema(fileSchemaType.getTypeName());
+  /**
+   * Optionally returns a {@link FileSchema} matching {@link SubmissionFileType} provided.
+   */
+  @JsonIgnore
+  public Optional<FileSchema> getFileSchema(SubmissionFileType type) {
+    return getFileSchemaByName(type.getTypeName());
   }
 
   /**
-   * TODO: phase out in favor of {@link #fileSchema(SubmissionFileType)}.
+   * Optionally returns a {@link FileSchema} matching the file schema name provided.
+   * <p>
+   * TODO: phase out in favour of {@link #getFileSchema(SubmissionFileType)}.
    */
-  public Optional<FileSchema> fileSchema(final String fileSchemaName) {
+  @JsonIgnore
+  public Optional<FileSchema> getFileSchemaByName(
+      @NonNull final String fileSchemaName) {
     return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
 
       @Override
@@ -144,11 +153,26 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
+   * Optionally returns a {@link FileSchema} for which the file name provided would be matching the pattern.
+   */
+  @JsonIgnore
+  public Optional<FileSchema> getFileSchemaByFileName(String fileName) {
+    val optional = Optional.<FileSchema> absent();
+    for (FileSchema fileSchema : files) {
+      if (fileSchema.matches(fileName)) {
+        return Optional.of(fileSchema);
+      }
+    }
+    return optional;
+  }
+
+  /**
    * Returns the list of {@code FileSchema} names
    * 
    * @return the list of {@code FileSchema} names
    */
-  public List<String> fileSchemaNames() {
+  @JsonIgnore
+  public List<String> getFileSchemaNames() {
     return newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
 
       @Override
@@ -159,9 +183,43 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
+   * Returns the list of {@code FileSchema} file patterns.
+   * 
+   * @return the list of {@code FileSchema} file patterns.
+   */
+  @JsonIgnore
+  public List<String> getFilePatterns() {
+    return newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
+
+      @Override
+      public String apply(FileSchema input) {
+        return input.getPattern();
+      }
+    }));
+  }
+
+  /**
+   * Returns a non-null String matching the file pattern for the given {@link SubmissionFileType}.
+   */
+  @JsonIgnore
+  public String getFilePattern(SubmissionFileType type) {
+    String pattern = null;
+    for (val fileSchema : files) {
+      boolean match = type.getTypeName().equals(fileSchema.getName());
+      if (match) {
+        pattern = fileSchema.getPattern();
+        break;
+      }
+    }
+    checkNotNull(pattern, "No file schema found for type '{}'", type);
+    return pattern;
+  }
+
+  /**
    * Returns a list of {@link FileSchema}s for a given {@link FeatureType}.
    */
-  public List<FileSchema> fileSchemata(final FeatureType featureType) {
+  @JsonIgnore
+  public List<FileSchema> getFileSchemata(final FeatureType featureType) {
     val filter = filter(files, new Predicate<FileSchema>() {
 
       @Override
@@ -190,10 +248,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public Set<String> getCodeListNames() { // TODO: add corresponding unit test(s) - see DCC-905
     Set<String> codeListNames = newLinkedHashSet();
-    for (FileSchema fileSchema : getFiles()) { // TODO: use visitor instead
+    for (FileSchema fileSchema : getFiles()) {
       for (Field field : fileSchema.getFields()) {
         for (Restriction restriction : field.getRestrictions()) {
-          if (restriction.getType().equals(CodeListRestriction_NAME)) {
+          if (restriction.getType() == RestrictionType.CODELIST) {
             BasicDBObject config = restriction.getConfig();
             String codeListName = config.getString(CodeListRestriction_FIELD);
             codeListNames.add(codeListName);

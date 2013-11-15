@@ -1,0 +1,27 @@
+{
+  "offset" : 1,
+  "errors" : [ {
+    "type" : "OUT_OF_RANGE_ERROR",
+    "columnNames" : [ "donor_age_at_diagnosis" ],
+    "number" : 0,
+    "value" : 205,
+    "line" : 1,
+    "parameters" : {
+      "MIN" : 0,
+      "MAX" : 200
+    }
+  } ]
+}{
+  "offset" : 2,
+  "errors" : [ {
+    "type" : "OUT_OF_RANGE_ERROR",
+    "columnNames" : [ "donor_age_at_diagnosis" ],
+    "number" : 0,
+    "value" : 201,
+    "line" : 2,
+    "parameters" : {
+      "MIN" : 0,
+      "MAX" : 200
+    }
+  } ]
+}

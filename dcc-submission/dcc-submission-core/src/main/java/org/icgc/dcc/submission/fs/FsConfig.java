@@ -17,15 +17,16 @@
  */
 package org.icgc.dcc.submission.fs;
 
-class FsConfig {
+public class FsConfig {
+
   /**
    * Root of DCC filesystem
    */
-  static final String FS_ROOT = "fs.root";
+  public static final String FS_ROOT = "fs.root";
 
   /**
    * Hadoop's file system scheme: {@code fs.default.name}
    */
-  static final String FS_URL = "fs.url";
+  public static final String FS_URL = "fs.url";
 
 }

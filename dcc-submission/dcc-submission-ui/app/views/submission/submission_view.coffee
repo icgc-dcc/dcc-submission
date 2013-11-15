@@ -28,6 +28,8 @@ SubmissionFilesTableView =
   require 'views/submission/submission_files_table_view'
 SignOffSubmissionView = require 'views/submission/signoff_submission_view'
 ValidateSubmissionView = require 'views/submission/validate_submission_view'
+CancelSubmissionView = require 'views/submission/cancel_submission_view'
+
 utils = require 'lib/utils'
 template = require 'views/templates/submission/submission'
 
@@ -46,12 +48,21 @@ module.exports = class SubmissionView extends View
     super
 
     @subscribeEvent "signOffSubmission", -> @model.fetch()
+
     @subscribeEvent "validateSubmission", -> @model.fetch()
+
+    @subscribeEvent "cancelSubmission", ->
+      @model.fetch()
+      $('#cancel-submission-popup-button').html('Cancelling...')
+      $('#cancel-submission-popup-button').attr('disabled', 'disabled')
+
 
     @delegate 'click', '#signoff-submission-popup-button',
       @signOffSubmissionPopup
     @delegate 'click', '#validate-submission-popup-button',
       @validateSubmissionPopup
+    @delegate 'click', '#cancel-submission-popup-button',
+      @cancelSubmissionPopup
 
     i = setInterval( =>
       if @model
@@ -73,6 +84,12 @@ module.exports = class SubmissionView extends View
     #console.debug "SubmissionView#validateSubmissionPopup", e
     @subview("validateSubmissionView"
       new ValidateSubmissionView
+        "submission": @model
+    )
+
+  cancelSubmissionPopup: (e) ->
+    @subview("cancelSubmissionView"
+      new CancelSubmissionView
         "submission": @model
     )
 

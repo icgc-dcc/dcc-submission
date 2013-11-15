@@ -54,7 +54,30 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_MUTATION_TYPE = "mutation_type";
     public static final String SUBMISSION_OBSERVATION_MUTATION = "mutation";
 
+    public static final String SUBMISSION_OBSERVATION_CONTROL_GENOTYPE = "control_genotype";
+    public static final String SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE = "tumour_genotype";
     public static final String SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
+
+    public static final String SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE = "mutated_from_allele";
+    public static final String SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE = "mutated_to_allele";
+  }
+
+  /**
+   * Field names used in the normalizer component.
+   */
+  @NoArgsConstructor(access = PRIVATE)
+  public static class NormalizerFieldNames {
+
+    /**
+     * Field to act as primary key between primary and secondary files.
+     */
+    public static final String NORMALIZER_OBSERVATION_ID = "observation_id";
+    public static final String NORMALIZER_MASKING = "masking";
+
+    /**
+     * Formerly in the submission files.
+     */
+    public static final String NORMALIZER_MUTATION = "mutation";
   }
 
   /**
@@ -243,6 +266,8 @@ public final class FieldNames {
       "experimental_analysis_performed_donor_count";
   public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_SAMPLE_COUNT =
       "experimental_analysis_performed_sample_count";
+  public static final String AVAILABLE_EXPERIMENTAL_ANALYSIS_PERFORMED =
+      "available_experimental_analysis_performed";
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
