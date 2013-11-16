@@ -27,6 +27,8 @@ import java.io.IOException;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
@@ -80,29 +82,35 @@ public class SftpServerServicePublicKeyTest {
   @Test
   @SneakyThrows
   public void testPublicKey() {
+    // Simulate the behavior of SecurityManagerProvider
+    DefaultSecurityManager defaultSecurityManager = new DefaultSecurityManager();
+    SecurityUtils.setSecurityManager(defaultSecurityManager);
+
+    // Setup public and private keys for test
     val keyStore = tmp.newFolder();
     val keyName = "sftp";
     val privateKey = new File(keyStore, keyName);
     val publicKey = new File(keyStore, keyName + ".pub");
 
+    // Create SFTP client
     JSch jsch = new JSch();
     createKeyPair(jsch, privateKey, publicKey);
     jsch.addIdentity(privateKey.getAbsolutePath());
 
+    // Enable public key in application
     when(config.hasPath("sftp.key")).thenReturn(true);
     when(config.getString("sftp.key")).thenReturn(getPublicKeyValue(publicKey));
 
-    // Create CUT
+    // Create class under test
     SftpServerService service = createService();
     service.startAsync().awaitRunning();
 
+    // Connect to server
     val session = jsch.getSession(USERNAME, SFTP_HOST, SFTP_PORT);
     session.setConfig("StrictHostKeyChecking", "no");
     session.connect();
 
     val sftpChannel = session.openChannel("sftp");
-    sftpChannel.setInputStream(System.in);
-    sftpChannel.setOutputStream(System.out);
     sftpChannel.connect();
 
     service.stopAsync().awaitTerminated();

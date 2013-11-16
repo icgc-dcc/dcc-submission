@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.shiro;
 
+import lombok.val;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.AuthenticationException;
@@ -32,7 +34,6 @@ import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
@@ -63,11 +64,11 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
   public Subject authenticate(final String username, final char[] password, final String host) {
     log.debug("Authenticating user {}", username);
 
-    Optional<User> optionalUser = users.getUserByUsername(username);
+    val optionalUser = users.getUserByUsername(username);
     boolean newUser = optionalUser.isPresent() == false;
 
     User user;
-    if(newUser) {
+    if (newUser) {
       user = new User(); // roles to be added along with saving after login (when subject will be linked to username)
       user.setUsername(username);
     } else {
@@ -76,61 +77,22 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
 
     // This code block is meant as a temporary solution for the need to disable user access after three failed
     // authentication attempts. It should be removed when the crowd server is enabled; see DCC-815
-    if(user.isLocked()) {
+    if (user.isLocked()) {
       log.info("User " + username + " is locked. Please contact your administrator.");
       return null;
     }
     // END HACK
 
-    // @formatter:off
-    /*
-     * "TO DO" below is cryptic, but removing this line produces the following symptom: can login with wrong password
-     * provided that someone logged in successfully and logged out (even with a hard refresh)
-     * 
-     * To reproduce:
-     * - comment out the line
-     * - login with admin
-     * - logout
-     * - hard refresh
-     * - attempt to login with a dummy password, it works every other time or so
-     * - conversely, uncomment the line and it appears one can't login with the dummy password anymore (tried 3 times)
-     */
-    // @formatter:on
-    ThreadContext.remove(); // TODO remove this once it is correctly done when the response is sent out (see DCC-815)
-    Subject subject = null;
-    try {
-      subject = SecurityUtils.getSubject();
-    } catch(UnavailableSecurityManagerException e) {
-      log.error("Failure to get the current Subject:", e);
-      Throwables.propagate(e);
-    }
+    Subject subject = resolveSubject();
 
-    // build token from credentials
-    UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
-    try {
-      // attempt to login user
-      subject.login(token);
-    } catch(UnknownAccountException uae) {
-      log.info("There is no user with username of {}", token.getPrincipal());
-    } catch(IncorrectCredentialsException ice) {
-      log.info("Password for account {} was incorrect!", token.getPrincipal());
-    } catch(LockedAccountException lae) { // TODO: look into this rather than using above hack?
-      log.info("The account for username {} is locked. Please contact your administrator to unlock it.",
-          token.getPrincipal());
-    } catch(AuthenticationException ae) { // FIXME: it seems invalid credentials actually result in:
-                                          // org.apache.shiro.authc.AuthenticationException: Authentication token of
-                                          // type [class org.apache.shiro.authc.UsernamePasswordToken] could not be
-                                          // authenticated by any configured realms. Please ensure that at least one
-                                          // realm can authenticate these tokens. (not IncorrectCredentialsException)
-      log.error("Unknown error logging in {}. Please contact your administrator.", token.getPrincipal());
-    }
+    login(username, password, host, subject);
 
-    if(newUser) {
+    if (newUser) {
       users.saveUser(user);
     }
 
-    if(subject.isAuthenticated()) {
-      if(newUser == false) {
+    if (subject.isAuthenticated()) {
+      if (newUser == false) {
         users.resetUser(user); // Part of lockout hack
       }
       log.info("User [{}] logged in successfully.", subject.getPrincipal());
@@ -142,6 +104,52 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       "user {} was reprimanded after a failed attempt", username);
       // End hack
       return null;
+    }
+  }
+
+  private Subject resolveSubject() {
+    /*
+     * "TO DO" below is cryptic, but removing this line produces the following symptom: can login with wrong password
+     * provided that someone logged in successfully and logged out (even with a hard refresh)
+     * 
+     * To reproduce: - comment out the line - login with admin - logout - hard refresh - attempt to login with a dummy
+     * password, it works every other time or so - conversely, uncomment the line and it appears one can't login with
+     * the dummy password anymore (tried 3 times)
+     */
+
+    // TODO remove this once it is correctly done when the response is sent out (see DCC-815)
+    ThreadContext.remove();
+    try {
+      return SecurityUtils.getSubject();
+    } catch (UnavailableSecurityManagerException e) {
+      log.error("Failure to get the current Subject:", e);
+      Throwables.propagate(e);
+    }
+
+    return null;
+  }
+
+  private void login(final String username, final char[] password, final String host, Subject subject) {
+    // Build token from credentials
+    val token = new UsernamePasswordToken(username, password, false, host);
+
+    try {
+      // Attempt to login user
+      subject.login(token);
+    } catch (UnknownAccountException uae) {
+      log.info("There is no user with username of {}", token.getPrincipal());
+    } catch (IncorrectCredentialsException ice) {
+      log.info("Password for account {} was incorrect!", token.getPrincipal());
+    } catch (LockedAccountException lae) { // TODO: look into this rather than using above hack?
+      log.info("The account for username {} is locked. Please contact your administrator to unlock it.",
+          token.getPrincipal());
+    } catch (AuthenticationException ae) {
+      // FIXME: it seems invalid credentials actually result in:
+      // org.apache.shiro.authc.AuthenticationException: Authentication token of
+      // type [class org.apache.shiro.authc.UsernamePasswordToken] could not be
+      // authenticated by any configured realms. Please ensure that at least one
+      // realm can authenticate these tokens. (not IncorrectCredentialsException)
+      log.error("Unknown error logging in {}. Please contact your administrator.", token.getPrincipal());
     }
   }
 

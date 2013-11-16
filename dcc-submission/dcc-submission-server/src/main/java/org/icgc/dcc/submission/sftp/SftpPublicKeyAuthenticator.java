@@ -25,10 +25,14 @@ import java.security.interfaces.RSAPublicKey;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.util.Base64;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
@@ -55,21 +59,40 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
     if (key instanceof RSAPublicKey) {
       val rsaKey = (RSAPublicKey) key;
 
-      String actual = new String(encode(rsaKey));
-      String expected = new String(decode(knownKey));
-      val match = actual.equals(expected);
-
-      if (match) {
+      if (isMatch(rsaKey)) {
         log.info("Successfully authenicated user '{}' using public key", username);
-      } else {
-        log.warn("Invalid authentication for user '{}' using public key", username);
+        login(username);
+
+        return true;
       }
 
-      return match;
+      log.warn("Invalid authentication for user '{}' using public key", username);
+      return false;
     }
 
     // Doesn't handle other key types currently.
     return false;
+  }
+
+  @SneakyThrows
+  private void login(String username) {
+    try {
+      val principals = new SimplePrincipalCollection(username, "");
+      val subject = new Subject.Builder().principals(principals).authenticated(true).buildSubject();
+      ThreadContext.remove();
+      ThreadContext.bind(subject);
+    } catch (Throwable t) {
+      log.error("Exception logging in user '{}': {}", username, t.getMessage());
+      throw t;
+    }
+  }
+
+  private boolean isMatch(RSAPublicKey rsaKey) {
+    String actual = new String(encode(rsaKey));
+    String expected = new String(decode(knownKey));
+    val match = actual.equals(expected);
+
+    return match;
   }
 
   /**
@@ -99,12 +122,12 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
     return Base64.decodeBase64(knownKey.getBytes());
   }
 
-  private static void write(byte[] str, OutputStream os) throws IOException {
+  private static void write(byte[] text, OutputStream outputStream) throws IOException {
     for (int shift = 24; shift >= 0; shift -= 8) {
-      os.write((str.length >>> shift) & 0xFF);
+      outputStream.write((text.length >>> shift) & 0xFF);
     }
 
-    os.write(str);
+    outputStream.write(text);
   }
 
 }
