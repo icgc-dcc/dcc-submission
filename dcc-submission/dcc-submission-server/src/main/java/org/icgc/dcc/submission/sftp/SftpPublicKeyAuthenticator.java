@@ -53,9 +53,17 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
   @Override
   public boolean authenticate(String username, PublicKey key, ServerSession session) {
     if (key instanceof RSAPublicKey) {
-      String text1 = new String(encode((RSAPublicKey) key));
-      String text2 = new String(Base64.decodeBase64(knownKey.getBytes()));
-      val match = text1.equals(text2);
+      val rsaKey = (RSAPublicKey) key;
+
+      String actual = new String(encode(rsaKey));
+      String expected = new String(decode(knownKey));
+      val match = actual.equals(expected);
+
+      if (match) {
+        log.info("Successfully authenicated user '{}' using public key", username);
+      } else {
+        log.warn("Invalid authentication for user '{}' using public key", username);
+      }
 
       return match;
     }
@@ -66,11 +74,8 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
 
   /**
    * Converts a Java RSA PK to SSH2 Format.s
-   * 
-   * @param key
-   * @return
    */
-  public static byte[] encode(RSAPublicKey key) {
+  private static byte[] encode(RSAPublicKey key) {
     try {
       val buffer = new ByteArrayOutputStream();
       val name = "ssh-rsa".getBytes(Charsets.US_ASCII.name());
@@ -85,6 +90,13 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
     }
 
     return null;
+  }
+
+  /**
+   * Decodes the known key.
+   */
+  private static byte[] decode(String knownKey) {
+    return Base64.decodeBase64(knownKey.getBytes());
   }
 
   private static void write(byte[] str, OutputStream os) throws IOException {
