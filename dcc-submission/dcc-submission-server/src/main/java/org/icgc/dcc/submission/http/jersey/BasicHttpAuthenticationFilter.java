@@ -17,28 +17,29 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static javax.ws.rs.BindingPriority.AUTHENTICATION;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.ws.rs.BindingPriority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.shiro.codec.Base64;
-import org.apache.shiro.subject.Subject;
 import org.glassfish.grizzly.http.Method;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.net.HttpHeaders;
@@ -51,20 +52,27 @@ import com.google.inject.Inject;
  * http://localhost:5379/ws/myresource
  */
 @Provider
-@BindingPriority(BindingPriority.AUTHENTICATION)
-public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFilter {
-
-  private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);
-
-  private static final String HTTP_AUTH_PREFIX = "X-DCC-Auth";
-
-  private static final String TOKEN_INFO_SEPARATOR = ":";
-
-  private static final String WWW_AUTHENTICATE_REALM = "DCC";
-
-  private final UsernamePasswordAuthenticator passwordAuthenticator;
+@BindingPriority(AUTHENTICATION)
+@Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
+public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   /**
+   * Custome authentication headers.
+   */
+  private static final String HTTP_AUTH_PREFIX = "X-DCC-Auth";
+  private static final String TOKEN_INFO_SEPARATOR = ":";
+  private static final String WWW_AUTHENTICATE_REALM = "DCC";
+
+  /**
+   * Delegate that performs the actual authentication.
+   */
+  @NonNull
+  private final UsernamePasswordAuthenticator authenticator;
+
+  /**
+   * List of paths that are publicly accessible.
+   * 
    * TODO: Change to use annotation (see DCC-818).
    * <p>
    * Note: do not provide trailing "/" in paths here.
@@ -76,35 +84,28 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
           "/dictionaries"
       );
 
-  @Inject
-  public BasicHttpAuthenticationRequestFilter(UsernamePasswordAuthenticator passwordAuthenticator) {
-    checkArgument(passwordAuthenticator != null);
-    this.passwordAuthenticator = checkNotNull(passwordAuthenticator);
-  }
-
   @Override
-  public void filter(ContainerRequestContext context) throws IOException {
-
-    Optional<String> openAccessPath = getOpenAccessPath(context);
+  public void filter(ContainerRequestContext context) {
+    val openAccessPath = getOpenAccessPath(context);
     if (openAccessPath.isPresent()) {
       log.debug("Skipping basic authentication for whitelisted path {}", openAccessPath.get());
       return;
     }
 
-    MultivaluedMap<String, String> headers = context.getHeaders();
-    String authorizationHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
-    log.debug("authorizationHeader = " + authorizationHeader);
+    val headers = context.getHeaders();
+    val authorizationHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
+    log.debug("authorizationHeader:  '{}'", authorizationHeader);
     if (authorizationHeader == null || authorizationHeader.isEmpty()) {
       abort(context);
     } else {
       // expected to be like: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
-      String[] split = authorizationHeader.split(" ", 2);
+      val split = authorizationHeader.split(" ", 2);
       if (split.length != 2 || !split[0].equals(HTTP_AUTH_PREFIX)) {
         abort(context, authorizationHeader);
       } else {
-        String authenticationToken = split[1];
-        String decodedAuthenticationToken = Base64.decodeToString(authenticationToken);
-        String[] decoded = decodedAuthenticationToken.split(TOKEN_INFO_SEPARATOR, 2);
+        val authenticationToken = split[1];
+        val decodedAuthenticationToken = Base64.decodeToString(authenticationToken);
+        val decoded = decodedAuthenticationToken.split(TOKEN_INFO_SEPARATOR, 2);
         if (decoded.length != 2) {
           abort(context, decoded.length);
         } else {
@@ -112,34 +113,40 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
         }
       }
     }
+  }
 
+  @Override
+  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+    // Remove subject bound to the current thread
+    authenticator.removeSubject();
   }
 
   private void authenticate(ContainerRequestContext context, String username, String password) {
-    log.info("username = \"" + username + "\"");
-    log.info("password decoded (" + password.length() + " characters long)");
+    log.info("username = '{}'", username);
+    log.info("password decoded ({} characters long)", password.length());
 
-    Subject currentUser = this.passwordAuthenticator.authenticate(username, password.toCharArray(), "");
+    val currentUser = authenticator.authenticate(username, password.toCharArray(), "");
     if (currentUser == null) {
       abort(context);
     }
+
     context.setSecurityContext(new ShiroSecurityContext(currentUser, context.getSecurityContext().isSecure()));
   }
 
   private void abort(ContainerRequestContext context) {
-    Response response = createUnauthorizedResponse();
+    val response = createUnauthorizedResponse();
     context.abortWith(response);
   }
 
   private void abort(ContainerRequestContext context, String authorizationHeader) {
     log.error("Invalid authorization header: " + authorizationHeader);
-    Response response = Response.status(Response.Status.BAD_REQUEST).build();
+    val response = Response.status(Response.Status.BAD_REQUEST).build();
     context.abortWith(response);
   }
 
   private void abort(ContainerRequestContext context, int decodedLength) {
     log.error("Expected 2 components of decoded authorization header; received " + decodedLength);
-    Response response = Response.status(Response.Status.BAD_REQUEST).build();
+    val response = Response.status(Response.Status.BAD_REQUEST).build();
     context.abortWith(response);
   }
 
@@ -164,15 +171,17 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
   }
 
   private boolean isOpenPath(String path) {
-    for (String openPath : OPEN_ACCESS_PATHS) {
+    for (val openPath : OPEN_ACCESS_PATHS) {
       if (path.startsWith(openPath)) {
         return true;
       }
     }
+
     return false;
   }
 
   private String removePathTrailingSlash(UriInfo uriInfo) {
     return uriInfo.getPath().replaceAll("/$", "");
   }
+
 }
