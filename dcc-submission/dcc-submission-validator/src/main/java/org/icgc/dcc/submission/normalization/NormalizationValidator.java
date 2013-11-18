@@ -42,8 +42,6 @@ import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
 import org.icgc.dcc.submission.normalization.steps.PreMasking;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
-import org.icgc.dcc.submission.normalization.steps.hacks.HackFieldDiscarding;
-import org.icgc.dcc.submission.normalization.steps.hacks.HackNewFieldsSynthesis;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -100,9 +98,6 @@ public final class NormalizationValidator implements Validator {
 
             .add(new InitialCounting())
 
-            .add(new HackFieldDiscarding("mutation")) // Hack
-            .add(new HackNewFieldsSynthesis("mutated_from_allele", "mutated_to_allele")) // Hack
-
             // Must happen before rebuilding the mutation
             .add(new PreMasking()) // Must happen no matter what
             .add(new AlleleMasking(config)) // May be skipped (partially or not)
@@ -113,9 +108,6 @@ public final class NormalizationValidator implements Validator {
 
             // Must happen after removing duplicates and allele masking
             .add(new PrimaryKeyGeneration())
-
-            .add(new HackFieldDiscarding("mutated_from_allele")) // Hack
-            .add(new HackFieldDiscarding("mutated_to_allele")) // Hack
 
             .add(new FinalCounting())
 

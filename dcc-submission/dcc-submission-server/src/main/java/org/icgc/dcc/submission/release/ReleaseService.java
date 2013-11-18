@@ -136,12 +136,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if (!NameValidator.validateEntityName(initRelease.getName())) {
       throw new InvalidNameException(initRelease.getName());
     }
+
     String dictionaryVersion = initRelease.getDictionaryVersion();
+    log.info("Dictionary version used: '{}'", dictionaryVersion);
+
     if (dictionaryVersion == null) {
       throw new ReleaseException("Dictionary version must not be null!");
     } else if (getDictionaryForVersion(dictionaryVersion) == null) {
+      // TODO
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
+
     // Just use name and dictionaryVersion from incoming json
     Release nextRelease = new Release(initRelease.getName());
     nextRelease.setDictionaryVersion(dictionaryVersion);

@@ -1,0 +1,3 @@
+analyzed_sample_id	specimen_id	analyzed_sample_type	analyzed_sample_type_other	analyzed_sample_interval	analyzed_sample_notes
+00301	0020	11	bBuSpdeY r	67	wYdyDmVOIn
+00312	0020	4	 Q rkuMdmP	-888	zq CaDPTbK

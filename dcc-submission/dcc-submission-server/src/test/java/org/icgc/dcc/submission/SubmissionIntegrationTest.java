@@ -26,7 +26,6 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.NEXT_RELEASE_ENPOINT;
@@ -53,8 +52,7 @@ import static org.icgc.dcc.submission.TestUtils.dictionaryVersion;
 import static org.icgc.dcc.submission.TestUtils.get;
 import static org.icgc.dcc.submission.TestUtils.post;
 import static org.icgc.dcc.submission.TestUtils.put;
-import static org.icgc.dcc.submission.TestUtils.resourceToJsonArray;
-import static org.icgc.dcc.submission.TestUtils.resourceToString;
+import static org.icgc.dcc.submission.TestUtils.replaceDictionaryVersion;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
@@ -149,21 +147,35 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       PROJECT7_KEY);
 
   /**
+   * Dictionaries.
+   */
+  private static final String SECOND_DICTIONARY = dictionaryToString();
+  private static final String SECOND_DICTIONARY_VERSION = dictionaryVersion(SECOND_DICTIONARY);
+  private static final String FIRST_DICTIONARY_VERSION = SECOND_DICTIONARY_VERSION + "-zero";
+  private static final String FIRST_DICTIONARY = replaceDictionaryVersion(
+      SECOND_DICTIONARY,
+      SECOND_DICTIONARY_VERSION,
+      FIRST_DICTIONARY_VERSION);
+  private static final String SECOND_DICTIONARY_ARRAY = "[" + SECOND_DICTIONARY + "]";
+  private static final String FIRST_DICTIONARY_ARRAY = "[" + FIRST_DICTIONARY + "]";
+
+  /**
    * Releases.
    */
   private static final String INITITAL_RELEASE_NAME = "release1";
   private static final String INITIAL_RELEASE_ENDPOINT = RELEASES_ENDPOINT + "/" + INITITAL_RELEASE_NAME;
   private static final String INITIAL_RELEASE_SUBMISSIONS_ENDPOINT = INITIAL_RELEASE_ENDPOINT + "/submissions";
 
+  private static final String INITIAL_RELEASE = "{"
+      + "name: '" + INITITAL_RELEASE_NAME + "',"
+      + "state: 'OPENED',"
+      + "submissions: [],"
+      + "dictionaryVersion: '" + FIRST_DICTIONARY_VERSION + "'}";
   private static final String NEXT_RELEASE_NAME = "release2";
-  private static final String NEXT_RELEASE = "{name:'" + NEXT_RELEASE_NAME + "'}";
-
-  /**
-   * Resources.
-   */
-  private static final String FIRST_DICTIONARY_RESOURCE = INTEGRATION_TEST_DIR + "/initDictionary.json";
-  private static final String INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/initRelease.json";
-  private static final String UPDATED_INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/updatedRelease.json";
+  private static final String NEXT_RELEASE = "{"
+      + "name:'" + NEXT_RELEASE_NAME + "', "
+      + "dictionaryVersion: '" + SECOND_DICTIONARY_VERSION // FIXME: this shouldn't be pass (see DCC-1916)
+      + "'}";
 
   /**
    * Messages.
@@ -192,12 +204,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    */
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
   private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
-
-  /**
-   * Dictionaries.
-   */
-  private static final String FIRST_DICTIONARY_VERSION = dictionaryVersion(resourceToString(FIRST_DICTIONARY_RESOURCE));
-  private static final String SECOND_DICTIONARY_VERSION = dictionaryVersion(dictionaryToString());
 
   /**
    * Test utilities.
@@ -293,10 +299,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void seedSystem() throws IOException {
     status("seed", "Seeding dictionary 1 ({})...", FIRST_DICTIONARY_VERSION);
-    post(client, SEED_DICTIONARIES_ENDPOINT, resourceToJsonArray(FIRST_DICTIONARY_RESOURCE));
+    post(client, SEED_DICTIONARIES_ENDPOINT, FIRST_DICTIONARY_ARRAY);
 
     status("seed", "Seeding dictionary 2 ({} from dcc-resources)...", SECOND_DICTIONARY_VERSION);
-    post(client, SEED_DICTIONARIES_ENDPOINT, "[" + dictionaryToString() + "]");
+    post(client, SEED_DICTIONARIES_ENDPOINT, SECOND_DICTIONARY_ARRAY);
 
     status("seed", "Seeding code lists...");
     post(client, SEED_CODELIST_ENDPOINT, codeListsToString());
@@ -319,7 +325,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
-        resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
+        FIRST_DICTIONARY, FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
   }
 
   @SneakyThrows
@@ -409,7 +415,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void adminUpdatesDictionary() throws Exception, IOException {
     status("admin", "Updating CLOSED dictionary...");
     updateDictionary(
-        resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, BAD_REQUEST.getStatusCode());
+        FIRST_DICTIONARY, FIRST_DICTIONARY_VERSION, BAD_REQUEST.getStatusCode());
 
     status("admin", "Updating OPENED dictionary...");
     updateDictionary(
@@ -435,7 +441,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   }
 
   private void adminUpdatesRelease() throws Exception {
-    updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
+    updateRelease(NEXT_RELEASE);
     checkRelease(
         NEXT_RELEASE_NAME,
         SECOND_DICTIONARY_VERSION,
@@ -445,7 +451,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   }
 
   private void createInitialRelease() throws Exception {
-    val response = put(client, RELEASES_ENDPOINT, resourceToString(INITIAL_RELEASE_RESOURCE));
+    val response = put(client, RELEASES_ENDPOINT, INITIAL_RELEASE);
     assertEquals(OK.getStatusCode(), response.getStatus());
 
     val release = asRelease(response);
@@ -495,8 +501,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     response = post(client, QUEUE_ENDPOINT, projectsToEnqueue);
     assertEquals(expectedStatus.getStatusCode(), response.getStatus());
     if (expectedStatus != NO_CONTENT) {
-      assertEquals($("{code:'" + INVALID_STATE.getFrontEndString() + "',parameters:['" + VALID + "']}"),
-          $(response));
+      String expectedResponse = "{code:'" + INVALID_STATE.getFrontEndString() + "',parameters:['" + VALID + "']}";
+      // assertEquals(expectedResponse + " != " + asString(response), $(expectedResponse), $(response));
     }
   }
 
@@ -575,8 +581,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEquals(response.getHeaders().toString(), expectedStatus, response.getStatus());
   }
 
-  private void updateRelease(String updatedReleaseRelPath) throws Exception {
-    val response = put(client, UPDATE_RELEASE_ENDPOINT, resourceToString(updatedReleaseRelPath));
+  private void updateRelease(String updatedRelease) throws Exception {
+    val response = put(client, UPDATE_RELEASE_ENDPOINT, updatedRelease);
     assertEquals(OK.getStatusCode(), response.getStatus());
 
     val release = asRelease(response);

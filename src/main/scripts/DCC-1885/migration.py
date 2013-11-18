@@ -4,10 +4,19 @@
 # ===========================================================================
 import sys,json
 
+UNKNOWN_FIELD_NAME = "UNKNOWN"
+DUMMY_CODE="1"
+DATA_MODE_REAL="real"
+DATA_MODE_TEST="test"
+
+# ===========================================================================
+
 dictionary_file = sys.argv[1] # curl -v -XGET -H "Accept: application/json" http://***REMOVED***:5380/ws/nextRelease/dictionary
 target_file_schema_type = sys.argv[2] # as specified in the dictionary: donor, ssm_p, meth_s, ...
-
-DUMMY_CODE="1"
+data_mode = sys.argv[3] # either "real" (default) or "test"
+if data_mode is None:
+ data_mode = DATA_MODE_REAL
+assert data_mode == DATA_MODE_REAL or data_mode == DATA_MODE_TEST, "Unknown data mode: '%s', valid values are: '%s'" % (data_mode, [DATA_MODE_REAL, DATA_MODE_TEST])
 
 # ===========================================================================
 
@@ -36,6 +45,9 @@ def print_expected_header(target_field_names):
 def describe_actual_data_row(fields, actual_field_names):
  actual_data_row = {}
  index = 0
+ expected_size = len(actual_field_names)
+ actual_size = len(fields)
+ assert actual_size == expected_size, "Unexpected number of fields encountered: '%s' instead of '%s'" % (actual_size, expected_size) # because submission is supposed to be valid
  for field in fields:
   field_name = actual_field_names[index]
   actual_data_row[field_name] = field
@@ -49,48 +61,56 @@ def process_actual_value(actual_value, target_field_name, actual_data_row, targe
  processed_value = actual_value
 
  # ---------------------------------------------------------------------------
- if target_file_schema_type == "specimen":
-  if target_field_name == "cellularity":
-   processed_value = DUMMY_CODE
+ if data_mode == DATA_MODE_TEST:
+
+  # ...........................................................................
+  if target_file_schema_type == "specimen":
+   if target_field_name == "cellularity":
+    processed_value = DUMMY_CODE
+ 
+  # ...........................................................................
+  if target_file_schema_type == "ssm_m":
+   if target_field_name in ["assembly_version", "raw_data_repository"]:
+    processed_value = DUMMY_CODE
+   if target_field_name == "variation_calling_algorithm" or target_field_name == "alignment_algorithm":
+    processed_value = "BWA 0.6.2 http://bio-bwa.sourceforge.net"
+   if target_field_name == "experimental_protocol":
+    processed_value = "Paired End http://www.illumina.com/technology/paired_end_sequencing_assay.ilmn"
+   if target_field_name == "base_calling_algorithm":
+    processed_value = "CASAVA http://support.illumina.com/sequencing/sequencing_software/casava.ilmn"
+ 
+  # ...........................................................................
+  if target_file_schema_type == "ssm_p":
+   if target_field_name == "chromosome_strand":
+    processed_value = "1"
+   if target_field_name == "biological_validation_status":
+    processed_value = DUMMY_CODE
+   if target_field_name == "biological_validation_platform":
+    processed_value = DUMMY_CODE
+   if target_field_name == "mutant_allele_read_count":
+    processed_value = "1.0"
+   if target_field_name == "total_read_count":
+    processed_value = "2.0"
+   if target_field_name == "expressed_allele":
+    processed_value = actual_data_row["tumour_genotype"].split('/')[0]
+ 
+   # ...........................................................................
+ 
+   if target_field_name == "mutated_from_allele" or target_field_name == "mutated_to_allele":
+    mutation = actual_data_row["mutation"]
+    assert '>' in mutation, "Couldn't find '>' in mutation field: %s" % mutation
+    if target_field_name == "mutated_from_allele":
+     index = 0
+    else:
+     index = 1
+    processed_value = mutation.split('>')[index]
+ 
+    # ---------------------------------------------------------------------------
+
+ else: # "real" mode
+  pass # TODO: this is where migration logic would go
 
  # ---------------------------------------------------------------------------
- if target_file_schema_type == "ssm_m":
-  if target_field_name == "assembly_version":
-   processed_value = DUMMY_CODE
-  if target_field_name == "variation_calling_algorithm" or target_field_name == "alignment_algorithm":
-   processed_value = "BWA 0.6.2 http://bio-bwa.sourceforge.net"
-  if target_field_name == "experimental_protocol":
-   processed_value = "Paired End http://www.illumina.com/technology/paired_end_sequencing_assay.ilmn"
-  if target_field_name == "base_calling_algorithm":
-   processed_value = "CASAVA http://support.illumina.com/sequencing/sequencing_software/casava.ilmn"
-
- # ---------------------------------------------------------------------------
- if target_file_schema_type == "ssm_p":
-  if target_field_name == "chromosome_strand":
-   processed_value = "1"
-  if target_field_name == "biological_validation_status":
-   processed_value = DUMMY_CODE
-  if target_field_name == "biological_validation_platform":
-   processed_value = DUMMY_CODE
-  if target_field_name == "mutant_allele_read_count":
-   processed_value = "1.0"
-  if target_field_name == "total_read_count":
-   processed_value = "2.0"
-  if target_field_name == "expressed_allele":
-   processed_value = actual_data_row["tumour_genotype"].split('/')[0]
-
-  # ---------------------------------------------------------------------------
-
-  if target_field_name == "mutated_from_allele" or target_field_name == "mutated_to_allele":
-   mutation = actual_data_row["mutation"]
-   assert '>' in mutation, "Couldn't find '>' in mutation field: %s" % mutation
-   if target_field_name == "mutated_from_allele":
-    index = 0
-   else:
-    index = 1
-   processed_value = mutation.split('>')[index]
-
-   # ---------------------------------------------------------------------------
 
  if not processed_value:
   processed_value = "-888"
@@ -104,6 +124,11 @@ with open(dictionary_file) as f:
  dictionary = json.load(f)
 target_file_schema = get_target_file_schema(dictionary, target_file_schema_type)
 target_field_names = get_target_field_names(target_file_schema)
+
+# logging
+sys.stderr.write("target_file_schema_type: " + target_file_schema_type + '\n')
+sys.stderr.write("dictionary_file: " + dictionary_file + '\n')
+sys.stderr.write("target_field_names: " + str(target_field_names) + '\n')
 
 # stream each line in standard input and write rows to standard output
 first_line = True
@@ -123,6 +148,10 @@ for line in sys.stdin:
   for actual_field_name in actual_field_names:
    if actual_field_name not in target_field_names:
     extra_field_names.append(actual_field_name)
+
+  # logging
+  sys.stderr.write("actual_field_names: " + str(actual_field_names) + '\n')
+  sys.stderr.write("extra_field_names: " + str(extra_field_names) + '\n')
 
   # print new header
   print_expected_header(target_field_names)
@@ -161,6 +190,8 @@ for line in sys.stdin:
  # print new line
 
  sys.stdout.write('\n')
+
+sys.stderr.write('\n')
 
 # ===========================================================================
 

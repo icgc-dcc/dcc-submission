@@ -343,7 +343,7 @@ public class NextReleaseResource {
   @Path("update")
   public Response update(
 
-      @Valid Release release,
+      @Valid Release release, // TODO: only requires String (+change UI)
 
       @Context Request request,
 
