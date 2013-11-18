@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.core;
 
 import static java.lang.String.format;
+import static javax.mail.Message.RecipientType.BCC;
+import static javax.mail.Message.RecipientType.CC;
 import static javax.mail.Message.RecipientType.TO;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -28,7 +30,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -45,7 +46,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
@@ -69,15 +69,12 @@ public class MailService {
   /**
    * From property names.
    */
-  public static final String MAIL_NORMAL_FROM = "mail.from.email";
-  public static final String MAIL_PROBLEM_FROM = "mail.from.email";
+  public static final String MAIL_FROM = "mail.from.email";
 
   /**
    * Recipient property names.
    */
-  public static final String MAIL_ADMIN_RECIPIENT = "mail.admin.email";
-  public static final String MAIL_MANUAL_SUPPORT_RECIPIENT = "mail.manual_support.email";
-  public static final String MAIL_AUTOMATIC_SUPPORT_RECIPIENT = "mail.automatic_support.email";
+  public static final String MAIL_SUPPORT_RECIPIENT = "mail.support.email";
   public static final String MAIL_NOTIFICATION_RECIPIENT = "mail.notification.email";
 
   /**
@@ -94,18 +91,10 @@ public class MailService {
   @NonNull
   private final Config config;
 
-  public void sendAdminProblem(String message) {
-    send(
-        from(MAIL_PROBLEM_FROM),
-        to(MAIL_ADMIN_RECIPIENT),
-        message,
-        message);
-  }
-
   public void sendSupportProblem(String subject, String message) {
     send(
-        from(MAIL_PROBLEM_FROM),
-        to(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
+        from(MAIL_FROM),
+        to(MAIL_SUPPORT_RECIPIENT),
         subject,
         message);
   }
@@ -123,13 +112,11 @@ public class MailService {
     }
 
     try {
-      // Always send to admin
-      val addresses = addresses(emails);
-      addresses.add(address(get(MAIL_ADMIN_RECIPIENT)));
-
       val message = message();
-      message.setFrom(address(get(state == ERROR ? MAIL_PROBLEM_FROM : MAIL_NORMAL_FROM)));
-      message.addRecipients(TO, recipients(addresses));
+      message.setFrom(address(get(MAIL_FROM)));
+      message.addRecipients(TO, addresses(emails));
+      message.addRecipient(CC, address(get(MAIL_SUPPORT_RECIPIENT)));
+      message.addRecipient(BCC, address(get(MAIL_NOTIFICATION_RECIPIENT))); // BCC since users shouldn't see this
       message.setSubject(formatSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state)));
       message.setText(
           state == ERROR ? template(MAIL_ERROR_BODY, projectKey, state) : //
@@ -138,7 +125,7 @@ public class MailService {
           format("Unexpected validation state '%s' prevented loading email text. Please see server log.", state));
 
       Transport.send(message);
-      log.info("Emails for '{}' sent to '{}'", projectKey, addresses);
+      log.info("Emails for '{}' sent to '{}'", projectKey, emails);
     } catch (Exception e) {
       log.error("An error occured while emailing: ", e);
     }
@@ -146,8 +133,8 @@ public class MailService {
 
   public void sendSignoff(String user, List<String> projectKeys, String nextReleaseName) {
     send(
-        from(MAIL_NORMAL_FROM),
-        to(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
+        from(MAIL_FROM),
+        to(MAIL_SUPPORT_RECIPIENT),
         format("Signed off Projects: %s", projectKeys),
         template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
   }
@@ -155,15 +142,15 @@ public class MailService {
   public void sendFeedback(Feedback feedback) {
     send(
         feedback.getEmail(),
-        to(MAIL_MANUAL_SUPPORT_RECIPIENT),
+        to(MAIL_SUPPORT_RECIPIENT),
         feedback.getSubject(),
         feedback.getMessage());
   }
 
   private void sendNotification(String subject) {
     send(
-        from(MAIL_NORMAL_FROM),
-        to(MAIL_NOTIFICATION_RECIPIENT),
+        from(MAIL_FROM),
+        to(MAIL_SUPPORT_RECIPIENT),
         subject,
         subject);
   }
@@ -178,6 +165,7 @@ public class MailService {
       val message = message();
       message.setFrom(address(from));
       message.addRecipient(TO, address(recipient));
+      message.addRecipient(BCC, address(get(MAIL_NOTIFICATION_RECIPIENT))); // BCC since users shouldn't see this
       message.setSubject(formatSubject(subject));
       message.setText(text);
 
@@ -224,12 +212,11 @@ public class MailService {
     return config.hasPath(MAIL_ENABLED) ? config.getBoolean(MAIL_ENABLED) : true;
   }
 
-  private static Set<Address> addresses(List<String> emails) {
-    val addresses = Sets.<Address> newLinkedHashSet();
-    for (val email : emails) {
+  private static Address[] addresses(List<String> emails) {
+    val addresses = new Address[emails.size()];
+    for (int i = 0; i < emails.size(); i++) {
       try {
-        val address = address(email);
-        addresses.add(address);
+        addresses[i] = address(emails.get(i));
       } catch (UnsupportedEncodingException e) {
         log.error("Illegal Address: " + e + " in " + emails);
       }
@@ -240,10 +227,6 @@ public class MailService {
 
   private static InternetAddress address(String email) throws UnsupportedEncodingException {
     return new InternetAddress(email, email);
-  }
-
-  private static Address[] recipients(Set<Address> addresses) {
-    return addresses.toArray(new Address[addresses.size()]);
   }
 
   private static String getHostName() {

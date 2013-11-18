@@ -18,19 +18,17 @@
 package org.icgc.dcc.submission.core;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
-import static org.elasticsearch.common.collect.Sets.newHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.core.MailService.MAIL_ADMIN_RECIPIENT;
-import static org.icgc.dcc.submission.core.MailService.MAIL_AUTOMATIC_SUPPORT_RECIPIENT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_ENABLED;
 import static org.icgc.dcc.submission.core.MailService.MAIL_ERROR_BODY;
+import static org.icgc.dcc.submission.core.MailService.MAIL_FROM;
 import static org.icgc.dcc.submission.core.MailService.MAIL_INVALID_BODY;
-import static org.icgc.dcc.submission.core.MailService.MAIL_MANUAL_SUPPORT_RECIPIENT;
-import static org.icgc.dcc.submission.core.MailService.MAIL_NORMAL_FROM;
-import static org.icgc.dcc.submission.core.MailService.MAIL_PROBLEM_FROM;
+import static org.icgc.dcc.submission.core.MailService.MAIL_NOTIFICATION_RECIPIENT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_SIGNOFF_BODY;
 import static org.icgc.dcc.submission.core.MailService.MAIL_SMTP_HOST;
+import static org.icgc.dcc.submission.core.MailService.MAIL_SUPPORT_RECIPIENT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_VALIDATION_SUBJECT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_VALID_BODY;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
@@ -90,8 +88,8 @@ public class MailServiceTest {
 
     });
 
-    assertThat(message.getFrom()).contains(address(get(MAIL_PROBLEM_FROM)));
-    assertThat(message.getAllRecipients()).contains(address(get(MAIL_AUTOMATIC_SUPPORT_RECIPIENT)));
+    assertThat(message.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(message.getAllRecipients()).contains(address(get(MAIL_SUPPORT_RECIPIENT)));
     assertThat(message.getSubject()).endsWith(subject);
     assertThat(message.getContent()).isEqualTo(text);
   }
@@ -114,8 +112,8 @@ public class MailServiceTest {
 
     });
 
-    assertThat(message.getFrom()).contains(address(get(MAIL_PROBLEM_FROM)));
-    assertThat(message.getAllRecipients()).contains(address(get(MAIL_ADMIN_RECIPIENT))).containsAll(addresses);
+    assertThat(message.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(message.getAllRecipients()).contains(address(get(MAIL_SUPPORT_RECIPIENT))).containsAll(addresses);
     assertThat(message.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
     assertThat(message.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
   }
@@ -136,7 +134,7 @@ public class MailServiceTest {
 
     when(config.hasPath(MAIL_ENABLED)).thenReturn(true);
     when(config.getBoolean(MAIL_ENABLED)).thenReturn(true);
-    for (val name : new String[] { MAIL_SMTP_HOST, MAIL_NORMAL_FROM, MAIL_PROBLEM_FROM, MAIL_ADMIN_RECIPIENT, MAIL_MANUAL_SUPPORT_RECIPIENT, MAIL_AUTOMATIC_SUPPORT_RECIPIENT }) {
+    for (val name : new String[] { MAIL_SMTP_HOST, MAIL_FROM, MAIL_FROM, MAIL_SUPPORT_RECIPIENT, MAIL_NOTIFICATION_RECIPIENT }) {
       when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn(name);
     }
