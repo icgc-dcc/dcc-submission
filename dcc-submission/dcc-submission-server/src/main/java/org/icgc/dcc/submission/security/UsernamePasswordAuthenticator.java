@@ -30,4 +30,7 @@ public interface UsernamePasswordAuthenticator {
   public Subject authenticate(String username, char[] password, String host);
 
   public Subject getSubject();
+
+  public void removeSubject();
+
 }

@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.semantic;
 import static com.google.common.util.concurrent.Futures.allAsList;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static java.util.concurrent.Executors.newFixedThreadPool;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyVararg;
@@ -67,7 +67,7 @@ public class ReferenceGenomeValidatorConcurrencyTest {
   @SneakyThrows
   public void testConcurrent() throws IOException {
     val fileName = "ssm_p.txt";
-    val n = 100;
+    val n = 20;
     val executor = createExecutor(n);
 
     val callables = Lists.<Callable<ValidationContext>> newArrayList();
@@ -90,12 +90,12 @@ public class ReferenceGenomeValidatorConcurrencyTest {
     val results = getResults(executor, callables);
     for (val context : results.get()) {
       // Verify
-      verify(context, times(7)).reportError(
+      verify(context, times(4)).reportError(
           eq(fileName),
           anyLong(),
           eq("reference_genome_allele"),
           anyString(),
-          eq(REFERENCE_GENOME_ERROR),
+          eq(REFERENCE_GENOME_MISMATCH_ERROR),
           anyVararg());
     }
   }
