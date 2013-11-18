@@ -34,11 +34,13 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
 @Slf4j
+@Ignore
 public class CascadeTest extends BaseCascadeTest {
 
   /**

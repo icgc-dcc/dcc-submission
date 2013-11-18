@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.semantic;
 
-import static com.google.common.io.ByteStreams.copy;
 import static com.google.common.io.Files.getFileExtension;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.google.common.primitives.Ints.tryParse;
@@ -25,18 +24,16 @@ import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -63,9 +60,23 @@ import com.google.common.io.LineReader;
  * 3,000,000 reference genomes in 200 seconds.
  * 
  * @see https://wiki.oicr.on.ca/display/DCCSOFT/Unify+genome+assembly+build+throughout+the+system
+ * @see https://wiki.oicr.on.ca/display/DCCSOFT/SSM+data+model+supporting+controlled+fields+and+other+improvements#
+ * SSMdatamodelsupportingcontrolledfieldsandotherimprovements-SSMvalidationinReferenceGenomesequenceValidationRGV
  */
 @Slf4j
 public class ReferenceGenomeValidator implements Validator {
+
+  /**
+   * The value of {@code ssm_p.0.mutation_type.v1} that corresponds to {@code insertion of <=200bp}.
+   * 
+   * @see http://legacy-portal.dcc.icgc.org/pages/docs/dictionaries/latest/#ssm_p.0.mutation_type.v1
+   */
+  private static final String INSERTION_MUTATION_TYPE = "2";
+
+  /**
+   * Value that is used to convey an insertion for the reference allele.
+   */
+  private static final String REFERENCE_INSERTION_VALUE = "-";
 
   /**
    * The reference assembly version that corresponds to the configured {@link #sequenceFile}.
@@ -88,7 +99,7 @@ public class ReferenceGenomeValidator implements Validator {
   @SneakyThrows
   public ReferenceGenomeValidator(@NonNull String fastaFilePath) {
     val fastaFile = new File(fastaFilePath).getAbsoluteFile();
-    this.assemblyVersion = getNameWithoutExtension(fastaFile.getName());
+    this.assemblyVersion = getAssemblyVersion(fastaFile);
     this.sequenceFile = new IndexedFastaSequenceFile(fastaFile);
 
     log.info("Using '{}' assembly versioned FASTA file: '{}'", assemblyVersion, fastaFile);
@@ -117,7 +128,7 @@ public class ReferenceGenomeValidator implements Validator {
       return;
     }
 
-    // Exists
+    // It exists
     val ssmPrimaryFile = optionalSsmPrimaryFile.get();
 
     // Source input
@@ -128,68 +139,6 @@ public class ReferenceGenomeValidator implements Validator {
     log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
     validate(context, ssmPrimaryFile.getName(), inputStream);
     log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
-  }
-
-  private void validate(final ValidationContext context, final String fileName, InputStream inputStream) {
-    val reader = new LineReader(new InputStreamReader(inputStream));
-    parse(reader, new LineProcessor() {
-
-      @Override
-      public void process(long lineNumber, String start, String end, String chromosomeCode, String referenceAllele) {
-        val chromosome = getChromosome(context, chromosomeCode);
-        val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
-
-        val mismatch = !isMatch(referenceAllele, referenceSequence);
-        if (mismatch) {
-          context.reportError(
-              fileName,
-              lineNumber,
-              SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
-              formatValue(referenceSequence, referenceAllele),
-              REFERENCE_GENOME_ERROR,
-
-              // Params
-              assemblyVersion);
-        }
-
-        // Cooperate
-        checkInterrupted(getName());
-      }
-
-    });
-  }
-
-  @SneakyThrows
-  public void parse(LineReader reader, LineProcessor callback) {
-    // @formatter:off
-    // Field indexes
-    int      chromosomeIdx = -1;
-    int           startIdx = -1;
-    int             endIdx = -1;
-    int referenceAlleleIdx = -1;
-
-    // Line state (one-based)
-    long lineNumber = 1;
-    String line;
-
-    // Read all lines
-    while ((line = reader.readLine()) != null) {
-      val fields = parseLine(line);
-
-      if (lineNumber == 1) {
-              chromosomeIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME);
-                   startIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME_START);
-                     endIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME_END);
-         referenceAlleleIdx = fields.indexOf(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
-      } else {
-        // Delegate logic
-        callback.process(lineNumber, fields.get(startIdx), fields.get(endIdx), fields.get(chromosomeIdx), fields.get(referenceAlleleIdx));
-      }
-
-      // Book-keeping
-      lineNumber++;
-    }
-    // @formatter:on
   }
 
   public String getReferenceGenomeSequence(String chromosome, String start, String end) {
@@ -206,23 +155,98 @@ public class ReferenceGenomeValidator implements Validator {
     return text;
   }
 
-  @SneakyThrows
-  private static void download(String source, String target, boolean compressed) {
-    log.info("Downloading '{}' to '{}'...", source, target);
-    @Cleanup
-    val inputStream = new BufferedInputStream(createUrlStream(source, compressed));
-    @Cleanup
-    val outputStream = new FileOutputStream(target);
+  private void validate(final ValidationContext context, final String fileName, InputStream inputStream) {
+    val reader = new LineReader(new InputStreamReader(inputStream));
+    parse(reader, new LineProcessor() {
 
-    copy(inputStream, outputStream);
-    log.info("Finished downloading '{}' to '{}'", source, target);
+      @Override
+      public void process(long lineNumber, String mutationType, String start, String end, String chromosomeCode,
+          String referenceAllele) {
+        val insertion = mutationType.equals(INSERTION_MUTATION_TYPE);
+        if (insertion) {
+          // Insertion
+          val mismatch = !referenceAllele.equals(REFERENCE_INSERTION_VALUE);
+          if (mismatch) {
+            context.reportError(
+                fileName,
+                lineNumber,
+                SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
+                formatValue(REFERENCE_INSERTION_VALUE, referenceAllele),
+                REFERENCE_GENOME_ERROR,
+
+                // Params
+                assemblyVersion);
+          }
+        } else {
+          // Deletion or substitution
+          val chromosome = getChromosome(context, chromosomeCode);
+          val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
+
+          val mismatch = !isMatch(referenceAllele, referenceSequence);
+          if (mismatch) {
+            context.reportError(
+                fileName,
+                lineNumber,
+                SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
+                formatValue(referenceSequence, referenceAllele),
+                REFERENCE_GENOME_ERROR,
+
+                // Params
+                assemblyVersion);
+          }
+        }
+
+        // Cooperate
+        checkInterrupted(getName());
+      }
+
+    });
   }
 
-  private static InputStream createUrlStream(String source, boolean compressed) throws IOException {
-    val connection = new URL(source).openConnection();
-    val inputStream = connection.getInputStream();
+  @SneakyThrows
+  private static void parse(LineReader reader, LineProcessor callback) {
+    // @formatter:off
+    // Field indexes
+    int   mutationTypeIdx  = -1;
+    int      chromosomeIdx = -1;
+    int           startIdx = -1;
+    int             endIdx = -1;
+    int referenceAlleleIdx = -1;
+  
+    // Line state (one-based)
+    long lineNumber = 1;
+    String line;
+  
+    // Read all lines
+    while ((line = reader.readLine()) != null) {
+      val fields = parseLine(line);
+  
+      if (lineNumber == 1) {
+        // Header
+            mutationTypeIdx = fields.indexOf(SUBMISSION_OBSERVATION_MUTATION_TYPE);
+              chromosomeIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME);
+                   startIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME_START);
+                     endIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME_END);
+         referenceAlleleIdx = fields.indexOf(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
+      } else {
+        // Delegate logic
+        callback.process(lineNumber, fields.get(mutationTypeIdx), fields.get(startIdx), fields.get(endIdx), fields.get(chromosomeIdx), fields.get(referenceAlleleIdx));
+      }
+  
+      // Book-keeping
+      lineNumber++;
+    }
+    // @formatter:on
+  }
 
-    return compressed ? new GZIPInputStream(inputStream) : inputStream;
+  /**
+   * Extracts the assembly version from the file name.
+   * 
+   * @param fastaFile the FASTA file
+   * @return the assembly version
+   */
+  private static String getAssemblyVersion(File fastaFile) {
+    return getNameWithoutExtension(fastaFile.getName());
   }
 
   private static String getChromosome(ValidationContext context, String chromosomeCode) {
@@ -286,7 +310,8 @@ public class ReferenceGenomeValidator implements Validator {
    */
   private interface LineProcessor {
 
-    void process(long lineNumber, String start, String end, String chromosome, String referenceAllele);
+    void process(long lineNumber, String mutationType, String start, String end, String chromosome,
+        String referenceAllele);
 
   }
 

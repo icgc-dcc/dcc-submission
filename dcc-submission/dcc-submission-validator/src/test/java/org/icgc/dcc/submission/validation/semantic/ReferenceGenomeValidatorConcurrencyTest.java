@@ -67,7 +67,7 @@ public class ReferenceGenomeValidatorConcurrencyTest {
   @SneakyThrows
   public void testConcurrent() throws IOException {
     val fileName = "ssm_p.txt";
-    val n = 100;
+    val n = 20;
     val executor = createExecutor(n);
 
     val callables = Lists.<Callable<ValidationContext>> newArrayList();
@@ -90,7 +90,7 @@ public class ReferenceGenomeValidatorConcurrencyTest {
     val results = getResults(executor, callables);
     for (val context : results.get()) {
       // Verify
-      verify(context, times(7)).reportError(
+      verify(context, times(4)).reportError(
           eq(fileName),
           anyLong(),
           eq("reference_genome_allele"),
