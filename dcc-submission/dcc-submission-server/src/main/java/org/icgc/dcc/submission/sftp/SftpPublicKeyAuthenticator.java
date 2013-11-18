@@ -25,10 +25,14 @@ import java.security.interfaces.RSAPublicKey;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.util.Base64;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
@@ -53,24 +57,48 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
   @Override
   public boolean authenticate(String username, PublicKey key, ServerSession session) {
     if (key instanceof RSAPublicKey) {
-      String text1 = new String(encode((RSAPublicKey) key));
-      String text2 = new String(Base64.decodeBase64(knownKey.getBytes()));
-      val match = text1.equals(text2);
+      val rsaKey = (RSAPublicKey) key;
 
-      return match;
+      if (isMatch(rsaKey)) {
+        log.info("Successfully authenicated user '{}' using public key", username);
+        login(username);
+
+        return true;
+      }
+
+      log.warn("Invalid authentication for user '{}' using public key", username);
+      return false;
     }
 
     // Doesn't handle other key types currently.
     return false;
   }
 
+  @SneakyThrows
+  private void login(String username) {
+    try {
+      val principals = new SimplePrincipalCollection(username, "");
+      val subject = new Subject.Builder().principals(principals).authenticated(true).buildSubject();
+      ThreadContext.remove();
+      ThreadContext.bind(subject);
+    } catch (Throwable t) {
+      log.error("Exception logging in user '{}': {}", username, t.getMessage());
+      throw t;
+    }
+  }
+
+  private boolean isMatch(RSAPublicKey rsaKey) {
+    String actual = new String(encode(rsaKey));
+    String expected = new String(decode(knownKey));
+    val match = actual.equals(expected);
+
+    return match;
+  }
+
   /**
    * Converts a Java RSA PK to SSH2 Format.s
-   * 
-   * @param key
-   * @return
    */
-  public static byte[] encode(RSAPublicKey key) {
+  private static byte[] encode(RSAPublicKey key) {
     try {
       val buffer = new ByteArrayOutputStream();
       val name = "ssh-rsa".getBytes(Charsets.US_ASCII.name());
@@ -87,12 +115,19 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
     return null;
   }
 
-  private static void write(byte[] str, OutputStream os) throws IOException {
+  /**
+   * Decodes the known key.
+   */
+  private static byte[] decode(String knownKey) {
+    return Base64.decodeBase64(knownKey.getBytes());
+  }
+
+  private static void write(byte[] text, OutputStream outputStream) throws IOException {
     for (int shift = 24; shift >= 0; shift -= 8) {
-      os.write((str.length >>> shift) & 0xFF);
+      outputStream.write((text.length >>> shift) & 0xFF);
     }
 
-    os.write(str);
+    outputStream.write(text);
   }
 
 }

@@ -88,8 +88,6 @@ public class Sftp implements TestRule {
     session.connect();
 
     sftpChannel = (ChannelSftp) session.openChannel("sftp");
-    sftpChannel.setInputStream(System.in);
-    sftpChannel.setOutputStream(System.out);
     sftpChannel.connect();
   }
 
