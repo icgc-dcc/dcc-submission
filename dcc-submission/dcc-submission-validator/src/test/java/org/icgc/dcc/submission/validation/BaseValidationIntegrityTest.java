@@ -23,6 +23,7 @@ import static java.util.Collections.sort;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -33,6 +34,7 @@ import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
@@ -50,6 +52,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -152,6 +155,14 @@ public abstract class BaseValidationIntegrityTest {
 
   protected static String getUnsortedFileContent(String resourcePath) {
     return getUnsortedFileContent(resourcePath, "");
+  }
+
+  protected Term term(String value) {
+    return new Term(value, "dummy", null);
+  }
+
+  protected List<Term> terms(Term... terms) {
+    return Lists.newArrayList(terms);
   }
 
 }
