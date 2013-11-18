@@ -143,7 +143,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if (dictionaryVersion == null) {
       throw new ReleaseException("Dictionary version must not be null!");
     } else if (getDictionaryForVersion(dictionaryVersion) == null) {
-      // TODO
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
 
