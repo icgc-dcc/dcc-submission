@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -27,7 +33,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationRequestFilter;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,14 +44,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.net.HttpHeaders;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
-public class BasicHttpAuthenticationRequestFilterTest {
+public class BasicHttpAuthenticationFilterTest {
 
   private Request mockRequest;
 
@@ -57,12 +56,11 @@ public class BasicHttpAuthenticationRequestFilterTest {
   @Mock
   private UriInfo mockUriInfo;
 
-  private BasicHttpAuthenticationRequestFilter basicHttpAuthenticationRequestFilter;
+  private BasicHttpAuthenticationFilter basicHttpAuthenticationRequestFilter;
 
   private UsernamePasswordAuthenticator usernamePasswordAuthenticator;
 
   private static final String HTTP_AUTH_PREFIX = "X-DCC-Auth";
-
   private static final String WWW_AUTHENTICATE_REALM = "DCC";
 
   @SuppressWarnings("unchecked")
@@ -78,7 +76,7 @@ public class BasicHttpAuthenticationRequestFilterTest {
     SecurityContext mockSecurityContext = mock(SecurityContext.class);
 
     this.basicHttpAuthenticationRequestFilter =
-        new BasicHttpAuthenticationRequestFilter(this.usernamePasswordAuthenticator);
+        new BasicHttpAuthenticationFilter(this.usernamePasswordAuthenticator);
 
     // Create some behaviour
     when(this.mockContext.getRequest()).thenReturn(this.mockRequest);
@@ -125,7 +123,6 @@ public class BasicHttpAuthenticationRequestFilterTest {
 
   @Test
   public void test_filter_handlesMissingHeader() throws IOException {
-
     // This test is testing that the header is absent
     when(this.mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(null);
 

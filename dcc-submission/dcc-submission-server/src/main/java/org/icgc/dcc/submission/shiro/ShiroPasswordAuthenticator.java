@@ -17,7 +17,11 @@
  */
 package org.icgc.dcc.submission.shiro;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
@@ -31,102 +35,75 @@ import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.core.UserService;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
 /**
  * Implements {@code UsernamePasswordAuthenticator} on top of {@code Shiro}.
  */
+@Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator {
 
-  private static final Logger log = LoggerFactory.getLogger(ShiroPasswordAuthenticator.class);
-
-  private final UserService users;
-
-  /**
-   * Somehow MUST inject {@code org.apache.shiro.mgt.SecurityManager} here to avoid the error message:
-   * "HTTP/1.1 500 No SecurityManager accessible to the calling code, either bound to the org.apache.shiro.util.ThreadContext or as a vm static singleton.  This is an invalid application configuration."
-   * TODO: find out why (DCC-?)
-   */
-  @Inject
-  public ShiroPasswordAuthenticator(org.apache.shiro.mgt.SecurityManager securityManager, UserService users) {
-    this.users = users;
-  }
+  @NonNull
+  private final UserService userService;
 
   /**
-   * Saves user if encountered from the first time in database. TODO: revisit (will save all script kiddies username
-   * attempts)?
+   * Saves user if encountered from the first time in database.
    */
   @Override
-  public Subject authenticate(final String username, final char[] password, final String host) {
+  public Subject authenticate(String username, char[] password, String host) {
     log.debug("Authenticating user {}", username);
 
-    val optionalUser = users.getUserByUsername(username);
+    val optionalUser = userService.getUserByUsername(username);
     boolean newUser = optionalUser.isPresent() == false;
 
     User user;
     if (newUser) {
-      user = new User(); // roles to be added along with saving after login (when subject will be linked to username)
+      // Roles to be added along with saving after login (when subject will be linked to username)
+      user = new User();
       user.setUsername(username);
     } else {
       user = optionalUser.get();
     }
 
-    // This code block is meant as a temporary solution for the need to disable user access after three failed
-    // authentication attempts. It should be removed when the crowd server is enabled; see DCC-815
     if (user.isLocked()) {
-      log.info("User " + username + " is locked. Please contact your administrator.");
+      log.info("User '{}' is locked. Please contact your administrator.", username);
       return null;
     }
-    // END HACK
 
     Subject subject = resolveSubject();
-
     login(username, password, host, subject);
 
     if (newUser) {
-      users.saveUser(user);
+      // TODO: Revisit (will save all script kiddies username attempts)?
+      userService.saveUser(user);
     }
 
     if (subject.isAuthenticated()) {
       if (newUser == false) {
-        users.resetUser(user); // Part of lockout hack
+        userService.resetUser(user);
       }
-      log.info("User [{}] logged in successfully.", subject.getPrincipal());
+
+      log.info("User '{}' logged in successfully.", subject.getPrincipal());
       return subject;
     } else {
-      // Hack
-      users.reprimandUser(user);
-      log.info(user.isLocked() ? "user {} was locked after too many failed attempts" : //
-      "user {} was reprimanded after a failed attempt", username);
-      // End hack
+      userService.reprimandUser(user);
+      log.info(user.isLocked() ?
+          "User {} was locked after too many failed attempts" :
+          "User {} was reprimanded after a failed attempt", username);
       return null;
     }
   }
 
+  @SneakyThrows
   private Subject resolveSubject() {
-    /*
-     * "TO DO" below is cryptic, but removing this line produces the following symptom: can login with wrong password
-     * provided that someone logged in successfully and logged out (even with a hard refresh)
-     * 
-     * To reproduce: - comment out the line - login with admin - logout - hard refresh - attempt to login with a dummy
-     * password, it works every other time or so - conversely, uncomment the line and it appears one can't login with
-     * the dummy password anymore (tried 3 times)
-     */
-
-    // TODO remove this once it is correctly done when the response is sent out (see DCC-815)
-    ThreadContext.remove();
     try {
       return SecurityUtils.getSubject();
     } catch (UnavailableSecurityManagerException e) {
       log.error("Failure to get the current Subject:", e);
-      Throwables.propagate(e);
+      throw e;
     }
-
-    return null;
   }
 
   private void login(final String username, final char[] password, final String host, Subject subject) {
@@ -137,11 +114,11 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       // Attempt to login user
       subject.login(token);
     } catch (UnknownAccountException uae) {
-      log.info("There is no user with username of {}", token.getPrincipal());
+      log.info("There is no user with username of '{}'", token.getPrincipal());
     } catch (IncorrectCredentialsException ice) {
-      log.info("Password for account {} was incorrect!", token.getPrincipal());
+      log.info("Password for user '{}' was incorrect!", token.getPrincipal());
     } catch (LockedAccountException lae) { // TODO: look into this rather than using above hack?
-      log.info("The account for username {} is locked. Please contact your administrator to unlock it.",
+      log.info("The account for user '{}'is locked. Please contact your administrator to unlock it.",
           token.getPrincipal());
     } catch (AuthenticationException ae) {
       // FIXME: it seems invalid credentials actually result in:
@@ -149,7 +126,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       // type [class org.apache.shiro.authc.UsernamePasswordToken] could not be
       // authenticated by any configured realms. Please ensure that at least one
       // realm can authenticate these tokens. (not IncorrectCredentialsException)
-      log.error("Unknown error logging in {}. Please contact your administrator.", token.getPrincipal());
+      log.error("Unknown error logging in user '{}'. Please contact your administrator.", token.getPrincipal());
     }
   }
 
@@ -157,4 +134,10 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
   public Subject getSubject() {
     return SecurityUtils.getSubject();
   }
+
+  @Override
+  public void removeSubject() {
+    ThreadContext.remove();
+  }
+
 }

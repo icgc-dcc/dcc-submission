@@ -94,9 +94,8 @@ public class ValidationModule extends AbstractDccModule {
       }
 
       private int getMaxValidating() {
-        return config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
-            config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
-            DEFAULT_MAX_VALIDATING;
+        val path = MAX_VALIDATING_CONFIG_PARAM;
+        return config.hasPath(path) ? config.getInt(path) : DEFAULT_MAX_VALIDATING;
       }
 
     }).in(Singleton.class);
@@ -166,10 +165,10 @@ public class ValidationModule extends AbstractDccModule {
 
       @Override
       public ReferenceGenomeValidator get() {
-        return new ReferenceGenomeValidator(getFastFilePath());
+        return new ReferenceGenomeValidator(getFastaFilePath());
       }
 
-      private String getFastFilePath() {
+      private String getFastaFilePath() {
         val path = FASTA_FILE_PATH_CONFIG_PARAM;
         checkState(config.hasPath(path), "'%s' is should be present in the config", path);
 
