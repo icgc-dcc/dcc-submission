@@ -166,7 +166,14 @@ public class ValidationModule extends AbstractDccModule {
 
       @Override
       public ReferenceGenomeValidator get() {
-        return new ReferenceGenomeValidator(config.getString(FASTA_FILE_PATH_CONFIG_PARAM));
+        return new ReferenceGenomeValidator(getFastFilePath());
+      }
+
+      private String getFastFilePath() {
+        val path = FASTA_FILE_PATH_CONFIG_PARAM;
+        checkState(config.hasPath(path), "'%s' is should be present in the config", path);
+
+        return config.getString(path);
       }
 
     });
@@ -180,10 +187,13 @@ public class ValidationModule extends AbstractDccModule {
 
       @Override
       public NormalizationValidator get() {
-        return NormalizationValidator.getDefaultInstance(
-            dccFileSystem2,
-            config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM));
+        return NormalizationValidator.getDefaultInstance(dccFileSystem2, getNormalizationConfig());
       }
+
+      private Config getNormalizationConfig() {
+        return config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM);
+      }
+
     });
   }
 
@@ -209,26 +219,23 @@ public class ValidationModule extends AbstractDccModule {
 
       @Override
       public DccFileSystem2 get() {
-        return new DccFileSystem2(
-            fileSystem,
-            getRootDir(config),
-            usesHadoop(config));
+        return new DccFileSystem2(fileSystem, getRootDir(), isHdfs());
       }
 
-      public String getRootDir(Config config) {
-        checkState(
-            config.hasPath("fs.root"),
-            "fs.root should be present in the config");
-        return config.getString("fs.root");
+      private String getRootDir() {
+        val path = "fs.root";
+        checkState(config.hasPath(path), "'%s' should be present in the config", path);
+
+        return config.getString(path);
       }
 
-      public boolean usesHadoop(Config config) {
-        checkState(
-            config.hasPath("fs.url"),
-            "fs.url should be present in the config");
-        return config.getString("fs.url")
-            .startsWith("hdfs");
+      private boolean isHdfs() {
+        val path = "fs.url";
+        checkState(config.hasPath(path), "'%s' should be present in the config", path);
+
+        return config.getString(path).startsWith("hdfs");
       }
+
     });
   }
 
