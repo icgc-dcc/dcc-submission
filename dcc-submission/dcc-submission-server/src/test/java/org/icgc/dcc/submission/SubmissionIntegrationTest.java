@@ -502,7 +502,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEquals(expectedStatus.getStatusCode(), response.getStatus());
     if (expectedStatus != NO_CONTENT) {
       String expectedResponse = "{code:'" + INVALID_STATE.getFrontEndString() + "',parameters:['" + VALID + "']}";
-      // assertEquals(expectedResponse + " != " + asString(response), $(expectedResponse), $(response));
+      // FIXME: assertEquals(expectedResponse + " != " + asString(response), $(expectedResponse), $(response));
     }
   }
 
