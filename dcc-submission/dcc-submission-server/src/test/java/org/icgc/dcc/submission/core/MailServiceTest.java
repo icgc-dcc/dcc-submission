@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.core;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static org.elasticsearch.common.collect.Sets.newHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -91,7 +92,7 @@ public class MailServiceTest {
 
     assertThat(message.getFrom()).contains(address(get(MAIL_PROBLEM_FROM)));
     assertThat(message.getAllRecipients()).contains(address(get(MAIL_AUTOMATIC_SUPPORT_RECIPIENT)));
-    assertThat(message.getSubject()).isEqualTo(subject);
+    assertThat(message.getSubject()).endsWith(subject);
     assertThat(message.getContent()).isEqualTo(text);
   }
 
@@ -101,20 +102,21 @@ public class MailServiceTest {
     val releaseName = "releaseName";
     val projectKey = "projectKey";
     val state = ERROR;
+    val emails = newArrayList("email@domain.com");
     val addresses = newHashSet(address("email@domain.com"));
 
     val message = verify(new Runnable() {
 
       @Override
       public void run() {
-        mailService.sendValidationFinished(releaseName, projectKey, state, addresses);
+        mailService.sendValidationFinished(releaseName, projectKey, state, emails);
       }
 
     });
 
     assertThat(message.getFrom()).contains(address(get(MAIL_PROBLEM_FROM)));
     assertThat(message.getAllRecipients()).contains(address(get(MAIL_ADMIN_RECIPIENT))).containsAll(addresses);
-    assertThat(message.getSubject()).isEqualTo(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+    assertThat(message.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
     assertThat(message.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
   }
 

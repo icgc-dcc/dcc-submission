@@ -24,6 +24,8 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -43,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
@@ -113,22 +116,21 @@ public class MailService {
   }
 
   public void sendValidationFinished(String releaseName, String projectKey, SubmissionState state,
-      Set<Address> addresses) {
+      List<String> emails) {
     if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
     }
 
     try {
-      if (state == ERROR) {
-        // Always send an email to admin when an error occurs
-        addresses.add(address(get(MAIL_ADMIN_RECIPIENT)));
-      }
+      // Always send to admin
+      val addresses = addresses(emails);
+      addresses.add(address(get(MAIL_ADMIN_RECIPIENT)));
 
       val message = message();
       message.setFrom(address(get(state == ERROR ? MAIL_PROBLEM_FROM : MAIL_NORMAL_FROM)));
       message.addRecipients(TO, recipients(addresses));
-      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+      message.setSubject(formatSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state)));
       message.setText(
           state == ERROR ? template(MAIL_ERROR_BODY, projectKey, state) : //
           state == VALID ? template(MAIL_VALID_BODY, projectKey, state, projectKey, projectKey) : //
@@ -176,7 +178,7 @@ public class MailService {
       val message = message();
       message.setFrom(address(from));
       message.addRecipient(TO, address(recipient));
-      message.setSubject(subject);
+      message.setSubject(formatSubject(subject));
       message.setText(text);
 
       Transport.send(message);
@@ -192,6 +194,10 @@ public class MailService {
     props.put(MAIL_SMTP_PORT, get(MAIL_SMTP_PORT, "25"));
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
+  }
+
+  private String formatSubject(String text) {
+    return format("[%s]: %s", getHostName(), text);
   }
 
   private String template(String templateName, Object... arguments) {
@@ -218,12 +224,35 @@ public class MailService {
     return config.hasPath(MAIL_ENABLED) ? config.getBoolean(MAIL_ENABLED) : true;
   }
 
+  private static Set<Address> addresses(List<String> emails) {
+    val addresses = Sets.<Address> newLinkedHashSet();
+    for (val email : emails) {
+      try {
+        val address = address(email);
+        addresses.add(address);
+      } catch (UnsupportedEncodingException e) {
+        log.error("Illegal Address: " + e + " in " + emails);
+      }
+    }
+
+    return addresses;
+  }
+
   private static InternetAddress address(String email) throws UnsupportedEncodingException {
     return new InternetAddress(email, email);
   }
 
   private static Address[] recipients(Set<Address> addresses) {
     return addresses.toArray(new Address[addresses.size()]);
+  }
+
+  private static String getHostName() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      // Best effort
+      return "unknown host";
+    }
   }
 
 }
