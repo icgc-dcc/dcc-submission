@@ -340,7 +340,21 @@ public enum ErrorType {
   /**
    * Submitted reference genome does not match the starnde reference genome.
    */
-  REFERENCE_GENOME_ERROR(CELL_LEVEL, "Found value %s for column %s, reference genome is %s") {
+  REFERENCE_GENOME_MISMATCH_ERROR(CELL_LEVEL, "Found value %s for column %s, reference genome is %s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  },
+
+  /**
+   * Submitted reference genome has type insertion. Expect "-" but found something else instead
+   */
+  REFERENCE_GENOME_INSERTION_ERROR(CELL_LEVEL, "Found value %s for column %s, reference genome is %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {

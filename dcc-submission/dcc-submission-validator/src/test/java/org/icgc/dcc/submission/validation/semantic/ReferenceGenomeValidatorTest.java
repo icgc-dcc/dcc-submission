@@ -19,7 +19,8 @@ package org.icgc.dcc.submission.validation.semantic;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyVararg;
@@ -105,12 +106,20 @@ public class ReferenceGenomeValidatorTest {
     validator.validate(context);
 
     // Verify
-    verify(context, times(4)).reportError(
+    verify(context, times(3)).reportError(
         eq(fileName),
         anyLong(),
         eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
         anyString(),
-        eq(REFERENCE_GENOME_ERROR),
+        eq(REFERENCE_GENOME_MISMATCH_ERROR),
+        anyVararg());
+
+    verify(context, times(1)).reportError(
+        eq(fileName),
+        anyLong(),
+        eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
+        anyString(),
+        eq(REFERENCE_GENOME_INSERTION_ERROR),
         anyVararg());
   }
 
