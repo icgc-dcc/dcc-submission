@@ -107,7 +107,7 @@ public class MailServiceTest {
 
       @Override
       public void run() {
-        mailService.sendValidated(releaseName, projectKey, state, addresses);
+        mailService.sendValidationFinished(releaseName, projectKey, state, addresses);
       }
 
     });

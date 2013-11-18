@@ -93,37 +93,27 @@ public class MailService {
 
   public void sendAdminProblem(String message) {
     send(
-        get(MAIL_PROBLEM_FROM),
-        get(MAIL_ADMIN_RECIPIENT),
+        from(MAIL_PROBLEM_FROM),
+        to(MAIL_ADMIN_RECIPIENT),
         message,
         message);
   }
 
   public void sendSupportProblem(String subject, String message) {
     send(
-        get(MAIL_PROBLEM_FROM),
-        get(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
+        from(MAIL_PROBLEM_FROM),
+        to(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
         subject,
         message);
   }
 
-  public void sendSignoff(String user, List<String> projectKeys, String nextReleaseName) {
-    send(
-        get(MAIL_NORMAL_FROM),
-        get(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
-        format("Signed off Projects: %s", projectKeys),
-        template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
+  public void sendValidationStarted(String releaseName, String projectKey, List<String> emails) {
+    sendNotification(format("Validation started for release '%s' project '%s' (on behalf of '%s')",
+        releaseName, projectKey, emails));
   }
 
-  public void sendFeedback(Feedback feedback) {
-    send(
-        feedback.getEmail(),
-        get(MAIL_MANUAL_SUPPORT_RECIPIENT),
-        feedback.getSubject(),
-        feedback.getMessage());
-  }
-
-  public void sendValidated(String releaseName, String projectKey, SubmissionState state, Set<Address> addresses) {
+  public void sendValidationFinished(String releaseName, String projectKey, SubmissionState state,
+      Set<Address> addresses) {
     if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
@@ -152,14 +142,26 @@ public class MailService {
     }
   }
 
-  public void sendProcessingStarted(String projectKey, List<String> emails) {
-    sendNotification(format("Processing started for project '%s' (on behalf of '%s')", projectKey, emails));
+  public void sendSignoff(String user, List<String> projectKeys, String nextReleaseName) {
+    send(
+        from(MAIL_NORMAL_FROM),
+        to(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
+        format("Signed off Projects: %s", projectKeys),
+        template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
+  }
+
+  public void sendFeedback(Feedback feedback) {
+    send(
+        feedback.getEmail(),
+        to(MAIL_MANUAL_SUPPORT_RECIPIENT),
+        feedback.getSubject(),
+        feedback.getMessage());
   }
 
   private void sendNotification(String subject) {
     send(
-        get(MAIL_NORMAL_FROM),
-        get(MAIL_NOTIFICATION_RECIPIENT),
+        from(MAIL_NORMAL_FROM),
+        to(MAIL_NOTIFICATION_RECIPIENT),
         subject,
         subject);
   }
@@ -194,6 +196,14 @@ public class MailService {
 
   private String template(String templateName, Object... arguments) {
     return format(get(templateName), arguments);
+  }
+
+  private String from(String name) {
+    return get(name);
+  }
+
+  private String to(String name) {
+    return get(name);
   }
 
   private String get(String name) {

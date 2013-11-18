@@ -271,7 +271,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    */
   synchronized private void acceptValidation(QueuedProject project, Release release) {
     log.info("Validation for '{}' accepted", project);
-    mailService.sendProcessingStarted(project.getKey(), project.getEmails());
+    mailService.sendValidationStarted(release.getName(), project.getKey(), project.getEmails());
     releaseService.resetValidationFolder(project.getKey(), release);
     releaseService.dequeueToValidating(project);
   }
@@ -349,7 +349,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     }
 
     if (!addresses.isEmpty()) {
-      mailService.sendValidated(release.getName(), queuedProject.getKey(), state, addresses);
+      mailService.sendValidationFinished(release.getName(), queuedProject.getKey(), state, addresses);
     }
   }
 

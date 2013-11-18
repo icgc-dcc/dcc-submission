@@ -20,15 +20,20 @@ package org.icgc.dcc.submission.sftp.fs;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import lombok.Delegate;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
 
+@Slf4j
 public abstract class HdfsSshFile implements SshFile {
 
   protected static final String SEPARATOR = "/";
@@ -147,7 +152,19 @@ public abstract class HdfsSshFile implements SshFile {
         throw new IOException("SFTP is in readonly mode");
       }
 
-      return fs.create(path);
+      log.info("Submission file opened: '{}'", path);
+      return new OutputStream() {
+
+        @Delegate(excludes = Closeable.class)
+        OutputStream delegate = fs.create(path);
+
+        @Override
+        public void close() throws IOException {
+          log.info("Submission file closed: '{}'", path);
+          delegate.close();
+        }
+
+      };
     } catch (Exception e) {
       return handleException(OutputStream.class, e);
     }
