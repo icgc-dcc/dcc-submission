@@ -29,15 +29,19 @@ import cascading.operation.Function;
 import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Step in charge of pre-emptively marking all observations as {@link Masking#OPEN} for the {@link SensitiveRowMarking} step.
+ * Step in charge of pre-emptively marking all observations as {@link Masking#OPEN} for the {@link SensitiveRowMarking}
+ * step.
  */
 @RequiredArgsConstructor
 public final class PreMarking implements NormalizationStep {
+
+  static final Fields MARKING_FIELD = Masking.NORMALIZER_MARKING_FIELD;
 
   @Override
   public String shortName() {
@@ -61,7 +65,7 @@ public final class PreMarking implements NormalizationStep {
 
     @VisibleForTesting
     PreMarker() {
-      super(Masking.NORMALIZER_MASKING_FIELD);
+      super(MARKING_FIELD);
     }
 
     @Override

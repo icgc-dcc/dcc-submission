@@ -24,7 +24,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.CONTROLLED;
-import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MASKING_FIELD;
+import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MARKING_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.CONTROL_GENOTYPE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD;
@@ -75,7 +75,7 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
    * Generates "masked" counterpart rows for "controlled" observations, unless the resulting row results in a trivial
    * mutation (e.g. A>A).
    * <p>
-   * This expects the {@link Masking#NORMALIZER_MASKING_FIELD} to be present already (as either {@link Masking#OPEN} or
+   * This expects the {@link Masking#NORMALIZER_MARKING_FIELD} to be present already (as either {@link Masking#OPEN} or
    * {@link Masking#CONTROLLED}).
    */
   @VisibleForTesting
@@ -130,7 +130,7 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
       copy.set(TUMOUR_GENOTYPE_FIELD, NO_VALUE);
 
       copy.setString(MUTATED_FROM_ALLELE_FIELD, referenceGenomeAllele);
-      copy.set(NORMALIZER_MASKING_FIELD, Masking.MASKED.getTupleValue());
+      copy.set(NORMALIZER_MARKING_FIELD, Masking.MASKED.getTupleValue());
 
       return copy.getTuple();
     }
@@ -139,10 +139,10 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
      * Returns the value for masking as set by the previous step.
      */
     private Masking getMaskingState(TupleEntry entry) {
-      String maskingString = entry.getString(NORMALIZER_MASKING_FIELD);
+      String maskingString = entry.getString(NORMALIZER_MARKING_FIELD);
       Optional<Masking> masking = Masking.getMasking(maskingString);
       checkState(masking.isPresent(), "There should be a '%s' field at this stage, instead: '%s'",
-          NORMALIZER_MASKING_FIELD, entry);
+          NORMALIZER_MARKING_FIELD, entry);
       return masking.get();
     }
 

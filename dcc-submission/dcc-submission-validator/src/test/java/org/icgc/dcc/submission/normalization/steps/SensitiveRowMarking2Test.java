@@ -43,7 +43,7 @@ public class SensitiveRowMarking2Test extends CascadingTestCase {
             .append(SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD)
             .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
             .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
-            .append(Masking.NORMALIZER_MASKING_FIELD);
+            .append(Masking.NORMALIZER_MARKING_FIELD);
 
     String dummyValue = "dummy";
     Tuple open = // Just passed through as is

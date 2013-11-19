@@ -28,10 +28,12 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
+import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.BusinessKeys;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -119,7 +121,8 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    * observations.
    */
   private Fields groupByFields(NormalizationContext context) {
-    return fields(context.getObservationUniqueFields());
+    return fields(BusinessKeys.MUTATION_PRIMARY_IDENTIFYING_PART)
+        .append(MARKING_FIELD);
   }
 
   /**

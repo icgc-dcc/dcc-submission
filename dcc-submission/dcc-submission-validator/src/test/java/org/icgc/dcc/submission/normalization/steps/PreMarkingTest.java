@@ -44,7 +44,7 @@ public class PreMarkingTest extends CascadingTestCase {
         new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
         new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
     };
-    Fields resultFields = Masking.NORMALIZER_MASKING_FIELD;
+    Fields resultFields = Masking.NORMALIZER_MARKING_FIELD;
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
     for (int i = 0; i < 3; i++) {

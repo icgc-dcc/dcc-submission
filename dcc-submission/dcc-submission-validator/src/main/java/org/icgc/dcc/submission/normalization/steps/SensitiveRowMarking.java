@@ -29,7 +29,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.CONTROLLED;
-import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MASKING_FIELD;
+import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MARKING_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.Masking.OPEN;
 
 import java.util.List;
@@ -88,7 +88,7 @@ public final class SensitiveRowMarking implements NormalizationStep {
             .append(TUMOUR_GENOTYPE_FIELD)
             .append(MUTATED_FROM_ALLELE_FIELD)
             .append(MUTATED_TO_ALLELE_FIELD)
-            .append(NORMALIZER_MASKING_FIELD),
+            .append(NORMALIZER_MARKING_FIELD),
 
         new SensitiveRowMarker(),
         REPLACE);
@@ -97,7 +97,7 @@ public final class SensitiveRowMarking implements NormalizationStep {
   /**
    * Marks tuples that are sensitives.
    * <p>
-   * This expects the {@link Masking#NORMALIZER_MASKING_FIELD} to be present already (as {@link Masking#OPEN} for all
+   * This expects the {@link Masking#NORMALIZER_MARKING_FIELD} to be present already (as {@link Masking#OPEN} for all
    * observations).
    */
   @VisibleForTesting
@@ -117,7 +117,7 @@ public final class SensitiveRowMarking implements NormalizationStep {
 
       // Ensure expected state
       {
-        val existingMasking = Masking.getMasking(entry.getString(Masking.NORMALIZER_MASKING_FIELD));
+        val existingMasking = Masking.getMasking(entry.getString(Masking.NORMALIZER_MARKING_FIELD));
         checkState(existingMasking.isPresent() && existingMasking.get() == Masking.OPEN,
             "Masking flag is expected to have been set to '%s' already", OPEN);
       }

@@ -39,13 +39,13 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking;
-import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.normalization.steps.Counting;
+import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
 import org.icgc.dcc.submission.normalization.steps.PreMarking;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
+import org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking;
 import org.icgc.dcc.submission.normalization.steps.UniqueCounting;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -124,13 +124,13 @@ public final class NormalizationValidator implements Validator {
             .add(new MaskedRowGeneration()) // May be skipped
 
             // Must happen after allele masking
+            .add(new MutationRebuilding()) // Must happen before removing redundant observations
             .add(new RedundantObservationRemoval(SUBMISSION_OBSERVATION_ANALYSIS_ID))
             // May be skipped
 
             .add(new UniqueCounting(
                 SUBMISSION_OBSERVATION_ANALYSIS_ID,
                 UNIQUE_REMAINING))
-            .add(new MutationRebuilding())
 
             // Must happen after removing duplicates and allele masking
             .add(new PrimaryKeyGeneration())
