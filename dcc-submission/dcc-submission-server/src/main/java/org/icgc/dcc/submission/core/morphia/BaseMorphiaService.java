@@ -114,7 +114,7 @@ public abstract class BaseMorphiaService<T> {
     }
     if (attempts >= MAX_ATTEMPTS) {
       String message = format("Failed to %s, could not acquire lock", description);
-      mailService.sendAdminProblem(message);
+      mailService.sendSupportProblem(message, message);
 
       throw new DccConcurrencyException(message);
     }

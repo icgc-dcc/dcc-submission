@@ -207,7 +207,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Reference genome error"
       description: (source) ->
         """
-        Sequence specified in reference_genome_allele does not match 
+        Sequence specified in reference_genome_allele does not match
         the corresponding sequence in the reference genome at:
         chromosome_start - chromosome_end
         """
