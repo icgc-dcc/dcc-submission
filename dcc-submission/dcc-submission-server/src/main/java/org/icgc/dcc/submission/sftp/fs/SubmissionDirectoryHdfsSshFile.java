@@ -19,15 +19,23 @@ package org.icgc.dcc.submission.sftp.fs;
 
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
+import java.io.FileNotFoundException;
+
+import lombok.NonNull;
+
+import org.icgc.dcc.submission.core.ProjectServiceException;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.sftp.SftpContext;
 
 public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
+  @NonNull
   private final SubmissionDirectory directory;
 
-  public SubmissionDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
-    super(root, directoryName);
-    this.directory = root.getSubmissionDirectory(directoryName);
+  public SubmissionDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
+    super(context, root, directoryName);
+    this.directory = getSubmissionDirectory(directoryName);
   }
 
   @Override
@@ -62,11 +70,24 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
   }
 
   @Override
-  public void notifyModified() {
+  protected void notifyModified() {
     try {
-      getParentFile().notifyModified(directory);
+      Submission submission = directory.getSubmission();
+      context.resetSubmission(submission);
     } catch (Exception e) {
       handleException(Boolean.class, e);
+    }
+  }
+
+  private SubmissionDirectory getSubmissionDirectory(String directoryName) {
+    try {
+      try {
+        return context.getSubmissionDirectory(directoryName);
+      } catch (ProjectServiceException e) {
+        throw new FileNotFoundException(directoryName);
+      }
+    } catch (Exception e) {
+      return handleException(SubmissionDirectory.class, e);
     }
   }
 

@@ -28,6 +28,8 @@ import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.flow.FlowConnector;
+import cascading.scheme.hadoop.TextDelimited;
+import cascading.scheme.hadoop.TextLine;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
@@ -46,7 +48,17 @@ public interface PlatformStrategy {
 
   public FlowConnector getFlowConnector();
 
+  /**
+   * TODO: Adapt submission code to use {@link #getSourceTap2(FileSchema)} since we can now assume the header is known
+   * (and therefore we should use {@link TextDelimited} rather than {@link TextLine}.
+   */
+  @Deprecated
   public Tap<?, ?, ?> getSourceTap(FileSchema schema);
+
+  /**
+   * See comment in {@link #getSourceTap(FileSchema)}.
+   */
+  public Tap<?, ?, ?> getSourceTap2(FileSchema schema);
 
   public Tap<?, ?, ?> getFlowSinkTap(FileSchema schema, FlowType type);
 

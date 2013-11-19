@@ -177,7 +177,7 @@ public class ScriptRestriction implements InternalPlanElement {
   @Slf4j
   public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
 
-    private static final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator(" = ").useForNull("null");
+    private static final Joiner.MapJoiner VARIABLE_JOINER = Joiner.on(", ").withKeyValueSeparator(" = ").useForNull("null");
 
     private final String reportedField;
     private final int number;
@@ -225,7 +225,7 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     private void reportError(TupleState state, Map<String, Object> values) {
-      val reportedValue = JOINER.join(values);
+      val reportedValue = VARIABLE_JOINER.join(values);
       reportError(state, reportedValue);
     }
 

@@ -29,6 +29,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
@@ -41,6 +42,7 @@ import com.google.common.collect.Sets;
 @Getter
 @Setter(PRIVATE)
 @ToString
+@Slf4j
 public class ErrorReport implements Serializable {
 
   /**
@@ -53,6 +55,11 @@ public class ErrorReport implements Serializable {
   private int number;
   private String description;
   private final List<ColumnErrorReport> columns = newLinkedList();
+
+  /**
+   * Temporary band-aid to fix the issue of bite offsets being converted twice (see DCC-1908).
+   */
+  private boolean alreadyConverted = false;
 
   public ErrorReport(TupleError error) {
     this.setErrorType(error.getType());
@@ -102,24 +109,28 @@ public class ErrorReport implements Serializable {
   }
 
   public void updateLineNumbers(Path file) throws IOException {
-    val offsets = Sets.<Long> newHashSet();
-    for (val column : columns) {
-      offsets.addAll(column.getLines());
-    }
-
-    val byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
-
-    if (byteToLine != null) {
+    if (alreadyConverted) {
+      log.info("Skipping attempt to convert byte-offsets since it has already been done (see DCC-1908)");
+    } else {
+      val offsets = Sets.<Long> newHashSet();
       for (val column : columns) {
-        val newLines = Lists.<Long> newLinkedList();
-        for (val oldLine : column.getLines()) {
-          newLines.add(byteToLine.get(oldLine));
-        }
-
-        column.setLines(newLines);
+        offsets.addAll(column.getLines());
       }
-    }
 
+      val byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
+
+      if (byteToLine != null) {
+        for (val column : columns) {
+          val newLines = Lists.<Long> newLinkedList();
+          for (val oldLine : column.getLines()) {
+            newLines.add(byteToLine.get(oldLine));
+          }
+
+          column.setLines(newLines);
+        }
+      }
+      alreadyConverted = true;
+    }
   }
 
 }

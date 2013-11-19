@@ -33,10 +33,6 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
-import javax.mail.Address;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -59,7 +55,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
@@ -269,9 +264,9 @@ public class ValidationScheduler extends AbstractScheduledService {
    * 
    * @param project
    */
-  private void acceptValidation(QueuedProject project, Release release) {
+  synchronized private void acceptValidation(QueuedProject project, Release release) {
     log.info("Validation for '{}' accepted", project);
-    mailService.sendProcessingStarted(project.getKey(), project.getEmails());
+    mailService.sendValidationStarted(release.getName(), project.getKey(), project.getEmails());
     releaseService.resetValidationFolder(project.getKey(), release);
     releaseService.dequeueToValidating(project);
   }
@@ -283,7 +278,8 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param state completion state
    * @param submissionReport the report produced through the validation process
    */
-  private void completeValidation(QueuedProject project, SubmissionState state, SubmissionReport submissionReport) {
+  synchronized private void completeValidation(QueuedProject project, SubmissionState state,
+      SubmissionReport submissionReport) {
     log.info("Validation for '{}' completed with state '{}'", project, state);
     try {
       storeSubmissionReport(project.getKey(), submissionReport);
@@ -337,19 +333,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   private void notifyRecipients(QueuedProject queuedProject, SubmissionState state) {
     val release = resolveOpenRelease();
 
-    val addresses = Sets.<Address> newHashSet();
-    for (val email : queuedProject.getEmails()) {
-      try {
-        val address = new InternetAddress(email);
-        addresses.add(address);
-      } catch (AddressException e) {
-        log.error("Illegal Address: " + e + " in " + queuedProject);
-      }
-    }
-
-    if (!addresses.isEmpty()) {
-      mailService.sendValidated(release.getName(), queuedProject.getKey(), state, addresses);
-    }
+    mailService.sendValidationFinished(release.getName(), queuedProject.getKey(), state, queuedProject.getEmails());
   }
 
 }

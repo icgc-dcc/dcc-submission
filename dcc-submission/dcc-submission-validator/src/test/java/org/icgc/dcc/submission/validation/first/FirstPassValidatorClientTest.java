@@ -142,7 +142,7 @@ public class FirstPassValidatorClientTest {
     dict.addFile(Schema.TESTFILE1.getSchema());
     dict.addFile(Schema.TESTFILE2.getSchema());
     dict.addFile(Schema.TESTFILE3.getSchema());
-    when(dict.getFileSchema(anyString()))
+    when(dict.getFileSchemaByFileName(anyString()))
         .thenReturn(Optional.of(Schema.TESTFILE1.getSchema()))
         .thenReturn(Optional.of(Schema.TESTFILE2.getSchema()))
         .thenReturn(Optional.of(Schema.TESTFILE3.getSchema()));

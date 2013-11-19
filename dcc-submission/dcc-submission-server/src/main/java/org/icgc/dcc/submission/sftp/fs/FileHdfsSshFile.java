@@ -22,15 +22,19 @@ import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 import java.io.IOException;
 import java.util.List;
 
+import lombok.NonNull;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.submission.sftp.SftpContext;
 
 public class FileHdfsSshFile extends HdfsSshFile {
 
+  @NonNull
   private final BaseDirectoryHdfsSshFile directory;
 
-  public FileHdfsSshFile(BaseDirectoryHdfsSshFile directory, String fileName) {
-    super(new Path(directory.path, fileName), directory.fs);
+  public FileHdfsSshFile(SftpContext context, BaseDirectoryHdfsSshFile directory, String fileName) {
+    super(context, new Path(directory.path, fileName), directory.fs);
     this.directory = directory;
   }
 
@@ -120,6 +124,8 @@ public class FileHdfsSshFile extends HdfsSshFile {
         if (success == false) {
           throw new IOException("Unable to delete file " + path.toUri());
         }
+
+        context.notifyFileRemoved(path);
 
         return success;
       }

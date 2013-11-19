@@ -68,6 +68,7 @@ public class PrimaryValidator implements Validator {
     log.info("Connecting cascade for project '{}'", projectKey);
     plan.connect(platformStrategy);
     log.info("Connected cascade for project '{}'", projectKey);
+    checkInterrupted(getName());
 
     try {
       // Start (blocking)

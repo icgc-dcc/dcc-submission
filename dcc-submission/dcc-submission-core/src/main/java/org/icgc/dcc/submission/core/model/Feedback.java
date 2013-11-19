@@ -17,46 +17,27 @@
  */
 package org.icgc.dcc.submission.core.model;
 
+import lombok.Data;
+
 /**
- * 
+ * DTO that conveys a feedback message from a submitter to DCC.
  */
+@Data
 public class Feedback {
-  protected String email;
 
-  protected String subject;
+  /**
+   * The "from" email address.
+   */
+  private String email;
 
-  protected String message;
+  /**
+   * The feedback subject.
+   */
+  private String subject;
 
-  public Feedback() {
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public void setHeader(String header) {
-    this.subject = header;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
-  }
-
-  public String getSubject() {
-    return this.subject;
-  }
-
-  public String getEmail() {
-    return this.email;
-  }
-
-  public String getMessage() {
-    return this.message;
-  }
-
-  @Override
-  public String toString() {
-    return "Feedback [email=" + email + ", subject=" + subject + "]";
-  }
+  /**
+   * The feedback message.
+   */
+  private String message;
 
 }
