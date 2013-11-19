@@ -29,6 +29,7 @@ import lombok.val;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
@@ -71,6 +72,8 @@ public class SftpServerServicePublicKeyTest {
   ProjectService projectService;
   @Mock
   ReleaseService releaseService;
+  @Mock
+  MailService mailService;
 
   @Before
   public void setUp() throws IOException, JSchException {
@@ -129,7 +132,7 @@ public class SftpServerServicePublicKeyTest {
   }
 
   private SftpServerService createService() {
-    val context = new SftpContext(fs, releaseService, projectService, authenticator);
+    val context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
     val authenticator = new SftpAuthenticator(context);
     val sshd = new SshServerProvider(config, context, authenticator).get();
     val eventBus = new EventBus();
