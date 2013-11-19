@@ -38,11 +38,11 @@ public class SensitiveRowMarking2Test extends CascadingTestCase {
 
     Fields inputFields =
         new Fields("f1", "f2")
-            .append(MaskedRowGeneration.CONTROL_GENOTYPE_FIELD)
-            .append(MaskedRowGeneration.TUMOUR_GENOTYPE_FIELD)
+            .append(SensitiveRowMarking.CONTROL_GENOTYPE_FIELD)
+            .append(SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD)
             .append(SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD)
             .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
-            .append(MaskedRowGeneration.MUTATED_TO_ALLELE_FIELD)
+            .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
             .append(Masking.NORMALIZER_MASKING_FIELD);
 
     String dummyValue = "dummy";

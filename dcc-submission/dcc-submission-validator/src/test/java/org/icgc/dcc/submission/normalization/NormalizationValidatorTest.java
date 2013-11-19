@@ -56,6 +56,7 @@ import cascading.scheme.local.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.io.Resources;
 import com.typesafe.config.Config;
@@ -75,6 +76,8 @@ public class NormalizationValidatorTest {
       Resources.getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, "reference", FILE_NAME))
           .getFile();
   private static final String OUTPUT_FILE = format("/tmp/dcc_root_dir/%s/%s", COMPONENT_NAME, FILE_NAME);
+
+  private static final Joiner NEWLINE_JOINER = Joiner.on("\n");
 
   private NormalizationValidator normalizationValidator;
 
@@ -159,10 +162,8 @@ public class NormalizationValidatorTest {
     normalizationValidator.validate(mockValidationContext);
 
     // Check data output
-    assertThat(readLines(new File(OUTPUT_FILE), UTF_8))
-        .isEqualTo(
-            readLines(new File(REFERENCE_FILE), UTF_8)
-        );
+    assertThat(NEWLINE_JOINER.join(readLines(new File(OUTPUT_FILE), UTF_8)))
+        .isEqualTo(NEWLINE_JOINER.join(readLines(new File(REFERENCE_FILE), UTF_8)));
 
     // Check internal report
     Mockito.verify(mockDccFileSystem2, Mockito.times(1))
@@ -171,13 +172,13 @@ public class NormalizationValidatorTest {
             Mockito.anyString(),
             Mockito.eq(
                 NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
-                    "10\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
+                    "11\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
                     "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
-                    "2\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
+                    "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
                     "1\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
                     "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
-                    "5\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
-                    "7\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
+                    "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
+                    "8\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
                 ));
   }
 

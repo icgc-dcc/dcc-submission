@@ -21,15 +21,15 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CONTROL_GENOTYPE;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.CONTROLLED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MASKING_FIELD;
+import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.CONTROL_GENOTYPE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD;
+import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD;
+import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD;
 import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -46,7 +46,6 @@ import cascading.operation.Function;
 import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
@@ -54,22 +53,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 
 /**
- * Steps in charge of marking sensitive observations and optionally creating a "masked" counterpart to them.
- * <p>
- * A sensitive observation is one for which the original allele in the mutation does not match that of the reference
- * genome allele at the same position.
- * <p>
- * Split in two: marking and masking
+ * Steps in charge of creating a "masked" counterpart to sensitive rows (see {@link SensitiveRowMarking}).
  */
 @Slf4j
 @RequiredArgsConstructor
 public final class MaskedRowGeneration implements NormalizationStep, OptionalStep {
 
   public static final String STEP_NAME = "mask";
-
-  static final Fields CONTROL_GENOTYPE_FIELD = new Fields(SUBMISSION_OBSERVATION_CONTROL_GENOTYPE);
-  static final Fields TUMOUR_GENOTYPE_FIELD = new Fields(SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE);
-  static final Fields MUTATED_TO_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
 
   @Override
   public String shortName() {
@@ -107,9 +97,11 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
       // https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component?focusedCommentId=53182773#comment-53182773)
       if (getMaskingState(entry) == CONTROLLED) {
         val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
+        val mutatedFromAllele = entry.getString(MUTATED_FROM_ALLELE_FIELD);
         val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
 
-        if (!isTrivialMaskedMutation(referenceGenomeAllele, mutatedToAllele)) {
+        if (!wouldBeSameMutation(referenceGenomeAllele, mutatedFromAllele)
+            && !wouldBeTrivialMutation(referenceGenomeAllele, mutatedToAllele)) {
           log.info("Creating mask for '{}'", entry); // Rare enough that we can
                                                      // log
           val mask = mask(TupleEntries.clone(entry), referenceGenomeAllele);
@@ -155,9 +147,17 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
     }
 
     /**
-     * We don't want to create a masked copy that would be result in a mutation like 'A>A' (useless).
+     * We don't want to create a masked copy that would be result in the same mutation as the original but only without
+     * the control/tumour genotypes erased.
      */
-    private boolean isTrivialMaskedMutation(String referenceGenomeAllele, String mutatedToAllele) {
+    private boolean wouldBeSameMutation(String referenceGenomeAllele, String mutatedFromAllele) {
+      return referenceGenomeAllele.equals(mutatedFromAllele);
+    }
+
+    /**
+     * We don't want to create a masked copy that would result in a mutation like 'A>A' (useless).
+     */
+    private boolean wouldBeTrivialMutation(String referenceGenomeAllele, String mutatedToAllele) {
       return referenceGenomeAllele.equals(mutatedToAllele);
     }
   }

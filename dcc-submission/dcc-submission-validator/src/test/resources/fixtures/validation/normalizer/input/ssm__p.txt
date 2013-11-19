@@ -9,3 +9,4 @@ a10	b5	l	c	e	d	1	A	A/A	A	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m
 a11	b5	l	c	e	d	1	A	A/A	A	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m
 a12	b5	l	c	e	d	1	A	A/A	A	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m
 a1	B	L	C	E	D	1	A	A/A	A	T	A/T	A	O	N	2.0	1.0	X	W	1	1	M
+a11	b11	l	c	e	d	1	A	A/G	A	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m

@@ -20,13 +20,20 @@ package org.icgc.dcc.submission.normalization.steps;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CONTROL_GENOTYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.CONTROLLED;
 import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MASKING_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.Masking.OPEN;
+
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -44,14 +51,13 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 
 /**
- * Steps in charge of marking sensitive observations and optionally creating a "masked" counterpart to them.
+ * Steps in charge of marking sensitive observations.
  * <p>
  * A sensitive observation is one for which the original allele in the mutation does not match that of the reference
  * genome allele at the same position.
- * <p>
- * Split in two: marking and masking
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -60,7 +66,10 @@ public final class SensitiveRowMarking implements NormalizationStep {
   public static final String STEP_NAME = "mark";
 
   static final Fields REFERENCE_GENOME_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
+  static final Fields CONTROL_GENOTYPE_FIELD = new Fields(SUBMISSION_OBSERVATION_CONTROL_GENOTYPE);
+  static final Fields TUMOUR_GENOTYPE_FIELD = new Fields(SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE);
   static final Fields MUTATED_FROM_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
+  static final Fields MUTATED_TO_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
 
   @Override
   public String shortName() {
@@ -70,9 +79,19 @@ public final class SensitiveRowMarking implements NormalizationStep {
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {
     // Mark rows that are sensitive
-    Fields argumentSelector = REFERENCE_GENOME_ALLELE_FIELD.append(MUTATED_FROM_ALLELE_FIELD).append(
-        NORMALIZER_MASKING_FIELD);
-    return new Each(pipe, argumentSelector, new SensitiveRowMarker(), REPLACE);
+    return new Each(
+        pipe,
+
+        // Argument selector
+        REFERENCE_GENOME_ALLELE_FIELD
+            .append(CONTROL_GENOTYPE_FIELD)
+            .append(TUMOUR_GENOTYPE_FIELD)
+            .append(MUTATED_FROM_ALLELE_FIELD)
+            .append(MUTATED_TO_ALLELE_FIELD)
+            .append(NORMALIZER_MASKING_FIELD),
+
+        new SensitiveRowMarker(),
+        REPLACE);
   }
 
   /**
@@ -83,6 +102,8 @@ public final class SensitiveRowMarking implements NormalizationStep {
    */
   @VisibleForTesting
   static final class SensitiveRowMarker extends BaseOperation<Void> implements Function<Void> {
+
+    private static final Splitter ALLELES_SPLITTER = Splitter.on("/");
 
     @VisibleForTesting
     SensitiveRowMarker() {
@@ -102,11 +123,16 @@ public final class SensitiveRowMarking implements NormalizationStep {
       }
 
       val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
+      val controlGenotype = entry.getString(CONTROL_GENOTYPE_FIELD);
+      val tumourGenotype = entry.getString(TUMOUR_GENOTYPE_FIELD);
       val mutatedFromAllele = entry.getString(MUTATED_FROM_ALLELE_FIELD);
+      val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
 
       // Mark if applicable
       final Masking masking;
-      if (isSensitive(referenceGenomeAllele, mutatedFromAllele)) {
+      if (!matchesAllControlAlleles(referenceGenomeAllele, controlGenotype)
+          || !matchesAllTumourAllelesButTo(referenceGenomeAllele, tumourGenotype, mutatedToAllele)) {
+
         log.info("Marking sensitive row: '{}'", entry); // Should be rare enough
         masking = CONTROLLED;
 
@@ -117,12 +143,43 @@ public final class SensitiveRowMarking implements NormalizationStep {
         masking = OPEN;
       }
 
-      functionCall.getOutputCollector().add(
-          new Tuple(referenceGenomeAllele, mutatedFromAllele, masking.getTupleValue()));
+      functionCall.getOutputCollector().add(new Tuple(
+          referenceGenomeAllele,
+          controlGenotype,
+          tumourGenotype,
+          mutatedFromAllele,
+          mutatedToAllele,
+          masking.getTupleValue()));
     }
 
-    private boolean isSensitive(String referenceGenomeAllele, String mutatedFromAllele) {
-      return !referenceGenomeAllele.equals(mutatedFromAllele);
+    private boolean matchesAllControlAlleles(String referenceGenomeAllele, String controlGenotype) {
+      List<String> controlAlleles = newArrayList(ALLELES_SPLITTER.split(controlGenotype));
+      for (String controlAllele : controlAlleles) {
+        if (!referenceGenomeAllele.equals(controlAllele)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private boolean matchesAllTumourAllelesButTo(String referenceGenomeAllele, String tumourGenotype,
+        String mutatedToAllele) {
+      for (String tumourAllele : getTumourAllelesMinusToAllele(tumourGenotype, mutatedToAllele)) {
+        if (!referenceGenomeAllele.equals(tumourAllele)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private List<String> getTumourAllelesMinusToAllele(String tumourGenotype, String mutatedToAllele) {
+      val alleles = newArrayList(ALLELES_SPLITTER.split(tumourGenotype));
+      val removed = alleles.remove(mutatedToAllele);
+      checkState(
+          removed,
+          "'%s' ('%s') is expected to be in '%s' ('%s') as per primary validation rules",
+          mutatedToAllele, MUTATED_TO_ALLELE_FIELD, tumourGenotype, TUMOUR_GENOTYPE_FIELD);
+      return alleles;
     }
   }
 }
