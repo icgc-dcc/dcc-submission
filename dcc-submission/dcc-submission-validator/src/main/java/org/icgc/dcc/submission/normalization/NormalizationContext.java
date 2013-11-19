@@ -29,20 +29,26 @@ import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
 import com.google.common.collect.ImmutableList;
 
 /**
- * 
+ * Common context object passed to all {@link NormalizationStep}s.
  */
 public interface NormalizationContext {
 
+  /**
+   * Returns the list of fields on which to group by in order to detect redundant observations.
+   */
   List<String> getObservationUniqueFields();
 
-  @Builder
   @Value
+  @Builder
   static final class DefaultNormalizationContext implements NormalizationContext {
 
+    /**
+     * See {@link NormalizationContext#getObservationUniqueFields()}.
+     */
     private final ImmutableList<String> observationUniqueFields;
 
     /**
-     * 
+     * Creates the default {@link NormalizationContext}.
      */
     static NormalizationContext getNormalizationContext(Dictionary dictionary, SubmissionFileType type) {
       return DefaultNormalizationContext.builder()

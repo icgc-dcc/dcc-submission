@@ -141,8 +141,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    * TODO: phase out in favour of {@link #getFileSchema(SubmissionFileType)}.
    */
   @JsonIgnore
-  public Optional<FileSchema> getFileSchemaByName(
-      @NonNull final String fileSchemaName) {
+  public Optional<FileSchema> getFileSchemaByName(@NonNull final String fileSchemaName) {
     return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
 
       @Override
@@ -205,14 +204,13 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   public String getFilePattern(SubmissionFileType type) {
     String pattern = null;
     for (val fileSchema : files) {
-      boolean match = type.getTypeName().equals(fileSchema.getName());
+      val match = type.getTypeName().equals(fileSchema.getName());
       if (match) {
         pattern = fileSchema.getPattern();
         break;
       }
     }
-    checkNotNull(pattern, "No file schema found for type '{}'", type);
-    return pattern;
+    return checkNotNull(pattern, "No file schema found for type '{}'", type);
   }
 
   /**

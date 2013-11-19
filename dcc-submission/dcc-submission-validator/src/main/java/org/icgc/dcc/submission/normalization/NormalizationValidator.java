@@ -39,7 +39,7 @@ import org.icgc.dcc.submission.normalization.steps.AlleleMasking;
 import org.icgc.dcc.submission.normalization.steps.FinalCounting;
 import org.icgc.dcc.submission.normalization.steps.InitialCounting;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
-import org.icgc.dcc.submission.normalization.steps.PreMasking;
+import org.icgc.dcc.submission.normalization.steps.PreMarking;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -57,7 +57,8 @@ import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 
 /**
- * TODO See https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component
+ * Entry point for the normalization component. The component is described in
+ * https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component.
  */
 @Slf4j
 @RequiredArgsConstructor(access = PRIVATE)
@@ -66,7 +67,7 @@ public final class NormalizationValidator implements Validator {
   public static final String COMPONENT_NAME = "normalizer";
 
   /**
-   * 
+   * Type that is the focus of normalization (there could be more in the future).
    */
   private static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
 
@@ -76,30 +77,41 @@ public final class NormalizationValidator implements Validator {
   private static final String END_PIPE_NAME = format("%s-end", COMPONENT_NAME);
 
   /**
-   * 
+   * Abstraction for the file system and related operations (temporary, see DCC-1876).
    */
   private final DccFileSystem2 dccFileSystem2;
 
   /**
-   * Subset...TODO
+   * Subset of config that is relevant to the normalization process.
+   * <p>
+   * TODO: bury under {@link NormalizationConfig}.
    */
   private final Config config;
 
   /**
-   * Order typically matters.
+   * Steps of the normalization. Order typically matters.
    */
   private final ImmutableList<NormalizationStep> steps;
 
+  @Override
+  public String getName() {
+    return COMPONENT_NAME;
+  }
+
+  /**
+   * Returns the default instance for the normalization.
+   */
   public static NormalizationValidator getDefaultInstance(DccFileSystem2 dccFileSystem2, Config config) {
     return new NormalizationValidator(
         dccFileSystem2,
         config,
-        new ImmutableList.Builder<NormalizationStep>() // Order matters for some steps
+        // Order matters for some steps
+        new ImmutableList.Builder<NormalizationStep>()
 
             .add(new InitialCounting())
 
             // Must happen before rebuilding the mutation
-            .add(new PreMasking()) // Must happen no matter what
+            .add(new PreMarking()) // Must happen no matter what
             .add(new AlleleMasking(config)) // May be skipped (partially or not)
 
             // Must happen after allele masking
@@ -118,6 +130,7 @@ public final class NormalizationValidator implements Validator {
   public void validate(ValidationContext validationContext) {
     val optional = grabSubmissionFile(FOCUS_TYPE, validationContext);
 
+    // Only perform normalization of there is a file to normalize
     if (optional.isPresent()) {
       String ssmPFile = optional.get();
       log.info("Starting normalization for {} file: '{}'", FOCUS_TYPE, ssmPFile);
@@ -131,24 +144,24 @@ public final class NormalizationValidator implements Validator {
   }
 
   /**
-   * 
+   * Handles the normalization.
    */
-  private void normalize(String fileName, ValidationContext validationContext) {
-    String releaseName = validationContext.getRelease().getName();
-    String projectKey = validationContext.getProjectKey();
+  private void normalize(String fileName, ValidationContext context) {
+    String releaseName = context.getRelease().getName();
+    String projectKey = context.getProjectKey();
 
     // Plan cascade
     val pipes = planCascade(
         DefaultNormalizationContext.getNormalizationContext(
-            validationContext.getDictionary(),
+            context.getDictionary(),
             FOCUS_TYPE));
 
     // Connect cascade
     val connectedCascade = connectCascade(
         pipes,
-        validationContext.getPlatformStrategy(),
+        context.getPlatformStrategy(),
         getFileSchema(
-            validationContext.getDictionary(),
+            context.getDictionary(),
             FOCUS_TYPE),
         releaseName,
         projectKey);
@@ -162,20 +175,21 @@ public final class NormalizationValidator implements Validator {
     // Perform sanity check on counters
     NormalizationReporter.performSanityChecks(connectedCascade);
 
-    // Report results
-    val checker = NormalizationReporter.collectPotentialErrors(config, connectedCascade, fileName);
+    // Report results (error or stats)s
+    val checker = NormalizationReporter.createNormalizationOutcomeChecker(config, connectedCascade, fileName);
     if (checker.isLikelyErroneous()) {
       log.warn("The submission is erroneous from the normalization standpoint: '{}'", checker);
-      NormalizationReporter.reportError(validationContext, checker);
+      NormalizationReporter.reportError(context, checker);
     } else {
       log.info("No errors were encountered during normalization");
       internalStatisticsReport(connectedCascade);
-      externalStatisticsReport(fileName, connectedCascade, validationContext);
+      externalStatisticsReport(fileName, connectedCascade, context);
     }
   }
 
   /**
-   * 
+   * Plans the normalization cascade. It will iterate over the {@link NormalizationStep}s and, if enabled, will have
+   * them extend the main {@link Pipe}.
    */
   private Pipes planCascade(NormalizationContext normalizationContext) {
     Pipe startPipe = new Pipe(START_PIPE_NAME);
@@ -195,12 +209,14 @@ public final class NormalizationValidator implements Validator {
   }
 
   /**
-   * 
+   * Connects the cascade to the input and output.
    */
   private ConnectedCascade connectCascade(
       Pipes pipes,
-      PlatformStrategy platformStrategy, FileSchema fileSchema,
-      String releaseName, String projectKey) {
+      PlatformStrategy platformStrategy,
+      FileSchema fileSchema,
+      String releaseName,
+      String projectKey) {
 
     val flowDef =
         flowDef()
@@ -215,35 +231,27 @@ public final class NormalizationValidator implements Validator {
     Flow<?> flow = platformStrategy // TODO: not re-using the submission's platform strategy
         .getFlowConnector()
         .connect(flowDef);
-    flow.writeDOT(format("/tmp/%s.dot", flow.getName())); // TODO: refactor /tmp
-    flow.writeStepsDOT(format("/tmp/%s-steps.dot", flow.getName()));
+    flow.writeDOT(format("/tmp/%s-%s.dot", projectKey, flow.getName())); // TODO: refactor /tmp
+    flow.writeStepsDOT(format("/tmp/%s-%s-steps.dot", projectKey, flow.getName()));
 
     val cascade = new CascadeConnector()
         .connect(
         cascadeDef()
             .setName(CASCADE_NAME)
             .addFlow(flow));
-    cascade.writeDOT(format("/tmp/%s.dot", cascade.getName()));
+    cascade.writeDOT(format("/tmp/%s-%s.dot", projectKey, cascade.getName()));
 
-    return new ConnectedCascade(releaseName, projectKey, flow, cascade);
+    return new ConnectedCascade(
+        releaseName,
+        projectKey,
+        flow,
+        cascade);
   }
 
   /**
-   * Well-formedness validation has already ensured that we have a properly formatted TSV file.
-   */
-  private Tap<?, ?, ?> getInputTap(PlatformStrategy platformStrategy, FileSchema fileSchema) {
-    return platformStrategy.getSourceTap2(fileSchema);
-  }
-
-  /**
-   * 
-   */
-  private Tap<?, ?, ?> getOutputTap(String releaseName, String projectKey) {
-    return dccFileSystem2.getNormalizationDataOutputTap(releaseName, projectKey);
-  }
-
-  /**
-   * TODO: externalise
+   * Writes the internal normalization report.
+   * <p>
+   * TODO: externalize
    */
   private void internalStatisticsReport(ConnectedCascade connectedCascade) {
     String report = NormalizationReporter.createInternalReportContent(connectedCascade);
@@ -255,7 +263,9 @@ public final class NormalizationValidator implements Validator {
   }
 
   /**
-   * TODO: externalise
+   * Reports statistics for the external report.
+   * <p>
+   * TODO: externalize
    */
   private void externalStatisticsReport(
       String fileName,
@@ -280,7 +290,7 @@ public final class NormalizationValidator implements Validator {
   }
 
   /**
-   * 
+   * Returns the submission file matching the type provided if there is such a file.
    */
   private Optional<String> grabSubmissionFile(SubmissionFileType type, ValidationContext validationContext) {
     return validationContext
@@ -291,11 +301,24 @@ public final class NormalizationValidator implements Validator {
                 .getFilePattern(type));
   }
 
-  @Override
-  public String getName() {
-    return COMPONENT_NAME;
+  /**
+   * Returns the input tap for the cascade. Well-formedness validation has already ensured that we have a properly
+   * formatted TSV file.
+   */
+  private Tap<?, ?, ?> getInputTap(PlatformStrategy platformStrategy, FileSchema fileSchema) {
+    return platformStrategy.getSourceTap2(fileSchema);
   }
 
+  /**
+   * Returns the output tap for the cascade.
+   */
+  private Tap<?, ?, ?> getOutputTap(String releaseName, String projectKey) {
+    return dccFileSystem2.getNormalizationDataOutputTap(releaseName, projectKey);
+  }
+
+  /**
+   * Placeholder for the start and end pipe (to ease future connection as a cascade).
+   */
   @Value
   private static final class Pipes {
 
@@ -303,6 +326,9 @@ public final class NormalizationValidator implements Validator {
     private final Pipe endPipe;
   }
 
+  /**
+   * Placeholder for the connected cascade.
+   */
   @Value
   static final class ConnectedCascade {
 

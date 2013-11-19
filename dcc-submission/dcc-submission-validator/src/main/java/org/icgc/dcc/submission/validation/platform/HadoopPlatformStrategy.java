@@ -201,6 +201,9 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
         path.toUri().getPath());
   }
 
+  /**
+   * Temporary: see DCC-1876
+   */
   @Override
   protected Tap<?, ?, ?> tapSource2(Path path) {
     val scheme = new TextDelimited(

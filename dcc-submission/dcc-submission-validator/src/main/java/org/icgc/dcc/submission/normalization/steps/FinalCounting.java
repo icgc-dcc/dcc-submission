@@ -30,7 +30,9 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 
 /**
- * TODO
+ * Performs final count of observations.
+ * <p>
+ * TODO: merge with {@link InitialCounting} by passing the counter to use.
  */
 public class FinalCounting implements NormalizationStep {
 

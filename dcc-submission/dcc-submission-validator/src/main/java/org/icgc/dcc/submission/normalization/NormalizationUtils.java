@@ -25,16 +25,20 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 /**
- * 
+ * Utility methods for the normalization component.
  */
 public class NormalizationUtils {
 
   /**
-   * 
+   * Returns a {@link FileSchema} from the dictionary and matching the given type. The type is expected to exist in the
+   * dictionary.
    */
   public static FileSchema getFileSchema(Dictionary dictionary, SubmissionFileType type) {
     val optional = dictionary.getFileSchema(type);
-    checkState(optional.isPresent(), "TODO");
+    checkState(
+        optional.isPresent(),
+        "Could not file a file schema in the dictionary for type '%s': '%s'",
+        type, dictionary.getFileSchemaNames());
     return optional.get();
   }
 }

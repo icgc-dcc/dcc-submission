@@ -34,14 +34,14 @@ import cascading.tuple.Tuple;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * 
+ * Step in charge of pre-emptively marking all observations as {@link Masking#OPEN} for the {@link AlleleMasking} step.
  */
 @RequiredArgsConstructor
-public final class PreMasking implements NormalizationStep {
+public final class PreMarking implements NormalizationStep {
 
   @Override
   public String shortName() {
-    return "pre-masking";
+    return "pre-marking";
   }
 
   @Override
@@ -49,18 +49,18 @@ public final class PreMasking implements NormalizationStep {
     return new Each(
         pipe,
         ALL,
-        new PreMaskingMarker(),
+        new PreMarker(),
         ALL);
   }
 
   /**
-   * 
+   * Marks all observations as {@link Masking#OPEN}.
    */
   @VisibleForTesting
-  static final class PreMaskingMarker extends BaseOperation<Void> implements Function<Void> {
+  static final class PreMarker extends BaseOperation<Void> implements Function<Void> {
 
     @VisibleForTesting
-    PreMaskingMarker() {
+    PreMarker() {
       super(Masking.NORMALIZER_MASKING_FIELD);
     }
 

@@ -205,7 +205,9 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   /**
-   * TODO: See DCC-1876.
+   * TODO: This is temporary until DCC-1876 is addressed.
+   * <p>
+   * TODO: address hard-codings
    */
   private void bindNewTemporaryFileSystemAbstraction() {
     bind(DccFileSystem2.class).toProvider(new Provider<DccFileSystem2>() {

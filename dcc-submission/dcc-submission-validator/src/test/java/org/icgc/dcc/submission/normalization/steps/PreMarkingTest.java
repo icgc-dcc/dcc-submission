@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.submission.normalization.steps.PreMasking.PreMaskingMarker;
+import org.icgc.dcc.submission.normalization.steps.PreMarking.PreMarker;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
 import org.junit.Test;
 
@@ -31,11 +31,11 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public class PreMaskingTest extends CascadingTestCase {
+public class PreMarkingTest extends CascadingTestCase {
 
   @Test
   public void test_cascading_PreMaskingMarker() {
-    Function<?> function = new PreMaskingMarker();
+    Function<?> function = new PreMarker();
 
     Fields inputFields = new Fields("f1", "f2");
     String dummyValue = "dummy";

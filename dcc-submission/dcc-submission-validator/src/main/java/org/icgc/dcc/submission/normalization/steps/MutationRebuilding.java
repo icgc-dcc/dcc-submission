@@ -24,6 +24,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
 import lombok.val;
 
+import org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
@@ -40,20 +41,21 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 
 /**
- * TODO
+ * Step in charge of rebuilding {@link NormalizerFieldNames#NORMALIZER_MUTATION} field.
  */
 public final class MutationRebuilding implements NormalizationStep {
 
   static final Fields MUTATED_FROM_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
   static final Fields MUTATED_TO_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
   static final Fields MUTATION_FIELD = new Fields(NORMALIZER_MUTATION);
+
   /**
    * Short name for the step.
    */
   private static final String SHORT_NAME = "mutation";
 
   /**
-   * 
+   * Joiner to use to concatenate the "from" and "to" allele fields.
    */
   private static final Joiner MUTATION_JOINER = on(">");
 
@@ -71,6 +73,9 @@ public final class MutationRebuilding implements NormalizationStep {
         ALL);
   }
 
+  /**
+   * Rebuilds the mutation by concatenating the "from" and "to" allele fields.
+   */
   @VisibleForTesting
   static final class MutationRebuilder extends BaseOperation<Void> implements Function<Void> {
 

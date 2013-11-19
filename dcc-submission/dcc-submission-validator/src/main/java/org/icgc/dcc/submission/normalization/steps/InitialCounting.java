@@ -33,7 +33,9 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
 /**
- * TODO
+ * Performs initial count of observations.
+ * <p>
+ * TODO: extract the count unique in a separate step
  */
 public final class InitialCounting implements NormalizationStep {
 
