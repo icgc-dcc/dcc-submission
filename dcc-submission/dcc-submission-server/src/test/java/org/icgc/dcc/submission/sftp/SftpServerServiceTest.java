@@ -143,6 +143,7 @@ public class SftpServerServiceTest {
     when(config.getInt("sftp.nio-workers")).thenReturn(NIO_WORKERS);
 
     // Mock authentication
+    when(subject.getPrincipal()).thenReturn("test-user");
     when(authenticator.authenticate(anyString(), (char[]) any(), anyString())).thenReturn(subject);
     when(authenticator.getSubject()).thenReturn(subject);
 

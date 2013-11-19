@@ -133,4 +133,5 @@ public class ReferenceGenomeValidatorConcurrencyTest {
       List<Callable<ValidationContext>> callables) {
     return allAsList((List) executor.invokeAll(callables));
   }
+
 }

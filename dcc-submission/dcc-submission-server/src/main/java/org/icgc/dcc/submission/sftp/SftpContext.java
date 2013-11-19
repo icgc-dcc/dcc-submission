@@ -124,6 +124,11 @@ public class SftpContext {
     return getReleaseFileSystem().isSystemDirectory(path);
   }
 
+  public void notifyFileTransfered(Path path) {
+    val userName = (String) getCurrentUser().getPrincipal();
+    log.info("'{}' finished transferring file '{}'", userName, path);
+  }
+
   private Subject getCurrentUser() {
     return authenticator.getSubject();
   }

@@ -19,16 +19,18 @@ package org.icgc.dcc.submission.sftp.fs;
 
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
+import org.icgc.dcc.submission.sftp.SftpContext;
+
 public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
-  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
-    super(root, directoryName);
+  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
+    super(context, root, directoryName);
   }
 
   @Override
-  public void notifyModified() {
+  protected void notifyModified() {
     try {
-      getParentFile().systemFilesNotifyModified();
+      context.resetSubmissions();
     } catch (Exception e) {
       handleException(e);
     }

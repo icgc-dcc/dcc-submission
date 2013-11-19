@@ -25,26 +25,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import lombok.AllArgsConstructor;
 import lombok.Delegate;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.submission.sftp.SftpContext;
 
 @Slf4j
+@AllArgsConstructor
 public abstract class HdfsSshFile implements SshFile {
 
   protected static final String SEPARATOR = "/";
 
+  @NonNull
+  protected final SftpContext context;
+  @NonNull
   protected Path path;
+  @NonNull
   protected final FileSystem fs;
-
-  protected HdfsSshFile(Path path, FileSystem fs) {
-    this.path = path;
-    this.fs = fs;
-  }
 
   @Override
   public boolean doesExist() {
@@ -160,8 +163,12 @@ public abstract class HdfsSshFile implements SshFile {
 
         @Override
         public void close() throws IOException {
-          log.info("Submission file closed: '{}'", path);
-          delegate.close();
+          try {
+            log.info("Submission file closed: '{}'", path);
+            context.notifyFileTransfered(path);
+          } finally {
+            delegate.close();
+          }
         }
 
       };
