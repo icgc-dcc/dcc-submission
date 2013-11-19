@@ -80,24 +80,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
   public void visit(Relation relation) {
     FileSchema currentSchema = getCurrentSchema();
     List<FileSchema> afferentStrictFileSchemata = currentSchema.getBidirectionalAfferentFileSchemata(dictionary);
-    if (currentSchema.getRole() != FileSchemaRole.SYSTEM //
-        && isReAnnotatedFile(currentSchema.getName()) == false) { // skip checking relations in file to be re-annotated
+    if (currentSchema.getRole() != FileSchemaRole.SYSTEM) { // skip checking relations in file to be re-annotated
       collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
     }
-  }
-
-  /**
-   * Determines whether the file schema under scrutiny is that of a file due for reannotation.
-   * 
-   * If so, its relation check is to be skipped but its relation cannot be removed from the dictionary as the loader
-   * depends on it (at least for now). See task DCC-764 for more information.
-   */
-  private boolean isReAnnotatedFile(String fileSchemaName) {
-    final String REANNOTATED_FILE_SCHEMA_NAME = "ssm_s";
-    List<String> fileSchemaNames = dictionary.getFileSchemaNames();
-    checkState(fileSchemaNames // make sure ssm_s hasn't been renamed
-        .contains(REANNOTATED_FILE_SCHEMA_NAME), "file schema names: %s", fileSchemaNames);
-    return REANNOTATED_FILE_SCHEMA_NAME.equals(fileSchemaName);
   }
 
   public static class RelationPlanElement implements ExternalPlanElement {
@@ -294,8 +279,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     @Override
-    public void operate(@SuppressWarnings("rawtypes")
-    FlowProcess flowProcess, BufferCall<Void> bufferCall) {
+    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       TupleEntry group = bufferCall.getGroup();
 
@@ -380,8 +364,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
      * For instance specimen -> donor, specimen would be on the LHS and donor would be on the RHS.
      */
     @Override
-    public void operate(@SuppressWarnings("rawtypes")
-    FlowProcess flowProcess, BufferCall<Void> bufferCall) {
+    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       while (iter.hasNext()) {
         TupleEntry entry = iter.next();

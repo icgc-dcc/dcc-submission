@@ -203,12 +203,24 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         #<br><br>
         #<em>#{source.parameters?.VALUE}</em>
         #"""
-    REFERENCE_GENOME_ERROR:
+    REFERENCE_GENOME_MISMATCH_ERROR:
       name: "Reference genome error"
       description: (source) ->
         """
-        Submitted reference genome allele does not match allele in
-         <em>#{source.parameters?.EXPECTED}</em>
+        Sequence specified in reference_genome_allele does not match
+        the corresponding sequence in the reference genome at:
+        chromosome_start - chromosome_end
+        """
+        #"""
+        #Submitted reference genome allele does not match allele in
+        # <em>#{source.parameters?.EXPECTED}</em>
+        #"""
+    REFERENCE_GENOME_INSERTION_ERROR:
+      name: "Reference genome error"
+      description: (source) ->
+        """
+        For an insertion, there is no corresponding sequence in the
+        reference genome, the only allowed value is a dash: <em>-</em>
         """
     TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR:
       name: "Excessive amount of sensitive data error"

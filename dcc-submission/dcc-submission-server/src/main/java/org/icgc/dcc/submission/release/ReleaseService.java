@@ -136,12 +136,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if (!NameValidator.validateEntityName(initRelease.getName())) {
       throw new InvalidNameException(initRelease.getName());
     }
+
     String dictionaryVersion = initRelease.getDictionaryVersion();
+    log.info("Dictionary version used: '{}'", dictionaryVersion);
+
     if (dictionaryVersion == null) {
       throw new ReleaseException("Dictionary version must not be null!");
     } else if (getDictionaryForVersion(dictionaryVersion) == null) {
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
+
     // Just use name and dictionaryVersion from incoming json
     Release nextRelease = new Release(initRelease.getName());
     nextRelease.setDictionaryVersion(dictionaryVersion);
@@ -839,9 +843,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * To notify us that an update failed.
    */
   private void notifyUpdateError(String filter, String setValues, String unsetValues) {
-    log.error("Unable to update the release (maybe a lock problem)?", new IllegalStateException());
+    val id = System.currentTimeMillis();
+    log.error("Unable to update the release (id: " + id + ") (maybe a lock problem)?", new IllegalStateException());
 
-    String message = format("filter: %s, set values: %s, unset values: %s", filter, setValues, unsetValues);
+    String message = format("filter: %s, set values: %s, unset values: %s, id: %s", filter, setValues, unsetValues, id);
     mailService.sendSupportProblem("Automatic email - Failure update", message);
   }
 

@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static org.icgc.dcc.submission.normalization.NormalizationConfig.NORMALIZER_CONFIG_PARAM;
+import static com.google.common.base.Preconditions.checkState;
 import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -25,6 +25,7 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.normalization.NormalizationConfig;
 import org.icgc.dcc.submission.normalization.NormalizationValidator;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
@@ -45,7 +46,6 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -58,9 +58,10 @@ import com.typesafe.config.Config;
 public class ValidationModule extends AbstractDccModule {
 
   /**
-   * Config property name.
+   * Config property names.
    */
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
+  private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
 
   /**
    * Default value for maximum number of concurrent validations.
@@ -93,9 +94,8 @@ public class ValidationModule extends AbstractDccModule {
       }
 
       private int getMaxValidating() {
-        return config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
-            config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
-            DEFAULT_MAX_VALIDATING;
+        val path = MAX_VALIDATING_CONFIG_PARAM;
+        return config.hasPath(path) ? config.getInt(path) : DEFAULT_MAX_VALIDATING;
       }
 
     }).in(Singleton.class);
@@ -158,7 +158,24 @@ public class ValidationModule extends AbstractDccModule {
     // Order: Syntactic, primary then semantic
     bindValidator(validators, FirstPassValidator.class);
     bindValidator(validators, PrimaryValidator.class);
-    bindValidator(validators, ReferenceGenomeValidator.class);
+    bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
+
+      @Inject
+      private Config config;
+
+      @Override
+      public ReferenceGenomeValidator get() {
+        return new ReferenceGenomeValidator(getFastaFilePath());
+      }
+
+      private String getFastaFilePath() {
+        val path = FASTA_FILE_PATH_CONFIG_PARAM;
+        checkState(config.hasPath(path), "'%s' is should be present in the config", path);
+
+        return config.getString(path);
+      }
+
+    });
     bindValidator(validators, new Provider<NormalizationValidator>() {
 
       @Inject
@@ -169,10 +186,13 @@ public class ValidationModule extends AbstractDccModule {
 
       @Override
       public NormalizationValidator get() {
-        return NormalizationValidator.getDefaultInstance(
-            dccFileSystem2,
-            config.getConfig(NORMALIZER_CONFIG_PARAM));
+        return NormalizationValidator.getDefaultInstance(dccFileSystem2, getNormalizationConfig());
       }
+
+      private Config getNormalizationConfig() {
+        return config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM);
+      }
+
     });
   }
 
@@ -200,26 +220,23 @@ public class ValidationModule extends AbstractDccModule {
 
       @Override
       public DccFileSystem2 get() {
-        return new DccFileSystem2(
-            fileSystem,
-            getRootDir(config),
-            usesHadoop(config));
+        return new DccFileSystem2(fileSystem, getRootDir(), isHdfs());
       }
 
-      public String getRootDir(Config config) {
-        Preconditions.checkState(
-            config.hasPath("fs.root"),
-            "fs.root should be present in the config");
-        return config.getString("fs.root");
+      private String getRootDir() {
+        val path = "fs.root";
+        checkState(config.hasPath(path), "'%s' should be present in the config", path);
+
+        return config.getString(path);
       }
 
-      public boolean usesHadoop(Config config) {
-        Preconditions.checkState(
-            config.hasPath("fs.url"),
-            "fs.url should be present in the config");
-        return config.getString("fs.url")
-            .startsWith("hdfs");
+      private boolean isHdfs() {
+        val path = "fs.url";
+        checkState(config.hasPath(path), "'%s' should be present in the config", path);
+
+        return config.getString(path).startsWith("hdfs");
       }
+
     });
   }
 

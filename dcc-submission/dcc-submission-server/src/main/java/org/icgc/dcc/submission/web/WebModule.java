@@ -23,10 +23,11 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationRequestFilter;
+import org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter;
 import org.icgc.dcc.submission.web.mapper.DuplicateNameExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.InvalidNameExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.ReleaseExceptionMapper;
+import org.icgc.dcc.submission.web.mapper.UnhandledExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.UnsatisfiedPreconditionExceptionMapper;
 import org.icgc.dcc.submission.web.provider.ValidatingJacksonJsonProvider;
 import org.icgc.dcc.submission.web.resource.CodeListResource;
@@ -54,6 +55,7 @@ public class WebModule extends AbstractModule {
    * resources.
    */
   public static class RootResources {
+
     @SuppressWarnings("unchecked")
     @Inject
     public RootResources(ResourceConfig config) {
@@ -65,14 +67,14 @@ public class WebModule extends AbstractModule {
       config.addClasses(NextReleaseResource.class);
       config.addClasses(DictionaryResource.class);
       config.addClasses(CodeListResource.class);
-      config.addClasses(BasicHttpAuthenticationRequestFilter.class);
+      config.addClasses(BasicHttpAuthenticationFilter.class);
       config.addClasses(UnsatisfiedPreconditionExceptionMapper.class);
       config.addClasses(ReleaseExceptionMapper.class);
       config.addClasses(InvalidNameExceptionMapper.class);
       config.addClasses(DuplicateNameExceptionMapper.class);
       config.addClasses(UserResource.class);
       config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment (see DCC-819)
+      config.addClasses(UnhandledExceptionMapper.class);
     }
   }
-
 }

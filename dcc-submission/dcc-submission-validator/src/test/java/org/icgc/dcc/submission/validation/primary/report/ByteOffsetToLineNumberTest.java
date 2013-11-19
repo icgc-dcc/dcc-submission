@@ -34,10 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.MiniHadoop;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -49,20 +49,17 @@ public class ByteOffsetToLineNumberTest {
    */
   private static final String TEST_DIR = "src/test/resources/fixtures/validation/line-numbers";
 
-  MiniHadoop hadoop;
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
+
+  FileSystem fileSystem;
 
   @Before
   @SneakyThrows
   public void setUp() {
-    hadoop = new MiniHadoop(new Configuration(), 1, 1, new File("/tmp/hadoop"));
+    fileSystem = FileSystem.getLocal(new Configuration());
 
-    ByteOffsetToLineNumber.fileSystem = hadoop.getFileSystem();
-  }
-
-  @After
-  @SneakyThrows
-  public void tearDown() {
-    hadoop.close();
+    ByteOffsetToLineNumber.fileSystem = fileSystem;
   }
 
   @Test
@@ -74,8 +71,8 @@ public class ByteOffsetToLineNumberTest {
       val offsets = expected.keySet();
       log.info("Expected: {}", expected);
 
-      Path path = new Path("/hdfs/" + file.getName());
-      hadoop.getFileSystem().copyFromLocalFile(new Path(file.toURI()), path);
+      Path path = new Path(tmp.newFile(file.getName()).getAbsolutePath());
+      fileSystem.copyFromLocalFile(new Path(file.toURI()), path);
 
       // Exercise
       val actual = ByteOffsetToLineNumber.convert(path, offsets, false);

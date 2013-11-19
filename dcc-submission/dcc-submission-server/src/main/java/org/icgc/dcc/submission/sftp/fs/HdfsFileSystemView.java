@@ -99,7 +99,7 @@ public class HdfsFileSystemView implements FileSystemView {
       throws FileNotFoundException {
     BaseDirectoryHdfsSshFile submissionDirectory = getSubmissionDirectory(file, path.getParent(), root);
     String submissionFileName = path.getName();
-    FileHdfsSshFile submissionFile = new FileHdfsSshFile(submissionDirectory, submissionFileName);
+    FileHdfsSshFile submissionFile = new FileHdfsSshFile(context, submissionDirectory, submissionFileName);
 
     if (!submissionFile.doesExist()) {
       new FileNotFoundException("Invalid file path: " + file);
@@ -132,9 +132,9 @@ public class HdfsFileSystemView implements FileSystemView {
   private BaseDirectoryHdfsSshFile getHdfsSshFile(RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
     if (context.isSystemDirectory(path)) {
-      result = new SystemFileHdfsSshFile(root, path.getName());
+      result = new SystemFileHdfsSshFile(context, root, path.getName());
     } else {
-      result = new SubmissionDirectoryHdfsSshFile(root, path.getName());
+      result = new SubmissionDirectoryHdfsSshFile(context, root, path.getName());
     }
 
     return result;

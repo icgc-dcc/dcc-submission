@@ -81,7 +81,6 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
         ssmP.getFieldNames());
     observationUniqueFields.remove(
         getFieldName(ANALYSIS_ID_FIELD));
-    observationUniqueFields.remove("mutation"); // Hack
 
     return ImmutableList.<String> copyOf(observationUniqueFields);
   }

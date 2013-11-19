@@ -120,7 +120,7 @@ public class BaseMorphiaServiceTest {
 
       });
     } finally {
-      verify(mailService).sendAdminProblem(argThat(new Contains(description)));
+      verify(mailService).sendSupportProblem(argThat(new Contains(description)), argThat(new Contains(description)));
     }
   }
 
