@@ -67,15 +67,14 @@ public class NormalizationValidatorTest {
   private static final String RELEASE_NAME = "dummy_release";
   private static final String PROJECT_NAME = "dummy_project";
 
-  private static final String INPUT_FILE_NAME = "input.tsv";
-  private static final String OUTPUT_FILE_NAME = "output.tsv";
-  private static final String REFERENCE_FILE_NAME = "reference.tsv";
+  private static final String FILE_NAME = "ssm__p.txt";
 
   private static final String INPUT_FILE =
-      Resources.getResource(format("fixtures/validation/%s/%s", COMPONENT_NAME, INPUT_FILE_NAME)).getFile();
+      Resources.getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, "input", FILE_NAME)).getFile();
   private static final String REFERENCE_FILE =
-      Resources.getResource(format("fixtures/validation/%s/%s", COMPONENT_NAME, REFERENCE_FILE_NAME)).getFile();
-  private static final String OUTPUT_FILE = format("/tmp/dcc_root_dir/%s/%s", COMPONENT_NAME, OUTPUT_FILE_NAME);
+      Resources.getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, "reference", FILE_NAME))
+          .getFile();
+  private static final String OUTPUT_FILE = format("/tmp/dcc_root_dir/%s/%s", COMPONENT_NAME, FILE_NAME);
 
   private NormalizationValidator normalizationValidator;
 
@@ -121,17 +120,17 @@ public class NormalizationValidatorTest {
     when(mockFileSchema.getFieldNames())
         .thenReturn(
             newArrayList(
-                "analysis_id", "analyzed_sample_id", "chromosome", "chromosome_end", "chromosome_start",
-                "chromosome_strand", "control_genotype", "db_xref", "expressed_allele", "is_annotated", "mutation",
-                "mutation_id", "mutation_type", "note", "probability", "quality_score", "read_count",
-                "reference_genome_allele", "refsnp_allele", "refsnp_strand", "tumour_genotype", "uri",
-                "verification_platform", "verification_status", "xref_ensembl_var_id")
+                "analysis_id", "analyzed_sample_id", "mutation_type", "chromosome", "chromosome_start",
+                "chromosome_end", "chromosome_strand", "reference_genome_allele", "control_genotype",
+                "mutated_from_allele", "mutated_to_allele", "tumour_genotype", "expressed_allele", "quality_score",
+                "probability", "total_read_count", "mutant_allele_read_count", "verification_status",
+                "verification_platform", "biological_validation_status", "biological_validation_platform", "note")
         );
     when(mockDictionary.getFileSchema(SubmissionFileType.SSM_P_TYPE))
         .thenReturn(
             Optional.<FileSchema> of(mockFileSchema));
     when(mockSubmissionDirectory.getFile(Mockito.anyString()))
-        .thenReturn(Optional.<String> of(OUTPUT_FILE_NAME));
+        .thenReturn(Optional.<String> of(FILE_NAME));
 
     mockInputTap();
     mockOutputTap();

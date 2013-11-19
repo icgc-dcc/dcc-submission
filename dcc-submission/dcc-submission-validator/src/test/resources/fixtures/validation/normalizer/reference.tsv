@@ -1,8 +1,0 @@
-analysis_id	analyzed_sample_id	chromosome	chromosome_end	chromosome_start	chromosome_strand	control_genotype	db_xref	expressed_allele	is_annotated	mutation_id	mutation_type	note	probability	quality_score	read_count	reference_genome_allele	refsnp_allele	refsnp_strand	tumour_genotype	uri	verification_platform	verification_status	xref_ensembl_var_id	masking	mutation	observation_id
-a1	B	C	D	E	F	A/A		H	I	J	L	M	N	O	P	A	R	S	A/T	V	W	X	Y	OPEN	A>T	v1
-a1	b1	c	d	e	f	A/A		h	i	j	l	m	n	o	p	A	r	s	A/T	v	w	x	y	OPEN	A>T	v2
-a2	b2	c	d	e	f			h	i	j	l	m	n	o	p	A	r	s		v	w	x	y	MASKED	A>T	v3
-a2	b2	c	d	e	f	A/G		h	i	j	l	m	n	o	p	A	r	s	A/T	v	w	x	y	CONTROLLED	G>T	v4
-a5	b3	c	d	e	f	A/A		h	i	j	l	m	n	o	p	A	r	s	A/T	v	w	x	y	OPEN	A>T	v5
-a7	b4	c	d	e	f	A/G		h	i	j	l	m	n	o	p	T	r	s	A/T	v	w	x	y	CONTROLLED	G>T	v6
-a10	b5	c	d	e	f	A/A		h	i	j	l	m	n	o	p	A	r	s	A/T	v	w	x	y	OPEN	A>T	v7
