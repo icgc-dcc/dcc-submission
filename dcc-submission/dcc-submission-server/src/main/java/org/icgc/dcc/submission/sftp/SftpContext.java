@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -65,6 +66,8 @@ public class SftpContext {
   private final ProjectService projectService;
   @NonNull
   private final UsernamePasswordAuthenticator authenticator;
+  @NonNull
+  private final MailService mailService;
 
   public boolean authenticate(String username, String password) {
     return authenticator.authenticate(username, password.toCharArray(), null) != null;
@@ -124,9 +127,10 @@ public class SftpContext {
     return getReleaseFileSystem().isSystemDirectory(path);
   }
 
-  public void notifyFileTransfered(Path path) {
-    val userName = (String) getCurrentUser().getPrincipal();
-    log.info("'{}' finished transferring file '{}'", userName, path);
+  public void notifyFileTransferred(Path path) {
+    val user = (String) getCurrentUser().getPrincipal();
+    log.info("'{}' finished transferring file '{}'", user, path);
+    mailService.sendFileTransferred(user, path.toUri().toString());
   }
 
   private Subject getCurrentUser() {

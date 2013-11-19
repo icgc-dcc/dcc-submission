@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -54,14 +55,14 @@ public class FileHdfsSshFileTest {
   SubmissionDirectory submissionDirectory;
   @Mock
   ReleaseFileSystem releaseFileSystem;
-
   @Mock
   ProjectService projectService;
   @Mock
   ReleaseService releaseService;
-
   @Mock
   UsernamePasswordAuthenticator authenticator;
+  @Mock
+  MailService mailService;
 
   SftpContext context;
   SubmissionDirectoryHdfsSshFile directory;
@@ -91,7 +92,7 @@ public class FileHdfsSshFileTest {
     when(submissionDirectory.getSubmission()).thenReturn(submission);
 
     // Create shared context
-    context = new SftpContext(fs, releaseService, projectService, authenticator);
+    context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
 
     RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context);
     String directoryName = PROJECT_KEY;

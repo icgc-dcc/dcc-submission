@@ -50,6 +50,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.SshServer;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.ProjectServiceException;
 import org.icgc.dcc.submission.core.model.Project;
@@ -105,7 +106,6 @@ public class SftpServerServiceTest {
   Subject subject;
   @Mock
   UsernamePasswordAuthenticator authenticator;
-
   @Mock
   Release release;
   @Mock
@@ -114,18 +114,18 @@ public class SftpServerServiceTest {
   Project project;
   @Mock
   NextRelease nextRelease;
-
   @Mock
   DccFileSystem fs;
   @Mock
   SubmissionDirectory submissionDirectory;
   @Mock
   ReleaseFileSystem releaseFileSystem;
-
   @Mock
   ProjectService projectService;
   @Mock
   ReleaseService releaseService;
+  @Mock
+  MailService mailService;
 
   SftpServerService service;
   File root;
@@ -413,7 +413,7 @@ public class SftpServerServiceTest {
   }
 
   private SftpServerService createService() {
-    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
+    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
     SftpAuthenticator authenticator = new SftpAuthenticator(context);
     SshServer sshd = new SshServerProvider(config, context, authenticator).get();
     EventBus eventBus = new EventBus();

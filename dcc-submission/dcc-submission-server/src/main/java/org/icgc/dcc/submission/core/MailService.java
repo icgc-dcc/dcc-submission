@@ -99,6 +99,11 @@ public class MailService {
         message);
   }
 
+  public void sendFileTransferred(String user, String path) {
+    sendNotification(format("User '%s' finished transferring file '%s'",
+        user, path));
+  }
+
   public void sendValidationStarted(String releaseName, String projectKey, List<String> emails) {
     sendNotification(format("Validation started for release '%s' project '%s' (on behalf of '%s')",
         releaseName, projectKey, emails));
@@ -122,7 +127,7 @@ public class MailService {
           state == ERROR ? template(MAIL_ERROR_BODY, projectKey, state) : //
           state == VALID ? template(MAIL_VALID_BODY, projectKey, state, projectKey, projectKey) : //
           state == INVALID ? template(MAIL_INVALID_BODY, projectKey, state, projectKey, projectKey) : //
-          format("Unexpected validation state '%s' prevented loading email text. Please see server log.", state));
+          format("Unexpected validation state '%s' prevented loading email text.", state));
 
       Transport.send(message);
       log.info("Emails for '{}' sent to '{}'", projectKey, emails);
@@ -151,7 +156,7 @@ public class MailService {
     send(
         from(MAIL_FROM),
         to(MAIL_SUPPORT_RECIPIENT),
-        subject,
+        "Notification: " + subject,
         subject);
   }
 

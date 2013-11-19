@@ -165,7 +165,7 @@ public abstract class HdfsSshFile implements SshFile {
         public void close() throws IOException {
           try {
             log.info("Submission file closed: '{}'", path);
-            context.notifyFileTransfered(path);
+            context.notifyFileTransferred(path);
           } finally {
             delegate.close();
           }
