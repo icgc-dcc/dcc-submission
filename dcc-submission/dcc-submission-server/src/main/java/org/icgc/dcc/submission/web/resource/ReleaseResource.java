@@ -73,14 +73,11 @@ public class ReleaseResource {
   @PUT
   public Response initialize(
 
-      @Valid
-      Release release,
+      @Valid Release release,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -115,8 +112,7 @@ public class ReleaseResource {
   @GET
   @JsonView(Digest.class)
   public Response getReleases(
-      @Context
-      SecurityContext securityContext)
+      @Context SecurityContext securityContext)
   {
     log.debug("Getting (visible) releases");
     if (hasReleaseViewPrivilege(securityContext) == false) {
@@ -132,11 +128,9 @@ public class ReleaseResource {
   @GET
   @Path("{name}")
   public Response getReleaseByName(
-      @PathParam("name")
-      String name,
+      @PathParam("name") String name,
 
-      @Context
-      SecurityContext securityContext)
+      @Context SecurityContext securityContext)
   {
     log.debug("Getting release using: {}", name);
     Subject subject = getSubject(securityContext);
@@ -152,14 +146,11 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}")
   public Response getSubmission(
-      @PathParam("name")
-      String releaseName,
+      @PathParam("name") String releaseName,
 
-      @PathParam("projectKey")
-      String projectKey,
+      @PathParam("projectKey") String projectKey,
 
-      @Context
-      SecurityContext securityContext)
+      @Context SecurityContext securityContext)
   {
     log.debug("Getting detailed submission: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
@@ -178,14 +169,11 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}/report")
   public Response getSubmissionReport(
-      @PathParam("name")
-      String releaseName,
+      @PathParam("name") String releaseName,
 
-      @PathParam("projectKey")
-      String projectKey,
+      @PathParam("projectKey") String projectKey,
 
-      @Context
-      SecurityContext securityContext)
+      @Context SecurityContext securityContext)
   {
     log.debug("Getting submission report for: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
@@ -207,17 +195,13 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}")
   public Response getSchemaReport(
-      @PathParam("name")
-      String releaseName,
+      @PathParam("name") String releaseName,
 
-      @PathParam("projectKey")
-      String projectKey,
+      @PathParam("projectKey") String projectKey,
 
-      @PathParam("schema")
-      String schema,
+      @PathParam("schema") String schema,
 
-      @Context
-      SecurityContext securityContext)
+      @Context SecurityContext securityContext)
   {
     log.debug("Getting schema report for: {}.{}.{}", new Object[] { releaseName, projectKey, schema });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
@@ -235,20 +219,15 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
   public Response getFieldReport(
-      @PathParam("name")
-      String releaseName,
+      @PathParam("name") String releaseName,
 
-      @PathParam("projectKey")
-      String projectKey,
+      @PathParam("projectKey") String projectKey,
 
-      @PathParam("schema")
-      String schema,
+      @PathParam("schema") String schema,
 
-      @PathParam("field")
-      String field,
+      @PathParam("field") String field,
 
-      @Context
-      SecurityContext securityContext)
+      @Context SecurityContext securityContext)
   {
     log.debug("Getting field report for: {}.{}.{}.{}", new Object[] { releaseName, projectKey, schema, field });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
@@ -277,14 +256,11 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}/files")
   public Response getSubmissionFileList(
-      @PathParam("name")
-      String releaseName,
+      @PathParam("name") String releaseName,
 
-      @PathParam("projectKey")
-      String projectKey,
+      @PathParam("projectKey") String projectKey,
 
-      @Context
-      SecurityContext securityContext)
+      @Context SecurityContext securityContext)
   {
     log.debug("Getting submission file list for release {} and project {}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {

@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
@@ -30,6 +31,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -185,6 +187,13 @@ public final class TestUtils {
     return dictionaryNode.get("version").asText();
   }
 
+  public static String replaceDictionaryVersion(String dictionary, String oldVersion, String newVersion) {
+    return dictionary
+        .replaceAll(
+            "\"version\": *\"" + Pattern.quote(oldVersion) + "\"",
+            "\"version\": \"" + newVersion + "\"");
+  }
+
   public static Builder build(Client client, String path) {
     return client
         .target(BASEURI)
@@ -198,7 +207,7 @@ public final class TestUtils {
     banner();
     log.info("GET {}", endPoint);
     banner();
-    return build(client, endPoint).get();
+    return logPotentialErrors(build(client, endPoint).get());
   }
 
   /**
@@ -210,7 +219,7 @@ public final class TestUtils {
     banner();
     log.info("POST {} {}", endPoint, abbreviate(payload, 1000));
     banner();
-    return build(client, endPoint).post(Entity.entity(payload, APPLICATION_JSON));
+    return logPotentialErrors(build(client, endPoint).post(Entity.entity(payload, APPLICATION_JSON)));
   }
 
   public static Response put(Client client, String endPoint, String payload) {
@@ -219,14 +228,24 @@ public final class TestUtils {
     banner();
     log.info("PUT {} {}", endPoint, abbreviate(payload, 1000));
     banner();
-    return build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON));
+    return logPotentialErrors(build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON)));
   }
 
   public static Response delete(Client client, String endPoint) {
     banner();
     log.info("DELETE {}", endPoint);
     banner();
-    return build(client, endPoint).delete();
+    return logPotentialErrors(build(client, endPoint).delete());
+  }
+
+  private static Response logPotentialErrors(Response response) {
+    int status = response.getStatus();
+    if (status < 200 || status >= 300) { // TODO: use Response.fromStatusCode(code).getFamily() rather
+      boolean buffered = response.bufferEntity();
+      checkState(buffered);
+      log.warn("There was an erroneous reponse: '{}', '{}'", status, asString(response));
+    }
+    return response;
   }
 
   public static String asString(Response response) {
