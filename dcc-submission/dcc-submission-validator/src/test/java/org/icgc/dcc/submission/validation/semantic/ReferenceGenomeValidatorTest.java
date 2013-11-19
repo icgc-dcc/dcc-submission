@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import lombok.val;
+import net.sf.picard.PicardException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -86,6 +87,14 @@ public class ReferenceGenomeValidatorTest {
   public void testLongSequenceInCorrect() {
     String ref = validator.getReferenceGenomeSequence(basesWrong[0], basesWrong[1], basesWrong[2]);
     assertThat(ref).isNotEqualTo(basesWrong[3]);
+  }
+
+  @Test(expected = PicardException.class)
+  public void testSequenceOutOfRange() {
+    String chromosome = "9";
+    String start = "1135797205";
+    String end = "1135797205";
+    validator.getReferenceGenomeSequence(chromosome, start, end);
   }
 
   @Test
