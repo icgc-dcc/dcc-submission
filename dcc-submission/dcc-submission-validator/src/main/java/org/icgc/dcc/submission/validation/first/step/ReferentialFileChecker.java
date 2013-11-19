@@ -83,7 +83,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
         getValidationContext().reportError(
             filename,
             REVERSE_RELATION_FILE_ERROR,
-            fileSchema.getName());
+            otherFileSchema.getName());
       }
     }
   }

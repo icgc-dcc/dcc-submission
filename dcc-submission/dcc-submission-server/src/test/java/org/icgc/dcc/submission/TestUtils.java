@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
@@ -240,6 +241,8 @@ public final class TestUtils {
   private static Response logPotentialErrors(Response response) {
     int status = response.getStatus();
     if (status < 200 || status >= 300) { // TODO: use Response.fromStatusCode(code).getFamily() rather
+      boolean buffered = response.bufferEntity();
+      checkState(buffered);
       log.warn("There was an erroneous reponse: '{}', '{}'", status, asString(response));
     }
     return response;

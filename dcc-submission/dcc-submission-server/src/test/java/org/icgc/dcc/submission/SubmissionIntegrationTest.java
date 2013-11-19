@@ -26,6 +26,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.NEXT_RELEASE_ENPOINT;
@@ -82,6 +83,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.core.model.SubmissionFileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
@@ -501,8 +503,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     response = post(client, QUEUE_ENDPOINT, projectsToEnqueue);
     assertEquals(expectedStatus.getStatusCode(), response.getStatus());
     if (expectedStatus != NO_CONTENT) {
-      String expectedResponse = "{code:'" + INVALID_STATE.getFrontEndString() + "',parameters:['" + VALID + "']}";
-      // FIXME: assertEquals(expectedResponse + " != " + asString(response), $(expectedResponse), $(response));
+      JsonNode expected = $("{code:'" + INVALID_STATE.getFrontEndString() + "',parameters:['" + VALID + "']}");
+      JsonNode actual = $(response);
+      assertEquals(expected + " != " + actual, expected, actual);
     }
   }
 
