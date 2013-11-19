@@ -20,6 +20,9 @@ package org.icgc.dcc.submission.normalization.steps;
 import static cascading.tuple.Fields.ALL;
 import static java.util.UUID.randomUUID;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
+
+import java.util.UUID;
+
 import lombok.val;
 
 import org.icgc.dcc.submission.normalization.NormalizationContext;
@@ -37,7 +40,7 @@ import cascading.tuple.Tuple;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * TODO
+ * Step in charge of generating a primary key for each observations.
  */
 public final class PrimaryKeyGeneration implements NormalizationStep {
 
@@ -63,7 +66,7 @@ public final class PrimaryKeyGeneration implements NormalizationStep {
   }
 
   /**
-   * 
+   * Generates a primary key using {@link UUID}.
    */
   @VisibleForTesting
   static final class PrimaryKeyGenerator extends BaseOperation<Void> implements Function<Void> {

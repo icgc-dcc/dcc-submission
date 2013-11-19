@@ -173,13 +173,13 @@ public class NormalizationValidatorTest {
             Mockito.anyString(),
             Mockito.eq(
                 NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
-                    "10\t" + NormalizationCounter.TOTAL_START.getDisplayName() + "\n" +
-                    "9\t" + NormalizationCounter.UNIQUE_START.getDisplayName() + "\n" +
-                    "2\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getDisplayName() + "\n" +
-                    "1\t" + NormalizationCounter.MASKED.getDisplayName() + "\n" +
-                    "4\t" + NormalizationCounter.DROPPED.getDisplayName() + "\n" +
-                    "5\t" + NormalizationCounter.UNIQUE_REMAINING.getDisplayName() + "\n" +
-                    "7\t" + NormalizationCounter.TOTAL_END.getDisplayName() + "\n" // 10+1-4
+                    "10\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
+                    "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
+                    "2\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
+                    "1\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
+                    "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
+                    "5\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
+                    "7\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
                 ));
   }
 

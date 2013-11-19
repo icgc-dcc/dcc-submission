@@ -87,6 +87,9 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
     return new FileTap(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
   }
 
+  /**
+   * Temporary: see DCC-1876
+   */
   @Override
   protected Tap<?, ?, ?> tapSource2(Path path) {
     return new FileTap(

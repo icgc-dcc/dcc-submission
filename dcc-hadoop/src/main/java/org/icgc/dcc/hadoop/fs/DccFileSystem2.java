@@ -29,9 +29,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
-import cascading.flow.local.LocalFlowConnector;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.local.FileTap;
@@ -53,12 +50,6 @@ public class DccFileSystem2 {
   private final String rootDir;
 
   private final boolean hadoopMode;
-
-  public FlowConnector getFlowConnector() {
-    return hadoopMode ?
-        new HadoopFlowConnector() :
-        new LocalFlowConnector();
-  }
 
   public Tap<?, ?, ?> getNormalizationDataOutputTap(String releaseName, String projectKey) {
     String path = getNormalizationDataOutputFile(releaseName, projectKey);

@@ -34,6 +34,7 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Unique;
+import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
 /**
@@ -65,7 +66,12 @@ public final class UniqueCounting implements NormalizationStep {
   }
 
   /**
-   * Counts unique occurrences of the given field.
+   * Performs a unique count for the given field(s) and in a transparent manner to the flow it originates from (and
+   * eventually merges to).
+   * <p>
+   * This uses a trick whereby we split the flow, do the count, filter out all tuples and merge back in the original
+   * flow. This is to circumvent the issue with cascading of having to have sink {@link Tap} for a branch to be run
+   * (TODO: find better way?).
    */
   private final class CountUnique extends SubAssembly {
 

@@ -18,20 +18,31 @@
 package org.icgc.dcc.submission.normalization.steps;
 
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MASKING;
+import lombok.NonNull;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
 
 import com.google.common.base.Optional;
 
+/**
+ * Enum representing the states of an observation with regard to sensitive information.
+ */
 public enum Masking {
   CONTROLLED, OPEN, MASKED;
 
+  static final Fields NORMALIZER_MASKING_FIELD = new Fields(NORMALIZER_MASKING);
+
+  /**
+   * Returns the value to be used in the context of a {@link Tuple} (to avoid serialization issues).
+   */
   public String getTupleValue() {
     return name();
   }
 
-  static final Fields NORMALIZER_MASKING_FIELD = new Fields(NORMALIZER_MASKING);
-
-  public static Optional<Masking> getMasking(String value) {
+  /**
+   * Optionally returns a {@link Masking} from a given {@link String}.
+   */
+  public static Optional<Masking> getMasking(@NonNull String value) {
     try {
       return Optional.<Masking> of(Masking.valueOf(value));
     } catch (IllegalArgumentException e) {

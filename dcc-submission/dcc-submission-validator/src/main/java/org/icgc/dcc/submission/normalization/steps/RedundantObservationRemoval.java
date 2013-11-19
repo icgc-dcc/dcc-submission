@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -52,7 +53,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 /**
- * TODO
+ * Step in charge of removing "redundant" observations, namely ones that describe the same observation as another but
+ * simply with a different {@link SubmissionFieldNames#SUBMISSION_OBSERVATION_ANALYSIS_ID} field.
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -68,7 +70,8 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
   private final String secondarySortFieldName;
 
   /**
-   * 
+   * Determines the fields for {@link NormalizationContext#getObservationUniqueFields()} based on the dictionary and the
+   * file type.
    */
   public static ImmutableList<String> getObservationUniqueFields(Dictionary dictionary, SubmissionFileType type) {
     FileSchema ssmP = getFileSchema(dictionary, type);
@@ -93,12 +96,15 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    */
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {
+
+    // Group on all fields from the original submission file and at the exeption of analysis_id
     pipe =
         new GroupBy(
             pipe,
             groupByFields(context),
             secondarySortFields());
 
+    // Filter out (with logging+counting) duplicate observations
     pipe = new Every(
         pipe,
         ALL,
@@ -116,10 +122,16 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
     return fields(context.getObservationUniqueFields());
   }
 
+  /**
+   * See {@link #secondarySortFieldName}.
+   */
   private Fields secondarySortFields() {
     return new Fields(secondarySortFieldName);
   }
 
+  /**
+   * Filters duplicate observations.
+   */
   @VisibleForTesting
   static final class FilterRedundantObservationBuffer extends BaseOperation<Void> implements Buffer<Void> {
 
@@ -135,15 +147,21 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
 
       val group = bufferCall.getGroup();
       val tuples = bufferCall.getArgumentsIterator();
-      checkState(tuples.hasNext(), "There should always be at least one item for a given group, none for '{}'", group);
+      checkState(
+          tuples.hasNext(),
+          "There should always be at least one item for a given group, none for '{}'", group);
+
+      // Keep the first item in the group (the one that will be kept)
       val first = tuples.next().getTupleCopy();
 
+      // For any duplicate, log the event and increment counter
       val duplicates = tuples.hasNext();
       if (duplicates) {
         while (tuples.hasNext()) {
           val duplicate = tuples.next().getTuple();
           log.info("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
               new Object[] { first, group, duplicate });
+
           flowProcess.increment(DROPPED, COUNT_INCREMENT);
         }
       } else {

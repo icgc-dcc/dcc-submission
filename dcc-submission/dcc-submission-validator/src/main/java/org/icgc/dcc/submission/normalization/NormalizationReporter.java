@@ -42,9 +42,10 @@ import org.icgc.dcc.submission.validation.core.ValidationContext;
 import com.typesafe.config.Config;
 
 /**
- * 
+ * Helper for reporting in the normalization.
  * <p>
- * TODO: non-static + split internal/external report-related logic (or merge with {@link NormalizationReport})
+ * TODO: Make it stateful+non-static and split internal/external report-related logic (and/or merge with
+ * {@link NormalizationReport}).
  */
 public class NormalizationReporter {
 
@@ -54,12 +55,13 @@ public class NormalizationReporter {
   static final String INTERNAL_REPORT_MESSAGE = "Statistics for normalization:";
 
   /**
-   * TODO
-   * <p>
-   * All of them for now.
+   * Returns the {@link NormalizationCounter}s to be shows in the internal report.
    */
   private static List<NormalizationCounter> INTERNAL_REPORT_COUNTERS = newArrayList(NormalizationCounter.values());
 
+  /**
+   * Performs some sanity checks on the counters.
+   */
   public static void performSanityChecks(ConnectedCascade connectedCascade) {
     long totalEnd = connectedCascade.getCounterValue(TOTAL_END);
     long totalStart = connectedCascade.getCounterValue(TOTAL_START);
@@ -88,26 +90,9 @@ public class NormalizationReporter {
   }
 
   /**
-   * 
+   * Creates a checker to assess whether the process was erroneous or not.
    */
-  public static String createInternalReportContent(ConnectedCascade connectedCascade) {
-    val sb = new StringBuilder();
-    sb.append(INTERNAL_REPORT_MESSAGE);
-    sb.append(NEWLINE);
-    for (val counter : INTERNAL_REPORT_COUNTERS) {
-      long counterValue = connectedCascade.getCounterValue(counter);
-      sb.append(counterValue);
-      sb.append(TAB);
-      sb.append(counter.getDisplayName());
-      sb.append(NEWLINE);
-    }
-    return sb.toString();
-  }
-
-  /**
-   * 
-   */
-  public static NormalizationChecker collectPotentialErrors(
+  public static NormalizationChecker createNormalizationOutcomeChecker(
       Config config, ConnectedCascade connectedCascade, String fileName) {
 
     long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
@@ -123,18 +108,38 @@ public class NormalizationReporter {
   }
 
   /**
-   * 
+   * Creates the {@link String} content for the internal report.
    */
-  public static void reportError(ValidationContext validationContext, NormalizationChecker normalizationError) {
-    validationContext
-        .reportError(
-            normalizationError.getFileName(),
-            TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR,
-            normalizationError.getCount(),
-            normalizationError.getTotal(),
-            normalizationError.getThreshold());
+  public static String createInternalReportContent(ConnectedCascade connectedCascade) {
+    val sb = new StringBuilder();
+    sb.append(INTERNAL_REPORT_MESSAGE);
+    sb.append(NEWLINE);
+    for (val counter : INTERNAL_REPORT_COUNTERS) {
+      long counterValue = connectedCascade.getCounterValue(counter);
+      sb.append(counterValue);
+      sb.append(TAB);
+      sb.append(counter.getInternalReportDisplayName());
+      sb.append(NEWLINE);
+    }
+    return sb.toString();
   }
 
+  /**
+   * Reports normalization error.
+   */
+  public static void reportError(ValidationContext validationContext, NormalizationChecker checker) {
+    validationContext
+        .reportError(
+            checker.getFileName(),
+            TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR,
+            checker.getCount(),
+            checker.getTotal(),
+            checker.getThreshold());
+  }
+
+  /**
+   * Placeholder to examine the normalization outcome.
+   */
   @Value
   @Builder
   static final class NormalizationChecker {
