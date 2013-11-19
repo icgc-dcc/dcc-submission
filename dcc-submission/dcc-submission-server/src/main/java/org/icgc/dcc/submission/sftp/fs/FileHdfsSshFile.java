@@ -125,6 +125,8 @@ public class FileHdfsSshFile extends HdfsSshFile {
           throw new IOException("Unable to delete file " + path.toUri());
         }
 
+        context.notifyFileRemoved(path);
+
         return success;
       }
 

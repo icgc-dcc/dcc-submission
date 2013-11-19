@@ -133,6 +133,12 @@ public class SftpContext {
     mailService.sendFileTransferred(user, path.toUri().toString());
   }
 
+  public void notifyFileRemoved(Path path) {
+    val user = (String) getCurrentUser().getPrincipal();
+    log.info("'{}' removed  file '{}'", user, path);
+    mailService.sendFileRemoved(user, path.toUri().toString());
+  }
+
   private Subject getCurrentUser() {
     return authenticator.getSubject();
   }

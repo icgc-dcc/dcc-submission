@@ -104,6 +104,11 @@ public class MailService {
         user, path));
   }
 
+  public void sendFileRemoved(String user, String path) {
+    sendNotification(format("User '%s' removed file '%s'",
+        user, path));
+  }
+
   public void sendValidationStarted(String releaseName, String projectKey, List<String> emails) {
     sendNotification(format("Validation started for release '%s' project '%s' (on behalf of '%s')",
         releaseName, projectKey, emails));
