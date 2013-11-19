@@ -20,6 +20,8 @@ package org.icgc.dcc.submission.validation.semantic;
 import static com.google.common.util.concurrent.Futures.allAsList;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -90,12 +92,20 @@ public class ReferenceGenomeValidatorConcurrencyTest {
     val results = getResults(executor, callables);
     for (val context : results.get()) {
       // Verify
-      verify(context, times(4)).reportError(
+      verify(context, times(3)).reportError(
           eq(fileName),
           anyLong(),
-          eq("reference_genome_allele"),
+          eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
           anyString(),
           eq(REFERENCE_GENOME_MISMATCH_ERROR),
+          anyVararg());
+
+      verify(context, times(1)).reportError(
+          eq(fileName),
+          anyLong(),
+          eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
+          anyString(),
+          eq(REFERENCE_GENOME_INSERTION_ERROR),
           anyVararg());
     }
   }
