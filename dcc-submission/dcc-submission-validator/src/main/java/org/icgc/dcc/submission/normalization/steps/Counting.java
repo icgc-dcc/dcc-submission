@@ -20,9 +20,10 @@ package org.icgc.dcc.submission.normalization.steps;
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.normalization.NormalizationContext;
+import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
 
@@ -32,12 +33,15 @@ import cascading.pipe.Pipe;
 /**
  * TODO
  */
-public class FinalCounting implements NormalizationStep {
+@RequiredArgsConstructor
+public final class Counting implements NormalizationStep {
 
   /**
    * Short name for the step.
    */
-  private static final String SHORT_NAME = "final-count";
+  private static final String SHORT_NAME = "count";
+
+  private final NormalizationCounter counter;
 
   @Override
   public String shortName() {
@@ -49,8 +53,7 @@ public class FinalCounting implements NormalizationStep {
     return new Each(
         pipe,
         ALL,
-        new Counter(TOTAL_END, COUNT_INCREMENT),
+        new Counter(counter, COUNT_INCREMENT),
         RESULTS);
   }
-
 }

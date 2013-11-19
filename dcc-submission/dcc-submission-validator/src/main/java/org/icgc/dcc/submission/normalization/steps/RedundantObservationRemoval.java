@@ -37,7 +37,6 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
 import cascading.flow.FlowProcess;
@@ -105,13 +104,6 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
         ALL,
         new FilterRedundantObservationBuffer(),
         REPLACE);
-
-    pipe = new CountUnique( // Will leave the pipe unaltered
-        pipe,
-        shortName(),
-        ANALYSIS_ID_FIELD,
-        NormalizationCounter.UNIQUE_REMAINING,
-        COUNT_INCREMENT);
 
     return pipe;
   }
