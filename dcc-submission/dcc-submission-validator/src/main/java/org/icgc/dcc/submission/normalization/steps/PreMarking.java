@@ -34,7 +34,7 @@ import cascading.tuple.Tuple;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Step in charge of pre-emptively marking all observations as {@link Masking#OPEN} for the {@link AlleleMasking} step.
+ * Step in charge of pre-emptively marking all observations as {@link Masking#OPEN} for the {@link SensitiveRowMarking} step.
  */
 @RequiredArgsConstructor
 public final class PreMarking implements NormalizationStep {

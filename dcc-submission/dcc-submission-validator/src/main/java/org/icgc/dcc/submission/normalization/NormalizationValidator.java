@@ -39,7 +39,8 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.steps.AlleleMasking;
+import org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking;
+import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.normalization.steps.Counting;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
 import org.icgc.dcc.submission.normalization.steps.PreMarking;
@@ -119,7 +120,8 @@ public final class NormalizationValidator implements Validator {
 
             // Must happen before rebuilding the mutation
             .add(new PreMarking()) // Must happen no matter what
-            .add(new AlleleMasking(config)) // May be skipped (partially or not)
+            .add(new SensitiveRowMarking())
+            .add(new MaskedRowGeneration()) // May be skipped
 
             // Must happen after allele masking
             .add(new RedundantObservationRemoval(SUBMISSION_OBSERVATION_ANALYSIS_ID))
