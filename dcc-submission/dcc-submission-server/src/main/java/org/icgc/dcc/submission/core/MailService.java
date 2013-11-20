@@ -18,8 +18,6 @@
 package org.icgc.dcc.submission.core;
 
 import static java.lang.String.format;
-import static javax.mail.Message.RecipientType.BCC;
-import static javax.mail.Message.RecipientType.CC;
 import static javax.mail.Message.RecipientType.TO;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -91,7 +89,20 @@ public class MailService {
   @NonNull
   private final Config config;
 
+  public void sendSupportFeedback(Feedback feedback) {
+    sendNotification(format("Feedback from %s - '%s'", feedback.getEmail(), feedback.getSubject()),
+        feedback.getMessage());
+
+    send(
+        feedback.getEmail(),
+        to(MAIL_SUPPORT_RECIPIENT),
+        feedback.getSubject(),
+        feedback.getMessage());
+  }
+
   public void sendSupportProblem(String subject, String message) {
+    sendNotification(format("Support issue - '%s'", subject));
+
     send(
         from(MAIL_FROM),
         to(MAIL_SUPPORT_RECIPIENT),
@@ -109,25 +120,35 @@ public class MailService {
         user, path));
   }
 
+  public void sendSignoff(String user, List<String> projectKeys, String nextReleaseName) {
+    sendNotification(
+        format("Signed off Projects: %s", projectKeys),
+        template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
+  }
+
   public void sendValidationStarted(String releaseName, String projectKey, List<String> emails) {
     sendNotification(format("Validation started for release '%s' project '%s' (on behalf of '%s')",
         releaseName, projectKey, emails));
   }
 
-  public void sendValidationFinished(String releaseName, String projectKey, SubmissionState state,
-      List<String> emails) {
+  public void sendValidationFinsished(String releaseName, String projectKey, List<String> emails, SubmissionState state) {
+    sendNotification(format("Validation finished for release '%s' project '%s' (on behalf of '%s') with state '%s'",
+        releaseName, projectKey, emails, state));
+  }
+
+  public void sendValidationResult(String releaseName, String projectKey, List<String> emails, SubmissionState state) {
     if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
     }
 
+    sendValidationFinsished(releaseName, projectKey, emails, state);
+
     try {
       val message = message();
       message.setFrom(address(get(MAIL_FROM)));
       message.addRecipients(TO, addresses(emails));
-      message.addRecipient(CC, address(get(MAIL_SUPPORT_RECIPIENT)));
-      message.addRecipient(BCC, address(get(MAIL_NOTIFICATION_RECIPIENT))); // BCC since users shouldn't see this
-      message.setSubject(formatSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state)));
+      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
       message.setText(
           state == ERROR ? template(MAIL_ERROR_BODY, projectKey, state) : //
           state == VALID ? template(MAIL_VALID_BODY, projectKey, state, projectKey, projectKey) : //
@@ -141,28 +162,16 @@ public class MailService {
     }
   }
 
-  public void sendSignoff(String user, List<String> projectKeys, String nextReleaseName) {
+  private void sendNotification(String subject, String message) {
     send(
         from(MAIL_FROM),
-        to(MAIL_SUPPORT_RECIPIENT),
-        format("Signed off Projects: %s", projectKeys),
-        template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
-  }
-
-  public void sendFeedback(Feedback feedback) {
-    send(
-        feedback.getEmail(),
-        to(MAIL_SUPPORT_RECIPIENT),
-        feedback.getSubject(),
-        feedback.getMessage());
+        to(MAIL_NOTIFICATION_RECIPIENT),
+        "Notification: " + subject,
+        message);
   }
 
   private void sendNotification(String subject) {
-    send(
-        from(MAIL_FROM),
-        to(MAIL_SUPPORT_RECIPIENT),
-        "Notification: " + subject,
-        subject);
+    sendNotification(subject, subject);
   }
 
   private void send(String from, String recipient, String subject, String text) {
@@ -175,7 +184,6 @@ public class MailService {
       val message = message();
       message.setFrom(address(from));
       message.addRecipient(TO, address(recipient));
-      message.addRecipient(BCC, address(get(MAIL_NOTIFICATION_RECIPIENT))); // BCC since users shouldn't see this
       message.setSubject(formatSubject(subject));
       message.setText(text);
 

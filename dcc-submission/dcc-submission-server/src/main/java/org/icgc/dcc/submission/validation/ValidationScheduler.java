@@ -333,7 +333,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   private void notifyRecipients(QueuedProject queuedProject, SubmissionState state) {
     val release = resolveOpenRelease();
 
-    mailService.sendValidationFinished(release.getName(), queuedProject.getKey(), state, queuedProject.getEmails());
+    mailService.sendValidationResult(release.getName(), queuedProject.getKey(), queuedProject.getEmails(), state);
   }
 
 }
