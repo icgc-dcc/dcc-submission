@@ -10,18 +10,89 @@
 # - for "input" type, leave the "mut" and "marking" columns empty (they're considered N/A)
 # - put result row(s) right after their corresponding input row
 # - separate input+result rows islands with a new line
-
 # TODO: explain CTRL
 
-type	ref	ctr	tmr	frm	to	mut	marking	comment
-
-input	A	A/A	A/C	A	C			simplest case
-result	A	A/A	A/C	A	C	A>C	OPEN	
-
-input	A	A/G	A/C	A	C			one sensitive allele in control
-result	A	A/G	A/C	A	C	A>C	CTRL	
-result	A			A	C	A>C	MASK	
-
-input	A	A/G	A/C	G	C			same but the "other" control allele is chosen as "from"
-result	A	A/G	A/C	G	C	A>C	CTRL	
-result	A			G	C	A>C	MASK	is that correct?
+type	mt	ref	ctr	tmr	frm	to	mut	marking	comment
+input	1	A	A/A	A/C	A	C			
+result	1	A	A/A	A/C	A	C	A>C	OPEN	
+									
+input	1	A	A/G	A/C	G	C			
+result	1	A	A/G	A/C	G	C	G>C	CTRL	
+result	1	A			A	C	A>C	MASK	
+									
+input	1	A	G/G	A/G	G	A			
+result		A	G/G	A/G	G	A	G>A	CTRL	
+#skip		A			A	A	A>A	
+									
+input	1	A	G/G	C/G	G	C			
+result	1	A	G/G	C/G	G	C	G>C	CTRL	
+result	1	A			A	C	A>C	MASK	
+									
+input	1	A	A/G	T/G	A	T			
+result	1	A	A/G	T/G	A	T	A>T	CTRL	
+result	1	A			A	T	A>T	MASK	
+									
+input	1	A	A/G	A/A	G	A			
+result	1	A	A/G	A/A	G	A	G>A	CTRL	
+#skip		A			A	A	A>A	
+									
+input	1	A	C/G	T/G	C	T			
+result	1	A	C/G	T/G	C	T	C>T	CTRL	
+result	1	A			A	T	A>T	MASK	
+									
+input	1	A	C/G	A/G	C	A			
+result	1	A	C/G	A/G	C	A	C>A	CTRL	
+#skip	1	A			A	A	A>A	
+									
+input	2	-	-/-	-/A	-	A	->A		
+result	2	-	-/-	-/A	-	A	->A	OPEN	
+									
+input	2	-	-/-	A/A	-	A	->A		
+result	2	-	-/-	A/A	-	A	->A	CTRL	
+result	2	-			-	A	->A	MASK	
+									
+input	2	-	-/A	A/A	-	A	->A		
+result	2	-	-/A	A/A	-	A	->A	CTRL	
+result	2	-			-	A	->A	MASK	
+									
+input	3	A	A/A	A/-	A	-	A>-		
+result	3	A	A/A	A/-	A	-	A>-	OPEN	
+									
+input	3	A	A/C	A/-	C	-	C>-		
+result	3	A	A/C	A/-	C	-	C>-	CTRL	
+result	3	A			A	-	A>-	MASK	
+									
+input	3	A	A/C	-/C	A	-	A>-		
+result	3	A	A/C	-/C	A	-	A>-	CTRL	
+result	3	A			A	-	A>-	MASK	
+									
+input	3	A	G/G	G/-	G	-	G>-		
+result	3	A	G/G	G/-	G	-	G>-	CTRL	
+result	3	A			A	-	A>-	MASK	
+									
+input	3	A	G/C	G/-	C	-	C>-		
+result	3	A	G/C	G/-	C	-	C>-	CTRL	
+result	3	A			A	-	A>-	MASK	
+									
+input	3	A	G/G	-/-	G	-	G>-		
+result	3	A	G/G	-/-	G	-	G>-	CTRL	
+result	3	A			A	-	A>-	MASK	
+									
+input	3	A	G/-	-/-	G	-	G>-		
+result	3	A	G/-	-/-	G	-	G>-	CTRL	
+result	3	A			A	-	A>-	MASK	
+									
+input	3	A	A/-	-/-	A	-	A>-		
+result	3	A	A/-	-/-	A	-	A>-	CTRL	
+result	3	A			A	-	A>-	MASK	
+									
+input	4	A	A/A	A/CGAT	A	CGAT	A>CGAT		
+result	4	A	A/A	A/CGAT	A	CGAT	A>CGAT	OPEN	
+									
+input	4	A	G/G	G/CGAT	G	CGAT	G>CGAT		
+result	4	A	G/G	G/CGAT	G	CGAT	G>CGAT	CTRL	
+result	4	A			A	CGAT	A>CGAT	MASK	
+									
+input	4	A	TCG/CG	TCG/AGCGGT	CG	GCGGT	CG>AGCGGT		
+result	4	A	TCG/CG	TCG/AGCGGT	CG	GCGGT	CG>AGCGGT	CTRL	
+result	4	A			A	GCGGT	A>AGCGGT	MASK	

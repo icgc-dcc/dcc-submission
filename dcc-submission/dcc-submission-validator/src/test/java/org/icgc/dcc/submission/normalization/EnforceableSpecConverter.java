@@ -27,6 +27,7 @@ import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CONTROL_GENOTYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
 
@@ -36,6 +37,7 @@ import java.util.Map;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.steps.Masking;
 
@@ -51,8 +53,9 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
 /**
- * TODO: add sanity checks + split on a per case basis?
+ * TODO: add sanity checks + split on a per case basis? + un-staticify
  */
+@Slf4j
 public class EnforceableSpecConverter {
 
   private static final Splitter TAB_SPLITTER = Splitter.on("\t");
@@ -62,6 +65,7 @@ public class EnforceableSpecConverter {
 
   private static final String ROW_TYPE_FIELD_NAME = "type";
 
+  private static final String MUTATION_TYPE_SHORT_FIELD_NAME = "mt";
   private static final String REFERENCE_GENOME_ALLELE_SHORT_FIELD_NAME = "ref";
   private static final String CONTROL_GENOTYPE_SHORT_FIELD_NAME = "ctr";
   private static final String TUMOUR_GENOTYPE_SHORT_FIELD_NAME = "tmr";
@@ -78,6 +82,7 @@ public class EnforceableSpecConverter {
   private static final String RESULT_TYPE = "result";
 
   private static final BiMap<String, String> SHORT_TO_REAL_FIELD_NAMES = new ImmutableBiMap.Builder<String, String>()
+      .put(MUTATION_TYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_MUTATION_TYPE)
       .put(REFERENCE_GENOME_ALLELE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE)
       .put(CONTROL_GENOTYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_CONTROL_GENOTYPE)
       .put(TUMOUR_GENOTYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE)
@@ -87,16 +92,16 @@ public class EnforceableSpecConverter {
       .put(MARKING_FIELD_NAME, NORMALIZER_MARKING)
       .build();
 
-  private static final String HEADER_LINE = TAB_JOINER.join(new ImmutableList.Builder<String>()
+  static List<String> HEADERS = new ImmutableList.Builder<String>()
       .add(ROW_TYPE_FIELD_NAME)
       .addAll(SHORT_TO_REAL_FIELD_NAMES.keySet())
       .add(COMMENT_FIELD_NAME)
-      .build());
+      .build();
 
   @SneakyThrows
   public static void convert(String specfile, String specDerivedInputFile, String specDerivedReferenceFile) {
     List<String> lines = readLines(new File(specfile), UTF_8);
-    checkState(lines.contains(HEADER_LINE));
+    checkState(lines.contains(TAB_JOINER.join(HEADERS)));
 
     // Extract data from spec
     val specDerivedInputRows = formatData(
@@ -120,10 +125,14 @@ public class EnforceableSpecConverter {
 
   private static List<Map<String, String>> extractData(List<String> lines, boolean input) {
     val data = Lists.<Map<String, String>> newArrayList();
-    for (String line : lines) {
+    for (int lineNumber = 0; lineNumber < lines.size(); lineNumber++) {
+      String line = lines.get(lineNumber);
+      log.info("line: {} ({})", line, lineNumber);
+
       if (isRelevantLine(line)) {
         Map<String, String> rowMap = characterizeFields(
             Lists.<String> newArrayList(TAB_SPLITTER.split(line)));
+        log.info("rowMap (1): {} ({})", rowMap);
 
         String rowType = rowMap.remove(ROW_TYPE_FIELD_NAME);
         if (input && isInputRow(rowType)) {
@@ -133,7 +142,6 @@ public class EnforceableSpecConverter {
           checkNotNull(rowMap.remove(MARKING_FIELD_NAME), "TODO");
           data.add(rowMap);
         } else if (!input && isResultRow(rowType)) {
-
           rowMap.put( // Translate the marking field's abbreviations
               MARKING_FIELD_NAME,
               unabbreviate(checkNotNull(rowMap.remove(MARKING_FIELD_NAME), "TODO")));
@@ -141,6 +149,7 @@ public class EnforceableSpecConverter {
         } else {
           checkState((input && isResultRow(rowType)) || (!input && isInputRow(rowType)), rowType);
         }
+        log.info("rowMap (2): {} ({})", rowMap);
       }
     }
     return data;
@@ -188,16 +197,9 @@ public class EnforceableSpecConverter {
 
     int i = 0;
     val rowMap = Maps.<String, String> newLinkedHashMap();
-
-    rowMap.put(ROW_TYPE_FIELD_NAME, row.get(i++));
-    rowMap.put(REFERENCE_GENOME_ALLELE_SHORT_FIELD_NAME, row.get(i++));
-    rowMap.put(CONTROL_GENOTYPE_SHORT_FIELD_NAME, row.get(i++));
-    rowMap.put(TUMOUR_GENOTYPE_SHORT_FIELD_NAME, row.get(i++));
-    rowMap.put(MUTATED_FROM_ALLELE_SHORT_FIELD_NAME, row.get(i++));
-    rowMap.put(MUTATED_TO_ALLELE_SHORT_FIELD_NAME, row.get(i++));
-    rowMap.put(MUTATION_SHORT_FIELD_NAME, row.get(i++));
-    rowMap.put(MARKING_FIELD_NAME, row.get(i++));
-    rowMap.put(COMMENT_FIELD_NAME, row.get(i++));
+    for (String fieldName : HEADERS) {
+      rowMap.put(fieldName, row.get(i++));
+    }
 
     return rowMap;
   }
@@ -229,7 +231,7 @@ public class EnforceableSpecConverter {
     } else if (abbrev.equalsIgnoreCase("MASK")) {
       masking = Masking.MASKED;
     } else {
-      checkState(false);
+      checkState(false, abbrev);
     }
     return masking.getTupleValue();
   }
