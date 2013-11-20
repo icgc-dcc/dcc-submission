@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -64,12 +65,30 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
   }
 
+  /**
+   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}.
+   */
   @Override
+  @Deprecated
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     try {
       Path path = path(schema);
       Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
       return tapSource(resolvedPath);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}; Temporary: see DCC-1876
+   */
+  @Override
+  public Tap<?, ?, ?> getSourceTap2(FileSchema schema) {
+    try {
+      Path path = path(schema);
+      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+      return tapSource2(resolvedPath);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -101,12 +120,28 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     return new Path(output, String.format("%s.%s%s%s.json", schema.getName(), type, FILE_NAME_SEPARATOR, reportName));
   }
 
+  /**
+   * Returns a tap for the given path.
+   */
   protected abstract Tap<?, ?, ?> tap(Path path);
 
   protected abstract Tap<?, ?, ?> tap(Path path, Fields fields);
 
+  /**
+   * See {@link #getSourceTap(FileSchema)} comment
+   */
+  @Deprecated
   protected abstract Tap<?, ?, ?> tapSource(Path path);
 
+  /**
+   * See {@link #getSourceTap(FileSchema)} comment
+   */
+  protected abstract Tap<?, ?, ?> tapSource2(Path path);
+
+  /**
+   * FIXME: This should not be happening in here, instead it should delegate to the filesystem abstraction (see
+   * DCC-1876).
+   */
   @Override
   public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
 

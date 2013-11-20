@@ -32,13 +32,11 @@ import lombok.val;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonProcessingException;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
-import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -57,16 +55,12 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
   private static final String PROJECT_KEY = "dummyProject";
 
   @Before
-  public void setUp() throws JsonProcessingException, IOException {
-    val termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
-    val termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
-    val termList3 =
-        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null),
-            new Term("4", "dummy", null), new Term("5", "dummy", null));
-    val termList4 =
-        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
-    val termList5 =
-        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
+  public void setUp() throws Exception {
+    val termList1 = terms(term("1"), term("2"));
+    val termList2 = terms(term("1"), term("2"));
+    val termList3 = terms(term("1"), term("2"), term("3"), term("4"), term("5"));
+    val termList4 = terms(term("1"), term("2"), term("3"));
+    val termList5 = terms(term("1"), term("2"), term("3"));
 
     when(context.getCodeList(anyString())).thenReturn(Optional.<CodeList> absent());
 
@@ -84,7 +78,8 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     when(context.getCodeList("specimen.0.specimen_storage.v1")).thenReturn(Optional.of(codeList1));
     when(context.getCodeList("specimen.0.tumour_confirmed.v1")).thenReturn(Optional.of(codeList1));
     when(context.getCodeList("specimen.0.specimen_available.v1")).thenReturn(Optional.of(codeList1));
-
+    when(context.getCodeList("specimen.0.cellularity.v1")).thenReturn(Optional.of(codeList1));
+    
     when(context.getCodeList("sample.0.analyzed_sample_type.v1")).thenReturn(Optional.of(codeList5));
 
     when(codeList1.getTerms()).thenReturn(termList1);

@@ -96,12 +96,12 @@ public class ValidationExecutor {
           validation.execute();
           log.info("call: Finished executing validation '{}'... {}", id, getStats());
         } catch (Throwable t) {
-          log.error("call: Exception executing validation '{}' {}: {}", new Object[] { id, getStats(), t });
+          log.error(format("call: Exception executing validation '%s': %s", id, getStats()), t);
 
           // Propagate for {@link ListeningFuture#onError()}
           throw t;
         } finally {
-          log.info("call: Validation duration: {} ms", id, validation.getDuration());
+          log.info("call: Validation '{}' duration: {} ms", id, validation.getDuration());
           futures.remove(id);
         }
 

@@ -51,4 +51,30 @@ public final class Tuples2 {
     }
     return objects;
   }
+
+  /**
+   * Determines whether or not 2 non-null tuples have the same content, with nulls matching nulls in terms of values.
+   * <p>
+   * This is mostly useful for tests.
+   * <p>
+   * TODO: consider handling nested tuples.
+   */
+  public static boolean sameContent(Tuple tuple1, Tuple tuple2) {
+    if (tuple1 == null || tuple2 == null) {
+      return false;
+    }
+    if (tuple1.size() != tuple2.size()) {
+      return false;
+    }
+    for (int i = 0; i < tuple1.size(); i++) {
+      Object object1 = tuple1.getObject(i);
+      Object object2 = tuple2.getObject(i);
+      if ((object1 == null && object2 != null) ||
+          (object1 != null && object2 == null) ||
+          (object1 != null && object2 != null && !object1.equals(object2))) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

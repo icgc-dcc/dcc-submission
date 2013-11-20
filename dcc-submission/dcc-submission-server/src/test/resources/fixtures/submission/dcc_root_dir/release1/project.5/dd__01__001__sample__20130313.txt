@@ -1,3 +1,0 @@
-analyzed_sample_id	specimen_id	analyzed_sample_type	analyzed_sample_type_other	analyzed_sample_interval	uri	db_xref	analyzed_sample_notes
-00301	0020	3	nRrunEpW c				
-00312	0020	7		68		00:a	QBbNUpprVD

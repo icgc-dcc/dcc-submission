@@ -151,6 +151,7 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
       message.append("  * ").append(error).append('\n');
     }
 
+    log.warn("There were validation errors: '{}'", message);
     throw new WebApplicationException(unprocessableEntity(message.toString()));
   }
 

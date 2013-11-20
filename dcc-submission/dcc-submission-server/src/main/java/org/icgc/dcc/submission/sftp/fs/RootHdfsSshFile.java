@@ -18,21 +18,18 @@
 package org.icgc.dcc.submission.sftp.fs;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.lsAll;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsAll;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.SshFileList;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
-import org.icgc.dcc.submission.core.ProjectServiceException;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 import com.google.common.base.Optional;
@@ -40,11 +37,8 @@ import com.google.common.base.Optional;
 @Slf4j
 public class RootHdfsSshFile extends HdfsSshFile {
 
-  private final SftpContext context;
-
   public RootHdfsSshFile(SftpContext context) {
-    super(context.getReleasePath(), context.getFileSystem());
-    this.context = context;
+    super(context, context.getReleasePath(), context.getFileSystem());
   }
 
   @Override
@@ -110,37 +104,6 @@ public class RootHdfsSshFile extends HdfsSshFile {
     }
   }
 
-  private Optional<SshFile> listSshFile(Path path) {
-    try {
-      // if it is System File directory and admin user, add to file list
-      if (context.isSystemDirectory(path)) {
-        return Optional.<SshFile> of(new SystemFileHdfsSshFile(this, path.getName()));
-      } else {
-        SubmissionDirectoryHdfsSshFile submissionDir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
-        if (submissionDir.doesExist()) {
-          // Necessary because of error handling workaround
-          return Optional.<SshFile> of(submissionDir);
-        }
-      }
-    } catch (Exception e) {
-      log.warn("Path '{}' skipped due to exception", path.getName(), e.getMessage());
-    }
-
-    return Optional.<SshFile> absent();
-  }
-
-  public SubmissionDirectory getSubmissionDirectory(String directoryName) {
-    try {
-      try {
-        return context.getSubmissionDirectory(directoryName);
-      } catch (ProjectServiceException e) {
-        throw new FileNotFoundException(directoryName);
-      }
-    } catch (Exception e) {
-      return handleException(SubmissionDirectory.class, e);
-    }
-  }
-
   @Override
   public HdfsSshFile getChild(Path filePath) {
     try {
@@ -148,11 +111,10 @@ public class RootHdfsSshFile extends HdfsSshFile {
       case 0:
         return this;
       case 1:
-        return new SubmissionDirectoryHdfsSshFile(this, filePath.getName());
+        return new SubmissionDirectoryHdfsSshFile(context, this, filePath.getName());
       case 2:
-        SubmissionDirectoryHdfsSshFile parentDir =
-            new SubmissionDirectoryHdfsSshFile(this, filePath.getParent().getName());
-        return new FileHdfsSshFile(parentDir, filePath.getName());
+        val parentDir = new SubmissionDirectoryHdfsSshFile(context, this, filePath.getParent().getName());
+        return new FileHdfsSshFile(context, parentDir, filePath.getName());
       }
     } catch (Exception e) {
       return handleException(HdfsSshFile.class, e);
@@ -163,15 +125,27 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
   @Override
   public void truncate() throws IOException {
+    // No-op
   }
 
-  public void notifyModified(SubmissionDirectory submissionDirectory) {
-    Submission submission = submissionDirectory.getSubmission();
-    context.resetSubmission(submission);
-  }
-
-  public void systemFilesNotifyModified() {
-    context.resetSubmissions();
+  private Optional<SshFile> listSshFile(Path path) {
+    try {
+      // if it is System File directory and admin user, add to file list
+      if (context.isSystemDirectory(path)) {
+        return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName()));
+      } else {
+        SubmissionDirectoryHdfsSshFile submissionDir =
+            new SubmissionDirectoryHdfsSshFile(context, this, path.getName());
+        if (submissionDir.doesExist()) {
+          // Necessary because of error handling workaround
+          return Optional.<SshFile> of(submissionDir);
+        }
+      }
+    } catch (Exception e) {
+      log.warn("Path '{}' skipped due to exception", path.getName(), e.getMessage());
+    }
+  
+    return Optional.<SshFile> absent();
   }
 
 }

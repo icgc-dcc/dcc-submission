@@ -81,7 +81,7 @@ public class UserResource {
   public Response feedback(Feedback feedback) {
     // No authorization check necessary
     log.debug("Sending feedback email: {}", feedback);
-    mailService.sendFeedback(feedback);
+    mailService.sendSupportFeedback(feedback);
 
     return Response.ok().build();
   }
