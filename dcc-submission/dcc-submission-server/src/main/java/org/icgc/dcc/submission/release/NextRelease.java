@@ -114,12 +114,20 @@ public class NextRelease extends BaseRelease {
         throw new InvalidStateException(ServerErrorCode.DUPLICATE_RELEASE_NAME, errorMessage);
       }
 
-      // critical operations
+      // TODO: This should be a critical section since the ValidationScheduler may see 2 open releases if the timing is
+      // right
+
+      //
+      // Start: Critical operations
+      //
       nextRelease = createNextRelease(nextReleaseName, oldRelease, dictionaryVersion);
       setupNextReleaseFileSystem(oldRelease, nextRelease, oldRelease.getProjectKeys()); // TODO: fix situation regarding
                                                                                         // aborting fs operations?
       closeDictionary(dictionaryVersion);
       completeOldRelease(oldRelease);
+      //
+      // End: Critical operations
+      //
     } finally {
       Release relinquishedRelease = dccLocking.relinquishReleasingLock();
       if (relinquishedRelease == null || //

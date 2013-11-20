@@ -46,7 +46,8 @@ public enum ServerErrorCode {
   QUEUE_NOT_EMPTY("QueueNotEmpty"),
   RELEASE_MISSING_DICTIONARY("ReleaseMissingDictionary"),
   DUPLICATE_RELEASE_NAME("DuplicateReleaseName"),
-  PROJECT_KEY_NOT_FOUND("ProjectKeyNotFound");
+  PROJECT_KEY_NOT_FOUND("ProjectKeyNotFound"),
+  UNKNOWN_THROWABLE("UnknownThrowable");
 
   // TODO: See
   // https://jira.oicr.on.ca/browse/DCC-660?focusedCommentId=44725&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-44725

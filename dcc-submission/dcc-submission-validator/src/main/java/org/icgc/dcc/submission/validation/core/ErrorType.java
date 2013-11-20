@@ -31,6 +31,7 @@ import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.
 import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.OTHER_SCHEMA;
 import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.SCHEMA;
 import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.VALUE;
+import static org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey.VALUE2;
 
 import java.util.List;
 import java.util.Map;
@@ -339,7 +340,7 @@ public enum ErrorType {
   /**
    * Submitted reference genome does not match the starnde reference genome.
    */
-  REFERENCE_GENOME_ERROR(CELL_LEVEL, "Found value %s for column %s, reference genome is %s") {
+  REFERENCE_GENOME_MISMATCH_ERROR(CELL_LEVEL, "Found value %s for column %s, reference genome is %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -348,7 +349,38 @@ public enum ErrorType {
       checkArgument(params[0] instanceof String);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
+  },
+
+  /**
+   * Submitted reference genome has type insertion. Expect "-" but found something else instead
+   */
+  REFERENCE_GENOME_INSERTION_ERROR(CELL_LEVEL, "Found value %s for column %s, reference genome is %s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  },
+
+  /**
+   * It is considered abnormal to report confidential observation above a certain configured threshold.
+   */
+  TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR(FILE_LEVEL, "An unreasonnably high number of sensitive observations have been detected.") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 3);
+      checkArgument(params[0] instanceof Long);
+      checkArgument(params[1] instanceof Long);
+      checkArgument(params[2] instanceof Float);
+      return ImmutableMap.of(VALUE, params[0], VALUE2, params[1], EXPECTED, params[2]);
+    }
   };
+  ;
 
   /**
    * Metadata.

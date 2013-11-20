@@ -17,25 +17,27 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import com.google.common.base.Joiner;
-import com.google.inject.Inject;
-import com.typesafe.config.Config;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
-import org.icgc.dcc.submission.release.model.Release;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
-import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.toFilenameList;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.release.model.Release;
+
+import com.google.common.base.Joiner;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 @Slf4j
 public class DccFileSystem {
@@ -101,7 +103,7 @@ public class DccFileSystem {
 
   /**
    * Ensures that the directory arborescence representing the given release exists, creates it if it does not.
-   *
+   * 
    * @param release the new release
    */
   public void ensureReleaseFilesystem(Release release, Set<String> projectKeyList) {
@@ -127,7 +129,7 @@ public class DccFileSystem {
 
   /**
    * Creates the directory arborescence representing the given release.
-   *
+   * 
    * @param release the new release
    */
   public void createReleaseFilesystem(Release release, Set<String> projectKeyList) {// TODO: make private?

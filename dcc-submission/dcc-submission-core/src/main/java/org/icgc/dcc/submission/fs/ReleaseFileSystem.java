@@ -26,7 +26,7 @@ import java.util.List;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;

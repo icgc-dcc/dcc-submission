@@ -73,7 +73,7 @@ public class FirstPassValidatorTest {
     FileSchema schema = new FileSchema("anyfile");
     schema.setPattern("anyfile");
     when(dict.getFiles()).thenReturn(newArrayList(schema));
-    when(dict.getFileSchema(anyString())).thenReturn(Optional.of(schema));
+    when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(schema));
 
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);

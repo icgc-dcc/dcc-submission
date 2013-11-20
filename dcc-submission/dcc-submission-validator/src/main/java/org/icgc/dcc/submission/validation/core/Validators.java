@@ -36,7 +36,7 @@ public final class Validators {
    * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
    */
   @SneakyThrows
-  public static void checkState(String name) {
+  public static void checkInterrupted(String name) {
     val cancelled = Thread.currentThread().isInterrupted();
     if (cancelled) {
       throw new InterruptedException("'" + name + "' was interrupted");

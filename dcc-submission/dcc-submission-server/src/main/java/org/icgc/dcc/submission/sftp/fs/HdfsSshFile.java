@@ -20,26 +20,34 @@ package org.icgc.dcc.submission.sftp.fs;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import lombok.AllArgsConstructor;
+import lombok.Delegate;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.submission.sftp.SftpContext;
 
+@Slf4j
+@AllArgsConstructor
 public abstract class HdfsSshFile implements SshFile {
 
   protected static final String SEPARATOR = "/";
 
+  @NonNull
+  protected final SftpContext context;
+  @NonNull
   protected Path path;
+  @NonNull
   protected final FileSystem fs;
-
-  protected HdfsSshFile(Path path, FileSystem fs) {
-    this.path = path;
-    this.fs = fs;
-  }
 
   @Override
   public boolean doesExist() {
@@ -147,7 +155,23 @@ public abstract class HdfsSshFile implements SshFile {
         throw new IOException("SFTP is in readonly mode");
       }
 
-      return fs.create(path);
+      log.info("Submission file opened: '{}'", path);
+      return new OutputStream() {
+
+        @Delegate(excludes = Closeable.class)
+        OutputStream delegate = fs.create(path);
+
+        @Override
+        public void close() throws IOException {
+          try {
+            log.info("Submission file closed: '{}'", path);
+            context.notifyFileTransferred(path);
+          } finally {
+            delegate.close();
+          }
+        }
+
+      };
     } catch (Exception e) {
       return handleException(OutputStream.class, e);
     }

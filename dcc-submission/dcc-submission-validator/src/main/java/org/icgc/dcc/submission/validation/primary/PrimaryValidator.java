@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.primary;
 
 import static com.google.common.collect.Iterables.size;
-import static org.icgc.dcc.submission.validation.core.Validators.checkState;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -68,13 +68,14 @@ public class PrimaryValidator implements Validator {
     log.info("Connecting cascade for project '{}'", projectKey);
     plan.connect(platformStrategy);
     log.info("Connected cascade for project '{}'", projectKey);
+    checkInterrupted(getName());
 
     try {
       // Start (blocking)
       log.info("Starting cascade for project '{}'", projectKey);
       plan.getCascade().complete();
       log.info("Finished cascade for project '{}'", projectKey);
-      checkState(getName());
+      checkInterrupted(getName());
 
       // Report
       log.info("Collecting report for project '{}'", projectKey);

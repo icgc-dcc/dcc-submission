@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.regex.Pattern.compile;
 
 import java.io.InputStream;
@@ -25,15 +27,17 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.Value;
+import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -89,6 +93,23 @@ public class SubmissionDirectory {
         return false;
       }
     });
+  }
+
+  /**
+   * If there is a matching file for the pattern, returns the one matching file or nothing. Errors out if there are more
+   * than one matching file.
+   */
+  public Optional<String> getFile(String filePattern) {
+    Iterable<String> files = listFiles(newArrayList(filePattern));
+    val iterator = files.iterator();
+    if (iterator.hasNext()) {
+      val optional = Optional.of(iterator.next());
+      checkState(!iterator.hasNext(),
+          "There should only be one matching file for pattern '{}', instead got: '{}'", filePattern, files);
+      return optional;
+    } else {
+      return Optional.<String> absent();
+    }
   }
 
   public String addFile(String filename, InputStream data) {
