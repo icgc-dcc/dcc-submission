@@ -1,0 +1,28 @@
+# format for this enforceable spec:
+#
+# - comments (starting with '#') and empty lines will be ignored
+# - this file will be split in two files (input versus result) based on the first column
+# - the "comment" column will be discarded
+# - short names for fields will be replaced by their real counterpart (ctr -> control_genotype)
+# - missing fields will be populated with dummy data (chromosome start, quality_score, ...) since they're not relevant here
+# - fields will be reordered to match the order of the dictionary
+# - a test will run on the re-formatted input file and be checked against the re-formatted result file
+# - for "input" type, leave the "mut" and "marking" columns empty (they're considered N/A)
+# - put result row(s) right after their corresponding input row
+# - separate input+result rows islands with a new line
+
+type	ref	ctr	tmr	frm	to	mut	marking	comment
+
+input	A	A/A	A/C	A	C				simplest case
+result	A	A/A	A/C	A	C	A>C	OPEN	
+
+input	A	A/G	A/C	A	C				one sensitive allele in control
+result	A	A/G	A/C	A	C	A>C	CTRL	
+result	A			A	C	A>C	MASK	
+
+input	A	A/G	A/C	G	C				same but the "other" control allele is chosen as "from"
+result	A	A/G	A/C	G	C	A>C	CTRL	
+result	A			G	C	A>C	MASK	is that correct?
+
+...
+
