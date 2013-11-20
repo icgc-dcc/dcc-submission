@@ -11,18 +11,20 @@
 # - put result row(s) right after their corresponding input row
 # - separate input+result rows islands with a new line
 
+# TODO: explain CTRL
+
 type	ref	ctr	tmr	frm	to	mut	marking	comment
 
-input	A	A/A	A/C	A	C				simplest case
+input	A	A/A	A/C	A	C			simplest case
 result	A	A/A	A/C	A	C	A>C	OPEN	
 
-input	A	A/G	A/C	A	C				one sensitive allele in control
+input	A	A/G	A/C	A	C			one sensitive allele in control
 result	A	A/G	A/C	A	C	A>C	CTRL	
 result	A			A	C	A>C	MASK	
 
-input	A	A/G	A/C	G	C				same but the "other" control allele is chosen as "from"
+input	A	A/G	A/C	G	C			same but the "other" control allele is chosen as "from"
 result	A	A/G	A/C	G	C	A>C	CTRL	
 result	A			G	C	A>C	MASK	is that correct?
 
-...
+
 

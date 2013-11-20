@@ -74,7 +74,7 @@ public final class NormalizationValidator implements Validator {
   /**
    * Type that is the focus of normalization (there could be more in the future).
    */
-  private static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
+  public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
 
   private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
   private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);

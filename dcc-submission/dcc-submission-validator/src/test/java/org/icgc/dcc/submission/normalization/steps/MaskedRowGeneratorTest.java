@@ -30,7 +30,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public class SensitiveRowMarking2Test extends CascadingTestCase {
+public class MaskedRowGeneratorTest extends CascadingTestCase {
 
   @Test
   public void test_cascading_MaskedRowGenerator() {

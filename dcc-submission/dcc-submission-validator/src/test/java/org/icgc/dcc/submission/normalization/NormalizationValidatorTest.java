@@ -18,11 +18,12 @@
 package org.icgc.dcc.submission.normalization;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Files.readLines;
+import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.normalization.NormalizationValidator.COMPONENT_NAME;
+import static org.icgc.dcc.submission.normalization.NormalizationValidator.FOCUS_TYPE;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +32,6 @@ import java.util.UUID;
 
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -58,7 +58,6 @@ import cascading.tap.local.FileTap;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.io.Resources;
 import com.typesafe.config.Config;
 
 @RunWith(PowerMockRunner.class)
@@ -69,13 +68,22 @@ public class NormalizationValidatorTest {
   private static final String PROJECT_NAME = "dummy_project";
 
   private static final String FILE_NAME = "ssm__p.txt";
+  private static final String INPUT = "input";
+  private static final String OUTPUT = "output";
+  private static final String REFERENCE = "reference";
 
-  private static final String INPUT_FILE =
-      Resources.getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, "input", FILE_NAME)).getFile();
-  private static final String REFERENCE_FILE =
-      Resources.getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, "reference", FILE_NAME))
-          .getFile();
-  private static final String OUTPUT_FILE = format("/tmp/dcc_root_dir/%s/%s", COMPONENT_NAME, FILE_NAME);
+  private static String ENFORCEABLE_SPEC_FILE = getResource(
+      format("fixtures/validation/%s/enforceable_specification.txt", COMPONENT_NAME)).getFile();
+  private static final String BASIC_INPUT_FILE =
+      getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, INPUT, FILE_NAME)).getFile();
+  private static final String BASIC_REFERENCE_FILE =
+      getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME)).getFile();
+  private static final String SPEC_DERIVED_INPUT_FILE =
+      format("/tmp/dcc_root_dir/%s/input/%s", COMPONENT_NAME, INPUT, FILE_NAME);
+  private static final String SPEC_DERIVED_REFERENCE_FILE =
+      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME);
+  private static final String OUTPUT_FILE =
+      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, OUTPUT, FILE_NAME);
 
   private static final Joiner NEWLINE_JOINER = Joiner.on("\n");
 
@@ -119,24 +127,12 @@ public class NormalizationValidatorTest {
     when(mockRelease.getName())
         .thenReturn(RELEASE_NAME);
     when(mockFileSchema.getFieldNames())
-        .thenReturn(
-            newArrayList(
-                "analysis_id", "analyzed_sample_id", "mutation_type", "chromosome", "chromosome_start",
-                "chromosome_end", "chromosome_strand", "reference_genome_allele", "control_genotype",
-                "mutated_from_allele", "mutated_to_allele", "tumour_genotype", "expressed_allele", "quality_score",
-                "probability", "total_read_count", "mutant_allele_read_count", "verification_status",
-                "verification_platform", "biological_validation_status", "biological_validation_platform", "note")
-        );
-    when(mockDictionary.getFileSchema(SubmissionFileType.SSM_P_TYPE))
+        .thenReturn(NormalizationTestUtils.getFieldNames(FOCUS_TYPE));
+    when(mockDictionary.getFileSchema(FOCUS_TYPE))
         .thenReturn(
             Optional.<FileSchema> of(mockFileSchema));
     when(mockSubmissionDirectory.getFile(Mockito.anyString()))
         .thenReturn(Optional.<String> of(FILE_NAME));
-
-    mockInputTap();
-    mockOutputTap();
-    when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(new LocalFlowConnector());
 
     when(mockValidationContext.getDictionary())
         .thenReturn(mockDictionary);
@@ -154,8 +150,50 @@ public class NormalizationValidatorTest {
 
   @SneakyThrows
   @Test
-  public void test_normalize() {
+  public void test_normalization_basic() {
+    test(
+        false,
+        NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
+            "11\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
+            "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
+            "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
+            "1\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
+            "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
+            "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
+            "8\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
+    );
+  }
+
+  @SneakyThrows
+  @Test
+  public void test_normalization_enforceable_spec() {
+    test(
+        true,
+        NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
+            "?\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
+            "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
+            "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
+            "1\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
+            "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
+            "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
+            "8\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
+    );
+  }
+
+  @SneakyThrows
+  private void test(boolean enforceableSpec, String expectedInternalReport) {
     new File(OUTPUT_FILE).delete();
+
+    if (enforceableSpec) {
+      EnforceableSpecConverter.convert(
+          ENFORCEABLE_SPEC_FILE, SPEC_DERIVED_INPUT_FILE, SPEC_DERIVED_REFERENCE_FILE);
+      mockInputTap(SPEC_DERIVED_INPUT_FILE);
+    } else {
+      mockInputTap(BASIC_INPUT_FILE);
+    }
+    mockOutputTap(OUTPUT_FILE);
+    when(mockPlatformStrategy.getFlowConnector())
+        .thenReturn(new LocalFlowConnector());
 
     normalizationValidator = NormalizationValidator
         .getDefaultInstance(mockDccFileSystem2, mockConfig);
@@ -163,23 +201,17 @@ public class NormalizationValidatorTest {
 
     // Check data output
     assertThat(NEWLINE_JOINER.join(readLines(new File(OUTPUT_FILE), UTF_8)))
-        .isEqualTo(NEWLINE_JOINER.join(readLines(new File(REFERENCE_FILE), UTF_8)));
+        .isEqualTo(
+            NEWLINE_JOINER.join(readLines(
+                new File(enforceableSpec ? SPEC_DERIVED_REFERENCE_FILE : BASIC_REFERENCE_FILE),
+                UTF_8)));
 
     // Check internal report
     Mockito.verify(mockDccFileSystem2, Mockito.times(1))
         .writeNormalizationReport(
             Mockito.anyString(),
             Mockito.anyString(),
-            Mockito.eq(
-                NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
-                    "11\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
-                    "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
-                    "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
-                    "1\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
-                    "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
-                    "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
-                    "8\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
-                ));
+            Mockito.eq(expectedInternalReport));
   }
 
   /**
@@ -207,36 +239,35 @@ public class NormalizationValidatorTest {
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
-  private void mockInputTap() {
+  private void mockInputTap(String inputFile) {
     when(mockPlatformStrategy.getSourceTap2(mockFileSchema))
-        .thenReturn(getInputTap());
-  }
-
-  // TODO: Shouldn't have to do that
-  @SuppressWarnings("rawtypes")
-  private Tap getInputTap() {
-    return new FileTap(
-        new TextDelimited(
-            true, // headers
-            FIELD_SEPARATOR),
-        INPUT_FILE);
+        .thenReturn(getInputTap(inputFile));
   }
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
-  private void mockOutputTap() {
+  private void mockOutputTap(String outputFile) {
     when(mockDccFileSystem2.getNormalizationDataOutputTap(RELEASE_NAME, PROJECT_NAME))
-        .thenReturn(getOutputTap());
+        .thenReturn(getOutputTap(outputFile));
   }
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
-  private Tap getOutputTap() {
+  private Tap getInputTap(String inputFile) {
     return new FileTap(
         new TextDelimited(
             true, // headers
             FIELD_SEPARATOR),
-        OUTPUT_FILE);
+        inputFile);
   }
 
+  // TODO: Shouldn't have to do that
+  @SuppressWarnings("rawtypes")
+  private Tap getOutputTap(String outputFile) {
+    return new FileTap(
+        new TextDelimited(
+            true, // headers
+            FIELD_SEPARATOR),
+        outputFile);
+  }
 }
