@@ -21,7 +21,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.readLines;
-import static java.lang.String.format;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
@@ -151,7 +150,6 @@ public class EnforceableSpecConverter {
     val data = Lists.<List<String>> newArrayList();
     data.add(targetFieldNames);
 
-    int observationId = 0;
     for (val row : rows) {
       val formattedRow = Lists.<String> newArrayList();
       for (String fieldName : targetFieldNames) {
@@ -160,7 +158,8 @@ public class EnforceableSpecConverter {
           String shortFieldName = SHORT_TO_REAL_FIELD_NAMES.inverse().get(fieldName);
           formattedRow.add(row.get(shortFieldName));
         } else if (NORMALIZER_OBSERVATION_ID.equals(fieldName)) {
-          formattedRow.add(format("v%s", ++observationId));
+          // TODO: pass a class member instead (un-statify the class)
+          formattedRow.add(NormalizationValidatorTest.OBSERVATION_ID_DEFAULT_VALUE);
         } else {
           formattedRow.add(DUMMY_VALUE);
         }
