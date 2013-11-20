@@ -84,7 +84,7 @@ public class SftpContext {
 
   // TODO: This should not be needed once the other todos are addressed
   public Release getNextRelease() {
-    return releaseService.resolveNextRelease().getRelease();
+    return releaseService.getNextRelease();
   }
 
   public String getNextReleaseName() {

@@ -20,7 +20,9 @@ package org.icgc.dcc.submission.release;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,17 +30,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.val;
+
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
-import org.icgc.dcc.submission.release.DccLocking;
-import org.icgc.dcc.submission.release.IllegalReleaseStateException;
-import org.icgc.dcc.submission.release.NextRelease;
-import org.icgc.dcc.submission.release.ReleaseException;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -52,15 +52,13 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 
-public class NextReleaseTest {
+public class ReleaseServiceNextReleaseTest {
 
-  private NextRelease nextRelease;
+  private ReleaseService releaseService;
 
   private Release release;
 
   private Dictionary dictionary;
-
-  private DccLocking dccLocking;
 
   private Datastore ds;
 
@@ -78,8 +76,6 @@ public class NextReleaseTest {
 
   private ReleaseFileSystem mockReleaseFileSystem;
 
-  private ReleaseService mockReleaseService;
-
   private DictionaryService mockDictionaryService;
 
   private static final String NEXT_RELEASE_NAME = "release2";
@@ -92,7 +88,6 @@ public class NextReleaseTest {
     updatesDict = mock(UpdateOperations.class);
     fs = mock(DccFileSystem.class);
     mockReleaseFileSystem = mock(ReleaseFileSystem.class);
-    mockReleaseService = mock(ReleaseService.class);
     mockDictionaryService = mock(DictionaryService.class);
 
     when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
@@ -108,12 +103,9 @@ public class NextReleaseTest {
     when(release.getSubmissions()).thenReturn(submissions);
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
 
-    dccLocking = mock(DccLocking.class);
     ds = mock(Datastore.class);
     mockMorphia = mock(Morphia.class);
 
-    when(dccLocking.acquireReleasingLock()).thenReturn(release);
-    when(dccLocking.relinquishReleasingLock()).thenReturn(release);
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
@@ -127,25 +119,22 @@ public class NextReleaseTest {
     when(query.filter(anyString(), any())).thenReturn(query);
     when(queryDict.filter(anyString(), any())).thenReturn(queryDict);
 
-    when(mockReleaseService.getFromName("not_existing_release")).thenReturn(null);
+    val mockMailService = mock(MailService.class);
+
+    releaseService = spy(new ReleaseService(mockMorphia, ds, fs, mockMailService));
+
+    doReturn(null).when(releaseService).getReleaseByName(anyString());
+    doReturn(release).when(releaseService).getNextRelease();
+
     Dictionary dictionary = mock(Dictionary.class);
     when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(dictionary);
-
-    nextRelease = new NextRelease(dccLocking, release, mockMorphia, ds, fs);
-  }
-
-  @Test(expected = IllegalReleaseStateException.class)
-  public void test_NextRelease_throwsWhenBadReleaseState() {
-    when(release.getState()).thenReturn(ReleaseState.COMPLETED);
-
-    new NextRelease(dccLocking, release, mockMorphia, ds, fs);
   }
 
   @Test
   public void test_release_setPreviousStateToCompleted() throws InvalidStateException {
     releaseSetUp();
 
-    nextRelease.release(NEXT_RELEASE_NAME);
+    releaseService.release(NEXT_RELEASE_NAME);
 
     verify(release).setState(ReleaseState.COMPLETED);
   }
@@ -154,18 +143,18 @@ public class NextReleaseTest {
   public void test_release_setNewStateToOpened() throws InvalidStateException {
     releaseSetUp();
 
-    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
 
-    assertTrue(newRelease.getRelease().getState() == ReleaseState.OPENED);
+    assertTrue(newRelease.getState() == ReleaseState.OPENED);
   }
 
   @Test
   public void test_release_datastoreUpdated() throws InvalidStateException {
     releaseSetUp();
 
-    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
 
-    verify(ds).save(newRelease.getRelease());
+    verify(ds).save(newRelease);
     verify(ds).createUpdateOperations(Release.class);
     verify(updates).set("state", ReleaseState.COMPLETED);
     verify(updates).set("releaseDate", release.getReleaseDate());
@@ -176,19 +165,19 @@ public class NextReleaseTest {
   public void test_release_correctReturnValue() throws InvalidStateException {
     releaseSetUp();
 
-    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
 
-    assertTrue(newRelease.getRelease().getName().equals(NEXT_RELEASE_NAME));
-    assertTrue(newRelease.getRelease().getDictionaryVersion().equals("0.6c"));
+    assertTrue(newRelease.getName().equals(NEXT_RELEASE_NAME));
+    assertTrue(newRelease.getDictionaryVersion().equals("0.6c"));
   }
 
   @Test
   public void test_release_newDictionarySet() throws InvalidStateException {
     releaseSetUp();
 
-    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
 
-    assertTrue(newRelease.getRelease().getDictionaryVersion().equals("0.6c"));
+    assertTrue(newRelease.getDictionaryVersion().equals("0.6c"));
   }
 
   @Test
@@ -198,7 +187,7 @@ public class NextReleaseTest {
     assertTrue(release.getDictionaryVersion().equals(dictionary.getVersion()));
     assertTrue(dictionary.getState() == DictionaryState.OPENED);
 
-    nextRelease.release(NEXT_RELEASE_NAME);
+    releaseService.release(NEXT_RELEASE_NAME);
 
     // TODO reinstate this test once NextRelease is rewritten to use services
     // verify(dictionary).close();
@@ -208,7 +197,7 @@ public class NextReleaseTest {
   public void test_release_throwsMissingDictionaryException() throws InvalidStateException {
     assertTrue(release.getDictionaryVersion() == null);
 
-    nextRelease.release("Release2");
+    releaseService.release("Release2");
   }
 
   @Ignore
@@ -217,7 +206,7 @@ public class NextReleaseTest {
     // TODO reinstate once NextRelease is fixed to make mocking easier
     releaseSetUp();
 
-    nextRelease.release(release.getName());
+    releaseService.release(release.getName());
   }
 
   @Ignore
@@ -242,4 +231,5 @@ public class NextReleaseTest {
     when(updates.set("submissions.$.state", SubmissionState.SIGNED_OFF)).thenReturn(updates);
     return submission;
   }
+
 }

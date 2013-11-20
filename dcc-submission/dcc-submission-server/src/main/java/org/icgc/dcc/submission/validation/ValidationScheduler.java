@@ -292,7 +292,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    * Utility method to give the current "next release" object and confirms open state.
    */
   private Release resolveOpenRelease() {
-    val release = releaseService.resolveNextRelease().getRelease();
+    val release = releaseService.getNextRelease();
     checkState(release.getState() == OPENED, "Release is expected to be '%s'", OPENED);
     return release;
   }

@@ -57,7 +57,6 @@ import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -90,7 +89,8 @@ public class NextReleaseResource {
   @GET
   public Response getNextRelease(
 
-      @Context SecurityContext securityContext
+      @Context
+      SecurityContext securityContext
 
       )
   {
@@ -119,7 +119,8 @@ public class NextReleaseResource {
   @Path("dictionary")
   public Response getDictionary(
 
-      @Context Request request
+      @Context
+      Request request
 
       )
   {
@@ -134,9 +135,11 @@ public class NextReleaseResource {
 
       Release nextRelease,
 
-      @Context Request request,
+      @Context
+      Request request,
 
-      @Context SecurityContext securityContext
+      @Context
+      SecurityContext securityContext
 
       )
   {
@@ -147,17 +150,16 @@ public class NextReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    NextRelease oldRelease = releaseService.resolveNextRelease(); // guaranteed not null
-    Release release = oldRelease.getRelease();
+    Release release = releaseService.getNextRelease(); // guaranteed not null
     String oldReleaseName = release.getName();
     log.info("Releasing {}", oldReleaseName);
 
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(request, release);
 
-    NextRelease newRelease = null;
+    Release newRelease = null;
     try {
-      newRelease = oldRelease.release(nextRelease.getName());
+      newRelease = releaseService.release(nextRelease.getName());
       log.info("Released {}", oldReleaseName);
     } catch (ReleaseException e) {
       ServerErrorCode code = RELEASE_EXCEPTION;
@@ -168,7 +170,7 @@ public class NextReleaseResource {
       log.error(code.getFrontEndString(), e);
       return Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     }
-    return ResponseTimestamper.ok(newRelease.getRelease()).build();
+    return ResponseTimestamper.ok(newRelease).build();
   }
 
   @GET
@@ -177,8 +179,7 @@ public class NextReleaseResource {
     /* no authorization check necessary */
 
     log.debug("Getting the queue for nextRelease");
-    NextRelease nextRelease = releaseService.resolveNextRelease();
-    List<String> projectIds = nextRelease.getQueued(); // TODO: ensure cannot be null (DCC-820)
+    List<String> projectIds = releaseService.getQueuedProjectKeys();
     Object[] projectIdArray = projectIds.toArray();
 
     return Response.ok(projectIdArray).build();
@@ -188,11 +189,14 @@ public class NextReleaseResource {
   @Path("queue")
   public Response queue(
 
-      @Valid List<QueuedProject> queuedProjects,
+      @Valid
+      List<QueuedProject> queuedProjects,
 
-      @Context Request request,
+      @Context
+      Request request,
 
-      @Context SecurityContext securityContext
+      @Context
+      SecurityContext securityContext
 
       )
   {
@@ -207,7 +211,7 @@ public class NextReleaseResource {
       projectKeys.add(projectKey);
     }
 
-    Release nextRelease = releaseService.resolveNextRelease().getRelease();
+    Release nextRelease = releaseService.getNextRelease();
     ResponseTimestamper.evaluate(request, nextRelease);
 
     try {
@@ -241,7 +245,8 @@ public class NextReleaseResource {
   @Path("queue")
   public Response removeAllQueued(
 
-      @Context SecurityContext securityContext
+      @Context
+      SecurityContext securityContext
 
       )
   {
@@ -259,9 +264,11 @@ public class NextReleaseResource {
   @SneakyThrows
   public Response cancelValidation(
 
-      @PathParam("projectKey") String projectKey,
+      @PathParam("projectKey")
+      String projectKey,
 
-      @Context SecurityContext securityContext
+      @Context
+      SecurityContext securityContext
 
       )
   {
@@ -300,9 +307,11 @@ public class NextReleaseResource {
 
       List<String> projectKeys,
 
-      @Context Request request,
+      @Context
+      Request request,
 
-      @Context SecurityContext securityContext
+      @Context
+      SecurityContext securityContext
 
       )
   {
@@ -311,7 +320,7 @@ public class NextReleaseResource {
       return unauthorizedResponse();
     }
 
-    Release nextRelease = releaseService.resolveNextRelease().getRelease();
+    Release nextRelease = releaseService.getNextRelease();
     ResponseTimestamper.evaluate(request, nextRelease);
 
     try {
@@ -343,11 +352,14 @@ public class NextReleaseResource {
   @Path("update")
   public Response update(
 
-      @Valid Release release, // TODO: only requires String (+change UI)
+      @Valid
+      Release release, // TODO: only requires String (+change UI)
 
-      @Context Request request,
+      @Context
+      Request request,
 
-      @Context SecurityContext securityContext
+      @Context
+      SecurityContext securityContext
 
       )
   {
@@ -378,7 +390,7 @@ public class NextReleaseResource {
   }
 
   private Release fetchOpenRelease() {
-    return releaseService.resolveNextRelease().getRelease();
+    return releaseService.getNextRelease();
   }
 
 }
