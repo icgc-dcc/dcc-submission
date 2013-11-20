@@ -33,9 +33,12 @@ import static org.icgc.dcc.submission.core.MailService.MAIL_VALIDATION_SUBJECT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_VALID_BODY;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
+
+import java.util.List;
 
 import javax.mail.Address;
 import javax.mail.Transport;
@@ -79,19 +82,20 @@ public class MailServiceTest {
     val subject = "subject";
     val text = "text";
 
-    val message = verify(new Runnable() {
+    mailService.sendSupportProblem(subject, text);
 
-      @Override
-      public void run() {
-        mailService.sendSupportProblem(subject, text);
-      }
+    verifyStatic(times(2));
 
-    });
+    val messages = getMessages();
+    val notifyMessage = messages.get(0);
+    assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
 
-    assertThat(message.getFrom()).contains(address(get(MAIL_FROM)));
-    assertThat(message.getAllRecipients()).contains(address(get(MAIL_SUPPORT_RECIPIENT)));
-    assertThat(message.getSubject()).endsWith(subject);
-    assertThat(message.getContent()).isEqualTo(text);
+    val supportMessage = messages.get(1);
+    assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(supportMessage.getAllRecipients()).contains(address(get(MAIL_SUPPORT_RECIPIENT)));
+    assertThat(supportMessage.getSubject()).endsWith(subject);
+    assertThat(supportMessage.getContent()).isEqualTo(text);
   }
 
   @Test
@@ -103,30 +107,28 @@ public class MailServiceTest {
     val emails = newArrayList("email@domain.com");
     val addresses = newHashSet(address("email@domain.com"));
 
-    val message = verify(new Runnable() {
+    mailService.sendValidationResult(releaseName, projectKey, emails, state);
 
-      @Override
-      public void run() {
-        mailService.sendValidationFinished(releaseName, projectKey, state, emails);
-      }
+    verifyStatic(times(2));
 
-    });
+    val messages = getMessages();
+    val notifyMessage = messages.get(0);
+    assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
 
-    assertThat(message.getFrom()).contains(address(get(MAIL_FROM)));
-    assertThat(message.getAllRecipients()).contains(address(get(MAIL_SUPPORT_RECIPIENT))).containsAll(addresses);
-    assertThat(message.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
-    assertThat(message.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
+    val supportMessage = messages.get(1);
+    assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(supportMessage.getAllRecipients()).containsAll(addresses);
+    assertThat(supportMessage.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+    assertThat(supportMessage.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
   }
 
   @SneakyThrows
-  private static MimeMessage verify(Runnable runnable) {
-    runnable.run();
-    verifyStatic();
-
+  private static List<MimeMessage> getMessages() {
     val captor = ArgumentCaptor.forClass(MimeMessage.class);
     Transport.send(captor.capture());
 
-    return captor.getValue();
+    return captor.getAllValues();
   }
 
   private static Config mockConfig() {
@@ -134,7 +136,7 @@ public class MailServiceTest {
 
     when(config.hasPath(MAIL_ENABLED)).thenReturn(true);
     when(config.getBoolean(MAIL_ENABLED)).thenReturn(true);
-    for (val name : new String[] { MAIL_SMTP_HOST, MAIL_FROM, MAIL_FROM, MAIL_SUPPORT_RECIPIENT, MAIL_NOTIFICATION_RECIPIENT }) {
+    for (val name : new String[] { MAIL_SMTP_HOST, MAIL_FROM, MAIL_SUPPORT_RECIPIENT, MAIL_NOTIFICATION_RECIPIENT }) {
       when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn(name);
     }
