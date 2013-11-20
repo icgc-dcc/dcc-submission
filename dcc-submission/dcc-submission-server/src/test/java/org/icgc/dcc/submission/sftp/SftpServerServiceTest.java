@@ -59,7 +59,6 @@ import org.icgc.dcc.submission.core.model.UserSession;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -113,8 +112,6 @@ public class SftpServerServiceTest {
   @Mock
   Project project;
   @Mock
-  NextRelease nextRelease;
-  @Mock
   DccFileSystem fs;
   @Mock
   SubmissionDirectory submissionDirectory;
@@ -150,8 +147,7 @@ public class SftpServerServiceTest {
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
     when(release.getName()).thenReturn(RELEASE_NAME);
-    when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.resolveNextRelease()).thenReturn(nextRelease);
+    when(releaseService.getNextRelease()).thenReturn(release);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new ProjectServiceException(""));
     when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(newArrayList(project));

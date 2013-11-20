@@ -143,9 +143,9 @@ public class ReleaseServiceTest {
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,
   // QProject.project); TODO: find a solution
   public void test_getNextRelease_isCorrectRelease() {
-    assertEquals(release.getId(), releaseService.resolveNextRelease().getRelease().getId());
+    assertEquals(release.getId(), releaseService.getNextRelease().getId());
     Release newRelease = addNewRelease("release2");
-    assertEquals(newRelease.getName(), releaseService.resolveNextRelease().getRelease().getName());
+    assertEquals(newRelease.getName(), releaseService.getNextRelease().getName());
   }
 
   @Test
@@ -186,17 +186,15 @@ public class ReleaseServiceTest {
 
   // @Test
   public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
-    NextRelease nextRelease = releaseService.resolveNextRelease();
-    Release nextReleaseRelease = nextRelease.getRelease();
-    assertTrue(!nextRelease.atLeastOneSignedOff(nextReleaseRelease));
+    Release nextReleaseRelease = releaseService.getNextRelease();
+    assertTrue(!releaseService.atLeastOneSignedOff(nextReleaseRelease));
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
     releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    nextRelease = releaseService.resolveNextRelease();
-    assertTrue(nextRelease.atLeastOneSignedOff(nextReleaseRelease));
+    assertTrue(releaseService.atLeastOneSignedOff(nextReleaseRelease));
   }
 
   // @Test
@@ -221,14 +219,14 @@ public class ReleaseServiceTest {
       throw new RuntimeException(e);
     }
 
-    NextRelease nextRelease = null;
+    Release nextRelease = null;
     try {
-      nextRelease = releaseService.resolveNextRelease().release(newRelease.getName());
+      nextRelease = releaseService.release(newRelease.getName());
     } catch (InvalidStateException e) {
       Throwables.propagate(e);
     }
 
-    return nextRelease.getRelease();
+    return nextRelease;
   }
 
 }
