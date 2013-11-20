@@ -21,6 +21,7 @@ import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.readLines;
+import static java.lang.String.format;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
@@ -150,14 +151,18 @@ public class EnforceableSpecConverter {
     val data = Lists.<List<String>> newArrayList();
     data.add(targetFieldNames);
 
+    int observationId = 0;
     for (val row : rows) {
       val formattedRow = Lists.<String> newArrayList();
       for (String fieldName : targetFieldNames) {
+        // Order matters
         if (isSpecifiedField(fieldName)) {
-          formattedRow.add(DUMMY_VALUE);
-        } else {
           String shortFieldName = SHORT_TO_REAL_FIELD_NAMES.inverse().get(fieldName);
           formattedRow.add(row.get(shortFieldName));
+        } else if (NORMALIZER_OBSERVATION_ID.equals(fieldName)) {
+          formattedRow.add(format("v%s", ++observationId));
+        } else {
+          formattedRow.add(DUMMY_VALUE);
         }
       }
       data.add(formattedRow);
@@ -231,7 +236,7 @@ public class EnforceableSpecConverter {
   }
 
   private static boolean isSpecifiedField(String fieldName) {
-    return !SHORT_TO_REAL_FIELD_NAMES.values().contains(fieldName);
+    return SHORT_TO_REAL_FIELD_NAMES.values().contains(fieldName);
   }
 
   private static boolean isInputRow(String type) {
