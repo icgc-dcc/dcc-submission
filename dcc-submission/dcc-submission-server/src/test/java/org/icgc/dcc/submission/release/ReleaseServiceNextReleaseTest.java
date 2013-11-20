@@ -123,7 +123,7 @@ public class ReleaseServiceNextReleaseTest {
 
     releaseService = spy(new ReleaseService(mockMorphia, ds, fs, mockMailService));
 
-    doReturn(null).when(releaseService).getFromName("not_existing_release");
+    doReturn(null).when(releaseService).getReleaseByName(anyString());
     doReturn(release).when(releaseService).getNextRelease();
 
     Dictionary dictionary = mock(Dictionary.class);

@@ -150,12 +150,12 @@ public class ReleaseServiceTest {
 
   @Test
   public void test_getFromName_exists() {
-    Assert.assertNotNull(releaseService.getFromName("release1"));
+    Assert.assertNotNull(releaseService.getReleaseByName("release1"));
   }
 
   @Test
   public void test_getFromName_notExists() {
-    Assert.assertNull(releaseService.getFromName("dummy"));
+    Assert.assertNull(releaseService.getReleaseByName("dummy"));
   }
 
   // @Test; The workflow seems to be that a Release has to be created first and then projects are added to it. This test
@@ -187,14 +187,14 @@ public class ReleaseServiceTest {
   // @Test
   public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
     Release nextReleaseRelease = releaseService.getNextRelease();
-    assertTrue(!releaseService.atLeastOneSignedOff(nextReleaseRelease));
+    assertTrue(!releaseService.isAtLeastOneSignedOff(nextReleaseRelease));
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
     releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    assertTrue(releaseService.atLeastOneSignedOff(nextReleaseRelease));
+    assertTrue(releaseService.isAtLeastOneSignedOff(nextReleaseRelease));
   }
 
   // @Test

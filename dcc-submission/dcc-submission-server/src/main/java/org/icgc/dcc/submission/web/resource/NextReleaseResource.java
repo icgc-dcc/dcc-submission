@@ -179,7 +179,7 @@ public class NextReleaseResource {
     /* no authorization check necessary */
 
     log.debug("Getting the queue for nextRelease");
-    List<String> projectIds = releaseService.getQueued();
+    List<String> projectIds = releaseService.getQueuedProjectKeys();
     Object[] projectIdArray = projectIds.toArray();
 
     return Response.ok(projectIdArray).build();
