@@ -34,11 +34,6 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
-import org.icgc.dcc.submission.release.DccLocking;
-import org.icgc.dcc.submission.release.IllegalReleaseStateException;
-import org.icgc.dcc.submission.release.NextRelease;
-import org.icgc.dcc.submission.release.ReleaseException;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -59,8 +54,6 @@ public class NextReleaseTest {
   private Release release;
 
   private Dictionary dictionary;
-
-  private DccLocking dccLocking;
 
   private Datastore ds;
 
@@ -108,12 +101,9 @@ public class NextReleaseTest {
     when(release.getSubmissions()).thenReturn(submissions);
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
 
-    dccLocking = mock(DccLocking.class);
     ds = mock(Datastore.class);
     mockMorphia = mock(Morphia.class);
 
-    when(dccLocking.acquireReleasingLock()).thenReturn(release);
-    when(dccLocking.relinquishReleasingLock()).thenReturn(release);
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
@@ -131,14 +121,14 @@ public class NextReleaseTest {
     Dictionary dictionary = mock(Dictionary.class);
     when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(dictionary);
 
-    nextRelease = new NextRelease(dccLocking, release, mockMorphia, ds, fs);
+    nextRelease = new NextRelease(release, mockMorphia, ds, fs);
   }
 
   @Test(expected = IllegalReleaseStateException.class)
   public void test_NextRelease_throwsWhenBadReleaseState() {
     when(release.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    new NextRelease(dccLocking, release, mockMorphia, ds, fs);
+    new NextRelease(release, mockMorphia, ds, fs);
   }
 
   @Test

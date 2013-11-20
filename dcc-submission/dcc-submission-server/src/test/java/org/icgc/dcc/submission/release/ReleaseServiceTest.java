@@ -54,8 +54,6 @@ import com.mongodb.MongoException;
 
 public class ReleaseServiceTest {
 
-  private DccLocking dccLocking;
-
   private Datastore datastore;
 
   private Dictionary dictionary;
@@ -80,7 +78,6 @@ public class ReleaseServiceTest {
       Mongo mongo = new MongoClient("localhost");
       Morphia morphia = new Morphia();
       datastore = morphia.createDatastore(mongo, testDbName);
-      dccLocking = mock(DccLocking.class);
       fs = mock(DccFileSystem.class);
 
       // Clear out the test database before each test
@@ -119,7 +116,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, mailService);
+      releaseService = new ReleaseService(morphia, datastore, fs, mailService);
       dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
       dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);

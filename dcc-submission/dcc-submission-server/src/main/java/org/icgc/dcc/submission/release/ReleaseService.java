@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,15 +92,13 @@ import com.mysema.query.types.Predicate;
 @Slf4j
 public class ReleaseService extends BaseMorphiaService<Release> {
 
-  private final DccLocking dccLocking;
   private final DccFileSystem fs;
 
   @Inject
-  public ReleaseService(DccLocking dccLocking, Morphia morphia, Datastore datastore, DccFileSystem fs,
+  public ReleaseService(Morphia morphia, Datastore datastore, @NonNull DccFileSystem fs,
       MailService mailService) {
     super(morphia, datastore, QRelease.release, mailService);
-    this.dccLocking = checkNotNull(dccLocking);
-    this.fs = checkNotNull(fs);
+    this.fs = fs;
 
     registerModelClasses(Release.class);
   }
@@ -198,7 +197,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             QRelease.release.state.eq(OPENED))
         .singleResult();
     return new NextRelease(
-        dccLocking,
         checkNotNull(nextRelease, "There is no next release in the database."),
         morphia(),
         datastore(),
@@ -226,7 +224,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     for (Release release : listReleases()) {
       if (release.getState() == ReleaseState.OPENED) {
-        list.add(new NextRelease(dccLocking, release, morphia(), datastore(), fs));
+        list.add(new NextRelease(release, morphia(), datastore(), fs));
       } else {
         list.add(new CompletedRelease(release, morphia(), datastore(), fs));
       }

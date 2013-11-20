@@ -47,16 +47,9 @@ import com.google.common.collect.Sets;
 @Slf4j
 public class NextRelease extends BaseRelease {
 
-  private final DccLocking dccLocking;
-
-  public NextRelease(final DccLocking dccLocking, final Release release, final Morphia morphia,
+  public NextRelease(final Release release, final Morphia morphia,
       final Datastore datastore, final DccFileSystem fs) throws IllegalReleaseStateException {
     super(release, morphia, datastore, fs);
-    checkArgument(dccLocking != null);
-
-    this.dccLocking = dccLocking; // TODO: moveup (DCC-685)?
-    dccLocking.setDatastore(datastore);
-
     if (release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);
     }
@@ -75,8 +68,7 @@ public class NextRelease extends BaseRelease {
     }
 
     Release nextRelease = null;
-    Release oldRelease = dccLocking.acquireReleasingLock(); // TODO: for now nothing checks for it (DCC-685); also
-                                                            // consider reentrance out of safety
+    Release oldRelease = getRelease();
     try {
       String errorMessage;
 
@@ -128,17 +120,11 @@ public class NextRelease extends BaseRelease {
       //
       // End: Critical operations
       //
-    } finally {
-      Release relinquishedRelease = dccLocking.relinquishReleasingLock();
-      if (relinquishedRelease == null || //
-          relinquishedRelease.equals(oldRelease) == false) { // just in case
-        log.error("could not relinquish lock on release {}, obtaining {}",
-            new Object[] { oldRelease, relinquishedRelease });
-        throw new ReleaseException("ReleaseException");
-      }
+    } catch (RuntimeException e) {
+      throw new ReleaseException("Exception trying to release", e);
     }
 
-    return new NextRelease(dccLocking, nextRelease, morphia(), datastore(), fileSystem());
+    return new NextRelease(nextRelease, morphia(), datastore(), fileSystem());
   }
 
   private Release createNextRelease(final String name, final Release oldRelease, final String dictionaryVersion) {
