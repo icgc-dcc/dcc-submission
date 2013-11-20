@@ -100,8 +100,10 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
         val mutatedFromAllele = entry.getString(MUTATED_FROM_ALLELE_FIELD);
         val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
 
-        if (!wouldBeSameMutation(referenceGenomeAllele, mutatedFromAllele)
-            && !wouldBeTrivialMutation(referenceGenomeAllele, mutatedToAllele)) {
+        if (
+        // !wouldBeSameMutation(referenceGenomeAllele, mutatedFromAllele)
+        // &&
+        !wouldBeTrivialMutation(referenceGenomeAllele, mutatedToAllele)) {
           log.info("Creating mask for '{}'", entry); // Rare enough that we can
                                                      // log
           val mask = mask(TupleEntries.clone(entry), referenceGenomeAllele);
@@ -144,14 +146,6 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
       checkState(masking.isPresent(), "There should be a '%s' field at this stage, instead: '%s'",
           NORMALIZER_MARKING_FIELD, entry);
       return masking.get();
-    }
-
-    /**
-     * We don't want to create a masked copy that would be result in the same mutation as the original but only without
-     * the control/tumour genotypes erased.
-     */
-    private boolean wouldBeSameMutation(String referenceGenomeAllele, String mutatedFromAllele) {
-      return referenceGenomeAllele.equals(mutatedFromAllele);
     }
 
     /**

@@ -74,28 +74,34 @@ public class EnforceableSpecConverter {
   private static final String MUTATION_SHORT_FIELD_NAME = "mut";
 
   private static final String MARKING_FIELD_NAME = "marking";
-  private static final String COMMENT_FIELD_NAME = "comment";
 
   private static final String DUMMY_VALUE = "dm";
 
   private static final String INPUT_TYPE = "input";
   private static final String RESULT_TYPE = "result";
 
+  private static final BiMap<String, String> SHORT_TO_REAL_SUBMISSION_FIELD_NAMES =
+      new ImmutableBiMap.Builder<String, String>()
+          .put(MUTATION_TYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_MUTATION_TYPE)
+          .put(REFERENCE_GENOME_ALLELE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE)
+          .put(CONTROL_GENOTYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_CONTROL_GENOTYPE)
+          .put(TUMOUR_GENOTYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE)
+          .put(MUTATED_FROM_ALLELE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE)
+          .put(MUTATED_TO_ALLELE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE)
+          .build();
+  private static final BiMap<String, String> SHORT_TO_REAL_NORMALIZER_FIELD_NAMES =
+      new ImmutableBiMap.Builder<String, String>()
+          .put(MUTATION_SHORT_FIELD_NAME, NORMALIZER_MUTATION)
+          .put(MARKING_FIELD_NAME, NORMALIZER_MARKING)
+          .build();
   private static final BiMap<String, String> SHORT_TO_REAL_FIELD_NAMES = new ImmutableBiMap.Builder<String, String>()
-      .put(MUTATION_TYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_MUTATION_TYPE)
-      .put(REFERENCE_GENOME_ALLELE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE)
-      .put(CONTROL_GENOTYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_CONTROL_GENOTYPE)
-      .put(TUMOUR_GENOTYPE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE)
-      .put(MUTATED_FROM_ALLELE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE)
-      .put(MUTATED_TO_ALLELE_SHORT_FIELD_NAME, SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE)
-      .put(MUTATION_SHORT_FIELD_NAME, NORMALIZER_MUTATION)
-      .put(MARKING_FIELD_NAME, NORMALIZER_MARKING)
+      .putAll(SHORT_TO_REAL_SUBMISSION_FIELD_NAMES)
+      .putAll(SHORT_TO_REAL_NORMALIZER_FIELD_NAMES)
       .build();
 
   static List<String> HEADERS = new ImmutableList.Builder<String>()
       .add(ROW_TYPE_FIELD_NAME)
       .addAll(SHORT_TO_REAL_FIELD_NAMES.keySet())
-      .add(COMMENT_FIELD_NAME)
       .build();
 
   @SneakyThrows
@@ -123,33 +129,34 @@ public class EnforceableSpecConverter {
     Files.write(toTsvString(specDerivedReferenceRows).getBytes(), reference);
   }
 
-  private static List<Map<String, String>> extractData(List<String> lines, boolean input) {
+  private static List<Map<String, String>> extractData(List<String> lines,
+      boolean input // TODO: make enum instead
+  ) {
     val data = Lists.<Map<String, String>> newArrayList();
     for (int lineNumber = 0; lineNumber < lines.size(); lineNumber++) {
       String line = lines.get(lineNumber);
       log.info("line: {} ({})", line, lineNumber);
 
-      if (isRelevantLine(line)) {
+      if (isRelevantLine(line, input)) {
         Map<String, String> rowMap = characterizeFields(
-            Lists.<String> newArrayList(TAB_SPLITTER.split(line)));
-        log.info("rowMap (1): {} ({})", rowMap);
+            Lists.<String> newArrayList(TAB_SPLITTER.split(line.trim())),
+            input);
+        log.info("rowMap (1): {} ({})", rowMap, lineNumber);
 
         String rowType = rowMap.remove(ROW_TYPE_FIELD_NAME);
-        if (input && isInputRow(rowType)) {
-
-          // Remove N/A fields
-          checkNotNull(rowMap.remove(MUTATION_SHORT_FIELD_NAME), "TODO");
-          checkNotNull(rowMap.remove(MARKING_FIELD_NAME), "TODO");
-          data.add(rowMap);
-        } else if (!input && isResultRow(rowType)) {
+        if (!input && isResultRow(rowType)) {
           rowMap.put( // Translate the marking field's abbreviations
               MARKING_FIELD_NAME,
               unabbreviate(checkNotNull(rowMap.remove(MARKING_FIELD_NAME), "TODO")));
-          data.add(rowMap);
         } else {
-          checkState((input && isResultRow(rowType)) || (!input && isInputRow(rowType)), rowType);
+          checkState(
+              (input && isInputRow(rowType))
+                  || (input && isResultRow(rowType))
+                  || (!input && isInputRow(rowType)),
+              rowType);
         }
-        log.info("rowMap (2): {} ({})", rowMap);
+        data.add(rowMap);
+        log.info("rowMap (2): {} ({})", rowMap, lineNumber);
       }
     }
     return data;
@@ -190,24 +197,35 @@ public class EnforceableSpecConverter {
     return normalizationFieldNames;
   }
 
-  private static Map<String, String> characterizeFields(List<String> row) {
+  private static Map<String, String> characterizeFields(List<String> row, boolean input) {
+    int actualRowSize = row.size();
+    int expectedSize = 1 + // +1 for type
+        (input ?
+            SHORT_TO_REAL_SUBMISSION_FIELD_NAMES.size() :
+            SHORT_TO_REAL_FIELD_NAMES.size());
 
-    // +2 for type and comment
-    checkState(row.size() == SHORT_TO_REAL_FIELD_NAMES.size() + 2);
+    checkState(
+        actualRowSize == expectedSize,
+        "expected row size: '%s', actual row size: '%s', row: '%s'", expectedSize, actualRowSize, row);
 
     int i = 0;
     val rowMap = Maps.<String, String> newLinkedHashMap();
-    for (String fieldName : HEADERS) {
-      rowMap.put(fieldName, row.get(i++));
+    for (int j = 0; j < HEADERS.size(); j++) {
+      String fieldName = HEADERS.get(i);
+      if (i < actualRowSize) {
+        rowMap.put(fieldName, row.get(i++));
+      }
     }
 
     return rowMap;
   }
 
-  private static boolean isRelevantLine(String line) {
+  private static boolean isRelevantLine(String line, boolean input) {
     return !line.trim().isEmpty()
         && !line.trim().startsWith("#")
-        && !line.equals(HEADER_LINE);
+        && !line.equals(TAB_JOINER.join(HEADERS))
+        && ((input && line.startsWith(INPUT_TYPE))
+        || (!input && line.startsWith(RESULT_TYPE)));
   }
 
   private static String toTsvString(List<List<String>> listOfList) {
