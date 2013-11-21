@@ -45,7 +45,6 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -75,8 +74,8 @@ public class NormalizationValidatorTest {
   private static final String OUTPUT = "output";
   private static final String REFERENCE = "reference";
 
-  private static String ENFORCEABLE_SPEC_FILE = getResource(
-      format("fixtures/validation/%s/enforceable_specification.txt", COMPONENT_NAME)).getFile();
+  private static String EXECUTABLE_SPEC_FILE = getResource(
+      format("fixtures/validation/%s/executable_specification.txt", COMPONENT_NAME)).getFile();
   private static final String BASIC_INPUT_FILE =
       getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, INPUT, FILE_NAME)).getFile();
   private static final String BASIC_REFERENCE_FILE =
@@ -149,88 +148,67 @@ public class NormalizationValidatorTest {
         .thenReturn(mockPlatformStrategy);
   }
 
-  @Ignore
   @SneakyThrows
   @Test
   public void test_normalization_basic() {
-    test(
-        false,
-        NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
-            "11\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
-            "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
-            "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
-            "1\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
-            "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
-            "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
-            "8\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
-    );
+
+    mockUUID(true);
+    when(mockConfig.getBoolean("duplicates.enabled"))
+        .thenReturn(true);
+
+    test(BASIC_INPUT_FILE, BASIC_REFERENCE_FILE);
+
+    // Check internal report
+    Mockito.verify(mockDccFileSystem2, Mockito.times(1))
+        .writeNormalizationReport(
+            Mockito.anyString(),
+            Mockito.anyString(),
+            Mockito.eq(NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
+                "11\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
+                "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
+                "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
+                "2\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
+                "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
+                "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
+                "9\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
+            ));
   }
 
   @SneakyThrows
   @Test
   public void test_normalization_enforceable_spec() {
-    test(
-        true,
-        NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
-            "?\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
-            "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
-            "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
-            "1\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
-            "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
-            "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
-            "8\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
-    );
+
+    ExecutableSpecConverter.convert(
+        EXECUTABLE_SPEC_FILE,
+        SPEC_DERIVED_INPUT_FILE, SPEC_DERIVED_REFERENCE_FILE);
+    mockUUID(false);
+    when(mockConfig.getBoolean("duplicates.enabled"))
+        .thenReturn(false);
+
+    test(SPEC_DERIVED_INPUT_FILE, SPEC_DERIVED_REFERENCE_FILE);
+
   }
 
   @SneakyThrows
-  private void test(
-      boolean enforceableSpec, // TODO: make enum instead
-      String expectedInternalReport) {
-    new File(OUTPUT_FILE).delete();
-
-    if (enforceableSpec) {
-      when(mockConfig.getBoolean("duplicates.enabled"))
-          .thenReturn(false);
-
-      EnforceableSpecConverter.convert(
-          ENFORCEABLE_SPEC_FILE,
-          SPEC_DERIVED_INPUT_FILE, SPEC_DERIVED_REFERENCE_FILE);
-      mockInputTap(SPEC_DERIVED_INPUT_FILE);
-
-      mockUUID(false);
-    } else {
-      when(mockConfig.getBoolean("duplicates.enabled"))
-          .thenReturn(true);
-
-      mockInputTap(BASIC_INPUT_FILE);
-
-      mockUUID(true);
-    }
+  private void test(String inputFile, String referenceFile) {
+    mockInputTap(inputFile);
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(new LocalFlowConnector());
 
+    new File(OUTPUT_FILE).delete();
     normalizationValidator = NormalizationValidator
         .getDefaultInstance(mockDccFileSystem2, mockConfig);
     normalizationValidator.validate(mockValidationContext);
 
     List<String> outputLines = readLines(new File(OUTPUT_FILE), UTF_8);
     List<String> referenceLines = readLines(
-        new File(enforceableSpec ? SPEC_DERIVED_REFERENCE_FILE : BASIC_REFERENCE_FILE),
+        new File(referenceFile),
         UTF_8);
 
     // Check data output
     assertThat(NEWLINE_JOINER.join(outputLines))
         .isEqualTo(NEWLINE_JOINER.join(referenceLines));
-
-    // Check internal report
-    if (!enforceableSpec) { // TODO: when ready
-      Mockito.verify(mockDccFileSystem2, Mockito.times(1))
-          .writeNormalizationReport(
-              Mockito.anyString(),
-              Mockito.anyString(),
-              Mockito.eq(expectedInternalReport));
-    }
   }
 
   /**
@@ -248,7 +226,8 @@ public class NormalizationValidatorTest {
           .thenReturn("v5")
           .thenReturn("v6")
           .thenReturn("v7")
-          .thenReturn("v8");
+          .thenReturn("v8")
+          .thenReturn("v9");
     }
 
     PowerMockito.when(UUID.randomUUID())

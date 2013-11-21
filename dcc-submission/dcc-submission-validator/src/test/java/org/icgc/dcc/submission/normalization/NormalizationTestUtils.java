@@ -32,10 +32,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
+/**
+ * Mostly ported from TestUtils in the dcc-submission-server module (TODO: address code duplication).
+ */
 @NoArgsConstructor(access = PRIVATE)
 final class NormalizationTestUtils {
-
-  // TODO: add note that duplcate code
 
   /**
    * Jackson constants.
@@ -53,9 +54,6 @@ final class NormalizationTestUtils {
     return getResource("org/icgc/dcc/resources/" + resourceName);
   }
 
-  /**
-   * TODO: have it read
-   */
   public static List<String> getFieldNames(SubmissionFileType type) {
     return newArrayList(dictionary()
         .getFileSchema(type).get()
