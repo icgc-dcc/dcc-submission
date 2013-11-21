@@ -110,7 +110,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   @Synchronized
-  public Release release(@NonNull final String nextReleaseName) throws InvalidStateException {
+  public Release release(String nextReleaseName) throws InvalidStateException {
     // check for next release name
     if (NameValidator.validateEntityName(nextReleaseName) == false) {
       throw new InvalidNameException(nextReleaseName);
