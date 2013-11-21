@@ -3,56 +3,9 @@
 # Usage: /mnt/proxyprod/git/branches/migration_testing/src/main/scripts/DCC-1925/vep.py ./dcc-submission/dcc-submission-validator/target/test-classes/fixtures/validation/external/error/fk_1/.validation /tmp/DCC-1925
 # Assumption: json documents have no separators, though they may contain newlines: { ... doc 1 ... }{ ... doc 2 ...}
 # Report files will be unsorted (but read in memory later on anyway); TODO: expand
-import sys,os,json,shutil
-
-# TODO: prune
-STRUCTURALLY_INVALID_ROW_ERROR ="STRUCTURALLY_INVALID_ROW_ERROR"
-INVALID_CHARSET_ROW_ERROR ="INVALID_CHARSET_ROW_ERROR"
-FORBIDDEN_VALUE_ERROR ="FORBIDDEN_VALUE_ERROR"
-RELATION_VALUE_ERROR ="RELATION_VALUE_ERROR"
-RELATION_PARENT_VALUE_ERROR ="RELATION_PARENT_VALUE_ERROR"
-UNIQUE_VALUE_ERROR ="UNIQUE_VALUE_ERROR"
-VALUE_TYPE_ERROR ="VALUE_TYPE_ERROR"
-OUT_OF_RANGE_ERROR ="OUT_OF_RANGE_ERROR"
-MISSING_VALUE_ERROR ="MISSING_VALUE_ERROR"
-CODELIST_ERROR ="CODELIST_ERROR"
-DISCRETE_VALUES_ERROR ="DISCRETE_VALUES_ERROR"
-REGEX_ERROR ="REGEX_ERROR"
-SCRIPT_ERROR ="SCRIPT_ERROR"
-TOO_MANY_FILES_ERROR ="TOO_MANY_FILES_ERROR"
-RELATION_FILE_ERROR ="RELATION_FILE_ERROR"
-REVERSE_RELATION_FILE_ERROR ="REVERSE_RELATION_FILE_ERROR"
-COMPRESSION_CODEC_ERROR ="COMPRESSION_CODEC_ERROR"
-DUPLICATE_HEADER_ERROR ="DUPLICATE_HEADER_ERROR"
-FILE_HEADER_ERROR ="FILE_HEADER_ERROR"
-REFERENCE_GENOME_MISMATCH_ERROR ="REFERENCE_GENOME_MISMATCH_ERROR"
-REFERENCE_GENOME_INSERTION_ERROR ="REFERENCE_GENOME_INSERTION_ERROR"
-TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR ="TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR"
-
-ERROR_TYPES = [ # TODO: prune
-		STRUCTURALLY_INVALID_ROW_ERROR,
-		INVALID_CHARSET_ROW_ERROR, 
-		FORBIDDEN_VALUE_ERROR, 
-		RELATION_VALUE_ERROR, 
-		RELATION_PARENT_VALUE_ERROR, 
-		UNIQUE_VALUE_ERROR, 
-		VALUE_TYPE_ERROR, 
-		OUT_OF_RANGE_ERROR, 
-		MISSING_VALUE_ERROR, 
-		CODELIST_ERROR, 
-		DISCRETE_VALUES_ERROR, 
-		REGEX_ERROR, 
-		SCRIPT_ERROR, 
-		TOO_MANY_FILES_ERROR, 
-		RELATION_FILE_ERROR, 
-		REVERSE_RELATION_FILE_ERROR, 
-		COMPRESSION_CODEC_ERROR, 
-		DUPLICATE_HEADER_ERROR, 
-		FILE_HEADER_ERROR, 
-		REFERENCE_GENOME_MISMATCH_ERROR, 
-		REFERENCE_GENOME_INSERTION_ERROR, 
-		TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR
-	]
+# 131121182856 - There should be no duplicates in the report files (no line number reported twice in the same file)
+import sys,os,json
+import migration_utils
 
 # ---------------------------------------------------------------------------
 
@@ -78,11 +31,6 @@ def convert_line_number(offset):
 
 # ---------------------------------------------------------------------------
 
-def get_report_file(file_type, error_type):
-	return "%s/%s-%s.vep" % (output_dir, file_type, error_type) # TODO: real path
-
-# ---------------------------------------------------------------------------
-
 # {
 #   "offset" : 2,
 #   "errors" : [ {
@@ -103,15 +51,15 @@ def process_doc(file_type, doc):
 	error_types_encountered = []
 	for error in json_doc["errors"]:
 		error_type = error["type"]
-		assert error_type in ERROR_TYPES
+		assert migration_utils.is_known_error_type(error_type)
 		number = int(error["number"])
-		assert number == 0 or error_type == SCRIPT_ERROR
+		assert number == 0 or migration_utils.is_script_error(error_type)
 		
 		# We only need to report one such error type per document/line
 		if error_type not in error_types_encountered:
 			error_types_encountered.append(error_type)
 
-			report_file = get_report_file(file_type, error_type)
+			report_file = migration_utils.get_report_file(output_dir, file_type, error_type)
 			with open(report_file, 'a') as f:
 				f.write(str(line_number) + '\n')
 
