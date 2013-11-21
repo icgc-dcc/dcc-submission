@@ -17,101 +17,69 @@
  */
 package org.icgc.dcc.submission.core.model;
 
-import static com.google.common.base.Objects.firstNonNull;
 import static org.icgc.dcc.submission.core.util.NameValidator.PROJECT_ID_PATTERN;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.Pattern;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
+import org.bson.types.ObjectId;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.NotBlank;
 
 import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Indexed;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
-@Entity
-public class Project extends BaseEntity implements HasName {
+@Entity(noClassnameStored = true)
+@Data
+@NoArgsConstructor
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+public class Project {
+
+  @Id
+  @JsonIgnore
+  private ObjectId id;
 
   @NotBlank
   @Pattern(regexp = PROJECT_ID_PATTERN)
   @Indexed(unique = true)
-  protected String key;
+  private String key;
 
   @NotBlank
-  protected String name;
+  private String name;
 
-  protected String alias;
+  private String alias;
 
-  protected List<String> users = Lists.newArrayList();
+  @NonNull
+  @JsonIgnore
+  private Set<String> users = Sets.newHashSet();
 
-  protected List<String> groups = Lists.newArrayList();
+  @NonNull
+  @JsonIgnore
+  private Set<String> groups = Sets.newHashSet();
 
-  public Project() {
-    super();
-  }
-
-  public Project(String name) {
-    super();
-    this.setName(name);
-  }
-
-  public Project(String name, String key) {
-    super();
-    this.setName(name);
-    this.setKey(key);
-  }
-
-  @Override
-  public String getName() {
-    return firstNonNull(name, getKey());
-  }
-
-  public void setName(String name) {
+  public Project(String key, String name) {
+    this.key = key;
     this.name = name;
   }
 
-  public String getAlias() {
-    return alias;
+  public Set<String> getUsers() {
+    return ImmutableSet.copyOf(users);
   }
 
-  public void setAlias(String alias) {
-    this.alias = alias;
+  public Set<String> getGroups() {
+    return ImmutableSet.copyOf(groups);
   }
 
-  public String getKey() {
-    return key;
+  public boolean hasUser(String user) {
+    return users.contains(user);
   }
-
-  public void setKey(String key) {
-    this.key = key;
-  }
-
-  public List<String> getUsers() {
-    return users;
-  }
-
-  public void setUsers(List<String> users) {
-    this.users = users;
-  }
-
-  public List<String> getGroups() {
-    return groups == null ? ImmutableList.<String> of() : ImmutableList.copyOf(groups);
-  }
-
-  public void setGroups(List<String> groups) {
-    this.groups = groups;
-  }
-
-  public boolean hasUser(String name) {
-    return this.users != null && this.users.contains(name);
-  }
-
-  @Override
-  public String toString() {
-    return "Project [key=" + key + ", name=" + name + ", alias=" + alias + ", users=" + users + ", groups=" + groups
-        + "]";
-  }
-
 }

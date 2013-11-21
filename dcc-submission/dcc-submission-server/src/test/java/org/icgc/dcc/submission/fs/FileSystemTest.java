@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.User;
-import org.icgc.dcc.submission.fs.FsConfig;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -100,8 +99,8 @@ public class FileSystemTest {
 
     when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(this.mockSubmission);
     List<String> projectKeys = Arrays.asList(this.mockProject.getKey()); // must be separated from thenReturn call
-                                                                         // (mockito bug:
-                                                                         // http://code.google.com/p/mockito/issues/detail?id=53)
+    // (mockito bug:
+    // http://code.google.com/p/mockito/issues/detail?id=53)
     when(this.mockRelease.getProjectKeys()).thenReturn(projectKeys);
   }
 }

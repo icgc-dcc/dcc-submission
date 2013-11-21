@@ -47,6 +47,8 @@ import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.release.ReleaseModule;
+import org.icgc.dcc.submission.repository.RepositoryModule;
+import org.icgc.dcc.submission.services.ServicesModule;
 import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.validation.ValidationModule;
@@ -166,6 +168,8 @@ public class Main {
         new JerseyModule(),
         new WebModule(),
         new MorphiaModule(),
+        new RepositoryModule(),
+        new ServicesModule(),
         new ShiroModule(),
         new FileSystemModule(),
         new SftpModule(),

@@ -35,8 +35,8 @@ public class ReleaseResourceTest extends ResourceTest {
     release.setName("ICGC13");
     release.setReleaseDate();
     release.setTransitioning(true);
-    release.addSubmission(new Submission("project1"));
-    release.addSubmission(new Submission("project2"));
+    release.addSubmission(new Submission("project1", "project one", release.getName()));
+    release.addSubmission(new Submission("project2", "project two", release.getName()));
 
     mockReleaseService = mock(ReleaseService.class);
     when(mockReleaseService.getReleasesBySubject(any(Subject.class))).thenReturn(newArrayList(release));
@@ -52,7 +52,8 @@ public class ReleaseResourceTest extends ResourceTest {
         .isEqualTo(
             "[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
                 + release.getReleaseDate().getTime()
-                + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\"},{\"projectKey\":\"project2\"}]}]");
+                + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"releaseName\":\"ICGC13\"},"
+                + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"releaseName\":\"ICGC13\"}]}]");
   }
 
   @Override

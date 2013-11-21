@@ -15,50 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.shiro;
 
-import java.util.Collection;
+package org.icgc.dcc.submission.repository;
 
-import org.apache.shiro.authc.credential.PasswordMatcher;
-import org.apache.shiro.realm.Realm;
-import org.icgc.dcc.submission.services.ProjectService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import com.google.common.collect.ImmutableSet;
+import org.icgc.dcc.submission.core.MailService;
+import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.QDictionary;
+
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.typesafe.config.Config;
 
-public class RealmProvider implements Provider<Collection<Realm>> {
-
-  private static final Logger log = LoggerFactory.getLogger(RealmProvider.class);
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class DictionaryRepository extends BaseMorphiaService<Dictionary> {
 
   @Inject
-  private Config config;
-
-  @Inject
-  private ProjectService projectService;
-
-  /**
-   * TODO <code>{@link ShiroPasswordAuthenticator#authenticate()}</code>
-   */
-  @Override
-  public Collection<Realm> get() {
-    String shiroIniFilePath = this.config.getString(ShiroConfig.SHIRO_INI_FILE);
-    log.info("shiroIniFilePath = " + shiroIniFilePath);
-    DccWrappingRealm dccWrappingRealm = buildDccWrappingRealm(shiroIniFilePath);
-
-    return ImmutableSet.<Realm> of(dccWrappingRealm);
-  }
-
-  private DccWrappingRealm buildDccWrappingRealm(String shiroIniFilePath) {
-    DccWrappingRealm dccWrappingRealm = new DccWrappingRealm(projectService);
-    dccWrappingRealm.setResourcePath("file:" + shiroIniFilePath);// TODO: existing constant for that?
-    dccWrappingRealm.init();
-    dccWrappingRealm.setCredentialsMatcher(new PasswordMatcher());
-    // TODO investigate caching particulars
-    dccWrappingRealm.setAuthorizationCachingEnabled(false);
-    return dccWrappingRealm;
+  public DictionaryRepository(Morphia morphia, Datastore datastore, MailService mailService) {
+    super(morphia, datastore, QDictionary.dictionary, mailService);
+    registerModelClasses(Dictionary.class, CodeList.class);
   }
 }

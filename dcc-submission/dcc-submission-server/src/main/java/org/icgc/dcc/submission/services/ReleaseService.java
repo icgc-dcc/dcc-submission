@@ -15,50 +15,64 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.shiro;
+package org.icgc.dcc.submission.services;
 
-import java.util.Collection;
+import java.util.Set;
 
-import org.apache.shiro.authc.credential.PasswordMatcher;
-import org.apache.shiro.realm.Realm;
-import org.icgc.dcc.submission.services.ProjectService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-import com.google.common.collect.ImmutableSet;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
+
 import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.typesafe.config.Config;
 
-public class RealmProvider implements Provider<Collection<Realm>> {
+@Slf4j
+@NoArgsConstructor
+@RequiredArgsConstructor(onConstructor = @_({ @Inject }))
+public class ReleaseService {
 
-  private static final Logger log = LoggerFactory.getLogger(RealmProvider.class);
+  @NonNull
+  private ReleaseRepository releaseRepository;
 
-  @Inject
-  private Config config;
-
-  @Inject
-  private ProjectService projectService;
-
-  /**
-   * TODO <code>{@link ShiroPasswordAuthenticator#authenticate()}</code>
-   */
-  @Override
-  public Collection<Realm> get() {
-    String shiroIniFilePath = this.config.getString(ShiroConfig.SHIRO_INI_FILE);
-    log.info("shiroIniFilePath = " + shiroIniFilePath);
-    DccWrappingRealm dccWrappingRealm = buildDccWrappingRealm(shiroIniFilePath);
-
-    return ImmutableSet.<Realm> of(dccWrappingRealm);
+  public Release find(String releaseName) {
+    log.info("Request for Release '{}'", releaseName);
+    return releaseRepository.find(releaseName);
   }
 
-  private DccWrappingRealm buildDccWrappingRealm(String shiroIniFilePath) {
-    DccWrappingRealm dccWrappingRealm = new DccWrappingRealm(projectService);
-    dccWrappingRealm.setResourcePath("file:" + shiroIniFilePath);// TODO: existing constant for that?
-    dccWrappingRealm.init();
-    dccWrappingRealm.setCredentialsMatcher(new PasswordMatcher());
-    // TODO investigate caching particulars
-    dccWrappingRealm.setAuthorizationCachingEnabled(false);
-    return dccWrappingRealm;
+  public Set<Release> findAll() {
+    log.info("Request to find all Releases");
+    return releaseRepository.findAll();
+  }
+
+  /**
+   * Query for {@code Release} with state {@code OPENED}
+   * 
+   * @return Current Open Release
+   */
+  public Release findOpen() {
+    log.info("Request for current Open Release");
+    return releaseRepository.findOpen();
+  }
+
+  /**
+   * Creates a new {@code Submission} and adds it to the current open {@code Release}
+   * 
+   * @return Current Open Release
+   */
+  public Release addSubmission(String projectKey, String projectName) {
+    log.info("Creating Submission for Project '{}' in current open Release", projectKey);
+
+    val openRelease = releaseRepository.findOpen();
+    val submission = new Submission(projectKey, projectName, openRelease.getName());
+    log.info("Created Submission '{}'", submission);
+
+    val release = releaseRepository.addSubmission(submission, openRelease.getName());
+
+    return release;
   }
 }

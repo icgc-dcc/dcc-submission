@@ -173,7 +173,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     nextRelease.setState(ReleaseState.OPENED);
 
     for (val submission : oldRelease.getSubmissions()) {
-      val newSubmission = new Submission(submission.getProjectKey());
+      val newSubmission =
+          new Submission(submission.getProjectKey(), submission.getProjectName(), nextRelease.getName());
       if (submission.getState() == SubmissionState.SIGNED_OFF) {
         newSubmission.setState(SubmissionState.NOT_VALIDATED);
       } else {
@@ -861,7 +862,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
-    val buildProjectStringPath = new Path(fs.buildProjectStringPath(release, projectKey));
+    val buildProjectStringPath = new Path(fs.buildProjectStringPath(release.getName(), projectKey));
 
     for (val path : HadoopUtils.lsFile(fs.getFileSystem(), buildProjectStringPath)) {
       // TODO: use DccFileSystem sabstraction instead

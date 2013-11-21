@@ -74,7 +74,7 @@ public class ReleaseFileSystem {
       throw new DccFileSystemException("User " + userSubject.getPrincipal()
           + " does not have permission to access project " + projectKey);
     }
-    String projectStringPath = dccFileSystem.buildProjectStringPath(release, projectKey);
+    String projectStringPath = dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
     boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
     if (exists == false) {
       throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
@@ -117,7 +117,7 @@ public class ReleaseFileSystem {
   }
 
   public void resetValidationFolder(String projectKey) {
-    String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release, projectKey);
+    String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);
     log.info("emptied directory {} for project {} ", validationStringPath, projectKey);
