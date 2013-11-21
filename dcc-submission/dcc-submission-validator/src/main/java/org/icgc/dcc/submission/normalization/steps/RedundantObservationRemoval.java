@@ -28,17 +28,18 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
+import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.BusinessKeys;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
 import cascading.flow.FlowProcess;
@@ -112,14 +113,6 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
         new FilterRedundantObservationBuffer(),
         REPLACE);
 
-    // Perform count on the resulting tuple stream; TODO: externalize to new step?
-    pipe = new CountUnique( // Will leave the pipe unaltered
-        pipe,
-        shortName(),
-        ANALYSIS_ID_FIELD,
-        NormalizationCounter.UNIQUE_REMAINING,
-        COUNT_INCREMENT);
-
     return pipe;
   }
 
@@ -128,7 +121,8 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    * observations.
    */
   private Fields groupByFields(NormalizationContext context) {
-    return fields(context.getObservationUniqueFields());
+    return fields(BusinessKeys.MUTATION_PRIMARY_IDENTIFYING_PART)
+        .append(MARKING_FIELD);
   }
 
   /**

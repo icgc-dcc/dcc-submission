@@ -30,6 +30,8 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Common context object passed to all {@link NormalizationStep}s.
+ * <p>
+ * TODO: This isn't really needed anymore - remove once 100% sure
  */
 public interface NormalizationContext {
 

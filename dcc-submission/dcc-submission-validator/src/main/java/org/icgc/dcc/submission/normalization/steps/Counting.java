@@ -19,30 +19,31 @@ package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.normalization.NormalizationContext;
+import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.tuple.Fields;
 
 /**
- * Performs initial count of observations.
+ * Performs final count of observations.
  * <p>
- * TODO: extract the count unique in a separate step
+ * TODO: merge with {@link InitialCounting} by passing the counter to use.
  */
-public final class InitialCounting implements NormalizationStep {
+@RequiredArgsConstructor
+public final class Counting implements NormalizationStep {
 
   /**
    * Short name for the step.
    */
-  private static final String SHORT_NAME = "initial-count";
+  private static final String SHORT_NAME = "count";
+
+  private final NormalizationCounter counter;
 
   @Override
   public String shortName() {
@@ -51,17 +52,10 @@ public final class InitialCounting implements NormalizationStep {
 
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {
-    pipe = new CountUnique( // Will leave the pipe unaltered
-        pipe,
-        shortName(),
-        new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID),
-        UNIQUE_START,
-        COUNT_INCREMENT);
-
     return new Each(
         pipe,
         ALL,
-        new Counter(TOTAL_START, COUNT_INCREMENT),
+        new Counter(counter, COUNT_INCREMENT),
         RESULTS);
   }
 }
