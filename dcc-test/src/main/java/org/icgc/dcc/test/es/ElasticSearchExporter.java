@@ -40,7 +40,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.ClusterState;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
-import org.elasticsearch.common.collect.ImmutableSet;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
@@ -69,7 +68,7 @@ public class ElasticSearchExporter {
 
   @SneakyThrows
   public void execute() {
-    for(String typeName : getTypeNames()) {
+    for (String typeName : getTypeNames()) {
       File exportFile = getExportFile(typeName);
       log.info("Exporting {}...", exportFile);
 
@@ -77,7 +76,7 @@ public class ElasticSearchExporter {
       Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(exportFile), UTF_8));
 
       SearchHits hits = getSearchHits(typeName);
-      for(SearchHit hit : hits) {
+      for (SearchHit hit : hits) {
         Map<String, Object> source = hit.getSource();
 
         MAPPER.writeValue(writer, source);
@@ -86,12 +85,11 @@ public class ElasticSearchExporter {
   }
 
   private Set<String> getTypeNames() {
-    ClusterState cs = esClient.admin().cluster().prepareState() //
+    ClusterState cs = esClient.admin().cluster().prepareState()
         .setFilterIndices(indexName).execute().actionGet().getState();
     IndexMetaData imd = cs.getMetaData().index(indexName);
-    ImmutableSet<String> types = imd.getMappings().keySet();
 
-    return types;
+    return imd.getMappings().keySet();
   }
 
   private File getExportFile(String typeName) throws IOException {

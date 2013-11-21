@@ -1,7 +1,7 @@
 package org.icgc.dcc.submission.web.resource;
 
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
