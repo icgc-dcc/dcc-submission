@@ -35,9 +35,11 @@ import com.google.inject.Inject;
 @EqualsAndHashCode(callSuper = false)
 public class DictionaryRepository extends BaseMorphiaService<Dictionary> {
 
-  @Inject
-  public DictionaryRepository(Morphia morphia, Datastore datastore, MailService mailService) {
-    super(morphia, datastore, QDictionary.dictionary, mailService);
-    registerModelClasses(Dictionary.class, CodeList.class);
-  }
+	@Inject
+	public DictionaryRepository(Morphia morphia, Datastore datastore,
+			MailService mailService) {
+		super(morphia, datastore, QDictionary.dictionary, mailService);
+		registerModelClasses(Dictionary.class, CodeList.class);
+	}
+
 }

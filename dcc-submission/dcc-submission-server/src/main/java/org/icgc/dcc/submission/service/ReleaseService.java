@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.services;
+package org.icgc.dcc.submission.service;
 
 import java.util.Set;
 
@@ -36,43 +36,49 @@ import com.google.inject.Inject;
 @RequiredArgsConstructor(onConstructor = @_({ @Inject }))
 public class ReleaseService {
 
-  @NonNull
-  private ReleaseRepository releaseRepository;
+	@NonNull
+	private ReleaseRepository releaseRepository;
 
-  public Release find(String releaseName) {
-    log.info("Request for Release '{}'", releaseName);
-    return releaseRepository.find(releaseName);
-  }
+	public Release find(String releaseName) {
+		log.info("Request for Release '{}'", releaseName);
+		return releaseRepository.find(releaseName);
+	}
 
-  public Set<Release> findAll() {
-    log.info("Request to find all Releases");
-    return releaseRepository.findAll();
-  }
+	public Set<Release> findAll() {
+		log.info("Request to find all Releases");
+		return releaseRepository.findAll();
+	}
 
-  /**
-   * Query for {@code Release} with state {@code OPENED}
-   * 
-   * @return Current Open Release
-   */
-  public Release findOpen() {
-    log.info("Request for current Open Release");
-    return releaseRepository.findOpen();
-  }
+	/**
+	 * Query for {@code Release} with state {@code OPENED}
+	 * 
+	 * @return Current Open Release
+	 */
+	public Release findOpen() {
+		log.info("Request for current Open Release");
+		return releaseRepository.findOpen();
+	}
 
-  /**
-   * Creates a new {@code Submission} and adds it to the current open {@code Release}
-   * 
-   * @return Current Open Release
-   */
-  public Release addSubmission(String projectKey, String projectName) {
-    log.info("Creating Submission for Project '{}' in current open Release", projectKey);
+	/**
+	 * Creates a new {@code Submission} and adds it to the current open
+	 * {@code Release}
+	 * 
+	 * @return Current Open Release
+	 */
+	public Release addSubmission(String projectKey, String projectName) {
+		log.info(
+				"Creating Submission for Project '{}' in current open Release",
+				projectKey);
 
-    val openRelease = releaseRepository.findOpen();
-    val submission = new Submission(projectKey, projectName, openRelease.getName());
-    log.info("Created Submission '{}'", submission);
+		val openRelease = releaseRepository.findOpen();
+		val submission = new Submission(projectKey, projectName,
+				openRelease.getName());
+		log.info("Created Submission '{}'", submission);
 
-    val release = releaseRepository.addSubmission(submission, openRelease.getName());
+		val release = releaseRepository.addSubmission(submission,
+				openRelease.getName());
 
-    return release;
-  }
+		return release;
+	}
+
 }

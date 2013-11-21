@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.services;
+package org.icgc.dcc.submission.service;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -84,4 +84,5 @@ public class ProjectService {
 
 		return submissions;
 	}
+
 }

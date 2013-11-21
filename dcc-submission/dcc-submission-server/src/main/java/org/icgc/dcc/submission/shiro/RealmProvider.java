@@ -21,7 +21,7 @@ import java.util.Collection;
 
 import org.apache.shiro.authc.credential.PasswordMatcher;
 import org.apache.shiro.realm.Realm;
-import org.icgc.dcc.submission.services.ProjectService;
+import org.icgc.dcc.submission.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

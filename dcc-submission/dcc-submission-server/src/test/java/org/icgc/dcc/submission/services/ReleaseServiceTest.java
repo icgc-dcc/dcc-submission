@@ -8,6 +8,7 @@ import lombok.val;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
+import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
