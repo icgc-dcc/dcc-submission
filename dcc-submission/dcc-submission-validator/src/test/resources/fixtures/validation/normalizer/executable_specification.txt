@@ -1,18 +1,59 @@
 # format for this enforceable spec:
 #
-# - comments (starting with '#') and empty lines will be ignored
-# - this file will be split in two files (input versus result) based on the first column
-# - the "comment" column will be discarded
-# - short names for fields will be replaced by their real counterpart (ctr -> control_genotype)
-# - missing fields will be populated with dummy data (chromosome start, quality_score, ...) since they're not relevant here
-# - fields will be reordered to match the order of the dictionary
-# - a test will run on the re-formatted input file and be checked against the re-formatted result file
-# - for "input" type, leave the "mut" and "marking" columns empty (they're considered N/A)
-# - put result row(s) right after their corresponding input row
-# - separate input+result rows islands with a new line
-# TODO: explain CTRL
+# - Comments (starting with '#') and empty lines will be ignored
+# - As much as possible, we try and make sure the columns are aligned on a basic editor that uses 4 spaces for tabs
+# - This file will be split in two files (input versus result) based on the first column
+# - The "comment" column will be discarded
+# - Short names for fields will be replaced by their real counterpart (ctr -> control_genotype)
+# - Missing fields will be populated with dummy data (chromosome start, quality_score, ...) since they're not relevant here
+# - Fields will be reordered to match the order of the dictionary
+# - A test will run on the re-formatted input file and be checked against the re-formatted result file
+# - For "input" type, leave the "mut" and "marking" columns empty (they're considered N/A)
+# - Put result row(s) right after their corresponding input row
+# - Separate input+result rows islands with a new line
+# - The "marking" column uses the abbreviations "OPEN", "CTRL" and "MASK" for "OPEN", "CONTROLLED" and "MASKED" respectively
+# 
+# Example:
+#
+# Input:
+# 
+# 	input	1	A	A/G	A/C	G	C
+#   
+# Translates to:
+# 
+#     input:	Indicates that the row is an input
+#     1:		Mutation type of "1" (substitution)
+#     A:		Reference genome allele A; Note that position isn't relevant here
+#     A/G:		Control genotype with alleles A and G
+#     A/C:		Tumour genotype with alleles A and C
+#     G:		Mutated "from" allele G (must be one of the alleles in the control genotype)
+#     C:  		Mutated "to" allele C (must be one of the alleles in the tumour genotype)
+# 
+# Refer to dictionary for the exact rules governing the values allows for each field and with respected to one another.
+# 
+# Expected result (s):
+# 
+# 	result	1	A	A/G	A/C	G	C	G>C	CTRL
+# 	...
+# 
+# Which translate to:
+# 
+# 	result:		Indicate that the row is one of the expected result for the input above (there can be more than one resulting row)
+# 	...
+# 	G>C:		The resulting mutation computed as the concatenation of the mutated "from" and the mutated "to" alleles
+# 	CTRL:		Indicates that the observation described is expected to be marked as "CONTROLLED"
+# 
+# This particular input would also generate a "masked" result like so:
+# 
+# 	result	1	A			A	C	A>C	MASK
+# 	
+# Which is the same as the "CONTROLLED" counterpart with 3 differences: the row is marked with "MASK" and both control/tumour genotypes are emptied
+# 
 
+# ===========================================================================
+# Header (must be present as is)
 type	mt	ref	ctr	tmr	frm	to	mut	marking
+
 
 input	1	A	A/A	A/C	A	C
 result	1	A	A/A	A/C	A	C	A>C	OPEN

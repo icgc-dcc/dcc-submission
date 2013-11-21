@@ -97,7 +97,6 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
       // https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component?focusedCommentId=53182773#comment-53182773)
       if (getMaskingState(entry) == CONTROLLED) {
         val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
-        val mutatedFromAllele = entry.getString(MUTATED_FROM_ALLELE_FIELD);
         val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
 
         if (
