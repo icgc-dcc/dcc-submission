@@ -26,8 +26,11 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -38,12 +41,14 @@ import javax.mail.internet.MimeMessage;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
@@ -57,7 +62,8 @@ public class MailService {
   public static final String MAIL_ENABLED = "mail.enabled";
   public static final String MAIL_SMTP_HOST = "mail.smtp.host";
   public static final String MAIL_SMTP_PORT = "mail.smtp.port";
-  public static final String MAIL_SMTP_SERVER = "smtp.oicr.on.ca";
+  public static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
+  public static final String MAIL_SMTP_CONNECTION_TIMEOUT = "mail.smtp.connectiontimeout";
 
   /**
    * Subject property name.
@@ -82,6 +88,20 @@ public class MailService {
   public static final String MAIL_ERROR_BODY = "mail.error_body";
   public static final String MAIL_VALID_BODY = "mail.valid_body";
   public static final String MAIL_INVALID_BODY = "mail.invalid_body";
+
+  /**
+   * Prefix used in the subject of a notification email.
+   */
+  public static final String NOTIFICATION_SUBJECT_PREFEX = "Notification: ";
+
+  /**
+   * Executor used in sending emails asynchronously.
+   */
+  private final Executor executor = Executors.newCachedThreadPool(
+      new ThreadFactoryBuilder()
+          .setNameFormat("mail-%s") // For logging
+          .setPriority(Thread.MIN_PRIORITY) // For niceness
+          .build());
 
   /**
    * Application config.
@@ -136,7 +156,8 @@ public class MailService {
         releaseName, projectKey, emails, state));
   }
 
-  public void sendValidationResult(String releaseName, String projectKey, List<String> emails, SubmissionState state) {
+  public void sendValidationResult(final String releaseName, final String projectKey, final List<String> emails,
+      final SubmissionState state) {
     if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
@@ -149,24 +170,29 @@ public class MailService {
       message.setFrom(address(get(MAIL_FROM)));
       message.addRecipients(TO, addresses(emails));
       message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
-      message.setText(
-          state == ERROR ? template(MAIL_ERROR_BODY, projectKey, state) : //
-          state == VALID ? template(MAIL_VALID_BODY, projectKey, state, projectKey, projectKey) : //
-          state == INVALID ? template(MAIL_INVALID_BODY, projectKey, state, projectKey, projectKey) : //
-          format("Unexpected validation state '%s' prevented loading email text.", state));
+      message.setText(getResult(projectKey, state));
 
-      Transport.send(message);
-      log.info("Emails for '{}' sent to '{}'", projectKey, emails);
+      send(message);
     } catch (Exception e) {
       log.error("An error occured while emailing: ", e);
     }
+  }
+
+  private String getResult(final String projectKey, final SubmissionState state) {
+    // @formatter:off
+    return
+      state == ERROR   ? template(MAIL_ERROR_BODY,   projectKey, state)                         : 
+      state == VALID   ? template(MAIL_VALID_BODY,   projectKey, state, projectKey, projectKey) :
+      state == INVALID ? template(MAIL_INVALID_BODY, projectKey, state, projectKey, projectKey) : 
+                         format("Unexpected validation state '%s' prevented loading email text.", state);
+    // @formatter:on
   }
 
   private void sendNotification(String subject, String message) {
     send(
         from(MAIL_FROM),
         to(MAIL_NOTIFICATION_RECIPIENT),
-        "Notification: " + subject,
+        NOTIFICATION_SUBJECT_PREFEX + subject,
         message);
   }
 
@@ -174,7 +200,7 @@ public class MailService {
     sendNotification(subject, subject);
   }
 
-  private void send(String from, String recipient, String subject, String text) {
+  private void send(final String from, final String recipient, final String subject, final String text) {
     if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
@@ -187,23 +213,48 @@ public class MailService {
       message.setSubject(formatSubject(subject));
       message.setText(text);
 
-      Transport.send(message);
-      log.info("Emails for '{}' sent to '{}'", subject, recipient);
+      send(message);
     } catch (Exception e) {
       log.error("An error occured while emailing: ", e);
     }
+  }
+
+  /**
+   * Sends the supplied {@code message} asynchronously using JavaMail.
+   * 
+   * @param message the message to send
+   */
+  private void send(final Message message) {
+    executor.execute(new Runnable() {
+
+      @Override
+      @SneakyThrows
+      public void run() {
+        try {
+          log.info("Sending email '{}' to {}...", message.getSubject(), Arrays.toString(message.getAllRecipients()));
+          Transport.send(message);
+          log.info("Sent email '{}' to {}", message.getSubject(), Arrays.toString(message.getAllRecipients()));
+        } catch (Throwable t) {
+          log.error("Error sending email '{}' to {}", message.getSubject(), Arrays.toString(message.getAllRecipients()));
+          log.error("Exception:", t);
+        }
+      }
+    });
+
   }
 
   private Message message() {
     val props = new Properties();
     props.put(MAIL_SMTP_HOST, get(MAIL_SMTP_HOST));
     props.put(MAIL_SMTP_PORT, get(MAIL_SMTP_PORT, "25"));
+    props.put(MAIL_SMTP_TIMEOUT, get(MAIL_SMTP_TIMEOUT, "5000"));
+    props.put(MAIL_SMTP_TIMEOUT, get(MAIL_SMTP_CONNECTION_TIMEOUT, "5000"));
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
   }
 
   private String formatSubject(String text) {
-    return format("[%s]: %s", getHostName(), text);
+    return format("[%s] %s", getHostName(), text);
   }
 
   private String template(String templateName, Object... arguments) {
