@@ -4,7 +4,7 @@
 # Assumption: json documents have no separators, though they may contain newlines: { ... doc 1 ... }{ ... doc 2 ...}
 # Report files will be unsorted (but read in memory later on anyway); TODO: expand
 # 131121182856 - There should be no duplicates in the report files (no line number reported twice in the same file)
-import sys,os,json
+import sys,os,logging,json
 import migration_utils
 
 # ---------------------------------------------------------------------------
@@ -12,21 +12,27 @@ import migration_utils
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
-print "input_dir: %s" % input_dir
-print "output_dir: %s" % output_dir
+migration_utils.configure_logging(output_dir, sys.argv[0])
+logging.info("input_dir: %s" % input_dir)
+logging.info("output_dir: %s" % output_dir)
 
 # ---------------------------------------------------------------------------
 
-# Reset output dir
-if os.path.isdir(output_dir):
-	for report_file_name in os.listdir(output_dir):
+# Reset output dirs
+report_dir = migration_utils.get_report_dir(output_dir)
+logging.info("report_dir: %s" % report_dir)
+
+if not os.path.isdir(output_dir):
+	os.makedirs(output_dir)
+if os.path.isdir(report_dir):
+	for report_file_name in os.listdir(report_dir):
 		os.remove(output_dir + '/' + report_file_name)
 else:
-	os.makedirs(output_dir)
+	os.makedirs(report_dir)
 
 # ---------------------------------------------------------------------------
 
-def convert_line_number(offset):
+def convert_line_number(input_file, offset):
 	return offset # TODO
 
 # ---------------------------------------------------------------------------
@@ -43,10 +49,9 @@ def convert_line_number(offset):
 #   } ]
 # }
 def process_doc(file_type, doc):
-	print doc
 	json_doc = json.loads(doc)
 	offset = long(json_doc["offset"])
-	line_number = convert_line_number(offset)
+	line_number = convert_line_number(input_file, offset)
 	
 	error_types_encountered = []
 	for error in json_doc["errors"]:
@@ -89,15 +94,13 @@ def process_tuple_error_file(file_type, input_file):
 	# process last document
 	process_doc(file_type, doc)
 	error_count = error_count + 1
-	print "error_count: %s" % error_count
+	logging.info("error_count: %s" % error_count)
 	
 	assert error_count > 0 or os.path.getsize(input_file) == 0
  
 # ---------------------------------------------------------------------------
- 
-# TODO: for each file type
-file_types = ["specimen"] # TODO: complete
-for file_type in file_types:
+
+for file_type in migration_constants.FILE_TYPES:
 	input_file_name = "%s.internal--errors.json" % file_type
 	if input_file_name in os.listdir(input_dir):
 		process_tuple_error_file(file_type, input_dir + '/' + input_file_name)

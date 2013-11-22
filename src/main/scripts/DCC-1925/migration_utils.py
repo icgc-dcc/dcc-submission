@@ -1,66 +1,42 @@
 #!/usr/bin/python
 # DCC-1925
 
-# TODO: prune
-STRUCTURALLY_INVALID_ROW_ERROR ="STRUCTURALLY_INVALID_ROW_ERROR"
-INVALID_CHARSET_ROW_ERROR ="INVALID_CHARSET_ROW_ERROR"
-FORBIDDEN_VALUE_ERROR ="FORBIDDEN_VALUE_ERROR"
-RELATION_VALUE_ERROR ="RELATION_VALUE_ERROR"
-RELATION_PARENT_VALUE_ERROR ="RELATION_PARENT_VALUE_ERROR"
-UNIQUE_VALUE_ERROR ="UNIQUE_VALUE_ERROR"
-VALUE_TYPE_ERROR ="VALUE_TYPE_ERROR"
-OUT_OF_RANGE_ERROR ="OUT_OF_RANGE_ERROR"
-MISSING_VALUE_ERROR ="MISSING_VALUE_ERROR"
-CODELIST_ERROR ="CODELIST_ERROR"
-DISCRETE_VALUES_ERROR ="DISCRETE_VALUES_ERROR"
-REGEX_ERROR ="REGEX_ERROR"
-SCRIPT_ERROR ="SCRIPT_ERROR"
-TOO_MANY_FILES_ERROR ="TOO_MANY_FILES_ERROR"
-RELATION_FILE_ERROR ="RELATION_FILE_ERROR"
-REVERSE_RELATION_FILE_ERROR ="REVERSE_RELATION_FILE_ERROR"
-COMPRESSION_CODEC_ERROR ="COMPRESSION_CODEC_ERROR"
-DUPLICATE_HEADER_ERROR ="DUPLICATE_HEADER_ERROR"
-FILE_HEADER_ERROR ="FILE_HEADER_ERROR"
-REFERENCE_GENOME_MISMATCH_ERROR ="REFERENCE_GENOME_MISMATCH_ERROR"
-REFERENCE_GENOME_INSERTION_ERROR ="REFERENCE_GENOME_INSERTION_ERROR"
-TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR ="TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR"
+import os,logging
+import migration_constants
 
-ERROR_TYPES = [ # TODO: prune
-		STRUCTURALLY_INVALID_ROW_ERROR,
-		INVALID_CHARSET_ROW_ERROR, 
-		FORBIDDEN_VALUE_ERROR, 
-		RELATION_VALUE_ERROR, 
-		RELATION_PARENT_VALUE_ERROR, 
-		UNIQUE_VALUE_ERROR, 
-		VALUE_TYPE_ERROR, 
-		OUT_OF_RANGE_ERROR, 
-		MISSING_VALUE_ERROR, 
-		CODELIST_ERROR, 
-		DISCRETE_VALUES_ERROR, 
-		REGEX_ERROR, 
-		SCRIPT_ERROR, 
-		TOO_MANY_FILES_ERROR, 
-		RELATION_FILE_ERROR, 
-		REVERSE_RELATION_FILE_ERROR, 
-		COMPRESSION_CODEC_ERROR, 
-		DUPLICATE_HEADER_ERROR, 
-		FILE_HEADER_ERROR, 
-		REFERENCE_GENOME_MISMATCH_ERROR, 
-		REFERENCE_GENOME_INSERTION_ERROR, 
-		TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR
-	]
+# ---------------------------------------------------------------------------
+
+def get_log_file(output_dir, script_name):
+	return "%s/%s" % (output_dir, os.path.basename(script_name).replace(".py", ".log"))
+
+def configure_logging(output_dir, script_name):
+	logging.basicConfig(filename=get_log_file(output_dir, script_name), filemode='w', level=logging.INFO)
 
 # ---------------------------------------------------------------------------
 
 def is_known_error_type(error_type):
-	return error_type in ERROR_TYPES
+	return error_type in migration_constants.ERROR_TYPES
 	
 def is_script_error(error_type):
-	return error_type == SCRIPT_ERROR
+	return error_type == migration_constants.SCRIPT_ERROR
 
 # ---------------------------------------------------------------------------
 
-def get_report_file(parent_dir, file_type, error_type):
-	return "%s/%s-%s.vep" % (parent_dir, file_type, error_type) # TODO: real path
+def get_report_dir(parent_dir):
+	return "%s/reports" % parent_dir
+def get_data_dir(parent_dir):
+	return "%s/data" % parent_dir
 
+def get_report_file(parent_dir, file_type, error_type):
+	return "%s/%s-%s.vep" % (get_report_dir(parent_dir), file_type, error_type) # TODO: real path
+
+
+
+def split_line(line):
+	return line.strip('\n').split('\t')
+
+def read_headers(input_file):
+	with open(input_file) as f:
+		header = f.readline()
+	return split_line(header)
 
