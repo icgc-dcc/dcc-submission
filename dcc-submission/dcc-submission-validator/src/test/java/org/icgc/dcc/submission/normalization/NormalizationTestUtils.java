@@ -15,44 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.normalization;
 
-import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Resources.getResource;
+import static lombok.AccessLevel.PRIVATE;
 
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
+import java.net.URL;
+import java.util.List;
 
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 /**
- * Performs final count of observations.
- * <p>
- * TODO: merge with {@link InitialCounting} by passing the counter to use.
+ * Mostly ported from TestUtils in the dcc-submission-server module (TODO: address code duplication).
  */
-public class FinalCounting implements NormalizationStep {
+@NoArgsConstructor(access = PRIVATE)
+final class NormalizationTestUtils {
 
   /**
-   * Short name for the step.
+   * Jackson constants.
    */
-  private static final String SHORT_NAME = "final-count";
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
-  @Override
-  public String shortName() {
-    return SHORT_NAME;
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
   }
 
-  @Override
-  public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Each(
-        pipe,
-        ALL,
-        new Counter(TOTAL_END, COUNT_INCREMENT),
-        RESULTS);
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
   }
 
+  public static List<String> getFieldNames(SubmissionFileType type) {
+    return newArrayList(dictionary()
+        .getFileSchema(type).get()
+        .getFieldNames());
+  }
 }

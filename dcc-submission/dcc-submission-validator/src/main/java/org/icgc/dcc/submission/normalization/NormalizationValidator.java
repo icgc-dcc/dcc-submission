@@ -23,6 +23,10 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +39,14 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.steps.AlleleMasking;
-import org.icgc.dcc.submission.normalization.steps.FinalCounting;
-import org.icgc.dcc.submission.normalization.steps.InitialCounting;
+import org.icgc.dcc.submission.normalization.steps.Counting;
+import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
 import org.icgc.dcc.submission.normalization.steps.PreMarking;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
+import org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking;
+import org.icgc.dcc.submission.normalization.steps.UniqueCounting;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -69,7 +74,7 @@ public final class NormalizationValidator implements Validator {
   /**
    * Type that is the focus of normalization (there could be more in the future).
    */
-  private static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
+  public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
 
   private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
   private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
@@ -108,20 +113,29 @@ public final class NormalizationValidator implements Validator {
         // Order matters for some steps
         new ImmutableList.Builder<NormalizationStep>()
 
-            .add(new InitialCounting())
+            .add(new UniqueCounting(
+                SUBMISSION_OBSERVATION_ANALYSIS_ID,
+                UNIQUE_START))
+            .add(new Counting(TOTAL_START))
 
             // Must happen before rebuilding the mutation
             .add(new PreMarking()) // Must happen no matter what
-            .add(new AlleleMasking(config)) // May be skipped (partially or not)
+            .add(new SensitiveRowMarking())
+            .add(new MaskedRowGeneration()) // May be skipped
 
             // Must happen after allele masking
-            .add(new RedundantObservationRemoval(SUBMISSION_OBSERVATION_ANALYSIS_ID)) // May be skipped
-            .add(new MutationRebuilding())
+            .add(new MutationRebuilding()) // Must happen before removing redundant observations
+            .add(new RedundantObservationRemoval(SUBMISSION_OBSERVATION_ANALYSIS_ID))
+            // May be skipped
+
+            .add(new UniqueCounting(
+                SUBMISSION_OBSERVATION_ANALYSIS_ID,
+                UNIQUE_REMAINING))
 
             // Must happen after removing duplicates and allele masking
             .add(new PrimaryKeyGeneration())
 
-            .add(new FinalCounting())
+            .add(new Counting(TOTAL_END))
 
             .build());
   }

@@ -30,53 +30,20 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public class AlleleMaskingTest extends CascadingTestCase {
-
-  @Test
-  public void test_cascading_SensitiveRowMarker() {
-    Function<?> function = new AlleleMasking.SensitiveRowMarker();
-
-    Fields inputFields =
-        new Fields("f1", "f2")
-            .append(AlleleMasking.REFERENCE_GENOME_ALLELE_FIELD)
-            .append(AlleleMasking.MUTATED_FROM_ALLELE_FIELD)
-            .append(Masking.NORMALIZER_MASKING_FIELD);
-
-    String dummyValue = "dummy";
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "A", Masking.OPEN.getTupleValue())),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G", Masking.OPEN.getTupleValue())),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C", Masking.OPEN.getTupleValue())),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "C", "C", Masking.OPEN.getTupleValue()))
-    };
-    Fields resultFields =
-        AlleleMasking.REFERENCE_GENOME_ALLELE_FIELD
-            .append(AlleleMasking.MUTATED_FROM_ALLELE_FIELD)
-            .append(Masking.NORMALIZER_MASKING_FIELD);
-
-    Tuple[] resultTuples = new Tuple[] {
-        new Tuple("A", "A", Masking.OPEN.getTupleValue()), // Untouched
-        new Tuple("A", "G", Masking.CONTROLLED.getTupleValue()), // Marked
-        new Tuple("T", "C", Masking.CONTROLLED.getTupleValue()), // Marked
-        new Tuple("C", "C", Masking.OPEN.getTupleValue()) // Untouched
-    };
-
-    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
-    checkOperationResults(iterator, resultTuples);
-  }
+public class MaskedRowGeneratorTest extends CascadingTestCase {
 
   @Test
   public void test_cascading_MaskedRowGenerator() {
-    Function<?> function = new AlleleMasking.MaskedRowGenerator();
+    Function<?> function = new MaskedRowGeneration.MaskedRowGenerator();
 
     Fields inputFields =
         new Fields("f1", "f2")
-            .append(AlleleMasking.CONTROL_GENOTYPE_FIELD)
-            .append(AlleleMasking.TUMOUR_GENOTYPE_FIELD)
-            .append(AlleleMasking.REFERENCE_GENOME_ALLELE_FIELD)
-            .append(AlleleMasking.MUTATED_FROM_ALLELE_FIELD)
-            .append(AlleleMasking.MUTATED_TO_ALLELE_FIELD)
-            .append(Masking.NORMALIZER_MASKING_FIELD);
+            .append(SensitiveRowMarking.CONTROL_GENOTYPE_FIELD)
+            .append(SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD)
+            .append(SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD)
+            .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
+            .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
+            .append(Masking.NORMALIZER_MARKING_FIELD);
 
     String dummyValue = "dummy";
     Tuple open = // Just passed through as is
@@ -109,4 +76,5 @@ public class AlleleMaskingTest extends CascadingTestCase {
     };
     checkOperationResults(iterator, resultTuples);
   }
+
 }
