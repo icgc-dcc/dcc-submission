@@ -25,35 +25,17 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
 import lombok.val;
 import net.sf.picard.PicardException;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import com.google.common.base.Optional;
-
-public class ReferenceGenomeValidatorTest {
-
-  @Rule
-  public TemporaryFolder tmp = new TemporaryFolder();
-
-  private static final String TEST_DIR = "src/test/resources/fixtures/validation/rgv";
-
-  private ReferenceGenomeValidator validator;
+public class ReferenceGenomeValidatorTest extends BaseReferenceGenomeValidatorTest {
 
   /**
    * @see http://genome.ucsc.edu/cgi-bin/hgGateway
@@ -64,11 +46,6 @@ public class ReferenceGenomeValidatorTest {
   private final String[] baseWrong = new String[] { "21", "33031597", "33031597", "C" };
   private final String[] basesCorrect = new String[] { "8", "50000", "50005", "CTAAGA" };
   private final String[] basesWrong = new String[] { "8", "50000", "50005", "AGAATC" };
-
-  @Before
-  public void setup() throws Exception {
-    validator = new ReferenceGenomeValidator("/tmp/GRCh37.fasta");
-  }
 
   @Test
   public void testSingleSequenceCorrect() {
@@ -104,30 +81,15 @@ public class ReferenceGenomeValidatorTest {
 
   @Test
   public void testSsmSamplePrimaryFile() throws IOException {
-    val context = mock(ValidationContext.class);
-
-    // Setup: Use local file system
-    val fileSystem = FileSystem.getLocal(new Configuration());
-    when(context.getFileSystem()).thenReturn(fileSystem);
-
-    // Setup: Establish input for the test
-    val fileName = "ssm_p.txt";
-    val directory = new Path(tmp.newFolder().getAbsolutePath());
-    val path = new Path(directory, fileName);
-
-    fileSystem.createNewFile(directory);
-    fileSystem.copyFromLocalFile(new Path(TEST_DIR, fileName), path);
-
-    val ssmPrimaryFile = Optional.<Path> of(path);
-    when(context.getSsmPrimaryFile()).thenReturn(ssmPrimaryFile);
-    when(context.getProjectKey()).thenReturn("project.test");
+    val testFile = TEST_FILE;
+    val context = mockContext(testFile);
 
     // Execute
     validator.validate(context);
 
     // Verify
     verify(context, times(3)).reportError(
-        eq(fileName),
+        eq(testFile.getName()),
         anyLong(),
         eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
         anyString(),
@@ -135,7 +97,7 @@ public class ReferenceGenomeValidatorTest {
         anyVararg());
 
     verify(context, times(1)).reportError(
-        eq(fileName),
+        eq(testFile.getName()),
         anyLong(),
         eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
         anyString(),

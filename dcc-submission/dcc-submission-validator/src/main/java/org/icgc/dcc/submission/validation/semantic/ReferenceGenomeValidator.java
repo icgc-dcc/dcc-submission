@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.semantic;
 import static com.google.common.io.Files.getFileExtension;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.google.common.primitives.Ints.tryParse;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
@@ -47,7 +48,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.BZip2Codec;
@@ -175,8 +175,7 @@ public class ReferenceGenomeValidator implements Validator {
       @SneakyThrows
       public void process(long lineNumber, String mutationType, String start, String end, String chromosomeCode,
           String referenceAllele) {
-        val insertion = mutationType.equals(INSERTION_MUTATION_TYPE);
-        if (insertion) {
+        if (isInsertionType(mutationType)) {
           // Insertion
           val mismatch = !referenceAllele.equals(REFERENCE_INSERTION_VALUE);
           if (mismatch) {
@@ -299,6 +298,10 @@ public class ReferenceGenomeValidator implements Validator {
     return asList(line.split(FIELD_SEPARATOR));
   }
 
+  private static boolean isInsertionType(String mutationType) {
+    return mutationType.equals(INSERTION_MUTATION_TYPE);
+  }
+
   private static boolean isMatch(String controlAllele, String refSequence) {
     return controlAllele.equalsIgnoreCase(refSequence);
   }
@@ -327,8 +330,11 @@ public class ReferenceGenomeValidator implements Validator {
   /**
    * Returns a {@code OutputStream} to capture all reported errors.
    */
-  private static FSDataOutputStream getOutputStream(ValidationContext context, Path ssmPrimaryFile) throws IOException {
-    val path = new Path(ssmPrimaryFile.toUri().toString() + ".rgv--errors.json");
+  private static OutputStream getOutputStream(ValidationContext context, Path ssmPrimaryFile) throws IOException {
+    val directory = context.getSubmissionDirectory().getValidationDirPath();
+    val fileName = format("%s.rgv--errors.json", getNameWithoutExtension(ssmPrimaryFile.getName()));
+    val path = new Path(directory, fileName);
+
     return context.getFileSystem().create(path);
   }
 
