@@ -21,6 +21,7 @@ import static com.google.common.io.Files.getFileExtension;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.google.common.primitives.Ints.tryParse;
 import static java.util.Arrays.asList;
+import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -45,9 +47,13 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.BZip2Codec;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
+import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 
@@ -135,10 +141,12 @@ public class ReferenceGenomeValidator implements Validator {
     // Source input
     @Cleanup
     val inputStream = getInputStream(ssmPrimaryFile, context.getFileSystem());
+    @Cleanup
+    val outputStream = getOutputStream(context, ssmPrimaryFile);
 
     // Get to work
     log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
-    validate(context, ssmPrimaryFile.getName(), inputStream);
+    validate(context, ssmPrimaryFile.getName(), inputStream, outputStream);
     log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
   }
 
@@ -156,11 +164,15 @@ public class ReferenceGenomeValidator implements Validator {
     return text;
   }
 
-  private void validate(final ValidationContext context, final String fileName, InputStream inputStream) {
+  private void validate(final ValidationContext context, final String fileName,
+      final InputStream inputStream, final OutputStream outputStream) {
     val reader = new LineReader(new InputStreamReader(inputStream));
+    val writer = createReportWriter();
+
     parse(reader, new LineProcessor() {
 
       @Override
+      @SneakyThrows
       public void process(long lineNumber, String mutationType, String start, String end, String chromosomeCode,
           String referenceAllele) {
         val insertion = mutationType.equals(INSERTION_MUTATION_TYPE);
@@ -168,15 +180,18 @@ public class ReferenceGenomeValidator implements Validator {
           // Insertion
           val mismatch = !referenceAllele.equals(REFERENCE_INSERTION_VALUE);
           if (mismatch) {
-            context.reportError(
-                fileName,
-                lineNumber,
-                SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
-                formatValue(REFERENCE_INSERTION_VALUE, referenceAllele),
-                REFERENCE_GENOME_INSERTION_ERROR,
+            val type = REFERENCE_GENOME_INSERTION_ERROR;
+            val value = formatValue(REFERENCE_INSERTION_VALUE, referenceAllele);
+            val columnName = SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+            val param = assemblyVersion;
 
-                // Params
-                assemblyVersion);
+            // Database
+            context.reportError(fileName, lineNumber, columnName, value, type, param);
+
+            // Report file
+            val tupleState = new TupleState(lineNumber);
+            tupleState.reportError(type, columnName, value, param);
+            writer.writeValue(outputStream, tupleState);
           }
         } else {
           // Deletion or substitution
@@ -185,15 +200,18 @@ public class ReferenceGenomeValidator implements Validator {
 
           val mismatch = !isMatch(referenceAllele, referenceSequence);
           if (mismatch) {
-            context.reportError(
-                fileName,
-                lineNumber,
-                SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
-                formatValue(referenceSequence, referenceAllele),
-                REFERENCE_GENOME_MISMATCH_ERROR,
+            val type = REFERENCE_GENOME_MISMATCH_ERROR;
+            val value = formatValue(REFERENCE_INSERTION_VALUE, referenceAllele);
+            val columnName = SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+            val param = assemblyVersion;
 
-                // Params
-                assemblyVersion);
+            // Database
+            context.reportError(fileName, lineNumber, columnName, value, type, param);
+
+            // Report file
+            val tupleState = new TupleState(lineNumber);
+            tupleState.reportError(type, columnName, value, param);
+            writer.writeValue(outputStream, tupleState);
           }
         }
 
@@ -290,7 +308,7 @@ public class ReferenceGenomeValidator implements Validator {
   }
 
   /**
-   * Returns a {@InputStream} capable of reading {@code gz}, {@code bzip2} or plain text files
+   * Returns an {@code InputStream} capable of reading {@code gz}, {@code bzip2} or plain text files.
    */
   private static InputStream getInputStream(Path path, FileSystem fileSystem) throws IOException {
     val extension = getFileExtension(path.getName());
@@ -304,6 +322,24 @@ public class ReferenceGenomeValidator implements Validator {
         bzip2 ? new BZip2Codec().createInputStream(inputStream) :
                 inputStream;
     // @formatter:on
+  }
+
+  /**
+   * Returns a {@code OutputStream} to capture all reported errors.
+   */
+  private static FSDataOutputStream getOutputStream(ValidationContext context, Path ssmPrimaryFile) throws IOException {
+    val path = new Path(ssmPrimaryFile.toUri().toString() + ".rgv--errors.json");
+    return context.getFileSystem().create(path);
+  }
+
+  /**
+   * Returns a {@code TupleState} json report writer.
+   */
+  private ObjectWriter createReportWriter() {
+    return new ObjectMapper()
+        .configure(AUTO_CLOSE_TARGET, false)
+        .writer()
+        .withDefaultPrettyPrinter();
   }
 
   /**

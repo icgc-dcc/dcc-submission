@@ -40,11 +40,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Optional;
 
 public class ReferenceGenomeValidatorTest {
+
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
 
   private static final String TEST_DIR = "src/test/resources/fixtures/validation/rgv";
 
@@ -107,7 +112,13 @@ public class ReferenceGenomeValidatorTest {
 
     // Setup: Establish input for the test
     val fileName = "ssm_p.txt";
-    val ssmPrimaryFile = Optional.<Path> of(new Path(TEST_DIR, fileName));
+    val directory = new Path(tmp.newFolder().getAbsolutePath());
+    val path = new Path(directory, fileName);
+
+    fileSystem.createNewFile(directory);
+    fileSystem.copyFromLocalFile(new Path(TEST_DIR, fileName), path);
+
+    val ssmPrimaryFile = Optional.<Path> of(path);
     when(context.getSsmPrimaryFile()).thenReturn(ssmPrimaryFile);
     when(context.getProjectKey()).thenReturn("project.test");
 
