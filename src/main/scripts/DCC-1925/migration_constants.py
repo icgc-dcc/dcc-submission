@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # DCC-1925
+# Constants relevant to the migration process
 
 DONOR = "donor"
 SPECIMEN = "specimen"

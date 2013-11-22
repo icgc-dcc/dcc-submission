@@ -38,8 +38,8 @@ def to_be_skipped(line, exclusion_value_indices, afference_exclusion_values, sur
 
 # ---------------------------------------------------------------------------
 
-def get_exclusion_value_indices(input_file):
-	headers = utils.read_headers(input_file)
+def get_exclusion_value_indices(intra_data_input_file):
+	headers = utils.read_headers(intra_data_input_file)
 	logging.info("headers: %s" % headers)
 	
 	keys = migration_constants.PK[file_type]
@@ -49,12 +49,7 @@ def get_exclusion_value_indices(input_file):
 
 # ---------------------------------------------------------------------------
 
-def process_file(file_type, input_file):
-	logging.info("file_type: %s" % file_type)
-	logging.info("input_file: %s" % input_file)
-
-	intra_data_input_file = migration_utils.get_intra_data_file(parent_dir, file_type)
-	logging.info("intra_data_input_file: %s" % intra_data_input_file)
+def process_file(file_type, intra_data_input_file):
 	
 	afference_report_input_file = migration_utils.get_afference_report_file(parent_dir, file_type)
 	surjectivity_efference_report_input_file = migration_utils.get_surjectivity_efference_report_file(parent_dir, file_type)
@@ -66,7 +61,7 @@ def process_file(file_type, input_file):
 	logging.info("afference_report: %s" % afference_report)
 	logging.info("surjectivity_efference_report: %s" % surjectivity_efference_report)
 
-	exclusion_value_indices = get_exclusion_value_indices(input_file)
+	exclusion_value_indices = get_exclusion_value_indices(intra_data_input_file)
 	logging.info("exclusion_value_indices: %s" % exclusion_value_indices)
 			
 	inter_data_output_file = migration_utils.get_inter_data_file(parent_dir, file_type)
@@ -84,6 +79,11 @@ def process_file(file_type, input_file):
 # ===========================================================================
 
 for file_type in migration_utils.FILE_TYPES:
-	process_file(file_type, migration_utils.get_original_data_file(input_dir, file_type))
+	logging.info("file_type: %s" % file_type)
+	
+	intra_data_input_file = migration_utils.get_intra_data_file(parent_dir, file_type)
+	logging.info("intra_data_input_file: %s" % intra_data_input_file)
+	
+	process_file(file_type, intra_data_input_file)
 	
 # ===========================================================================
