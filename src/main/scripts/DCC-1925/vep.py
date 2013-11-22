@@ -10,25 +10,12 @@ import migration_utils
 # ---------------------------------------------------------------------------
 
 input_dir = sys.argv[1]
-output_dir = sys.argv[2]
+parent_dir = sys.argv[2]
 
-migration_utils.configure_logging(output_dir, sys.argv[0])
+migration_utils.configure_logging(parent_dir, sys.argv[0])
 logging.info("input_dir: %s" % input_dir)
-logging.info("output_dir: %s" % output_dir)
-
-# ---------------------------------------------------------------------------
-
-# Reset output dirs
-report_dir = migration_utils.get_report_dir(output_dir)
-logging.info("report_dir: %s" % report_dir)
-
-if not os.path.isdir(output_dir):
-	os.makedirs(output_dir)
-if os.path.isdir(report_dir):
-	for report_file_name in os.listdir(report_dir):
-		os.remove(output_dir + '/' + report_file_name)
-else:
-	os.makedirs(report_dir)
+logging.info("parent_dir: %s" % parent_dir)
+migration_utils.reset_outputs(output_dir)
 
 # ---------------------------------------------------------------------------
 
@@ -64,7 +51,7 @@ def process_doc(file_type, doc):
 		if error_type not in error_types_encountered:
 			error_types_encountered.append(error_type)
 
-			error_report_file = migration_utils.get_error_report_file(output_dir, file_type, error_type)
+			error_report_file = migration_utils.get_error_report_file(parent_dir, file_type, error_type)
 			with open(error_report_file, 'a') as f:
 				f.write(str(line_number) + '\n')
 

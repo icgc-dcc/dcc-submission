@@ -20,3 +20,8 @@ def get_header_indices(headers, subset):
 		assert -1 not in indices
 	return indices
 
+def write_lines(output_file, lines):
+	with open(output_file, 'w') as f:
+		for line in lines:
+			afference.write(lines + '\n')
+

@@ -7,29 +7,12 @@ import migration_utils,migration_constants,discarder_utils
 # ===========================================================================
 
 input_dir = sys.argv[1]
-output_dir = sys.argv[2]
+parent_dir = sys.argv[2]
 
-migration_utils.configure_logging(output_dir, sys.argv[0])
+migration_utils.configure_logging(parent_dir, sys.argv[0])
 logging.info("input_dir: %s" % input_dir)
-logging.info("output_dir: %s" % output_dir)
-
-	here
-
-report_dir = migration_utils.get_report_dir(output_dir)
-logging.info("report_dir: %s" % report_dir)
-
-# Reset output dirs
-data_dir = migration_utils.get_data_dir(output_dir)
-logging.info("data_dir: %s" % data_dir)
-
-# TODO: address code duplication
-if not os.path.isdir(output_dir):
-	os.makedirs(output_dir)
-if os.path.isdir(data_dir):
-	for data_file_name in os.listdir(data_dir):
-		os.remove(output_dir + '/' + data_file_name)
-else:
-	os.makedirs(data_dir)
+logging.info("output_dir: %s" % parent_dir)
+migration_utils.reset_outputs(parent_dir)
 
 # ===========================================================================
 
@@ -71,9 +54,10 @@ def process_file(file_type, input_file):
 	logging.info("input_file: %s" % input_file)
 
 	intra_data_input_file = migration_utils.get_intra_data_file(parent_dir, file_type)
+	logging.info("intra_data_input_file: %s" % intra_data_input_file)
+	
 	afference_report_input_file = migration_utils.get_afference_report_file(parent_dir, file_type)
 	surjectivity_efference_report_input_file = migration_utils.get_surjectivity_efference_report_file(parent_dir, file_type)
-	logging.info("intra_data_input_file: %s" % intra_data_input_file)
 	logging.info("afference_report_input_file: %s" % afference_report_input_file)
 	logging.info("surjectivity_efference_report_input_file: %s" % surjectivity_efference_report_input_file)
 	
@@ -100,6 +84,6 @@ def process_file(file_type, input_file):
 # ===========================================================================
 
 for file_type in migration_utils.FILE_TYPES:
-	process_file(file_type, get_input_file(input_dir, file_type))
+	process_file(file_type, migration_utils.get_original_data_file(input_dir, file_type))
 	
 # ===========================================================================
