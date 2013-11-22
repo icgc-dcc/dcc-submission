@@ -64,8 +64,8 @@ def process_doc(file_type, doc):
 		if error_type not in error_types_encountered:
 			error_types_encountered.append(error_type)
 
-			report_file = migration_utils.get_report_file(output_dir, file_type, error_type)
-			with open(report_file, 'a') as f:
+			error_report_file = migration_utils.get_error_report_file(output_dir, file_type, error_type)
+			with open(error_report_file, 'a') as f:
 				f.write(str(line_number) + '\n')
 
 # ---------------------------------------------------------------------------

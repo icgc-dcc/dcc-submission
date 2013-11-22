@@ -2,7 +2,7 @@
 # DCC-1925
 # Usage:
 import sys,os,logging,glob
-import migration_utils,migration_constants
+import utils,migration_utils,migration_constants,discarder_utils
 
 # ===========================================================================
 
@@ -35,6 +35,7 @@ def get_reports(file_type):
 	for error_type in migration_utils.ERROR_TYPES:
 		report_file = migration_utils.get_report_file(output_dir, file_type, error_type)
 		if os.path.isfile(report_file):
+			logging.info("Processing report file for: '%s'" % error_type)
 			with open(report_file, 'r') as f:
 				lines = f.readlines()
 			lines.sort()
@@ -43,6 +44,8 @@ def get_reports(file_type):
 			assert lines == set(lines)
 			
 			reports[error_type] = lines
+		else:
+			logging.info("No report file for: '%s'" % error_type)
 	return reports
 
 # ---------------------------------------------------------------------------
@@ -55,56 +58,44 @@ def to_be_skipped(reports, line_number):
 
 # ---------------------------------------------------------------------------
 
-def get_key_values(line):
-	fields = migration_utils.split_line(line)
-	return [fields[i] for i in key_indices]
-
-# ---------------------------------------------------------------------------
-
-def get_relation_indices(input_file):
-
-	def get_header_indices(headers, keys):
-		indices = None
-		if keys is not None:
-			indices = [headers.index(key) for key in keys]
-			assert -1 not in indices
-		return indices
-		
-	headers = migration_utils.read_headers(input_file)
+def get_relation_indices(input_file):		
+	headers = utils.read_headers(input_file)
 	logging.info("headers: %s" % headers)
 
-	afference_keys = migration_constants.AFFERENT_RELATIONS[file_type]
-	surjectively_efference_keys = migration_constants.SURJECTIVELY_EFFERENT_RELATIONS[file_type]
+	afference_keys = migration_constants.PK[file_type]
+	surjective_efference_keys = migration_constants.SURJECTIVE_FK[file_type]
 	logging.info("afference_keys: %s" % afference_keys)
-	logging.info("surjectively_efference_keys: %s" % surjectively_efference_keys)
+	logging.info("surjective_efference_keys: %s" % surjective_efference_keys)
 
-	afference_indices = migration_utils.get_header_indices(headers, afference_keys)
-	surjectivity_efference_indices = migration_utils.get_header_indices(headers, surjectivity_efference_keys)
-	logging.info("afference_indices: %s" % afference_indices)
-	logging.info("surjectivity_efference_indices: %s" % surjectivity_efference_indices)
+	afference_indices = utils.get_header_indices(headers, afference_keys)
+	surjective_efference_indices = utils.get_header_indices(headers, surjective_efference_keys)
 
-	return afference_indices, surjectivity_efference_indices
+	return afference_indices, surjective_efference_indices
 				
 # ---------------------------------------------------------------------------
 
 def process_file(file_type, input_file):
-	reports = get_reports(file_type)
-	data_output_file = get_data_output_file()
-	afference_file = get_afference_file()
-	surjectivity_efference_file = get_surjectivity_efference_file()
-	
 	logging.info("file_type: %s" % file_type)
 	logging.info("input_file: %s" % input_file)
+	
+	reports = get_reports(file_type)
 	logging.info("reports: %s" % reports)
-	logging.info("data_output_file: %s" % data_output_file)
-	logging.info("afference_file: %s" % afference_file)
-	logging.info("surjectivity_efference_file: %s" % surjectivity_efference_file)
+	
+	intra_data_output_file = migration_utils.get_intra_data_file(parent_dir, file_type)
+	afference_output_file = migration_utils.get_afference_report_file(parent_dir, file_type)
+	surjective_efference_output_file = migration_utils.get_surjective_efference_report_file(parent_dir, file_type)
+	logging.info("intra_data_output_file: %s" % intra_data_output_file)
+	logging.info("afference_output_file: %s" % afference_output_file)
+	logging.info("surjective_efference_output_file: %s" % surjective_efference_output_file)
 
-	afference_indices, surjectivity_efference_indices = get_relation_indices(input_file)
+	# Compute report indices
+	afference_indices, surjective_efference_indices = get_relation_indices(input_file)
+	logging.info("afference_indices: %s" % afference_indices)
+	logging.info("surjective_efference_indices: %s" % surjective_efference_indices)
 
-	data = open(data_output_file, 'w')
-	afference = open(afference_file, 'w')
-	surjective_efference = open(surjectivity_efference_output_file, 'w')
+	data = open(intra_data_output_file, 'w')
+	afference = open(afference_output_file, 'w')
+	surjective_efference = open(surjective_efference_output_file, 'w')
 	
 	with open(input_file) as f:
 		line_number = 0
@@ -112,12 +103,12 @@ def process_file(file_type, input_file):
 		for line in f: # Will include header (which will basically never be skipped)
 			if to_be_skipped(reports, line_number):
 				afference.write(
-					'\t'.join(get_key_values(
+					'\t'.join(utils.get_tsv_values
 						line,
 						afference_indices))
 					+ '\n')
 				surjective_efference.write(
-					'\t'.join(get_key_values(
+					'\t'.join(utils.get_tsv_values
 						line,
 						surjective_efference_indices))
 					+ '\n')
@@ -127,20 +118,11 @@ def process_file(file_type, input_file):
 			
 	data.close()
 	afference.close()
-	surjectivity_efference.close()	
+	surjective_efference.close()	
 	
 # ---------------------------------------------------------------------------
 
 for file_type in migration_utils.FILE_TYPES:
-	if '_' in file_type:
-		split = file_type.split('_')
-		input_file_name_pattern = "%s*__%s*" % (split[0], split[1])
-	else:
-		input_file_name_pattern = "%s*" % (file_type)
-	input_files = glob.glob(input_dir + '/' + input_file_name_pattern)
-	assert len(input_files) == 1
-	input_file = input_files[0]
-	
-	process_file(file_type, input_file)
+	process_file(file_type, get_input_file(input_dir, file_type))
 	
 # ===========================================================================
