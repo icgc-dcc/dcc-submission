@@ -14,7 +14,6 @@ import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -46,8 +45,6 @@ public class FileHdfsSshFileTest {
   Submission submission;
   @Mock
   Project project;
-  @Mock
-  NextRelease nextRelease;
 
   @Mock
   DccFileSystem fs;
@@ -77,12 +74,11 @@ public class FileHdfsSshFileTest {
 
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
-    when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.resolveNextRelease()).thenReturn(nextRelease);
+    when(releaseService.getNextRelease()).thenReturn(release);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
 
     // Mock file system
-    when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
+    when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(release, null)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(createFileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);

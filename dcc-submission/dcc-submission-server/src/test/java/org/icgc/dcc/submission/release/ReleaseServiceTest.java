@@ -54,8 +54,6 @@ import com.mongodb.MongoException;
 
 public class ReleaseServiceTest {
 
-  private DccLocking dccLocking;
-
   private Datastore datastore;
 
   private Dictionary dictionary;
@@ -80,7 +78,6 @@ public class ReleaseServiceTest {
       Mongo mongo = new MongoClient("localhost");
       Morphia morphia = new Morphia();
       datastore = morphia.createDatastore(mongo, testDbName);
-      dccLocking = mock(DccLocking.class);
       fs = mock(DccFileSystem.class);
 
       // Clear out the test database before each test
@@ -119,7 +116,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, mailService);
+      releaseService = new ReleaseService(morphia, datastore, fs, mailService);
       dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
       dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
@@ -146,19 +143,19 @@ public class ReleaseServiceTest {
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,
   // QProject.project); TODO: find a solution
   public void test_getNextRelease_isCorrectRelease() {
-    assertEquals(release.getId(), releaseService.resolveNextRelease().getRelease().getId());
+    assertEquals(release.getId(), releaseService.getNextRelease().getId());
     Release newRelease = addNewRelease("release2");
-    assertEquals(newRelease.getName(), releaseService.resolveNextRelease().getRelease().getName());
+    assertEquals(newRelease.getName(), releaseService.getNextRelease().getName());
   }
 
   @Test
   public void test_getFromName_exists() {
-    Assert.assertNotNull(releaseService.getFromName("release1"));
+    Assert.assertNotNull(releaseService.getReleaseByName("release1"));
   }
 
   @Test
   public void test_getFromName_notExists() {
-    Assert.assertNull(releaseService.getFromName("dummy"));
+    Assert.assertNull(releaseService.getReleaseByName("dummy"));
   }
 
   // @Test; The workflow seems to be that a Release has to be created first and then projects are added to it. This test
@@ -189,17 +186,15 @@ public class ReleaseServiceTest {
 
   // @Test
   public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
-    NextRelease nextRelease = releaseService.resolveNextRelease();
-    Release nextReleaseRelease = nextRelease.getRelease();
-    assertTrue(!nextRelease.atLeastOneSignedOff(nextReleaseRelease));
+    Release nextReleaseRelease = releaseService.getNextRelease();
+    assertTrue(!releaseService.isAtLeastOneSignedOff(nextReleaseRelease));
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
     releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    nextRelease = releaseService.resolveNextRelease();
-    assertTrue(nextRelease.atLeastOneSignedOff(nextReleaseRelease));
+    assertTrue(releaseService.isAtLeastOneSignedOff(nextReleaseRelease));
   }
 
   // @Test
@@ -224,14 +219,14 @@ public class ReleaseServiceTest {
       throw new RuntimeException(e);
     }
 
-    NextRelease nextRelease = null;
+    Release nextRelease = null;
     try {
-      nextRelease = releaseService.resolveNextRelease().release(newRelease.getName());
+      nextRelease = releaseService.release(newRelease.getName());
     } catch (InvalidStateException e) {
       Throwables.propagate(e);
     }
 
-    return nextRelease.getRelease();
+    return nextRelease;
   }
 
 }

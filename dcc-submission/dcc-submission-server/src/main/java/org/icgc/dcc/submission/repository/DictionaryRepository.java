@@ -15,23 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release;
 
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseState;
+package org.icgc.dcc.submission.repository;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import org.icgc.dcc.submission.core.MailService;
+import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.QDictionary;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.inject.Inject;
 
-public class CompletedRelease extends BaseRelease {
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class DictionaryRepository extends BaseMorphiaService<Dictionary> {
 
-  CompletedRelease(Release release, Morphia morphia, Datastore datastore, DccFileSystem fs)
-      throws IllegalReleaseStateException {
-    super(release, morphia, datastore, fs);
-    if(release.getState() != ReleaseState.COMPLETED) {
-      throw new IllegalReleaseStateException(release, ReleaseState.COMPLETED);
-    }
-  }
+	@Inject
+	public DictionaryRepository(Morphia morphia, Datastore datastore,
+			MailService mailService) {
+		super(morphia, datastore, QDictionary.dictionary, mailService);
+		registerModelClasses(Dictionary.class, CodeList.class);
+	}
 
 }

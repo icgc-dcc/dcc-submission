@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;

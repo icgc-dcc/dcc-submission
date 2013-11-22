@@ -35,6 +35,7 @@ import java.util.concurrent.CancellationException;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Synchronized;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -191,8 +192,9 @@ public class ValidationScheduler extends AbstractScheduledService {
     val future = executor.execute(validation);
 
     // If we made it here then the validation was accepted
-    log.info("Validating next project in queue: '{}'", project);
+    log.info("Accepting next project in queue: '{}'", project);
     acceptValidation(project, release);
+    log.info("Accepted: '{}'", project);
 
     // Add callbacks to handle execution outcomes
     addCallback(future, new FutureCallback<Validation>() {
@@ -207,6 +209,7 @@ public class ValidationScheduler extends AbstractScheduledService {
         val state = validation.getContext().hasErrors() ? INVALID : VALID;
         val submissionReport = validation.getContext().getSubmissionReport();
         completeValidation(project, state, submissionReport);
+        log.info("onSuccess - Completed '{}'", project.getKey());
       }
 
       /**
@@ -219,6 +222,7 @@ public class ValidationScheduler extends AbstractScheduledService {
         val state = t instanceof CancellationException ? NOT_VALIDATED : ERROR;
         val submissionReport = validation.getContext().getSubmissionReport();
         completeValidation(project, state, submissionReport);
+        log.info("onFailure - Completed '{}'.", project.getKey());
       }
 
     });
@@ -264,7 +268,8 @@ public class ValidationScheduler extends AbstractScheduledService {
    * 
    * @param project
    */
-  synchronized private void acceptValidation(QueuedProject project, Release release) {
+  @Synchronized
+  private void acceptValidation(QueuedProject project, Release release) {
     log.info("Validation for '{}' accepted", project);
     mailService.sendValidationStarted(release.getName(), project.getKey(), project.getEmails());
     releaseService.resetValidationFolder(project.getKey(), release);
@@ -278,7 +283,8 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param state completion state
    * @param submissionReport the report produced through the validation process
    */
-  synchronized private void completeValidation(QueuedProject project, SubmissionState state,
+  @Synchronized
+  private void completeValidation(QueuedProject project, SubmissionState state,
       SubmissionReport submissionReport) {
     log.info("Validation for '{}' completed with state '{}'", project, state);
     try {
@@ -292,7 +298,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    * Utility method to give the current "next release" object and confirms open state.
    */
   private Release resolveOpenRelease() {
-    val release = releaseService.resolveNextRelease().getRelease();
+    val release = releaseService.getNextRelease();
     checkState(release.getState() == OPENED, "Release is expected to be '%s'", OPENED);
     return release;
   }

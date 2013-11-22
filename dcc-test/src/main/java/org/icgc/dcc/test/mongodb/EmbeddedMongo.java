@@ -52,17 +52,23 @@ public class EmbeddedMongo implements TestRule {
   @Override
   public Statement apply(final Statement base, Description description) {
     return new Statement() {
+
       @Override
       public void evaluate() throws Throwable {
         log.info("Starting embedded Mongo...");
         start();
         log.info("Embedded Mongo started");
+        try {
+          base.evaluate();
+        } catch (Throwable t) {
+          log.error("Error evaluating: ", t);
 
-        base.evaluate();
-
-        log.info("Stopping embedded Mongo...");
-        stop();
-        log.info("Embedded Mongo stopped");
+          throw t;
+        } finally {
+          log.info("Stopping embedded Mongo...");
+          stop();
+          log.info("Embedded Mongo stopped");
+        }
       }
     };
   }

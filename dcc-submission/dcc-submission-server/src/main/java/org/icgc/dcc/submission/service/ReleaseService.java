@@ -15,43 +15,70 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release;
+package org.icgc.dcc.submission.service;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.Set;
 
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.CompletedRelease;
-import org.icgc.dcc.submission.release.IllegalReleaseStateException;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseState;
-import org.junit.Test;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
+import com.google.inject.Inject;
 
-public class CompletedReleaseTest {
+@Slf4j
+@NoArgsConstructor
+@RequiredArgsConstructor(onConstructor = @_({ @Inject }))
+public class ReleaseService {
 
-  @Test
-  public void test_CompletedRelease_throwsIfIllegalState() {
-    Release mockRelease = mock(Release.class);
-    when(mockRelease.getState()).thenReturn(ReleaseState.OPENED);
+	@NonNull
+	private ReleaseRepository releaseRepository;
 
-    try {
-      new CompletedRelease(mockRelease, mock(Morphia.class), mock(Datastore.class), mock(DccFileSystem.class));
-      fail("Exception expected but none thrown");
-    } catch(IllegalReleaseStateException e) {
+	public Release find(String releaseName) {
+		log.info("Request for Release '{}'", releaseName);
+		return releaseRepository.find(releaseName);
+	}
 
-    }
-  }
+	public Set<Release> findAll() {
+		log.info("Request to find all Releases");
+		return releaseRepository.findAll();
+	}
 
-  @Test
-  public void test_CompletedRelease_doesNotThrow() {
-    Release mockRelease = mock(Release.class);
-    when(mockRelease.getState()).thenReturn(ReleaseState.COMPLETED);
+	/**
+	 * Query for {@code Release} with state {@code OPENED}
+	 * 
+	 * @return Current Open Release
+	 */
+	public Release findOpen() {
+		log.info("Request for current Open Release");
+		return releaseRepository.findOpen();
+	}
 
-    new CompletedRelease(mockRelease, mock(Morphia.class), mock(Datastore.class), mock(DccFileSystem.class));
-  }
+	/**
+	 * Creates a new {@code Submission} and adds it to the current open
+	 * {@code Release}
+	 * 
+	 * @return Current Open Release
+	 */
+	public Release addSubmission(String projectKey, String projectName) {
+		log.info(
+				"Creating Submission for Project '{}' in current open Release",
+				projectKey);
+
+		val openRelease = releaseRepository.findOpen();
+		val submission = new Submission(projectKey, projectName,
+				openRelease.getName());
+		log.info("Created Submission '{}'", submission);
+
+		val release = releaseRepository.addSubmission(submission,
+				openRelease.getName());
+
+		return release;
+	}
 
 }

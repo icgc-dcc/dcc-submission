@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
-import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -39,7 +39,6 @@ import lombok.val;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -90,8 +89,6 @@ public class ValidationSchedulerTest {
   @Mock
   ValidationContext context;
   @Mock
-  NextRelease nextRelease;
-  @Mock
   Release release;
   @Mock
   Dictionary dictionary;
@@ -107,8 +104,7 @@ public class ValidationSchedulerTest {
     // Establish an open release with a single queued project
     when(release.getState()).thenReturn(OPENED);
     when(release.nextInQueue()).thenReturn(Optional.fromNullable(queuedProject));
-    when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.resolveNextRelease()).thenReturn(nextRelease);
+    when(releaseService.getNextRelease()).thenReturn(release);
     when(releaseService.countOpenReleases()).thenReturn(1L);
     when(releaseService.getNextDictionary()).thenReturn(dictionary);
   }

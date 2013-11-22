@@ -97,7 +97,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         filenameList1.toString());
     log.info("ls1 = " + filenameList1);
 
-    String releaseStringPath = this.dccFileSystem.buildReleaseStringPath(this.mockRelease);
+    String releaseStringPath = this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName());
     log.info("releaseStringPath = " + releaseStringPath);
 
     Iterable<String> filenameList2 =
@@ -166,6 +166,6 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
   @After
   public void tearDown() {
-    HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease));
+    HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName()));
   }
 }

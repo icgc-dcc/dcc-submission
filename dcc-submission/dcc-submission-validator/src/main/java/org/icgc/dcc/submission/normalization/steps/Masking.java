@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.normalization.steps;
 
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MASKING;
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import lombok.NonNull;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
@@ -30,7 +30,7 @@ import com.google.common.base.Optional;
 public enum Masking {
   CONTROLLED, OPEN, MASKED;
 
-  static final Fields NORMALIZER_MASKING_FIELD = new Fields(NORMALIZER_MASKING);
+  static final Fields NORMALIZER_MARKING_FIELD = new Fields(NORMALIZER_MARKING);
 
   /**
    * Returns the value to be used in the context of a {@link Tuple} (to avoid serialization issues).

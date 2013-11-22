@@ -19,7 +19,9 @@ package org.icgc.dcc.submission.core;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.core.MailService.MAIL_ENABLED;
 import static org.icgc.dcc.submission.core.MailService.MAIL_ERROR_BODY;
@@ -31,6 +33,7 @@ import static org.icgc.dcc.submission.core.MailService.MAIL_SMTP_HOST;
 import static org.icgc.dcc.submission.core.MailService.MAIL_SUPPORT_RECIPIENT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_VALIDATION_SUBJECT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_VALID_BODY;
+import static org.icgc.dcc.submission.core.MailService.NOTIFICATION_SUBJECT_PREFEX;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -41,6 +44,7 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import java.util.List;
 
 import javax.mail.Address;
+import javax.mail.MessagingException;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -83,15 +87,21 @@ public class MailServiceTest {
     val text = "text";
 
     mailService.sendSupportProblem(subject, text);
+    sleepUninterruptibly(1, SECONDS);
 
     verifyStatic(times(2));
 
     val messages = getMessages();
-    val notifyMessage = messages.get(0);
+    assertThat(messages.size()).isEqualTo(2);
+
+    val m1 = messages.get(0);
+    val m2 = messages.get(1);
+    val notifyMessage = isNotification(m1) ? m1 : m2;
+    val supportMessage = isNotification(m1) ? m2 : m1;
+
     assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
     assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
 
-    val supportMessage = messages.get(1);
     assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
     assertThat(supportMessage.getAllRecipients()).contains(address(get(MAIL_SUPPORT_RECIPIENT)));
     assertThat(supportMessage.getSubject()).endsWith(subject);
@@ -108,19 +118,30 @@ public class MailServiceTest {
     val addresses = newHashSet(address("email@domain.com"));
 
     mailService.sendValidationResult(releaseName, projectKey, emails, state);
+    sleepUninterruptibly(1, SECONDS);
 
     verifyStatic(times(2));
 
     val messages = getMessages();
-    val notifyMessage = messages.get(0);
+    assertThat(messages.size()).isEqualTo(2);
+
+    val m1 = messages.get(0);
+    val m2 = messages.get(1);
+    val notifyMessage = isNotification(m1) ? m1 : m2;
+    val supportMessage = isNotification(m1) ? m2 : m1;
+
     assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
     assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
 
-    val supportMessage = messages.get(1);
     assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
     assertThat(supportMessage.getAllRecipients()).containsAll(addresses);
     assertThat(supportMessage.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
     assertThat(supportMessage.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
+  }
+
+  private static boolean isNotification(MimeMessage message) throws MessagingException {
+    // Low-tech but works
+    return message.getSubject().contains(NOTIFICATION_SUBJECT_PREFEX);
   }
 
   @SneakyThrows

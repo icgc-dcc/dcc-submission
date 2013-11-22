@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 public abstract class ResourceTest extends JerseyTest {
 
@@ -67,9 +68,9 @@ public abstract class ResourceTest extends JerseyTest {
         // Business modules
         (Module) new ValidationModule());
 
-    modules.addAll(configureModules());
+    // modules.addAll(configureModules());
 
-    injector = Guice.createInjector(modules);
+    injector = Guice.createInjector(Modules.override(modules).with(configureModules()));
 
     return injector.getInstance(ResourceConfig.class);
   }

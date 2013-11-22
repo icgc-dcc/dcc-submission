@@ -15,51 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.normalization;
 
-import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.RESULTS;
-import static java.lang.String.format;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Resources.getResource;
+import static lombok.AccessLevel.PRIVATE;
 
-import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.EmitNothing;
+import java.net.URL;
+import java.util.List;
 
-import cascading.pipe.Each;
-import cascading.pipe.Merge;
-import cascading.pipe.Pipe;
-import cascading.pipe.SubAssembly;
-import cascading.pipe.assembly.Unique;
-import cascading.tap.Tap;
-import cascading.tuple.Fields;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 /**
- * Performs a unique count for the given field(s) and in a transparent manner to the flow it originates from (and
- * eventually merges to).
- * <p>
- * This uses a trick whereby we split the flow, do the count, filter out all tuples and merge back in the original flow.
- * This is to circumvent the issue with cascading of having to have sink {@link Tap} for a branch to be run (TODO: find
- * better way?).
+ * Mostly ported from TestUtils in the dcc-submission-server module (TODO: address code duplication).
  */
-public final class CountUnique extends SubAssembly {
+@NoArgsConstructor(access = PRIVATE)
+final class NormalizationTestUtils {
 
-  CountUnique(Pipe pipe, String stepShortName, Fields fields, NormalizationCounter counter, long increment) {
-    Pipe unique = new Pipe(
-        format("%s-%s-pipe", stepShortName, counter),
-        pipe);
+  /**
+   * Jackson constants.
+   */
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
-    unique = new Unique(unique, fields);
-    unique = new Each(
-        unique,
-        ALL,
-        new Counter(counter, increment),
-        RESULTS);
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+  }
 
-    // Trick to re-join main branch without consequences (else side branch does not get executed)
-    unique = new Each(unique, new EmitNothing());
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
 
-    setTails(new Merge(
-        pipe, // Will effectively remain unaltered
-        unique));
+  public static List<String> getFieldNames(SubmissionFileType type) {
+    return newArrayList(dictionary()
+        .getFileSchema(type).get()
+        .getFieldNames());
   }
 }

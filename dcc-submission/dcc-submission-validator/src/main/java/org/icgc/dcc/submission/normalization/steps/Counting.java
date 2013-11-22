@@ -15,19 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release;
+package org.icgc.dcc.submission.normalization.steps;
 
-import java.util.List;
+import static cascading.tuple.Fields.ALL;
+import static cascading.tuple.Fields.RESULTS;
+import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.fs.ReleaseFileSystem;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.normalization.NormalizationContext;
+import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
 
-public interface HasRelease {
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
 
-  public ReleaseFileSystem getReleaseFilesystem();
+/**
+ * Performs final count of observations.
+ * <p>
+ * TODO: merge with {@link InitialCounting} by passing the counter to use.
+ */
+@RequiredArgsConstructor
+public final class Counting implements NormalizationStep {
 
-  public Release getRelease();
+  /**
+   * Short name for the step.
+   */
+  private static final String SHORT_NAME = "count";
 
-  public List<Project> getProjects();
+  private final NormalizationCounter counter;
+
+  @Override
+  public String shortName() {
+    return SHORT_NAME;
+  }
+
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Each(
+        pipe,
+        ALL,
+        new Counter(counter, COUNT_INCREMENT),
+        RESULTS);
+  }
 }

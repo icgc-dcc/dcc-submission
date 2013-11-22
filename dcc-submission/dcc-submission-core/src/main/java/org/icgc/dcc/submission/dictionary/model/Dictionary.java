@@ -129,6 +129,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   /**
    * Optionally returns a {@link FileSchema} matching {@link SubmissionFileType} provided.
+   * <p>
+   * TODO: change to not return optional (never valid not to have a match)
    */
   @JsonIgnore
   public Optional<FileSchema> getFileSchema(SubmissionFileType type) {

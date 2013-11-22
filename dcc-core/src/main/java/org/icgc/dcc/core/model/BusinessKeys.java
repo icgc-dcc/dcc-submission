@@ -19,11 +19,11 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ASSEMBLY_VERSION;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 
@@ -53,7 +53,7 @@ public final class BusinessKeys {
       SUBMISSION_OBSERVATION_CHROMOSOME_START,
       SUBMISSION_OBSERVATION_CHROMOSOME_END,
       SUBMISSION_OBSERVATION_MUTATION_TYPE,
-      SUBMISSION_OBSERVATION_MUTATION);
+      NORMALIZER_MUTATION);
 
   /**
    * Part of the business key for mutations that is found in the primary files and is <b>not</b> part of the identifying
