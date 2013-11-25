@@ -105,7 +105,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Relation violation"
       description: (source) ->
         """
-        The following values in referenced shema
+        The following values in referenced schema
         <em>#{source.parameters?.OTHER_SCHEMA}</em>
         (fields <em>#{source.parameters?.OTHER_FIELDS.join ', '}</em>)
         have no corresponding records in the current file,
@@ -140,14 +140,15 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     UNIQUE_VALUE_ERROR:
       name: "Value uniqueness error"
       description: (source) ->
-        console.log source
         """
         Duplicate values found
         """
     STRUCTURALLY_INVALID_ROW_ERROR:
       name: "Invalid row structure"
       description: (source) ->
-        Field counts in all lines are expected to be
+        """
+        Field counts in all lines are expected to be #{source.parameters?.EXPECTED}
+        """
         #"""
         #Field counts in all lines are expected to match that of the file
         #header. Offending lines
@@ -167,10 +168,6 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         one file is allowed. <br>
         #{source.parameters?.FILES.join '<br>'}
         """
-        #"""
-        #More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
-        #filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
-        #"""
     COMPRESSION_CODEC_ERROR:
       name: "Compression Error"
       description: (source) ->
@@ -178,16 +175,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         File name extension does not match file compression type. Please use
         <em>.gz</em> for gzip, <em>.bz2</em> for bzip2.
         """
-        #"""
-        #File compression type does not match file extension
-        #"""
     INVALID_CHARSET_ROW_ERROR:
       name: "Row contains invalid charset"
       description: (source) ->
         """
         Charset Invalid, expected charset for the line is
         <em>#{source.parameters?.EXPECTED} with no control character except
-         tab as a delimiter </em>
+         tab as a delimiter </em>. Offending lines:
         """
     FILE_HEADER_ERROR:
       name: "File header error"
@@ -195,7 +189,6 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
         Invalid header line. It is expected to contain the following fields
         in the specified order separated by <em>tab</em>: <br>
-        #{source.parameters?.VALUE}
         """
         #"""
         #Different from the expected header
@@ -239,7 +232,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     if source.errorType in [
       "COMPRESSION_CODEC_ERROR"
       "TOO_MANY_FILES_ERROR"
-      "FILE_HEADER_ERROR"
+      #"FILE_HEADER_ERROR"
       "RELATION_FILE_ERROR"
       "REVERSE_RELATION_FILE_ERROR"
       "TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR"
@@ -249,9 +242,34 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "MISSING_VALUE_ERROR"
       "OUT_OF_RANGE_ERROR"
       "NOT_A_NUMBER_ERROR"
+      "INVALID_CHARSET_ROW_ERROR"
       #"STRUCTURALLY_INVALID_ROW_ERROR"
       ]
       return source.lines.join ', '
+    else if source.errorType is 'FILE_HEADER_ERROR'
+      console.log ">>>", source
+      expected = source.parameters.EXPECTED
+      actual = source.parameters.VALUE
+      displayLength = Math.max(expected.length, actual.length)
+
+      out = ""
+      out += "<br><table class='table table-condensed'>
+        <th style='border:none'>Expected</th>
+        <th style='border:none'>Actual</th>"
+
+      console.log expected
+      console.log actual
+      for i in [0..displayLength - 1] by 1
+        expectedVal = expected[i] || '-'
+        actualVal = actual[i] || '-'
+        out += "<tr>
+          <td style='background:none;border:none'>
+          #{expectedVal}</td>
+          <td style='background:none;border:none'>
+          #{actualVal}</td></tr>"
+      out += "</table>"
+      return out
+
     else if source.columnNames[0] is "FileLevelError"
       return ""
 
