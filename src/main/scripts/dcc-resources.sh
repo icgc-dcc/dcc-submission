@@ -27,7 +27,7 @@ wc -l /tmp/dcc-resources/CodeList.json
 
 mkdir -p /tmp/dcc-resources/org/icgc/dcc/resources
 mv /tmp/dcc-resources/Dictionary.json /tmp/dcc-resources/CodeList.json /tmp/dcc-resources/org/icgc/dcc/resources/
-jar cf /tmp/dcc-resources-${version?}.jar /tmp/dcc-resources/org
+jar cf /tmp/dcc-resources-${version?}.jar -C /tmp/dcc-resources/ org
 
 ls /tmp/dcc-resources-${version?}.jar
 jar tvf /tmp/dcc-resources-${version?}.jar
