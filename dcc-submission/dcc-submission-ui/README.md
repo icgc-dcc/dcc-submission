@@ -9,7 +9,7 @@ Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are usin
 Install brunch and required modules:
 
 	sudo npm install -g brunch@1.6.7 
-   sudo npm install -g coffee-script 
+   	sudo npm install -g coffee-script 
 	cd dcc/dcc-submission/dcc-submission-ui
 	npm install
 	
