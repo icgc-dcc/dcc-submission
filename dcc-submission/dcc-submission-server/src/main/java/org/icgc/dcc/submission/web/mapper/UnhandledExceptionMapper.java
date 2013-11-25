@@ -30,12 +30,13 @@ public class UnhandledExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable throwable) {
-    log.error("A throwable was caught: '{}'", throwable);
+    log.error("A throwable was caught:", throwable);
     return Response
         .status(Response.Status.INTERNAL_SERVER_ERROR)
         .entity(new ServerErrorResponseMessage(
-            ServerErrorCode.UNKNOWN_THROWABLE,
+            ServerErrorCode.UNKNOWN_ERROR,
             throwable.getMessage()))
         .build();
   }
+
 }
