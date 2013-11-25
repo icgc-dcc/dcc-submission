@@ -52,6 +52,6 @@
 
   <properties>
     <!-- Versions - Resources -->
-    <dcc-resources.version>0.7a-beta</dcc-resources.version>
+    <dcc-resources.version>0.7a</dcc-resources.version>
   </properties>
 </project>
