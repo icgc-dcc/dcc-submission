@@ -9,10 +9,10 @@ import migration_utils,migration_constants,discarder_utils
 input_dir = sys.argv[1]
 parent_dir = sys.argv[2]
 
+migration_utils.reset_outputs(parent_dir)
 migration_utils.configure_logging(parent_dir, sys.argv[0])
 logging.info("input_dir: %s" % input_dir)
 logging.info("output_dir: %s" % parent_dir)
-migration_utils.reset_outputs(parent_dir)
 
 # ===========================================================================
 
@@ -82,8 +82,11 @@ for file_type in migration_utils.FILE_TYPES:
 	logging.info("file_type: %s" % file_type)
 	
 	intra_data_input_file = migration_utils.get_intra_data_file(parent_dir, file_type)
-	logging.info("intra_data_input_file: %s" % intra_data_input_file)
-	
-	process_file(file_type, intra_data_input_file)
+	if intra_data_input_file is not None:
+		logging.info("intra_data_input_file: %s" % intra_data_input_file)		
+		process_file(file_type, intra_data_input_file)
+	else:
+		logging.info("No matches for: '%s'" % file_type)
+
 	
 # ===========================================================================

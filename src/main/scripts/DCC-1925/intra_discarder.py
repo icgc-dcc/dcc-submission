@@ -1,23 +1,23 @@
 #!/usr/bin/python
 # DCC-1925
 # Usage:
-import sys,os,logging,glob
-import utils,migration_utils,migration_constants,discarder_utils
+import sys,os,logging,glob,gzip
+import utils,migration_utils,migration_constants,discarder_utils,relation_utils
 
 # ===========================================================================
 
 input_dir = sys.argv[1]
 parent_dir = sys.argv[2]
 
+migration_utils.reset_outputs(parent_dir)
 migration_utils.configure_logging(parent_dir, sys.argv[0])
 logging.info("input_dir: %s" % input_dir)
 logging.info("parent_dir: %s" % parent_dir)
-migration_utils.reset_outputs(parent_dir)
 
 # ---------------------------------------------------------------------------
 
-def get_reports(file_type):
-	reports = {}
+def get_vep_reports(file_type):
+	vep_reports = {}
 	for error_type in migration_utils.ERROR_TYPES:
 		get_error_report_file = migration_utils.get_error_report_file(parent_dir, file_type, error_type)
 		if os.path.isfile(get_error_report_file):
@@ -29,123 +29,82 @@ def get_reports(file_type):
 			# Check no duplicates (see 131121182856)
 			assert lines == set(lines)
 			
-			reports[error_type] = lines
+			vep_reports[error_type] = lines
 		else:
 			logging.info("No report file for: '%s'" % error_type)
-	return reports
+	return vep_reports
 
 # ---------------------------------------------------------------------------
 
-def to_be_skipped(reports, line_number):
-	for error_type, line_numbers in reports.iteritems():
+def get_discarding_indices(file_type, original_data_file):
+	discarding_fields = relation_utils.get_relation_fields(file_type)
+	logging.info("discarding_fields: %s" % discarding_fields)
+	
+	headers = utils.read_headers(original_data_file):
+	logging.info("headers: %s" % headers)
+		
+	return utils.get_header_indices(headers, discarding_fields)
+
+# ---------------------------------------------------------------------------
+
+def to_be_skipped(vep_reports, line_number):
+	for error_type, line_numbers in vep_reports.iteritems():
 		if line_number in line_numbers:
 			return True
 	return False
-
-# ---------------------------------------------------------------------------
-
-def get_relation_indices(input_file):		
-	headers = utils.read_headers(input_file)
-	logging.info("headers: %s" % headers)
-
-	afference_keys = migration_constants.PK[file_type]
-	surjective_efference_keys = migration_constants.SURJECTIVE_FK[file_type]
-	logging.info("afference_keys: %s" % afference_keys)
-	logging.info("surjective_efference_keys: %s" % surjective_efference_keys)
-
-	afference_indices = utils.get_header_indices(headers, afference_keys)
-	surjective_efference_indices = utils.get_header_indices(headers, surjective_efference_keys)
-
-	return afference_indices, surjective_efference_indices
-				
+		
 # ---------------------------------------------------------------------------
 
 # This also collects ...TODO
-def filter_file(file_type, input_file):
-	reports = get_reports(file_type)
-	logging.info("reports: %s" % reports)
+def filter_file(file_type, original_data_file, intra_data_output_file, vep_reports, discarding_indices, discarding_report_output_file):
+	discarding_report = open(discarding_report_output_file, 'w')
 	
-	intra_data_output_file = migration_utils.get_intra_data_file(parent_dir, file_type)
-	data = open(intra_data_output_file, 'w')
-	afference_values, surjective_efference_values = [], []
-	with open(input_file) as f:
-		line_number = 0
-
-		for line in f: # Will include header (which will basically never be skipped)
-			logging.debug("Considering line: '%s' ('%s')" % (line, line_number))
-			if to_be_skipped(reports, line_number):
-				logging.debug("To be skipped")
-				afference_values.append(
-					'\t'.join(
-						utils.get_tsv_values
-							line,
-							afference_indices))
-							
-				# This will be further filtered later
-				surjective_efference_values.append(
-					'\t'.join(
-						utils.get_tsv_values
-							line,
-							afference_indices))				
-			else:
-				logging.debug("To be kept")
-				data.write(line)
-			line_number += 1
-	data.close()
+	original_data = migration_utils.open_file(original_data_file)
+	
+	line_number = 0
+	for line in original_data: # Will include header (which will basically never be skipped)
+		logging.debug("Considering line: '%s' ('%s')" % (line, line_number))
+		discarding_values = utils.get_tsv_values(line, discarding_indices)
+		if to_be_skipped(vep_reports, line_number):
+			logging.debug("To be skipped")		
+			dropped_flag = 1
+		else:
+			logging.debug("To be kept")
+			dropped_flag = 0
+			data.write(line)
+		report_line = "%s\t%s" % (dropped_flag, '\t'.join(discarding_values))
+		logging.debug("Adding report line: '%'" % report_line)
+		discarding_report.write(report_line)
+		line_number += 1
+		
+	discarding_report.close()
+	original_data.close()
 
 	return intra_data_output_file, afference_values, surjective_efference_values
-	
-# ---------------------------------------------------------------------------
-
-# Filters the... TODO
-def filter_surjective_efference_values(intra_data_output_file, surjective_efference_indices, surjective_efference_values):
-
-	# 131122152052-scanning
-	with open(intra_data_output_file) as f:
-		for line in f:
-			values = utils.get_tsv_values(line, surjective_efference_indices)
-			
-			# We remove the key since it's still used (TODO: expand)
-			if values in surjective_efference_values:
-				surjective_efference_values.remove(values)
-				logging.info("Removing '%s' from the list of values to remove" % values)
-			else:
-				logging.debug("Keeping '%s' in the list of values to remove" % values)
-
-	return surjective_efference_values
-
-# ---------------------------------------------------------------------------
-
-def write_reports(afference_values, filtered_surjective_efference_values):
-	afference_report_output_file = migration_utils.get_afference_report_file(parent_dir, file_type)
-	surjective_efference_report_output_file = migration_utils.get_surjective_efference_report_file(parent_dir, file_type)
-	
-	logging.info("afference_output_file: %s" % afference_output_file)
-	logging.info("surjective_efference_output_file: %s" % surjective_efference_output_file)
-
-	utils.write_lines(afference_output_file, afference_values)
-	utils.write_lines(surjective_efference_output_file, filtered_surjective_efference_values)
-
 # ---------------------------------------------------------------------------
 
 def process_file(file_type):
 	logging.info("file_type: %s" % file_type)
 	
-	input_file = migration_utils.get_original_data_file(input_dir, file_type)
-	logging.info("input_file: %s" % input_file)
+	original_data_file = migration_utils.get_original_data_file(input_dir, file_type)
+	if original_data_file is not None:
+		logging.info("original_data_file: %s" % original_data_file)
+	
+		intra_data_output_file = migration_utils.get_intra_data_file(parent_dir, file_type)
+		logging.info("intra_data_output_file: %s" % intra_data_output_file)
 
-	# Compute report indices
-	intra_data_output_file, afference_indices, surjective_efference_indices = get_relation_indices(input_file)
-	logging.info("intra_data_output_file: %s" % intra_data_output_file)
-	logging.info("afference_indices: %s" % afference_indices)
-	logging.info("surjective_efference_indices: %s" % surjective_efference_indices)
+		vep_reports = get_vep_reports(file_type)
+		logging.info("vep_reports: %s" % vep_reports)
+		
+		discarding_indices = get_discarding_indices(file_type, original_data_file)
+		logging.info("discarding_indices: %s" % discarding_indices)
 
-	afference_values, surjective_efference_values = filter_file(file_type, input_file)
-	filtered_surjective_efference_values = filter_surjective_efference_values(
-		intra_data_output_file,
-		surjective_efference_indices,
-		surjective_efference_values)
-	write_reports(afference_values, filtered_surjective_efference_values)
+		discarding_report_output_file = migration_utils.get_discarding_report_output_file(parent_dir, file_type)
+		logging.info("discarding_report_output_file: %s" % discarding_report_output_file)
+	
+		filter_file(file_type, original_data_file, intra_data_output_file, vep_reports, discarding_indices, discarding_report_output_file)
+	else:
+		logging.info("No matches for: '%s'" % file_type)
 	
 # ---------------------------------------------------------------------------
 

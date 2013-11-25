@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # General utils methods
+import re
 
 # ===========================================================================
 
@@ -34,5 +35,20 @@ def write_lines(output_file, lines):
 	with open(output_file, 'w') as f:
 		for line in lines:
 			afference.write(lines + '\n')
+
+# ---------------------------------------------------------------------------
+
+def is_plain_file(input_file):
+	return re.search(".txt$", input_file)
+
+# ---------------------------------------------------------------------------
+
+def is_gzip_file(input_file):
+	return re.search(".txt.gz$", input_file)
+
+# ---------------------------------------------------------------------------
+
+def is_bzip2_file(input_file):
+	return re.search(".txt.bz2$", input_file)
 
 # ===========================================================================
