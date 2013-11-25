@@ -61,7 +61,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         this field: <em>#{source.parameters?.EXPECTED}</em>
         """
     SCRIPT_ERROR:
-      name: "Failed script expression"
+      name: "Failed script-based validation"
       description: (source) ->
         # Note we don't have an mvel formatter/highlighter, this is
         # currently simulated with javascript formatter and java highlighter
@@ -69,11 +69,16 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         errorPretty = hljs.highlight('java', js_beautify(errorRaw)).value
 
         """
-        #{source.parameters?.DESCRIPTION}.
-        Values do not pass the script expression associated with this
-        this field: <br><br>
-        <pre><code>#{errorPretty}</code></pre>
+        Data row failed script-based validation check, see
+        <a href="">submission documentation</a> for more details.
+        <br><br><pre><code>#{errorPretty}</code></pre>
         """
+
+        ##{source.parameters?.DESCRIPTION}.
+        #Values do not pass the script expression associated with this
+        #this field: <br><br>
+        #<pre><code>#{errorPretty}</code></pre>
+        #"""
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
       description: (source) ->
@@ -147,7 +152,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Invalid row structure"
       description: (source) ->
         """
-        Field counts in all lines are expected to be #{source.parameters?.EXPECTED}
+        Field counts in all lines are expected to be
+        #{source.parameters?.EXPECTED}
         """
         #"""
         #Field counts in all lines are expected to match that of the file
@@ -179,9 +185,9 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Row contains invalid charset"
       description: (source) ->
         """
-        Charset Invalid, expected charset for the line is
-        <em>#{source.parameters?.EXPECTED} with no control character except
-         tab as a delimiter </em>. Offending lines:
+        Expected charset is <em>#{source.parameters?.EXPECTED}</em>
+        with no control characters except for <em>Tab</em> as field
+        delimiter. Offending lines:
         """
     FILE_HEADER_ERROR:
       name: "File header error"
@@ -216,15 +222,26 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         reference genome, the only allowed value is a dash: <em>-</em>
         """
     TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR:
-      name: "Excessive amount of sensitive data error"
+      name: "Excessive amount of SSMs need to be masked"
+      #name: "Excessive amount of sensitive data error"
       description: (source) ->
+        val1 = source.parameters.VALUE
+        val2 = source.parameters.VALUE2
+        expected = source.parameters.EXPECTED
         """
-        An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of
-        <em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
-        observations has been dectected and most likely indicates an error
-        in the data. The maximum threshold allowed is
-        <em>#{parseFloat(100*source.parameters?.EXPECTED).toFixed(2)}%</em>.
+        The percentage (#{parseFloat(100*val1/val2).toFixed(2)}%) of SSMs that
+        needs to be masked exceeded the reasonable level (currently the
+        threshold is set as #{parseFloat(100*expected).toFixed(2)}% ).
+        More details about SSM masking can be found
+        <a href="">here</a>.
         """
+        #"""
+        #An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of
+        #<em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
+        #observations has been dectected and most likely indicates an error
+        #in the data. The maximum threshold allowed is
+        #<em>#{parseFloat(100*source.parameters?.EXPECTED).toFixed(2)}%</em>.
+        #"""
   details: (source) ->
 
     # There are generally two types of errors: file level errors
