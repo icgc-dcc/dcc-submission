@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static org.icgc.dcc.submission.validation.cascading.TupleState.createTupleError;
 
@@ -109,6 +110,9 @@ public class SubmissionReportContext implements ReportContext {
   @Override
   public void reportLineNumbers(Path path) {
     val schemaReport = submissionReport.getSchemaReport(path.getName());
+    checkState(schemaReport != null, "No schema report found for name '%s' with path '%s'. Submission report: %s",
+        path.getName(), path, submissionReport);
+
     for (val errorReport : schemaReport.getErrors()) {
       try {
         errorReport.updateLineNumbers(path);
