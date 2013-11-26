@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static org.icgc.dcc.submission.validation.cascading.TupleState.createTupleError;
 
@@ -110,8 +109,13 @@ public class SubmissionReportContext implements ReportContext {
   @Override
   public void reportLineNumbers(Path path) {
     val schemaReport = submissionReport.getSchemaReport(path.getName());
-    checkState(schemaReport != null, "No schema report found for name '%s' with path '%s'. Submission report: %s",
-        path.getName(), path, submissionReport);
+    val missing = schemaReport == null;
+    if (missing) {
+      // This could happen for optional files (which don't report statistics) that don't have errors
+      log.warn("No schema report found for name '{}' with path '{}'. Skipping...", path.getName(), path);
+
+      return;
+    }
 
     for (val errorReport : schemaReport.getErrors()) {
       try {
