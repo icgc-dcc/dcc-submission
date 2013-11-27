@@ -46,7 +46,7 @@ public class ReleaseFileSystemTest {
 
   @Test
   @SneakyThrows
-  public void testMoveFrom() {
+  public void testMovePathFrom() {
 
     //
     // Setup: Environment
@@ -86,16 +86,22 @@ public class ReleaseFileSystemTest {
 
     val previousSystemDir = new File(previousReleaseDir, "SystemFiles");
     val previousSystemPath = new Path(previousSystemDir.getAbsolutePath());
+    val previousSystemFile = new File(previousSystemDir, "system.txt");
 
     // Create files and directories
     previousReleaseDir.mkdirs();
-    previousSubmissionValidationDir.mkdirs();
-    previousSystemDir.mkdirs();
+    previousSubmissionDir.mkdirs();
     previousSubmissionDonorFile.createNewFile();
     previousSubmissionSampleFile.createNewFile();
+
+    previousSubmissionValidationDir.mkdirs();
     previousSubmissionDonorErrorFile.createNewFile();
     previousSubmissionSampleErrorFile.createNewFile();
 
+    previousSystemDir.mkdirs();
+    previousSystemFile.createNewFile();
+
+    // Mock
     when(previousRelease.getName()).thenReturn(previousReleaseName);
     when(previousRelease.getSubmission(anyString())).thenReturn(previousSubmission);
     when(previousReleaseFileSystem.getSubmissionDirectory(projectKey)).thenReturn(previousSubmissionDirectory);
@@ -128,6 +134,9 @@ public class ReleaseFileSystemTest {
     val nextSubmissionValidationDir = new File(nextReleaseDir, projectKey + "/.validation");
     val nextSubmissionDonorErrorFile = new File(nextSubmissionValidationDir, "donor--errors.json");
     val nextSubmissionSampleErrorFile = new File(nextSubmissionValidationDir, "sample--errors.json");
+
+    val nextSystemDir = new File(nextReleaseDir, "SystemFiles");
+    val nextSystemFile = new File(nextSystemDir, "system.txt");
 
     // Create files and directories
     nextSubmissionDir.mkdirs();
@@ -163,17 +172,25 @@ public class ReleaseFileSystemTest {
 
     // The "moveFrom" validation folder moved
     assertThat(previousSubmissionDir).exists();
+
     assertThat(previousSubmissionValidationDir).doesNotExist();
     assertThat(previousSubmissionDonorFile).doesNotExist();
     assertThat(previousSubmissionSampleFile).doesNotExist();
+
+    assertThat(previousSystemDir).exists();
+    assertThat(previousSystemFile).doesNotExist();
 
     // The "moveTo" is fully populated
     assertThat(nextSubmissionDir).exists();
     assertThat(nextSubmissionDonorFile).exists();
     assertThat(nextSubmissionSampleFile).exists();
+
     assertThat(nextSubmissionValidationDir).exists();
     assertThat(nextSubmissionDonorErrorFile).exists();
     assertThat(nextSubmissionSampleErrorFile).exists();
+
+    assertThat(nextSystemDir).exists();
+    assertThat(nextSystemFile).exists();
   }
 
   private static List<String> projectKeys(String projectKey) {
