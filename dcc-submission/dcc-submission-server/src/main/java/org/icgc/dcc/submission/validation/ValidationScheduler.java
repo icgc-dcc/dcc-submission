@@ -124,10 +124,12 @@ public class ValidationScheduler extends AbstractScheduledService {
     try {
       pollOpenRelease();
       pollQueue();
-    } catch (Throwable t) {
-      // We catch and do not re-throw to avoid terminating the AbstractScheduledService thread
-      log.error("Exception polling:", t);
-      mailService.sendSupportProblem(t.getMessage(), getStackTraceAsString(t));
+    } catch (Exception e) {
+      log.error("Exception polling:", e);
+      mailService.sendSupportProblem(e.getMessage(), getStackTraceAsString(e));
+
+      // This will terminate the AbstractScheduledService thread but that is the safest thing to do here
+      throw e;
     }
   }
 
@@ -313,7 +315,7 @@ public class ValidationScheduler extends AbstractScheduledService {
 
   private void storeSubmissionReport(String projectKey, SubmissionReport report) {
     // Persist the report to DB
-    log.info("Storing validation submission report for project '{}'...", projectKey);
+    log.info("Storing validation submission report for project '{}': {}...", projectKey, report);
     val releaseName = resolveOpenRelease().getName();
     releaseService.updateSubmissionReport(releaseName, projectKey, report);
     log.info("Finished storing validation submission report for project '{}'", projectKey);
