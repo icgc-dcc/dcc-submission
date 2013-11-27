@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.List;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -71,12 +72,15 @@ public class ReleaseFileSystemTest {
     val previousReleaseDir = new File(rootDir, previousReleaseName);
 
     val previousSubmission = mock(Submission.class);
-    val previousSubmissionDir = new SubmissionDirectory(dccFileSystem, previousRelease, projectKey, previousSubmission);
-    val previousSubmissionPath = new File(previousReleaseDir, projectKey).getAbsolutePath();
+    val previousSubmissionDirectory =
+        new SubmissionDirectory(dccFileSystem, previousRelease, projectKey, previousSubmission);
+    val previousSubmissionDir = new File(previousReleaseDir, projectKey);
+    val previousSubmissionPath = previousSubmissionDir.getAbsolutePath();
+    val previousSubmissionSampleFile = new File(previousSubmissionPath, submissionSampleFileName);
+    val previousSubmissionDonorFile = new File(previousSubmissionPath, submissionDonorFileName);
+
     val previousSubmissionValidationDir = new File(previousReleaseDir, projectKey + "/.validation");
     val previousSubmissionValidationDirPath = previousSubmissionValidationDir.getAbsolutePath();
-    val previousSubmissionDonorFile = new File(previousSubmissionPath, submissionDonorFileName);
-    val previousSubmissionSampleFile = new File(previousSubmissionPath, submissionSampleFileName);
     val previousSubmissionDonorErrorFile = new File(previousSubmissionValidationDirPath, "donor--errors.json");
     val previousSubmissionSampleErrorFile = new File(previousSubmissionValidationDirPath, "sample--errors.json");
 
@@ -94,16 +98,16 @@ public class ReleaseFileSystemTest {
 
     when(previousRelease.getName()).thenReturn(previousReleaseName);
     when(previousRelease.getSubmission(anyString())).thenReturn(previousSubmission);
-    when(previousReleaseFileSystem.getSubmissionDirectory(projectKey)).thenReturn(previousSubmissionDir);
+    when(previousReleaseFileSystem.getSubmissionDirectory(projectKey)).thenReturn(previousSubmissionDirectory);
     when(previousReleaseFileSystem.getSystemDirectory()).thenReturn(previousSystemPath);
-    when(previousSubmissionDir.getValidationDirPath()).thenReturn(previousSubmissionValidationDirPath);
-    when(previousSubmissionDir.getDataFilePath(previousSubmissionDonorFile.getName())).thenReturn(
+    when(previousSubmissionDirectory.getValidationDirPath()).thenReturn(previousSubmissionValidationDirPath);
+    when(previousSubmissionDirectory.getDataFilePath(previousSubmissionDonorFile.getName())).thenReturn(
         previousSubmissionDonorFile.getAbsolutePath());
-    when(previousSubmissionDir.getDataFilePath(previousSubmissionSampleFile.getName())).thenReturn(
+    when(previousSubmissionDirectory.getDataFilePath(previousSubmissionSampleFile.getName())).thenReturn(
         previousSubmissionSampleFile.getAbsolutePath());
-    when(previousSubmissionDir.getDataFilePath(previousSubmissionDonorErrorFile.getName())).thenReturn(
+    when(previousSubmissionDirectory.getDataFilePath(previousSubmissionDonorErrorFile.getName())).thenReturn(
         previousSubmissionDonorErrorFile.getAbsolutePath());
-    when(previousSubmissionDir.getDataFilePath(previousSubmissionSampleErrorFile.getName())).thenReturn(
+    when(previousSubmissionDirectory.getDataFilePath(previousSubmissionSampleErrorFile.getName())).thenReturn(
         previousSubmissionSampleErrorFile.getAbsolutePath());
 
     //
@@ -120,7 +124,10 @@ public class ReleaseFileSystemTest {
     val nextSubmissionPath = nextSubmissionDir.getAbsolutePath();
     val nextSubmissionDonorFile = new File(nextSubmissionPath, submissionDonorFileName);
     val nextSubmissionSampleFile = new File(nextSubmissionPath, submissionSampleFileName);
+
     val nextSubmissionValidationDir = new File(nextReleaseDir, projectKey + "/.validation");
+    val nextSubmissionDonorErrorFile = new File(nextSubmissionValidationDir, "donor--errors.json");
+    val nextSubmissionSampleErrorFile = new File(nextSubmissionValidationDir, "sample--errors.json");
 
     // Create files and directories
     nextSubmissionDir.mkdirs();
@@ -148,21 +155,29 @@ public class ReleaseFileSystemTest {
     // Exercise
     //
 
-    val projectKeys = newArrayList(projectKey);
-    nextReleaseFileSystem.moveFrom(previousReleaseFileSystem, projectKeys);
+    nextReleaseFileSystem.moveFrom(previousReleaseFileSystem, projectKeys(projectKey));
 
     //
     // Verify
     //
 
     // The "moveFrom" validation folder moved
+    assertThat(previousSubmissionDir).exists();
     assertThat(previousSubmissionValidationDir).doesNotExist();
-    assertThat(nextSubmissionValidationDir).exists();
+    assertThat(previousSubmissionDonorFile).doesNotExist();
+    assertThat(previousSubmissionSampleFile).doesNotExist();
 
     // The "moveTo" is fully populated
     assertThat(nextSubmissionDir).exists();
     assertThat(nextSubmissionDonorFile).exists();
     assertThat(nextSubmissionSampleFile).exists();
+    assertThat(nextSubmissionValidationDir).exists();
+    assertThat(nextSubmissionDonorErrorFile).exists();
+    assertThat(nextSubmissionSampleErrorFile).exists();
+  }
+
+  private static List<String> projectKeys(String projectKey) {
+    return newArrayList(projectKey);
   }
 
   @SneakyThrows
