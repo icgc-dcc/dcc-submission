@@ -24,6 +24,7 @@ import static com.google.common.util.concurrent.Futures.addCallback;
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.elasticsearch.common.base.Throwables.getStackTraceAsString;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -120,8 +121,14 @@ public class ValidationScheduler extends AbstractScheduledService {
    */
   @Override
   protected void runOneIteration() throws Exception {
-    pollOpenRelease();
-    pollQueue();
+    try {
+      pollOpenRelease();
+      pollQueue();
+    } catch (Throwable t) {
+      // We catch and do not re-throw to avoid terminating the AbstractScheduledService thread
+      log.error("Exception polling:", t);
+      mailService.sendSupportProblem(t.getMessage(), getStackTraceAsString(t));
+    }
   }
 
   /**
@@ -149,6 +156,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       count = releaseService.countOpenReleases();
     } while (count == 0);
 
+    // This can happen during a release, see DCC-1931
     checkState(count == 1, "Expecting one and only one '%s' release, instead getting '%s'",
         OPENED, count);
   }
