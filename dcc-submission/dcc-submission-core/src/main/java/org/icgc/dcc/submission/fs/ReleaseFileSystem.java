@@ -68,6 +68,7 @@ public class ReleaseFileSystem {
   }
 
   public void setUpNewReleaseFileSystem(
+      String oldReleaseName, // Remove after DCC-1940
       String newReleaseName,
       @NonNull
       ReleaseFileSystem previous,
@@ -91,6 +92,9 @@ public class ReleaseFileSystem {
       move(fileSystem,
           previous.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath(),
           next.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath());
+
+      // Band-aid: DCC-1940
+      dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
     }
 
     // Move "releaseName/projectKey/SystemFiles"

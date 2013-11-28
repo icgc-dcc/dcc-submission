@@ -39,6 +39,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.google.common.collect.Lists;
+
 public class ReleaseFileSystemTest {
 
   @Rule
@@ -164,7 +166,13 @@ public class ReleaseFileSystemTest {
     // Exercise
     //
 
-    nextReleaseFileSystem.setUpNewReleaseFileSystem(previousReleaseFileSystem, projectKeys(projectKey));
+    nextReleaseFileSystem.setUpNewReleaseFileSystem(
+        previousReleaseName,
+        nextReleaseName,
+        previousReleaseFileSystem,
+        projectKeys(projectKey),
+        Lists.<String> newArrayList()
+        );
 
     //
     // Verify

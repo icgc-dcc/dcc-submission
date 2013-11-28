@@ -160,7 +160,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
 
       nextRelease = createNextRelease(nextReleaseName, oldRelease, dictionaryVersion);
-      setUpNewReleaseFileSystem(nextRelease, oldRelease);
+      setUpNewReleaseFileSystem(oldRelease, nextRelease);
       closeDictionary(dictionaryVersion);
       completeOldRelease(oldRelease);
     } catch (RuntimeException e) {
@@ -170,9 +170,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return nextRelease;
   }
 
-  private void setUpNewReleaseFileSystem(Release nextRelease, Release oldRelease) {
+  private void setUpNewReleaseFileSystem(Release oldRelease, Release nextRelease) {
     fs.getReleaseFilesystem(nextRelease)
         .setUpNewReleaseFileSystem(
+            oldRelease.getName(), // Remove after DCC-1940
             nextRelease.getName(),
 
             // The release file system
