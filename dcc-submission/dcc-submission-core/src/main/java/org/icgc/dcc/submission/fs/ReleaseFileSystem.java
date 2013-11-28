@@ -84,16 +84,16 @@ public class ReleaseFileSystem {
     dccFileSystem.createReleaseDirectory(newReleaseName);
 
     // Create empty dirs along with nested .validation
-    dccFileSystem.createProjectDirectories(newReleaseName, newLinkedHashSet(signedOffProjectKeys));
+    dccFileSystem.createProjectDirectoryStructures(newReleaseName, newLinkedHashSet(signedOffProjectKeys));
 
-    // Move "releaseName/projectKey/"
     for (val otherProjectKey : otherProjectKeys) {
+      // Move "releaseName/projectKey/"
       move(fileSystem,
           previous.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath(),
           next.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath());
 
-      // Band-aid: DCC-1940
-      dccFileSystem.createProjectDirectoryStructure(oldReleaseName, otherProjectKey);
+      // Band-aid: see DCC-1940
+      dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
     }
 
     // Move "releaseName/projectKey/SystemFiles"

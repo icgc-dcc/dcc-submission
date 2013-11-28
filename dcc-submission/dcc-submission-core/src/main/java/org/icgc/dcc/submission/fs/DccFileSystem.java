@@ -113,7 +113,7 @@ public class DccFileSystem {
 
     // create path for release
     val releaseStringPath = createReleaseDirectory(newReleaseName);
-    createProjectDirectories(release.getName(), projectKeyList);
+    createProjectDirectoryStructures(release.getName(), projectKeyList);
 
     // create system files for release directory
     ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
@@ -144,10 +144,17 @@ public class DccFileSystem {
     return releaseStringPath;
   }
 
+  public String createNewProjectDirectoryStructure(String releaseName, String projectKey) {
+    String projectDirectoryPath = createProjectDirectory(releaseName, projectKey);
+    String validationDirectoryPath = createValidationDirectory(releaseName, projectKey);
+    checkState(validationDirectoryPath.startsWith(projectDirectoryPath));
+    return projectDirectoryPath;
+  }
+
   /**
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
-  public String createProjectDirectoryStructure(String release, String projectKey) {
+  public String createProjectDirectory(String release, String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
 
@@ -155,11 +162,18 @@ public class DccFileSystem {
     log.info("Creating new directory: '%s'", projectStringPath);
     createDirIfDoesNotExist(projectStringPath); // TODO: change to error out if exists
 
+    return projectStringPath;
+  }
+
+  public String createValidationDirectory(String release, String projectKey) {
+    checkArgument(release != null);
+    checkArgument(projectKey != null);
+
     String validationStringPath = this.buildValidationDirStringPath(release, projectKey);
     log.info("Creating new directory: '%s'", validationStringPath);
     createDirIfDoesNotExist(validationStringPath); // TODO: change to error out if exists
 
-    return projectStringPath;
+    return validationStringPath;
   }
 
   /**
@@ -204,14 +218,15 @@ public class DccFileSystem {
   /**
    * TODO: move this to {@link ReleaseFileSystemTest}...
    */
-  protected void createProjectDirectories(String release,
+  protected void createProjectDirectoryStructures(
+      String release,
       @NonNull
       Set<String> projectKeys) {
 
     // Create sub-directory for each project
     log.info("# of projects = " + projectKeys.size());
     for (String projectKey : projectKeys) {
-      this.createProjectDirectoryStructure(release, projectKey);
+      this.createNewProjectDirectoryStructure(release, projectKey);
     }
   }
 

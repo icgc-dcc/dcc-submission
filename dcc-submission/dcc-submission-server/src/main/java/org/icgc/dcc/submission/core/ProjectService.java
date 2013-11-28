@@ -87,7 +87,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
     submission.setProjectKey(project.getKey());
     submission.setState(SubmissionState.NOT_VALIDATED);
     release.addSubmission(submission);
-    fs.createProjectDirectoryStructure(release.getName(), project.getKey());
+    fs.createNewProjectDirectoryStructure(release.getName(), project.getKey());
 
     Query<Release> updateQuery = datastore().createQuery(Release.class)//
         .filter("name = ", release.getName());

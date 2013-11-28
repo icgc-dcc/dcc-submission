@@ -108,11 +108,12 @@ public class ProjectResource {
 
       // Add directory for submission
       // TODO: move this to service
-      dccFileSystem.createProjectDirectoryStructure(release.getName(), project.getKey());
+      String projectDirectoryPath =
+          dccFileSystem.createNewProjectDirectoryStructure(release.getName(), project.getKey());
 
       response =
           Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
-      log.info("Project '{}' added!", project.getKey());
+      log.info("Project '{}' added ({})!", project.getKey(), projectDirectoryPath);
     } catch (DuplicateKey e) {
       response = Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
           .build();
