@@ -78,8 +78,8 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     when(context.getCodeList("specimen.0.specimen_storage.v1")).thenReturn(Optional.of(codeList1));
     when(context.getCodeList("specimen.0.tumour_confirmed.v1")).thenReturn(Optional.of(codeList1));
     when(context.getCodeList("specimen.0.specimen_available.v1")).thenReturn(Optional.of(codeList1));
-    when(context.getCodeList("specimen.0.cellularity.v1")).thenReturn(Optional.of(codeList1));
-    
+    when(context.getCodeList("specimen.0.cellularity.v2")).thenReturn(Optional.of(codeList1));
+
     when(context.getCodeList("sample.0.analyzed_sample_type.v1")).thenReturn(Optional.of(codeList5));
 
     when(codeList1.getTerms()).thenReturn(termList1);

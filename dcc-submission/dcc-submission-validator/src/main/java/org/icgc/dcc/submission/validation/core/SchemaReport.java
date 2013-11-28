@@ -19,13 +19,13 @@ package org.icgc.dcc.submission.validation.core;
 
 import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 
 import java.io.Serializable;
 import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Optional;
@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableList;
 
 @Embedded
 @Setter
-@ToString
 public class SchemaReport implements Serializable {
 
   @Getter
@@ -84,6 +83,12 @@ public class SchemaReport implements Serializable {
 
   public void addFieldReports(List<FieldReport> fieldReports) {
     this.fieldReports.addAll(fieldReports);
+  }
+
+  @Override
+  public String toString() {
+    return format("SchemaReport [name=%s, summaryReports=%s, fieldReports=%s, errors=%s]", name,
+        summaryReports.size(), fieldReports.size(), errors.size());
   }
 
 }

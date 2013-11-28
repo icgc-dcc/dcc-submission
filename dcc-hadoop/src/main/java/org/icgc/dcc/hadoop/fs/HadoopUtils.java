@@ -118,7 +118,6 @@ public class HadoopUtils {
    */
   @Deprecated
   public static void createSymlink(FileSystem fileSystem, Path origin, Path destination) {
-
     try {
       FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
     } catch (IOException e) {
@@ -129,6 +128,7 @@ public class HadoopUtils {
   public static void mv(FileSystem fileSystem, String origin, String destination) {
     Path originPath = new Path(origin);
     Path destinationPath = new Path(destination);
+
     mv(fileSystem, originPath, destinationPath);
   }
 
@@ -139,6 +139,7 @@ public class HadoopUtils {
     } catch (IOException e) {
       throw new HdfsException(e);
     }
+
     if (!rename) {
       throw new HdfsException(String.format("could not rename %s to %s", originPath, destinationPath));
     }
@@ -155,6 +156,7 @@ public class HadoopUtils {
     } catch (IOException e) {
       throw new HdfsException(e);
     }
+
     return exists;
   }
 
