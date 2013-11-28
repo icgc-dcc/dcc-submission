@@ -164,7 +164,7 @@ public class ReleaseFileSystemTest {
     // Exercise
     //
 
-    nextReleaseFileSystem.moveFrom(previousReleaseFileSystem, projectKeys(projectKey));
+    nextReleaseFileSystem.setUpNewReleaseFileSystem(previousReleaseFileSystem, projectKeys(projectKey));
 
     //
     // Verify

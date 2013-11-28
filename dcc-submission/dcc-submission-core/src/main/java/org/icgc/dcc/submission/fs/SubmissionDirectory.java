@@ -69,7 +69,10 @@ public class SubmissionDirectory {
    * (non-recursive) TODO: confirm
    */
   public Iterable<String> listFile(Pattern pattern) {
-    List<Path> pathList = HadoopUtils.lsFile(this.dccFileSystem.getFileSystem(), getSubmissionDirPath(), pattern);
+    List<Path> pathList = HadoopUtils.lsFile(
+        this.dccFileSystem.getFileSystem(),
+        new Path(getSubmissionDirPath()),
+        pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 
@@ -134,9 +137,8 @@ public class SubmissionDirectory {
     return this.projectKey;
   }
 
-  public Path getSubmissionDirPath() {
-    String projectStringPath = dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
-    return new Path(projectStringPath);
+  public String getSubmissionDirPath() {
+    return dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
   }
 
   public String getValidationDirPath() {

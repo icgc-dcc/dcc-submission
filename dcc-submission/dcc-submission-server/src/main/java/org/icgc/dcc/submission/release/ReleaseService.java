@@ -21,7 +21,10 @@ import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -80,8 +83,8 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -97,7 +100,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   private final DccFileSystem fs;
 
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, @NonNull DccFileSystem fs, MailService mailService) {
+  public ReleaseService(Morphia morphia, Datastore datastore, @NonNull
+  DccFileSystem fs, MailService mailService) {
     super(morphia, datastore, QRelease.release, mailService);
     this.fs = fs;
 
@@ -156,8 +160,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
 
       nextRelease = createNextRelease(nextReleaseName, oldRelease, dictionaryVersion);
-      setupNextReleaseFileSystem(oldRelease, nextRelease, oldRelease.getProjectKeys()); // TODO: fix situation regarding
-                                                                                        // aborting fs operations?
+      setUpNewReleaseFileSystem(nextRelease, oldRelease);
       closeDictionary(dictionaryVersion);
       completeOldRelease(oldRelease);
     } catch (RuntimeException e) {
@@ -165,6 +168,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     return nextRelease;
+  }
+
+  private void setUpNewReleaseFileSystem(Release nextRelease, Release oldRelease) {
+    fs.getReleaseFilesystem(nextRelease)
+        .setUpNewReleaseFileSystem(
+            nextRelease.getName(),
+
+            // The release file system
+            fs.getReleaseFilesystem(oldRelease),
+
+            // The signed off projects
+            extractProjectKeys(filter(oldRelease.getSubmissions(), oldRelease.signedOffProjects())),
+
+            // The remaining projects
+            extractProjectKeys(filter(oldRelease.getSubmissions(), not(oldRelease.signedOffProjects()))));
   }
 
   private Release createNextRelease(final String name, final Release oldRelease, final String dictionaryVersion) {
@@ -187,14 +205,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     datastore().save(nextRelease); // TODO: put in ReleaseService?
 
     return nextRelease;
-  }
-
-  private void setupNextReleaseFileSystem(Release oldRelease, Release nextRelease, Iterable<String> oldProjectKeys) {
-    fs.createReleaseFilesystem(nextRelease, Sets.newLinkedHashSet(oldProjectKeys));
-    val newReleaseFilesystem = fs.getReleaseFilesystem(nextRelease);
-    val oldReleaseFilesystem = fs.getReleaseFilesystem(oldRelease);
-
-    newReleaseFilesystem.moveFrom(oldReleaseFilesystem, getProjectsToMove(oldRelease));
   }
 
   /**
@@ -235,17 +245,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
     }
     return false;
-  }
-
-  private ImmutableList<String> getProjectsToMove(final Release oldRelease) {
-    List<String> projectsKeys = newArrayList();
-    for (val submission : oldRelease.getSubmissions()) {
-      if (submission.getState() != SubmissionState.SIGNED_OFF) {
-        projectsKeys.add(submission.getProjectKey());
-      }
-    }
-
-    return ImmutableList.<String> copyOf(projectsKeys);
   }
 
   public Release getReleaseByName(String releaseName) {
@@ -304,7 +303,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     // after initial release, create initial file system
     Set<String> projects = Sets.newHashSet();
-    fs.ensureReleaseFilesystem(nextRelease, projects);
+    fs.createInitialReleaseFilesystem(nextRelease, projects);
   }
 
   /**
@@ -682,27 +681,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     // If a new dictionary was specified, reset submissions, TODO: use resetSubmission() instead (DCC-901)!
     if (sameDictionary == false) {
-      for (val submission : release.getSubmissions()) {
-        val projectKey = submission.getProjectKey();
-        val newSubmissionState = NOT_VALIDATED;
-        String report = "report";
-
-        log.info("Setting submission {} to {} and resetting {}",
-            new Object[] { on(".").join(newReleaseName, projectKey), newSubmissionState, report });
-
-        submission.setState(newSubmissionState);
-        submission.resetReport();
-        val submissionUpdate = datastore().update(
-            datastore().createQuery(Release.class)
-                .filter("name = ", newReleaseName)
-                .filter("submissions.projectKey = ", projectKey),
-            allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class))
-                .set("submissions.$.state", newSubmissionState)
-                .unset(report));
-        if (submissionUpdate.getUpdatedCount() != 1) { // Ensure update was successful
-          notifyUpdateError(on(".").join(newReleaseName, projectKey), newSubmissionState.name(), report);
-        }
-      }
+      // Reset all projects
+      resetSubmissions(newReleaseName, release.getProjectKeys());
     }
 
     return release;
@@ -955,7 +935,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   // TODO: figure out difference with method below
-  private Dictionary getDictionaryFromVersion(@NonNull String version) {
+  private Dictionary getDictionaryFromVersion(@NonNull
+  String version) {
     // Also found in DictionaryService - see comments in DCC-245
     return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary).where(
         QDictionary.dictionary.version.eq(version)).singleResult();
@@ -1026,6 +1007,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         where(mysemaPredicate.get()) :
         query();
     return query.list();
+  }
+
+  private Iterable<String> extractProjectKeys(Iterable<Submission> submissions) {
+    return transform(
+        submissions,
+        new Function<Submission, String>() {
+
+          @Override
+          public String apply(Submission submission) {
+            return submission.getProjectKey();
+          }
+        });
   }
 
 }

@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 
 import java.util.Date;
 import java.util.List;
@@ -115,6 +116,16 @@ public class Release extends BaseEntity implements HasName {
 
   public List<Submission> getSubmissions() {
     return submissions;
+  }
+
+  public Predicate<Submission> signedOffProjects() {
+    return new Predicate<Submission>() {
+
+      @Override
+      public boolean apply(Submission submission) {
+        return SIGNED_OFF == submission.getState();
+      }
+    };
   }
 
   @JsonIgnore

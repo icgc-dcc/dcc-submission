@@ -67,7 +67,8 @@ public class ProjectResource {
   private DccFileSystem dccFileSystem;
 
   @GET
-  public Response getProjects(@Context SecurityContext securityContext) {
+  public Response getProjects(@Context
+  SecurityContext securityContext) {
     log.info("Request for all Projects");
 
     val user = getSubject(securityContext);
@@ -85,7 +86,9 @@ public class ProjectResource {
   }
 
   @POST
-  public Response addProject(@Context SecurityContext securityContext, @Valid Project project) {
+  public Response addProject(@Context
+  SecurityContext securityContext, @Valid
+  Project project) {
     log.info("Request to add Project '{}'", project);
 
     val user = getSubject(securityContext);
@@ -104,7 +107,8 @@ public class ProjectResource {
       val release = releaseService.addSubmission(project.getKey(), project.getName());
 
       // Add directory for submission
-      dccFileSystem.mkdirProjectDirectory(release.getName(), project.getKey());
+      // TODO: move this to service
+      dccFileSystem.createProjectDirectory(release.getName(), project.getKey());
 
       response =
           Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
@@ -120,7 +124,9 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}")
-  public Response getProject(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+  public Response getProject(@PathParam("projectKey")
+  String projectKey, @Context
+  SecurityContext securityContext) {
     log.info("Request for Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
@@ -144,9 +150,12 @@ public class ProjectResource {
   @POST
   @Path("{projectKey}")
   public Response updateProject(
-      @PathParam("projectKey") String projectKey,
-      @Valid Project project,
-      @Context SecurityContext securityContext) {
+      @PathParam("projectKey")
+      String projectKey,
+      @Valid
+      Project project,
+      @Context
+      SecurityContext securityContext) {
     log.info("Request to update Project '{}' with '{}'", projectKey, project);
 
     val user = getSubject(securityContext);
@@ -169,8 +178,10 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}/releases")
   public Response getProjectSubmissions(
-      @PathParam("projectKey") String projectKey,
-      @Context SecurityContext securityContext) {
+      @PathParam("projectKey")
+      String projectKey,
+      @Context
+      SecurityContext securityContext) {
     log.info("Request for all Submissions from Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
