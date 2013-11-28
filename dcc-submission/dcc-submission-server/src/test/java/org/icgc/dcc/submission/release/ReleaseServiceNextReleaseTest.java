@@ -134,7 +134,7 @@ public class ReleaseServiceNextReleaseTest {
   public void test_release_setPreviousStateToCompleted() throws InvalidStateException {
     releaseSetUp();
 
-    releaseService.release(NEXT_RELEASE_NAME);
+    releaseService.attemptRelease(NEXT_RELEASE_NAME);
 
     verify(release).setState(ReleaseState.COMPLETED);
   }
@@ -143,7 +143,7 @@ public class ReleaseServiceNextReleaseTest {
   public void test_release_setNewStateToOpened() throws InvalidStateException {
     releaseSetUp();
 
-    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.attemptRelease(NEXT_RELEASE_NAME);
 
     assertTrue(newRelease.getState() == ReleaseState.OPENED);
   }
@@ -152,7 +152,7 @@ public class ReleaseServiceNextReleaseTest {
   public void test_release_datastoreUpdated() throws InvalidStateException {
     releaseSetUp();
 
-    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.attemptRelease(NEXT_RELEASE_NAME);
 
     verify(ds).save(newRelease);
     verify(ds).createUpdateOperations(Release.class);
@@ -165,7 +165,7 @@ public class ReleaseServiceNextReleaseTest {
   public void test_release_correctReturnValue() throws InvalidStateException {
     releaseSetUp();
 
-    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.attemptRelease(NEXT_RELEASE_NAME);
 
     assertTrue(newRelease.getName().equals(NEXT_RELEASE_NAME));
     assertTrue(newRelease.getDictionaryVersion().equals("0.6c"));
@@ -175,7 +175,7 @@ public class ReleaseServiceNextReleaseTest {
   public void test_release_newDictionarySet() throws InvalidStateException {
     releaseSetUp();
 
-    Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
+    Release newRelease = releaseService.attemptRelease(NEXT_RELEASE_NAME);
 
     assertTrue(newRelease.getDictionaryVersion().equals("0.6c"));
   }
@@ -187,7 +187,7 @@ public class ReleaseServiceNextReleaseTest {
     assertTrue(release.getDictionaryVersion().equals(dictionary.getVersion()));
     assertTrue(dictionary.getState() == DictionaryState.OPENED);
 
-    releaseService.release(NEXT_RELEASE_NAME);
+    releaseService.attemptRelease(NEXT_RELEASE_NAME);
 
     // TODO reinstate this test once NextRelease is rewritten to use services
     // verify(dictionary).close();
@@ -197,7 +197,7 @@ public class ReleaseServiceNextReleaseTest {
   public void test_release_throwsMissingDictionaryException() throws InvalidStateException {
     assertTrue(release.getDictionaryVersion() == null);
 
-    releaseService.release("Release2");
+    releaseService.attemptRelease("Release2");
   }
 
   @Ignore
@@ -206,7 +206,7 @@ public class ReleaseServiceNextReleaseTest {
     // TODO reinstate once NextRelease is fixed to make mocking easier
     releaseSetUp();
 
-    releaseService.release(release.getName());
+    releaseService.attemptRelease(release.getName());
   }
 
   @Ignore

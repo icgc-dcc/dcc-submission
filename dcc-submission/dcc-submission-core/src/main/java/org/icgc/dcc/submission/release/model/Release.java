@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.release.model;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
@@ -128,6 +129,19 @@ public class Release extends BaseEntity implements HasName {
     };
   }
 
+  /**
+   * Not thread-safe.
+   */
+  public void complete() {
+    setState(COMPLETED);
+    resetReleaseDate();
+    for (int i = submissions.size() - 1; i >= 0; i--) {
+      if (submissions.get(i).getState() != SIGNED_OFF) {
+        submissions.remove(i);
+      }
+    }
+  }
+
   @JsonIgnore
   public Iterable<String> getProjectKeys() {
     return Iterables.transform(getSubmissions(), new Function<Submission, String>() {
@@ -187,6 +201,10 @@ public class Release extends BaseEntity implements HasName {
 
   public void setReleaseDate() {
     this.releaseDate = new Date();
+  }
+
+  public void resetReleaseDate() {
+    setReleaseDate();
   }
 
   /**

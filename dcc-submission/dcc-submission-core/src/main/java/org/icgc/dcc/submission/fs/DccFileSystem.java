@@ -132,7 +132,7 @@ public class DccFileSystem {
    */
   protected String createReleaseDirectory(String newReleaseName) {
     String releaseStringPath = this.buildReleaseStringPath(newReleaseName);
-    log.info("release path = " + releaseStringPath);
+    log.info("Creating new release path: '{}'", releaseStringPath);
 
     checkState(!HadoopUtils.checkExistence(this.fileSystem, releaseStringPath),
         "Release directory already exists: '%s'", releaseStringPath);
@@ -147,16 +147,18 @@ public class DccFileSystem {
   /**
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
-  public String createProjectDirectory(String release, String projectKey) {
+  public String createProjectDirectoryStructure(String release, String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
 
     String projectStringPath = this.buildProjectStringPath(release, projectKey);
+    log.info("Creating new directory: '%s'", projectStringPath);
     createDirIfDoesNotExist(projectStringPath); // TODO: change to error out if exists
+
     String validationStringPath = this.buildValidationDirStringPath(release, projectKey);
+    log.info("Creating new directory: '%s'", validationStringPath);
     createDirIfDoesNotExist(validationStringPath); // TODO: change to error out if exists
 
-    log.info("\t" + "project path = " + projectStringPath);
     return projectStringPath;
   }
 
@@ -209,7 +211,7 @@ public class DccFileSystem {
     // Create sub-directory for each project
     log.info("# of projects = " + projectKeys.size());
     for (String projectKey : projectKeys) {
-      this.createProjectDirectory(release, projectKey);
+      this.createProjectDirectoryStructure(release, projectKey);
     }
   }
 

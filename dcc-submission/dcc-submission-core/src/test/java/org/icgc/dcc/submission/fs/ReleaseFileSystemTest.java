@@ -172,6 +172,7 @@ public class ReleaseFileSystemTest {
         previousReleaseFileSystem,
         projectKeys(projectKey),
         Lists.<String> newArrayList()
+        ad
         );
 
     //

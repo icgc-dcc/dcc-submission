@@ -81,8 +81,7 @@ public class ReleaseFileSystem {
     val fileSystem = dccFileSystem.getFileSystem();
     val next = this;
 
-    String releaseStringPath = dccFileSystem.createReleaseDirectory(newReleaseName);
-    log.info("release path = " + releaseStringPath);
+    dccFileSystem.createReleaseDirectory(newReleaseName);
 
     // Create empty dirs along with nested .validation
     dccFileSystem.createProjectDirectories(newReleaseName, newLinkedHashSet(signedOffProjectKeys));
@@ -94,7 +93,7 @@ public class ReleaseFileSystem {
           next.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath());
 
       // Band-aid: DCC-1940
-      dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
+      dccFileSystem.createProjectDirectoryStructure(oldReleaseName, otherProjectKey);
     }
 
     // Move "releaseName/projectKey/SystemFiles"
