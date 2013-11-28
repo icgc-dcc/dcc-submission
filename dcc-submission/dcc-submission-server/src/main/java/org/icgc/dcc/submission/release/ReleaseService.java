@@ -28,6 +28,7 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -235,10 +236,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             fs.getReleaseFilesystem(oldRelease),
 
             // The signed off projects
-            extractProjectKeys(filter(oldRelease.getSubmissions(), oldRelease.signedOffProjects())),
+            extractProjectKeys(filter(oldRelease.getSubmissions(), SIGNED_OFF_PROJECTS_PREDICATE)),
 
             // The remaining projects
-            extractProjectKeys(filter(oldRelease.getSubmissions(), not(oldRelease.signedOffProjects()))));
+            extractProjectKeys(filter(oldRelease.getSubmissions(), not(SIGNED_OFF_PROJECTS_PREDICATE))));
   }
 
   boolean isAtLeastOneSignedOff(Release release) {

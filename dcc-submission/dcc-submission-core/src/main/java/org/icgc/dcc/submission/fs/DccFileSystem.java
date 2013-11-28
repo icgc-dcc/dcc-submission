@@ -116,10 +116,9 @@ public class DccFileSystem {
     createProjectDirectoryStructures(release.getName(), projectKeyList);
 
     // create system files for release directory
-    ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
-
-    Path systemFilePath = releaseFS.getSystemDirectory();
-    checkState(!HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString()));
+    Path systemFilePath = this.getReleaseFilesystem(release).getSystemDirectory();
+    checkState(!HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString()),
+        "'%s' already exists", systemFilePath.toString());
     HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
 
     // log resulting sub-directories
@@ -159,7 +158,7 @@ public class DccFileSystem {
     checkArgument(projectKey != null);
 
     String projectStringPath = this.buildProjectStringPath(release, projectKey);
-    log.info("Creating new directory: '%s'", projectStringPath);
+    log.info("Creating new directory: '{}'", projectStringPath);
     createDirIfDoesNotExist(projectStringPath); // TODO: change to error out if exists
 
     return projectStringPath;
@@ -170,7 +169,7 @@ public class DccFileSystem {
     checkArgument(projectKey != null);
 
     String validationStringPath = this.buildValidationDirStringPath(release, projectKey);
-    log.info("Creating new directory: '%s'", validationStringPath);
+    log.info("Creating new directory: '{}'", validationStringPath);
     createDirIfDoesNotExist(validationStringPath); // TODO: change to error out if exists
 
     return validationStringPath;

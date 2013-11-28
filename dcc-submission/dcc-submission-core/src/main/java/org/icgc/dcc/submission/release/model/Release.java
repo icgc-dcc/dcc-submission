@@ -55,6 +55,14 @@ import com.google.common.collect.Lists;
 @Entity
 public class Release extends BaseEntity implements HasName {
 
+  public static final Predicate<Submission> SIGNED_OFF_PROJECTS_PREDICATE = new Predicate<Submission>() {
+
+    @Override
+    public boolean apply(Submission submission) {
+      return SIGNED_OFF == submission.getState();
+    }
+  };
+
   @NotBlank
   @Pattern(regexp = NameValidator.DEFAULT_NAME_PATTERN)
   @JsonView(Digest.class)
@@ -117,16 +125,6 @@ public class Release extends BaseEntity implements HasName {
 
   public List<Submission> getSubmissions() {
     return submissions;
-  }
-
-  public Predicate<Submission> signedOffProjects() {
-    return new Predicate<Submission>() {
-
-      @Override
-      public boolean apply(Submission submission) {
-        return SIGNED_OFF == submission.getState();
-      }
-    };
   }
 
   /**

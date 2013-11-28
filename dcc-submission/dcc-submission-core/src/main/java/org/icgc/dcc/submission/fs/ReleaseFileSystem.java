@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.fs;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
 import lombok.AllArgsConstructor;
@@ -76,6 +77,10 @@ public class ReleaseFileSystem {
       Iterable<String> signedOffProjectKeys,
       @NonNull
       Iterable<String> otherProjectKeys) {
+    log.info("Setting up new release file system for: '{}'", newReleaseName);
+
+    checkState(signedOffProjectKeys.iterator().hasNext() || otherProjectKeys.iterator().hasNext(),
+        "There must be at least on project key to process");
 
     // Shorthands
     val fileSystem = dccFileSystem.getFileSystem();
@@ -84,7 +89,9 @@ public class ReleaseFileSystem {
     dccFileSystem.createReleaseDirectory(newReleaseName);
 
     // Create empty dirs along with nested .validation
-    dccFileSystem.createProjectDirectoryStructures(newReleaseName, newLinkedHashSet(signedOffProjectKeys));
+    dccFileSystem.createProjectDirectoryStructures(
+        newReleaseName,
+        newLinkedHashSet(signedOffProjectKeys));
 
     for (val otherProjectKey : otherProjectKeys) {
       // Move "releaseName/projectKey/"
