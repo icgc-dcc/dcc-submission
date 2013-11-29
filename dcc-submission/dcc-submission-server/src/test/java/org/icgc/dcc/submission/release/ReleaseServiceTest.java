@@ -221,7 +221,7 @@ public class ReleaseServiceTest {
 
     Release nextRelease = null;
     try {
-      nextRelease = releaseService.attemptRelease(newRelease.getName());
+      nextRelease = releaseService.release(newRelease.getName());
     } catch (InvalidStateException e) {
       Throwables.propagate(e);
     }

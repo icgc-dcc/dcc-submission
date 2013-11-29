@@ -41,9 +41,11 @@ import com.typesafe.config.Config;
 public final class NormalizationConfig {
 
   /**
-   * Interface to implement for {@link NormalizationStep}s that can be enabled/disabled.
+   * Interface to implement for {@link NormalizationStep}s that can be
+   * enabled/disabled.
    */
-  public interface OptionalStep {}
+  public interface OptionalStep {
+  }
 
   /**
    * Top-level configuration key for the component.
@@ -51,13 +53,14 @@ public final class NormalizationConfig {
   public static final String NORMALIZER_CONFIG_PARAM = NormalizationValidator.COMPONENT_NAME;
 
   /**
-   * Key to enable/disable {@link NormalizationStep}s that implement {@link OptionalStep}.
+   * Key to enable/disable {@link NormalizationStep}s that implement
+   * {@link OptionalStep}.
    */
   public static final String ENABLED = "enabled";
 
   /**
-   * Key to set the error above which errors are reported in the normalisation. It defines the maximum ratio of
-   * controlled to total observations.
+   * Key to set the error above which errors are reported in the normalisation.
+   * It defines the maximum ratio of controlled to total observations.
    */
   public static final String ERROR_THRESHOLD = "error_threshold";
 
@@ -72,14 +75,12 @@ public final class NormalizationConfig {
    * Default values.
    */
   private static final float CONFIDENTIAL_ERROR_THRESHOLD_DEFAULT_VALUE = 0.1f;
-  private static final Map<Class<? extends OptionalStep>, Boolean> STEP_ENABLING_DEFAULT_VALUES =
-      new ImmutableMap.Builder<Class<? extends OptionalStep>, Boolean>()
-          .put(RedundantObservationRemoval.class, ON)
-          .put(MaskedRowGeneration.class, ON)
-          .build();
+  private static final Map<Class<? extends OptionalStep>, Boolean> STEP_ENABLING_DEFAULT_VALUES = new ImmutableMap.Builder<Class<? extends OptionalStep>, Boolean>()
+      .put(RedundantObservationRemoval.class, ON).put(MaskedRowGeneration.class, ON).build();
 
   /**
-   * Checks whether a step is enabled or not. Non-optional step are always considered enabled.
+   * Checks whether a step is enabled or not. Non-optional step are always
+   * considered enabled.
    */
   public static boolean isEnabled(NormalizationStep step, Config config) {
     if (!(step instanceof OptionalStep)) {

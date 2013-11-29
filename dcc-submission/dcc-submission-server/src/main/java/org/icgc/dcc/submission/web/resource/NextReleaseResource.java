@@ -159,7 +159,7 @@ public class NextReleaseResource {
 
     Release newRelease = null;
     try {
-      newRelease = releaseService.attemptRelease(nextRelease.getName());
+      newRelease = releaseService.release(nextRelease.getName());
       log.info("Released {}", oldReleaseName);
     } catch (ReleaseException e) {
       ServerErrorCode code = RELEASE_EXCEPTION;

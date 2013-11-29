@@ -123,7 +123,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   @Synchronized
-  public Release attemptRelease(String nextReleaseName) throws InvalidStateException {
+  public Release release(String nextReleaseName) throws InvalidStateException {
     // check for next release name
     if (NameValidator.validateEntityName(nextReleaseName) == false) {
       throw new InvalidNameException(nextReleaseName);
@@ -167,7 +167,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         throw new InvalidStateException(ServerErrorCode.DUPLICATE_RELEASE_NAME, errorMessage);
       }
 
-      newRelease = performRelease(oldRelease, nextReleaseName, dictionaryVersion);
+      newRelease = doRelease(oldRelease, nextReleaseName, dictionaryVersion);
     } catch (RuntimeException e) {
       throw new ReleaseException("Exception trying to release", e);
     }
@@ -175,9 +175,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return newRelease;
   }
 
-  private Release performRelease(
+  private Release doRelease(
+      @NonNull
       Release oldRelease,
+      @NonNull
       String nextReleaseName,
+      @NonNull
       String dictionaryVersion) {
 
     // Create new release entity
