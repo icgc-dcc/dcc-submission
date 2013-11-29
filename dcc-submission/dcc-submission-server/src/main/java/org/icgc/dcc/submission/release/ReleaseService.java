@@ -606,17 +606,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
         log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
 
-        val submission = getSubmissionByName(nextRelease, projectKey); // can't be null
+        val submission = getSubmissionByName(nextRelease, projectKey);
         val currentState = submission.getState();
         if (expectedState != currentState) {
-          throw new ReleaseException( // not recoverable
-              "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead), cannot set to "
-                  + destinationState);
+          throw new ReleaseException("project " + projectKey + " is not " + expectedState + " (" + currentState
+              + " instead), cannot set to " + destinationState);
         }
-        submission.setState(destinationState);
 
-        // update corresponding database entity
-        updateRelease(nextReleaseName, nextRelease);
+        // Update corresponding database entity
+        updateSubmissionState(nextReleaseName, projectKey, destinationState);
 
         log.info("Resolved {} for {}", projectKey, nextReleaseName);
         return Optional.absent();
@@ -824,8 +822,23 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     int updatedCount = update.getUpdatedCount();
     if (updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
-      log.error("Setting submission reports {} failed for {}.{}", new Object[] { (report == null ? null : report
-          .getSchemaReports().size()), releaseName, projectKey }, new IllegalStateException());
+      log.error("Setting submission report containing {} schema reports failed for project '{}'",
+          report == null ? null : report.getSchemaReports().size(), releaseName);
+    }
+  }
+
+  @Synchronized
+  public void updateSubmissionState(String releaseName, String projectKey, SubmissionState state) {
+    val update = datastore().update(
+        datastore().createQuery(Release.class)
+            .filter("name = ", releaseName)
+            .filter("submissions.projectKey = ", projectKey),
+        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class))
+            .set("submissions.$.state", state));
+
+    int updatedCount = update.getUpdatedCount();
+    if (updatedCount != 1) {
+      log.error("Setting submission state to '{}' failed for project '{}'", state, projectKey);
     }
   }
 
