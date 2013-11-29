@@ -28,6 +28,7 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
@@ -44,7 +45,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Synchronized;
@@ -105,14 +105,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   /**
    * Temporary solution until DCC-1262 is addressed
    */
-  private final ReleaseRepository<Release> releaseRepository;
+  private final ReleaseRepository releaseRepository;
 
   @Inject
   public ReleaseService(Morphia morphia, Datastore datastore, @NonNull
   DccFileSystem fs, MailService mailService) {
     super(morphia, datastore, QRelease.release, mailService);
     this.fs = fs;
-    this.releaseRepository = new ReleaseRepository<Release>();
+    this.releaseRepository = new ReleaseRepository();
 
     registerModelClasses(Release.class);
   }
@@ -991,9 +991,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   /**
    * See comment on {@link ReleaseService#releaseRepository}.
+   * <p>
+   * TODO: DCC-1262 - Merge with {@link org.icgc.dcc.submission.repository.ReleaseRepository}
    */
-  @NoArgsConstructor(access = AccessLevel.PRIVATE)
-  private final class ReleaseRepository<T> {
+  @NoArgsConstructor(access = PRIVATE)
+  private final class ReleaseRepository {
 
     /**
      * Idempotent.
