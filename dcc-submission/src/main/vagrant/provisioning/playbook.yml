@@ -1,0 +1,47 @@
+---
+- hosts: vagrant 
+  sudo: yes
+  vars:
+    - artifactory_base_url: http://seqwaremaven.oicr.on.ca/artifactory/
+    - reference_genome_version: GRCh37
+    - reference_genome_archive: "dcc-reference-genome-{{ reference_genome_version }}.tar.gz"
+    - reference_genome_url: "{{ artifactory_base_url }}/simple/dcc-dependencies/org/icgc/dcc/dcc-reference-genome/{{ reference_genome_version }}/{{ reference_genome_archive }}"
+  tasks:
+
+    - name: Banner for VM
+      action: copy src=files/motd dest=/etc/motd mode=755
+
+    - name: Install python software properties (apt-add-repository)
+      apt: pkg=python-software-properties update_cache=yes
+
+    - name: Add Java PPA
+      apt_repository: repo=ppa:webupd8team/java state=present
+
+    - name: Automatically accept Java license
+      shell: echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+
+    - name: Install Java 7
+      apt: pkg='{{ item }}' state=present update_cache=yes force=yes
+      with_items:
+        - oracle-java7-installer
+        - oracle-java7-set-default
+
+    - name: MongoDB | Fetch 10Gen signing key
+      command: apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+    
+    - name: MongoDB | Add 10Gen repository
+      shell: 
+        echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/10gen.list
+        creates=/etc/apt/sources.list.d/10gen.list
+    
+    - name: MongoDB | Install latest MongoDB release 
+      apt: pkg=mongodb-10gen=2.4.1 state=present update_cache=yes
+    
+    - name: MongoDB | Insure deamon is running correctly
+      service: name=mongodb state=started
+
+    - name: Download the reference genome
+      action: "get_url url={{ reference_genome_url }} dest=/tmp/{{ reference_genome_archive }} mode=0444"
+
+    - name: Extract the reference geneomo 
+      action: "command tar xzf {{ reference_genome_archive }} -C ~" 
