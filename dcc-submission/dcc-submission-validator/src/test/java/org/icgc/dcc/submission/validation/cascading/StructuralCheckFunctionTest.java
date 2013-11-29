@@ -23,7 +23,6 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction;
 import org.junit.Ignore;
 import org.junit.Test;
 
