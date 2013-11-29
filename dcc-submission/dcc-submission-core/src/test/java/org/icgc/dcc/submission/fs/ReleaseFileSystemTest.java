@@ -166,12 +166,14 @@ public class ReleaseFileSystemTest {
     // Exercise
     //
 
+    val signedOffProjectKeys = Lists.<String> newArrayList();
+    val nonSignedOffProjectKeys = projectKeys(projectKey);
     nextReleaseFileSystem.setUpNewReleaseFileSystem(
         previousReleaseName,
         nextReleaseName,
         previousReleaseFileSystem,
-        Lists.<String> newArrayList(),
-        projectKeys(projectKey)
+        signedOffProjectKeys,
+        nonSignedOffProjectKeys
         );
 
     //

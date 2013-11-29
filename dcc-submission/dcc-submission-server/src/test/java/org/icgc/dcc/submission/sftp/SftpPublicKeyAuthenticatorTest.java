@@ -85,7 +85,7 @@ public class SftpPublicKeyAuthenticatorTest {
   }
 
   @After
-  public void tearDown() throws IOException, JSchException {
+  public void tearDown() {
     ThreadContext.remove();
   }
 

@@ -24,7 +24,6 @@ import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 import lombok.NonNull;
@@ -109,20 +108,20 @@ public class DccFileSystem {
    * @param release the new release
    */
   public void createInitialReleaseFilesystem(Release release, Set<String> projectKeyList) {
-    String newReleaseName = release.getName();
+    val newReleaseName = release.getName();
 
     // create path for release
     val releaseStringPath = createReleaseDirectory(newReleaseName);
     createProjectDirectoryStructures(release.getName(), projectKeyList);
 
     // create system files for release directory
-    Path systemFilePath = this.getReleaseFilesystem(release).getSystemDirectory();
+    val systemFilePath = this.getReleaseFilesystem(release).getSystemDirectory();
     checkState(!HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString()),
         "'%s' already exists", systemFilePath.toString());
     HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
 
     // log resulting sub-directories
-    List<Path> lsAll = HadoopUtils.lsAll(this.fileSystem, new Path(releaseStringPath));
+    val lsAll = HadoopUtils.lsAll(this.fileSystem, new Path(releaseStringPath));
     log.info("ls {} = {}", releaseStringPath, toFilenameList(lsAll));
   }
 
@@ -130,7 +129,7 @@ public class DccFileSystem {
    * TODO: move this to {@link ReleaseFileSystemTest}...
    */
   protected String createReleaseDirectory(String newReleaseName) {
-    String releaseStringPath = this.buildReleaseStringPath(newReleaseName);
+    val releaseStringPath = this.buildReleaseStringPath(newReleaseName);
     log.info("Creating new release path: '{}'", releaseStringPath);
 
     checkState(!HadoopUtils.checkExistence(this.fileSystem, releaseStringPath),
@@ -164,7 +163,11 @@ public class DccFileSystem {
     return projectStringPath;
   }
 
-  public String createValidationDirectory(String release, String projectKey) {
+  public String createValidationDirectory(
+      @NonNull
+      String release,
+      @NonNull
+      String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
 

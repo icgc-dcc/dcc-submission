@@ -181,14 +181,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       String dictionaryVersion) {
 
     // Create new release entity
-    val newRelease = createNextReleaseObject(oldRelease, nextReleaseName, dictionaryVersion);
+    val newRelease = createNextRelease(oldRelease, nextReleaseName, dictionaryVersion);
 
     // Set up new release file system counterpart
     setUpNewReleaseFileSystem(oldRelease, newRelease);
 
     // Must happen AFTER creating the new release object and setting up the file system (both operations need the old
     // release in its pre-completion state)
-    log.info("Completing old release entity object: '%s'", oldRelease.getName());
+    log.info("Completing old release entity object: '{}'", oldRelease.getName());
     oldRelease.complete();
 
     // Persist modified entity objects
@@ -200,7 +200,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return newRelease;
   }
 
-  private Release createNextReleaseObject(
+  private Release createNextRelease(
       @NonNull
       Release oldRelease,
       @NonNull
@@ -996,7 +996,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
      * Idempotent.
      */
     private void closeDictionary(final String oldDictionaryVersion) { // TODO: move to dictionary service?
-      log.info("Closing dictionary: '%s'", oldDictionaryVersion);
+      log.info("Closing dictionary: '{}'", oldDictionaryVersion);
       datastore().findAndModify(
           datastore().createQuery(Dictionary.class)
               .filter("version", oldDictionaryVersion),
@@ -1007,7 +1007,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     private void updateCompletedRelease(
         @NonNull
         Release oldRelease) {
-      log.info("Updating completed release: '%s'", oldRelease.getName());
+      log.info("Updating completed release: '{}'", oldRelease.getName());
       datastore().findAndModify(
           datastore().createQuery(Release.class)
               .filter("name", oldRelease.getName()),
@@ -1023,7 +1023,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     private void saveNewRelease(
         @NonNull
         Release newRelease) {
-      log.info("Saving new release: '%s'", newRelease.getName());
+      log.info("Saving new release: '{}'", newRelease.getName());
       datastore().save(newRelease);
     }
 

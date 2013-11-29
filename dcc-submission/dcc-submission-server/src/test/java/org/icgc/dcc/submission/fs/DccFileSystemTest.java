@@ -51,14 +51,14 @@ public class DccFileSystemTest extends FileSystemTest {
   @Test
   public void test_ensureReleaseFilesystem_handlesUnexistingDirectory() throws IOException {
     when(this.mockFileSystem.exists(any(Path.class)))
-        .thenReturn(false).thenReturn(false).thenReturn(true).thenReturn(true).thenReturn(false);
+        .thenReturn(false, false, true, true, false);
     this.dccFileSystem.createInitialReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
   }
 
   @Test
   public void test_ensureReleaseFilesystem_handlesExistingDirectory() throws IOException {
     when(this.mockFileSystem.exists(any(Path.class)))
-        .thenReturn(false).thenReturn(false).thenReturn(true).thenReturn(true).thenReturn(false);
+        .thenReturn(false, false, true, true, false);
     this.dccFileSystem.createInitialReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
   }
 }
