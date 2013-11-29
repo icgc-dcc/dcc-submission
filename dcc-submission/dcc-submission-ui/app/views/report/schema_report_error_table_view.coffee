@@ -70,8 +70,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
 
         """
         Data row failed script-based validation check, see
-        <a href="">submission documentation</a> for more details.
-        <br><br><pre><code>#{errorPretty}</code></pre>
+        <a href="http://docs.icgc.org/">submission documentation</a>
+        for more details.  <br><br><pre><code>#{errorPretty}</code></pre>
         """
 
         ##{source.parameters?.DESCRIPTION}.
@@ -233,7 +233,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         needs to be masked exceeded the reasonable level (currently the
         threshold is set as #{parseFloat(100*expected).toFixed(2)}% ).
         More details about SSM masking can be found
-        <a href="">here</a>.
+        <a href="http://docs.icgc.org/">here</a>.
         """
         #"""
         #An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of
