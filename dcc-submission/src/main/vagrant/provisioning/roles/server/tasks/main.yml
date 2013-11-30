@@ -1,0 +1,18 @@
+---
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+
+- name: Create MOTD banner
+  action: copy src=files/motd dest=/etc/motd mode=755
+
+- name: Create file system
+  action: "file path={{ item }} state=directory"
+  with_items:
+    - "{{ root_dir }}"
+    - "{{ data_dir }}"
+
+- name: Download the distribution 
+  action: "get_url url={{ distribution_url }} dest={{ staging_dir }}/{{ distribution_archive }} mode=0444"
+
+- name: Extract the distribution 
+  action: "command tar xzf {{ staging_dir }}/{{ distribution_archive }} --strip 1 -C {{ root_dir }}" 
+ 

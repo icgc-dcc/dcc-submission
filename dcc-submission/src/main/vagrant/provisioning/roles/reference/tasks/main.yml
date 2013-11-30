@@ -1,0 +1,10 @@
+---
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+
+- name: Download the reference genome
+  action: "get_url url={{ reference_genome_url }} dest={{ staging_dir }}/{{ reference_genome_archive }} mode=0444"
+  when: false
+
+- name: Extract the reference genome 
+  action: "command tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ data_dir }}" 
+  when: false

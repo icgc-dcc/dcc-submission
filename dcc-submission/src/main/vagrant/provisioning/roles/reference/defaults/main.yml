@@ -1,0 +1,5 @@
+---
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+
+# The version of the reference genome
+reference_genome_version: GRCh37
