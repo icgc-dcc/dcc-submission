@@ -5,4 +5,4 @@
   get_url: "url={{ reference_genome_url }} dest={{ staging_dir }}/{{ reference_genome_archive }} mode=0444"
 
 - name: Extract the reference genome 
-  command: "tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ data_dir }}" 
+  command: "tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ target_dir }}" 

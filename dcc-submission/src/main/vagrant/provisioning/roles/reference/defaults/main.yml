@@ -3,3 +3,4 @@
 
 # The version of the reference genome
 reference_genome_version: GRCh37
+target_dir: /tmp
