@@ -9,3 +9,6 @@ external_docs_url: http://docs.icgc.org
 artifactory_url: http://seqwaremaven.oicr.on.ca/artifactory
 artifactory_release_url: "{{ artifactory_url }}/dcc-release" 
 artifactory_deps_url: "{{ artifactory_url }}/simple/dcc-dependencies" 
+
+# Directories
+staging_dir: ~

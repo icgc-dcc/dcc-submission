@@ -1,12 +1,11 @@
 ---
 # Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
 
-# File system
-staging_dir: /tmp
-root_dir: /srv/dcc-submission
-data_dir: "{{ root_dir }}/data"
-bin_dir:  "{{ root_dir }}/bin"
-conf_dir: "{{ root_dir }}/conf"
+# Directories
+install_dir: /srv/dcc-submission
+data_dir: "{{ install_dir }}/data"
+bin_dir: "{{ install_dir }}/bin"
+conf_dir: "{{ install_dir }}/conf"
 
 # Distribution
 distribution_name: "dcc-submission-server"

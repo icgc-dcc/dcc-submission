@@ -5,14 +5,14 @@
   template: src=motd.j2 dest=/etc/motd mode=755
 
 - name: Create file system
-  action: "file path={{ item }} state=directory"
+  file: "path={{ item }} state=directory"
   with_items:
-    - "{{ root_dir }}"
+    - "{{ install_dir }}"
     - "{{ data_dir }}"
 
 - name: Download the distribution 
-  action: "get_url url={{ distribution_url }} dest={{ staging_dir }}/{{ distribution_archive }} mode=0444"
+  get_url: "url={{ distribution_url }} dest={{ staging_dir }}/{{ distribution_archive }} mode=0444"
 
 - name: Extract the distribution 
-  action: "command tar xzf {{ staging_dir }}/{{ distribution_archive }} --strip 1 -C {{ root_dir }}" 
+  command: "tar xzf {{ staging_dir }}/{{ distribution_archive }} --strip 1 -C {{ install_dir }}" 
  

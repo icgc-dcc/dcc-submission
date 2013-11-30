@@ -3,6 +3,7 @@
 
 - name: Fetch 10Gen signing key
   command: apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+  changed_when: False
 
 - name: Add 10Gen repository
   shell: 
