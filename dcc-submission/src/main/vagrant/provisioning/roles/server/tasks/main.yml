@@ -2,7 +2,7 @@
 # Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
 
 - name: Create MOTD banner
-  action: copy src=files/motd dest=/etc/motd mode=755
+  template: src=motd.j2 dest=/etc/motd mode=755
 
 - name: Create file system
   action: "file path={{ item }} state=directory"

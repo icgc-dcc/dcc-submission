@@ -1,8 +1,11 @@
 ---
 # Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
 
-# URLs 
+# External URLs 
 external_submission_url: https://submissions.dcc.icgc.org
-artifactory_url:         http://seqwaremaven.oicr.on.ca/artifactory
+external_docs_url: http://docs.icgc.org
+
+# Artifactory URLS
+artifactory_url: http://seqwaremaven.oicr.on.ca/artifactory
 artifactory_release_url: "{{ artifactory_url }}/dcc-release" 
-artifactory_deps_url:    "{{ artifactory_url }}/simple/dcc-dependencies" 
+artifactory_deps_url: "{{ artifactory_url }}/simple/dcc-dependencies" 
