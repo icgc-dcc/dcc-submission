@@ -1,32 +1,35 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+#
+# DCC Submission Server - VM
+#
+# Description: 
+#   The is the Vagrant file for provisioning the dcc-submission distribution using the 
+#   VirtualBox provider and ansible as the provisioner.
+#
+# See:
+#   - http://docs.icgc.org
+#   - http://docs.vagrantup.com/v2/provisioning/ansible.html
+#   - http://docs.vagrantup.com/v2/virtualbox/configuration.html
 
 Vagrant.configure("2") do |config|
-
-  # Basic configuration
+  # Base box
   config.vm.box = "precise64" 
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
-  # DCC submission server
+  # Hostname of the box 
   config.vm.hostname="dcc-submission-vm"
 
-#  config.vm.provision "ansible" do |ansible|
-#    ansible.playbook = "provisioning/playbook.yml"
-#    ansible.name = "www.dcc.icgc.local"
-#    ansible.customize ["modifyvm", :id, "--memory", "4096"]
-#    ansible.hosts = "submission-server"
-#  end
- # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine.
   config.vm.network :forwarded_port, guest: 80, host: 8080
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP. This IP is used in the example Ansible inventory file.
   config.vm.network :private_network, ip: "10.211.55.100"
 
-  # For information on available options for Ansible provisioning, please visit:
-  # http://docs.vagrantup.com/v2/provisioning/ansible.html
+  # Configure Ansible provisioningxxxxxxxxxx:
   config.vm.provision :ansible do |ansible|
     ansible.playbook = "provisioning/playbook.yml"
     ansible.inventory_path = "provisioning/inventory"
@@ -34,7 +37,6 @@ Vagrant.configure("2") do |config|
   end
 
   # For information on available options for the Virtualbox provider, please visit:
-  # http://docs.vagrantup.com/v2/virtualbox/configuration.html
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "1024"]
   end

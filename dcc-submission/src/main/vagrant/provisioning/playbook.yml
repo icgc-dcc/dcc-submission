@@ -1,30 +1,75 @@
 ---
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+#
+# DCC Submission Server - Playbook 
+#
+# Description: 
+#   The is the Ansible playbook file for provisioning the dcc-submission distribution.
+#
+# See:
+#   - http://www.ansibleworks.com/docs/playbooks.html
+
 - hosts: vagrant 
   sudo: yes
+
   vars:
-    - artifactory_base_url: http://seqwaremaven.oicr.on.ca/artifactory/
-    - reference_genome_version: GRCh37
-    - reference_genome_archive: "dcc-reference-genome-{{ reference_genome_version }}.tar.gz"
-    - reference_genome_url: "{{ artifactory_base_url }}/simple/dcc-dependencies/org/icgc/dcc/dcc-reference-genome/{{ reference_genome_version }}/{{ reference_genome_archive }}"
+
+    # File system
+    - staging_dir: /tmp
+    - root_dir: /srv/dcc-submission
+    - data_dir: "{{ root_dir }}/data"
+    - bin_dir:  "{{ root_dir }}/bin"
+    - conf_dir: "{{ root_dir }}/conf"
+
+    # URLs 
+    - external_submission_url: https://submissions.dcc.icgc.org
+    - artifactory_url:         http://seqwaremaven.oicr.on.ca/artifactory
+    - artifactory_release_url: "{{ artifactory_url }}/dcc-release" 
+    - artifactory_deps_url:    "{{ artifactory_url }}/simple/dcc-dependencies" 
+
+    # Distribution
+    - distribution_name:         "dcc-submission-server"
+    - distribution_version:      2.1.7
+    - distribution_name_version: "{{ distribution_name }}-{{ distribution_version }}"
+    - distribution_archive:      "{{ distribution_name_version }}-dist.tar.gz"
+    - distribution_url:          "{{ artifactory_release_url }}/org/icgc/dcc/{{ distribution_name }}/{{ distribution_version }}/{{ distribution_archive }}"
+
+    # Reference
+    - reference_genome_name:     "dcc-reference-genome"
+    - reference_genome_version:  GRCh37
+    - reference_genome_archive:  "{{ reference_genome_name }}-{{ reference_genome_version }}.tar.gz"
+    - reference_genome_url:      "{{ artifactory_deps_url }}/org/icgc/dcc/{{ reference_genome_name }}/{{ reference_genome_version }}/{{ reference_genome_archive }}"
+
+    # Java
+    - java_name: oracle-java7
+    
+    # MongoDB
+    - mongodb_version: 2.4.1
+
   tasks:
 
-    - name: Banner for VM
-      action: copy src=files/motd dest=/etc/motd mode=755
+    #
+    # Java
+    #
 
-    - name: Install python software properties (apt-add-repository)
+    - name: Java | Install python software properties (apt-add-repository)
       apt: pkg=python-software-properties update_cache=yes
 
-    - name: Add Java PPA
+    - name: Java | Add Java PPA
       apt_repository: repo=ppa:webupd8team/java state=present
 
-    - name: Automatically accept Java license
-      shell: echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+    - name: Java | Automatically accept Java license
+      shell: echo "{{ java_name }}-installer" shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
 
-    - name: Install Java 7
+    - name: Java | Install Java 
       apt: pkg='{{ item }}' state=present update_cache=yes force=yes
       with_items:
-        - oracle-java7-installer
-        - oracle-java7-set-default
+        - "{{ java_name }}-installer"
+        - "{{ java_name }}-set-default"
+
+    # 
+    # MongoDB
+    #
 
     - name: MongoDB | Fetch 10Gen signing key
       command: apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
@@ -34,14 +79,39 @@
         echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/10gen.list
         creates=/etc/apt/sources.list.d/10gen.list
     
-    - name: MongoDB | Install latest MongoDB release 
-      apt: pkg=mongodb-10gen=2.4.1 state=present update_cache=yes
+    - name: MongoDB | Install specific release 
+      apt: pkg=mongodb-10gen="{{ mongodb_version }}" state=present update_cache=yes
     
     - name: MongoDB | Insure deamon is running correctly
       service: name=mongodb state=started
 
-    - name: Download the reference genome
-      action: "get_url url={{ reference_genome_url }} dest=/tmp/{{ reference_genome_archive }} mode=0444"
+    #
+    # Server
+    # 
 
-    - name: Extract the reference geneomo 
-      action: "command tar xzf {{ reference_genome_archive }} -C ~" 
+    - name: Server | Create MOTD banner
+      action: copy src=files/motd dest=/etc/motd mode=755
+
+    - name: Server | Create file system
+      action: "file path={{ item }} state=directory"
+      with_items:
+        - "{{ root_dir }}"
+        - "{{ data_dir }}"
+
+    - name: Server | Download the distribution 
+      action: "get_url url={{ distribution_url }} dest={{ staging_dir }}/{{ distribution_archive }} mode=0444"
+
+    - name: Server | Extract the distribution 
+      action: "command tar xzf {{ staging_dir }}/{{ distribution_archive }} --strip 1 -C {{ root_dir }}" 
+ 
+    # 
+    # Reference
+    #
+
+    - name: Reference | Download the reference genome
+      action: "get_url url={{ reference_genome_url }} dest={{ staging_dir }}/{{ reference_genome_archive }} mode=0444"
+      when: false
+
+    - name: Reference | Extract the reference genome 
+      action: "command tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ data_dir }}" 
+      when: false
