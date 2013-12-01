@@ -11,7 +11,7 @@
 
 # {{ ansible_managed }}
 [users]
-admin = {{ admin_hashed_password.stdout }}, admin
+admin = {{ admin_password_hash.stdout }}, admin
 
 [roles]
 admin = *

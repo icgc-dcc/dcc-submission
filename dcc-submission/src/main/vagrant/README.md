@@ -15,3 +15,17 @@ Issue the following command:
  
  	cd dcc/dcc-submission/src/main/vagrant
 	vagrant up
+
+Ad Hoc Commands
+---
+Issue the following command to print `$PWD`:
+
+	ansible all -i provisioning/inventory -u vagrant --private-key ~/.vagrant.d/insecure_private_key -m shell -a 'pwd'
+
+Resources
+---
+Useful links:
+- http://www.ansibleworks.com/docs/
+- http://jinja.pocoo.org/docs/templates/
+- http://docs.vagrantup.com/v2/provisioning/ansible.html
+- http://docs.vagrantup.com/v2/virtualbox/configuration.html

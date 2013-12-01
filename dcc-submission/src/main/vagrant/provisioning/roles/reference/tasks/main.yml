@@ -3,6 +3,14 @@
 
 - name: Download the reference genome
   get_url: "url={{ reference_genome_url }} dest={{ staging_dir }}/{{ reference_genome_archive }} mode=0444"
+  when: false
 
 - name: Extract the reference genome 
   command: "tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ target_dir }}" 
+  when: false
+  
+- name: Create empty files (temporary until within OICR network)
+  command: "/bin/touch /tmp/{{ item }}"
+  with_items:
+    - "{{ reference_genome_version }}.fasta"
+    - "{{ reference_genome_version }}.fasta.fai"

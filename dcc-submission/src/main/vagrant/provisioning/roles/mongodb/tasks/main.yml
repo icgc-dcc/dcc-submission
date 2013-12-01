@@ -13,5 +13,5 @@
 - name: Install specific release 
   apt: pkg=mongodb-10gen="{{ mongodb_version }}" state=present update_cache=yes
 
-- name: Insure daemon is running
+- name: Ensure daemon is running
   service: name=mongodb state=started

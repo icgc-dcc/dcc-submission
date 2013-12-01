@@ -3,4 +3,4 @@
 
 dependencies:
   - { role: java }
-  - { role: reference, target_dir: "{{ data_dir }}", when: "0 == 1" }
+  - { role: reference, target_dir: "{{ data_dir }}" }

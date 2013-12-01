@@ -4,7 +4,7 @@
 # DCC Submission Server - Master playbook 
 #
 # Description: 
-#   The is the Ansible playbook file for provisioning the dcc-submission distribution.
+#   The is the master Ansible playbook file for provisioning the dcc-submission distribution.
 #
 # See:
 #   - http://www.ansibleworks.com/docs/playbooks.html
