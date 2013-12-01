@@ -15,4 +15,17 @@
 
 - name: Extract the distribution 
   command: "tar xzf {{ staging_dir }}/{{ distribution_archive }} --strip 1 -C {{ install_dir }}" 
- 
+  sudo: yes
+
+- name: Configure local file system
+  lineinfile: dest="{{ conf_dir }}/application.conf" regexp='([^"]+)("hdfs://[^"]+")' line='\1"file:///"' backrefs=yes state=present
+
+- name: Download Shiro password utility
+  get_url: "url=http://repo1.maven.org/maven2/org/apache/shiro/tools/shiro-tools-hasher/1.2.1/shiro-tools-hasher-1.2.1-cli.jar dest={{ staging_dir }}/password.jar"
+
+- name: Generate password hash
+  shell: "echo '{{ admin_password }}' > password.txt; java -jar {{ staging_dir }}/password.jar -f shiro1 -a SHA-256 -r password.txt; rm password.txt"
+  register: admin_hashed_password
+
+- name: Create users, passowords and roles
+  template: src=realm.ini.j2 dest="{{ conf_dir }}/realm.ini" mode=755
