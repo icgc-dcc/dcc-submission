@@ -10,7 +10,8 @@
 - name: Extract the reference genome 
   command: "tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ target_dir }}" 
   when: false
-  
+
+# TODO: Remove 
 - name: Create empty files (temporary until within OICR network)
   command: "mkdir {{ target_dir }} -p"
 - command: "/bin/touch {{ target_dir }}/{{ item }}"

@@ -1,6 +1,11 @@
 ---
 # Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
 
+# Role dependencies of the server which specify application specific role parameterization
 dependencies:
-  - { role: java, java_name: 'oracle-java6' } # Server currently requires Java 6
-  - { role: reference, target_dir: "{{ data_dir }}" } # linked with application configuration
+
+   # Server currently requires Java 6
+  - { role: java, java_name: 'oracle-java6' }
+  
+  # Linked with application configuration
+  - { role: reference, target_dir: "{{ data_dir }}" }

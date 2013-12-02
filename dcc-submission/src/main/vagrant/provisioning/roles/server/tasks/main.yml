@@ -26,7 +26,7 @@
   
 # Setup authentication and authorization
 - name: Download Shiro password utility
-  get_url: "url=http://repo1.maven.org/maven2/org/apache/shiro/tools/shiro-tools-hasher/1.2.1/shiro-tools-hasher-1.2.1-cli.jar dest={{ staging_dir }}/password.jar"
+  get_url: "url={{ shiro_url }} dest={{ staging_dir }}/password.jar"
 
 - name: Generate password hash
   shell: "java -jar {{ staging_dir }}/password.jar -f shiro1 -a SHA-256 -i 500000 -gs '{{ admin_password }}'"
