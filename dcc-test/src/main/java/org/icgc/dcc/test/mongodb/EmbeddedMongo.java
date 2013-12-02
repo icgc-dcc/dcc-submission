@@ -17,9 +17,14 @@
  */
 package org.icgc.dcc.test.mongodb;
 
-import java.util.logging.Logger;
+import static de.flapdoodle.embed.mongo.Command.MongoD;
+import static de.flapdoodle.embed.mongo.distribution.Version.Main.V2_4;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.junit.rules.TestRule;
@@ -27,26 +32,30 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
-import de.flapdoodle.embed.mongo.config.RuntimeConfig;
-import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.RuntimeConfigBuilder;
+import de.flapdoodle.embed.mongo.distribution.Version.Main;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.NullProcessor;
-import de.flapdoodle.embed.process.io.directories.FixedPath;
 
 @Slf4j
 public class EmbeddedMongo implements TestRule {
 
-  private MongodExecutable mongodExe;
+  /**
+   * Current DCC version.
+   */
+  private static final Main VERSION = V2_4;
 
-  private MongodProcess mongod;
-
-  private MongodConfig mongodConfig;
-
+  /**
+   * Mongo state.
+   */
+  private MongodExecutable mongodExecutable;
+  private MongodProcess mongodProcess;
   private MongoClient mongo;
 
   @Override
@@ -74,7 +83,7 @@ public class EmbeddedMongo implements TestRule {
   }
 
   public int getPort() {
-    return mongodConfig.net().getPort();
+    return mongo.getAddress().getPort();
   }
 
   public MongoClient getMongo() {
@@ -83,25 +92,59 @@ public class EmbeddedMongo implements TestRule {
 
   @SneakyThrows
   private void start() {
-    // Suppress logging
-    System.setProperty("de.flapdoodle.embed.io.tmpdir", "target");
-    RuntimeConfig runtimeConfig = RuntimeConfig.getInstance(Logger.getLogger(getClass().getName()));
-    runtimeConfig.setProcessOutput(new ProcessOutput(new NullProcessor(), new NullProcessor(), new NullProcessor()));
-    runtimeConfig.setTempDirFactory(new FixedPath("target"));
-
-    // Start mongo
-    MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
-    mongodConfig = new MongodConfig(Version.Main.V2_3);
-    mongodExe = runtime.prepare(mongodConfig);
-    mongod = mongodExe.start();
-    mongo = new MongoClient("localhost", mongodConfig.net().getPort());
+    mongodExecutable = createExecutable(VERSION);
+    mongodProcess = createProcess(mongodExecutable);
+    mongo = createClient(mongodProcess);
   }
 
-  @SneakyThrows
   private void stop() {
-    // Stop mongo
-    mongod.stop();
-    mongodExe.stop();
+    try {
+      if (mongo != null) {
+        mongo.close();
+      }
+    } finally {
+      try {
+        if (mongodProcess != null) {
+          mongodProcess.stop();
+        }
+      } finally {
+        if (mongodExecutable != null) {
+          mongodExecutable.stop();
+        }
+      }
+    }
+  }
+
+  private static MongodExecutable createExecutable(Main version) throws UnknownHostException, IOException {
+    val config = new MongodConfigBuilder()
+        .version(version)
+        .build();
+
+    return createStarter().prepare(config);
+  }
+
+  private static MongodProcess createProcess(MongodExecutable mongodExecutable) throws IOException {
+    return mongodExecutable.start();
+  }
+
+  private static MongodStarter createStarter() {
+    val config = new RuntimeConfigBuilder()
+        .defaults(MongoD)
+        .processOutput(createProcessOutput())
+        .build();
+
+    return MongodStarter.getInstance(config);
+  }
+
+  private static ProcessOutput createProcessOutput() {
+    return new ProcessOutput(new NullProcessor(), new NullProcessor(), new NullProcessor());
+  }
+
+  private static MongoClient createClient(MongodProcess mongodProcess) throws UnknownHostException {
+    val net = mongodProcess.getConfig().net();
+    val address = new ServerAddress(net.getServerAddress(), net.getPort());
+
+    return new MongoClient(address);
   }
 
 }

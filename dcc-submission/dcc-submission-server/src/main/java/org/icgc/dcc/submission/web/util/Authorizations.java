@@ -65,7 +65,7 @@ public final class Authorizations {
 
   public static Subject getSubject(SecurityContext securityContext) {
     Subject subject = shiroSecurityContext(securityContext).getSubject();
-    log.info("Logged in as {}", subject.getPrincipal());
+    log.debug("Logged in as {}", subject.getPrincipal());
     return subject;
   }
 

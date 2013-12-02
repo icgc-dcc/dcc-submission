@@ -1,0 +1,21 @@
+---
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+#
+# DCC Submission Server - Master playbook 
+#
+# Description: 
+#   The is the master Ansible playbook file for provisioning the dcc-submission distribution.
+#
+# See:
+#   - http://www.ansibleworks.com/docs/playbooks.html
+
+# This single play playbook will provision the VM
+- hosts: vagrant
+  gather_facts: False
+  sudo: yes
+  
+  # Apply theses roles
+  roles: 
+    - mongodb
+    - server
+

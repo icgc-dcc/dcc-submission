@@ -47,7 +47,7 @@ public enum ServerErrorCode {
   RELEASE_MISSING_DICTIONARY("ReleaseMissingDictionary"),
   DUPLICATE_RELEASE_NAME("DuplicateReleaseName"),
   PROJECT_KEY_NOT_FOUND("ProjectKeyNotFound"),
-  UNKNOWN_THROWABLE("UnknownThrowable");
+  UNKNOWN_ERROR("UnknownError");
 
   // TODO: See
   // https://jira.oicr.on.ca/browse/DCC-660?focusedCommentId=44725&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-44725

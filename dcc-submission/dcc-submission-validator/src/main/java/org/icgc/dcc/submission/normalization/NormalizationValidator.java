@@ -153,7 +153,7 @@ public final class NormalizationValidator implements Validator {
     } else {
       log.info(
           "Skipping normalization for {}, no matching file in submission: '{}'",
-          new Object[] { FOCUS_TYPE, optional.get(), validationContext.getSubmissionDirectory().listFile() });
+          new Object[] { FOCUS_TYPE, validationContext.getSubmissionDirectory().listFile() });
     }
   }
 

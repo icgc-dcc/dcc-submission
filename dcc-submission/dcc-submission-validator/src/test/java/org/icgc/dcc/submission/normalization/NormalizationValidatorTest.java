@@ -69,7 +69,7 @@ public class NormalizationValidatorTest {
   private static final String RELEASE_NAME = "dummy_release";
   private static final String PROJECT_NAME = "dummy_project";
 
-  private static final String FILE_NAME = "ssm__p.txt";
+  private static final String FILE_NAME = "ssm_p.txt";
   private static final String INPUT = "input";
   private static final String OUTPUT = "output";
   private static final String REFERENCE = "reference";

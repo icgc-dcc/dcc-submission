@@ -1,36 +1,55 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-
-$banner = <<'BANNER'
-
-    ______________________   ____  ____________            _    ____  ___
-   /  _/ ____/ ____/ ____/  / __ \/ ____/ ____/           | |  / /  |/  /
-   / // /   / / __/ /      / / / / /   / /      ______    | | / / /|_/ / 
- _/ // /___/ /_/ / /___   / /_/ / /___/ /___   /_____/    | |/ / /  / /  
-/___/\____/\____/\____/  /_____/\____/\____/              |___/_/  /_/   
-                                                                         
-
-BANNER
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+#
+# DCC Submission Server - VirtualBox VM Vagrant file
+#
+# Description: 
+#   The is the Vagrant file for provisioning the dcc-submission distribution using the 
+#   VirtualBox provider and ansible as the provisioner.
+#
+# See:
+#   - http://docs.icgc.org
+#   - http://www.ansibleworks.com/docs/
+#   - http://www.ansibleworks.com/docs/guide_vagrant.html
+#   - http://jinja.pocoo.org/docs/templates/
+#   - http://docs.vagrantup.com/v2/provisioning/ansible.html
+#   - http://docs.vagrantup.com/v2/virtualbox/configuration.html
 
 Vagrant.configure("2") do |config|
-
-  # Basic configuration
+  # Base box
   config.vm.box = "precise64" 
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
-  # DCC submission server
-  config.vm.define :www do |www|
-    www.vm.provider :virtualbox do |v|
-      v.name = "www.dcc.icgc.local"
-      v.customize ["modifyvm", :id, "--memory", "4096"]
-    end
-    www.vm.network :private_network, ip: "10.211.55.100"
-    www.vm.hostname = "www.dcc.icgc.local"
-    www.vm.provision :puppet do |puppet|
-      puppet.manifests_path = "puppet/manifests"
-      puppet.module_path  = "modules"
-      puppet.manifest_file = "site.pp"
-    end
-  end
+  # Hostname of the box 
+  config.vm.hostname="dcc-submission-vm"
 
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine.
+  # See provisioning/server/templates/application.conf.j2
+  config.vm.network :forwarded_port, guest: 5380, host: 5380 
+  config.vm.network :forwarded_port, guest: 5322, host: 5322 
+  
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP. This IP is used in the Ansible inventory file.
+  config.vm.network :private_network, ip: "10.211.55.100"
+  
+  # Execute VirtualBox provider
+  config.vm.provider :virtualbox do |v|
+  	# Appliance name
+    v.name = "icgc-dcc-validator"
+    
+    # This should be a suitably large number for submitters to test a sample data set
+    v.customize ["modifyvm", :id, "--memory", "4096"]
+  end
+  
+  # Execute Ansible provisioner
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = "provisioning/vm.yml"
+    ansible.inventory_path = "provisioning/inventory/hosts"
+    ansible.verbose = 'vvvv'
+    
+    # Avoids ssh: connect to host 10.211.55.100 port 22: Host is down
+    ansible.raw_arguments = "--timeout=60"
+  end
 end

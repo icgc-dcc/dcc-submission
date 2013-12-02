@@ -1,7 +1,7 @@
 ICGC DCC - Submission
 ===
 
-Parent project of the submission modules
+Parent project of the submission modules.
 
 Build
 ---
