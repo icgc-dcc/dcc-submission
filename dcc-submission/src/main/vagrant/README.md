@@ -22,6 +22,13 @@ Issue the following command to print `$PWD`:
 
 	ansible all -i provisioning/inventory -u vagrant --private-key ~/.vagrant.d/insecure_private_key -m shell -a 'pwd'
 
+Exporting
+---
+
+Issue the following command to export the appliance:
+
+	VBoxManage export dcc_validator_vm -o dcc_valiator_vm.ova --vsys 0 --product "DCC Validator VM 2.x"
+
 Resources
 ---
 Useful links:
