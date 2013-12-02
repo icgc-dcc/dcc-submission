@@ -8,7 +8,7 @@ bin_dir: "{{ install_dir }}/bin"
 conf_dir: "{{ install_dir }}/conf"
 
 # Distribution
-distribution_name: "dcc-submission-server"
-distribution_name_version: "{{ distribution_name }}-{{ distribution_version }}"
-distribution_archive: "{{ distribution_name_version }}-dist.tar.gz"
-distribution_url: "{{ artifactory_release_url }}/org/icgc/dcc/{{ distribution_name }}/{{ distribution_version }}/{{ distribution_archive }}"
+dist_name: "dcc-submission-server"
+dist_name_version: "{{ dist_name }}-{{ dist_version }}"
+dist_archive: "{{ dist_name_version }}-dist.tar.gz"
+dist_url: "{{ artifactory_release_url }}/org/icgc/dcc/{{ dist_name }}/{{ dist_version }}/{{ dist_archive }}"

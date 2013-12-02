@@ -13,24 +13,25 @@
     - "{{ data_dir }}"
 
 # Install the distribution
-- name: Download the distribution 
-  get_url: "url={{ distribution_url }} dest={{ staging_dir }}/{{ distribution_archive }} mode=0444"
+- name: Download the distribution
+  get_url: "url={{ dist_url }} dest={{ staging_dir }}/{{ dist_archive }} mode=0444"
 
-- name: Extract the distribution 
-  command: "tar xzf {{ staging_dir }}/{{ distribution_archive }} --strip 1 -C {{ install_dir }}" 
+- name: Extract the dist 
+  command: "tar xzf {{ staging_dir }}/{{ dist_archive }} --strip 1 -C {{ install_dir }}" 
   sudo: yes
 
-# Ensure we are using the local file system in the application over HDFS
-- name: Configure local file system
-  lineinfile: dest="{{ conf_dir }}/application.conf" regexp='([^"]+)("hdfs://[^"]+")' line='\1"file:///"' backrefs=yes state=present
-
+# Configure the application
+- name: Configure application
+  template: src=application.conf.j2 dest="{{ conf_dir }}/application.conf"
+  
 # Setup authentication and authorization
 - name: Download Shiro password utility
   get_url: "url=http://repo1.maven.org/maven2/org/apache/shiro/tools/shiro-tools-hasher/1.2.1/shiro-tools-hasher-1.2.1-cli.jar dest={{ staging_dir }}/password.jar"
 
-- name: Generate password hash (shell can't use process substitution here)
-  shell: "echo '{{ admin_password }}' > password.txt; java -jar {{ staging_dir}}/password.jar -f shiro1 -a SHA-256 -r password.txt; rm password.txt"
-  register: admin_password_hash
+- name: Generate password hash
+  shell: "java -jar {{ staging_dir }}/password.jar -f shiro1 -a SHA-256 -i 500000 -gs '{{ admin_password }}'"
+  register: password_hash
+- set_fact: "admin_password_hash={{ password_hash.stdout }}"
 
 - name: Create users, passwords and roles
   template: src=realm.ini.j2 dest="{{ conf_dir }}/realm.ini"

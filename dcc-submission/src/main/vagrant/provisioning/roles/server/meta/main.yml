@@ -2,5 +2,5 @@
 # Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
 
 dependencies:
-  - { role: java }
-  - { role: reference, target_dir: "{{ data_dir }}" }
+  - { role: java, java_name: 'oracle-java6' } # Server currently requires Java 6
+  - { role: reference, target_dir: "{{ data_dir }}" } # linked with application configuration

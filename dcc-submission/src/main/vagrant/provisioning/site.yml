@@ -9,8 +9,12 @@
 # See:
 #   - http://www.ansibleworks.com/docs/playbooks.html
 
-- hosts: vagrant 
+# This playbook will provision the VM
+- hosts: vagrant
+  gather_facts: False
   sudo: yes
+  
+  # Apply theses roles
   roles: 
     - mongodb
     - server
