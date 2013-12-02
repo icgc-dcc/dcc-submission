@@ -4,5 +4,10 @@
 # The version of the dcc-submission-server to install
 dist_version: 2.1.8
 
-# Admin SFTP / HTTP password for the submission system which gets hashed and stored in ream.ini
+# Admin SFTP / HTTP username / password for the submission system which gets hashed and stored in ream.ini
+admin_username: admin
 admin_password: password
+
+# Application ports
+http_port: 5380
+sftp_port: 5322

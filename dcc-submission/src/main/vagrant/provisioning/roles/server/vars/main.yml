@@ -3,6 +3,7 @@
 
 # Directories
 install_dir: /srv/dcc-submission
+web_dir: "{{ install_dir }}/www"
 data_dir: "{{ install_dir }}/data"
 bin_dir: "{{ install_dir }}/bin"
 conf_dir: "{{ install_dir }}/conf"

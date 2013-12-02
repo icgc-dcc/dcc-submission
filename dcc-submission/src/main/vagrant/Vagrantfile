@@ -37,7 +37,7 @@ Vagrant.configure("2") do |config|
   # Execute VirtualBox provider
   config.vm.provider :virtualbox do |v|
   	# Appliance name
-    v.name = "dcc-submission-vm"
+    v.name = "icgc-dcc-validator"
     
     # This should be a suitably large number for submitters to test a sample data set
     v.customize ["modifyvm", :id, "--memory", "4096"]

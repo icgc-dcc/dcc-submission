@@ -30,3 +30,4 @@ Useful links:
 - http://jinja.pocoo.org/docs/templates/
 - http://docs.vagrantup.com/v2/provisioning/ansible.html
 - http://docs.vagrantup.com/v2/virtualbox/configuration.html
+- https://www.virtualbox.org/manual/ch08.html

@@ -42,3 +42,24 @@
   
 - name: Ensure daemon is running
   service: name=dcc-submission-server state=started
+
+# Initialize the system with data
+- name: Copy initialization script
+  copy: "src=init.sh dest={{ staging_dir }}/init.sh mode=0744"
+
+- name: Install packages for initialization
+  apt: pkg=curl state=installed  
+
+- name: Assign init command to variable
+  set_fact: init_command="{{ staging_dir }}/init.sh {{ external_submission_url }} http://localhost:{{ http_port }} {{ admin_username }} {{ admin_password }} Release1 project1 Project1 Project1"
+  
+- name: Initialize the system
+  shell: "{{ init_command }}"
+
+# Install restart hook
+- name: Copy error page
+  copy: "src=error.html dest={{ staging_dir }}/error.html"
+  
+- name: Install startup script
+  template: src=rc.local.j2 dest="/etc/rc.local"
+  
