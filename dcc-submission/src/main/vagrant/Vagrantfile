@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 # Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
 #
-# DCC Submission Server - VM
+# DCC Submission Server - VirtualBox VM Vagrant file
 #
 # Description: 
 #   The is the Vagrant file for provisioning the dcc-submission distribution using the 
@@ -10,6 +10,9 @@
 #
 # See:
 #   - http://docs.icgc.org
+#   - http://www.ansibleworks.com/docs/
+#   - http://www.ansibleworks.com/docs/guide_vagrant.html
+#   - http://jinja.pocoo.org/docs/templates/
 #   - http://docs.vagrantup.com/v2/provisioning/ansible.html
 #   - http://docs.vagrantup.com/v2/virtualbox/configuration.html
 
@@ -33,16 +36,20 @@ Vagrant.configure("2") do |config|
   
   # Execute VirtualBox provider
   config.vm.provider :virtualbox do |v|
+  	# Appliance name
     v.name = "dcc-submission-vm"
-    v.customize ["modifyvm", :id, "--memory", "1024"]
+    
+    # This should be a suitably large number for submitters to test a sample data set
+    v.customize ["modifyvm", :id, "--memory", "4096"]
   end
   
   # Execute Ansible provisioner
   config.vm.provision :ansible do |ansible|
-    ansible.playbook = "provisioning/site.yml"
+    ansible.playbook = "provisioning/vm.yml"
     ansible.inventory_path = "provisioning/inventory/hosts"
     ansible.verbose = 'vvvv'
+    
+    # Avoids ssh: connect to host 10.211.55.100 port 22: Host is down
     ansible.raw_arguments = "--timeout=60"
   end
-
 end

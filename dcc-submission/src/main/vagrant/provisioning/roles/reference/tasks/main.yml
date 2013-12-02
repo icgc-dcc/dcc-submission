@@ -4,17 +4,12 @@
 # Download from central repository
 - name: Download the reference genome
   get_url: "url={{ reference_genome_url }} dest={{ staging_dir }}/{{ reference_genome_archive }} mode=0444"
-  when: false
+
+# Ensure target dir exists
+- name: Creating target dir
+  file: "dest={{ target_dir }} state=directory"
 
 # Install the FASTA files to the specified location
 - name: Extract the reference genome 
   command: "tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ target_dir }}" 
-  when: false
 
-# TODO: Remove 
-- name: Create empty files (temporary until within OICR network)
-  command: "mkdir {{ target_dir }} -p"
-- command: "/bin/touch {{ target_dir }}/{{ item }}"
-  with_items:
-    - "{{ reference_genome_version }}.fasta"
-    - "{{ reference_genome_version }}.fasta.fai"

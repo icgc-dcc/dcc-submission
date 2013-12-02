@@ -26,6 +26,7 @@ Resources
 ---
 Useful links:
 - http://www.ansibleworks.com/docs/
+- http://www.ansibleworks.com/docs/guide_vagrant.html
 - http://jinja.pocoo.org/docs/templates/
 - http://docs.vagrantup.com/v2/provisioning/ansible.html
 - http://docs.vagrantup.com/v2/virtualbox/configuration.html

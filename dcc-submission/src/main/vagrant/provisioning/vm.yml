@@ -9,7 +9,7 @@
 # See:
 #   - http://www.ansibleworks.com/docs/playbooks.html
 
-# This playbook will provision the VM
+# This single play playbook will provision the VM
 - hosts: vagrant
   gather_facts: False
   sudo: yes
