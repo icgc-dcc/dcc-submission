@@ -1,11 +1,15 @@
 ICGC DCC - Submission - Vagrant VirtualBox VM
 ===
 
-To create, start, provision and export the virtual machine, please follow the directions below.
+Follow the directions outlined in this document to create, start, provision and export the [`dcc-submission`](../../../) virtual machine (VM). Please see http://docs.icgc.org for operational instructions once the VM is up and running.
+
+You may notice that the layout of the [`provisioning/`](provisioning) directory is highly structured and factored into many files. Although excessive for a single instance node such as the VM, the rationale for this decomposition is to promote reuse across projects and environments. This is mainly achieved using Ansible [roles](http://www.ansibleworks.com/docs/playbooks_roles.html) and [variables](http://www.ansibleworks.com/docs/playbooks_variables.html).
+
+Furthermore, we may leverage Anisble to provision the system using other providers such as [`vagrant-aws`](https://github.com/mitchellh/vagrant-aws), [`vagrant-openstack`](https://github.com/cloudbau/vagrant-openstack-plugin) and [`vagrant-kvm`](https://github.com/adrahon/vagrant-kvm).
 
 Setup
 ---
-The minimum requirements for creating the VM is reasonably current VirtualBox installation, Vagrant (v2 preferred) and Ansible:
+The minimum requirements for creating the VM is VirtualBox (4.3+), Vagrant (1.3.5+) and Ansible (1.4+). You can find instructions on how to install each of these by following the links below.
 
 - Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 - Install [Vagrant](http://downloads.vagrantup.com)
@@ -15,7 +19,7 @@ The minimum requirements for creating the VM is reasonably current VirtualBox in
 
 Provisioning
 ---
-To create and provision the VM, clone the project, navigate to the `vagrant` directory and issue `vagrant up`:
+To create and provision the VM, clone the project, navigate to the `vagrant` directory and issue [`vagrant up`](http://docs.vagrantup.com/v2/cli/up.html):
  
  	git clone git@github.com:icgc-dcc/dcc.git
  	cd dcc/dcc-submission/src/main/vagrant
@@ -37,18 +41,19 @@ Resources
 ---
 When developing Ansible playbooks targeting the VirtualBox provider, you may find the following resources useful.
 
-#### Ansible
-- http://www.ansibleworks.com/docs/
+#### VirtualBox
+- http://www.virtualbox.org/manual/ch08.html
 
-#### Ansible Templates (Jinja2)
-- http://jinja.pocoo.org/docs/templates/
+#### Vagrant - VirtualBox Provider
+- http://docs.vagrantup.com/v2/virtualbox/configuration.html
 
-#### Ansible Vagrant
+#### Vagrant - Ansible Provisioner
 - http://www.ansibleworks.com/docs/guide_vagrant.html
 - http://docs.vagrantup.com/v2/provisioning/ansible.html
 
-#### Vagrant
-- http://docs.vagrantup.com/v2/virtualbox/configuration.html
+#### Ansible
+- http://www.ansibleworks.com/docs
+- http://www.ansibleworks.com/docs/playbooks_best_practices.html
 
-#### VirtualBox
-- https://www.virtualbox.org/manual/ch08.html
+#### Ansible - Templates (Jinja2)
+- http://jinja.pocoo.org/docs/templates
