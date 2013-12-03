@@ -1,21 +1,21 @@
 ICGC DCC - Submission - Vagrant VirtualBox VM
 ===
 
-To create and start the virtual machine, please follow the directions below.
+To create, start, provision and export the virtual machine, please follow the directions below.
 
 Setup
 ---
 The minimum requirements for creating the VM is reasonably current VirtualBox installation, Vagrant (v2 preferred) and Ansible:
 
-- Install [VirtualBox 4.2.12](https://www.virtualbox.org/wiki/Downloads)
-- Install [Vagrant 1.3.5](http://downloads.vagrantup.com/tags/v1.3.5)
-- Install [Ansible ](http://devopsu.com/guides/ansible-mac-osx.html)
+- Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+- Install [Vagrant](http://downloads.vagrantup.com)
+- Install [Ansible](http://www.ansibleworks.com/docs/intro_installation.html)
 
-*Note*: It is important that you _not_ install the `vagrant-anisble` plugin as this is already bundled with recent versions of Vagrant. Doing so may result in `python` class loading issues.
+*Note*: It is important that you _not_ install the external [`vagrant-anisble`](https://github.com/dsander/vagrant-ansible) plugin as this is deprecated and is already bundled with recent versions of Vagrant. Doing so may result in `python` Ansible class loading issues.
 
-Run
+Provisioning
 ---
-To create the VM, clone the project, navigate to the `vagrant` directory and issue `vagrant up`:
+To create and provision the VM, clone the project, navigate to the `vagrant` directory and issue `vagrant up`:
  
  	git clone git@github.com:icgc-dcc/dcc.git
  	cd dcc/dcc-submission/src/main/vagrant
@@ -40,7 +40,7 @@ When developing Ansible playbooks targeting the VirtualBox provider, you may fin
 #### Ansible
 - http://www.ansibleworks.com/docs/
 
-#### Ansible Templates
+#### Ansible Templates (Jinja2)
 - http://jinja.pocoo.org/docs/templates/
 
 #### Ansible Vagrant
