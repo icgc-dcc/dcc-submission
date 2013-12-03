@@ -49,9 +49,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <properties>
-    <!-- Versions - Resources -->
-    <dcc-resources.version>0.7a</dcc-resources.version>
-  </properties>
 </project>
