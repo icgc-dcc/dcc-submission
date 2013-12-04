@@ -85,7 +85,7 @@ public class ProjectResourceTest extends ResourceTest {
       @Override
       protected void configure() {
         dccFileSystem = mock(DccFileSystem.class);
-        when(dccFileSystem.mkdirProjectDirectory(any(String.class), any(String.class))).thenReturn(PATH);
+        when(dccFileSystem.createNewProjectDirectoryStructure(any(String.class), any(String.class))).thenReturn(PATH);
 
         release = new Release("REL1");
         releases = Sets.newHashSet(release);
@@ -240,8 +240,8 @@ public class ProjectResourceTest extends ResourceTest {
 
     verify(projectService).add(any(Project.class));
     verify(releaseService).addSubmission("PRJ1", "Project One");
-    verify(dccFileSystem).mkdirProjectDirectory("REL1", "PRJ1");
-    assertThat(dccFileSystem.mkdirProjectDirectory("REL1", "PRJ1")).isEqualTo(PATH);
+    verify(dccFileSystem).createNewProjectDirectoryStructure("REL1", "PRJ1");
+    assertThat(dccFileSystem.createNewProjectDirectoryStructure("REL1", "PRJ1")).isEqualTo(PATH);
 
     assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
     assertThat(reponse.getLocation().toString()).isEqualTo("projects/PRJ1");

@@ -29,11 +29,13 @@ import lombok.val;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,7 +52,7 @@ import com.jcraft.jsch.KeyPair;
 import com.typesafe.config.Config;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SftpServerServicePublicKeyTest {
+public class SftpPublicKeyAuthenticatorTest {
 
   /**
    * Test configuration.
@@ -80,6 +82,11 @@ public class SftpServerServicePublicKeyTest {
     // Mock configuration
     when(config.getInt("sftp.port")).thenReturn(5322);
     when(config.getString("sftp.path")).thenReturn(tmp.newFile().getAbsolutePath());
+  }
+
+  @After
+  public void tearDown() {
+    ThreadContext.remove();
   }
 
   @Test

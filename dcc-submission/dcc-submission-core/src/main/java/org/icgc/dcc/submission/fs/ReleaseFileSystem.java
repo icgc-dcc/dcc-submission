@@ -17,10 +17,9 @@
  */
 package org.icgc.dcc.submission.fs;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
-
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -57,33 +56,51 @@ public class ReleaseFileSystem {
     this(dccFilesystem, release, null);
   }
 
-  public SubmissionDirectory getSubmissionDirectory(@NonNull String projectKey) {
-    checkSubmissionDirectory(projectKey); // also checks privileges
-    val submission = release.getSubmission(projectKey);
+  public SubmissionDirectory getSubmissionDirectory(
+      @NonNull
+      String projectKey) {
 
+    if (hasPrivileges(projectKey) == false) {
+      throw new DccFileSystemException("User " + userSubject.getPrincipal()
+          + " does not have permission to access project " + projectKey);
+    }
+    val submission = release.getSubmission(projectKey);
     return new SubmissionDirectory(dccFileSystem, release, projectKey, submission);
   }
 
-  public void moveFrom(@NonNull ReleaseFileSystem previous, @NonNull List<String> projectKeys) {
-    // TODO: Determine why we can't just rename "releaseName1/projectKey/" to "releaseName2/projectKey/" and call it a
-    // day
+  public void setUpNewReleaseFileSystem(
+      String oldReleaseName, // Remove after DCC-1940
+      String newReleaseName,
+      @NonNull
+      ReleaseFileSystem previous,
+      @NonNull
+      Iterable<String> signedOffProjectKeys,
+      @NonNull
+      Iterable<String> otherProjectKeys) {
+    log.info("Setting up new release file system for: '{}'", newReleaseName);
+
+    checkState(signedOffProjectKeys.iterator().hasNext() || otherProjectKeys.iterator().hasNext(),
+        "There must be at least on project key to process");
 
     // Shorthands
     val fileSystem = dccFileSystem.getFileSystem();
     val next = this;
 
-    // Move "releaseName/projectKey/"
-    for (val projectKey : projectKeys) {
-      val previousSubmissionDirectory = previous.getSubmissionDirectory(projectKey);
-      val nextSubmissionDirectory = next.getSubmissionDirectory(projectKey);
+    dccFileSystem.createReleaseDirectory(newReleaseName);
 
-      // Move "releaseName/projectKey/donor.txt"
-      for (val previousSubmissionFilePath : previousSubmissionDirectory.listFile()) {
-        moveSubmissionFile(fileSystem, previousSubmissionDirectory, nextSubmissionDirectory, previousSubmissionFilePath);
-      }
+    // Create empty dirs along with nested .validation
+    dccFileSystem.createProjectDirectoryStructures(
+        newReleaseName,
+        newLinkedHashSet(signedOffProjectKeys));
 
-      // Move "releaseName/projectKey/.validation"
-      moveValidationDir(fileSystem, previousSubmissionDirectory, nextSubmissionDirectory);
+    for (val otherProjectKey : otherProjectKeys) {
+      // Move "releaseName/projectKey/"
+      move(fileSystem,
+          previous.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath(),
+          next.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath());
+
+      // Band-aid: see DCC-1940
+      dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
     }
 
     // Move "releaseName/projectKey/SystemFiles"
@@ -96,7 +113,9 @@ public class ReleaseFileSystem {
     }
   }
 
-  public void resetValidationFolder(@NonNull String projectKey) {
+  public void resetValidationFolder(
+      @NonNull
+      String projectKey) {
     val validationStringPath = dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);
@@ -134,32 +153,6 @@ public class ReleaseFileSystem {
 
   private boolean hasPrivileges(String projectKey) {
     return isApplication() || this.userSubject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
-  }
-
-  private void checkSubmissionDirectory(@NonNull String projectKey) {
-    if (hasPrivileges(projectKey) == false) {
-      throw new DccFileSystemException("User " + userSubject.getPrincipal()
-          + " does not have permission to access project " + projectKey);
-    }
-
-    String projectStringPath = dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
-    boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
-    if (exists == false) {
-      throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
-    }
-  }
-
-  private static void moveSubmissionFile(FileSystem fileSystem, SubmissionDirectory source, SubmissionDirectory target,
-      String path) {
-    val sourceSubmissionFilePath = source.getDataFilePath(path);
-    val targetSubmissionFilePath = target.getDataFilePath(path);
-
-    move(fileSystem, sourceSubmissionFilePath, targetSubmissionFilePath);
-  }
-
-  @SneakyThrows
-  private static void moveValidationDir(FileSystem fileSystem, SubmissionDirectory source, SubmissionDirectory target) {
-    move(fileSystem, source.getValidationDirPath(), target.getValidationDirPath());
   }
 
   private static void moveSystemDir(ReleaseFileSystem previous, FileSystem fileSystem, ReleaseFileSystem next) {

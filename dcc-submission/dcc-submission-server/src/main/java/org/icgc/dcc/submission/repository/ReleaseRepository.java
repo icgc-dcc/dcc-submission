@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
@@ -37,83 +38,85 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.mongodb.WriteConcern;
 
+/**
+ * TODO: DCC-1262 - Merge with {@link ReleaseService}'s ReleaseRepository inner class
+ */
 @Slf4j
 public class ReleaseRepository extends BaseMorphiaService<Release> {
 
-	static final QRelease schema = QRelease.release;
+  static final QRelease schema = QRelease.release;
 
-	@Inject
-	public ReleaseRepository(Morphia morphia, Datastore datastore,
-			MailService mailService) {
-		super(morphia, datastore, schema, mailService);
-		super.registerModelClasses(Release.class);
-	}
+  @Inject
+  public ReleaseRepository(Morphia morphia, Datastore datastore,
+      MailService mailService) {
+    super(morphia, datastore, schema, mailService);
+    super.registerModelClasses(Release.class);
+  }
 
-	/**
-	 * Search for all {@code Release}s
-	 * 
-	 * @return All Releases
-	 */
-	public Set<Release> findAll() {
-		log.info("Finding all Releases");
-		return ImmutableSet.copyOf(query().list());
-	}
+  /**
+   * Search for all {@code Release}s
+   * 
+   * @return All Releases
+   */
+  public Set<Release> findAll() {
+    log.info("Finding all Releases");
+    return ImmutableSet.copyOf(query().list());
+  }
 
-	/**
-	 * Search for {@code Release} by name
-	 * 
-	 * @return Release
-	 */
-	public Release find(String releaseName) {
-		log.info("Finding Release '{}'", releaseName);
-		return where(schema.name.eq(releaseName)).singleResult();
-	}
+  /**
+   * Search for {@code Release} by name
+   * 
+   * @return Release
+   */
+  public Release find(String releaseName) {
+    log.info("Finding Release '{}'", releaseName);
+    return where(schema.name.eq(releaseName)).singleResult();
+  }
 
-	/**
-	 * Query for {@code Release} with state {@code OPENED}
-	 * 
-	 * @return Current Open Release
-	 */
-	public Release findOpen() {
-		log.info("Finding Current Open Release");
-		return where(schema.state.eq(ReleaseState.OPENED)).singleResult();
-	}
+  /**
+   * Query for {@code Release} with state {@code OPENED}
+   * 
+   * @return Current Open Release
+   */
+  public Release findOpen() {
+    log.info("Finding Current Open Release");
+    return where(schema.state.eq(ReleaseState.OPENED)).singleResult();
+  }
 
-	/**
-	 * Adds {@code Submission} to the current open {@code Release} <br>
-	 * <br>
-	 * This method should be used instead of {@link #update(Release)} since it
-	 * does not overwrite the Release object in the DB.
-	 * 
-	 * @return Current Open Release
-	 */
-	public Release addSubmission(Submission submission, String releaseName) {
-		log.info("Adding Submission for Project '{}' to Release '{}'",
-				submission.getProjectKey(), releaseName);
-		val q = datastore().createQuery(Release.class).field("name")
-				.equal(releaseName);
-		val ops = datastore().createUpdateOperations(Release.class).add(
-				"submissions", submission);
-		val modifiedRelease = this.datastore().findAndModify(q, ops);
+  /**
+   * Adds {@code Submission} to the current open {@code Release} <br>
+   * <br>
+   * This method should be used instead of {@link #update(Release)} since it does not overwrite the Release object in
+   * the DB.
+   * 
+   * @return Current Open Release
+   */
+  public Release addSubmission(Submission submission, String releaseName) {
+    log.info("Adding Submission for Project '{}' to Release '{}'",
+        submission.getProjectKey(), releaseName);
+    val q = datastore().createQuery(Release.class).field("name")
+        .equal(releaseName);
+    val ops = datastore().createUpdateOperations(Release.class).add(
+        "submissions", submission);
+    val modifiedRelease = this.datastore().findAndModify(q, ops);
 
-		log.info("Submission '{}' added!", submission.getProjectKey());
-		return modifiedRelease;
-	}
+    log.info("Submission '{}' added!", submission.getProjectKey());
+    return modifiedRelease;
+  }
 
-	/**
-	 * Updates Release with new Release object. <br>
-	 * <br>
-	 * This will overwrite any changes that might have happened between
-	 * initially getting the release and updating.
-	 * 
-	 * @return Response object from Mongo
-	 */
-	public Key<Release> update(Release release) {
-		log.info("Updating Release '{}'", release.getName());
+  /**
+   * Updates Release with new Release object. <br>
+   * <br>
+   * This will overwrite any changes that might have happened between initially getting the release and updating.
+   * 
+   * @return Response object from Mongo
+   */
+  public Key<Release> update(Release release) {
+    log.info("Updating Release '{}'", release.getName());
 
-		val response = datastore().save(release, WriteConcern.ACKNOWLEDGED);
+    val response = datastore().save(release, WriteConcern.ACKNOWLEDGED);
 
-		return response;
-	}
+    return response;
+  }
 
 }
