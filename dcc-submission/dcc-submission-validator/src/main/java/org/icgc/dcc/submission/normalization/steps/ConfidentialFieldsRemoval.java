@@ -15,30 +15,54 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.normalization.steps;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
+import org.icgc.dcc.submission.normalization.NormalizationContext;
+import org.icgc.dcc.submission.normalization.NormalizationStep;
+
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
+import cascading.tuple.Fields;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Utility methods for the normalization component.
+ * 
  */
-public class NormalizationUtils {
+public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
+
+  public static final String STEP_NAME = "confidential-fields";
 
   /**
-   * Returns a {@link FileSchema} from the dictionary and matching the given type. The type is expected to exist in the
-   * dictionary.
+   * 
    */
-  public static FileSchema getFileSchema(Dictionary dictionary, SubmissionFileType type) {
-    val optional = dictionary.getFileSchema(type);
-    checkState(
-        optional.isPresent(),
-        "Could not file a file schema in the dictionary for type '%s': '%s'",
-        type, dictionary.getFileSchemaNames());
-    return optional.get();
+  public static ImmutableMap<String, ImmutableList<String>> getControlledFields(Dictionary dictionary) {
+    val controlledFields = new ImmutableMap.Builder<String, ImmutableList<String>>();
+    for (val fileSchema : dictionary.getFiles()) {
+      controlledFields.put( //
+          fileSchema.getName(), //
+          copyOf(fileSchema.getControlledFieldNames()));
+    }
+    return controlledFields.build();
   }
+
+  @Override
+  public String shortName() {
+    return STEP_NAME;
+  }
+
+  /**
+   * 
+   */
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Discard(pipe, new Fields("TODO"));
+  }
+
 }

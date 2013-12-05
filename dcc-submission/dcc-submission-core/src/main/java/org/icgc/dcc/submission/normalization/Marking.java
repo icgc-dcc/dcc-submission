@@ -15,36 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.normalization;
 
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import lombok.NonNull;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
 
 import com.google.common.base.Optional;
 
 /**
  * Enum representing the states of an observation with regard to sensitive information.
  */
-public enum Masking {
+public enum Marking {
   CONTROLLED, OPEN, MASKED;
 
-  static final Fields NORMALIZER_MARKING_FIELD = new Fields(NORMALIZER_MARKING);
-
   /**
-   * Returns the value to be used in the context of a {@link Tuple} (to avoid serialization issues).
+   * Returns the value to be used in the context of a tuple (to avoid serialization issues).
    */
   public String getTupleValue() {
     return name();
   }
 
+  public boolean isControlled() {
+    return this == CONTROLLED;
+  }
+
+  public boolean isOpen() {
+    return this == OPEN;
+  }
+
+  public boolean isMasked() {
+    return this == MASKED;
+  }
+
   /**
-   * Optionally returns a {@link Masking} from a given {@link String}.
+   * Optionally returns a {@link Marking} from a given {@link String}.
    */
-  public static Optional<Masking> getMasking(@NonNull String value) {
+  public static Optional<Marking> getMarking(@NonNull String value) {
     try {
-      return Optional.<Masking> of(Masking.valueOf(value));
+      return Optional.<Marking> of(Marking.valueOf(value));
     } catch (IllegalArgumentException e) {
       return Optional.absent();
     }

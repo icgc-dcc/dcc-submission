@@ -17,47 +17,41 @@
  */
 package org.icgc.dcc.submission.normalization;
 
-import java.util.List;
-
 import lombok.Value;
 import lombok.experimental.Builder;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
+import org.icgc.dcc.submission.normalization.steps.ConfidentialFieldsRemoval;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Common context object passed to all {@link NormalizationStep}s.
- * <p>
- * TODO: This isn't really needed anymore - remove once 100% sure
  */
 public interface NormalizationContext {
 
   /**
-   * Returns the list of fields on which to group by in order to detect redundant observations.
+   * TODO
    */
-  List<String> getObservationUniqueFields();
+  ImmutableMap<String, ImmutableList<String>> getControlledFields();
 
   @Value
   @Builder
   static final class DefaultNormalizationContext implements NormalizationContext {
 
     /**
-     * See {@link NormalizationContext#getObservationUniqueFields()}.
+     * See {@link NormalizationContext#getControlledFields()}.
      */
-    private final ImmutableList<String> observationUniqueFields;
+    private final ImmutableMap<String, ImmutableList<String>> controlledFields;
 
     /**
      * Creates the default {@link NormalizationContext}.
      */
-    static NormalizationContext getNormalizationContext(Dictionary dictionary, SubmissionFileType type) {
-      return DefaultNormalizationContext.builder()
-          .observationUniqueFields(
-              RedundantObservationRemoval.getObservationUniqueFields(
-                  dictionary,
-                  type))
+    static NormalizationContext getNormalizationContext(Dictionary dictionary) {
+      return DefaultNormalizationContext //
+          .builder() //
+          .controlledFields(ConfidentialFieldsRemoval.getControlledFields(dictionary)) //
           .build();
     }
   }

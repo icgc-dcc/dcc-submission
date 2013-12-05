@@ -21,6 +21,7 @@ import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.ch
 
 import java.util.Iterator;
 
+import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
 import org.junit.Test;
 
@@ -43,15 +44,15 @@ public class MaskedRowGeneratorTest extends CascadingTestCase {
             .append(SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD)
             .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
             .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
-            .append(Masking.NORMALIZER_MARKING_FIELD);
+            .append(PreMarking.MARKING_FIELD);
 
     String dummyValue = "dummy";
     Tuple open = // Just passed through as is
-        new Tuple(dummyValue, dummyValue, "A/A", "A/T", "A", "A", "T", Masking.OPEN.getTupleValue());
+        new Tuple(dummyValue, dummyValue, "A/A", "A/T", "A", "A", "T", Marking.OPEN.getTupleValue());
     Tuple nonTrivial = // They differ -> masked
-        new Tuple(dummyValue, dummyValue, "A/G", "A/T", "A", "G", "T", Masking.CONTROLLED.getTupleValue());
+        new Tuple(dummyValue, dummyValue, "A/G", "A/T", "A", "G", "T", Marking.CONTROLLED.getTupleValue());
     Tuple trivial = // reference genome allele equals mutation_to -> not masked
-        new Tuple(dummyValue, dummyValue, "A/G", "A/A", "A", "G", "A", Masking.CONTROLLED.getTupleValue());
+        new Tuple(dummyValue, dummyValue, "A/G", "A/A", "A", "G", "A", Marking.CONTROLLED.getTupleValue());
 
     TupleEntry[] entries = new TupleEntry[] {
         new TupleEntry(inputFields, open),
@@ -71,7 +72,7 @@ public class MaskedRowGeneratorTest extends CascadingTestCase {
             "A",
             "A", // Changed to match reference genome allele
             "T",
-            Masking.MASKED.getTupleValue()), // Marked as masked
+            Marking.MASKED.getTupleValue()), // Marked as masked
         trivial, // Untouched
     };
     checkOperationResults(iterator, resultTuples);

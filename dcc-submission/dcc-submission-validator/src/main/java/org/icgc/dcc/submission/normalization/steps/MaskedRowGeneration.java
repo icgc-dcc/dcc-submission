@@ -21,10 +21,10 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.normalization.Marking.CONTROLLED;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
-import static org.icgc.dcc.submission.normalization.steps.Masking.CONTROLLED;
-import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MARKING_FIELD;
+import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.CONTROL_GENOTYPE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD;
@@ -36,6 +36,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
+import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
@@ -75,8 +76,8 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
    * Generates "masked" counterpart rows for "controlled" observations, unless the resulting row results in a trivial
    * mutation (e.g. A>A).
    * <p>
-   * This expects the {@link Masking#NORMALIZER_MARKING_FIELD} to be present already (as either {@link Masking#OPEN} or
-   * {@link Masking#CONTROLLED}).
+   * This expects the {@link PreMarking#MARKING_FIELD} to be present already (as either {@link Marking#OPEN} or
+   * {@link Marking#CONTROLLED}).
    */
   @VisibleForTesting
   static final class MaskedRowGenerator extends BaseOperation<Void> implements Function<Void> {
@@ -95,7 +96,7 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
 
       // Create masked counterpart if sensitive and mask is non trivial (see
       // https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component?focusedCommentId=53182773#comment-53182773)
-      if (getMaskingState(entry) == CONTROLLED) {
+      if (getMarkingState(entry) == CONTROLLED) {
         val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
         val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
 
@@ -131,7 +132,7 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
       copy.set(TUMOUR_GENOTYPE_FIELD, NO_VALUE);
 
       copy.setString(MUTATED_FROM_ALLELE_FIELD, referenceGenomeAllele);
-      copy.set(NORMALIZER_MARKING_FIELD, Masking.MASKED.getTupleValue());
+      copy.set(MARKING_FIELD, Marking.MASKED.getTupleValue());
 
       return copy.getTuple();
     }
@@ -139,12 +140,11 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
     /**
      * Returns the value for masking as set by the previous step.
      */
-    private Masking getMaskingState(TupleEntry entry) {
-      String maskingString = entry.getString(NORMALIZER_MARKING_FIELD);
-      Optional<Masking> masking = Masking.getMasking(maskingString);
-      checkState(masking.isPresent(), "There should be a '%s' field at this stage, instead: '%s'",
-          NORMALIZER_MARKING_FIELD, entry);
-      return masking.get();
+    private Marking getMarkingState(TupleEntry entry) {
+      String markingString = entry.getString(MARKING_FIELD);
+      Optional<Marking> marking = Marking.getMarking(markingString);
+      checkState(marking.isPresent(), "There should be a '%s' field at this stage, instead: '%s'", MARKING_FIELD, entry);
+      return marking.get();
     }
 
     /**

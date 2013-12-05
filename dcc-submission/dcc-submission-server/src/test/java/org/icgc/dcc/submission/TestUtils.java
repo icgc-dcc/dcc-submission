@@ -72,9 +72,8 @@ public final class TestUtils {
   /**
    * Jackson constants.
    */
-  public static final ObjectMapper MAPPER = new ObjectMapper()
-      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+  public static final ObjectMapper MAPPER = new ObjectMapper().configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,
+      true).configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
   /**
    * Endpoint path constants.
@@ -148,7 +147,7 @@ public final class TestUtils {
 
   public static List<String> getFieldNames(SubmissionFileType type) {
     return newArrayList(dictionary()
-        .getFileSchema(type).get()
+        .getFileSchema(type)
         .getFieldNames());
   }
 
@@ -195,17 +194,12 @@ public final class TestUtils {
   }
 
   public static String replaceDictionaryVersion(String dictionary, String oldVersion, String newVersion) {
-    return dictionary
-        .replaceAll(
-            "\"version\": *\"" + Pattern.quote(oldVersion) + "\"",
-            "\"version\": \"" + newVersion + "\"");
+    return dictionary.replaceAll("\"version\": *\"" + Pattern.quote(oldVersion) + "\"", "\"version\": \"" + newVersion
+        + "\"");
   }
 
   public static Builder build(Client client, String path) {
-    return client
-        .target(BASEURI)
-        .path(path)
-        .request(APPLICATION_JSON)
+    return client.target(BASEURI).path(path).request(APPLICATION_JSON)
         .header(Authorization.toString(), AUTHORIZATION_HEADER_VALUE);
   }
 
@@ -247,7 +241,9 @@ public final class TestUtils {
 
   private static Response logPotentialErrors(Response response) {
     int status = response.getStatus();
-    if (status < 200 || status >= 300) { // TODO: use Response.fromStatusCode(code).getFamily() rather
+    if (status < 200 || status >= 300) { // TODO: use
+                                         // Response.fromStatusCode(code).getFamily()
+                                         // rather
       boolean buffered = response.bufferEntity();
       checkState(buffered);
       log.warn("There was an erroneous reponse: '{}', '{}'", status, asString(response));
