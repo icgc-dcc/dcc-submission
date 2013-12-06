@@ -134,7 +134,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    * Returns a {@link FileSchema} matching {@link SubmissionFileType} provided.
    */
   @JsonIgnore
-  public FileSchema getFileSchema(SubmissionFileType type) {
+  public FileSchema getFileSchema(@NonNull SubmissionFileType type) {
     val optional = getFileSchemaByName(type.getTypeName());
     checkState(optional.isPresent(), "Coun't find type '%s' in dictionary", type);
     return optional.get();
