@@ -22,6 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.icgc.dcc.hadoop.cascading.Fields2.buildSortedList;
 import static org.icgc.dcc.hadoop.cascading.Fields2.indicesOf;
+import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -156,7 +157,9 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     for (int i = 0; i < values.size(); i++) {
       String value = values.get(i);
       if (MISSING_CODES.contains(value)) {
-        adjustedValues.add(null);
+        adjustedValues.add((String) NO_VALUE);
+
+        // Mark field as originally using a missing code
         tupleState.addMissingField((String) this.getFieldDeclaration().get(i));
       } else {
         adjustedValues.add(value);
