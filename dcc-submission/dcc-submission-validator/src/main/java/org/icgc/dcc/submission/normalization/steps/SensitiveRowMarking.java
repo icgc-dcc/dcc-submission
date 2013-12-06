@@ -118,7 +118,7 @@ public final class SensitiveRowMarking implements NormalizationStep {
 
       // Ensure expected state
       {
-        val existingMasking = Marking.getMarking(entry.getString(MARKING_FIELD));
+        val existingMasking = Marking.from(entry.getString(MARKING_FIELD));
         checkState(existingMasking.isPresent() && existingMasking.get() == Marking.OPEN,
             "Masking flag is expected to have been set to '%s' already", OPEN);
       }

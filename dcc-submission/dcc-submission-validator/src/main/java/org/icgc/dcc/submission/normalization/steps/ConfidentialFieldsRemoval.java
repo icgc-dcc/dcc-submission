@@ -33,20 +33,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * 
+ * May never be used.
  */
 public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
 
   public static final String STEP_NAME = "confidential-fields";
 
   /**
-   * 
+   * TODO
    */
   public static ImmutableMap<String, ImmutableList<String>> getControlledFields(Dictionary dictionary) {
     val controlledFields = new ImmutableMap.Builder<String, ImmutableList<String>>();
     for (val fileSchema : dictionary.getFiles()) {
-      controlledFields.put( //
-          fileSchema.getName(), //
+      controlledFields.put(
+          fileSchema.getName(),
           copyOf(fileSchema.getControlledFieldNames()));
     }
     return controlledFields.build();
@@ -58,7 +58,7 @@ public final class ConfidentialFieldsRemoval implements NormalizationStep, Optio
   }
 
   /**
-   * 
+   * TODO
    */
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {

@@ -117,8 +117,6 @@ public final class NormalizationValidator implements Validator {
                 UNIQUE_START))
             .add(new Counting(TOTAL_START))
 
-            // .add(new ConfidentialFieldsRemoval())
-
             // Must happen before rebuilding the mutation
             .add(new PreMarking()) // Must happen no matter what
             .add(new SensitiveRowMarking())
@@ -169,10 +167,11 @@ public final class NormalizationValidator implements Validator {
     val pipes = planCascade(DefaultNormalizationContext.getNormalizationContext(context.getDictionary()));
 
     // Connect cascade
+    val ssmPFileSchema = context.getDictionary().getFileSchema(FOCUS_TYPE);
     val connectedCascade = connectCascade(
         pipes,
         context.getPlatformStrategy(),
-        context.getDictionary().getFileSchema(FOCUS_TYPE),
+        ssmPFileSchema,
         releaseName,
         projectKey);
 

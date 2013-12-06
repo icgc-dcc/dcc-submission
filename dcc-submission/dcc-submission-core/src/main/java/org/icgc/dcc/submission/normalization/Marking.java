@@ -49,7 +49,7 @@ public enum Marking {
   /**
    * Optionally returns a {@link Marking} from a given {@link String}.
    */
-  public static Optional<Marking> getMarking(@NonNull String value) {
+  public static Optional<Marking> from(@NonNull String value) {
     try {
       return Optional.<Marking> of(Marking.valueOf(value));
     } catch (IllegalArgumentException e) {

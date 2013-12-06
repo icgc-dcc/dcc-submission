@@ -273,10 +273,12 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    * Returns a mapping of {@link SubmissionFileType} to file pattern.
    */
   @JsonIgnore
-  public Map<SubmissionFileType, String> getPatternMap() {
+  public Map<SubmissionFileType, String> getPatterns() {
     val map = new ImmutableMap.Builder<SubmissionFileType, String>();
     for (val fileSchema : files) {
-      map.put(SubmissionFileType.from(fileSchema.getName()), fileSchema.getPattern());
+      map.put(
+          SubmissionFileType.from(fileSchema.getName()),
+          fileSchema.getPattern());
     }
     return map.build();
   }

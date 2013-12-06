@@ -32,7 +32,7 @@ import com.google.common.collect.ImmutableMap;
 public interface NormalizationContext {
 
   /**
-   * TODO
+   * Returns the list of fields that are marked as "controlled" (region of residence for instance).
    */
   ImmutableMap<String, ImmutableList<String>> getControlledFields();
 
@@ -49,9 +49,9 @@ public interface NormalizationContext {
      * Creates the default {@link NormalizationContext}.
      */
     static NormalizationContext getNormalizationContext(Dictionary dictionary) {
-      return DefaultNormalizationContext //
-          .builder() //
-          .controlledFields(ConfidentialFieldsRemoval.getControlledFields(dictionary)) //
+      return DefaultNormalizationContext
+          .builder()
+          .controlledFields(ConfidentialFieldsRemoval.getControlledFields(dictionary))
           .build();
     }
   }

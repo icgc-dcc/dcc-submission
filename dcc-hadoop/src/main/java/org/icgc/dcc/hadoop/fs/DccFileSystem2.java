@@ -73,8 +73,6 @@ public class DccFileSystem2 {
         new FileTap(new cascading.scheme.local.TextDelimited(true, "\t"), path);
   }
 
-  // ===========================================================================
-
   /**
    * Temporarily under .validation so that ReleaseFileSystem#resetValidationFolder() can reset it as well (TODO: address
    * in DCC-1876)
@@ -94,9 +92,6 @@ public class DccFileSystem2 {
     return format("%s/%s/%s", rootDir, releaseName, projectKey);
   }
 
-  // ---------------------------------------------------------------------------
-
-  // TODO: make private, instead provide method to get file based on pattern
   public String getNormalizationDataDir(String releaseName, String projectKey) {
     return format("%s/data", getNormalizationDir(releaseName, projectKey));
   }
@@ -104,8 +99,6 @@ public class DccFileSystem2 {
   public String getAnnotationDataDir(String releaseName, String projectKey) {
     return format("%s/data", getAnnotationDir(releaseName, projectKey));
   }
-
-  // ===========================================================================
 
   private String getNormalizationReportsDir(String releaseName, String projectKey) {
     return format("%s/reports", getNormalizationDir(releaseName, projectKey));
@@ -126,6 +119,7 @@ public class DccFileSystem2 {
         lazyDirCreation(getAnnotationDataDir(releaseName, projectKey)));
   }
 
+  // TODO: move to a NormalizerDccFileSystem2-like class?
   public void writeNormalizationReport(String releaseName, String projectKey, String content) {
     writeFile(
         getNormalizationReportOutputFile(
@@ -158,9 +152,9 @@ public class DccFileSystem2 {
     val files = Lists.<String> newArrayList();
 
     // Handle all but ssm_p and ssm_s files (directly from the submission system)
-    String submissionDataDir = getSubmissionDataDir(releaseName, projectKey);
+    val submissionDataDir = getSubmissionDataDir(releaseName, projectKey);
     for (val filePath : lsFile(fileSystem, new Path(submissionDataDir))) {
-      String file = filePath.toUri().toString();
+      val file = filePath.toUri().toString();
       if (!matches(file, ssmPPattern) && !matches(file, ssmSPattern)) { // ssm_p and ssm_s are handled separately
         files.add(file);
       }
@@ -170,8 +164,8 @@ public class DccFileSystem2 {
     {
       String normalizationDataOutputFile = getNormalizationDataOutputFile(releaseName, projectKey);
       if (checkExistence(fileSystem, normalizationDataOutputFile)) {
-        String fileName = new File(normalizationDataOutputFile).getName();
-        boolean matchesSsmPPattern = compile(ssmPPattern).matcher(fileName).matches();
+        val fileName = new File(normalizationDataOutputFile).getName();
+        val matchesSsmPPattern = compile(ssmPPattern).matcher(fileName).matches();
         checkState(matchesSsmPPattern, // By design
             "File '%s' does not match expected pattern: '%s'", ssmPPattern, fileName);
         files.add(normalizationDataOutputFile);
@@ -182,10 +176,10 @@ public class DccFileSystem2 {
 
     // Handle ssm_s (from the annotator)
     {
-      String annotationDataOutputFile = getAnnotationDataOutputFile(releaseName, projectKey);
+      val annotationDataOutputFile = getAnnotationDataOutputFile(releaseName, projectKey);
       if (checkExistence(fileSystem, annotationDataOutputFile)) {
-        String fileName = new File(annotationDataOutputFile).getName();
-        boolean matchesSsmSPattern = compile(ssmSPattern).matcher(fileName).matches();
+        val fileName = new File(annotationDataOutputFile).getName();
+        val matchesSsmSPattern = compile(ssmSPattern).matcher(fileName).matches();
         checkState(matchesSsmSPattern, // By design
             "File '%s' does not match expected pattern: '%s'", ssmSPattern, fileName);
         files.add(annotationDataOutputFile);
@@ -197,6 +191,12 @@ public class DccFileSystem2 {
     return files;
   }
 
+  /**
+   * Determines whether or not the name of the given file - including its parent directory(ies) - matches the given
+   * pattern.
+   * <p>
+   * For instance: /path/to/myfile.txt is a match for ".+\.txt".
+   */
   public static boolean matches(String file, String filePattern) {
     return compile(filePattern)
         .matcher(new File(file).getName())

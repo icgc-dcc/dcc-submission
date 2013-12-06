@@ -51,7 +51,6 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
 
 /**
  * Steps in charge of creating a "masked" counterpart to sensitive rows (see {@link SensitiveRowMarking}).
@@ -141,8 +140,8 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
      * Returns the value for masking as set by the previous step.
      */
     private Marking getMarkingState(TupleEntry entry) {
-      String markingString = entry.getString(MARKING_FIELD);
-      Optional<Marking> marking = Marking.getMarking(markingString);
+      val markingString = entry.getString(MARKING_FIELD);
+      val marking = Marking.from(markingString);
       checkState(marking.isPresent(), "There should be a '%s' field at this stage, instead: '%s'", MARKING_FIELD, entry);
       return marking.get();
     }
