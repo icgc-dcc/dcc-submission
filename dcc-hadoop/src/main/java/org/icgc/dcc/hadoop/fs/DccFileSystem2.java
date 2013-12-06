@@ -76,14 +76,15 @@ public class DccFileSystem2 {
    * in DCC-1876)
    */
   private String getNormalizationDir(String releaseName, String projectKey) {
-    return format("%s/%s/%s/.validation/normalizer", rootDir, releaseName, projectKey);
+    return format("%s/%s/%s/.validation/normalization", rootDir, releaseName, projectKey); // TODO: refactor process
+                                                                                           // name
   }
 
   /**
    * TODO: DCC-1876 - no need to actually nest it under the .validation
    */
   private String getAnnotationDir(String releaseName, String projectKey) {
-    return format("%s/%s/%s/.validation/annotator", rootDir, releaseName, projectKey);
+    return format("%s/%s/%s/.validation/annotation", rootDir, releaseName, projectKey); // TODO: refactor process name
   }
 
   public String getSubmissionDataDir(String releaseName, String projectKey) {
