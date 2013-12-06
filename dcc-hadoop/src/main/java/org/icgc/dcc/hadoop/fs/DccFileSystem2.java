@@ -49,8 +49,6 @@ import com.google.common.collect.Lists;
  * <p>
  * Requirements:<br/>
  * - Junjun's tool to re-write specimen file<br/>
- * <p>
- * TODO: move from dcc-hadoop, as it needs to be aware of SubmissionFileType for instance
  */
 @RequiredArgsConstructor
 @Slf4j
