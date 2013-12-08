@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.dictionary.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
@@ -26,6 +27,7 @@ import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FI
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -49,6 +51,7 @@ import com.google.code.morphia.annotations.PrePersist;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.mongodb.BasicDBObject;
@@ -128,13 +131,13 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
-   * Optionally returns a {@link FileSchema} matching {@link SubmissionFileType} provided.
-   * <p>
-   * TODO: change to not return optional (never valid not to have a match)
+   * Returns a {@link FileSchema} matching {@link SubmissionFileType} provided.
    */
   @JsonIgnore
-  public Optional<FileSchema> getFileSchema(SubmissionFileType type) {
-    return getFileSchemaByName(type.getTypeName());
+  public FileSchema getFileSchema(@NonNull SubmissionFileType type) {
+    val optional = getFileSchemaByName(type.getTypeName());
+    checkState(optional.isPresent(), "Coun't find type '%s' in dictionary", type);
+    return optional.get();
   }
 
   /**
@@ -264,5 +267,19 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   public boolean usesCodeList(final String codeListName) {
     return getCodeListNames().contains(codeListName);
+  }
+
+  /**
+   * Returns a mapping of {@link SubmissionFileType} to file pattern.
+   */
+  @JsonIgnore
+  public Map<SubmissionFileType, String> getPatterns() {
+    val map = new ImmutableMap.Builder<SubmissionFileType, String>();
+    for (val fileSchema : files) {
+      map.put(
+          SubmissionFileType.from(fileSchema.getName()),
+          fileSchema.getPattern());
+    }
+    return map.build();
   }
 }

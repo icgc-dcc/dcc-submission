@@ -18,8 +18,10 @@
 package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import lombok.RequiredArgsConstructor;
 
+import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
@@ -35,13 +37,13 @@ import cascading.tuple.Tuple;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Step in charge of pre-emptively marking all observations as {@link Masking#OPEN} for the {@link SensitiveRowMarking}
+ * Step in charge of pre-emptively marking all observations as {@link Marking#OPEN} for the {@link SensitiveRowMarking}
  * step.
  */
 @RequiredArgsConstructor
 public final class PreMarking implements NormalizationStep {
 
-  static final Fields MARKING_FIELD = Masking.NORMALIZER_MARKING_FIELD;
+  static final Fields MARKING_FIELD = new Fields(NORMALIZER_MARKING);
 
   @Override
   public String shortName() {
@@ -58,7 +60,7 @@ public final class PreMarking implements NormalizationStep {
   }
 
   /**
-   * Marks all observations as {@link Masking#OPEN}.
+   * Marks all observations as {@link Marking#OPEN}.
    */
   @VisibleForTesting
   static final class PreMarker extends BaseOperation<Void> implements Function<Void> {
@@ -77,7 +79,7 @@ public final class PreMarking implements NormalizationStep {
           .getOutputCollector()
           .add(
               // Until specified otherwise (if applicable as it can be turned off)
-              new Tuple(Masking.OPEN.name())
+              new Tuple(Marking.OPEN.name())
           );
     }
   }

@@ -130,7 +130,7 @@ public class ReleaseServiceNextReleaseTest {
     doReturn(release).when(releaseService).getNextRelease();
 
     Dictionary dictionary = mock(Dictionary.class);
-    when(mockDictionaryService.getFromVersion(EXISTING_DICTIONARY_VERSION)).thenReturn(dictionary);
+    when(mockDictionaryService.getDictionaryByVersion("existing_dictionary")).thenReturn(dictionary);
   }
 
   @Test

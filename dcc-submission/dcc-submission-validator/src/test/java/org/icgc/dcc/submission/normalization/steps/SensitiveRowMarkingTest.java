@@ -21,6 +21,7 @@ import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.ch
 
 import java.util.Iterator;
 
+import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
 import org.junit.Test;
 
@@ -41,7 +42,7 @@ public class SensitiveRowMarkingTest extends CascadingTestCase {
         .append(SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD)
         .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
         .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
-        .append(Masking.NORMALIZER_MARKING_FIELD);
+        .append(PreMarking.MARKING_FIELD);
 
     Fields inputFields =
         new Fields("f1", "f2")
@@ -51,20 +52,20 @@ public class SensitiveRowMarkingTest extends CascadingTestCase {
     TupleEntry[] entries =
         new TupleEntry[] {
             new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "A", "A/A", "A/T", "A", "T", Masking.OPEN.getTupleValue())),
+                dummyValue, dummyValue, "A", "A/A", "A/T", "A", "T", Marking.OPEN.getTupleValue())),
             new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "A", "G/G", "G/T", "G", "T", Masking.OPEN.getTupleValue())),
+                dummyValue, dummyValue, "A", "G/G", "G/T", "G", "T", Marking.OPEN.getTupleValue())),
             new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "T", "C/C", "G/G", "C", "G", Masking.OPEN.getTupleValue())),
+                dummyValue, dummyValue, "T", "C/C", "G/G", "C", "G", Marking.OPEN.getTupleValue())),
             new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "C", "C/C", "T/T", "C", "T", Masking.OPEN.getTupleValue()))
+                dummyValue, dummyValue, "C", "C/C", "T/T", "C", "T", Marking.OPEN.getTupleValue()))
         };
 
     Tuple[] resultTuples = new Tuple[] {
-        new Tuple("A", "A/A", "A/T", "A", "T", Masking.OPEN.getTupleValue()), // Untouched
-        new Tuple("A", "G/G", "G/T", "G", "T", Masking.CONTROLLED.getTupleValue()), // Marked
-        new Tuple("T", "C/C", "G/G", "C", "G", Masking.CONTROLLED.getTupleValue()), // Marked
-        new Tuple("C", "C/C", "T/T", "C", "T", Masking.CONTROLLED.getTupleValue()) // Marked
+        new Tuple("A", "A/A", "A/T", "A", "T", Marking.OPEN.getTupleValue()), // Untouched
+        new Tuple("A", "G/G", "G/T", "G", "T", Marking.CONTROLLED.getTupleValue()), // Marked
+        new Tuple("T", "C/C", "G/G", "C", "G", Marking.CONTROLLED.getTupleValue()), // Marked
+        new Tuple("C", "C/C", "T/T", "C", "T", Marking.CONTROLLED.getTupleValue()) // Marked
     };
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);

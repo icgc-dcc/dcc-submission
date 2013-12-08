@@ -27,7 +27,6 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
-import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
 import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -76,7 +75,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    * file type.
    */
   public static ImmutableList<String> getObservationUniqueFields(Dictionary dictionary, SubmissionFileType type) {
-    FileSchema ssmP = getFileSchema(dictionary, type);
+    FileSchema ssmP = dictionary.getFileSchema(type);
 
     val observationUniqueFields = newArrayList(
         ssmP.getFieldNames());
