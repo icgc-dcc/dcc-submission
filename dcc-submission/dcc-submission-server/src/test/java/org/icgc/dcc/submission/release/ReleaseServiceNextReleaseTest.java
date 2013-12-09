@@ -81,7 +81,6 @@ public class ReleaseServiceNextReleaseTest {
 
   private static final String FIRST_RELEASE_NAME = "release1";
   private static final String NEXT_RELEASE_NAME = "release2";
-  private static final String EXISTING_DICTIONARY_VERSION = "i_declare_therefore_i_am";
 
   @SuppressWarnings("unchecked")
   @Before
