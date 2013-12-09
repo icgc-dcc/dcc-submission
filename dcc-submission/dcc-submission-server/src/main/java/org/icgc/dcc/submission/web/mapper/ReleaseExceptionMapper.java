@@ -22,15 +22,19 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 
 @Provider
+@Slf4j
 public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException> {
 
   @Override
   public Response toResponse(ReleaseException exception) {
+    log.error("An exception was caught: ", exception);
     return Response.status(Status.BAD_REQUEST)
         .entity(new ServerErrorResponseMessage(ServerErrorCode.RELEASE_EXCEPTION, exception.getMessage())).build();
   }

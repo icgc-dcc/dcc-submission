@@ -17,86 +17,284 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.repeat;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Resources.getResource;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
+import static org.glassfish.grizzly.http.util.Header.Authorization;
 
-import java.io.IOException;
+import java.io.File;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.jersey.internal.util.Base64;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.mongodb.BasicDBObject;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 /**
- * Utils class for integration test (to help un-clutter it). TODO: should probably make decorator for Client instead
+ * Utility class for integration test (to help declutter it).
  */
+@Slf4j
+@NoArgsConstructor(access = PRIVATE)
 public final class TestUtils {
 
-  private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
+  /**
+   * Jackson constants.
+   */
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
-  private static final String AUTHORIZATION = "X-DCC-Auth " //
-      + Base64.encodeAsString("admin:adminspasswd"); // only true for development realm
+  /**
+   * Endpoint path constants.
+   */
+  public static final String SEED_ENDPOINT = "/seed";
+  public static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
+  public static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
+  public static final String DICTIONARIES_ENDPOINT = "/dictionaries";
+  public static final String CODELISTS_ENDPOINT = "/codeLists";
+  public static final String PROJECTS_ENDPOINT = "/projects";
+  public static final String RELEASES_ENDPOINT = "/releases";
+  public static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
+  public static final String UPDATE_RELEASE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/update";
+  public static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
+  public static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
+  public static final String VALIDATION_ENDPOINT = NEXT_RELEASE_ENPOINT + "/validation";
 
-  private static final String BASEURI = "http://localhost:5380/ws";
+  /**
+   * URL constants.
+   */
+  public static final String BASEURI = "http://localhost:5380/ws";
+  public static final String AUTHORIZATION_HEADER_VALUE = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
 
-  static String resourceToString(String resourcePath) throws IOException {
-    return Resources.toString(TestUtils.class.getResource(resourcePath), Charsets.UTF_8);
+  /**
+   * Test configuration constants.
+   */
+  public static final File TEST_CONFIG_FILE = new File("src/test/conf/application.conf");
+  public static final Config TEST_CONFIG = ConfigFactory.parseFile(TEST_CONFIG_FILE).resolve();
+
+  @SneakyThrows
+  public static String resourceToString(String resourcePath) {
+    return Resources.toString(TestUtils.class.getResource(resourcePath), UTF_8);
   }
 
-  static String resourceToJsonArray(String resourcePath) throws IOException {
+  @SneakyThrows
+  public static String resourceToString(URL resourceUrl) {
+    return Resources.toString(resourceUrl, UTF_8);
+  }
+
+  @SneakyThrows
+  public static String resourceToJsonArray(String resourcePath) {
     return "[" + resourceToString(resourcePath) + "]";
   }
 
-  static Builder build(Client client, String endPoint) {
-    return client.target(BASEURI).path(endPoint).request(MediaType.APPLICATION_JSON)
-        .header(Header.Authorization.toString(), AUTHORIZATION);
+  public static CodeList getChromosomeCodeList() {
+    val targetCodeListName = "GLOBAL.0.chromosome.v1";
+    for (val codeList : codeLists()) {
+      if (targetCodeListName.equals(codeList.getName())) {
+        return codeList;
+      }
+    }
+
+    throw new IllegalStateException("Code list '" + targetCodeListName + "' is not available");
   }
 
-  static Response get(Client client, String endPoint) throws IOException {
+  @SneakyThrows
+  public static List<CodeList> codeLists() {
+    Iterator<CodeList> codeLists = MAPPER.reader(CodeList.class).readValues(getDccResource("CodeList.json"));
+    return newArrayList(codeLists);
+  }
+
+  @SneakyThrows
+  public static String codeListsToString() {
+    return MAPPER.writeValueAsString(codeLists());
+  }
+
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+  }
+
+  public static List<String> getFieldNames(SubmissionFileType type) {
+    return newArrayList(dictionary().getFileSchema(type).getFieldNames());
+  }
+
+  @SneakyThrows
+  public static Dictionary addScript(Dictionary dictionary, String fileSchemaName, String fieldName, String script,
+      String description) {
+    for (val fileSchema : dictionary.getFiles()) {
+      if (fileSchema.getName().equals(fileSchemaName)) {
+        for (val field : fileSchema.getFields()) {
+          if (field.getName().equals(fieldName)) {
+            val config = new BasicDBObject();
+            config.put(ScriptRestriction.PARAM, script);
+            config.put(ScriptRestriction.PARAM_DESCRIPTION, description);
+
+            val restriction = new Restriction();
+            restriction.setType(RestrictionType.SCRIPT);
+            restriction.setConfig(config);
+
+            val restrictions = field.getRestrictions();
+            restrictions.add(restriction);
+          }
+        }
+      }
+    }
+
+    return dictionary;
+  }
+
+  @SneakyThrows
+  public static String dictionaryToString() {
+    return MAPPER.writeValueAsString(dictionary());
+  }
+
+  @SneakyThrows
+  public static String dictionaryToString(Dictionary dict) {
+    return MAPPER.writeValueAsString(dict);
+  }
+
+  @SneakyThrows
+  public static String dictionaryVersion(String dictionaryJson) {
+    val dictionaryNode = MAPPER.readTree(dictionaryJson);
+
+    return dictionaryNode.get("version").asText();
+  }
+
+  public static String replaceDictionaryVersion(String dictionary, String oldVersion, String newVersion) {
+    return dictionary
+        .replaceAll(
+            "\"version\": *\"" + Pattern.quote(oldVersion) + "\"",
+            "\"version\": \"" + newVersion + "\"");
+  }
+
+  public static Builder build(Client client, String path) {
+    return client
+        .target(BASEURI)
+        .path(path)
+        .request(APPLICATION_JSON)
+        .header(Authorization.toString(), AUTHORIZATION_HEADER_VALUE);
+  }
+
+  @SneakyThrows
+  public static Response get(Client client, String endPoint) {
+    banner();
     log.info("GET {}", endPoint);
-    return build(client, endPoint).get();
+    banner();
+    return logPotentialErrors(build(client, endPoint).get());
   }
 
-  static Response post(Client client, String endPoint, String payload) {
-    log.info("POST {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
-    return build(client, endPoint).post(Entity.entity(payload, MediaType.APPLICATION_JSON));
+  /**
+   * TODO: ensure payload is valid json and fail fast (also for other VERBS)
+   */
+  public static Response post(Client client, String endPoint, String payload) {
+    payload = normalize(payload);
+
+    banner();
+    log.info("POST {} {}", endPoint, abbreviate(payload, 1000));
+    banner();
+    return logPotentialErrors(build(client, endPoint).post(Entity.entity(payload, APPLICATION_JSON)));
   }
 
-  static Response put(Client client, String endPoint, String payload) {
-    log.info("PUT {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
-    return build(client, endPoint).put(Entity.entity(payload, MediaType.APPLICATION_JSON));
+  public static Response put(Client client, String endPoint, String payload) {
+    payload = normalize(payload);
+
+    banner();
+    log.info("PUT {} {}", endPoint, abbreviate(payload, 1000));
+    banner();
+    return logPotentialErrors(build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON)));
   }
 
-  static String asString(Response response) {
+  public static Response delete(Client client, String endPoint) {
+    banner();
+    log.info("DELETE {}", endPoint);
+    banner();
+    return logPotentialErrors(build(client, endPoint).delete());
+  }
+
+  private static Response logPotentialErrors(Response response) {
+    int status = response.getStatus();
+    if (status < 200 || status >= 300) { // TODO: use Response.fromStatusCode(code).getFamily() rather
+      boolean buffered = response.bufferEntity();
+      checkState(buffered);
+      log.warn("There was an erroneous reponse: '{}', '{}'", status, asString(response));
+    }
+    return response;
+  }
+
+  public static String asString(Response response) {
     return response.readEntity(String.class);
   }
 
-  static Release asRelease(Response response) throws Exception {
-    return new ObjectMapper().readValue(asString(response), Release.class);
+  @SneakyThrows
+  public static JsonNode $(String json) {
+    return MAPPER.readTree(json);
   }
 
-  static ReleaseView asReleaseView(Response response) throws Exception {
-    return new ObjectMapper().readValue(asString(response), ReleaseView.class);
+  @SneakyThrows
+  public static JsonNode $(Response response) {
+    return $(asString(response));
   }
 
-  static DetailedSubmission asDetailedSubmission(Response response) throws Exception {
-    return new ObjectMapper().readValue(asString(response), DetailedSubmission.class);
+  @SneakyThrows
+  public static Release asRelease(Response response) {
+    return MAPPER.readValue(asString(response), Release.class);
   }
 
-  private TestUtils() {
-    // Prevent construction
+  @SneakyThrows
+  public static ReleaseView asReleaseView(Response response) {
+    return MAPPER.readValue(asString(response), ReleaseView.class);
+  }
+
+  @SneakyThrows
+  public static DetailedSubmission asDetailedSubmission(Response response) {
+    return MAPPER.readValue(asString(response), DetailedSubmission.class);
+  }
+
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
+
+  @SneakyThrows
+  private static String normalize(String json) {
+    val node = MAPPER.readTree(json);
+    val writer = MAPPER.writerWithDefaultPrettyPrinter();
+    return writer.writeValueAsString(node);
+  }
+
+  private static void banner() {
+    log.info("{}", repeat("\u00B7", 80));
   }
 
 }

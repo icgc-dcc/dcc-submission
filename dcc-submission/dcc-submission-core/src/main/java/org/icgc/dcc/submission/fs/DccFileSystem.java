@@ -1,44 +1,47 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
- *                                                                                                               
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
- * You should have received a copy of the GNU General Public License along with                                  
- * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
- *                                                                                                               
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
- * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED                          
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;                               
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.toFilenameList;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 
-import java.util.List;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.Set;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
+@Slf4j
 public class DccFileSystem {
-
-  private static final Logger log = LoggerFactory.getLogger(DccFileSystem.class);
 
   public static final String VALIDATION_DIRNAME = ".validation";
 
@@ -62,7 +65,7 @@ public class DccFileSystem {
     this.fileSystem = fileSystem;
 
     // grab root directory
-    this.rootStringPath = this.config.getString(FsConfig.FS_ROOT);
+    this.rootStringPath = this.config.getString(FS_ROOT);
     checkState(this.rootStringPath != null);
 
     log.info("fileSystem = " + this.fileSystem.getClass().getSimpleName());
@@ -104,74 +107,82 @@ public class DccFileSystem {
    * 
    * @param release the new release
    */
-  public void ensureReleaseFilesystem(Release release, Set<String> projectKeyList) {
+  public void createInitialReleaseFilesystem(Release release, Set<String> projectKeyList) {
+    val newReleaseName = release.getName();
 
     // create path for release
-    String releaseStringPath = this.buildReleaseStringPath(release);
-    log.info("release path = " + releaseStringPath);
+    val releaseStringPath = createReleaseDirectory(newReleaseName);
+    createProjectDirectoryStructures(release.getName(), projectKeyList);
 
-    // check for pre-existence
-    boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
-    if(exists) {
-      log.info("filesystem for release " + release.getName() + " already exists");
-      ensureSubmissionDirectories(release, projectKeyList);
-    } else {
-      log.info("creating filesystem for release " + release.getName());
-      this.createReleaseFilesystem(release, projectKeyList);
-    }
+    // create system files for release directory
+    val systemFilePath = this.getReleaseFilesystem(release).getSystemDirectory();
+    checkState(!HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString()),
+        "'%s' already exists", systemFilePath.toString());
+    HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
 
     // log resulting sub-directories
-    List<Path> lsAll = HadoopUtils.lsAll(this.fileSystem, new Path(releaseStringPath));
+    val lsAll = HadoopUtils.lsAll(this.fileSystem, new Path(releaseStringPath));
     log.info("ls {} = {}", releaseStringPath, toFilenameList(lsAll));
   }
 
   /**
-   * Creates the directory arborescence representing the given release.
-   * 
-   * @param release the new release
+   * TODO: move this to {@link ReleaseFileSystemTest}...
    */
-  public void createReleaseFilesystem(Release release, Set<String> projectKeyList) {// TODO: make private?
-    String releaseStringPath = this.buildReleaseStringPath(release);
+  protected String createReleaseDirectory(String newReleaseName) {
+    val releaseStringPath = this.buildReleaseStringPath(newReleaseName);
+    log.info("Creating new release path: '{}'", releaseStringPath);
 
-    // check for pre-existence (at this point we expect it not to)
-    boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
-    if(exists) {
-      throw new DccFileSystemException("release directory " + releaseStringPath + " already exists");
-    }
+    checkState(!HadoopUtils.checkExistence(this.fileSystem, releaseStringPath),
+        "Release directory already exists: '%s'", releaseStringPath);
+    log.info("Creating filesystem for release: '{}'", newReleaseName);
 
     // create corresponding release directory
     HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
-    ensureSubmissionDirectories(release, projectKeyList);
 
-    // create system files for release directory
-    ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
-    Path systemFilePath = releaseFS.getSystemDirectory();
-    exists = HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString());
-    if(exists == false) {
-      HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
-    }
+    return releaseStringPath;
+  }
+
+  public String createNewProjectDirectoryStructure(String releaseName, String projectKey) {
+    String projectDirectoryPath = createProjectDirectory(releaseName, projectKey);
+    String validationDirectoryPath = createValidationDirectory(releaseName, projectKey);
+    checkState(validationDirectoryPath.startsWith(projectDirectoryPath));
+    return projectDirectoryPath;
   }
 
   /**
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
-  public void mkdirProjectDirectory(Release release, String projectKey) {
+  public String createProjectDirectory(String release, String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
 
     String projectStringPath = this.buildProjectStringPath(release, projectKey);
-    createDirIfDoesNotExist(projectStringPath);
-    String validationStringPath = this.buildValidationDirStringPath(release, projectKey);
-    createDirIfDoesNotExist(validationStringPath);
+    log.info("Creating new directory: '{}'", projectStringPath);
+    createDirIfDoesNotExist(projectStringPath); // TODO: change to error out if exists
 
-    log.info("\t" + "project path = " + projectStringPath);
+    return projectStringPath;
+  }
+
+  public String createValidationDirectory(
+      @NonNull
+      String release,
+      @NonNull
+      String projectKey) {
+    checkArgument(release != null);
+    checkArgument(projectKey != null);
+
+    String validationStringPath = this.buildValidationDirStringPath(release, projectKey);
+    log.info("Creating new directory: '{}'", validationStringPath);
+    createDirIfDoesNotExist(validationStringPath); // TODO: change to error out if exists
+
+    return validationStringPath;
   }
 
   /**
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
   void createDirIfDoesNotExist(final String stringPath) {
-    if(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
+    if (HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
       HadoopUtils.mkdirs(this.fileSystem, stringPath);
       checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath));
     }
@@ -181,37 +192,43 @@ public class DccFileSystem {
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
   void removeDirIfExist(final String stringPath) {
-    if(HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
+    if (HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
       HadoopUtils.rmr(this.fileSystem, stringPath);
       checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false);
     }
   }
 
-  public String buildReleaseStringPath(Release release) {
+  public String buildReleaseStringPath(String release) {
     checkArgument(release != null);
-    return concatPath(this.rootStringPath, release.getName());
+    return concatPath(this.rootStringPath, release);
   }
 
-  public String buildProjectStringPath(Release release, String projectKey) {
+  public String buildProjectStringPath(String release, String projectKey) {
     checkArgument(projectKey != null);
     return concatPath(this.buildReleaseStringPath(release), projectKey);
   }
 
-  public String buildFileStringPath(Release release, String projectKey, String filename) {
+  public String buildFileStringPath(String release, String projectKey, String filename) {
     checkArgument(filename != null);
     return concatPath(this.buildProjectStringPath(release, projectKey), filename);
   }
 
-  public String buildValidationDirStringPath(Release release, String projectKey) {
+  public String buildValidationDirStringPath(String release, String projectKey) {
     return concatPath(this.buildProjectStringPath(release, projectKey), VALIDATION_DIRNAME);
   }
 
-  private void ensureSubmissionDirectories(Release release, Set<String> projectKeyList) {
-    // create sub-directory for each project
-    checkState(projectKeyList != null);
-    log.info("# of projects = " + projectKeyList.size());
-    for(String project : projectKeyList) {
-      this.mkdirProjectDirectory(release, project);
+  /**
+   * TODO: move this to {@link ReleaseFileSystemTest}...
+   */
+  protected void createProjectDirectoryStructures(
+      String release,
+      @NonNull
+      Set<String> projectKeys) {
+
+    // Create sub-directory for each project
+    log.info("# of projects = " + projectKeys.size());
+    for (String projectKey : projectKeys) {
+      this.createNewProjectDirectoryStructure(release, projectKey);
     }
   }
 
@@ -225,11 +242,20 @@ public class DccFileSystem {
   private void mkdirsRootDirectory() {
     // create root dir if it does not exist
     boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.rootStringPath);
-    if(!rootExists) {
+    if (!rootExists) {
       log.info(this.rootStringPath + " does not exist");
       HadoopUtils.mkdirs(this.fileSystem, this.rootStringPath);
       log.info("created " + this.rootStringPath);
     }
+  }
+
+  /**
+   * @param filePath
+   * @throws IOException
+   */
+  public DataInputStream open(String filePathname) throws IOException {
+    checkArgument(filePathname != null);
+    return fileSystem.open(new Path(filePathname));
   }
 
 }

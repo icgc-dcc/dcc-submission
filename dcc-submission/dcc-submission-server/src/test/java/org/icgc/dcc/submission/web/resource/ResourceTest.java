@@ -5,6 +5,7 @@ import static com.google.inject.util.Modules.EMPTY_MODULE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.glassfish.jersey.internal.util.Base64.encodeAsString;
+import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -34,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.typesafe.config.ConfigFactory;
+import com.google.inject.util.Modules;
 
 public abstract class ResourceTest extends JerseyTest {
 
@@ -53,23 +54,23 @@ public abstract class ResourceTest extends JerseyTest {
 
   @Override
   protected Application configure() {
-    List<Module> modules = newArrayList(//
+    List<Module> modules = newArrayList(
         // Infrastructure modules
-        (Module) new ConfigModule(ConfigFactory.load()), //
-        (Module) new CoreModule(), //
-        (Module) new JerseyModule(), //
-        (Module) new WebModule(), //
-        (Module) new MorphiaModule(), //
-        (Module) new ShiroModule(), //
-        (Module) new FileSystemModule(), //
-        (Module) new SftpModule(), //
+        (Module) new ConfigModule(TEST_CONFIG),
+        (Module) new CoreModule(),
+        (Module) new JerseyModule(),
+        (Module) new WebModule(),
+        (Module) new MorphiaModule(),
+        (Module) new ShiroModule(),
+        (Module) new FileSystemModule(),
+        (Module) new SftpModule(),
 
         // Business modules
         (Module) new ValidationModule());
 
-    modules.addAll(configureModules());
+    // modules.addAll(configureModules());
 
-    injector = Guice.createInjector(modules);
+    injector = Guice.createInjector(Modules.override(modules).with(configureModules()));
 
     return injector.getInstance(ResourceConfig.class);
   }

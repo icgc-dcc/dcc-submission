@@ -64,7 +64,9 @@ public final class Authorizations {
   }
 
   public static Subject getSubject(SecurityContext securityContext) {
-    return shiroSecurityContext(securityContext).getSubject();
+    Subject subject = shiroSecurityContext(securityContext).getSubject();
+    log.debug("Logged in as {}", subject.getPrincipal());
+    return subject;
   }
 
   public static boolean hasAdminRole(Collection<String> roles) {
@@ -78,7 +80,7 @@ public final class Authorizations {
     return subject.isPermitted(privilege);
   }
 
-  public static boolean isOmnipotentUser(SecurityContext securityContext) {
+  public static boolean isSuperUser(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.ALL.getPrefix());
   }
 

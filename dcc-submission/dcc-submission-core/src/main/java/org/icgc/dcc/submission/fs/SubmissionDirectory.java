@@ -18,17 +18,28 @@
 package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.regex.Pattern.compile;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.Value;
+import lombok.val;
+
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 public class SubmissionDirectory {
 
@@ -58,7 +69,10 @@ public class SubmissionDirectory {
    * (non-recursive) TODO: confirm
    */
   public Iterable<String> listFile(Pattern pattern) {
-    List<Path> pathList = HadoopUtils.lsFile(this.dccFileSystem.getFileSystem(), getSubmissionDirPath(), pattern);
+    List<Path> pathList = HadoopUtils.lsFile(
+        this.dccFileSystem.getFileSystem(),
+        new Path(getSubmissionDirPath()),
+        pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 
@@ -66,14 +80,49 @@ public class SubmissionDirectory {
     return this.listFile(null);
   }
 
+  /**
+   * Returns the list of files that match a file pattern in the dictionary.
+   */
+  public Iterable<String> listFiles(final List<String> filePatterns) {
+    return Iterables.filter(listFile(), new Predicate<String>() {
+
+      @Override
+      public boolean apply(String input) {
+        for (String filePattern : filePatterns) {
+          if (compile(filePattern).matcher(input).matches()) {
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+  }
+
+  /**
+   * If there is a matching file for the pattern, returns the one matching file or nothing. Errors out if there are more
+   * than one matching file.
+   */
+  public Optional<String> getFile(String filePattern) {
+    Iterable<String> files = listFiles(newArrayList(filePattern));
+    val iterator = files.iterator();
+    if (iterator.hasNext()) {
+      val optional = Optional.of(iterator.next());
+      checkState(!iterator.hasNext(),
+          "There should only be one matching file for pattern '{}', instead got: '{}'", filePattern, files);
+      return optional;
+    } else {
+      return Optional.<String> absent();
+    }
+  }
+
   public String addFile(String filename, InputStream data) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.projectKey, filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release.getName(), this.projectKey, filename);
     HadoopUtils.touch(this.dccFileSystem.getFileSystem(), filepath, data);
     return filepath;
   }
 
   public String deleteFile(String filename) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.projectKey, filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release.getName(), this.projectKey, filename);
     HadoopUtils.rm(this.dccFileSystem.getFileSystem(), filepath);
     return filepath;
   }
@@ -88,17 +137,16 @@ public class SubmissionDirectory {
     return this.projectKey;
   }
 
-  public Path getSubmissionDirPath() {
-    String projectStringPath = dccFileSystem.buildProjectStringPath(release, projectKey);
-    return new Path(projectStringPath);
+  public String getSubmissionDirPath() {
+    return dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
   }
 
   public String getValidationDirPath() {
-    return dccFileSystem.buildValidationDirStringPath(release, projectKey);
+    return dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
   }
 
   public String getDataFilePath(String filename) {
-    return dccFileSystem.buildFileStringPath(release, projectKey, filename);
+    return dccFileSystem.buildFileStringPath(release.getName(), projectKey, filename);
   }
 
   public Submission getSubmission() {
@@ -123,4 +171,20 @@ public class SubmissionDirectory {
   public void createEmptyValidationDir() {
     dccFileSystem.createDirIfDoesNotExist(getValidationDirPath());
   }
+
+  public List<SubmissionDirectoryFile> getSubmissionFiles() {
+    return null;
+  }
+
+  /**
+   * There's already a "SubmissionFile" class (for the UI)...
+   */
+  @Value
+  public class SubmissionDirectoryFile {
+
+    String fileName;
+    SubmissionFileType type;
+    Pattern pattern;
+  }
+
 }

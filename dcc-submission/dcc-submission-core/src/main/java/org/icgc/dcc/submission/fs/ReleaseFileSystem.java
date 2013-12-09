@@ -17,110 +17,109 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
-
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
+@AllArgsConstructor
 public class ReleaseFileSystem {
 
-  private static final Logger log = LoggerFactory.getLogger(ReleaseFileSystem.class);
+  /**
+   * System files directory name.
+   */
+  public static final String SYSTEM_FILES_DIR_NAME = "SystemFiles";
 
+  /**
+   * Dependencies.
+   */
+  @NonNull
   private final DccFileSystem dccFileSystem;
-
+  @NonNull
   private final Release release;
-
   private final Subject userSubject;
-
-  public static final String SYSTEM_FILES = "SystemFiles";
-
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release, Subject subject) {
-    super();
-
-    checkArgument(dccFilesystem != null);
-    checkArgument(release != null);
-
-    this.dccFileSystem = dccFilesystem;
-    this.release = release;
-    this.userSubject = subject; // may be null
-  }
 
   public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release) {
     this(dccFilesystem, release, null);
   }
 
-  public SubmissionDirectory getSubmissionDirectory(String projectKey) {
-    checkNotNull(projectKey);
-    checkSubmissionDirectory(projectKey); // also checks privileges
-    Submission submission = release.getSubmission(projectKey);
-    return new SubmissionDirectory(dccFileSystem, release, projectKey, submission);
-  }
+  public SubmissionDirectory getSubmissionDirectory(
+      @NonNull
+      String projectKey) {
 
-  private void checkSubmissionDirectory(String projectKey) {
-    checkNotNull(projectKey);
     if (hasPrivileges(projectKey) == false) {
       throw new DccFileSystemException("User " + userSubject.getPrincipal()
           + " does not have permission to access project " + projectKey);
     }
-    String projectStringPath = dccFileSystem.buildProjectStringPath(release, projectKey);
-    boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
-    if (exists == false) {
-      throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
-    }
+    val submission = release.getSubmission(projectKey);
+    return new SubmissionDirectory(dccFileSystem, release, projectKey, submission);
   }
 
-  public void moveFrom(ReleaseFileSystem previous, List<String> projectKeys) {
-    FileSystem fileSystem = this.dccFileSystem.getFileSystem();
+  public void setUpNewReleaseFileSystem(
+      String oldReleaseName, // Remove after DCC-1940
+      String newReleaseName,
+      @NonNull
+      ReleaseFileSystem previous,
+      @NonNull
+      Iterable<String> signedOffProjectKeys,
+      @NonNull
+      Iterable<String> otherProjectKeys) {
+    log.info("Setting up new release file system for: '{}'", newReleaseName);
 
-    for (String projectKey : projectKeys) {
-      SubmissionDirectory previousSubmissionDirectory = previous.getSubmissionDirectory(projectKey);
-      SubmissionDirectory newSubmissionDirectory = getSubmissionDirectory(projectKey);
-      for (String filename : previousSubmissionDirectory.listFile()) {
-        String origin = previousSubmissionDirectory.getDataFilePath(filename);
-        String destination = newSubmissionDirectory.getDataFilePath(filename);
-        log.info("moving {} to {} ", origin, destination);
-        HadoopUtils.mv(fileSystem, origin, destination);
-      }
-      // move .validation folder over
-      HadoopUtils.mv(fileSystem, previousSubmissionDirectory.getValidationDirPath(),
-          newSubmissionDirectory.getValidationDirPath());
+    checkState(signedOffProjectKeys.iterator().hasNext() || otherProjectKeys.iterator().hasNext(),
+        "There must be at least on project key to process");
+
+    // Shorthands
+    val fileSystem = dccFileSystem.getFileSystem();
+    val next = this;
+
+    dccFileSystem.createReleaseDirectory(newReleaseName);
+
+    // Create empty dirs along with nested .validation
+    dccFileSystem.createProjectDirectoryStructures(
+        newReleaseName,
+        newLinkedHashSet(signedOffProjectKeys));
+
+    for (val otherProjectKey : otherProjectKeys) {
+      // Move "releaseName/projectKey/"
+      move(fileSystem,
+          previous.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath(),
+          next.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath());
+
+      // Band-aid: see DCC-1940
+      dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
     }
 
-    // also move System Files from previous releases
-    Path originDir = previous.getSystemDirectory();
-    Path destinationDir = this.getSystemDirectory();
-    HadoopUtils.mkdirs(fileSystem, destinationDir.toString());
-
-    List<Path> files = HadoopUtils.lsFile(fileSystem, originDir);
-    for (Path originFile : files) {
-      Path destinationFile = new Path(destinationDir, originFile.getName());
-      HadoopUtils.mv(fileSystem, originFile, destinationFile); // temporary solution until DCC-835 is done
-    }
+    // Move "releaseName/projectKey/SystemFiles"
+    moveSystemDir(previous, fileSystem, next);
   }
 
   public void emptyValidationFolders() {
-    for (String projectKey : release.getProjectKeys()) {
+    for (val projectKey : release.getProjectKeys()) {
       resetValidationFolder(projectKey);
     }
   }
 
-  public void resetValidationFolder(String projectKey) {
-    String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release, projectKey);
+  public void resetValidationFolder(
+      @NonNull
+      String projectKey) {
+    val validationStringPath = dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);
-    log.info("emptied directory {} for project {} ", validationStringPath, projectKey);
+    log.info("Emptied directory '{}' for project '{}'", validationStringPath, projectKey);
   }
 
   public boolean isReadOnly() {
@@ -140,7 +139,7 @@ public class ReleaseFileSystem {
   }
 
   public Path getSystemDirectory() {
-    return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES);
+    return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES_DIR_NAME);
   }
 
   public boolean isSystemDirectory(Path path) {
@@ -154,6 +153,38 @@ public class ReleaseFileSystem {
 
   private boolean hasPrivileges(String projectKey) {
     return isApplication() || this.userSubject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
+  }
+
+  private static void moveSystemDir(ReleaseFileSystem previous, FileSystem fileSystem, ReleaseFileSystem next) {
+    val sourceSystemDir = previous.getSystemDirectory();
+    val targetSystemDir = next.getSystemDirectory();
+
+    log.info("Creating '{}'", targetSystemDir);
+    HadoopUtils.mkdirs(fileSystem, targetSystemDir.toString());
+
+    val systemFilePaths = HadoopUtils.lsFile(fileSystem, sourceSystemDir);
+    for (val sourceSystemFilePath : systemFilePaths) {
+      val targetSystemFilePath = new Path(targetSystemDir, sourceSystemFilePath.getName());
+
+      movePath(fileSystem, sourceSystemFilePath, targetSystemFilePath);
+    }
+  }
+
+  @SneakyThrows
+  private static void movePath(FileSystem fileSystem, Path source, Path target) {
+    move(fileSystem, source.toString(), target.toString());
+  }
+
+  @SneakyThrows
+  private static void move(FileSystem fileSystem, String source, String target) {
+    try {
+      log.info("Moving '{}' to '{}'...", source, target);
+      HadoopUtils.mv(fileSystem, source, target);
+    } catch (Throwable t) {
+      log.error("Could not move '{}' to '{}': " + t, source, target);
+
+      throw t;
+    }
   }
 
 }

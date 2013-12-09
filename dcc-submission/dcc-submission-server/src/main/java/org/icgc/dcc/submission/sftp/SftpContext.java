@@ -21,11 +21,15 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -47,25 +51,23 @@ import com.google.inject.Inject;
  * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
  */
+@Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class SftpContext {
 
   /**
    * Encapsulated context.
    */
+  @NonNull
   private final DccFileSystem fs;
+  @NonNull
   private final ReleaseService releaseService;
+  @NonNull
   private final ProjectService projectService;
+  @NonNull
   private final UsernamePasswordAuthenticator authenticator;
-
-  @Inject
-  public SftpContext(DccFileSystem fs, ReleaseService releaseService, ProjectService projectService,
-      UsernamePasswordAuthenticator authenticator) {
-    super();
-    this.fs = fs;
-    this.releaseService = releaseService;
-    this.projectService = projectService;
-    this.authenticator = authenticator;
-  }
+  @NonNull
+  private final MailService mailService;
 
   public boolean authenticate(String username, String password) {
     return authenticator.authenticate(username, password.toCharArray(), null) != null;
@@ -82,7 +84,7 @@ public class SftpContext {
 
   // TODO: This should not be needed once the other todos are addressed
   public Release getNextRelease() {
-    return releaseService.getNextRelease().getRelease();
+    return releaseService.getNextRelease();
   }
 
   public String getNextReleaseName() {
@@ -104,12 +106,13 @@ public class SftpContext {
   }
 
   public Path getReleasePath() {
-    String releasePath = fs.buildReleaseStringPath(getNextRelease());
+    String releasePath = fs.buildReleaseStringPath(getNextRelease().getName());
     return new Path(releasePath);
   }
 
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
   public void resetSubmission(Submission submission) {
+    log.info("Resetting submission '{}'...", submission.getProjectKey());
     releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey());
   }
 
@@ -122,6 +125,18 @@ public class SftpContext {
 
   public boolean isSystemDirectory(Path path) {
     return getReleaseFileSystem().isSystemDirectory(path);
+  }
+
+  public void notifyFileTransferred(Path path) {
+    val user = (String) getCurrentUser().getPrincipal();
+    log.info("'{}' finished transferring file '{}'", user, path);
+    mailService.sendFileTransferred(user, path.toUri().toString());
+  }
+
+  public void notifyFileRemoved(Path path) {
+    val user = (String) getCurrentUser().getPrincipal();
+    log.info("'{}' removed  file '{}'", user, path);
+    mailService.sendFileRemoved(user, path.toUri().toString());
   }
 
   private Subject getCurrentUser() {

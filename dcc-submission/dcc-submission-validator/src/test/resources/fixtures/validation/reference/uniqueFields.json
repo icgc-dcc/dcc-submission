@@ -1,0 +1,11 @@
+{
+  "offset" : 3,
+  "errors" : [ {
+    "type" : "UNIQUE_VALUE_ERROR",
+    "columnNames" : [ "donor_sex", "donor_region_of_residence", "donor_vital_status" ],
+    "number" : 0,
+    "value" : [ "2", "GL", "1" ],
+    "line" : 3,
+    "parameters" : { }
+  } ]
+}

@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -24,14 +27,10 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.mongodb.BasicDBObject;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * TODO: look at ReleaseValidationTest and re-use Bob's super class (DCC-904)
@@ -49,7 +48,7 @@ public class RestrictionTest {
   @Test
   public void test_validRestriction() {
     Restriction restriction = new Restriction();
-    restriction.setType("regex");
+    restriction.setType(RestrictionType.REGEX);
     BasicDBObject config = new BasicDBObject();
     config.put("pattern", "^$");
     restriction.setConfig(config);
@@ -73,7 +72,7 @@ public class RestrictionTest {
   @Test
   public void test_invalidPattern() {
     Restriction restriction = new Restriction();
-    restriction.setType("regex");
+    restriction.setType(RestrictionType.REGEX);
     BasicDBObject config = new BasicDBObject();
     config.put("pattern", "[");
     restriction.setConfig(config);

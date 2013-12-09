@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.core;
 
 import java.util.logging.LogManager;
 
-import org.icgc.dcc.submission.release.DccLocking;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.inject.AbstractModule;
@@ -37,11 +36,10 @@ public class CoreModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(DccRuntime.class).in(Singleton.class);
-    bind(DccLocking.class).in(Singleton.class);
-
     bind(SystemService.class).in(Singleton.class);
     bind(ProjectService.class).in(Singleton.class);
     bind(UserService.class).in(Singleton.class);
+    bind(MailService.class).in(Singleton.class);
   }
 
 }

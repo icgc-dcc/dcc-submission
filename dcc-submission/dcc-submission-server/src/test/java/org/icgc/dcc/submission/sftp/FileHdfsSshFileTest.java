@@ -8,17 +8,16 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpContext;
 import org.icgc.dcc.submission.sftp.fs.FileHdfsSshFile;
 import org.icgc.dcc.submission.sftp.fs.RootHdfsSshFile;
 import org.icgc.dcc.submission.sftp.fs.SubmissionDirectoryHdfsSshFile;
@@ -40,66 +39,74 @@ public class FileHdfsSshFileTest {
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
 
-  // @formatter:off
-  @Mock Release release;
-  @Mock Submission submission;
-  @Mock Project project;
-  @Mock NextRelease nextRelease;
+  @Mock
+  Release release;
+  @Mock
+  Submission submission;
+  @Mock
+  Project project;
 
-  @Mock DccFileSystem fs;
-  @Mock SubmissionDirectory submissionDirectory;
-  @Mock ReleaseFileSystem releaseFileSystem;
-  
-  @Mock ProjectService projectService;
-  @Mock ReleaseService releaseService;  
-  
-  @Mock UsernamePasswordAuthenticator authenticator;  
-  // @formatter:off
+  @Mock
+  DccFileSystem fs;
+  @Mock
+  SubmissionDirectory submissionDirectory;
+  @Mock
+  ReleaseFileSystem releaseFileSystem;
+  @Mock
+  ProjectService projectService;
+  @Mock
+  ReleaseService releaseService;
+  @Mock
+  UsernamePasswordAuthenticator authenticator;
+  @Mock
+  MailService mailService;
 
+  SftpContext context;
   SubmissionDirectoryHdfsSshFile directory;
-  
+
   @Before
   public void setUp() throws IOException {
     // Create the simulated project directory
     File root = tmp.newFolder(RELEASE_NAME);
     String projectDirectoryName = "/" + PROJECT_KEY;
     File projectDirectory = new File(root, projectDirectoryName);
-    projectDirectory.mkdir();    
-    
+    projectDirectory.mkdir();
+
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
-    when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.getNextRelease()).thenReturn(nextRelease);
+    when(releaseService.getNextRelease()).thenReturn(release);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
 
     // Mock file system
-    when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
+    when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(release, null)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(createFileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
     when(releaseFileSystem.getSubmissionDirectory(PROJECT_KEY)).thenReturn(submissionDirectory);
     when(submissionDirectory.isReadOnly()).thenReturn(false);
-    when(submissionDirectory.getSubmission()).thenReturn(submission);    
-    
-    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
+    when(submissionDirectory.getSubmission()).thenReturn(submission);
+
+    // Create shared context
+    context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
+
     RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context);
     String directoryName = PROJECT_KEY;
-    directory = new SubmissionDirectoryHdfsSshFile(rootDirectory, directoryName);
+    directory = new SubmissionDirectoryHdfsSshFile(context, rootDirectory, directoryName);
   }
-  
+
   @Test
   public void testDoesNotExist() throws IOException {
     String fileName = "file.txt";
-    FileHdfsSshFile file = new FileHdfsSshFile(directory, fileName);
+    FileHdfsSshFile file = new FileHdfsSshFile(context, directory, fileName);
 
     assertThat(file.doesExist()).isFalse();
   }
-  
+
   @Test
   public void testCreate() throws IOException {
     String fileName = "file.txt";
-    FileHdfsSshFile file = new FileHdfsSshFile(directory, fileName);
+    FileHdfsSshFile file = new FileHdfsSshFile(context, directory, fileName);
 
     assertThat(file.create()).isTrue();
     assertThat(file.doesExist()).isTrue();
@@ -111,5 +118,5 @@ public class FileHdfsSshFileTest {
 
     return localFileSystem;
   }
-  
+
 }

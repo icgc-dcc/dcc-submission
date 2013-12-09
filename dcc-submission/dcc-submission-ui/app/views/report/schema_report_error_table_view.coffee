@@ -60,6 +60,26 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         Values do not match the regular expression set for
         this field: <em>#{source.parameters?.EXPECTED}</em>
         """
+    SCRIPT_ERROR:
+      name: "Failed script-based validation"
+      description: (source) ->
+        # Note we don't have an mvel formatter/highlighter, this is
+        # currently simulated with javascript formatter and java highlighter
+        errorRaw = source.parameters?.EXPECTED
+        errorPretty = hljs.highlight('java', js_beautify(errorRaw)).value
+
+        """
+        Data row failed script-based validation check, see
+        <a href="http://docs.icgc.org/" target="_blank">
+        submission documentation</a> for more details.
+        <br><br><pre><code>#{errorPretty}</code></pre>
+        """
+
+        ##{source.parameters?.DESCRIPTION}.
+        #Values do not pass the script expression associated with this
+        #this field: <br><br>
+        #<pre><code>#{errorPretty}</code></pre>
+        #"""
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
       description: (source) ->
@@ -83,17 +103,19 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Relation violation"
       description: (source) ->
         """
-        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
-        do not exist in the reference file
-        <em>#{source.parameters?.SCHEMA}</em>
+        The following values have no match in the reference schema
+        <em>#{source.parameters?.OTHER_SCHEMA}</em>
+        (fields <em>#{source.parameters?.OTHER_FIELDS}</em>)
         """
     RELATION_PARENT_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
-        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
-        from the reference file do not exist in the schema
-        <em>#{source.parameters?.SCHEMA}</em>
+        The following values in referenced schema
+        <em>#{source.parameters?.OTHER_SCHEMA}</em>
+        (fields <em>#{source.parameters?.OTHER_FIELDS.join ', '}</em>)
+        have no corresponding records in the current file,
+        yet they are expected to have at least one match each.
         """
     MISSING_VALUE_ERROR:
       name: "Missing value"
@@ -124,7 +146,6 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     UNIQUE_VALUE_ERROR:
       name: "Value uniqueness error"
       description: (source) ->
-        console.log source
         """
         Duplicate values found
         """
@@ -132,9 +153,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Invalid row structure"
       description: (source) ->
         """
-        Field counts in all lines are expected to match that of the file
-        header. Offending lines
+        Field counts in all lines are expected to be
+        #{source.parameters?.EXPECTED}
         """
+        #"""
+        #Field counts in all lines are expected to match that of the file
+        #header. Offending lines
+        #"""
     FORBIDDEN_VALUE_ERROR:
       name: "Invalid value"
       description: (source) ->
@@ -145,25 +170,124 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Filename collision"
       description: (source) ->
         """
-        More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
-        filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        The following files are found matching
+        <em>#{source.parameters?.SCHEMA}</em> filename pattern, only
+        one file is allowed. <br>
+        #{source.parameters?.FILES.join '<br>'}
         """
     COMPRESSION_CODEC_ERROR:
       name: "Compression Error"
       description: (source) ->
         """
-        File compression type does not match file extension
+        File name extension does not match file compression type. Please use
+        <em>.gz</em> for gzip, <em>.bz2</em> for bzip2.
         """
-
-
+    INVALID_CHARSET_ROW_ERROR:
+      name: "Row contains invalid charset"
+      description: (source) ->
+        """
+        Expected charset is <em>#{source.parameters?.EXPECTED}</em>
+        with no control characters except for <em>Tab</em> as field
+        delimiter. Offending lines:
+        """
+    FILE_HEADER_ERROR:
+      name: "File header error"
+      description: (source) ->
+        """
+        Invalid header line. It is expected to contain the following fields
+        in the specified order separated by <em>tab</em>: <br>
+        """
+        #"""
+        #Different from the expected header
+        #<em>#{source.parameters?.EXPECTED}</em>
+        #<br><br>
+        #<em>#{source.parameters?.VALUE}</em>
+        #"""
+    REFERENCE_GENOME_MISMATCH_ERROR:
+      name: "Reference genome error"
+      description: (source) ->
+        """
+        Sequence specified in reference_genome_allele does not match
+        the corresponding sequence in the reference genome at:
+        chromosome_start - chromosome_end
+        """
+        #"""
+        #Submitted reference genome allele does not match allele in
+        # <em>#{source.parameters?.EXPECTED}</em>
+        #"""
+    REFERENCE_GENOME_INSERTION_ERROR:
+      name: "Reference genome error"
+      description: (source) ->
+        """
+        For an insertion, there is no corresponding sequence in the
+        reference genome, the only allowed value is a dash: <em>-</em>
+        """
+    TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR:
+      name: "Excessive amount of SSMs need to be masked"
+      #name: "Excessive amount of sensitive data error"
+      description: (source) ->
+        val1 = source.parameters.VALUE
+        val2 = source.parameters.VALUE2
+        expected = source.parameters.EXPECTED
+        """
+        The percentage (#{parseFloat(100*val1/val2).toFixed(2)}%) of SSMs that
+        needs to be masked exceeded the reasonable level (currently the
+        threshold is set as #{parseFloat(100*expected).toFixed(2)}% ).
+        More details about SSM masking can be found
+        <a href="http://docs.icgc.org/" target="_blank">here</a>.
+        """
+        #"""
+        #An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of
+        #<em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
+        #observations has been dectected and most likely indicates an error
+        #in the data. The maximum threshold allowed is
+        #<em>#{parseFloat(100*source.parameters?.EXPECTED).toFixed(2)}%</em>.
+        #"""
   details: (source) ->
+
+    # There are generally two types of errors: file level errors
+    # with no line details, and row level errors
     if source.errorType in [
+      "COMPRESSION_CODEC_ERROR"
+      "TOO_MANY_FILES_ERROR"
+      #"FILE_HEADER_ERROR"
+      "RELATION_FILE_ERROR"
+      "REVERSE_RELATION_FILE_ERROR"
+      "TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR"
+      ]
+      return ""
+    else if source.errorType in [
       "MISSING_VALUE_ERROR"
       "OUT_OF_RANGE_ERROR"
       "NOT_A_NUMBER_ERROR"
-      "STRUCTURALLY_INVALID_ROW_ERROR"
+      "INVALID_CHARSET_ROW_ERROR"
+      #"STRUCTURALLY_INVALID_ROW_ERROR"
       ]
       return source.lines.join ', '
+    else if source.errorType is 'FILE_HEADER_ERROR'
+      console.log ">>>", source
+      expected = source.parameters.EXPECTED
+      actual = source.parameters.VALUE
+      displayLength = Math.max(expected.length, actual.length)
+
+      out = ""
+      out += "<br><table class='table table-condensed'>
+        <th style='border:none'>Expected</th>
+        <th style='border:none'>Actual</th>"
+
+      console.log expected
+      console.log actual
+      for i in [0..displayLength - 1] by 1
+        expectedVal = expected[i] || '-'
+        actualVal = actual[i] || '-'
+        out += "<tr>
+          <td style='background:none;border:none'>
+          #{expectedVal}</td>
+          <td style='background:none;border:none'>
+          #{actualVal}</td></tr>"
+      out += "</table>"
+      return out
+
     else if source.columnNames[0] is "FileLevelError"
       return ""
 
@@ -175,7 +299,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
     for i in source.lines
-      out += "<tr><td style='background:none;border:none'>#{i}</td>
+      if i==-1
+        display = "N/A"
+      else
+        display = i
+      out += "<tr><td style='background:none;border:none'>#{display}</td>
       <td style='background:none;border:none'>
       #{source.lineValueMap[i]}</td></tr>"
     out += "</table>"

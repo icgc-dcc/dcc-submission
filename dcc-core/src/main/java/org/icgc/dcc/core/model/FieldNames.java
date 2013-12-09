@@ -52,9 +52,31 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_START = "chromosome_start";
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_END = "chromosome_end";
     public static final String SUBMISSION_OBSERVATION_MUTATION_TYPE = "mutation_type";
-    public static final String SUBMISSION_OBSERVATION_MUTATION = "mutation";
 
+    public static final String SUBMISSION_OBSERVATION_CONTROL_GENOTYPE = "control_genotype";
+    public static final String SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE = "tumour_genotype";
     public static final String SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
+
+    public static final String SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE = "mutated_from_allele";
+    public static final String SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE = "mutated_to_allele";
+  }
+
+  /**
+   * Field names used in the normalizer component.
+   */
+  @NoArgsConstructor(access = PRIVATE)
+  public static class NormalizerFieldNames {
+
+    /**
+     * Field to act as primary key between primary and secondary files.
+     */
+    public static final String NORMALIZER_OBSERVATION_ID = "observation_id";
+    public static final String NORMALIZER_MARKING = "marking";
+
+    /**
+     * Formerly in the submission files.
+     */
+    public static final String NORMALIZER_MUTATION = "mutation";
   }
 
   /**
@@ -87,6 +109,7 @@ public final class FieldNames {
   public static final String PROJECT_PARTNER_COUNTRIES = "partner_countries"; // "Mexico" for instance
   public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
+  public static final String PROJECT_SUMMARY_REPOSITORY = "repository";
   public static final String PROJECT_SUMMARY_TOTAL_DONOR_COUNT = "_total_donor_count";
 
   /**
@@ -101,6 +124,7 @@ public final class FieldNames {
   public static final String DONOR_ID = "_donor_id";
 
   public static final String DONOR_SUMMARY = "_summary";
+  public static final String DONOR_SUMMARY_REPOSITORY = "repository";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS_SAMPLE_COUNTS =
       "experimental_analysis_performed_sample_count";
@@ -127,6 +151,7 @@ public final class FieldNames {
   public static final String SEQUENCE_DATA_PROJECT_ID = "_project_id";
   public static final String SEQUENCE_DATA_LEGACY_SAMPLE_ID = "legacy_sample_id";
   public static final String SEQUENCE_DATA_LIBRARY_STRATEGY = "library_strategy";
+  public static final String SEQUENCE_DATA_REPOSITORY = "repository";
 
   /**
    * Gene field names.
@@ -240,6 +265,8 @@ public final class FieldNames {
       "experimental_analysis_performed_donor_count";
   public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_SAMPLE_COUNT =
       "experimental_analysis_performed_sample_count";
+  public static final String AVAILABLE_EXPERIMENTAL_ANALYSIS_PERFORMED =
+      "available_experimental_analysis_performed";
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;

@@ -17,7 +17,10 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.submission.dictionary.model.Field.IS_CONTROLLED;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,6 +28,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
 import lombok.ToString;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -196,14 +200,35 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   @JsonIgnore
+  public Iterable<String> getControlledFieldNames() {
+    return getFieldNames(filter(fields, IS_CONTROLLED));
+  }
+
+  @JsonIgnore
   public Iterable<String> getFieldNames() {
-    return Iterables.transform(getFields(), new Function<Field, String>() {
+    return getFieldNames(getFields());
+  }
+
+  @JsonIgnore
+  private Iterable<String> getFieldNames(Iterable<Field> fields) {
+    return Iterables.transform(fields, new Function<Field, String>() {
 
       @Override
-      public String apply(Field input) {
-        return input.getName();
+      public String apply(Field field) {
+        return field.getName();
       }
     });
+  }
+
+  /**
+   * Returns whether or not the provided file name matches the pattern for the current {@link FileSchema}.
+   */
+  public boolean matches(
+      @NonNull
+      String fileName) {
+    return compile(pattern) // TODO: lazy-load
+        .matcher(fileName)
+        .matches();
   }
 
   /**
@@ -223,5 +248,4 @@ public class FileSchema implements DictionaryElement, Serializable {
     }
     return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
   }
-
 }

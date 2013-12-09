@@ -28,7 +28,7 @@ public final class NameValidator {
 
   public final static String DEFAULT_NAME_PATTERN = "^[\\w]{3,}$";
 
-  public final static String PROJECT_ID_PATTERN = "^[\\p{Print}\\.]{3,}$";
+  public final static String PROJECT_ID_PATTERN = "^[\\w\\.\\-]{3,}$";
 
   public static boolean validateProjectId(String id) {
     return validateEntityName(id, PROJECT_ID_PATTERN);

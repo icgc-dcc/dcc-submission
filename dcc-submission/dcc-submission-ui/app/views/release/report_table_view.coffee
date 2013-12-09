@@ -234,7 +234,7 @@ module.exports = class ReportTableView extends DataTableView
             state = if source.matchedSchemaName
               if source.errors.length
                 "INVALID"
-              else if source.fieldReports.length
+              else if source.fieldReports.length or source.summaryReports.length
                 "VALID"
               else
                 "NOT VALIDATED"
@@ -259,7 +259,8 @@ module.exports = class ReportTableView extends DataTableView
           bSortable: false
           bVisible: false
           mData: (source) =>
-            if source.errors.length or source.fieldReports.length
+            if source.errors.length or source.fieldReports.length \
+                or source.summaryReports.length
               "<a href='/releases/#{@model.get('release')}" +
               "/submissions/#{@model.get('projectKey')}" +
               "/report/#{source.name}'>view</span>"

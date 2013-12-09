@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.core;
 
-import static org.icgc.dcc.submission.release.ReleaseService.filterOutFakeReleasesForETL;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +49,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
   private final DccFileSystem fs;
 
   @Inject
-  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
-    super(morphia, datastore, QProject.project);
+  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs, MailService mailService) {
+    super(morphia, datastore, QProject.project, mailService);
     super.registerModelClasses(Project.class);
     this.fs = fs;
   }
@@ -89,7 +87,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
     submission.setProjectKey(project.getKey());
     submission.setState(SubmissionState.NOT_VALIDATED);
     release.addSubmission(submission);
-    fs.mkdirProjectDirectory(release, project.getKey());
+    fs.createNewProjectDirectoryStructure(release.getName(), project.getKey());
 
     Query<Release> updateQuery = datastore().createQuery(Release.class)//
         .filter("name = ", release.getName());
@@ -152,12 +150,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
         .singleResult();
   }
 
-  /**
-   * Ignoring releases whose name is starting with a specific prefix (see https://jira.oicr.on.ca/browse/DCC-1409 for
-   * more details).
-   */
   private List<Release> listReleases() {
-    return filterOutFakeReleasesForETL(getReleaseQuery().list());
+    return getReleaseQuery().list();
   }
 
   private MorphiaQuery<Release> getReleaseQuery() {

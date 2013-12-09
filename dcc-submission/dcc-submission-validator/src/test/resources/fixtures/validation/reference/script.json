@@ -1,0 +1,24 @@
+{
+  "offset" : 2,
+  "errors" : [ {
+    "type" : "SCRIPT_ERROR",
+    "columnNames" : [ "donor_sex" ],
+    "number" : 0,
+    "value" : "donor_sex = 2",
+    "line" : 2,
+    "parameters" : {
+      "EXPECTED" : "donor_sex == 1",
+      "DESCRIPTION" : "Donor's sex must be male"
+    }
+  }, {
+    "type" : "SCRIPT_ERROR",
+    "columnNames" : [ "donor_sex" ],
+    "number" : 1,
+    "value" : "donor_sex = 2",
+    "line" : 2,
+    "parameters" : {
+      "EXPECTED" : "donor_sex != 2",
+      "DESCRIPTION" : "Donor's sex must not equal two"
+    }
+  } ]
+}

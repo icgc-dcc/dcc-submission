@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.icgc.dcc</groupId>
+    <artifactId>dcc-submission</artifactId>
+    <version>2.2.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>dcc-submission-validator</artifactId>
+
+  <name>${project.artifactId}</name>
+  <description>${project.name}</description>
+
+  <repositories>
+    <!-- Parent pom bootstrap -->
+    <repository>
+      <id>internal</id>
+      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <!-- DCC -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-submission-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-hadoop</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Jackson (Codehaus) -->
+    <dependency>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-mapper-asl</artifactId>
+      <version>1.9.8</version>
+    </dependency>
+
+    <!-- Cascading -->
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>cascading-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>cascading-local</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>cascading-hadoop</artifactId>
+    </dependency>
+
+    <!-- Hadoop -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.hadoop.gplcompression</groupId>
+      <artifactId>hadoop-lzo</artifactId>
+    </dependency>
+
+    <!-- Dependency injection -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
+
+    <!-- Utilities -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+
+    <!-- MIME detection -->
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>1.4</version>
+    </dependency>
+
+    <!-- Compression -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.5</version>
+    </dependency>
+
+    <!-- Scripting -->
+    <dependency>
+      <groupId>org.mvel</groupId>
+      <artifactId>mvel2</artifactId>
+      <version>${mvel.version}</version>
+    </dependency>
+
+    <!-- Genomics -->
+    <dependency>
+      <groupId>org.utgenome.thirdparty</groupId>
+      <artifactId>picard</artifactId>
+      <version>${picard.version}</version>
+    </dependency>
+
+    <!-- Testing - DCC -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-resources</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Testing - Hadoop -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-minicluster</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Testing - Cascading -->
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>cascading-core</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <properties>
+    <!-- Versions -->
+    <mvel.version>2.1.7.Final</mvel.version>
+    <picard.version>1.101.0</picard.version>
+  </properties>
+</project>

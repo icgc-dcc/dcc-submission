@@ -17,10 +17,16 @@
  */
 package org.icgc.dcc.submission.web.util;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
 
-import lombok.AccessLevel;
+import javax.ws.rs.core.Response;
+
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +34,7 @@ import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = PRIVATE)
 public final class Responses {
 
   public static final Response.StatusType UNPROCESSABLE_ENTITY = new Response.StatusType() {
@@ -56,11 +62,37 @@ public final class Responses {
 
   public static Response noSuchEntityResponse(boolean important, String... names) {
     ServerErrorResponseMessage errorMessage =
-        new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, (Object[]) names);
+        new ServerErrorResponseMessage(NO_SUCH_ENTITY, (Object[]) names);
     if (important) {
       log.info("No such entity: {}", errorMessage);
     }
-    return Response.status(Status.NOT_FOUND).entity(errorMessage).build();
+    return Response.status(NOT_FOUND).entity(errorMessage).build();
+  }
+
+  public static Response notFound(String name) {
+    return Response
+        .status(NOT_FOUND)
+        .entity(new ServerErrorResponseMessage(NO_SUCH_ENTITY, name))
+        .build();
+  }
+
+  public static Response badRequest(ServerErrorCode code, Object... args) {
+    return Response
+        .status(BAD_REQUEST)
+        .entity(new ServerErrorResponseMessage(code, args))
+        .build();
+  }
+
+  public static Response created() {
+    return Response
+        .status(CREATED)
+        .build();
+  }
+
+  public static Response noContent() {
+    return Response
+        .status(NO_CONTENT)
+        .build();
   }
 
   public static Response unauthorizedResponse() {
@@ -72,7 +104,7 @@ public final class Responses {
     if (important) {
       log.info("unauthorized action: {}", errorMessage);
     }
-    return Response.status(Status.UNAUTHORIZED).entity(errorMessage).build();
+    return Response.status(UNAUTHORIZED).entity(errorMessage).build();
   }
 
 }

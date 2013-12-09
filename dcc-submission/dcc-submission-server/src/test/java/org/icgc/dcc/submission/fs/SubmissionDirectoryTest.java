@@ -29,8 +29,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.junit.Test;
 
 import com.google.common.io.ByteStreams;
@@ -57,8 +55,9 @@ public class SubmissionDirectoryTest extends FileSystemTest {
     when(this.mockFileSystem.listStatus(any(Path.class))).thenReturn(new FileStatus[] {});
     when(this.mockFileSystem.create(any(Path.class))).thenReturn(this.mockFSDataOutputStream);
 
-    when(this.mockDccFileSystem.buildProjectStringPath(this.mockRelease, PROJECT_KEY)).thenReturn(ROOT_DIR);
-    when(this.mockDccFileSystem.buildFileStringPath(this.mockRelease, PROJECT_KEY, FILENAME_1)).thenReturn(FILEPATH_1);
+    when(this.mockDccFileSystem.buildProjectStringPath(this.mockRelease.getName(), PROJECT_KEY)).thenReturn(ROOT_DIR);
+    when(this.mockDccFileSystem.buildFileStringPath(this.mockRelease.getName(), PROJECT_KEY, FILENAME_1)).thenReturn(
+        FILEPATH_1);
     when(this.mockDccFileSystem.getFileSystem()).thenReturn(this.mockFileSystem);
 
     this.submissionDirectory =

@@ -19,25 +19,31 @@ package org.icgc.dcc.submission.shiro;
 
 import java.util.Collection;
 
+import lombok.val;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class SecurityManagerProvider implements Provider<org.apache.shiro.mgt.SecurityManager> {
+public class SecurityManagerProvider implements Provider<SecurityManager> {
 
   @Inject
   private Collection<Realm> realms;
 
   @Override
-  public org.apache.shiro.mgt.SecurityManager get() {
-    DefaultSecurityManager defaultSecurityManager = new DefaultSecurityManager(this.realms);
+  public SecurityManager get() {
+    DefaultSecurityManager defaultSecurityManager = new DefaultSecurityManager(realms);
     disableSessions(defaultSecurityManager);
+
+    // Bind globally
     SecurityUtils.setSecurityManager(defaultSecurityManager);
+
     return defaultSecurityManager;
   }
 
@@ -45,7 +51,9 @@ public class SecurityManagerProvider implements Provider<org.apache.shiro.mgt.Se
    * Disables server-side sessions entirely
    */
   private void disableSessions(DefaultSecurityManager defaultSecurityManager) {
-    DefaultSubjectDAO subjectDao = (DefaultSubjectDAO) defaultSecurityManager.getSubjectDAO();
-    ((DefaultSessionStorageEvaluator) subjectDao.getSessionStorageEvaluator()).setSessionStorageEnabled(false);
+    val subjectDao = (DefaultSubjectDAO) defaultSecurityManager.getSubjectDAO();
+    val sessionStorageEvaluator = (DefaultSessionStorageEvaluator) subjectDao.getSessionStorageEvaluator();
+    sessionStorageEvaluator.setSessionStorageEnabled(false);
   }
+
 }

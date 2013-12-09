@@ -27,11 +27,11 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
@@ -87,7 +87,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         filenameList0.toString());
     log.info("ls0 = " + filenameList0);
 
-    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
+    this.dccFileSystem.createInitialReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
 
     Iterable<String> filenameList1 =
         HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));
@@ -97,7 +97,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         filenameList1.toString());
     log.info("ls1 = " + filenameList1);
 
-    String releaseStringPath = this.dccFileSystem.buildReleaseStringPath(this.mockRelease);
+    String releaseStringPath = this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName());
     log.info("releaseStringPath = " + releaseStringPath);
 
     Iterable<String> filenameList2 =
@@ -166,6 +166,6 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
   @After
   public void tearDown() {
-    HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease));
+    HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName()));
   }
 }

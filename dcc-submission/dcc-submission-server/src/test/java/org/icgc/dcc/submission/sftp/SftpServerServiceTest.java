@@ -50,6 +50,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.SshServer;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.ProjectServiceException;
 import org.icgc.dcc.submission.core.model.Project;
@@ -58,15 +59,10 @@ import org.icgc.dcc.submission.core.model.UserSession;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpContext;
-import org.icgc.dcc.submission.sftp.SftpServerService;
-import org.icgc.dcc.submission.sftp.SshServerProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -109,7 +105,6 @@ public class SftpServerServiceTest {
   Subject subject;
   @Mock
   UsernamePasswordAuthenticator authenticator;
-
   @Mock
   Release release;
   @Mock
@@ -117,19 +112,17 @@ public class SftpServerServiceTest {
   @Mock
   Project project;
   @Mock
-  NextRelease nextRelease;
-
-  @Mock
   DccFileSystem fs;
   @Mock
   SubmissionDirectory submissionDirectory;
   @Mock
   ReleaseFileSystem releaseFileSystem;
-
   @Mock
   ProjectService projectService;
   @Mock
   ReleaseService releaseService;
+  @Mock
+  MailService mailService;
 
   SftpServerService service;
   File root;
@@ -141,25 +134,26 @@ public class SftpServerServiceTest {
 
     // Mock configuration
     when(config.getInt("sftp.port")).thenReturn(sftp.getPort());
-    when(config.getString("sftp.path")).thenReturn("/tmp/file.pem");
+    when(config.getString("sftp.path")).thenReturn(tmp.newFile().getAbsolutePath());
+    when(config.getString("sftp.key")).thenReturn("key");
     when(config.hasPath("sftp.nio-workers")).thenReturn(true);
     when(config.getInt("sftp.nio-workers")).thenReturn(NIO_WORKERS);
 
     // Mock authentication
+    when(subject.getPrincipal()).thenReturn("test-user");
     when(authenticator.authenticate(anyString(), (char[]) any(), anyString())).thenReturn(subject);
     when(authenticator.getSubject()).thenReturn(subject);
 
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
     when(release.getName()).thenReturn(RELEASE_NAME);
-    when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.getNextRelease()).thenReturn(nextRelease);
+    when(releaseService.getNextRelease()).thenReturn(release);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new ProjectServiceException(""));
     when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(newArrayList(project));
 
     // Mock file system
-    when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
+    when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(release, subject)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(fileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
@@ -172,14 +166,14 @@ public class SftpServerServiceTest {
     service = createService();
 
     // Start CUT
-    service.startAndWait();
+    service.startAsync().awaitRunning();
 
     sftp.connect();
   }
 
   @After
   public void tearDown() {
-    service.stop();
+    service.stopAsync().awaitTerminated();
     sftp.disconnect();
   }
 
@@ -415,7 +409,7 @@ public class SftpServerServiceTest {
   }
 
   private SftpServerService createService() {
-    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
+    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
     SftpAuthenticator authenticator = new SftpAuthenticator(context);
     SshServer sshd = new SshServerProvider(config, context, authenticator).get();
     EventBus eventBus = new EventBus();

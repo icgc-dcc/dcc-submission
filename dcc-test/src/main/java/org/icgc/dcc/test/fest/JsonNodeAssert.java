@@ -18,18 +18,17 @@
 package org.icgc.dcc.test.fest;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static java.lang.String.format;
-import junit.framework.ComparisonFailure;
 import lombok.SneakyThrows;
 
 import org.fest.assertions.api.AbstractAssert;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonNodeAssert extends AbstractAssert<JsonNodeAssert, JsonNode> {
 
-  private static ObjectMapper MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);;
+  private static ObjectMapper MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);
 
   public JsonNodeAssert(JsonNode actual) {
     super(actual, JsonNodeAssert.class);
@@ -40,14 +39,11 @@ public class JsonNodeAssert extends AbstractAssert<JsonNodeAssert, JsonNode> {
   }
 
   @Override
+  @SneakyThrows
   public JsonNodeAssert isEqualTo(JsonNode expected) {
-    if(!actual.equals(expected)) {
-      String expectedJson = toString(expected);
-      String actualJson = toString(actual);
-      String errorMessage = format("Expected JsonNode to be%n%s%nbut was%n%s", expectedJson, actualJson);
-
-      throw new ComparisonFailure(errorMessage, expectedJson, actualJson);
-    }
+    String expectedJson = toString(expected);
+    String actualJson = toString(actual);
+    JSONAssert.assertEquals(expectedJson, actualJson, false);
 
     return this;
   }

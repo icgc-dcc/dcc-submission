@@ -21,6 +21,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -31,8 +34,6 @@ import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryCloneVisitor;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -44,15 +45,14 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 /**
  * Offers various CRUD operations pertaining to {@code Dictionary}
  */
+@Slf4j
 public class DictionaryService extends BaseMorphiaService<Dictionary> {
-
-  private static final Logger log = LoggerFactory.getLogger(DictionaryService.class);
 
   private final ReleaseService releases;
 
   @Inject
-  public DictionaryService(Morphia morphia, Datastore datastore, ReleaseService releases) {
-    super(morphia, datastore, QDictionary.dictionary);
+  public DictionaryService(Morphia morphia, Datastore datastore, ReleaseService releases, MailService mailService) {
+    super(morphia, datastore, QDictionary.dictionary, mailService);
     checkArgument(releases != null);
     this.releases = releases;
     registerModelClasses(Dictionary.class, CodeList.class);
@@ -62,7 +62,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     return this.query().list();
   }
 
-  public Dictionary getFromVersion(String version) {
+  public Dictionary getDictionaryByVersion(String version) {
     return this.where(QDictionary.dictionary.version.eq(version)).singleResult();
   }
 
@@ -84,7 +84,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     datastore().updateFirst(updateQuery, dictionary, false);
 
     // Reset submissions if applicable
-    Release release = releases.getNextRelease().getRelease();
+    Release release = releases.getNextRelease();
     if (dictionary.getVersion().equals(release.getDictionaryVersion())) {
       releases.resetSubmissions(release.getName(), release.getProjectKeys());
     }
@@ -96,11 +96,11 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     if (oldVersion.equals(newVersion)) {
       throw new DictionaryServiceException("cannot clone a dictionary using the same version: " + newVersion);
     }
-    Dictionary oldDictionary = this.getFromVersion(oldVersion);
+    Dictionary oldDictionary = this.getDictionaryByVersion(oldVersion);
     if (oldDictionary == null) {
       throw new DictionaryServiceException("cannot clone an non-existent dictionary: " + oldVersion);
     }
-    if (getFromVersion(newVersion) != null) {
+    if (getDictionaryByVersion(newVersion) != null) {
       throw new DictionaryServiceException("cannot clone to an already existing dictionary: " + newVersion);
     }
 
@@ -128,7 +128,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
       throw new DictionaryServiceException("New dictionary must specify a valid version");
     }
 
-    if (this.getFromVersion(version) != null) {
+    if (this.getDictionaryByVersion(version) != null) {
       throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
     }
 
@@ -194,7 +194,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
    * Must reset INVALID submissions IF the nextRelease uses a dictionary that uses the corresponding codelist (as the
    * change may render them VALID). (TODO: point to spec).
    */
-  public void addTerm(String codeListName, Term term) {
+  public void addCodeListTerm(String codeListName, Term term) {
     checkArgument(codeListName != null);
     checkArgument(term != null);
 
@@ -214,21 +214,24 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
         datastore.createUpdateOperations(CodeList.class).add("terms", term));
 
     // Reset INVALID submissions if applicable
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.getNextRelease();
     Dictionary currentDictionary = getCurrentDictionary(openRelease);
     if (currentDictionary.usesCodeList(codeListName)) {
+      log.info("Resetting submission due to active dictionary code list term addition...");
       releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
+    } else {
+      log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
   }
 
   public Dictionary getCurrentDictionary() {
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.getNextRelease();
     return getCurrentDictionary(openRelease);
   }
 
   public Dictionary getCurrentDictionary(Release openRelease) {
     String currentDictionaryVersion = openRelease.getDictionaryVersion();
-    return getFromVersion(currentDictionaryVersion);
+    return getDictionaryByVersion(currentDictionaryVersion);
   }
 
   private Query<Dictionary> buildDictionaryVersionQuery(Dictionary dictionary) {
