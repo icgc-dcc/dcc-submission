@@ -56,7 +56,7 @@ final class NormalizationTestUtils {
 
   public static List<String> getFieldNames(SubmissionFileType type) {
     return newArrayList(dictionary()
-        .getFileSchema(type).get()
+        .getFileSchema(type)
         .getFieldNames());
   }
 }

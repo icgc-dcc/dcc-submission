@@ -17,12 +17,20 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
+import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.mkdirs;
+
+import java.io.File;
+import java.util.List;
+
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -33,13 +41,14 @@ import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.local.FileTap;
 
+import com.google.common.collect.Lists;
+
 /**
  * Very basic replacement for {@link DccFileSystem}, as discussed with @Bob Tiernay around 13/11/07 (see DCC-1876). This
  * is a temporary solution until a proper re-modelling of the file operations related objects can happen.
  * <p>
  * Requirements:<br/>
  * - Junjun's tool to re-write specimen file<br/>
- * 
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -67,11 +76,27 @@ public class DccFileSystem2 {
    * in DCC-1876)
    */
   private String getNormalizationDir(String releaseName, String projectKey) {
-    return format("%s/%s/%s/.validation/normalizer", rootDir, releaseName, projectKey);
+    return format("%s/%s/%s/.validation/normalization", rootDir, releaseName, projectKey); // TODO: refactor process
+                                                                                           // name
   }
 
-  private String getNormalizationDataDir(String releaseName, String projectKey) {
+  /**
+   * TODO: DCC-1876 - no need to actually nest it under the .validation
+   */
+  private String getAnnotationDir(String releaseName, String projectKey) {
+    return format("%s/%s/%s/.validation/annotation", rootDir, releaseName, projectKey); // TODO: refactor process name
+  }
+
+  public String getSubmissionDataDir(String releaseName, String projectKey) {
+    return format("%s/%s/%s", rootDir, releaseName, projectKey);
+  }
+
+  public String getNormalizationDataDir(String releaseName, String projectKey) {
     return format("%s/data", getNormalizationDir(releaseName, projectKey));
+  }
+
+  public String getAnnotationDataDir(String releaseName, String projectKey) {
+    return format("%s/data", getAnnotationDir(releaseName, projectKey));
   }
 
   private String getNormalizationReportsDir(String releaseName, String projectKey) {
@@ -84,10 +109,16 @@ public class DccFileSystem2 {
   }
 
   public String getNormalizationDataOutputFile(String releaseName, String projectKey) {
-    return format("%s/ssm__p.txt",
+    return format("%s/ssm_p.txt",
         lazyDirCreation(getNormalizationDataDir(releaseName, projectKey)));
   }
 
+  public String getAnnotationDataOutputFile(String releaseName, String projectKey) {
+    return format("%s/ssm_s.txt",
+        lazyDirCreation(getAnnotationDataDir(releaseName, projectKey)));
+  }
+
+  // TODO: move to a NormalizerDccFileSystem2-like class?
   public void writeNormalizationReport(String releaseName, String projectKey, String content) {
     writeFile(
         getNormalizationReportOutputFile(
@@ -111,5 +142,63 @@ public class DccFileSystem2 {
       mkdirs(fileSystem, dir);
     }
     return dir;
+  }
+
+  /**
+   * List relevant files for the loader component, not necessarily all under the same directory.
+   */
+  public List<String> listLoaderFiles(String releaseName, String projectKey, String ssmPPattern, String ssmSPattern) {
+    val files = Lists.<String> newArrayList();
+
+    // Handle all but ssm_p and ssm_s files (directly from the submission system)
+    val submissionDataDir = getSubmissionDataDir(releaseName, projectKey);
+    for (val filePath : lsFile(fileSystem, new Path(submissionDataDir))) {
+      val file = filePath.toUri().toString();
+      if (!matches(file, ssmPPattern) && !matches(file, ssmSPattern)) { // ssm_p and ssm_s are handled separately
+        files.add(file);
+      }
+    }
+
+    // Handle ssm_p (from the normalizer)
+    {
+      String normalizationDataOutputFile = getNormalizationDataOutputFile(releaseName, projectKey);
+      if (checkExistence(fileSystem, normalizationDataOutputFile)) {
+        val fileName = new File(normalizationDataOutputFile).getName();
+        val matchesSsmPPattern = compile(ssmPPattern).matcher(fileName).matches();
+        checkState(matchesSsmPPattern, // By design
+            "File '%s' does not match expected pattern: '%s'", ssmPPattern, fileName);
+        files.add(normalizationDataOutputFile);
+      } else {
+        log.info("No ssm_p normalization file found at '{}'", normalizationDataOutputFile);
+      }
+    }
+
+    // Handle ssm_s (from the annotator)
+    {
+      val annotationDataOutputFile = getAnnotationDataOutputFile(releaseName, projectKey);
+      if (checkExistence(fileSystem, annotationDataOutputFile)) {
+        val fileName = new File(annotationDataOutputFile).getName();
+        val matchesSsmSPattern = compile(ssmSPattern).matcher(fileName).matches();
+        checkState(matchesSsmSPattern, // By design
+            "File '%s' does not match expected pattern: '%s'", ssmSPattern, fileName);
+        files.add(annotationDataOutputFile);
+      } else {
+        log.info("No ssm_s annotation file found at '{}'", annotationDataOutputFile);
+      }
+    }
+
+    return files;
+  }
+
+  /**
+   * Determines whether or not the name of the given file - including its parent directory(ies) - matches the given
+   * pattern.
+   * <p>
+   * For instance: /path/to/myfile.txt is a match for ".+\.txt".
+   */
+  public static boolean matches(String file, String filePattern) {
+    return compile(filePattern)
+        .matcher(new File(file).getName())
+        .matches();
   }
 }

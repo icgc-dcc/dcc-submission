@@ -62,7 +62,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     return this.query().list();
   }
 
-  public Dictionary getFromVersion(String version) {
+  public Dictionary getDictionaryByVersion(String version) {
     return this.where(QDictionary.dictionary.version.eq(version)).singleResult();
   }
 
@@ -96,11 +96,11 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     if (oldVersion.equals(newVersion)) {
       throw new DictionaryServiceException("cannot clone a dictionary using the same version: " + newVersion);
     }
-    Dictionary oldDictionary = this.getFromVersion(oldVersion);
+    Dictionary oldDictionary = this.getDictionaryByVersion(oldVersion);
     if (oldDictionary == null) {
       throw new DictionaryServiceException("cannot clone an non-existent dictionary: " + oldVersion);
     }
-    if (getFromVersion(newVersion) != null) {
+    if (getDictionaryByVersion(newVersion) != null) {
       throw new DictionaryServiceException("cannot clone to an already existing dictionary: " + newVersion);
     }
 
@@ -128,7 +128,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
       throw new DictionaryServiceException("New dictionary must specify a valid version");
     }
 
-    if (this.getFromVersion(version) != null) {
+    if (this.getDictionaryByVersion(version) != null) {
       throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
     }
 
@@ -231,7 +231,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
 
   public Dictionary getCurrentDictionary(Release openRelease) {
     String currentDictionaryVersion = openRelease.getDictionaryVersion();
-    return getFromVersion(currentDictionaryVersion);
+    return getDictionaryByVersion(currentDictionaryVersion);
   }
 
   private Query<Dictionary> buildDictionaryVersionQuery(Dictionary dictionary) {

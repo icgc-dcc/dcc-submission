@@ -1,0 +1,15 @@
+---
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+
+# Download from central repository
+- name: Download the reference genome
+  get_url: "url={{ reference_genome_url }} dest={{ staging_dir }}/{{ reference_genome_archive }} mode=0444"
+
+# Ensure target dir exists
+- name: Creating target dir
+  file: "dest={{ target_dir }} state=directory"
+
+# Install the FASTA files to the specified location
+- name: Extract the reference genome 
+  command: "tar xzf {{ staging_dir }}/{{ reference_genome_archive }} -C {{ target_dir }} creates={{ target_dir }}/{{ reference_genome_version }}.fasta" 
+

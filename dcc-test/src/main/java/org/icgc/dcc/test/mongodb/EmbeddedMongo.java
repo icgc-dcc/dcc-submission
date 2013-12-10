@@ -108,7 +108,7 @@ public class EmbeddedMongo implements TestRule {
           mongodProcess.stop();
         }
       } finally {
-        if (mongodProcess != null) {
+        if (mongodExecutable != null) {
           mongodExecutable.stop();
         }
       }

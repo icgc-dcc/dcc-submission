@@ -96,7 +96,7 @@ public class DictionaryResource {
   {
     // No authorization check necessary
     log.debug("Getting dictionary: {}", version);
-    Dictionary dict = this.dictionaryService.getFromVersion(version);
+    Dictionary dict = this.dictionaryService.getDictionaryByVersion(version);
     if (dict == null) {
       return Response.status(NOT_FOUND)
           .entity(new ServerErrorResponseMessage(NO_SUCH_ENTITY, version)).build();
@@ -183,7 +183,7 @@ public class DictionaryResource {
       return unauthorizedResponse();
     }
 
-    val oldDictionary = dictionaryService.getFromVersion(version);
+    val oldDictionary = dictionaryService.getDictionaryByVersion(version);
     if (oldDictionary == null) {
       return Response
           .status(NOT_FOUND)

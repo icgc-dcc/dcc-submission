@@ -71,7 +71,7 @@ public final class FieldNames {
      * Field to act as primary key between primary and secondary files.
      */
     public static final String NORMALIZER_OBSERVATION_ID = "observation_id";
-    public static final String NORMALIZER_MARKING = "masking"; // TODO: rename
+    public static final String NORMALIZER_MARKING = "marking";
 
     /**
      * Formerly in the submission files.
