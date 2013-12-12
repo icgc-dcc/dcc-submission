@@ -131,8 +131,7 @@ public class NormalizationValidatorTest {
     when(mockFileSchema.getFieldNames())
         .thenReturn(NormalizationTestUtils.getFieldNames(FOCUS_TYPE));
     when(mockDictionary.getFileSchema(FOCUS_TYPE))
-        .thenReturn(
-            Optional.<FileSchema> of(mockFileSchema));
+        .thenReturn(mockFileSchema);
     when(mockSubmissionDirectory.getFile(Mockito.anyString()))
         .thenReturn(Optional.<String> of(FILE_NAME));
 

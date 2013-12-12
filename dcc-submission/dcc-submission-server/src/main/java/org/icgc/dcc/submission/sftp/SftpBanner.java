@@ -62,7 +62,7 @@ class SftpBanner {
   /**
    * Standard operating procedure for DCC submissions.
    */
-  private static final String SOP_URL = "http://dcc.icgc.org/pages/docs/dcc_submission_system_sop-beta.pdf";
+  private static final String DOCS_URL = "http://docs.icgc.org";
 
   /**
    * External banner text.
@@ -108,7 +108,7 @@ class SftpBanner {
         "  - Downloading is disabled (ex. 'get', 'mget')\n" +
         "  - You may 'cd', 'put' 'rm' 'ls' in the following project directories:\n" +
         formatDirectories(projectKeys) +
-        "  - Submission instructions may be found at: '" + SOP_URL + "'\n" +
+        "  - Submission instructions may be found at: '" + DOCS_URL + "'\n" +
         "  - For support contact: '" + SUPPORT_EMAIL + "'\n" +
         "\n";
 

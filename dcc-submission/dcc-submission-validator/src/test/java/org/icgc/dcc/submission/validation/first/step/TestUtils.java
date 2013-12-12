@@ -58,6 +58,7 @@ public class TestUtils {
     verify(validationContext, never()).reportError(anyString(), any(ErrorType.class));
     verify(validationContext, never()).reportError(anyString(), any(TupleError.class));
     verify(validationContext, never()).reportError(anyString(), any(ErrorType.class), any());
+    verify(validationContext, never()).reportError(anyString(), any(ErrorType.class), any(), any());
     verify(validationContext, never()).reportError(anyString(), any(), any(ErrorType.class));
     verify(validationContext, never()).reportError(anyString(), anyLong(), any(), any(ErrorType.class));
     verify(validationContext, never()).reportError(anyString(), anyLong(), anyString(), any(), any(ErrorType.class));

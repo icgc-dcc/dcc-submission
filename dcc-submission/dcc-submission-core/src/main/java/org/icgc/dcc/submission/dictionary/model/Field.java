@@ -42,6 +42,14 @@ import com.google.common.collect.Iterables;
 @ToString(of = { "name", "valueType" })
 public class Field implements DictionaryElement, Serializable {
 
+  public static final Predicate<Field> IS_CONTROLLED = new Predicate<Field>() {
+
+    @Override
+    public boolean apply(Field field) {
+      return field.isControlled();
+    }
+  };
+
   @NotBlank
   private String name;
 

@@ -1,0 +1,20 @@
+#
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+#
+# DCC Submission Server - VM update script
+#
+
+# {{ ansible_managed }}
+
+# Install latest version
+{{ bin_dir }}/install -l
+sleep 10
+
+# Reinitialize system
+bash {{ init_command }}
+if [ "$?" != 0 ]; then
+   # Copy over the VM error page for if/when things go wrong initializing
+   cp -v {{ staging_dir }}/error.html {{ web_dir }}/public/index.html
+fi
+
+exit 0
