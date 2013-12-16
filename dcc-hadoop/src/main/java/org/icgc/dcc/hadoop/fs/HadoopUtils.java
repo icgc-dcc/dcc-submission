@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.ByteStreams.copy;
 
 import java.io.IOException;
@@ -86,22 +88,16 @@ public class HadoopUtils {
     return isFile(fileSystem, new Path(stringPath));
   }
 
-  @SneakyThrows
   public static boolean isFile(FileSystem fileSystem, @NonNull Path path) {
-    return fileSystem
-        .getFileStatus(path)
-        .isFile();
+    return getFileStatus(fileSystem, path).isFile();
   }
 
   public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) {
     return isDirectory(fileSystem, new Path(stringPath));
   }
 
-  @SneakyThrows
   public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) {
-    return fileSystem
-        .getFileStatus(path)
-        .isDirectory();
+    return getFileStatus(fileSystem, path).isDirectory();
   }
 
   public static void rm(FileSystem fileSystem, String stringPath) {
@@ -237,21 +233,24 @@ public class HadoopUtils {
     return filenameList;
   }
 
-  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) {
-    FileStatus fileStatus = null;
-    try {
-      fileStatus = fileSystem.getFileStatus(path);
-    } catch (IOException e) {
-      throw new HdfsException(e);
-    }
-    return fileStatus;
-  }
-
   /**
    * This is not applicable for dir.
    */
   public static long duFile(FileSystem fileSystem, Path filePath) throws IOException {
     FileStatus status = fileSystem.getFileStatus(filePath);
     return status.getLen();
+  }
+
+  /**
+   * Returns the {@link FileStatus} for the given {@link Path}.
+   */
+  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) {
+    FileStatus status = null;
+    try {
+      status = fileSystem.getFileStatus(path);
+    } catch (IOException e) {
+      propagate(e);
+    }
+    return checkNotNull(status, "Expecting a non-null reference for '%s'", path);
   }
 }
