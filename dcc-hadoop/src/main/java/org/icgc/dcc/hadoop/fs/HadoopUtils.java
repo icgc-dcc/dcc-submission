@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.conf.Configuration;
@@ -79,6 +80,28 @@ public class HadoopUtils {
     } catch (IOException e) {
       throw new HdfsException(e);
     }
+  }
+
+  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) {
+    return isFile(fileSystem, new Path(stringPath));
+  }
+
+  @SneakyThrows
+  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) {
+    return fileSystem
+        .getFileStatus(path)
+        .isFile();
+  }
+
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) {
+    return isDirectory(fileSystem, new Path(stringPath));
+  }
+
+  @SneakyThrows
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) {
+    return fileSystem
+        .getFileStatus(path)
+        .isDirectory();
   }
 
   public static void rm(FileSystem fileSystem, String stringPath) {
