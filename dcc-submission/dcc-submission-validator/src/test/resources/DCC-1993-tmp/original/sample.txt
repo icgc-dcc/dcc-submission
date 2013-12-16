@@ -1,0 +1,14 @@
+analyzed_sample_id	specimen_id	other_sample
+sa-ssm-01.01.T01	sp-ssm-01.01	dummy
+sa-ssm-01.01.C02	sp-ssm-01.01	dummy
+sa-ssm-02.01.T01	sp-ssm-02.01	dummy
+sa-ssm-02.01.C02	sp-ssm-02.01	dummy
+sa-ssm-03.01.T01	sp-ssm-03.01	dummy
+sa-ssm-03.01.C02	sp-ssm-03.01	dummy
+sa-cnsm-01.01.T01	sp-cnsm-01.01	dummy
+sa-cnsm-01.01.C02	sp-cnsm-01.01	dummy
+sa-cnsm-02.01.T01	sp-cnsm-02.01	dummy
+sa-cnsm-02.01.C02	sp-cnsm-02.01	dummy
+sa-cnsm-03.01.T01	sp-cnsm-03.01	dummy
+sa-cnsm-03.01.C02	sp-cnsm-03.01	dummy
+
