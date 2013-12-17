@@ -21,8 +21,6 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import org.icgc.dcc.submission.validation.kv.Keys.Tuple;
-
 /**
  * 
  */

@@ -17,64 +17,28 @@
  */
 package org.icgc.dcc.submission.validation.kv;
 
-import java.util.List;
-
 import lombok.Value;
-import lombok.val;
 
-// TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
 @Value
-public class Keys implements Comparable<Keys> {
+public class Tuple {
 
-  public static final Keys NOT_APPLICABLE = null;
-
-  private final short size;
-  private final String[] keys;
-
-  public static Keys from(List<String> row, List<Integer> indices) {
-    short size = (short) indices.size();
-    val keys = new String[size];
-    for (int index = 0; index < indices.size(); index++) {
-      keys[index] = row.get(indices.get(index));
-    }
-    // TODO: checks
-    return new Keys(size, keys);
-  }
+  private final Keys pk;
+  private final Keys fk;
 
   /**
-   * Somewhat optimized...
+   * Only applicable for some meta files
    */
-  @Override
-  public int compareTo(Keys keys) {
-    // TODO: double-check for errors + guava way?
-    if (size == 1) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
-      if (compared0 != 0) {
-        return compared0;
-      }
-    } else if (size == 2) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
-      if (compared0 != 0) {
-        return compared0;
-      }
-      val compared1 = this.keys[1].compareTo(keys.keys[1]);
-      if (compared1 != 0) {
-        return compared1;
-      }
-    } else if (size == 3) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
-      if (compared0 != 0) {
-        return compared0;
-      }
-      val compared1 = this.keys[1].compareTo(keys.keys[1]);
-      if (compared1 != 0) {
-        return compared1;
-      }
-      val compared2 = this.keys[2].compareTo(keys.keys[2]);
-      if (compared2 != 0) {
-        return compared2;
-      }
-    }
-    return 0;
+  private final Keys secondaryFk;
+
+  public boolean hasPk() {
+    return pk != null;
+  }
+
+  public boolean hasFk() {
+    return fk != null;
+  }
+
+  public boolean hasSecondaryFk() {
+    return secondaryFk != null;
   }
 }
