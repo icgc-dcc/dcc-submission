@@ -17,34 +17,45 @@
  */
 package org.icgc.dcc.submission.validation.kv;
 
-import lombok.Getter;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
 
 /**
  * 
  */
-@Getter
-public class KeyValidatorData {
+public class KeyValidatorErrors {
 
-  // TODO: further split
-  FileDigest donorOriginalDigest;
-  FileDigest specimenOriginalDigest;
-  FileDigest sampleOriginalDigest;
-  FileDigest ssmMOriginalDigest;
-  FileDigest ssmPOriginalDigest;
-  FileDigest cnsmMOriginalDigest;
-  FileDigest cnsmPOriginalDigest;
-  FileDigest cnsmSOriginalDigest;
+  List<Tuple> donorUniqueOriginalErrors = newArrayList();
+  List<Tuple> specimenUniqueOriginalErrors = newArrayList();
+  List<Tuple> sampleUniqueOriginalErrors = newArrayList();
+  List<Tuple> ssmMUniqueOriginalErrors = newArrayList();
+  // List<Tuple> ssmPUniqueOriginalErrors = newArrayList();
+  List<Tuple> cnsmMUniqueOriginalErrors = newArrayList();
+  List<Tuple> cnsmPUniqueOriginalErrors = newArrayList();
+  // List<Tuple> cnsmSUniqueOriginalErrors = newArrayList();
 
-  FileDigest donorNewDigest;
-  FileDigest specimenNewDigest;
-  FileDigest sampleNewDigest;
-  FileDigest ssmMNewDigest;
-  FileDigest ssmPNewDigest;
-  FileDigest cnsmMNewDigest;
-  FileDigest cnsmPNewDigest;
-  FileDigest cnsmSNewDigest;
+  List<Tuple> donorUniqueNewErrors = newArrayList();
+  List<Tuple> specimenUniqueNewErrors = newArrayList();
+  List<Tuple> sampleUniqueNewErrors = newArrayList();
+  List<Tuple> ssmMUniqueNewErrors = newArrayList();
+  // List<Tuple> ssmPUniqueNewErrors = newArrayList();
+  List<Tuple> cnsmMUniqueNewErrors = newArrayList();
+  List<Tuple> cnsmPUniqueNewErrors = newArrayList();
+  // List<Tuple> cnsmSUniqueNewErrors = newArrayList();
 
-  FileDigest donorDigest;
-  FileDigest specimenDigest;
-  FileDigest sampleDigest;
+  List<Tuple> donorRelationErrors = newArrayList();
+  List<Tuple> specimenRelationErrors = newArrayList();
+  List<Tuple> sampleRelationErrors = newArrayList();
+  List<Tuple> ssmMRelationErrors = newArrayList();
+  List<Tuple> ssmPRelationErrors = newArrayList();
+  List<Tuple> cnsmMRelationErrors = newArrayList();
+  List<Tuple> cnsmPRelationErrors = newArrayList();
+  List<Tuple> cnsmSRelationErrors = newArrayList();
+
+  List<Keys> donorSurjectivityErrors = newArrayList();
+  List<Keys> specimenSurjectivityErrors = newArrayList();
+  List<Keys> sampleSurjectivityErrors = newArrayList();
+  List<Keys> ssmMSurjectivityErrors = newArrayList();
+  List<Keys> cnsmMSurjectivityErrors = newArrayList();
 }

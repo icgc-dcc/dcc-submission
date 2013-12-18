@@ -50,7 +50,7 @@ public class Surjectivity {
   }
 
   void validateSimpleSurjection(FileType fileType, //
-      final KeyValidatorData data, // TODO: only pass relevant copy instead
+      KeyValidatorData data, KeyValidatorErrors errors, // TODO: only pass relevant copy instead
       Set<Keys> surjectionEncountered) {
 
     Set<Keys> surjectionExpected = getSurjectionExpectedForType(fileType, data);
@@ -58,16 +58,17 @@ public class Surjectivity {
       collectSurjectionErrors(
           surjectionExpected,
           surjectionEncountered,
-          getSurjectionErrorsForType(fileType, data));
+          getSurjectionErrorsForType(fileType, errors));
     }
   }
 
-  void validateComplexSurjection(KeyValidatorData data) { // TODO: only pass relevant part instead
+  void validateComplexSurjection(KeyValidatorData data, KeyValidatorErrors errors) { // TODO: only pass relevant part
+                                                                                     // instead
     Set<Keys> sampleSurjectionExpected = newTreeSet(
-        (Helper.hasNewClinical() ? data.sampleNewDigest : data.sampleOriginalDigest)
+        (Helper.hasNewClinicalData() ? data.sampleNewDigest : data.sampleOriginalDigest)
             .getPks()); // TODO: defensive copy instead
     if (hasSurjectionErrors(sampleSurjectionExpected, sampleSurjectionEncountered)) {
-      collectSurjectionErrors(sampleSurjectionExpected, sampleSurjectionEncountered, data.sampleSurjectivityErrors);
+      collectSurjectionErrors(sampleSurjectionExpected, sampleSurjectionEncountered, errors.sampleSurjectivityErrors);
     }
   }
 
@@ -117,7 +118,7 @@ public class Surjectivity {
   }
 
   private List<Keys> getSurjectionErrorsForType(FileType fileType, //
-      final KeyValidatorData data // TODO: only pass relevant copy instead
+      final KeyValidatorErrors errors // TODO: only pass relevant copy instead
   ) {
     List<Keys> surjectionErrors = null;
 
@@ -125,23 +126,23 @@ public class Surjectivity {
     if (fileType == DONOR) {
       ; // N/A
     } else if (fileType == SPECIMEN) {
-      surjectionErrors = data.donorSurjectivityErrors;
+      surjectionErrors = errors.donorSurjectivityErrors;
     } else if (fileType == SAMPLE) {
-      surjectionErrors = data.specimenSurjectivityErrors;
+      surjectionErrors = errors.specimenSurjectivityErrors;
     }
 
     // Ssm
     else if (fileType == SSM_M) {
       ; // Handled elsewhere
     } else if (fileType == SSM_P) {
-      surjectionErrors = data.ssmMSurjectivityErrors;
+      surjectionErrors = errors.ssmMSurjectivityErrors;
     }
 
     // Cnsm
     else if (fileType == CNSM_M) {
       ; // Handled elsewhere
     } else if (fileType == CNSM_P) {
-      surjectionErrors = data.cnsmMSurjectivityErrors;
+      surjectionErrors = errors.cnsmMSurjectivityErrors;
     } else if (fileType == CNSM_S) {
       ; // N/A
     } else {

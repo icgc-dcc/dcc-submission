@@ -21,10 +21,14 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import com.google.common.base.Splitter;
+
 /**
  * 
  */
 public class KeyValidatorConstants {
+
+  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
 
   // map?
   public static final List<Integer> DONOR_PKS = newArrayList(0);

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.kv;
 
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.kv.FileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.kv.FileType.DONOR;
 import static org.icgc.dcc.submission.validation.kv.FileType.SSM_M;
@@ -30,33 +31,48 @@ import java.io.File;
  */
 public class Helper {
 
-  public static String getPath(SubmissionType submissionType, FileType fileType) {
-    return "src/test/resources/DCC-1993-tmp/" + submissionType.getSubDirectory() + "/"
-        + fileType.toString().toLowerCase()
-        + ".txt";
+  public static final String TO_BE_REMOVED_FILE_NAME = "TO_BE_REMOVED";
+  private static final String PARENT_DIR = "src/test/resources/DCC-1993-tmp";
+
+  public static String getDataFilePath(SubmissionType submissionType, FileType fileType) {
+    return format("%s/%s/%s.txt",
+        PARENT_DIR, submissionType.getSubDirectory(), fileType.toString().toLowerCase());
   }
 
-  public static boolean hasOriginalClinical() {
-    return new File(getPath(ORIGINAL_FILE, DONOR)).exists();
+  public static String getToBeRemovedFile() {
+    return format("%s/%s/%s.txt",
+        PARENT_DIR, NEW_FILE.getSubDirectory(), TO_BE_REMOVED_FILE_NAME);
   }
 
-  public static boolean hasOriginalSsm() {
-    return new File(getPath(ORIGINAL_FILE, SSM_M)).exists();
+  public static boolean hasToBeRemovedFile() {
+    return new File(getToBeRemovedFile()).exists();
   }
 
-  public static boolean hasOriginalCnsm() {
-    return new File(getPath(ORIGINAL_FILE, CNSM_M)).exists();
+  public static boolean hasOriginalData() {
+    return hasOriginalClinicalData();
   }
 
-  public static boolean hasNewClinical() {
-    return new File(getPath(NEW_FILE, DONOR)).exists();
+  public static boolean hasOriginalClinicalData() {
+    return new File(getDataFilePath(ORIGINAL_FILE, DONOR)).exists();
   }
 
-  public static boolean hasNewSsm() {
-    return new File(getPath(NEW_FILE, SSM_M)).exists();
+  public static boolean hasOriginalSsmData() {
+    return new File(getDataFilePath(ORIGINAL_FILE, SSM_M)).exists();
   }
 
-  public static boolean hasNewCnsm() {
-    return new File(getPath(NEW_FILE, CNSM_M)).exists();
+  public static boolean hasOriginalCnsmData() {
+    return new File(getDataFilePath(ORIGINAL_FILE, CNSM_M)).exists();
+  }
+
+  public static boolean hasNewClinicalData() {
+    return new File(getDataFilePath(NEW_FILE, DONOR)).exists();
+  }
+
+  public static boolean hasNewSsmData() {
+    return new File(getDataFilePath(NEW_FILE, SSM_M)).exists();
+  }
+
+  public static boolean hasNewCnsmData() {
+    return new File(getDataFilePath(NEW_FILE, CNSM_M)).exists();
   }
 }

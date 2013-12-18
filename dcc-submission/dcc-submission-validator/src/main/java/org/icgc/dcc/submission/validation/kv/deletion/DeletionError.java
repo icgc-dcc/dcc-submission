@@ -15,36 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.kv.deletion;
 
-import lombok.Getter;
 
 /**
  * 
  */
-@Getter
-public class KeyValidatorData {
+public class DeletionError {
 
-  // TODO: further split
-  FileDigest donorOriginalDigest;
-  FileDigest specimenOriginalDigest;
-  FileDigest sampleOriginalDigest;
-  FileDigest ssmMOriginalDigest;
-  FileDigest ssmPOriginalDigest;
-  FileDigest cnsmMOriginalDigest;
-  FileDigest cnsmPOriginalDigest;
-  FileDigest cnsmSOriginalDigest;
-
-  FileDigest donorNewDigest;
-  FileDigest specimenNewDigest;
-  FileDigest sampleNewDigest;
-  FileDigest ssmMNewDigest;
-  FileDigest ssmPNewDigest;
-  FileDigest cnsmMNewDigest;
-  FileDigest cnsmPNewDigest;
-  FileDigest cnsmSNewDigest;
-
-  FileDigest donorDigest;
-  FileDigest specimenDigest;
-  FileDigest sampleDigest;
 }

@@ -5,4 +5,4 @@ an-ssm-02	sa-ssm-02.01.T01	mut-ssm-02.01	dummy
 an-ssm-02	sa-ssm-02.01.T01	mut-ssm-02.02	dummy
 an-ssm-03	sa-ssm-03.01.T01	mut-ssm-03.01	dummy
 an-ssm-03	sa-ssm-03.01.T01	mut-ssm-03.02	dummy
-
+an-ssm-04	sa-ssm-04.01.T01	mut-ssm-04.01	dummy

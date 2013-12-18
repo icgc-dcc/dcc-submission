@@ -1,0 +1,3 @@
+donor_id	feature_type
+dr01	cnsm, ssm
+dr04	all

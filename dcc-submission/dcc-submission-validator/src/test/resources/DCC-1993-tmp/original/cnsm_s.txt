@@ -11,4 +11,4 @@ an-cnsm-03	sa-cnsm-03.01.T01	mut-cnsm-03.01	co-cnsm-03.01.01	dummy
 an-cnsm-03	sa-cnsm-03.01.T01	mut-cnsm-03.01	co-cnsm-03.01.02	dummy
 an-cnsm-03	sa-cnsm-03.01.T01	mut-cnsm-03.02	co-cnsm-03.02.01	dummy
 an-cnsm-03	sa-cnsm-03.01.T01	mut-cnsm-03.02	co-cnsm-03.02.02	dummy
-
+an-cnsm-04	sa-cnsm-04.01.T01	mut-cnsm-04.01	co-cnsm-04.01.01	dummy
