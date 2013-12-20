@@ -47,7 +47,7 @@ public class SurjectivityValidator {
   public void validateSimpleSurjection(KVFileType fileType,
       KVFileDataDigest originalData, KVFileDataDigest newData, KVFileErrors surjectionFileErrors,
       Set<KVKeys> surjectionEncountered) {
-    val dataDigest = !fileType.isDodo() || hasNewClinicalData() ? newData : originalData;
+    val dataDigest = !fileType.isReplaceAll() || hasNewClinicalData() ? newData : originalData;
     val expectedSujectionKeys = newTreeSet(checkNotNull(dataDigest, "TODO: '%s'", fileType).getPks());
     if (hasSurjectionErrors(expectedSujectionKeys, surjectionEncountered)) {
       collectSurjectionErrors(

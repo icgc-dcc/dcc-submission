@@ -77,12 +77,11 @@ import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
-public class KVFileDataDigest { // TODO: use optionals?
+public class KVFileDataDigest {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   // TODO: encapsulate in other object?
-
   @SuppressWarnings("unused")
   // Used in toString()
   private final KVSubmissionType submissionType;
@@ -96,9 +95,8 @@ public class KVFileDataDigest { // TODO: use optionals?
   // Used in toString()
   private final boolean placeholder;
 
-  // TODO: change to arrays?
   @Getter
-  private final Set<KVKeys> pks;
+  private final Set<KVKeys> pks; // TODO: change to arrays?
 
   public static KVFileDataDigest getEmptyInstance(KVSubmissionType submissionType, KVFileType fileType) {
     return new KVFileDataDigest(
@@ -109,8 +107,11 @@ public class KVFileDataDigest { // TODO: use optionals?
         Sets.<KVKeys> newTreeSet());
   }
 
+  /**
+   * TODO: ! account for deletions (do not report errors for those)
+   */
   @SneakyThrows
-  public KVFileDataDigest( // TODO: very ugly
+  public KVFileDataDigest( // TODO: very ugly: split processing of new and old
       KVSubmissionType submissionType, KVFileType fileType, String path,
       DeletionData deletionData,
       KVFileDataDigest oldData, KVFileDataDigest oldReferencedData, KVFileDataDigest newReferencedData,
@@ -134,6 +135,7 @@ public class KVFileDataDigest { // TODO: use optionals?
     val reader = new BufferedReader(new FileReader(new File(path)));
     long lineCount = 0;
     for (String line; (line = reader.readLine()) != null;) {
+
       // TODO: add sanity check on header
       if (lineCount != 0 && !line.trim().isEmpty()) {
         val row = newArrayList(TAB_SPLITTER.split(line)); // TODO: optimize (use array)
@@ -155,7 +157,7 @@ public class KVFileDataDigest { // TODO: use optionals?
         else {
 
           // Clinical
-          if (fileType == DONOR) {
+          if (fileType == DONOR) { // TODO: split per file type (subclass or compose)
 
             // Uniqueness check against original data
             if (oldData.pksContains(tuple.getPk())) {

@@ -27,8 +27,8 @@ public enum KVFileType {
   CNSM_P,
   CNSM_S;
 
-  public boolean isDodo() {
-    return this == SPECIMEN || this == SAMPLE;
+  public boolean isReplaceAll() {
+    return this == DONOR || this == SPECIMEN || this == SAMPLE;
   }
 
   public boolean hasComplexSurjectiveRelation() {
