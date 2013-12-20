@@ -17,64 +17,31 @@
  */
 package org.icgc.dcc.submission.validation.kv;
 
-import java.util.List;
+enum KVFileType {
+  DONOR,
+  SPECIMEN,
+  SAMPLE,
+  SSM_M,
+  SSM_P,
+  CNSM_M,
+  CNSM_P,
+  CNSM_S;
 
-import lombok.Value;
-import lombok.val;
-
-// TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
-@Value
-public class Keys implements Comparable<Keys> { // TODO: more like KeysValues
-
-  public static final Keys NOT_APPLICABLE = null;
-
-  private final short size;
-  private final String[] keys;
-
-  public static Keys from(List<String> row, List<Integer> indices) {
-    short size = (short) indices.size();
-    val keys = new String[size];
-    for (int index = 0; index < indices.size(); index++) {
-      keys[index] = row.get(indices.get(index));
-    }
-    // TODO: checks
-    return new Keys(size, keys);
+  public boolean hasComplexSurjectiveRelation() {
+    return this == SSM_M || this == CNSM_M;
   }
 
   /**
-   * Somewhat optimized...
+   * Simple as opposd to TODO
    */
-  @Override
-  public int compareTo(Keys keys) {
-    // TODO: double-check for errors + guava way?
-    if (size == 1) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
-      if (compared0 != 0) {
-        return compared0;
-      }
-    } else if (size == 2) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
-      if (compared0 != 0) {
-        return compared0;
-      }
-      val compared1 = this.keys[1].compareTo(keys.keys[1]);
-      if (compared1 != 0) {
-        return compared1;
-      }
-    } else if (size == 3) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
-      if (compared0 != 0) {
-        return compared0;
-      }
-      val compared1 = this.keys[1].compareTo(keys.keys[1]);
-      if (compared1 != 0) {
-        return compared1;
-      }
-      val compared2 = this.keys[2].compareTo(keys.keys[2]);
-      if (compared2 != 0) {
-        return compared2;
-      }
-    }
-    return 0;
+  public boolean hasSimpleSurjectiveRelation() {
+    return this == SPECIMEN || this == SAMPLE || this == SSM_P || this == CNSM_P;
+  }
+
+  /**
+   * 
+   */
+  public boolean hasPk() {
+    return this != SSM_P && this != CNSM_S;
   }
 }

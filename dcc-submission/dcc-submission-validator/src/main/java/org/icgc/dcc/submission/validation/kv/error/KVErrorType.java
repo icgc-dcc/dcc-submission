@@ -15,38 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.kv.error;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.List;
-
-import com.google.common.base.Splitter;
+import static org.icgc.dcc.submission.validation.kv.error.KeysType.FK;
+import static org.icgc.dcc.submission.validation.kv.error.KeysType.PK;
+import static org.icgc.dcc.submission.validation.kv.error.KeysType.SECONDARY_FK;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 
  */
-public class KeyValidatorConstants {
+@RequiredArgsConstructor
+public enum KVErrorType {
+  UNIQUE_ORIGINAL(PK),
+  UNIQUE_NEW(PK),
+  RELATION(FK),
+  SECONDARY_RELATION(SECONDARY_FK),
+  SURJECTION(PK);
 
-  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
-
-  // map?
-  public static final List<Integer> DONOR_PKS = newArrayList(0);
-  public static final List<Integer> SPECIMEN_FKS = newArrayList(0);
-  public static final List<Integer> SPECIMEN_PKS = newArrayList(1);
-  public static final List<Integer> SAMPLE_FKS = newArrayList(1);
-  public static final List<Integer> SAMPLE_PKS = newArrayList(0);
-  public static final List<Integer> SSM_M_FKS1 = newArrayList(1); // Tumour
-  public static final List<Integer> SSM_M_FKS2 = newArrayList(2); // Control
-  public static final List<Integer> SSM_M_PKS = newArrayList(0, SSM_M_FKS1.get(0));
-  public static final List<Integer> SSM_P_FKS = newArrayList(0, 1);
-  // public static final List<Integer> SSM_P_PKS = newArrayList();
-  public static final List<Integer> CNSM_M_FKS1 = newArrayList(1); // Tumour
-  public static final List<Integer> CNSM_M_FKS2 = newArrayList(2); // Control
-  public static final List<Integer> CNSM_M_PKS = newArrayList(0, CNSM_M_FKS1.get(0));
-  public static final List<Integer> CNSM_P_FKS = newArrayList(0, 1);
-  public static final List<Integer> CNSM_P_PKS = newArrayList(0, 1, 2);
-  public static final List<Integer> CNSM_S_FKS = newArrayList(0, 1, 2);
-
-  // public static final List<Integer> CNSM_S_PKS = newArrayList();
+  /**
+   * TODO: explain!
+   */
+  @Getter
+  private final KeysType keysType;
 }

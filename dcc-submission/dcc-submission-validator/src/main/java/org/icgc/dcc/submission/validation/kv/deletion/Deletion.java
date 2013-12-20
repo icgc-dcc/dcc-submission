@@ -22,7 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
 import static org.icgc.dcc.submission.validation.kv.Helper.getToBeRemovedFile;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorConstants.TAB_SPLITTER;
+import static org.icgc.dcc.submission.validation.kv.KeyValidator.TAB_SPLITTER;
 import static org.icgc.dcc.submission.validation.kv.deletion.Deletion.KeyValidationAdditionalType.ALL;
 import static org.icgc.dcc.submission.validation.kv.deletion.Deletion.KeyValidationAdditionalType.ERROR;
 
@@ -83,7 +83,7 @@ public class Deletion {
 
     // TODO: "with" construct
     val reader = new BufferedReader(new FileReader(new File(toBeDetetedFile)));
-    int lineCount = 0;
+    long lineCount = 0;
     for (String line; (line = reader.readLine()) != null;) {
       if (lineCount != 0 && !line.trim().isEmpty()) {
         val row = newArrayList(TAB_SPLITTER.split(line));

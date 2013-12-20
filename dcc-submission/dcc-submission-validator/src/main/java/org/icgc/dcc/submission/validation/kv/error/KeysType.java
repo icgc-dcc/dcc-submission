@@ -15,19 +15,11 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.kv.error;
 
-enum FileType {
-  DONOR, SPECIMEN, SAMPLE, SSM_M, SSM_P, CNSM_M, CNSM_P, CNSM_S;
-
-  public boolean hasComplexSurjectiveRelation() {
-    return this == SSM_M || this == CNSM_M;
-  }
-
-  /**
-   * Simple as opposd to TODO
-   */
-  public boolean hasSimpleSurjectiveRelation() {
-    return this == SPECIMEN || this == SAMPLE || this == SSM_P || this == CNSM_P;
-  }
+/**
+ * 
+ */
+public enum KeysType {
+  PK, FK, SECONDARY_FK;
 }

@@ -18,8 +18,13 @@
 package org.icgc.dcc.submission.validation.kv.deletion;
 
 import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Sets.difference;
+import static com.google.common.collect.Sets.intersection;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
+import static com.google.common.collect.Sets.union;
 
 import java.util.List;
 import java.util.Map;
@@ -31,11 +36,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.submission.validation.kv.KeyValidatorData;
+import org.icgc.dcc.submission.validation.kv.Keys;
 import org.icgc.dcc.submission.validation.kv.deletion.Deletion.KeyValidationAdditionalType;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * 
@@ -50,18 +56,20 @@ public class DeletionData {
     return new DeletionData(Maps.<String, List<DeletionType>> newTreeMap());
   }
 
-  public Set<String> getDonorIds() {
+  public Set<String> getDonorIdKeys() {
     return deletionMap.keySet();
   }
 
   /**
    * Only log.errors them now
    * <p>
+   * Assumed to be well-formed (TSV, encoding, number of columns, ...)
+   * <p>
    * TODO: consider validating while parsing to save time? Could this file get big?
    * <p>
    * TODO: pass line number as well
    */
-  public Optional<DeletionError> validate() {
+  public Optional<DeletionError> validateWellFormedness() {
     Set<String> encountered = newTreeSet();
     for (val entry : deletionMap.entrySet()) {
       val donorId = entry.getKey();
@@ -94,14 +102,17 @@ public class DeletionData {
   /**
    * TODO: add tests
    */
-  public boolean validateClinicalDataDeletion1(KeyValidatorData data) { // TODO: PLK
-    val donorOriginalPks = data.getDonorOriginalDigest().getPks();
-    val donorsToBeDeleted = getDonorIds();
+  public boolean validateAgainstOldClinicalData(KeyValidatorData data) { // TODO: PLK
+    val donorOriginalPks = extractSingleKey(
+        data
+            .getDonorOriginalDigest()
+            .getPks());
+    val donorsToBeDeleted = getDonorIdKeys();
 
     // Checks if there are donors marked as to-be-deleted but that do not exist in the original data
-    val difference2 = Sets.difference(donorsToBeDeleted, donorOriginalPks);
-    if (!difference2.isEmpty()) {
-      log.error("'{}'", difference2);
+    val difference = difference(donorsToBeDeleted, donorOriginalPks);
+    if (!difference.isEmpty()) {
+      log.error("'{}'", difference);
       return false;
     }
 
@@ -111,27 +122,49 @@ public class DeletionData {
   /**
    * TODO: add tests
    */
-  public boolean validateClinicalDataDeletion2(KeyValidatorData data) { // TODO: PLK
-    val donorOriginalPks = data.getDonorOriginalDigest().getPks();
-    val donorNewPks = data.getDonorNewDigest().getPks();
-    val donorsToBeDeleted = getDonorIds();
+  public boolean validateAgainstNewClinicalData(KeyValidatorData data) { // TODO: PLK
+    val donorOriginalPks = extractSingleKey(
+        data
+            .getDonorOriginalDigest()
+            .getPks());
+    val donorNewPks = extractSingleKey(
+        data
+            .getDonorNewDigest()
+            .getPks());
+    val donorsToBeDeleted = getDonorIdKeys();
 
     // Check if there are donors that are both included in the new data and marked as to-be-deleted
-    val intersection = Sets.intersection(donorNewPks, donorsToBeDeleted);
+    val intersection = intersection(donorNewPks, donorsToBeDeleted);
     if (!intersection.isEmpty()) {
       log.error("'{}'", intersection);
       return false;
     }
 
-    val union = Sets.union(donorNewPks, donorsToBeDeleted);
-    val difference1 = Sets.difference(donorOriginalPks, union);
-
     // Check if there are donors formerly in the data but not included in the new data yet not marked as to-be-deleted
-    if (!difference1.isEmpty()) {
-      log.error("'{}'", difference1);
+    val union = union(donorNewPks, donorsToBeDeleted);
+    val difference = difference(donorOriginalPks, union);
+    if (!difference.isEmpty()) {
+      log.error("'{}'", difference);
       return false;
     }
 
     return true;
+  }
+
+  /**
+   * TODO: move to a decorator for file digest?
+   */
+  private Set<String> extractSingleKey(Set<Keys> keys) {
+    return newTreeSet(transform(
+        keys,
+        new Function<Keys, String>() {
+
+          @Override
+          public String apply(Keys keys) {
+            checkState(keys.getSize() == 1); // TODO: remove costly check?
+            return keys.getKeys()[0];
+          }
+        }));
+
   }
 }

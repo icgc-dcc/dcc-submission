@@ -20,17 +20,18 @@ package org.icgc.dcc.submission.validation.kv;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.kv.FileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.FileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.FileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.FileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.FileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.FileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.FileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.FileType.SSM_P;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_P;
 
-import java.util.List;
 import java.util.Set;
+
+import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
 
 /**
  * 
@@ -49,7 +50,7 @@ public class Surjectivity {
     sampleSurjectionEncountered.addAll(surjectionEncountered);
   }
 
-  void validateSimpleSurjection(FileType fileType, //
+  void validateSimpleSurjection(KVFileType fileType, //
       KeyValidatorData data, KeyValidatorErrors errors, // TODO: only pass relevant copy instead
       Set<Keys> surjectionEncountered) {
 
@@ -68,7 +69,10 @@ public class Surjectivity {
         (Helper.hasNewClinicalData() ? data.sampleNewDigest : data.sampleOriginalDigest)
             .getPks()); // TODO: defensive copy instead
     if (hasSurjectionErrors(sampleSurjectionExpected, sampleSurjectionEncountered)) {
-      collectSurjectionErrors(sampleSurjectionExpected, sampleSurjectionEncountered, errors.sampleSurjectivityErrors);
+      collectSurjectionErrors(
+          sampleSurjectionExpected,
+          sampleSurjectionEncountered,
+          errors.getFileErrors(SAMPLE));
     }
   }
 
@@ -76,17 +80,18 @@ public class Surjectivity {
     return surjectionExpected.size() != surjectionEncountered.size();
   }
 
-  private void collectSurjectionErrors(Set<Keys> surjectionExpected, Set<Keys> surjectionEncountered,
-      List<Keys> surjectionErrors) {
+  private void collectSurjectionErrors(
+      Set<Keys> surjectionExpected, Set<Keys> surjectionEncountered,
+      KVFileErrors fileError) {
     for (Keys keys : surjectionExpected) {
       if (!surjectionEncountered.contains(keys)) {
-        surjectionErrors.add(keys);
+        fileError.addSurjectionError(keys);
       }
     }
   }
 
-  private Set<Keys> getSurjectionExpectedForType(FileType fileType, //
-      final KeyValidatorData data // TODO: only pass relevant copy instead
+  private Set<Keys> getSurjectionExpectedForType(KVFileType fileType,
+      KeyValidatorData data // TODO: PLK
   ) {
     Set<Keys> surjectionExpected = null;
 
@@ -117,37 +122,38 @@ public class Surjectivity {
     return checkNotNull(surjectionExpected, "TODO: '%s'", fileType);
   }
 
-  private List<Keys> getSurjectionErrorsForType(FileType fileType, //
+  private KVFileErrors getSurjectionErrorsForType(KVFileType fileType, //
       final KeyValidatorErrors errors // TODO: only pass relevant copy instead
   ) {
-    List<Keys> surjectionErrors = null;
+    KVFileErrors surjectionErrors = null;
 
     // Clinical
     if (fileType == DONOR) {
       ; // N/A
     } else if (fileType == SPECIMEN) {
-      surjectionErrors = errors.donorSurjectivityErrors;
+      surjectionErrors = errors.getFileErrors(DONOR);
     } else if (fileType == SAMPLE) {
-      surjectionErrors = errors.specimenSurjectivityErrors;
+      surjectionErrors = errors.getFileErrors(SPECIMEN);
     }
 
     // Ssm
     else if (fileType == SSM_M) {
-      ; // Handled elsewhere
+      ; // SAMPLE is handled elsewhere
     } else if (fileType == SSM_P) {
-      surjectionErrors = errors.ssmMSurjectivityErrors;
+      surjectionErrors = errors.getFileErrors(SSM_M);
     }
 
     // Cnsm
     else if (fileType == CNSM_M) {
-      ; // Handled elsewhere
+      ; // SAMPLE is handled elsewhere
     } else if (fileType == CNSM_P) {
-      surjectionErrors = errors.cnsmMSurjectivityErrors;
+      surjectionErrors = errors.getFileErrors(CNSM_M);
     } else if (fileType == CNSM_S) {
       ; // N/A
     } else {
       checkState(false, "TODO");
     }
+
     return checkNotNull(surjectionErrors, "TODO");
   }
 }

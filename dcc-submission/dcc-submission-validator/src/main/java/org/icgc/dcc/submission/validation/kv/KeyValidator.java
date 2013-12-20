@@ -18,14 +18,6 @@
 package org.icgc.dcc.submission.validation.kv;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.validation.kv.FileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.FileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.FileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.FileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.FileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.FileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.FileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.FileType.SSM_P;
 import static org.icgc.dcc.submission.validation.kv.Helper.TO_BE_REMOVED_FILE_NAME;
 import static org.icgc.dcc.submission.validation.kv.Helper.getDataFilePath;
 import static org.icgc.dcc.submission.validation.kv.Helper.hasNewClinicalData;
@@ -36,6 +28,14 @@ import static org.icgc.dcc.submission.validation.kv.Helper.hasOriginalCnsmData;
 import static org.icgc.dcc.submission.validation.kv.Helper.hasOriginalData;
 import static org.icgc.dcc.submission.validation.kv.Helper.hasOriginalSsmData;
 import static org.icgc.dcc.submission.validation.kv.Helper.hasToBeRemovedFile;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_P;
 import static org.icgc.dcc.submission.validation.kv.SubmissionType.NEW_FILE;
 import static org.icgc.dcc.submission.validation.kv.SubmissionType.ORIGINAL_FILE;
 import static org.icgc.dcc.submission.validation.kv.SubmissionType.TREATED_AS_ORIGINAL;
@@ -44,6 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.kv.deletion.Deletion;
 import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
+
+import com.google.common.base.Splitter;
 
 /**
  * Very primitive version. The non-genericity was a request from Bob.
@@ -57,6 +59,8 @@ import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
 @Slf4j
 @RequiredArgsConstructor
 public class KeyValidator {
+
+  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
 
   private final long logThreshold;
   private final KeyValidatorData data = new KeyValidatorData();
@@ -75,7 +79,7 @@ public class KeyValidator {
     }
     log.info("{}", deletionData);
 
-    deletionData.validate();
+    deletionData.validateWellFormedness();
 
     if (hasOriginalData()) {
       loadOriginalData();
@@ -116,6 +120,9 @@ public class KeyValidator {
       data.specimenDigest = data.specimenOriginalDigest;
       data.sampleDigest = data.sampleOriginalDigest;
     }
+
+    boolean valid = errors.describe();
+    log.info("{}", valid);
 
     log.info("done.");
   }
@@ -187,7 +194,7 @@ public class KeyValidator {
    */
   private void loadNewData(DeletionData deletionData) {
 
-    boolean valid = true;// TODO: deletionData.validateClinicalDataDeletion1(data);
+    boolean valid = deletionData.validateAgainstOldClinicalData(data);
     if (!valid) {
       System.exit(1); // FIXME
     } else {
@@ -208,7 +215,7 @@ public class KeyValidator {
           TREATED_AS_ORIGINAL, SAMPLE, getDataFilePath(NEW_FILE, SAMPLE),
           data, errors, surjectivity, logThreshold);
 
-      valid = deletionData.validateClinicalDataDeletion2(data);
+      valid = deletionData.validateAgainstNewClinicalData(data);
       if (!valid) {
         System.exit(1); // FIXME
       } else {
