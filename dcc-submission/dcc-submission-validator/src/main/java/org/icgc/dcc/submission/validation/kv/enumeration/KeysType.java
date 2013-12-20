@@ -15,30 +15,11 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
-
-import static com.google.common.collect.Maps.newLinkedHashMap;
-
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+package org.icgc.dcc.submission.validation.kv.enumeration;
 
 /**
  * 
  */
-public class KVSubmissionDataDigest {
-
-  private final Map<KVFileType, KVFileDataDigest> data = newLinkedHashMap();
-
-  public Set<Entry<KVFileType, KVFileDataDigest>> entrySet() {
-    return data.entrySet();
-  }
-
-  public void put(KVFileType fileType, KVFileDataDigest fileData) {
-    data.put(fileType, fileData);
-  }
-
-  public KVFileDataDigest get(KVFileType fileType) {
-    return data.get(fileType);
-  }
+public enum KeysType {
+  PK, FK, SECONDARY_FK;
 }

@@ -15,28 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.error;
+package org.icgc.dcc.submission.validation.kv.enumeration;
 
-import static org.icgc.dcc.submission.validation.kv.error.KeysType.FK;
-import static org.icgc.dcc.submission.validation.kv.error.KeysType.PK;
-import static org.icgc.dcc.submission.validation.kv.error.KeysType.SECONDARY_FK;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * 
- */
 @RequiredArgsConstructor
-public enum KVErrorType {
-  UNIQUE_ORIGINAL(PK),
-  UNIQUE_NEW(PK),
-  RELATION(FK),
-  SECONDARY_RELATION(SECONDARY_FK),
-  SURJECTION(PK);
+public enum KVSubmissionType {
+  ORIGINAL_FILE("original"),
+  NEW_FILE("new"),
+  TREATED_AS_ORIGINAL(ORIGINAL_FILE.getSubDirectory()), // For clinical data re-submitted
+  ;
 
-  /**
-   * TODO: explain!
-   */
   @Getter
-  private final KeysType keysType;
+  private final String subDirectory;
+
+  public boolean isIncrementalData() {
+    return this == NEW_FILE;
+  }
+
+  public boolean isExistingData() {
+    return !isIncrementalData();
+  }
 }

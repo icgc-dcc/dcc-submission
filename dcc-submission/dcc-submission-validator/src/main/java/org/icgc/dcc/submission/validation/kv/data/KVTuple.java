@@ -15,20 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.kv.data;
 
 import lombok.Value;
 
 @Value
-public class Tuple {
+public class KVTuple {
 
-  private final Keys pk;
-  private final Keys fk;
+  private final KVKeys pk;
+  private final KVKeys fk;
 
   /**
    * Only applicable for some meta files
    */
-  private final Keys secondaryFk;
+  private final KVKeys secondaryFk;
 
   public boolean hasPk() {
     return pk != null;

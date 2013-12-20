@@ -21,14 +21,14 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
-import static org.icgc.dcc.submission.validation.kv.Helper.getDataFilePath;
-import static org.icgc.dcc.submission.validation.kv.Helper.getToBeRemovedFile;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.NEW_FILE;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.ORIGINAL_FILE;
-import static org.icgc.dcc.submission.validation.kv.KeyValidationAdditionalType.ALL;
-import static org.icgc.dcc.submission.validation.kv.KeyValidationAdditionalType.ERROR;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.getDataFilePath;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.getToBeRemovedFile;
 import static org.icgc.dcc.submission.validation.kv.KeyValidator.TAB_SPLITTER;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.NEW_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ALL;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ERROR;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.submission.validation.kv.KeyValidationAdditionalType;
+import org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;

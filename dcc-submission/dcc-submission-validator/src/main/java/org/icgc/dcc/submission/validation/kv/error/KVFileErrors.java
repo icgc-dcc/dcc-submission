@@ -20,18 +20,19 @@ package org.icgc.dcc.submission.validation.kv.error;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.RELATION;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.SECONDARY_RELATION;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.SURJECTION;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.UNIQUE_NEW;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.UNIQUE_ORIGINAL;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SECONDARY_RELATION;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SURJECTION;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_NEW;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_ORIGINAL;
 
 import java.util.List;
 import java.util.Map;
 
-import lombok.val;
+import org.icgc.dcc.submission.validation.kv.data.KVKeys;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
 
-import org.icgc.dcc.submission.validation.kv.Keys;
+import lombok.val;
 
 /**
  * Include file type?
@@ -68,14 +69,14 @@ public class KVFileErrors {
     return rowErrors.containsKey(lineNumber);
   }
 
-  public void addSurjectionError(Keys keys) {
+  public void addSurjectionError(KVKeys keys) {
     addError(SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys);
   }
 
   /**
    * TODO: create other wrappers like the surjection one
    */
-  public void addError(long lineNumber, KVErrorType type, Keys keys) {
+  public void addError(long lineNumber, KVErrorType type, KVKeys keys) {
     rowErrors.put(lineNumber, new KVRowError(type, keys));
   }
 

@@ -15,40 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.kv.data;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_P;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_M_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_P_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_P_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_S_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.DONOR_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SAMPLE_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SAMPLE_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SPECIMEN_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SPECIMEN_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_M_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_P_FKS;
 import static org.icgc.dcc.submission.validation.kv.KeyValidator.TAB_SPLITTER;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.RELATION;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.SECONDARY_RELATION;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.UNIQUE_NEW;
-import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.UNIQUE_ORIGINAL;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SECONDARY_RELATION;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_NEW;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_ORIGINAL;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.CNSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.CNSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.CNSM_M_PKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.CNSM_P_FKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.CNSM_P_PKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.CNSM_S_FKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SAMPLE_FKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SPECIMEN_FKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SPECIMEN_PKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SSM_M_PKS;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.SSM_P_FKS;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -66,7 +66,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
 import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
+import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
@@ -95,7 +98,7 @@ public class KVFileDataDigest { // TODO: use optionals?
 
   // TODO: change to arrays?
   @Getter
-  private final Set<Keys> pks;
+  private final Set<KVKeys> pks;
 
   public static KVFileDataDigest getEmptyInstance(KVSubmissionType submissionType, KVFileType fileType) {
     return new KVFileDataDigest(
@@ -103,7 +106,7 @@ public class KVFileDataDigest { // TODO: use optionals?
         fileType,
         (String) null,
         true,
-        Sets.<Keys> newTreeSet());
+        Sets.<KVKeys> newTreeSet());
   }
 
   @SneakyThrows
@@ -124,7 +127,7 @@ public class KVFileDataDigest { // TODO: use optionals?
     log.info("{}", Joiner.on(", ").join(submissionType, fileType, path));
 
     // Prepare surjection info gathering
-    Set<Keys> surjectionEncountered = submissionType.isIncrementalData() ? Sets.<Keys> newTreeSet() : null;
+    Set<KVKeys> surjectionEncountered = submissionType.isIncrementalData() ? Sets.<KVKeys> newTreeSet() : null;
 
     // Read line by lines
     @Cleanup
@@ -392,52 +395,52 @@ public class KVFileDataDigest { // TODO: use optionals?
     }
   }
 
-  private Tuple getTuple(KVFileType fileType, List<String> row) {
-    Keys pk = null, fk1 = null, fk2 = null;
+  private KVTuple getTuple(KVFileType fileType, List<String> row) {
+    KVKeys pk = null, fk1 = null, fk2 = null;
 
     // Clinical
     if (fileType == DONOR) {
-      pk = Keys.from(row, DONOR_PKS);
-      fk1 = Keys.NOT_APPLICABLE;
-      fk2 = Keys.NOT_APPLICABLE;
+      pk = KVKeys.from(row, DONOR_PKS);
+      fk1 = KVKeys.NOT_APPLICABLE;
+      fk2 = KVKeys.NOT_APPLICABLE;
     } else if (fileType == SPECIMEN) {
-      pk = Keys.from(row, SPECIMEN_PKS);
-      fk1 = Keys.from(row, SPECIMEN_FKS);
-      fk2 = Keys.NOT_APPLICABLE;
+      pk = KVKeys.from(row, SPECIMEN_PKS);
+      fk1 = KVKeys.from(row, SPECIMEN_FKS);
+      fk2 = KVKeys.NOT_APPLICABLE;
     } else if (fileType == SAMPLE) {
-      pk = Keys.from(row, SAMPLE_PKS);
-      fk1 = Keys.from(row, SAMPLE_FKS);
-      fk2 = Keys.NOT_APPLICABLE;
+      pk = KVKeys.from(row, SAMPLE_PKS);
+      fk1 = KVKeys.from(row, SAMPLE_FKS);
+      fk2 = KVKeys.NOT_APPLICABLE;
     }
 
     // Ssm
     else if (fileType == SSM_M) {
-      pk = Keys.from(row, SSM_M_PKS);
-      fk1 = Keys.from(row, SSM_M_FKS1);
-      fk2 = Keys.from(row, SSM_M_FKS2); // TODO: handle case where value is null or a missing code
+      pk = KVKeys.from(row, SSM_M_PKS);
+      fk1 = KVKeys.from(row, SSM_M_FKS1);
+      fk2 = KVKeys.from(row, SSM_M_FKS2); // TODO: handle case where value is null or a missing code
     } else if (fileType == SSM_P) {
-      pk = Keys.NOT_APPLICABLE;
-      fk1 = Keys.from(row, SSM_P_FKS);
-      fk2 = Keys.NOT_APPLICABLE;
+      pk = KVKeys.NOT_APPLICABLE;
+      fk1 = KVKeys.from(row, SSM_P_FKS);
+      fk2 = KVKeys.NOT_APPLICABLE;
     }
 
     // Cnsm
     else if (fileType == CNSM_M) {
-      pk = Keys.from(row, CNSM_M_PKS);
-      fk1 = Keys.from(row, CNSM_M_FKS1);
-      fk2 = Keys.from(row, CNSM_M_FKS2); // TODO: handle case where value is null or a missing code
+      pk = KVKeys.from(row, CNSM_M_PKS);
+      fk1 = KVKeys.from(row, CNSM_M_FKS1);
+      fk2 = KVKeys.from(row, CNSM_M_FKS2); // TODO: handle case where value is null or a missing code
     } else if (fileType == CNSM_P) {
-      pk = Keys.from(row, CNSM_P_PKS);
-      fk1 = Keys.from(row, CNSM_P_FKS);
-      fk2 = Keys.NOT_APPLICABLE;
+      pk = KVKeys.from(row, CNSM_P_PKS);
+      fk1 = KVKeys.from(row, CNSM_P_FKS);
+      fk2 = KVKeys.NOT_APPLICABLE;
     } else if (fileType == CNSM_S) {
-      pk = Keys.NOT_APPLICABLE;
-      fk1 = Keys.from(row, CNSM_S_FKS);
-      fk2 = Keys.NOT_APPLICABLE;
+      pk = KVKeys.NOT_APPLICABLE;
+      fk1 = KVKeys.from(row, CNSM_S_FKS);
+      fk2 = KVKeys.NOT_APPLICABLE;
     }
 
     checkState(pk != null || fk1 != null, "TODO: '%s'", row);
-    return new Tuple(pk, fk1, fk2);
+    return new KVTuple(pk, fk1, fk2);
   }
 
   private void logProcessedLine(long lineCount, boolean finished) {
@@ -456,7 +459,7 @@ public class KVFileDataDigest { // TODO: use optionals?
         .writeValueAsString(this); // TODO: show sample only (first and last 10 for instance) + excluding nulls
   }
 
-  public boolean pksContains(@NonNull Keys keys) {// TODO: consider removing such time consuming checks?
+  public boolean pksContains(@NonNull KVKeys keys) {// TODO: consider removing such time consuming checks?
     return pks.contains(keys);
   }
 }

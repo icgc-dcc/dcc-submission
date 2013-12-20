@@ -18,33 +18,40 @@
 package org.icgc.dcc.submission.validation.kv;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.validation.kv.Helper.getDataFilePath;
-import static org.icgc.dcc.submission.validation.kv.Helper.hasNewClinicalData;
-import static org.icgc.dcc.submission.validation.kv.Helper.hasNewCnsmData;
-import static org.icgc.dcc.submission.validation.kv.Helper.hasNewSsmData;
-import static org.icgc.dcc.submission.validation.kv.Helper.hasOriginalClinicalData;
-import static org.icgc.dcc.submission.validation.kv.Helper.hasOriginalCnsmData;
-import static org.icgc.dcc.submission.validation.kv.Helper.hasOriginalData;
-import static org.icgc.dcc.submission.validation.kv.Helper.hasOriginalSsmData;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_P;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.RELATIONS;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.NEW_FILE;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.ORIGINAL_FILE;
-import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.TREATED_AS_ORIGINAL;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.getDataFilePath;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewClinicalData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewCnsmData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewSsmData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalClinicalData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalCnsmData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalSsmData;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.NEW_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.TREATED_AS_ORIGINAL;
+import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.RELATIONS;
+
+import org.icgc.dcc.submission.validation.kv.data.KVFileDataDigest;
+import org.icgc.dcc.submission.validation.kv.data.KVSubmissionDataDigest;
+import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
+import org.icgc.dcc.submission.validation.kv.deletion.DeletionFileParser;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
+import org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors;
+import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
+
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
-import org.icgc.dcc.submission.validation.kv.deletion.DeletionFileParser;
-import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
 
 import com.google.common.base.Splitter;
 

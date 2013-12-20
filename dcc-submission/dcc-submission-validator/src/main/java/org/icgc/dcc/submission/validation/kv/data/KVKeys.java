@@ -15,26 +15,66 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.kv.data;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
-@RequiredArgsConstructor
-public enum KVSubmissionType {
-  ORIGINAL_FILE("original"),
-  NEW_FILE("new"),
-  TREATED_AS_ORIGINAL(ORIGINAL_FILE.getSubDirectory()), // For clinical data re-submitted
-  ;
+import lombok.Value;
+import lombok.val;
 
-  @Getter
-  private final String subDirectory;
+// TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
+@Value
+public class KVKeys implements Comparable<KVKeys> { // TODO: more like KeysValues
 
-  public boolean isIncrementalData() {
-    return this == NEW_FILE;
+  public static final KVKeys NOT_APPLICABLE = null;
+
+  private final short size;
+  private final String[] keys;
+
+  public static KVKeys from(List<String> row, List<Integer> indices) {
+    short size = (short) indices.size();
+    val keys = new String[size];
+    for (int index = 0; index < indices.size(); index++) {
+      keys[index] = row.get(indices.get(index));
+    }
+    // TODO: checks
+    return new KVKeys(size, keys);
   }
 
-  public boolean isExistingData() {
-    return !isIncrementalData();
+  /**
+   * Somewhat optimized...
+   */
+  @Override
+  public int compareTo(KVKeys keys) {
+    // TODO: double-check for errors + guava way?
+    if (size == 1) {
+      val compared0 = this.keys[0].compareTo(keys.keys[0]);
+      if (compared0 != 0) {
+        return compared0;
+      }
+    } else if (size == 2) {
+      val compared0 = this.keys[0].compareTo(keys.keys[0]);
+      if (compared0 != 0) {
+        return compared0;
+      }
+      val compared1 = this.keys[1].compareTo(keys.keys[1]);
+      if (compared1 != 0) {
+        return compared1;
+      }
+    } else if (size == 3) {
+      val compared0 = this.keys[0].compareTo(keys.keys[0]);
+      if (compared0 != 0) {
+        return compared0;
+      }
+      val compared1 = this.keys[1].compareTo(keys.keys[1]);
+      if (compared1 != 0) {
+        return compared1;
+      }
+      val compared2 = this.keys[2].compareTo(keys.keys[2]);
+      if (compared2 != 0) {
+        return compared2;
+      }
+    }
+    return 0;
   }
 }

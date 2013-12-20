@@ -23,7 +23,7 @@ package org.icgc.dcc.submission.validation.kv;
 public class Main {
 
   public static void main(String[] args) {
-    long logThreshold = Long.valueOf(args[0]);
+    long logThreshold = args != null && args.length >= 1 ? Long.valueOf(args[0]) : 2;
     new KeyValidator(logThreshold).validate();
   }
 }

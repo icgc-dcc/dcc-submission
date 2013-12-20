@@ -15,25 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.kv.error;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
 
 import java.util.List;
 import java.util.Map;
 
+import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
+
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -55,8 +55,7 @@ public class KVSubmissionErrors {
           .put(CNSM_S, CNSM_P)
           .build();
 
-  // TODO: translate to Strings rather?
-  // map?
+  // TODO: translate to Strings rather? + make map per file type/submission type?
   public static final List<Integer> DONOR_PKS = newArrayList(0);
   public static final List<Integer> SPECIMEN_FKS = newArrayList(0);
   public static final List<Integer> SPECIMEN_PKS = newArrayList(1);
@@ -120,9 +119,6 @@ public class KVSubmissionErrors {
     return errors.get(fileType);
   }
 
-  /**
-   * @return
-   */
   public boolean describe() {
     boolean status = true;
     for (val entry : errors.entrySet()) {
