@@ -111,19 +111,17 @@ public class KVFileDataDigest { // TODO: use optionals?
       KVSubmissionType submissionType, KVFileType fileType, String path,
       DeletionData deletionData,
       KVFileDataDigest oldData, KVFileDataDigest oldReferencedData, KVFileDataDigest newReferencedData,
-      KVFileErrors errors1, KVFileErrors errors2,
+      KVFileErrors errors, KVFileErrors surjectionErrors, // TODO: better names (+explain)
       SurjectivityValidator surjectivityValidator,
       long logThreshold) {
     this.submissionType = checkNotNull(submissionType);
     this.fileType = checkNotNull(fileType);
     this.path = path; // TODO
     this.placeholder = false;
+    this.pks = newTreeSet();
 
     log.info("{}", StringUtils.repeat("=", 75));
     log.info("{}", Joiner.on(", ").join(submissionType, fileType, path));
-
-    // TODO: use builder?
-    this.pks = newTreeSet();
 
     // Prepare surjection info gathering
     Set<Keys> surjectionEncountered = submissionType.isIncrementalData() ? Sets.<Keys> newTreeSet() : null;
@@ -158,13 +156,13 @@ public class KVFileDataDigest { // TODO: use optionals?
 
             // Uniqueness check against original data
             if (oldData.pksContains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
@@ -178,20 +176,20 @@ public class KVFileDataDigest { // TODO: use optionals?
 
             // Uniqueness check against original data
             if (oldData.pksContains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue; // TODO: do we want to report more errors all at once?
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
             else if (!oldReferencedData.pksContains(tuple.getFk())
                 && !newReferencedData.pksContains(tuple.getFk())) {
-              errors1.addError(lineCount, RELATION, tuple.getFk());
+              errors.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -205,20 +203,20 @@ public class KVFileDataDigest { // TODO: use optionals?
 
             // Uniqueness check against original data
             if (oldData.pksContains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
             else if (!oldReferencedData.pksContains(tuple.getFk())
                 && !newReferencedData.pksContains(tuple.getFk())) {
-              errors1.addError(lineCount, RELATION, tuple.getFk());
+              errors.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -235,20 +233,20 @@ public class KVFileDataDigest { // TODO: use optionals?
 
             // Uniqueness check against original data
             if (oldData.pksContains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
             else if (!oldReferencedData.pksContains(tuple.getFk())
                 && !newReferencedData.pksContains(tuple.getFk())) {
-              errors1.addError(lineCount, RELATION, tuple.getFk());
+              errors.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -256,7 +254,7 @@ public class KVFileDataDigest { // TODO: use optionals?
             else if (tuple.hasSecondaryFk() // May not
                 && (!oldReferencedData.pksContains(tuple.getSecondaryFk())
                 && !newReferencedData.pksContains(tuple.getSecondaryFk()))) {
-              errors1.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+              errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
               continue;
             }
 
@@ -274,7 +272,7 @@ public class KVFileDataDigest { // TODO: use optionals?
             // Foreign key check
             if (!oldReferencedData.pksContains(tuple.getFk())
                 && !newReferencedData.pksContains(tuple.getFk())) {
-              errors1.addError(lineCount, RELATION, tuple.getFk());
+              errors.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -291,20 +289,20 @@ public class KVFileDataDigest { // TODO: use optionals?
 
             // Uniqueness check against original data
             if (oldData.pksContains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
             else if (!oldReferencedData.pksContains(tuple.getFk())
                 && !newReferencedData.pksContains(tuple.getFk())) {
-              errors1.addError(lineCount, RELATION, tuple.getFk());
+              errors.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -312,7 +310,7 @@ public class KVFileDataDigest { // TODO: use optionals?
             else if (tuple.hasSecondaryFk() // May not
                 && (!oldReferencedData.pksContains(tuple.getSecondaryFk())
                 && !newReferencedData.pksContains(tuple.getSecondaryFk()))) {
-              errors1.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+              errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
               continue;
             }
 
@@ -328,20 +326,20 @@ public class KVFileDataDigest { // TODO: use optionals?
 
             // Uniqueness check against original data
             if (oldData.pksContains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
             else if (!oldReferencedData.pksContains(tuple.getFk())
                 && !newReferencedData.pksContains(tuple.getFk())) {
-              errors1.addError(lineCount, RELATION, tuple.getFk());
+              errors.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -357,7 +355,7 @@ public class KVFileDataDigest { // TODO: use optionals?
             // Foreign key check
             if (!oldReferencedData.pksContains(tuple.getFk())
                 && !newReferencedData.pksContains(tuple.getFk())) {
-              errors1.addError(lineCount, RELATION, tuple.getFk());
+              errors.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -384,7 +382,7 @@ public class KVFileDataDigest { // TODO: use optionals?
         surjectivityValidator.validateSimpleSurjection(
             fileType,
             oldReferencedData, newReferencedData,
-            errors2,
+            surjectionErrors,
             surjectionEncountered);
       }
 

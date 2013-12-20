@@ -44,12 +44,12 @@ import com.google.common.collect.ImmutableMap;
 public class KVSubmissionErrors {
 
   // TODO: move elsewhere
-  public static final Map<KVFileType, KVFileType> RELATIONS =
+  public static final Map<KVFileType, KVFileType> RELATIONS = // TODO: all necessary?
       new ImmutableMap.Builder<KVFileType, KVFileType>()
           .put(SPECIMEN, DONOR)
           .put(SAMPLE, SPECIMEN)
           .put(SSM_M, SAMPLE)
-          .put(SSM_P, SSM_P)
+          .put(SSM_P, SSM_M)
           .put(CNSM_M, SAMPLE)
           .put(CNSM_P, CNSM_M)
           .put(CNSM_S, CNSM_P)
