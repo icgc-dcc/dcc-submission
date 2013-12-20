@@ -18,33 +18,23 @@
 package org.icgc.dcc.submission.validation.kv;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-/**
- * 
- */
-@Getter
-public class KeyValidatorData {
+@RequiredArgsConstructor
+public enum KVSubmissionType {
+  ORIGINAL_FILE("original"),
+  NEW_FILE("new"),
+  TREATED_AS_ORIGINAL(ORIGINAL_FILE.getSubDirectory()), // For clinical data re-submitted
+  ;
 
-  // TODO: further split
-  FileDigest donorOriginalDigest;
-  FileDigest specimenOriginalDigest;
-  FileDigest sampleOriginalDigest;
-  FileDigest ssmMOriginalDigest;
-  FileDigest ssmPOriginalDigest;
-  FileDigest cnsmMOriginalDigest;
-  FileDigest cnsmPOriginalDigest;
-  FileDigest cnsmSOriginalDigest;
+  @Getter
+  private final String subDirectory;
 
-  FileDigest donorNewDigest;
-  FileDigest specimenNewDigest;
-  FileDigest sampleNewDigest;
-  FileDigest ssmMNewDigest;
-  FileDigest ssmPNewDigest;
-  FileDigest cnsmMNewDigest;
-  FileDigest cnsmPNewDigest;
-  FileDigest cnsmSNewDigest;
+  public boolean isIncrementalData() {
+    return this == NEW_FILE;
+  }
 
-  FileDigest donorDigest;
-  FileDigest specimenDigest;
-  FileDigest sampleDigest;
+  public boolean isExistingData() {
+    return !isIncrementalData();
+  }
 }

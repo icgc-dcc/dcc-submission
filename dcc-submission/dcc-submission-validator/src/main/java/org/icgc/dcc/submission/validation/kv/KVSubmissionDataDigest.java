@@ -17,24 +17,28 @@
  */
 package org.icgc.dcc.submission.validation.kv;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 
-@RequiredArgsConstructor
-enum SubmissionType {
-  ORIGINAL_FILE("original"),
-  NEW_FILE("new"),
-  TREATED_AS_ORIGINAL(ORIGINAL_FILE.getSubDirectory()), // For clinical data re-submitted
-  ;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-  @Getter
-  private final String subDirectory;
+/**
+ * 
+ */
+public class KVSubmissionDataDigest {
 
-  public boolean isIncrementalData() {
-    return this == NEW_FILE;
+  private final Map<KVFileType, KVFileDataDigest> data = newLinkedHashMap();
+
+  public Set<Entry<KVFileType, KVFileDataDigest>> entrySet() {
+    return data.entrySet();
   }
 
-  public boolean isExistingData() {
-    return !isIncrementalData();
+  public void put(KVFileType fileType, KVFileDataDigest fileData) {
+    data.put(fileType, fileData);
+  }
+
+  public KVFileDataDigest get(KVFileType fileType) {
+    return data.get(fileType);
   }
 }

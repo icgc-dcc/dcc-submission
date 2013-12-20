@@ -17,35 +17,23 @@
  */
 package org.icgc.dcc.submission.validation.kv;
 
-public enum KVFileType {
-  DONOR,
-  SPECIMEN,
-  SAMPLE,
-  SSM_M,
-  SSM_P,
-  CNSM_M,
-  CNSM_P,
-  CNSM_S;
+import org.icgc.dcc.core.model.DeletionType;
 
-  public boolean isDodo() {
-    return this == SPECIMEN || this == SAMPLE;
+public enum KeyValidationAdditionalType implements DeletionType {
+  ALL, ERROR;
+
+  @Override
+  public boolean isAllDeletionType() {
+    return this == ALL;
   }
 
-  public boolean hasComplexSurjectiveRelation() {
-    return this == SSM_M || this == CNSM_M;
+  @Override
+  public boolean isErroneousDeletionType() {
+    return this == ERROR;
   }
 
-  /**
-   * Simple as opposd to TODO
-   */
-  public boolean hasSimpleSurjectiveRelation() {
-    return this == SPECIMEN || this == SAMPLE || this == SSM_P || this == CNSM_P;
-  }
-
-  /**
-   * 
-   */
-  public boolean hasPk() {
-    return this != SSM_P && this != CNSM_S;
+  // TODO: move to FeatureTypeDeletion?
+  public static boolean matchesAllDeletionType(String value) {
+    return ALL.name().equalsIgnoreCase(value);
   }
 }

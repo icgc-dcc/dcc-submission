@@ -21,52 +21,41 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
+import static org.icgc.dcc.submission.validation.kv.Helper.getDataFilePath;
 import static org.icgc.dcc.submission.validation.kv.Helper.getToBeRemovedFile;
+import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.NEW_FILE;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.ORIGINAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.KeyValidationAdditionalType.ALL;
+import static org.icgc.dcc.submission.validation.kv.KeyValidationAdditionalType.ERROR;
 import static org.icgc.dcc.submission.validation.kv.KeyValidator.TAB_SPLITTER;
-import static org.icgc.dcc.submission.validation.kv.deletion.Deletion.KeyValidationAdditionalType.ALL;
-import static org.icgc.dcc.submission.validation.kv.deletion.Deletion.KeyValidationAdditionalType.ERROR;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.submission.validation.kv.KeyValidationAdditionalType;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 
 /**
  * TODO: consider having the validation be separated from the key validator?
  */
 @Slf4j
-public class Deletion {
+public class DeletionFileParser {
 
   private static final Splitter FEATURE_TYPE_SPLITTER = Splitter.on(',');
-
-  public enum KeyValidationAdditionalType implements DeletionType {
-    ALL, ERROR;
-
-    @Override
-    public boolean isAllDeletionType() {
-      return this == ALL;
-    }
-
-    @Override
-    public boolean isErroneousDeletionType() {
-      return this == ERROR;
-    }
-
-    // TODO: move to FeatureTypeDeletion?
-    public static boolean matchesAllDeletionType(String value) {
-      return ALL.name().equalsIgnoreCase(value);
-    }
-  }
 
   /**
    * Key-value pair format is expected to have been checked for already in the first-pass validation.
@@ -74,7 +63,7 @@ public class Deletion {
    * Does not perform any validation per se, simply parsing.
    */
   @SneakyThrows
-  public DeletionData parseToBeDeletedFile() { // TODO: move to deletion file
+  public DeletionData parseToBeDeletedFile() {
     val toBeDetetedFile = getToBeRemovedFile();
     log.info("{}", toBeDetetedFile);
 
@@ -82,6 +71,7 @@ public class Deletion {
     Map<String, List<DeletionType>> deletionMap = newTreeMap();
 
     // TODO: "with" construct
+    @Cleanup
     val reader = new BufferedReader(new FileReader(new File(toBeDetetedFile)));
     long lineCount = 0;
     for (String line; (line = reader.readLine()) != null;) {
@@ -101,6 +91,36 @@ public class Deletion {
       lineCount++;
     }
     return new DeletionData(deletionMap);
+  }
+
+  @SneakyThrows
+  private Set<String> getDonorIds(String donorFile) {
+    val donorIds = Sets.<String> newTreeSet();
+    @Cleanup
+    val reader = new BufferedReader(new FileReader(new File(donorFile)));
+    long lineCount = 0;
+    for (String line; (line = reader.readLine()) != null;) {
+      if (lineCount != 0 && !line.trim().isEmpty()) {
+        val row = newArrayList(TAB_SPLITTER.split(line));
+        log.debug("\t" + row);
+        String donorId = row.get(0);
+        donorIds.add(donorId);
+      }
+      lineCount++;
+    }
+    return donorIds;
+  }
+
+  public Set<String> getOldDonorIds() {
+    val oldDonorFile = getDataFilePath(ORIGINAL_FILE, DONOR);
+    log.info("{}", oldDonorFile);
+    return getDonorIds(oldDonorFile);
+  }
+
+  public Set<String> getNewDonorIds() {
+    val newDonorFile = getDataFilePath(NEW_FILE, DONOR);
+    log.info("{}", newDonorFile);
+    return getDonorIds(newDonorFile);
   }
 
   private List<String> getFeatureTypeStringList(String featureTypesString) {

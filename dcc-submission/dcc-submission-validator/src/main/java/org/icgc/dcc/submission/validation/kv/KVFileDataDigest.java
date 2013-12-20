@@ -29,22 +29,22 @@ import static org.icgc.dcc.submission.validation.kv.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.kv.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_M_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_P_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_P_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.CNSM_S_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SAMPLE_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SPECIMEN_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SPECIMEN_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_M_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionErrors.SSM_P_FKS;
 import static org.icgc.dcc.submission.validation.kv.KeyValidator.TAB_SPLITTER;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.CNSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.CNSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.CNSM_M_PKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.CNSM_P_FKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.CNSM_P_PKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.CNSM_S_FKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.DONOR_PKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SAMPLE_FKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SAMPLE_PKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SPECIMEN_FKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SPECIMEN_PKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SSM_M_PKS;
-import static org.icgc.dcc.submission.validation.kv.KeyValidatorErrors.SSM_P_FKS;
 import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.RELATION;
 import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.SECONDARY_RELATION;
 import static org.icgc.dcc.submission.validation.kv.error.KVErrorType.UNIQUE_NEW;
@@ -65,6 +65,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
+import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
+import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
@@ -72,7 +74,7 @@ import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
-public class FileDigest { // TODO: use optionals?
+public class KVFileDataDigest { // TODO: use optionals?
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -80,7 +82,7 @@ public class FileDigest { // TODO: use optionals?
 
   @SuppressWarnings("unused")
   // Used in toString()
-  private final SubmissionType submissionType;
+  private final KVSubmissionType submissionType;
   @SuppressWarnings("unused")
   // Used in toString()
   private final KVFileType fileType;
@@ -95,28 +97,23 @@ public class FileDigest { // TODO: use optionals?
   @Getter
   private final Set<Keys> pks;
 
-  // private final Set<Keys> fks; // needed?
-  // private final Set<Keys> secondaryFks; // needed?
-  // private final List<Tuple> tuples; // needed?
-
-  public static FileDigest getEmptyInstance(SubmissionType submissionType, KVFileType fileType) {
-    return new FileDigest(
+  public static KVFileDataDigest getEmptyInstance(KVSubmissionType submissionType, KVFileType fileType) {
+    return new KVFileDataDigest(
         submissionType,
         fileType,
         (String) null,
         true,
-        Sets.<Keys> newTreeSet()
-    // Sets.<Keys> newTreeSet(),
-    // Sets.<Keys> newTreeSet(),
-    // Lists.<Tuple> newArrayList()
-    );
+        Sets.<Keys> newTreeSet());
   }
 
-  // TODO: move to file digest rather (as hierarchy)?
   @SneakyThrows
-  public FileDigest(
-      SubmissionType submissionType, KVFileType fileType, String path,
-      KeyValidatorData data, KeyValidatorErrors errors, Surjectivity surjectivity, long logThreshold) {
+  public KVFileDataDigest( // TODO: very ugly
+      KVSubmissionType submissionType, KVFileType fileType, String path,
+      DeletionData deletionData,
+      KVFileDataDigest oldData, KVFileDataDigest oldReferencedData, KVFileDataDigest newReferencedData,
+      KVFileErrors errors1, KVFileErrors errors2,
+      SurjectivityValidator surjectivityValidator,
+      long logThreshold) {
     this.submissionType = checkNotNull(submissionType);
     this.fileType = checkNotNull(fileType);
     this.path = path; // TODO
@@ -127,9 +124,6 @@ public class FileDigest { // TODO: use optionals?
 
     // TODO: use builder?
     this.pks = newTreeSet();
-    // this.fks = newTreeSet();
-    // this.secondaryFks = newTreeSet();
-    // this.tuples = newArrayList();
 
     // Prepare surjection info gathering
     Set<Keys> surjectionEncountered = submissionType.isIncrementalData() ? Sets.<Keys> newTreeSet() : null;
@@ -154,13 +148,6 @@ public class FileDigest { // TODO: use optionals?
           } else {
             checkState(!fileType.hasPk(), "TODO");
           }
-          // if (tuple.hasFk()) {
-          // fks.add(tuple.getFk());
-          // }
-          // if (tuple.hasSecondaryFk()) {
-          // secondaryFks.add(tuple.getSecondaryFk());
-          // }
-          // tuples.add(tuple); // At least one must be non-null
         }
 
         // Incremental data (new)
@@ -170,14 +157,14 @@ public class FileDigest { // TODO: use optionals?
           if (fileType == DONOR) {
 
             // Uniqueness check against original data
-            if (data.donorOriginalDigest.pksContains(tuple.getPk())) {
-              errors.getFileErrors(DONOR).addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+            if (oldData.pksContains(tuple.getPk())) {
+              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors.getFileErrors(DONOR).addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
@@ -190,21 +177,21 @@ public class FileDigest { // TODO: use optionals?
           } else if (fileType == SPECIMEN) {
 
             // Uniqueness check against original data
-            if (data.specimenOriginalDigest.pksContains(tuple.getPk())) {
-              errors.getFileErrors(SPECIMEN).addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+            if (oldData.pksContains(tuple.getPk())) {
+              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue; // TODO: do we want to report more errors all at once?
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors.getFileErrors(SPECIMEN).addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
-            else if (!data.donorOriginalDigest.pksContains(tuple.getFk())
-                && !data.donorNewDigest.pksContains(tuple.getFk())) {
-              errors.getFileErrors(SPECIMEN).addError(lineCount, RELATION, tuple.getFk());
+            else if (!oldReferencedData.pksContains(tuple.getFk())
+                && !newReferencedData.pksContains(tuple.getFk())) {
+              errors1.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -217,21 +204,21 @@ public class FileDigest { // TODO: use optionals?
           } else if (fileType == SAMPLE) {
 
             // Uniqueness check against original data
-            if (data.sampleOriginalDigest.pksContains(tuple.getPk())) {
-              errors.getFileErrors(SAMPLE).addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+            if (oldData.pksContains(tuple.getPk())) {
+              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors.getFileErrors(SAMPLE).addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
-            else if (!data.specimenOriginalDigest.pksContains(tuple.getFk())
-                && !data.specimenNewDigest.pksContains(tuple.getFk())) {
-              errors.getFileErrors(SAMPLE).addError(lineCount, RELATION, tuple.getFk());
+            else if (!oldReferencedData.pksContains(tuple.getFk())
+                && !newReferencedData.pksContains(tuple.getFk())) {
+              errors1.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -247,29 +234,29 @@ public class FileDigest { // TODO: use optionals?
           else if (fileType == SSM_M) {
 
             // Uniqueness check against original data
-            if (data.ssmMOriginalDigest.pksContains(tuple.getPk())) {
-              errors.getFileErrors(SSM_M).addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+            if (oldData.pksContains(tuple.getPk())) {
+              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors.getFileErrors(SSM_M).addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
-            else if (!data.sampleOriginalDigest.pksContains(tuple.getFk())
-                && !data.sampleNewDigest.pksContains(tuple.getFk())) {
-              errors.getFileErrors(SSM_M).addError(lineCount, RELATION, tuple.getFk());
+            else if (!oldReferencedData.pksContains(tuple.getFk())
+                && !newReferencedData.pksContains(tuple.getFk())) {
+              errors1.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
             // Secondary foreign key check
             else if (tuple.hasSecondaryFk() // May not
-                && (!data.sampleOriginalDigest.pksContains(tuple.getSecondaryFk())
-                && !data.sampleNewDigest.pksContains(tuple.getSecondaryFk()))) {
-              errors.getFileErrors(SSM_M).addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+                && (!oldReferencedData.pksContains(tuple.getSecondaryFk())
+                && !newReferencedData.pksContains(tuple.getSecondaryFk()))) {
+              errors1.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
               continue;
             }
 
@@ -285,9 +272,9 @@ public class FileDigest { // TODO: use optionals?
             ; // No uniqueness check for ssm_p
 
             // Foreign key check
-            if (!data.ssmMOriginalDigest.pksContains(tuple.getFk())
-                && !data.ssmMNewDigest.pksContains(tuple.getFk())) {
-              errors.getFileErrors(SSM_P).addError(lineCount, RELATION, tuple.getFk());
+            if (!oldReferencedData.pksContains(tuple.getFk())
+                && !newReferencedData.pksContains(tuple.getFk())) {
+              errors1.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -303,29 +290,29 @@ public class FileDigest { // TODO: use optionals?
           else if (fileType == CNSM_M) {
 
             // Uniqueness check against original data
-            if (data.cnsmMOriginalDigest.pksContains(tuple.getPk())) {
-              errors.getFileErrors(CNSM_M).addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+            if (oldData.pksContains(tuple.getPk())) {
+              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors.getFileErrors(CNSM_M).addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
-            else if (!data.sampleOriginalDigest.pksContains(tuple.getFk())
-                && !data.sampleNewDigest.pksContains(tuple.getFk())) {
-              errors.getFileErrors(CNSM_M).addError(lineCount, RELATION, tuple.getFk());
+            else if (!oldReferencedData.pksContains(tuple.getFk())
+                && !newReferencedData.pksContains(tuple.getFk())) {
+              errors1.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
             // Secondary foreign key check
             else if (tuple.hasSecondaryFk() // May not
-                && (!data.sampleOriginalDigest.pksContains(tuple.getSecondaryFk())
-                && !data.sampleNewDigest.pksContains(tuple.getSecondaryFk()))) {
-              errors.getFileErrors(CNSM_M).addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+                && (!oldReferencedData.pksContains(tuple.getSecondaryFk())
+                && !newReferencedData.pksContains(tuple.getSecondaryFk()))) {
+              errors1.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
               continue;
             }
 
@@ -340,21 +327,21 @@ public class FileDigest { // TODO: use optionals?
           } else if (fileType == CNSM_P) {
 
             // Uniqueness check against original data
-            if (data.cnsmPOriginalDigest.pksContains(tuple.getPk())) {
-              errors.getFileErrors(CNSM_P).addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
+            if (oldData.pksContains(tuple.getPk())) {
+              errors1.addError(lineCount, UNIQUE_ORIGINAL, tuple.getPk());
               continue;
             }
 
             // Uniqueness check against new data
             else if (pks.contains(tuple.getPk())) {
-              errors.getFileErrors(CNSM_P).addError(lineCount, UNIQUE_NEW, tuple.getPk());
+              errors1.addError(lineCount, UNIQUE_NEW, tuple.getPk());
               continue;
             }
 
             // Foreign key check
-            else if (!data.cnsmMOriginalDigest.pksContains(tuple.getFk())
-                && !data.cnsmMNewDigest.pksContains(tuple.getFk())) {
-              errors.getFileErrors(CNSM_P).addError(lineCount, RELATION, tuple.getFk());
+            else if (!oldReferencedData.pksContains(tuple.getFk())
+                && !newReferencedData.pksContains(tuple.getFk())) {
+              errors1.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -368,9 +355,9 @@ public class FileDigest { // TODO: use optionals?
             ; // No uniqueness check for cnsm_s
 
             // Foreign key check
-            if (!data.cnsmPOriginalDigest.pksContains(tuple.getFk())
-                && !data.cnsmPNewDigest.pksContains(tuple.getFk())) {
-              errors.getFileErrors(CNSM_S).addError(lineCount, RELATION, tuple.getFk());
+            if (!oldReferencedData.pksContains(tuple.getFk())
+                && !newReferencedData.pksContains(tuple.getFk())) {
+              errors1.addError(lineCount, RELATION, tuple.getFk());
               continue;
             }
 
@@ -394,11 +381,15 @@ public class FileDigest { // TODO: use optionals?
     // Surjectivity; TODO: externalize
     if (submissionType.isIncrementalData()) {
       if (fileType.hasSimpleSurjectiveRelation()) {
-        surjectivity.validateSimpleSurjection(fileType, data, errors, surjectionEncountered);
+        surjectivityValidator.validateSimpleSurjection(
+            fileType,
+            oldReferencedData, newReferencedData,
+            errors2,
+            surjectionEncountered);
       }
 
       if (fileType.hasComplexSurjectiveRelation()) {
-        surjectivity.addEncounteredSamples(surjectionEncountered);
+        surjectivityValidator.addEncounteredSamples(surjectionEncountered);
       }
     }
   }

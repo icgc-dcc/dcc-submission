@@ -21,8 +21,8 @@ import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.kv.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.kv.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.kv.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.SubmissionType.NEW_FILE;
-import static org.icgc.dcc.submission.validation.kv.SubmissionType.ORIGINAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.NEW_FILE;
+import static org.icgc.dcc.submission.validation.kv.KVSubmissionType.ORIGINAL_FILE;
 
 import java.io.File;
 
@@ -34,7 +34,7 @@ public class Helper {
   public static final String TO_BE_REMOVED_FILE_NAME = "TO_BE_REMOVED";
   private static final String PARENT_DIR = "src/test/resources/DCC-1993-tmp";
 
-  public static String getDataFilePath(SubmissionType submissionType, KVFileType fileType) {
+  public static String getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
     return format("%s/%s/%s.txt",
         PARENT_DIR, submissionType.getSubDirectory(), fileType.toString().toLowerCase());
   }

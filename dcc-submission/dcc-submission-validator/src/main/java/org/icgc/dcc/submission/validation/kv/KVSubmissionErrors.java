@@ -41,7 +41,19 @@ import com.google.common.collect.ImmutableMap;
  * 
  */
 @Slf4j
-public class KeyValidatorErrors {
+public class KVSubmissionErrors {
+
+  // TODO: move elsewhere
+  public static final Map<KVFileType, KVFileType> RELATIONS =
+      new ImmutableMap.Builder<KVFileType, KVFileType>()
+          .put(SPECIMEN, DONOR)
+          .put(SAMPLE, SPECIMEN)
+          .put(SSM_M, SAMPLE)
+          .put(SSM_P, SSM_P)
+          .put(CNSM_M, SAMPLE)
+          .put(CNSM_P, CNSM_M)
+          .put(CNSM_S, CNSM_P)
+          .build();
 
   // TODO: translate to Strings rather?
   // map?
@@ -84,7 +96,7 @@ public class KeyValidatorErrors {
       .put(
           SSM_P,
           new KVFileErrors(
-              new Object(),
+              new Object(), // TODO: factory
               SSM_P_FKS))
       .put(
           CNSM_M,
@@ -116,6 +128,7 @@ public class KeyValidatorErrors {
     for (val entry : errors.entrySet()) {
       val fileType = entry.getKey();
       val fileErrors = entry.getValue();
+      log.info("{}", fileType);
       boolean fileStatus = fileErrors.describe();
       status &= fileStatus;
       log.info("{}: {}", fileType, fileStatus);
