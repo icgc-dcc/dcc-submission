@@ -26,7 +26,6 @@ import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -44,13 +43,17 @@ public class FileParser<T> {
   public void parse(Path filePath, FileRecordProcessor<T> recordProcessor) throws IOException {
     @Cleanup
     val inputStream = getInputStream(filePath, fileSystem);
+
+    parse(inputStream, recordProcessor);
+  }
+
+  public void parse(InputStream inputStream, FileRecordProcessor<T> recordProcessor) throws IOException {
     val reader = new LineReader(new InputStreamReader(inputStream));
 
     parse(reader, recordProcessor);
   }
 
-  @SneakyThrows
-  private void parse(LineReader reader, FileRecordProcessor<T> recordProcessor) {
+  public void parse(LineReader reader, FileRecordProcessor<T> recordProcessor) throws IOException {
     // Line state (one-based)
     long lineNumber = 1;
     String line;
