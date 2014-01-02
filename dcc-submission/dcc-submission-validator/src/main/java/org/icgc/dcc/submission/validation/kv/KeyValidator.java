@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.kv;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.getDataFilePath;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewClinicalData;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewCnsmData;
@@ -37,7 +38,6 @@ import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.NEW_FILE;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.TREATED_AS_ORIGINAL;
-import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.RELATIONS;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;

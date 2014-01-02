@@ -17,7 +17,21 @@
  */
 package org.icgc.dcc.submission.validation.kv.error;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_P_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_P_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_S_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SAMPLE_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SPECIMEN_FKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SPECIMEN_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_P_FKS;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
@@ -27,13 +41,12 @@ import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECI
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
 
-import java.util.List;
 import java.util.Map;
-
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -42,35 +55,6 @@ import com.google.common.collect.ImmutableMap;
  */
 @Slf4j
 public class KVSubmissionErrors {
-
-  // TODO: move elsewhere
-  public static final Map<KVFileType, KVFileType> RELATIONS = // TODO: all necessary?
-      new ImmutableMap.Builder<KVFileType, KVFileType>()
-          .put(SPECIMEN, DONOR)
-          .put(SAMPLE, SPECIMEN)
-          .put(SSM_M, SAMPLE)
-          .put(SSM_P, SSM_M)
-          .put(CNSM_M, SAMPLE)
-          .put(CNSM_P, CNSM_M)
-          .put(CNSM_S, CNSM_P)
-          .build();
-
-  // TODO: translate to Strings rather? + make map per file type/submission type?
-  public static final List<Integer> DONOR_PKS = newArrayList(0);
-  public static final List<Integer> SPECIMEN_FKS = newArrayList(0);
-  public static final List<Integer> SPECIMEN_PKS = newArrayList(1);
-  public static final List<Integer> SAMPLE_FKS = newArrayList(1);
-  public static final List<Integer> SAMPLE_PKS = newArrayList(0);
-  public static final List<Integer> SSM_M_FKS1 = newArrayList(1); // Tumour
-  public static final List<Integer> SSM_M_FKS2 = newArrayList(2); // Control
-  public static final List<Integer> SSM_M_PKS = newArrayList(0, SSM_M_FKS1.get(0));
-  public static final List<Integer> SSM_P_FKS = newArrayList(0, 1);
-  public static final List<Integer> CNSM_M_FKS1 = newArrayList(1); // Tumour
-  public static final List<Integer> CNSM_M_FKS2 = newArrayList(2); // Control
-  public static final List<Integer> CNSM_M_PKS = newArrayList(0, CNSM_M_FKS1.get(0));
-  public static final List<Integer> CNSM_P_FKS = newArrayList(0, 1);
-  public static final List<Integer> CNSM_P_PKS = newArrayList(0, 1, 2);
-  public static final List<Integer> CNSM_S_FKS = newArrayList(0, 1, 2);
 
   private final Map<KVFileType, KVFileErrors> errors = new ImmutableMap.Builder<KVFileType, KVFileErrors>()
       .put(

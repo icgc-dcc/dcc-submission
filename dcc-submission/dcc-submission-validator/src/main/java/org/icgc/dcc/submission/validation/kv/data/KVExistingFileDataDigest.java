@@ -18,66 +18,27 @@
 package org.icgc.dcc.submission.validation.kv.data;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.TAB_SPLITTER;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang.StringUtils;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
 
-import com.google.common.base.Joiner;
-
-@Slf4j
 public class KVExistingFileDataDigest extends KVFileDataDigest {
 
-  /**
-   * TODO: ! account for deletions (do not report errors for those)
-   */
-  @SneakyThrows
+  // TODO: lombok delegation?
   public KVExistingFileDataDigest(
       KVSubmissionType submissionType, KVFileType fileType, String path, long logThreshold) {
     super(submissionType, fileType, path, logThreshold);
+  }
 
-    log.info("{}", StringUtils.repeat("=", 75));
-    log.info("{}", Joiner.on(", ").join(submissionType, fileType, path));
-
+  @Override
+  protected void processTuple(KVTuple tuple, long lineCount) {
     checkState(submissionType.isExistingData(), "TODO");
 
-    // Read line by lines
-    @Cleanup
-    val reader = new BufferedReader(new FileReader(new File(path)));
-    long lineCount = 0;
-    for (String line; (line = reader.readLine()) != null;) {
-
-      // TODO: add sanity check on header
-      if (lineCount != 0 && !line.trim().isEmpty()) {
-        val row = newArrayList(TAB_SPLITTER.split(line)); // TODO: optimize (use array)
-        log.debug("\t" + row);
-
-        val tuple = getTuple(fileType, row);
-        log.debug("tuple: {}", tuple);
-
-        // Original data (old); This should already be valid, nothing to check
-        if (tuple.hasPk()) {
-          pks.add(tuple.getPk());
-        } else {
-          checkState(!fileType.hasPk(), "TODO");
-        }
-      }
-      lineCount++;
-      if ((lineCount % logThreshold) == 0) {
-        logProcessedLine(lineCount, false);
-      }
+    // Original data (old); This should already be valid, nothing to check
+    if (tuple.hasPk()) {
+      pks.add(tuple.getPk());
+    } else {
+      checkState(!fileType.hasPk(), "TODO");
     }
-    logProcessedLine(lineCount, true);
   }
 }
