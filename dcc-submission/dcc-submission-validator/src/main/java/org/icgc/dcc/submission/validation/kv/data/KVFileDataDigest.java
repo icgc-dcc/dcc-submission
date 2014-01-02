@@ -109,7 +109,7 @@ public class KVFileDataDigest {
   }
 
   @SneakyThrows
-  public void processFile() {
+  public KVFileDataDigest processFile() {
     checkState(!placeholder);
     log.info("{}", repeat("=", 75));
     log.info("{}", Joiner.on(", ").join(submissionType, fileType, path));
@@ -132,6 +132,8 @@ public class KVFileDataDigest {
     });
 
     postProcessing();
+
+    return this;
   }
 
   /**

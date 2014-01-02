@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.kv.surjectivity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewClinicalData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasIncrementalClinicalData;
 
 import java.util.Set;
 
@@ -52,7 +52,7 @@ public class SurjectivityValidator {
       KVFileDataDigest newData,
       KVFileErrors surjectionFileErrors,
       Set<KVKeyValues> surjectionEncountered) {
-    val dataDigest = !fileType.isReplaceAll() || hasNewClinicalData() ? newData : originalData;
+    val dataDigest = !fileType.isReplaceAll() || hasIncrementalClinicalData() ? newData : originalData;
     val expectedSujectionKeys = newTreeSet(checkNotNull(dataDigest, "TODO: '%s'", fileType).getPks());
     if (hasSurjectionErrors(expectedSujectionKeys, surjectionEncountered)) {
       collectSurjectionErrors(
@@ -66,7 +66,7 @@ public class SurjectivityValidator {
       KVFileDataDigest sampleOriginalData,
       KVFileDataDigest sampleNewData,
       KVFileErrors surjectionSampleFileErrors) {
-    val sampleDataDigest = hasNewClinicalData() ? sampleNewData : sampleOriginalData;
+    val sampleDataDigest = hasIncrementalClinicalData() ? sampleNewData : sampleOriginalData;
     val expectedSampleSujectionKeys = newTreeSet(checkNotNull(sampleDataDigest, "TODO: '%s'").getPks());
     if (hasSurjectionErrors(expectedSampleSujectionKeys, sampleSurjectionEncountered)) {
       collectSurjectionErrors(

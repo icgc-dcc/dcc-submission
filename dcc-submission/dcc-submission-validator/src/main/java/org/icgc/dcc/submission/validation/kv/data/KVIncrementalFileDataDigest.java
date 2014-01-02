@@ -44,7 +44,7 @@ import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
 
 import com.google.common.collect.Sets;
 
-public class KVNewFileDataDigest extends KVFileDataDigest {
+public class KVIncrementalFileDataDigest extends KVFileDataDigest {
 
   @SuppressWarnings("unused")
   private final DeletionData deletionData;
@@ -61,7 +61,7 @@ public class KVNewFileDataDigest extends KVFileDataDigest {
   /**
    * TODO: ! account for deletions (do not report errors for those)
    */
-  public KVNewFileDataDigest(
+  public KVIncrementalFileDataDigest(
       KVSubmissionType submissionType, KVFileType fileType, String path, long logThreshold,
 
       @NonNull DeletionData deletionData,

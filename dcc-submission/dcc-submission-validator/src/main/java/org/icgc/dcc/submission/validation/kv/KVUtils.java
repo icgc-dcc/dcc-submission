@@ -21,8 +21,8 @@ import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.NEW_FILE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.INCREMENTAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.EXISTING_FILE;
 
 import java.io.File;
 
@@ -46,38 +46,38 @@ public class KVUtils {
 
   public static String getToBeRemovedFile() {
     return format("%s/%s/%s.txt",
-        PARENT_DIR, NEW_FILE.getSubDirectory(), TO_BE_REMOVED_FILE_NAME);
+        PARENT_DIR, INCREMENTAL_FILE.getSubDirectory(), TO_BE_REMOVED_FILE_NAME);
   }
 
   public static boolean hasToBeRemovedFile() {
     return new File(getToBeRemovedFile()).exists();
   }
 
-  public static boolean hasOriginalData() {
-    return hasOriginalClinicalData();
+  public static boolean hasExistingData() {
+    return hasExistingClinicalData();
   }
 
-  public static boolean hasOriginalClinicalData() {
-    return new File(getDataFilePath(ORIGINAL_FILE, DONOR)).exists();
+  public static boolean hasExistingClinicalData() {
+    return new File(getDataFilePath(EXISTING_FILE, DONOR)).exists();
   }
 
-  public static boolean hasOriginalSsmData() {
-    return new File(getDataFilePath(ORIGINAL_FILE, SSM_M)).exists();
+  public static boolean hasExistingSsmData() {
+    return new File(getDataFilePath(EXISTING_FILE, SSM_M)).exists();
   }
 
-  public static boolean hasOriginalCnsmData() {
-    return new File(getDataFilePath(ORIGINAL_FILE, CNSM_M)).exists();
+  public static boolean hasExistingCnsmData() {
+    return new File(getDataFilePath(EXISTING_FILE, CNSM_M)).exists();
   }
 
-  public static boolean hasNewClinicalData() {
-    return new File(getDataFilePath(NEW_FILE, DONOR)).exists();
+  public static boolean hasIncrementalClinicalData() {
+    return new File(getDataFilePath(INCREMENTAL_FILE, DONOR)).exists();
   }
 
-  public static boolean hasNewSsmData() {
-    return new File(getDataFilePath(NEW_FILE, SSM_M)).exists();
+  public static boolean hasIncrementalSsmData() {
+    return new File(getDataFilePath(INCREMENTAL_FILE, SSM_M)).exists();
   }
 
-  public static boolean hasNewCnsmData() {
-    return new File(getDataFilePath(NEW_FILE, CNSM_M)).exists();
+  public static boolean hasIncrementalCnsmData() {
+    return new File(getDataFilePath(INCREMENTAL_FILE, CNSM_M)).exists();
   }
 }
