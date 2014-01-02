@@ -22,55 +22,65 @@ import java.util.List;
 import lombok.Value;
 import lombok.val;
 
+/**
+ * Represents the values for a given key (a key may be composite).
+ */
 // TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
 @Value
-public class KVKeys implements Comparable<KVKeys> { // TODO: more like KeysValues
+public class KVKeyValues implements Comparable<KVKeyValues> {
 
-  public static final KVKeys NOT_APPLICABLE = null;
+  public static final KVKeyValues NOT_APPLICABLE = null;
 
+  /**
+   * Values for the key.
+   */
+  private final String[] values;
+
+  /**
+   * Size of the key for optimization purposes (may be 1 if the key is not a composite one).
+   */
   private final short size;
-  private final String[] keys;
 
-  public static KVKeys from(List<String> row, List<Integer> indices) {
+  public static KVKeyValues from(List<String> row, List<Integer> indices) {
     short size = (short) indices.size();
     val keys = new String[size];
     for (int index = 0; index < indices.size(); index++) {
       keys[index] = row.get(indices.get(index));
     }
     // TODO: checks
-    return new KVKeys(size, keys);
+    return new KVKeyValues(keys, size);
   }
 
   /**
    * Somewhat optimized...
    */
   @Override
-  public int compareTo(KVKeys keys) {
+  public int compareTo(KVKeyValues keys) {
     // TODO: double-check for errors + guava way?
     if (size == 1) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
+      val compared0 = this.values[0].compareTo(keys.values[0]);
       if (compared0 != 0) {
         return compared0;
       }
     } else if (size == 2) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
+      val compared0 = this.values[0].compareTo(keys.values[0]);
       if (compared0 != 0) {
         return compared0;
       }
-      val compared1 = this.keys[1].compareTo(keys.keys[1]);
+      val compared1 = this.values[1].compareTo(keys.values[1]);
       if (compared1 != 0) {
         return compared1;
       }
     } else if (size == 3) {
-      val compared0 = this.keys[0].compareTo(keys.keys[0]);
+      val compared0 = this.values[0].compareTo(keys.values[0]);
       if (compared0 != 0) {
         return compared0;
       }
-      val compared1 = this.keys[1].compareTo(keys.keys[1]);
+      val compared1 = this.values[1].compareTo(keys.values[1]);
       if (compared1 != 0) {
         return compared1;
       }
-      val compared2 = this.keys[2].compareTo(keys.keys[2]);
+      val compared2 = this.values[2].compareTo(keys.values[2]);
       if (compared2 != 0) {
         return compared2;
       }

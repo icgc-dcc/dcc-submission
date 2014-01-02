@@ -26,7 +26,7 @@ import java.util.Set;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 
 /**
- * 
+ * Represents the data dagest for the whole submission, as either existing or incremental data.
  */
 public class KVSubmissionDataDigest {
 

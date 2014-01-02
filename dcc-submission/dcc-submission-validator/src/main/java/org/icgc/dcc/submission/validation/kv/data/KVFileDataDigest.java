@@ -85,7 +85,7 @@ public class KVFileDataDigest {
   private final long logThreshold;
 
   @Getter
-  protected final Set<KVKeys> pks = Sets.<KVKeys> newTreeSet(); // TODO: change to arrays?
+  protected final Set<KVKeyValues> pks = Sets.<KVKeyValues> newTreeSet(); // TODO: change to arrays?
 
   public static KVFileDataDigest getEmptyInstance(@NonNull KVSubmissionType submissionType, @NonNull KVFileType fileType) {
     return new KVFileDataDigest(
@@ -149,47 +149,47 @@ public class KVFileDataDigest {
   }
 
   protected KVTuple getTuple(KVFileType fileType, List<String> row) {
-    KVKeys pk = null, fk1 = null, fk2 = null;
+    KVKeyValues pk = null, fk1 = null, fk2 = null;
 
     // Clinical
     if (fileType == DONOR) {
-      pk = KVKeys.from(row, DONOR_PKS);
-      fk1 = KVKeys.NOT_APPLICABLE;
-      fk2 = KVKeys.NOT_APPLICABLE;
+      pk = KVKeyValues.from(row, DONOR_PKS);
+      fk1 = KVKeyValues.NOT_APPLICABLE;
+      fk2 = KVKeyValues.NOT_APPLICABLE;
     } else if (fileType == SPECIMEN) {
-      pk = KVKeys.from(row, SPECIMEN_PKS);
-      fk1 = KVKeys.from(row, SPECIMEN_FKS);
-      fk2 = KVKeys.NOT_APPLICABLE;
+      pk = KVKeyValues.from(row, SPECIMEN_PKS);
+      fk1 = KVKeyValues.from(row, SPECIMEN_FKS);
+      fk2 = KVKeyValues.NOT_APPLICABLE;
     } else if (fileType == SAMPLE) {
-      pk = KVKeys.from(row, SAMPLE_PKS);
-      fk1 = KVKeys.from(row, SAMPLE_FKS);
-      fk2 = KVKeys.NOT_APPLICABLE;
+      pk = KVKeyValues.from(row, SAMPLE_PKS);
+      fk1 = KVKeyValues.from(row, SAMPLE_FKS);
+      fk2 = KVKeyValues.NOT_APPLICABLE;
     }
 
     // Ssm
     else if (fileType == SSM_M) {
-      pk = KVKeys.from(row, SSM_M_PKS);
-      fk1 = KVKeys.from(row, SSM_M_FKS1);
-      fk2 = KVKeys.from(row, SSM_M_FKS2); // TODO: handle case where value is null or a missing code
+      pk = KVKeyValues.from(row, SSM_M_PKS);
+      fk1 = KVKeyValues.from(row, SSM_M_FKS1);
+      fk2 = KVKeyValues.from(row, SSM_M_FKS2); // TODO: handle case where value is null or a missing code
     } else if (fileType == SSM_P) {
-      pk = KVKeys.NOT_APPLICABLE;
-      fk1 = KVKeys.from(row, SSM_P_FKS);
-      fk2 = KVKeys.NOT_APPLICABLE;
+      pk = KVKeyValues.NOT_APPLICABLE;
+      fk1 = KVKeyValues.from(row, SSM_P_FKS);
+      fk2 = KVKeyValues.NOT_APPLICABLE;
     }
 
     // Cnsm
     else if (fileType == CNSM_M) {
-      pk = KVKeys.from(row, CNSM_M_PKS);
-      fk1 = KVKeys.from(row, CNSM_M_FKS1);
-      fk2 = KVKeys.from(row, CNSM_M_FKS2); // TODO: handle case where value is null or a missing code
+      pk = KVKeyValues.from(row, CNSM_M_PKS);
+      fk1 = KVKeyValues.from(row, CNSM_M_FKS1);
+      fk2 = KVKeyValues.from(row, CNSM_M_FKS2); // TODO: handle case where value is null or a missing code
     } else if (fileType == CNSM_P) {
-      pk = KVKeys.from(row, CNSM_P_PKS);
-      fk1 = KVKeys.from(row, CNSM_P_FKS);
-      fk2 = KVKeys.NOT_APPLICABLE;
+      pk = KVKeyValues.from(row, CNSM_P_PKS);
+      fk1 = KVKeyValues.from(row, CNSM_P_FKS);
+      fk2 = KVKeyValues.NOT_APPLICABLE;
     } else if (fileType == CNSM_S) {
-      pk = KVKeys.NOT_APPLICABLE;
-      fk1 = KVKeys.from(row, CNSM_S_FKS);
-      fk2 = KVKeys.NOT_APPLICABLE;
+      pk = KVKeyValues.NOT_APPLICABLE;
+      fk1 = KVKeyValues.from(row, CNSM_S_FKS);
+      fk2 = KVKeyValues.NOT_APPLICABLE;
     }
 
     checkState(pk != null || fk1 != null, "TODO: '%s'", row);
@@ -198,7 +198,7 @@ public class KVFileDataDigest {
 
   public boolean pksContains(
       @NonNull// TODO: consider removing such time consuming checks?
-      KVKeys keys) {
+      KVKeyValues keys) {
     return pks.contains(keys);
   }
 

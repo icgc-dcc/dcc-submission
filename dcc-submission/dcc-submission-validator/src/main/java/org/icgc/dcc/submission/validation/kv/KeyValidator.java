@@ -59,12 +59,6 @@ import com.google.common.collect.Sets;
  * Glue for the key validation.
  * <p>
  * Very primitive version. The non-genericity was a request from Bob.
- * <p>
- * TODO:<br/>
- * TO_BE_REMOVED<br/>
- * optional files<br/>
- * other feature types<br/>
- * consider removing the check* (costly)<br/>
  */
 @Slf4j
 @RequiredArgsConstructor

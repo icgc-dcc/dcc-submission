@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.kv.error;
 
 import java.util.List;
 
-import org.icgc.dcc.submission.validation.kv.data.KVKeys;
+import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
 
 import lombok.Value;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class KVRowError {
 
   private final KVErrorType type;
-  private final KVKeys keys;
+  private final KVKeyValues keys;
 
   public void describe(long lineNumber, List<Integer> fieldIndices) {
     log.error("{} error at {}.{}: {}",
