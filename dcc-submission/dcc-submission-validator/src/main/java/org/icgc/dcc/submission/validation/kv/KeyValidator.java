@@ -109,22 +109,24 @@ public class KeyValidator {
   public DeletionData validateDeletions() {
     val deletionData = DeletionData.getInstance();
 
-    boolean valid;
-    valid = deletionData.validateWellFormedness();
-    if (!valid) {
-      log.error("Deletion well-formedness errors found");
-    }
-
-    val oldDonorIds = hasOriginalClinicalData() ? DeletionFileParser.getOldDonorIds() : Sets.<String> newTreeSet();
-    valid = deletionData.validateAgainstOldClinicalData(oldDonorIds);
-    if (!valid) {
-      log.error("Deletion previous data errors found");
-    }
-
-    if (hasNewClinicalData()) {
-      valid = deletionData.validateAgainstNewClinicalData(oldDonorIds, DeletionFileParser.getNewDonorIds());
+    if (2 > 1) { // Skipped for now
+      boolean valid;
+      valid = deletionData.validateWellFormedness();
       if (!valid) {
-        log.error("Deletion new data errors found");
+        log.error("Deletion well-formedness errors found");
+      }
+
+      val oldDonorIds = hasOriginalClinicalData() ? DeletionFileParser.getOldDonorIds() : Sets.<String> newTreeSet();
+      valid = deletionData.validateAgainstOldClinicalData(oldDonorIds);
+      if (!valid) {
+        log.error("Deletion previous data errors found");
+      }
+
+      if (hasNewClinicalData()) {
+        valid = deletionData.validateAgainstNewClinicalData(oldDonorIds, DeletionFileParser.getNewDonorIds());
+        if (!valid) {
+          log.error("Deletion new data errors found");
+        }
       }
     }
 
