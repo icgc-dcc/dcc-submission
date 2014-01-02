@@ -1,4 +1,3 @@
 analysis_id	analyzed_sample_id	matched_sample_id	other_ssm_m
 an-ssm-02	sa-ssm-02.01.T01	sa-ssm-02.01.C01	dummy2
 an-ssm-03	sa-ssm-03.01.T01	sa-ssm-03.01.C01	dummy2
-
