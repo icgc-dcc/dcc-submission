@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,21 +17,22 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-import lombok.RequiredArgsConstructor;
+import static com.google.common.collect.Lists.newArrayList;
 
-import com.google.common.base.Splitter;
+import java.util.List;
 
-@RequiredArgsConstructor
-public abstract class AbstractFileLineParser<T> implements FileLineParser<T> {
+import lombok.ToString;
 
-  /**
-   * Separator between fields.
-   */
-  protected static final String FIELD_SEPARATOR = "\t";
+@ToString
+public class FileLineListParser extends AbstractFileLineParser<List<String>> {
 
-  /**
-   * Splits fields in to a {@code String} iterable.
-   */
-  protected static final Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
+  @Override
+  public List<String> parse(String line) {
+    return split(line);
+  }
+
+  protected static List<String> split(String line) {
+    return newArrayList(FIELD_SPLITTER.split(line));
+  }
 
 }

@@ -19,16 +19,10 @@ package org.icgc.dcc.submission.core.util;
 
 import lombok.ToString;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-
 import com.google.common.collect.Iterables;
 
 @ToString
 public class FileLineArrayParser extends AbstractFileLineParser<String[]> {
-
-  public FileLineArrayParser(FileSchema schema) {
-    super(schema);
-  }
 
   @Override
   public String[] parse(String line) {

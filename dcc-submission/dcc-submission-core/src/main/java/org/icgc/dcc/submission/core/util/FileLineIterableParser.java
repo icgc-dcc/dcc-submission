@@ -19,14 +19,8 @@ package org.icgc.dcc.submission.core.util;
 
 import lombok.ToString;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-
 @ToString
 public class FileLineIterableParser extends AbstractFileLineParser<Iterable<String>> {
-
-  public FileLineIterableParser(FileSchema schema) {
-    super(schema);
-  }
 
   @Override
   public Iterable<String> parse(String line) {
