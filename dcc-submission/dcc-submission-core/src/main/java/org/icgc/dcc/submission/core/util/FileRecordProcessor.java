@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-public interface FileLineParser<T> {
+public interface FileRecordProcessor<T> {
 
-  T parse(String line);
+  void process(long lineNumber, T record);
 
 }

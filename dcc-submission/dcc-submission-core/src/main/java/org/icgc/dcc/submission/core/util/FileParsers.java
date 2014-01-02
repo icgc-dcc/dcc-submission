@@ -17,8 +17,28 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-public interface FileLineParser<T> {
+import static lombok.AccessLevel.PRIVATE;
 
-  T parse(String line);
+import java.util.Map;
+
+import lombok.NoArgsConstructor;
+
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+
+@NoArgsConstructor(access = PRIVATE)
+public class FileParsers {
+
+  public FileParser<Map<String, String>> newMapFileParser(FileSystem fileSystem, FileSchema fileSchema) {
+    return new FileParser<Map<String, String>>(fileSystem, new FileLineMapParser(fileSchema));
+  }
+
+  public FileParser<String[]> newArrayFileParser(FileSystem fileSystem, FileSchema fileSchema) {
+    return new FileParser<String[]>(fileSystem, new FileLineArrayParser(fileSchema));
+  }
+
+  public FileParser<Iterable<String>> newIterableFileParser(FileSystem fileSystem, FileSchema fileSchema) {
+    return new FileParser<Iterable<String>>(fileSystem, new FileLineIterableParser(fileSchema));
+  }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,8 +17,41 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-public interface FileLineParser<T> {
+import java.util.Iterator;
+import java.util.Map;
 
-  T parse(String line);
+import lombok.ToString;
+import lombok.val;
+
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+
+import com.google.common.collect.ImmutableMap;
+
+@ToString
+public class FileLineMapParser extends AbstractFileLineParser<Map<String, String>> {
+
+  public FileLineMapParser(FileSchema schema) {
+    super(schema);
+  }
+
+  @Override
+  public Map<String, String> parse(String line) {
+    val values = split(line);
+    return parse(values);
+  }
+
+  private Map<String, String> parse(Iterator<String> values) {
+    val record = ImmutableMap.<String, String> builder();
+    for (val fieldName : schema.getFieldNames()) {
+      val fieldValue = values.next();
+      record.put(fieldName, fieldValue);
+    }
+
+    return record.build();
+  }
+
+  protected static Iterator<String> split(String line) {
+    return FIELD_SPLITTER.split(line).iterator();
+  }
 
 }
