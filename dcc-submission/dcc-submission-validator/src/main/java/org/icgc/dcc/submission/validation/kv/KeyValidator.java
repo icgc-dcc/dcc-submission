@@ -42,13 +42,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.validation.kv.data.KVExistingFileDataDigest;
 import org.icgc.dcc.submission.validation.kv.data.KVFileDataDigest;
+import org.icgc.dcc.submission.validation.kv.data.KVNewFileDataDigest;
 import org.icgc.dcc.submission.validation.kv.data.KVSubmissionDataDigest;
 import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.kv.deletion.DeletionFileParser;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
-import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
 
@@ -188,19 +189,14 @@ public class KeyValidator {
   private void loadOriginalFile(KVFileType fileType) {
     originalData.put(
         fileType,
-        new KVFileDataDigest(
-            ORIGINAL_FILE, fileType, getDataFilePath(ORIGINAL_FILE, fileType),
-            (DeletionData) null,
-            (KVFileDataDigest) null, (KVFileDataDigest) null, (KVFileDataDigest) null, // TODO: ugly, need strategy
-            (KVFileErrors) null, (KVFileErrors) null,
-            surjectivityValidator, logThreshold));
+        new KVExistingFileDataDigest(ORIGINAL_FILE, fileType, getDataFilePath(ORIGINAL_FILE, fileType), logThreshold));
   }
 
   private void loadNewFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
     newData.put(
         fileType,
-        new KVFileDataDigest( // TODO: address ugliness
-            submissionType, fileType, getDataFilePath(NEW_FILE, fileType),
+        new KVNewFileDataDigest( // TODO: address ugliness
+            submissionType, fileType, getDataFilePath(NEW_FILE, fileType), logThreshold,
             deletionData,
 
             originalData.get(fileType),
@@ -210,7 +206,7 @@ public class KeyValidator {
             errors.getFileErrors(fileType),
             errors.getFileErrors(RELATIONS.get(fileType)), // May be null (for DONOR for instance)
 
-            surjectivityValidator, logThreshold));
+            surjectivityValidator));
   }
 
   private void loadEmptyOriginalFiles() {
