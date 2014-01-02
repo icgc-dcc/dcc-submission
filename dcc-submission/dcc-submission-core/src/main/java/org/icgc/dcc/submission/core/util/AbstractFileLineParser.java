@@ -17,8 +17,27 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-public interface FileLineParser<T> {
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-  T parse(String line);
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+
+import com.google.common.base.Splitter;
+
+@RequiredArgsConstructor
+public abstract class AbstractFileLineParser<T> implements FileLineParser<T> {
+
+  /**
+   * Separator between fields.
+   */
+  protected static final String FIELD_SEPARATOR = "\t";
+
+  /**
+   * Splits fields in to a {@code String} iterable.
+   */
+  protected static final Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
+
+  @NonNull
+  protected final FileSchema schema;
 
 }

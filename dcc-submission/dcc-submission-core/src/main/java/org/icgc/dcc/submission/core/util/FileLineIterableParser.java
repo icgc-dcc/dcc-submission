@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,8 +17,24 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-public interface FileLineParser<T> {
+import lombok.ToString;
 
-  T parse(String line);
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+
+@ToString
+public class FileLineIterableParser extends AbstractFileLineParser<Iterable<String>> {
+
+  public FileLineIterableParser(FileSchema schema) {
+    super(schema);
+  }
+
+  @Override
+  public Iterable<String> parse(String line) {
+    return split(line);
+  }
+
+  protected static Iterable<String> split(String line) {
+    return FIELD_SPLITTER.split(line);
+  }
 
 }
