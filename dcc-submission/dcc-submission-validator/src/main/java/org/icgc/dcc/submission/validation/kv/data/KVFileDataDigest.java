@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.kv.KeyValidator.TAB_SPLITTER;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.RELATION;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SECONDARY_RELATION;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_NEW;
@@ -65,6 +64,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
+import org.icgc.dcc.submission.validation.kv.KVConstants;
 import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
@@ -138,7 +138,7 @@ public class KVFileDataDigest {
 
       // TODO: add sanity check on header
       if (lineCount != 0 && !line.trim().isEmpty()) {
-        val row = newArrayList(TAB_SPLITTER.split(line)); // TODO: optimize (use array)
+        val row = newArrayList(KVConstants.TAB_SPLITTER.split(line)); // TODO: optimize (use array)
         log.debug("\t" + row);
 
         val tuple = getTuple(fileType, row);

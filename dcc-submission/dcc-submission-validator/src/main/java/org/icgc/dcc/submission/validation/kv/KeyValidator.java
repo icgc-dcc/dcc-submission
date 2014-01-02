@@ -38,6 +38,9 @@ import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.TREATED_AS_ORIGINAL;
 import static org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors.RELATIONS;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.kv.data.KVFileDataDigest;
 import org.icgc.dcc.submission.validation.kv.data.KVSubmissionDataDigest;
@@ -49,13 +52,11 @@ import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
 
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 
 /**
+ * Glue for the key validation.
+ * <p>
  * Very primitive version. The non-genericity was a request from Bob.
  * <p>
  * TODO:<br/>
@@ -68,10 +69,7 @@ import com.google.common.base.Splitter;
 @RequiredArgsConstructor
 public class KeyValidator {
 
-  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
-
   private final long logThreshold;
-  private final DeletionFileParser deletionParser = new DeletionFileParser();
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
   private final KVSubmissionDataDigest originalData = new KVSubmissionDataDigest();
   private final KVSubmissionDataDigest newData = new KVSubmissionDataDigest();
@@ -79,20 +77,20 @@ public class KeyValidator {
 
   public void validate() {
 
-    // Deletion data
-    val deletionData = DeletionData.validate(deletionParser);
+    // Validate deletion data
+    val deletionData = validateDeletions();
 
-    // Old data
+    // Process old data
     if (hasOriginalData()) {
-      loadOriginalData(deletionData);
+      loadOriginalData();
     } else {
-      loadPlaceholderData();
+      loadEmptyOriginalFiles();
     }
     for (val entry : originalData.entrySet()) {
       log.info("{}: {}", entry.getKey(), entry.getValue());
     }
 
-    // New data
+    // Process new data
     loadNewData(deletionData);
     for (val entry : newData.entrySet()) {
       log.info("{}: {}", entry.getKey(), entry.getValue());
@@ -107,10 +105,35 @@ public class KeyValidator {
     log.info("done.");
   }
 
-  private void loadOriginalData(DeletionData deletionData) { // TODO: deletionData not really needed here
+  public DeletionData validateDeletions() {
+    val deletionData = DeletionData.getInstance();
+
+    boolean valid;
+    valid = deletionData.validateWellFormedness();
+    if (!valid) {
+      log.error("Deletion well-formedness errors found");
+    }
+
+    val oldDonorIds = hasOriginalClinicalData() ? DeletionFileParser.getOldDonorIds() : Sets.<String> newTreeSet();
+    valid = deletionData.validateAgainstOldClinicalData(oldDonorIds);
+    if (!valid) {
+      log.error("Deletion previous data errors found");
+    }
+
+    if (hasNewClinicalData()) {
+      valid = deletionData.validateAgainstNewClinicalData(oldDonorIds, DeletionFileParser.getNewDonorIds());
+      if (!valid) {
+        log.error("Deletion new data errors found");
+      }
+    }
+
+    return deletionData;
+  }
+
+  private void loadOriginalData() {
 
     // Original clinical
-    checkState(hasOriginalClinicalData(), "TODO");
+    checkState(hasOriginalClinicalData(), "TODO"); // At this point we expect it
     loadOriginalFile(DONOR);
     loadOriginalFile(SPECIMEN);
     loadOriginalFile(SAMPLE);
@@ -134,19 +157,6 @@ public class KeyValidator {
       loadEmptyOriginalFile(CNSM_P);
       loadEmptyOriginalFile(CNSM_S);
     }
-  }
-
-  private void loadPlaceholderData() {
-    originalData.put(DONOR, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, DONOR));
-    originalData.put(SPECIMEN, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, SPECIMEN));
-    originalData.put(SAMPLE, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, SAMPLE));
-
-    originalData.put(SSM_M, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, SSM_M));
-    originalData.put(SSM_P, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, SSM_P));
-
-    originalData.put(CNSM_M, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, CNSM_M));
-    originalData.put(CNSM_P, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, CNSM_P));
-    originalData.put(CNSM_S, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, CNSM_S));
   }
 
   /**
@@ -203,10 +213,21 @@ public class KeyValidator {
             surjectivityValidator, logThreshold));
   }
 
+  private void loadEmptyOriginalFiles() {
+    loadEmptyOriginalFile(DONOR);
+    loadEmptyOriginalFile(SPECIMEN);
+    loadEmptyOriginalFile(SAMPLE);
+
+    loadEmptyOriginalFile(SSM_M);
+    loadEmptyOriginalFile(SSM_P);
+
+    loadEmptyOriginalFile(CNSM_M);
+    loadEmptyOriginalFile(CNSM_P);
+    loadEmptyOriginalFile(CNSM_S);
+  }
+
   private void loadEmptyOriginalFile(KVFileType fileType) {
-    originalData.put(
-        fileType,
-        KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, fileType));
+    originalData.put(fileType, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, fileType));
   }
 
   private void validateComplexSurjection() {

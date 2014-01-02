@@ -30,7 +30,9 @@ import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
 
 /**
- * 
+ * Utils method for the key validation.
+ * <p>
+ * In particular, it detects and retrieves files.
  */
 public class KVUtils {
 

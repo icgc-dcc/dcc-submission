@@ -23,8 +23,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
 import static com.google.common.collect.Sets.union;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.TO_BE_REMOVED_FILE_NAME;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewClinicalData;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalClinicalData;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.hasToBeRemovedFile;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ERROR;
 
@@ -40,10 +38,9 @@ import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
- * 
+ * Holds the map of donor ID to list of feature types to be deleted + performs validations on it.
  */
 @Value
 @Slf4j
@@ -51,45 +48,29 @@ public class DeletionData {
 
   private final Map<String, List<DeletionType>> deletionMap;
 
-  public static DeletionData getEmptyInstance() {
-    return new DeletionData(Maps.<String, List<DeletionType>> newTreeMap());
+  public Set<String> getDonorIdKeys() {
+    return deletionMap.keySet();
   }
 
-  public static DeletionData validate(DeletionFileParser deletionParser) { // TODO: not static
+  // TODO: more getters
+
+  /**
+   * 
+   */
+  public static DeletionData getInstance() {
     DeletionData deletionData;
     if (hasToBeRemovedFile()) {
-      deletionData = deletionParser.parseToBeDeletedFile();
+      deletionData = DeletionFileParser.parseToBeDeletedFile();
     } else {
       deletionData = DeletionData.getEmptyInstance();
       log.info("No '{}' file provided", TO_BE_REMOVED_FILE_NAME);
     }
     log.info("{}", deletionData);
-
-    boolean valid;
-    valid = deletionData.validateWellFormedness();
-    if (!valid) {
-      System.exit(1); // FIXME
-    } else {
-      log.info("ok0");
-    }
-
-    val oldDonorIds = hasOriginalClinicalData() ? deletionParser.getOldDonorIds() : Sets.<String> newTreeSet();
-    valid = deletionData.validateAgainstOldClinicalData(oldDonorIds);
-    if (!valid) {
-      System.exit(1); // FIXME
-    } else {
-      log.info("ok1");
-    }
-
-    if (hasNewClinicalData()) {
-      valid = deletionData.validateAgainstNewClinicalData(oldDonorIds, deletionParser.getNewDonorIds());
-      if (!valid) {
-        System.exit(1); // FIXME
-      } else {
-        log.info("ok2");
-      }
-    }
     return deletionData;
+  }
+
+  private static DeletionData getEmptyInstance() {
+    return new DeletionData(Maps.<String, List<DeletionType>> newTreeMap());
   }
 
   /**
@@ -173,9 +154,5 @@ public class DeletionData {
 
   private boolean isAllDeletionAlone(List<DeletionType> featureTypes) {
     return featureTypes.size() == 1 && featureTypes.get(0).isAllDeletionType();
-  }
-
-  public Set<String> getDonorIdKeys() {
-    return deletionMap.keySet();
   }
 }

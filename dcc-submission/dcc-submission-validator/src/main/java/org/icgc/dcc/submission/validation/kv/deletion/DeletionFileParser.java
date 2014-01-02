@@ -21,9 +21,9 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.TAB_SPLITTER;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.getDataFilePath;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.getToBeRemovedFile;
-import static org.icgc.dcc.submission.validation.kv.KeyValidator.TAB_SPLITTER;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.NEW_FILE;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
@@ -44,12 +44,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.submission.validation.kv.KVConstants;
 import org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 
 /**
+ * Utils class to parse the deletion file (which is assumed to be small in comparison with real data).
+ * <p>
  * TODO: consider having the validation be separated from the key validator?
  */
 @Slf4j
@@ -63,7 +66,7 @@ public class DeletionFileParser {
    * Does not perform any validation per se, simply parsing.
    */
   @SneakyThrows
-  public DeletionData parseToBeDeletedFile() {
+  public static DeletionData parseToBeDeletedFile() {
     val toBeDetetedFile = getToBeRemovedFile();
     log.info("{}", toBeDetetedFile);
 
@@ -76,7 +79,7 @@ public class DeletionFileParser {
     long lineCount = 0;
     for (String line; (line = reader.readLine()) != null;) {
       if (lineCount != 0 && !line.trim().isEmpty()) {
-        val row = newArrayList(TAB_SPLITTER.split(line));
+        val row = newArrayList(KVConstants.TAB_SPLITTER.split(line));
         log.debug("\t" + row);
 
         checkState(row.size() == 2, "TODO");
@@ -94,7 +97,7 @@ public class DeletionFileParser {
   }
 
   @SneakyThrows
-  private Set<String> getDonorIds(String donorFile) {
+  private static Set<String> getDonorIds(String donorFile) {
     val donorIds = Sets.<String> newTreeSet();
     @Cleanup
     val reader = new BufferedReader(new FileReader(new File(donorFile)));
@@ -111,26 +114,26 @@ public class DeletionFileParser {
     return donorIds;
   }
 
-  public Set<String> getOldDonorIds() {
+  public static Set<String> getOldDonorIds() {
     val oldDonorFile = getDataFilePath(ORIGINAL_FILE, DONOR);
     log.info("{}", oldDonorFile);
     return getDonorIds(oldDonorFile);
   }
 
-  public Set<String> getNewDonorIds() {
+  public static Set<String> getNewDonorIds() {
     val newDonorFile = getDataFilePath(NEW_FILE, DONOR);
     log.info("{}", newDonorFile);
     return getDonorIds(newDonorFile);
   }
 
-  private List<String> getFeatureTypeStringList(String featureTypesString) {
+  private static List<String> getFeatureTypeStringList(String featureTypesString) {
     return newArrayList(FEATURE_TYPE_SPLITTER.split(
         featureTypesString
             .toLowerCase()
             .replace(" ", "")));
   }
 
-  private List<DeletionType> getDeletionType(List<String> featureTypeStringList) {
+  private static List<DeletionType> getDeletionType(List<String> featureTypeStringList) {
     List<DeletionType> deletionTypes = newArrayList();
     for (val featureTypeString : featureTypeStringList) {
       boolean isAll = KeyValidationAdditionalType.matchesAllDeletionType(featureTypeString);
