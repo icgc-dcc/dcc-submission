@@ -35,6 +35,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
@@ -66,7 +67,6 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.LiteProject;
@@ -108,8 +108,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   private final ReleaseRepository releaseRepository;
 
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, @NonNull
-  DccFileSystem fs, MailService mailService) {
+  public ReleaseService(Morphia morphia, Datastore datastore, @NonNull DccFileSystem fs, MailService mailService) {
     super(morphia, datastore, QRelease.release, mailService);
     this.fs = fs;
     this.releaseRepository = new ReleaseRepository();
@@ -176,12 +175,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private Release doRelease(
-      @NonNull
-      Release oldRelease,
-      @NonNull
-      String nextReleaseName,
-      @NonNull
-      String dictionaryVersion) {
+      @NonNull Release oldRelease,
+      @NonNull String nextReleaseName,
+      @NonNull String dictionaryVersion) {
 
     // Create new release entity
     val newRelease = createNextRelease(oldRelease, nextReleaseName, dictionaryVersion);
@@ -204,12 +200,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private Release createNextRelease(
-      @NonNull
-      Release oldRelease,
-      @NonNull
-      String name,
-      @NonNull
-      String dictionaryVersion) {
+      @NonNull Release oldRelease,
+      @NonNull String name,
+      @NonNull String dictionaryVersion) {
     val nextRelease = new Release(name);
     nextRelease.setDictionaryVersion(dictionaryVersion);
     nextRelease.setState(ReleaseState.OPENED);
@@ -435,23 +428,25 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("signing off {} for {}", projectKeys, nextReleaseName);
 
     // update release object
-    val expectedState = SubmissionState.VALID;
+    val expectedState = VALID;
     nextRelease.removeFromQueue(projectKeys);
     for (val projectKey : projectKeys) {
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
-      submission.setState(SubmissionState.SIGNED_OFF);
+      submission.setState(SIGNED_OFF);
     }
 
-    updateRelease(nextReleaseName, nextRelease);
+    dbUpdateRelease(nextReleaseName, nextRelease);
 
     // TODO: synchronization (DCC-685), may require cleaning up the FS abstraction (do we really need the project object
     // or is the projectKey sufficient?)
-    // remove .validation folder from the Submission folder
+
+    // Remove validation files in the ".validation" folder (leave normalization files untouched)
     val releaseFs = fs.getReleaseFilesystem(nextRelease);
     val projects = getProjects(projectKeys);
     for (val project : projects) {
-      SubmissionDirectory submissionDirectory = releaseFs.getSubmissionDirectory(project.getKey());
-      submissionDirectory.removeValidationDir();
+      releaseFs
+          .getSubmissionDirectory(project.getKey())
+          .removeValidationFiles();
     }
 
     // after sign off, send a email to DCC support
@@ -526,7 +521,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       submission.setState(QUEUED);
     }
 
-    updateRelease(nextReleaseName, nextRelease);
+    dbUpdateRelease(nextReleaseName, nextRelease);
     log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
   }
 
@@ -573,7 +568,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         submission.setState(destinationState);
 
         // update corresponding database entity
-        updateRelease(nextReleaseName, nextRelease);
+        dbUpdateRelease(nextReleaseName, nextRelease);
 
         log.info("Dequeued {} to validating state for {}", nextProjectKey, nextReleaseName);
         return Optional.absent();
@@ -911,7 +906,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * @throws DccModelOptimisticLockException if optimistic lock fails
    * @throws ReleaseException if the update fails for other reasons (probably not recoverable)
    */
-  private void updateRelease(String originalReleaseName, Release updatedRelease) throws DccModelOptimisticLockException {
+  private void dbUpdateRelease(String originalReleaseName, Release updatedRelease)
+      throws DccModelOptimisticLockException {
     UpdateResults<Release> update = null;
     try {
       update = datastore().updateFirst(
@@ -1010,8 +1006,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     private void updateCompletedRelease(
-        @NonNull
-        Release oldRelease) {
+        @NonNull Release oldRelease) {
       log.info("Updating completed release: '{}'", oldRelease.getName());
       datastore().findAndModify(
           datastore().createQuery(Release.class)
@@ -1026,8 +1021,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
      * Do *not* use to update an existing release (not intended that way).
      */
     private void saveNewRelease(
-        @NonNull
-        Release newRelease) {
+        @NonNull Release newRelease) {
       log.info("Saving new release: '{}'", newRelease.getName());
       datastore().save(newRelease);
     }
@@ -1048,8 +1042,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     // TODO: figure out difference with method below
-    private Dictionary getDictionaryFromVersion(@NonNull
-    String version) {
+    private Dictionary getDictionaryFromVersion(@NonNull String version) {
       // Also found in DictionaryService - see comments in DCC-245
       return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary).where(
           QDictionary.dictionary.version.eq(version)).singleResult();
