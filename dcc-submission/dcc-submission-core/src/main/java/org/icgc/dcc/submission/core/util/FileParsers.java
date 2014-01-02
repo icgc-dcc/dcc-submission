@@ -19,26 +19,56 @@ package org.icgc.dcc.submission.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 @NoArgsConstructor(access = PRIVATE)
 public class FileParsers {
 
-  public FileParser<Map<String, String>> newMapFileParser(FileSystem fileSystem, FileSchema fileSchema) {
+  private static final FileSystem DEFAULT_FILE_SYSTEM = getDefaultFileSystem();
+
+  public static FileParser<Map<String, String>> newMapFileParser(FileSchema fileSchema) {
+    return newMapFileParser(DEFAULT_FILE_SYSTEM, fileSchema);
+  }
+
+  public static FileParser<Map<String, String>> newMapFileParser(FileSystem fileSystem, FileSchema fileSchema) {
     return new FileParser<Map<String, String>>(fileSystem, new FileLineMapParser(fileSchema));
   }
 
-  public FileParser<String[]> newArrayFileParser(FileSystem fileSystem, FileSchema fileSchema) {
-    return new FileParser<String[]>(fileSystem, new FileLineArrayParser(fileSchema));
+  public static FileParser<String[]> newArrayFileParser() {
+    return newArrayFileParser(DEFAULT_FILE_SYSTEM);
   }
 
-  public FileParser<Iterable<String>> newIterableFileParser(FileSystem fileSystem, FileSchema fileSchema) {
-    return new FileParser<Iterable<String>>(fileSystem, new FileLineIterableParser(fileSchema));
+  public static FileParser<String[]> newArrayFileParser(FileSystem fileSystem) {
+    return new FileParser<String[]>(fileSystem, new FileLineArrayParser());
+  }
+
+  public static FileParser<Iterable<String>> newIterableFileParser() {
+    return newIterableFileParser(DEFAULT_FILE_SYSTEM);
+  }
+
+  public static FileParser<Iterable<String>> newIterableFileParser(FileSystem fileSystem) {
+    return new FileParser<Iterable<String>>(fileSystem, new FileLineIterableParser());
+  }
+
+  public static FileParser<List<String>> newListFileParser() {
+    return newListFileParser(DEFAULT_FILE_SYSTEM);
+  }
+
+  public static FileParser<List<String>> newListFileParser(FileSystem fileSystem) {
+    return new FileParser<List<String>>(fileSystem, new FileLineListParser());
+  }
+
+  @SneakyThrows
+  private static FileSystem getDefaultFileSystem() {
+    return FileSystem.getLocal(new Configuration());
   }
 
 }

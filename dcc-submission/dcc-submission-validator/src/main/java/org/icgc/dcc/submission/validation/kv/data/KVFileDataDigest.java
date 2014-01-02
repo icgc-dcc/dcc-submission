@@ -18,8 +18,9 @@
 package org.icgc.dcc.submission.validation.kv.data;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.submission.core.util.FileParsers.newListFileParser;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS2;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_PKS;
@@ -35,7 +36,6 @@ import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_FKS2;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_PKS;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_P_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.TAB_SPLITTER;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
@@ -45,13 +45,9 @@ import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECI
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.List;
 import java.util.Set;
 
-import lombok.Cleanup;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +55,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.core.util.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
 
@@ -114,31 +111,25 @@ public class KVFileDataDigest {
   @SneakyThrows
   public void processFile() {
     checkState(!placeholder);
-    log.info("{}", StringUtils.repeat("=", 75));
+    log.info("{}", repeat("=", 75));
     log.info("{}", Joiner.on(", ").join(submissionType, fileType, path));
 
-    // Read line by lines
-    @Cleanup
-    val reader = new BufferedReader(new FileReader(new File(path)));
-    long lineCount = 0;
-    for (String line; (line = reader.readLine()) != null;) {
+    val parser = newListFileParser();
+    parser.parse(new Path(path), new FileRecordProcessor<List<String>>() {
 
-      // TODO: add sanity check on header
-      if (lineCount != 0 && !line.trim().isEmpty()) {
-        val row = newArrayList(TAB_SPLITTER.split(line)); // TODO: optimize (use array)
-        log.debug("\t" + row);
-
-        val tuple = getTuple(fileType, row);
+      @Override
+      public void process(long lineNumber, List<String> record) {
+        val tuple = getTuple(fileType, record);
         log.debug("tuple: {}", tuple);
 
-        processTuple(tuple, lineCount);
+        processTuple(tuple, lineNumber);
+
+        if ((lineNumber % logThreshold) == 0) {
+          logProcessedLine(lineNumber, false);
+        }
       }
-      lineCount++;
-      if ((lineCount % logThreshold) == 0) {
-        logProcessedLine(lineCount, false);
-      }
-    }
-    logProcessedLine(lineCount, true);
+
+    });
 
     postProcessing();
   }

@@ -20,6 +20,8 @@ package org.icgc.dcc.submission.core.util;
 import java.util.Iterator;
 import java.util.Map;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.val;
 
@@ -28,11 +30,11 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import com.google.common.collect.ImmutableMap;
 
 @ToString
+@RequiredArgsConstructor
 public class FileLineMapParser extends AbstractFileLineParser<Map<String, String>> {
 
-  public FileLineMapParser(FileSchema schema) {
-    super(schema);
-  }
+  @NonNull
+  protected final FileSchema schema;
 
   @Override
   public Map<String, String> parse(String line) {
