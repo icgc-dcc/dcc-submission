@@ -30,23 +30,25 @@ import static org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityVal
 import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.submission.validation.kv.KVFileDescription;
 import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
 
 /**
- * Include file type?
+ * 
  */
 public class KVFileErrors {
 
   private final Map<KVErrorType, List<Integer>> fieldIndicesPerErrorType = newLinkedHashMap();
   private final Map<Long, KVRowError> rowErrors = newTreeMap();
 
-  public KVFileErrors(List<Integer> pkIndices) {
-    fieldIndicesPerErrorType.put(UNIQUE_ORIGINAL, pkIndices);
-    fieldIndicesPerErrorType.put(UNIQUE_NEW, pkIndices);
-    fieldIndicesPerErrorType.put(SURJECTION, pkIndices); // FIXME
+  public KVFileErrors(@NonNull List<Integer> pkIndices) {
+    this.fieldIndicesPerErrorType.put(UNIQUE_ORIGINAL, pkIndices);
+    this.fieldIndicesPerErrorType.put(UNIQUE_NEW, pkIndices);
+    this.fieldIndicesPerErrorType.put(SURJECTION, pkIndices); // FIXME
   }
 
   public KVFileErrors(List<Integer> pkIndices, List<Integer> fkIndices) {
@@ -54,13 +56,18 @@ public class KVFileErrors {
     fieldIndicesPerErrorType.put(RELATION, fkIndices);
   }
 
-  public KVFileErrors(List<Integer> pkIndices, List<Integer> fkIndices, List<Integer> secondaryFkIndices) {
+  public KVFileErrors(
+      @NonNull List<Integer> pkIndices,
+      @NonNull List<Integer> fkIndices,
+      @NonNull List<Integer> secondaryFkIndices) {
     this(pkIndices, fkIndices);
     fieldIndicesPerErrorType.put(SECONDARY_RELATION, secondaryFkIndices);
   }
 
   // TODO: factory instead of constructors
-  public KVFileErrors(Object ignoreMe, List<Integer> fkIndices) {
+  public KVFileErrors(
+      @NonNull Object ignoreMe,
+      @NonNull List<Integer> fkIndices) {
     fieldIndicesPerErrorType.put(RELATION, fkIndices);
   }
 
@@ -76,10 +83,10 @@ public class KVFileErrors {
    * TODO: create other wrappers like the surjection one
    */
   public void addError(long lineNumber, KVErrorType type, KVKeyValues keys) {
-    rowErrors.put(lineNumber, new KVRowError(type, keys));
+    rowErrors.put(lineNumber, new KVRowError(type, keys)); // FIXME
   }
 
-  public boolean describe() {
+  public boolean describe(KVFileDescription kvFileDescription) {
     if (rowErrors.isEmpty()) {
       return true;
     } else {
@@ -90,7 +97,7 @@ public class KVFileErrors {
             fieldIndicesPerErrorType
                 .get(rowError.getType()),
             "TODO: %s", entry);
-        rowError.describe(lineNumber, fieldIndices);
+        rowError.describe(kvFileDescription, lineNumber, fieldIndices);
       }
       return false;
     }

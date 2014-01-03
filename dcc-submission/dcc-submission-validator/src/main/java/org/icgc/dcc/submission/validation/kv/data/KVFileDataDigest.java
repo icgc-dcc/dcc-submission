@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.kv.data;
 
 import static com.google.common.base.Preconditions.checkState;
-import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.core.util.FileParsers.newListFileParser;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS1;
@@ -28,6 +27,7 @@ import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_P_FKS;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_P_PKS;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_S_FKS;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.kv.KVConstants.MAPPER;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.SAMPLE_FKS;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.SAMPLE_PKS;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.SPECIMEN_FKS;
@@ -57,11 +57,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.util.FileRecordProcessor;
+import org.icgc.dcc.submission.validation.kv.KVFileDescription;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 
 /**
@@ -70,56 +68,32 @@ import com.google.common.collect.Sets;
  * Not abstract because of the "empty" instance.
  */
 @Slf4j
-@RequiredArgsConstructor(access = PRIVATE)
+@RequiredArgsConstructor
+// (access = PRIVATE)
 public class KVFileDataDigest {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-
-  // TODO: encapsulate in other object?
-  @NonNull
-  protected final KVSubmissionType submissionType;
-  @NonNull
-  protected final KVFileType fileType;
-  private final String path; // TODO: optional?
-  private final boolean placeholder;
+  protected final KVFileDescription kvFileDescription;
   private final long logThreshold;
 
   @Getter
   protected final Set<KVKeyValues> pks = Sets.<KVKeyValues> newTreeSet(); // TODO: change to arrays?
 
-  public static KVFileDataDigest getEmptyInstance(@NonNull KVSubmissionType submissionType, @NonNull KVFileType fileType) {
-    return new KVFileDataDigest(
-        submissionType,
-        fileType,
-        (String) null, // no file path
-        true, // this IS a placeholder
-        -1); // No need for a threshold
-  }
-
-  protected KVFileDataDigest(
-      @NonNull KVSubmissionType submissionType,
-      @NonNull KVFileType fileType,
-      @NonNull String path,
-      long logThreshold) {
-    this(submissionType,
-        fileType,
-        path,
-        false,
-        logThreshold); // this is NOT a placeholder
+  public static KVFileDataDigest getEmptyInstance(@NonNull KVFileDescription kvFileDescription) {
+    return new KVFileDataDigest(kvFileDescription, -1); // -1: no need for a threshold
   }
 
   @SneakyThrows
   public KVFileDataDigest processFile() {
-    checkState(!placeholder);
     log.info("{}", repeat("=", 75));
-    log.info("{}", Joiner.on(", ").join(submissionType, fileType, path));
+    log.info("{}", kvFileDescription);
 
     val parser = newListFileParser();
-    parser.parse(new Path(path), new FileRecordProcessor<List<String>>() {
+    checkState(kvFileDescription.isPlaceholder(), "TODO");
+    parser.parse(new Path(kvFileDescription.getFilePath().get()), new FileRecordProcessor<List<String>>() {
 
       @Override
       public void process(long lineNumber, List<String> record) {
-        val tuple = getTuple(fileType, record);
+        val tuple = getTuple(kvFileDescription.getFileType(), record);
         log.debug("tuple: {}", tuple);
 
         processTuple(tuple, lineNumber);
@@ -147,7 +121,7 @@ public class KVFileDataDigest {
    * For surjection checks in the case of incremental data (nothing to do for existing data).
    */
   protected void postProcessing() {
-    checkState(submissionType.isExistingData()); // incremental MUST overide it
+    checkState(kvFileDescription.getSubmissionType().isExistingData()); // incremental MUST overide it
   }
 
   protected KVTuple getTuple(KVFileType fileType, List<String> row) {

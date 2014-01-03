@@ -19,15 +19,13 @@ package org.icgc.dcc.submission.validation.kv.data;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.kv.KVFileDescription;
 
 public class KVExistingFileDataDigest extends KVFileDataDigest {
 
   // TODO: lombok delegation?
-  public KVExistingFileDataDigest(
-      KVSubmissionType submissionType, KVFileType fileType, String path, long logThreshold) {
-    super(submissionType, fileType, path, logThreshold);
+  public KVExistingFileDataDigest(KVFileDescription kvFileDescription, long logThreshold) {
+    super(kvFileDescription, logThreshold);
   }
 
   /**
@@ -35,13 +33,13 @@ public class KVExistingFileDataDigest extends KVFileDataDigest {
    */
   @Override
   protected void processTuple(KVTuple tuple, long lineCount) {
-    checkState(submissionType.isExistingData(), "TODO");
+    checkState(kvFileDescription.getSubmissionType().isExistingData(), "TODO");
 
     // Original data (old); This should already be valid, nothing to check
     if (tuple.hasPk()) {
       pks.add(tuple.getPk());
     } else {
-      checkState(!fileType.hasPk(), "TODO");
+      checkState(!kvFileDescription.getFileType().hasPk(), "TODO");
     }
   }
 }

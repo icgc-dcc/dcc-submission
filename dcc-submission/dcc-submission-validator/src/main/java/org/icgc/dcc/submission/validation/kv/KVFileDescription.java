@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,29 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.error;
+package org.icgc.dcc.submission.validation.kv;
 
-import java.util.List;
-
+import static org.icgc.dcc.submission.validation.kv.KVConstants.MAPPER;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.kv.KVFileDescription;
-import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
+
+import com.google.common.base.Optional;
 
 /**
- * 
+ * TODO: rename
  */
 @Value
-@Slf4j
-public class KVRowError {
+public class KVFileDescription {
 
-  private final KVErrorType type;
-  private final KVKeyValues keyValues;
+  @NonNull
+  private final KVSubmissionType submissionType;
+  @NonNull
+  private final KVFileType fileType;
 
-  public void describe(KVFileDescription kvFileDescription, long lineNumber, List<Integer> fieldIndices) {
-    log.error("'{}' error at location '{}.{}' (line/fields): '{}' ('{}')",
-        new Object[] { type, lineNumber, fieldIndices, keyValues, kvFileDescription });
+  /**
+   * May just be a placeholder (hence the optional).
+   */
+  private final Optional<String> filePath;
+
+  public boolean isPlaceholder() {
+    return !filePath.isPresent();
+  }
+
+  @Override
+  public String toString() {
+    return toJsonSummaryString();
+  }
+
+  @SneakyThrows
+  public String toJsonSummaryString() {
+    return "\n" + MAPPER
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(this); // TODO: show sample only (first and last 10 for instance) + excluding nulls
   }
 }

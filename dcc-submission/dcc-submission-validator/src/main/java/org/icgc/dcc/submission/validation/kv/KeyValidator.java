@@ -53,6 +53,7 @@ import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.kv.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
 /**
@@ -186,7 +187,12 @@ public class KeyValidator {
     log.info("Loading existing file: '{}'", fileType);
     existingData.put(
         fileType,
-        new KVExistingFileDataDigest(EXISTING_FILE, fileType, getDataFilePath(EXISTING_FILE, fileType), logThreshold)
+        new KVExistingFileDataDigest(
+            new KVFileDescription(
+                EXISTING_FILE,
+                fileType,
+                Optional.<String> of(getDataFilePath(EXISTING_FILE, fileType))),
+            logThreshold)
             .processFile());
   }
 
@@ -195,7 +201,11 @@ public class KeyValidator {
     incrementalData.put(
         fileType,
         new KVIncrementalFileDataDigest( // TODO: address ugliness
-            submissionType, fileType, getDataFilePath(INCREMENTAL_FILE, fileType), logThreshold,
+            new KVFileDescription(
+                submissionType,
+                fileType,
+                Optional.<String> of(getDataFilePath(INCREMENTAL_FILE, fileType))),
+            logThreshold,
             deletionData,
 
             existingData.get(fileType),
@@ -225,7 +235,14 @@ public class KeyValidator {
 
   private void loadPlaceholderExistingFile(KVFileType fileType) {
     log.info("Loading placeholder existing file: '{}'", fileType);
-    existingData.put(fileType, KVFileDataDigest.getEmptyInstance(EXISTING_FILE, fileType));
+    existingData.put(
+        fileType,
+        KVFileDataDigest.getEmptyInstance(
+            new KVFileDescription(
+                EXISTING_FILE,
+                fileType,
+                Optional.<String> absent())
+            ));
   }
 
   private void validateComplexSurjection() {
