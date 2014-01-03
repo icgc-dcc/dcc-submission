@@ -15,25 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.error;
+package org.icgc.dcc.submission.validation.key.error;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.RELATION;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SECONDARY_RELATION;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SURJECTION;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_NEW;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_ORIGINAL;
-import static org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SURJECTION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUE_NEW;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUE_ORIGINAL;
+import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
 
 import java.util.List;
 import java.util.Map;
 
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
+import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
+import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 
 /**
  * Include file type?

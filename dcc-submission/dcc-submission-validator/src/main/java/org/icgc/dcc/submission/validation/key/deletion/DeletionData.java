@@ -15,16 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.deletion;
+package org.icgc.dcc.submission.validation.key.deletion;
 
 import static com.google.common.collect.Sets.difference;
 import static com.google.common.collect.Sets.intersection;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
 import static com.google.common.collect.Sets.union;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.TO_BE_REMOVED_FILE_NAME;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasToBeRemovedFile;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ERROR;
+import static org.icgc.dcc.submission.validation.key.KVUtils.TO_BE_REMOVED_FILE_NAME;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasToBeRemovedFile;
+import static org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType.ERROR;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
-import org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType;
+import org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.collect.Maps;
 

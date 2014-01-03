@@ -15,20 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.deletion;
+package org.icgc.dcc.submission.validation.key.deletion;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.TAB_SPLITTER;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.getDataFilePath;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.getToBeRemovedFile;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.EXISTING_FILE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.INCREMENTAL_FILE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ALL;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ERROR;
+import static org.icgc.dcc.submission.validation.key.KVConstants.TAB_SPLITTER;
+import static org.icgc.dcc.submission.validation.key.KVUtils.getDataFilePath;
+import static org.icgc.dcc.submission.validation.key.KVUtils.getToBeRemovedFile;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType.ALL;
+import static org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType.ERROR;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,8 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.submission.validation.kv.KVConstants;
-import org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType;
+import org.icgc.dcc.submission.validation.key.KVConstants;
+import org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;

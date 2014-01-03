@@ -15,20 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.surjectivity;
+package org.icgc.dcc.submission.validation.key.surjectivity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasIncrementalClinicalData;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalClinicalData;
 
 import java.util.Set;
 
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.kv.data.KVFileDataDigest;
-import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
+import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
+import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 
 /**
  * Validates surjective relations.

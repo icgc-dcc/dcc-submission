@@ -15,26 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.enumeration;
+package org.icgc.dcc.submission.validation.key.enumeration;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+public enum KVFileType {
+  DONOR,
+  SPECIMEN,
+  SAMPLE,
+  SSM_M,
+  SSM_P,
+  CNSM_M,
+  CNSM_P,
+  CNSM_S;
 
-@RequiredArgsConstructor
-public enum KVSubmissionType {
-  EXISTING_FILE("original"),
-  INCREMENTAL_FILE("new"),
-  TREATED_AS_ORIGINAL(EXISTING_FILE.getSubDirectory()), // For clinical data re-submitted
-  ;
-
-  @Getter
-  private final String subDirectory;
-
-  public boolean isIncrementalData() {
-    return this == INCREMENTAL_FILE;
+  public boolean isReplaceAll() {
+    return this == DONOR || this == SPECIMEN || this == SAMPLE;
   }
 
-  public boolean isExistingData() {
-    return !isIncrementalData();
+  public boolean hasComplexSurjectiveRelation() {
+    return this == SSM_M || this == CNSM_M;
+  }
+
+  /**
+   * Simple as opposd to TODO
+   */
+  public boolean hasSimpleSurjectiveRelation() {
+    return this == SPECIMEN || this == SAMPLE || this == SSM_P || this == CNSM_P;
+  }
+
+  /**
+   * 
+   */
+  public boolean hasPk() {
+    return this != SSM_P && this != CNSM_S;
   }
 }

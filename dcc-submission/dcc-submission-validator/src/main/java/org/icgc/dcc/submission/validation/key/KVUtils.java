@@ -15,19 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.key;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.INCREMENTAL_FILE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.EXISTING_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 
 import java.io.File;
 
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
 /**
  * Utils method for the key validation.

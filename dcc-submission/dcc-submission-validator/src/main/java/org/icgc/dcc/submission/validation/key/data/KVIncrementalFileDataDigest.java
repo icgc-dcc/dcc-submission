@@ -15,32 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.data;
+package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.RELATION;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SECONDARY_RELATION;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_NEW;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_ORIGINAL;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUE_NEW;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUE_ORIGINAL;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
 
 import java.util.Set;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
-import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
-import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
+import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
+import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.collect.Sets;
 

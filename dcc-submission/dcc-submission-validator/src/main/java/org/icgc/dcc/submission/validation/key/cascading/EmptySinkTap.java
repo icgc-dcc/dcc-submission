@@ -15,15 +15,62 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.key.cascading;
 
-/**
- * Entry point.
- */
-public class Main {
+import java.io.IOException;
 
-  public static void main(String[] args) {
-    long logThreshold = args != null && args.length >= 1 ? Long.valueOf(args[0]) : 2;
-    new KeyValidator(logThreshold).validate();
+import lombok.NonNull;
+import cascading.flow.FlowProcess;
+import cascading.scheme.NullScheme;
+import cascading.scheme.Scheme;
+import cascading.tap.SinkMode;
+import cascading.tap.SinkTap;
+import cascading.tuple.TupleEntryCollector;
+import cascading.tuple.TupleEntrySchemeCollector;
+
+public class EmptySinkTap<T> extends SinkTap<T, Void> {
+
+  @NonNull
+  private final String identifier;
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public EmptySinkTap(String identifier) {
+    this(new NullScheme(), identifier);
   }
+
+  public EmptySinkTap(Scheme<T, ?, Void, ?, ?> scheme, String identifier) {
+    super(scheme, SinkMode.UPDATE);
+    this.identifier = "empty://sink." + identifier;
+  }
+
+  @Override
+  public String getIdentifier() {
+    return identifier;
+  }
+
+  @Override
+  public TupleEntryCollector openForWrite(FlowProcess<T> flowProcess, Void output) throws IOException {
+    return new TupleEntrySchemeCollector<T, Void>(flowProcess, getScheme(), output);
+  }
+
+  @Override
+  public boolean createResource(T conf) throws IOException {
+    return true;
+  }
+
+  @Override
+  public boolean deleteResource(T conf) throws IOException {
+    return false;
+  }
+
+  @Override
+  public boolean resourceExists(T conf) throws IOException {
+    return true;
+  }
+
+  @Override
+  public long getModifiedTime(T conf) throws IOException {
+    return 0;
+  }
+
 }

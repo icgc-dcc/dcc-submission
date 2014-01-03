@@ -15,11 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.enumeration;
+package org.icgc.dcc.submission.validation.key.enumeration;
+
+import org.icgc.dcc.core.model.DeletionType;
 
 /**
- * 
+ * For deletion only (TODO: expand)
  */
-public enum KeysType {
-  PK, FK, SECONDARY_FK;
+public enum KeyValidationAdditionalType implements DeletionType {
+  ALL, ERROR;
+
+  @Override
+  public boolean isAllDeletionType() {
+    return this == ALL;
+  }
+
+  @Override
+  public boolean isErroneousDeletionType() {
+    return this == ERROR;
+  }
+
+  // TODO: move to FeatureTypeDeletion?
+  public static boolean matchesAllDeletionType(String value) {
+    return ALL.name().equalsIgnoreCase(value);
+  }
 }

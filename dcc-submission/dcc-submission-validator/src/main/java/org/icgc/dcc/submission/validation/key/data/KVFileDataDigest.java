@@ -15,35 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.data;
+package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newListFileParser;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_P_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_P_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_S_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.DONOR_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SAMPLE_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SAMPLE_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SPECIMEN_FKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SPECIMEN_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_M_PKS;
-import static org.icgc.dcc.submission.validation.kv.KVConstants.SSM_P_FKS;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_P_PKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_S_FKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SAMPLE_FKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SPECIMEN_FKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SPECIMEN_PKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
 
 import java.util.List;
 import java.util.Set;
@@ -57,8 +57,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;

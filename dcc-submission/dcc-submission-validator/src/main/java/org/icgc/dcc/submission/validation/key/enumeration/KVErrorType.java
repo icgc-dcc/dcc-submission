@@ -15,31 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.enumeration;
 
-import lombok.NonNull;
+import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.FK;
+import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.PK;
+import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.SECONDARY_FK;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.operation.OperationCall;
 
+/**
+ * 
+ */
 @RequiredArgsConstructor
-@SuppressWarnings("rawtypes")
-public class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
+public enum KVErrorType {
+  UNIQUE_ORIGINAL(PK),
+  UNIQUE_NEW(PK),
+  RELATION(FK),
+  SECONDARY_RELATION(SECONDARY_FK),
+  SURJECTION(PK);
 
-  @NonNull
-  private final Runnable runnable;
-
-  @Override
-  public void operate(FlowProcess flowProcess, FunctionCall<Void> functionCall) {
-    // No-op
-  }
-
-  @Override
-  public void prepare(FlowProcess flowProcess, OperationCall<Void> operationCall) {
-    runnable.run();
-  }
-
+  /**
+   * TODO: explain!
+   */
+  @Getter
+  private final KeysType keysType;
 }

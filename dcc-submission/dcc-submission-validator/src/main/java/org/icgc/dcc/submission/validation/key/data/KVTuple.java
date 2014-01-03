@@ -15,28 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.enumeration;
+package org.icgc.dcc.submission.validation.key.data;
 
-import static org.icgc.dcc.submission.validation.kv.enumeration.KeysType.FK;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KeysType.PK;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KeysType.SECONDARY_FK;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 /**
- * 
+ * Data relevant to the key validation for a given row.
  */
-@RequiredArgsConstructor
-public enum KVErrorType {
-  UNIQUE_ORIGINAL(PK),
-  UNIQUE_NEW(PK),
-  RELATION(FK),
-  SECONDARY_RELATION(SECONDARY_FK),
-  SURJECTION(PK);
+@Value
+public class KVTuple {
 
   /**
-   * TODO: explain!
+   * Applicable for most file except for the leafs (see dictionary DAG).
    */
-  @Getter
-  private final KeysType keysType;
+  private final KVKeyValues pk;
+
+  /**
+   * Applicable for all files but 'donor'.
+   */
+  private final KVKeyValues fk;
+
+  /**
+   * Only applicable for some meta files
+   */
+  private final KVKeyValues secondaryFk;
+
+  public boolean hasPk() {
+    return pk != null;
+  }
+
+  public boolean hasFk() {
+    return fk != null;
+  }
+
+  public boolean hasSecondaryFk() {
+    return secondaryFk != null;
+  }
 }

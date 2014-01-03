@@ -15,22 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv;
+package org.icgc.dcc.submission.validation.key;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
 
 import java.util.List;
 import java.util.Map;
 
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;

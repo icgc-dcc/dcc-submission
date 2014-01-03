@@ -15,59 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.enumeration;
 
-import java.io.Closeable;
-import java.io.IOException;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-import lombok.NonNull;
-import cascading.flow.FlowProcess;
-import cascading.scheme.NullScheme;
-import cascading.scheme.Scheme;
-import cascading.tap.SourceTap;
-import cascading.tuple.TupleEntryIterator;
-import cascading.tuple.TupleEntrySchemeIterator;
+@RequiredArgsConstructor
+public enum KVSubmissionType {
+  EXISTING_FILE("original"),
+  INCREMENTAL_FILE("new"),
+  TREATED_AS_ORIGINAL(EXISTING_FILE.getSubDirectory()), // For clinical data re-submitted
+  ;
 
-public class EmptySourceTap<T> extends SourceTap<T, Closeable> {
+  @Getter
+  private final String subDirectory;
 
-  @NonNull
-  private final String identifier;
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public EmptySourceTap(String identifier) {
-    this(new NullScheme(), identifier);
+  public boolean isIncrementalData() {
+    return this == INCREMENTAL_FILE;
   }
 
-  public EmptySourceTap(Scheme<T, Closeable, ?, ?, ?> scheme, String identifier) {
-    super(scheme);
-    this.identifier = "empty://source." + identifier;
+  public boolean isExistingData() {
+    return !isIncrementalData();
   }
-
-  @Override
-  public String getIdentifier() {
-    return identifier;
-  }
-
-  @Override
-  public TupleEntryIterator openForRead(FlowProcess<T> flowProcess, Closeable input)
-      throws IOException {
-    return new TupleEntrySchemeIterator<T, Closeable>(flowProcess, getScheme(), new Closeable() {
-
-      @Override
-      public void close() throws IOException {
-      }
-
-    });
-  }
-
-  @Override
-  public boolean resourceExists(T conf) throws IOException {
-    return true;
-  }
-
-  @Override
-  public long getModifiedTime(T conf) throws IOException {
-    return System.currentTimeMillis();
-  }
-
 }

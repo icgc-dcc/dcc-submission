@@ -15,37 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.enumeration;
+package org.icgc.dcc.submission.validation.key.cascading;
 
-public enum KVFileType {
-  DONOR,
-  SPECIMEN,
-  SAMPLE,
-  SSM_M,
-  SSM_P,
-  CNSM_M,
-  CNSM_P,
-  CNSM_S;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.operation.OperationCall;
 
-  public boolean isReplaceAll() {
-    return this == DONOR || this == SPECIMEN || this == SAMPLE;
+@RequiredArgsConstructor
+@SuppressWarnings("rawtypes")
+public class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
+
+  @NonNull
+  private final Runnable runnable;
+
+  @Override
+  public void operate(FlowProcess flowProcess, FunctionCall<Void> functionCall) {
+    // No-op
   }
 
-  public boolean hasComplexSurjectiveRelation() {
-    return this == SSM_M || this == CNSM_M;
+  @Override
+  public void prepare(FlowProcess flowProcess, OperationCall<Void> operationCall) {
+    runnable.run();
   }
 
-  /**
-   * Simple as opposd to TODO
-   */
-  public boolean hasSimpleSurjectiveRelation() {
-    return this == SPECIMEN || this == SAMPLE || this == SSM_P || this == CNSM_P;
-  }
-
-  /**
-   * 
-   */
-  public boolean hasPk() {
-    return this != SSM_P && this != CNSM_S;
-  }
 }

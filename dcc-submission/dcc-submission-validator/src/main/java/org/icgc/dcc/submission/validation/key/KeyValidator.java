@@ -17,85 +17,222 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static cascading.cascade.CascadeDef.cascadeDef;
-import static cascading.flow.FlowDef.flowDef;
-import static java.lang.String.format;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.key.KVConstants.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.KVUtils.getDataFilePath;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingClinicalData;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingCnsmData;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingData;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingSsmData;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalClinicalData;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalCnsmData;
+import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalSsmData;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.TREATED_AS_ORIGINAL;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.key.data.KVExistingFileDataDigest;
+import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
+import org.icgc.dcc.submission.validation.key.data.KVIncrementalFileDataDigest;
+import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
+import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
+import org.icgc.dcc.submission.validation.key.deletion.DeletionFileParser;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
+import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
-import cascading.cascade.Cascade;
-import cascading.cascade.CascadeConnector;
-import cascading.flow.Flow;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
+import com.google.common.collect.Sets;
 
-public class KeyValidator implements Validator {
+/**
+ * Glue for the key validation.
+ * <p>
+ * Very primitive version. The non-genericity was a request from Bob.
+ */
+@Slf4j
+@RequiredArgsConstructor
+public class KeyValidator {
 
-  public static final String COMPONENT_NAME = "Key Validator";
+  private final long logThreshold;
+  private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
+  private final KVSubmissionDataDigest existingData = new KVSubmissionDataDigest();
+  private final KVSubmissionDataDigest incrementalData = new KVSubmissionDataDigest();
+  private final KVSubmissionErrors errors = new KVSubmissionErrors();
+
+  public void validate() {
+
+    // Validate deletion data
+    val deletionData = DeletionData.getInstance();
+    // validateDeletions(deletionData);
+
+    // Process existing data
+    if (hasExistingData()) {
+      loadExistingData();
+    } else {
+      loadPlaceholderExistingFiles();
+    }
+    for (val entry : existingData.entrySet()) {
+      log.info("{}: {}", entry.getKey(), entry.getValue());
+    }
+
+    // Process incremental data
+    loadIncrementalData(deletionData);
+    for (val entry : incrementalData.entrySet()) {
+      log.info("{}: {}", entry.getKey(), entry.getValue());
+    }
+
+    // Surjection validation (can only be done at the very end)
+    validateComplexSurjection();
+
+    // Report
+    boolean valid = errors.describe(); // TODO: prettify
+    log.info("{}", valid);
+    log.info("done.");
+  }
+
+  public void validateDeletions(DeletionData deletionData) {
+    boolean valid;
+    valid = deletionData.validateWellFormedness();
+    if (!valid) {
+      log.error("Deletion well-formedness errors found");
+    }
+
+    val existingDonorIds = hasExistingClinicalData() ?
+        DeletionFileParser.getExistingDonorIds() :
+        Sets.<String> newTreeSet();
+    valid = deletionData.validateAgainstOldClinicalData(existingDonorIds);
+    if (!valid) {
+      log.error("Deletion previous data errors found");
+    }
+
+    if (hasIncrementalClinicalData()) {
+      valid = deletionData.validateAgainstIncrementalClinicalData(
+          existingDonorIds, DeletionFileParser.getIncrementalDonorIds());
+      if (!valid) {
+        log.error("Deletion incremental data errors found");
+      }
+    }
+  }
+
+  private void loadExistingData() {
+    log.info("Loading existing data");
+
+    // Existing clinical
+    checkState(hasExistingClinicalData(), "TODO"); // At this point we expect it
+    loadExistingFile(DONOR);
+    loadExistingFile(SPECIMEN);
+    loadExistingFile(SAMPLE);
+
+    // Existing ssm
+    if (hasExistingSsmData()) {
+      loadExistingFile(SSM_M);
+      loadExistingFile(SSM_P);
+    } else {
+      loadPlaceholderExistingFile(SSM_M);
+      loadPlaceholderExistingFile(SSM_P);
+    }
+
+    // Existing cnsm
+    if (hasExistingCnsmData()) {
+      loadExistingFile(CNSM_M);
+      loadExistingFile(CNSM_P);
+      loadExistingFile(CNSM_S);
+    } else {
+      loadPlaceholderExistingFile(CNSM_M);
+      loadPlaceholderExistingFile(CNSM_P);
+      loadPlaceholderExistingFile(CNSM_S);
+    }
+  }
 
   /**
-   * Type that is the focus of normalization (there could be more in the future).
+   * Order matters!
    */
-  public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
+  private void loadIncrementalData(DeletionData deletionData) {
+    log.info("Loading incremental data");
 
-  private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
-  private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
+    // Incremental clinical
+    if (hasIncrementalClinicalData()) {
+      loadIncrementalFile(DONOR, TREATED_AS_ORIGINAL, deletionData);
+      loadIncrementalFile(SPECIMEN, TREATED_AS_ORIGINAL, deletionData);
+      loadIncrementalFile(SAMPLE, TREATED_AS_ORIGINAL, deletionData);
+    }
 
-  @Override
-  public String getName() {
-    return COMPONENT_NAME;
+    // Incremental ssm
+    if (hasIncrementalSsmData()) {
+      loadIncrementalFile(SSM_M, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(SSM_P, INCREMENTAL_FILE, deletionData);
+    }
+
+    // Incremental cnsm
+    if (hasIncrementalCnsmData()) {
+      loadIncrementalFile(CNSM_M, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(CNSM_P, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(CNSM_S, INCREMENTAL_FILE, deletionData);
+    }
   }
 
-  @Override
-  public void validate(ValidationContext context) throws InterruptedException {
-    val cascade =
-        connectCascade(context.getPlatformStrategy(), context.getRelease().getName(), context.getProjectKey());
-
-    cascade.complete();
+  private void loadExistingFile(KVFileType fileType) {
+    log.info("Loading existing file: '{}'", fileType);
+    existingData.put(
+        fileType,
+        new KVExistingFileDataDigest(EXISTING_FILE, fileType, getDataFilePath(EXISTING_FILE, fileType), logThreshold)
+            .processFile());
   }
 
-  private Cascade connectCascade(PlatformStrategy platformStrategy, String releaseName, String projectKey) {
-    Pipe pipe = new Each("key-validation", new ExecuteFunction(new Runnable() {
+  private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
+    log.info("Loading incremental file: '{}.{}'", fileType, submissionType);
+    incrementalData.put(
+        fileType,
+        new KVIncrementalFileDataDigest( // TODO: address ugliness
+            submissionType, fileType, getDataFilePath(INCREMENTAL_FILE, fileType), logThreshold,
+            deletionData,
 
-      @Override
-      public void run() {
-        // TODO: Put call to business logic here
-        System.out.println("Starting validation inside the cluster!");
-      }
+            existingData.get(fileType),
+            existingData.get(RELATIONS.get(fileType)),
+            incrementalData.get(RELATIONS.get(fileType)),
 
-    }));
+            errors.getFileErrors(fileType),
+            errors.getFileErrors(RELATIONS.get(fileType)), // May be null (for DONOR for instance)
 
-    val flow = createFlow(platformStrategy, projectKey, pipe);
-    val cascade = createCascade(projectKey, flow);
-
-    return cascade;
+            surjectivityValidator)
+            .processFile());
   }
 
-  private static Flow<?> createFlow(PlatformStrategy platformStrategy, String projectKey, Pipe pipe) {
-    Flow<?> flow = platformStrategy.getFlowConnector()
-        .connect(flowDef()
-            .setName(FLOW_NAME)
-            .addSource(pipe, new EmptySourceTap<Void>(projectKey))
-            .addTailSink(pipe, new EmptySinkTap<Void>(projectKey)));
-    flow.writeDOT(format("/tmp/%s-%s.dot", projectKey, flow.getName()));
-    flow.writeStepsDOT(format("/tmp/%s-%s-steps.dot", projectKey, flow.getName()));
+  private void loadPlaceholderExistingFiles() {
+    log.info("Loading placeholder existing files");
+    loadPlaceholderExistingFile(DONOR);
+    loadPlaceholderExistingFile(SPECIMEN);
+    loadPlaceholderExistingFile(SAMPLE);
 
-    return flow;
+    loadPlaceholderExistingFile(SSM_M);
+    loadPlaceholderExistingFile(SSM_P);
+
+    loadPlaceholderExistingFile(CNSM_M);
+    loadPlaceholderExistingFile(CNSM_P);
+    loadPlaceholderExistingFile(CNSM_S);
   }
 
-  private static cascading.cascade.Cascade createCascade(String projectKey, final cascading.flow.Flow<?> flow) {
-    val cascade = new CascadeConnector()
-        .connect(cascadeDef()
-            .setName(CASCADE_NAME)
-            .addFlow(flow));
-    cascade.writeDOT(format("/tmp/%s-%s.dot", projectKey, cascade.getName()));
-
-    return cascade;
+  private void loadPlaceholderExistingFile(KVFileType fileType) {
+    log.info("Loading placeholder existing file: '{}'", fileType);
+    existingData.put(fileType, KVFileDataDigest.getEmptyInstance(EXISTING_FILE, fileType));
   }
 
+  private void validateComplexSurjection() {
+    log.info("Validating complex surjection");
+    surjectivityValidator.validateComplexSurjection(
+        existingData.get(SAMPLE),
+        incrementalData.get(SAMPLE),
+        errors.getFileErrors(SAMPLE));
+  }
 }

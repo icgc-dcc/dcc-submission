@@ -15,33 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.data;
+package org.icgc.dcc.submission.validation.key.error;
 
-import static com.google.common.base.Preconditions.checkState;
+import java.util.List;
 
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
+import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 
-public class KVExistingFileDataDigest extends KVFileDataDigest {
+import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
-  // TODO: lombok delegation?
-  public KVExistingFileDataDigest(
-      KVSubmissionType submissionType, KVFileType fileType, String path, long logThreshold) {
-    super(submissionType, fileType, path, logThreshold);
-  }
+/**
+ * 
+ */
+@Value
+@Slf4j
+public class KVRowError {
 
-  /**
-   * In the case of existing data the processing consists in gathering the PKs.
-   */
-  @Override
-  protected void processTuple(KVTuple tuple, long lineCount) {
-    checkState(submissionType.isExistingData(), "TODO");
+  private final KVErrorType type;
+  private final KVKeyValues keys;
 
-    // Original data (old); This should already be valid, nothing to check
-    if (tuple.hasPk()) {
-      pks.add(tuple.getPk());
-    } else {
-      checkState(!fileType.hasPk(), "TODO");
-    }
+  public void describe(long lineNumber, List<Integer> fieldIndices) {
+    log.error("{} error at {}.{}: {}",
+        new Object[] { type, lineNumber, fieldIndices, keys });
   }
 }

@@ -15,40 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.data;
+package org.icgc.dcc.submission.validation.key.data;
 
-import lombok.Value;
+import static com.google.common.collect.Maps.newLinkedHashMap;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 /**
- * Data relevant to the key validation for a given row.
+ * Represents the data dagest for the whole submission, as either existing or incremental data.
  */
-@Value
-public class KVTuple {
+public class KVSubmissionDataDigest {
 
-  /**
-   * Applicable for most file except for the leafs (see dictionary DAG).
-   */
-  private final KVKeyValues pk;
+  private final Map<KVFileType, KVFileDataDigest> data = newLinkedHashMap();
 
-  /**
-   * Applicable for all files but 'donor'.
-   */
-  private final KVKeyValues fk;
-
-  /**
-   * Only applicable for some meta files
-   */
-  private final KVKeyValues secondaryFk;
-
-  public boolean hasPk() {
-    return pk != null;
+  public Set<Entry<KVFileType, KVFileDataDigest>> entrySet() {
+    return data.entrySet();
   }
 
-  public boolean hasFk() {
-    return fk != null;
+  public void put(KVFileType fileType, KVFileDataDigest fileData) {
+    data.put(fileType, fileData);
   }
 
-  public boolean hasSecondaryFk() {
-    return secondaryFk != null;
+  public KVFileDataDigest get(KVFileType fileType) {
+    return data.get(fileType);
   }
 }

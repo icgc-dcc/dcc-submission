@@ -15,32 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.data;
+package org.icgc.dcc.submission.validation.key.data;
 
-import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
-import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
+public class KVExistingFileDataDigest extends KVFileDataDigest {
 
-/**
- * Represents the data dagest for the whole submission, as either existing or incremental data.
- */
-public class KVSubmissionDataDigest {
-
-  private final Map<KVFileType, KVFileDataDigest> data = newLinkedHashMap();
-
-  public Set<Entry<KVFileType, KVFileDataDigest>> entrySet() {
-    return data.entrySet();
+  // TODO: lombok delegation?
+  public KVExistingFileDataDigest(
+      KVSubmissionType submissionType, KVFileType fileType, String path, long logThreshold) {
+    super(submissionType, fileType, path, logThreshold);
   }
 
-  public void put(KVFileType fileType, KVFileDataDigest fileData) {
-    data.put(fileType, fileData);
-  }
+  /**
+   * In the case of existing data the processing consists in gathering the PKs.
+   */
+  @Override
+  protected void processTuple(KVTuple tuple, long lineCount) {
+    checkState(submissionType.isExistingData(), "TODO");
 
-  public KVFileDataDigest get(KVFileType fileType) {
-    return data.get(fileType);
+    // Original data (old); This should already be valid, nothing to check
+    if (tuple.hasPk()) {
+      pks.add(tuple.getPk());
+    } else {
+      checkState(!fileType.hasPk(), "TODO");
+    }
   }
 }

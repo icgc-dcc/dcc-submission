@@ -15,28 +15,11 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.kv.error;
-
-import java.util.List;
-
-import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
-
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
+package org.icgc.dcc.submission.validation.key.enumeration;
 
 /**
  * 
  */
-@Value
-@Slf4j
-public class KVRowError {
-
-  private final KVErrorType type;
-  private final KVKeyValues keys;
-
-  public void describe(long lineNumber, List<Integer> fieldIndices) {
-    log.error("{} error at {}.{}: {}",
-        new Object[] { type, lineNumber, fieldIndices, keys });
-  }
+public enum KeysType {
+  PK, FK, SECONDARY_FK;
 }

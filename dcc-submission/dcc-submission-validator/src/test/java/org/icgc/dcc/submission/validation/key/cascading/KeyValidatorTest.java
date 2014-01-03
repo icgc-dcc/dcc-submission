@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.cascading;
 
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.mockito.Mockito.mock;
@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.key.cascading.KeyValidator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.junit.Before;
 import org.junit.Rule;
