@@ -180,7 +180,7 @@ public class DccFileSystem2 {
         val fileName = new File(annotationDataOutputFile).getName();
         val matchesSsmSPattern = compile(ssmSPattern).matcher(fileName).matches();
         checkState(matchesSsmSPattern, // By design
-            "File '%s' does not match expected pattern: '%s'", ssmSPattern, fileName);
+            "File '%s' does not match expected pattern: '%s'", fileName, ssmSPattern);
         files.add(annotationDataOutputFile);
       } else {
         log.info("No ssm_s annotation file found at '{}'", annotationDataOutputFile);
