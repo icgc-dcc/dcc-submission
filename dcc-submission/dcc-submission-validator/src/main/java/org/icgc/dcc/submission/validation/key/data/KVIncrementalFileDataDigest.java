@@ -92,6 +92,8 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
   protected void processTuple(KVTuple tuple, long lineCount) {
     checkState(kvFileDescription.getSubmissionType().isIncrementalData(), "TODO");
 
+    updatePksIfApplicable(tuple);
+
     // Clinical
     val fileType = kvFileDescription.getFileType();
     if (fileType == DONOR) { // TODO: split per file type (subclass or compose)

@@ -24,6 +24,7 @@ import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalClini
 import java.util.Set;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
@@ -33,6 +34,7 @@ import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 /**
  * Validates surjective relations.
  */
+@Slf4j
 public class SurjectivityValidator {
 
   public static final long SURJECTION_ERROR_LINE_NUMBER = -1;
@@ -69,10 +71,13 @@ public class SurjectivityValidator {
     val sampleDataDigest = hasIncrementalClinicalData() ? sampleNewData : sampleOriginalData;
     val expectedSampleSujectionKeys = newTreeSet(checkNotNull(sampleDataDigest, "TODO: '%s'").getPks());
     if (hasSurjectionErrors(expectedSampleSujectionKeys, sampleSurjectionEncountered)) {
+      log.error("Some complex surjection errors detected");
       collectSurjectionErrors(
           expectedSampleSujectionKeys,
           sampleSurjectionEncountered,
           surjectionSampleFileErrors);
+    } else {
+      log.error("No complex surjection errors detected");
     }
   }
 

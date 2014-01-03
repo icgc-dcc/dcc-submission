@@ -36,10 +36,6 @@ public class KVExistingFileDataDigest extends KVFileDataDigest {
     checkState(kvFileDescription.getSubmissionType().isExistingData(), "TODO");
 
     // Original data (old); This should already be valid, nothing to check
-    if (tuple.hasPk()) {
-      pks.add(tuple.getPk());
-    } else {
-      checkState(!kvFileDescription.getFileType().hasPk(), "TODO");
-    }
+    updatePksIfApplicable(tuple);
   }
 }

@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PROTECTED;
-import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newListFileParser;
 import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS2;
@@ -85,7 +84,6 @@ public class KVFileDataDigest {
 
   @SneakyThrows
   public KVFileDataDigest processFile() {
-    log.info("{}", repeat("=", 75));
     log.info("{}", kvFileDescription);
 
     val parser = newListFileParser();
@@ -123,6 +121,14 @@ public class KVFileDataDigest {
    */
   protected void postProcessing() {
     checkState(kvFileDescription.getSubmissionType().isExistingData()); // incremental MUST overide it
+  }
+
+  protected void updatePksIfApplicable(KVTuple tuple) {
+    if (tuple.hasPk()) {
+      pks.add(tuple.getPk());
+    } else {
+      checkState(!kvFileDescription.getFileType().hasPk(), "TODO");
+    }
   }
 
   protected KVTuple getTuple(KVFileType fileType, List<String> row) {

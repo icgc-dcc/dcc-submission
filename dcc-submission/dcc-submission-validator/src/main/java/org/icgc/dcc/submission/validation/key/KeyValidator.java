@@ -21,6 +21,7 @@ import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.validation.key.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.KVFileDescription.getExistingFileDescription;
 import static org.icgc.dcc.submission.validation.key.KVFileDescription.getIncrementalFileDescription;
@@ -111,15 +112,19 @@ public class KeyValidator implements Validator {
     } else {
       loadPlaceholderExistingFiles();
     }
+    log.info("{}", repeat("=", 75));
     for (val entry : existingData.entrySet()) {
       log.info("{}: {}", entry.getKey(), entry.getValue());
     }
+    log.info("{}", repeat("=", 75));
 
     // Process incremental data
     loadIncrementalData(deletionData);
+    log.info("{}", repeat("=", 75));
     for (val entry : incrementalData.entrySet()) {
       log.info("{}: {}", entry.getKey(), entry.getValue());
     }
+    log.info("{}", repeat("=", 75));
 
     // Surjection validation (can only be done at the very end)
     validateComplexSurjection();
@@ -159,25 +164,30 @@ public class KeyValidator implements Validator {
 
     // Existing clinical
     checkState(hasExistingClinicalData(), "TODO"); // At this point we expect it
+    log.info("Processing exiting clinical data");
     loadExistingFile(DONOR);
     loadExistingFile(SPECIMEN);
     loadExistingFile(SAMPLE);
 
     // Existing ssm
     if (hasExistingSsmData()) {
+      log.info("Processing exiting ssm data");
       loadExistingFile(SSM_M);
       loadExistingFile(SSM_P);
     } else {
+      log.info("No exiting ssm data");
       loadPlaceholderExistingFile(SSM_M);
       loadPlaceholderExistingFile(SSM_P);
     }
 
     // Existing cnsm
     if (hasExistingCnsmData()) {
+      log.info("Processing exiting cnsm data");
       loadExistingFile(CNSM_M);
       loadExistingFile(CNSM_P);
       loadExistingFile(CNSM_S);
     } else {
+      log.info("No exiting cnsm data");
       loadPlaceholderExistingFile(CNSM_M);
       loadPlaceholderExistingFile(CNSM_P);
       loadPlaceholderExistingFile(CNSM_S);
@@ -192,26 +202,36 @@ public class KeyValidator implements Validator {
 
     // Incremental clinical
     if (hasIncrementalClinicalData()) {
+      log.info("Processing incremental clinical data");
       loadIncrementalFile(DONOR, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
       loadIncrementalFile(SPECIMEN, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
       loadIncrementalFile(SAMPLE, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
+    } else {
+      log.info("No incremental clinical data");
     }
 
     // Incremental ssm
     if (hasIncrementalSsmData()) {
+      log.info("Processing incremental ssm data");
       loadIncrementalFile(SSM_M, INCREMENTAL_FILE, deletionData);
       loadIncrementalFile(SSM_P, INCREMENTAL_FILE, deletionData);
+    } else {
+      log.info("No incremental ssm data");
     }
 
     // Incremental cnsm
     if (hasIncrementalCnsmData()) {
+      log.info("Processing incremental cnsm data");
       loadIncrementalFile(CNSM_M, INCREMENTAL_FILE, deletionData);
       loadIncrementalFile(CNSM_P, INCREMENTAL_FILE, deletionData);
       loadIncrementalFile(CNSM_S, INCREMENTAL_FILE, deletionData);
+    } else {
+      log.info("No incremental cnsm data");
     }
   }
 
   private void loadExistingFile(KVFileType fileType) {
+    log.info("{}", repeat("=", 75));
     log.info("Loading existing file: '{}'", fileType);
     val dataFilePath = getDataFilePath(EXISTING_FILE, fileType);
     existingData.put(
@@ -223,6 +243,7 @@ public class KeyValidator implements Validator {
   }
 
   private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
+    log.info("{}", repeat("=", 75));
     log.info("Loading incremental file: '{}.{}'", fileType, submissionType);
     val dataFilePath = getDataFilePath(INCREMENTAL_FILE, fileType);
     incrementalData.put(
@@ -266,11 +287,13 @@ public class KeyValidator implements Validator {
   }
 
   private void validateComplexSurjection() {
+    log.info("{}", repeat("=", 75));
     log.info("Validating complex surjection");
     surjectivityValidator.validateComplexSurjection(
         existingData.get(SAMPLE),
         incrementalData.get(SAMPLE),
         errors.getFileErrors(SAMPLE));
+    log.info("{}", repeat("=", 75));
   }
 
   private Cascade connectCascade(PlatformStrategy platformStrategy, String releaseName, String projectKey) {
