@@ -22,16 +22,16 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum KVSubmissionType {
-  ORIGINAL_FILE("original"),
-  NEW_FILE("new"),
-  TREATED_AS_ORIGINAL(ORIGINAL_FILE.getSubDirectory()), // For clinical data re-submitted
+  EXISTING_FILE("original"),
+  INCREMENTAL_FILE("new"),
+  TREATED_AS_ORIGINAL(EXISTING_FILE.getSubDirectory()), // For clinical data re-submitted
   ;
 
   @Getter
   private final String subDirectory;
 
   public boolean isIncrementalData() {
-    return this == NEW_FILE;
+    return this == INCREMENTAL_FILE;
   }
 
   public boolean isExistingData() {

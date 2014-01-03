@@ -131,7 +131,7 @@ public class DeletionData {
   /**
    * TODO: add tests
    */
-  public boolean validateAgainstNewClinicalData(Set<String> donorOriginalPks, Set<String> donorNewPks) {
+  public boolean validateAgainstIncrementalClinicalData(Set<String> donorOriginalPks, Set<String> donorNewPks) {
     val donorsToBeDeleted = getDonorIdKeys();
 
     // Check if there are donors that are both included in the new data and marked as to-be-deleted

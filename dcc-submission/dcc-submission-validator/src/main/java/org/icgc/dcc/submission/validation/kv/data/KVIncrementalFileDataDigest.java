@@ -44,7 +44,7 @@ import org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator;
 
 import com.google.common.collect.Sets;
 
-public class KVNewFileDataDigest extends KVFileDataDigest {
+public class KVIncrementalFileDataDigest extends KVFileDataDigest {
 
   @SuppressWarnings("unused")
   private final DeletionData deletionData;
@@ -56,12 +56,12 @@ public class KVNewFileDataDigest extends KVFileDataDigest {
   private final KVFileErrors surjectionErrors;
   private final SurjectivityValidator surjectivityValidator; // TODO: instantiate here?
 
-  private final Set<KVKeys> surjectionEncountered = Sets.<KVKeys> newTreeSet();
+  private final Set<KVKeyValues> surjectionEncountered = Sets.<KVKeyValues> newTreeSet();
 
   /**
    * TODO: ! account for deletions (do not report errors for those)
    */
-  public KVNewFileDataDigest(
+  public KVIncrementalFileDataDigest(
       KVSubmissionType submissionType, KVFileType fileType, String path, long logThreshold,
 
       @NonNull DeletionData deletionData,
@@ -85,6 +85,9 @@ public class KVNewFileDataDigest extends KVFileDataDigest {
     this.surjectivityValidator = surjectivityValidator;
   }
 
+  /**
+   * In the case of incremental data, the processing consists of validating it.
+   */
   @Override
   protected void processTuple(KVTuple tuple, long lineCount) {
     checkState(submissionType.isIncrementalData(), "TODO");

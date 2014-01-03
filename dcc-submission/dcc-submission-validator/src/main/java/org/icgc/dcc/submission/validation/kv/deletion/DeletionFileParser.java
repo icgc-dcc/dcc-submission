@@ -25,8 +25,8 @@ import static org.icgc.dcc.submission.validation.kv.KVConstants.TAB_SPLITTER;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.getDataFilePath;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.getToBeRemovedFile;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.NEW_FILE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.EXISTING_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ALL;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KeyValidationAdditionalType.ERROR;
 
@@ -96,6 +96,7 @@ public class DeletionFileParser {
     return new DeletionData(deletionMap);
   }
 
+  // TODO: use abstraction rather
   @SneakyThrows
   private static Set<String> getDonorIds(String donorFile) {
     val donorIds = Sets.<String> newTreeSet();
@@ -114,16 +115,16 @@ public class DeletionFileParser {
     return donorIds;
   }
 
-  public static Set<String> getOldDonorIds() {
-    val oldDonorFile = getDataFilePath(ORIGINAL_FILE, DONOR);
-    log.info("{}", oldDonorFile);
-    return getDonorIds(oldDonorFile);
+  public static Set<String> getExistingDonorIds() {
+    val existingDonorFile = getDataFilePath(EXISTING_FILE, DONOR);
+    log.info("{}", existingDonorFile);
+    return getDonorIds(existingDonorFile);
   }
 
-  public static Set<String> getNewDonorIds() {
-    val newDonorFile = getDataFilePath(NEW_FILE, DONOR);
-    log.info("{}", newDonorFile);
-    return getDonorIds(newDonorFile);
+  public static Set<String> getIncrementalDonorIds() {
+    val incrementalDonorFile = getDataFilePath(INCREMENTAL_FILE, DONOR);
+    log.info("{}", incrementalDonorFile);
+    return getDonorIds(incrementalDonorFile);
   }
 
   private static List<String> getFeatureTypeStringList(String featureTypesString) {

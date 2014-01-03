@@ -20,13 +20,13 @@ package org.icgc.dcc.submission.validation.kv;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.kv.KVUtils.getDataFilePath;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewClinicalData;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewCnsmData;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewSsmData;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalClinicalData;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalCnsmData;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalData;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasOriginalSsmData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasExistingClinicalData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasExistingCnsmData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasExistingData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasExistingSsmData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasIncrementalClinicalData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasIncrementalCnsmData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasIncrementalSsmData;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.CNSM_S;
@@ -35,8 +35,8 @@ import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SAMPL
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVFileType.SSM_P;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.NEW_FILE;
-import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.ORIGINAL_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.EXISTING_FILE;
+import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType.TREATED_AS_ORIGINAL;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.kv.data.KVExistingFileDataDigest;
 import org.icgc.dcc.submission.validation.kv.data.KVFileDataDigest;
-import org.icgc.dcc.submission.validation.kv.data.KVNewFileDataDigest;
+import org.icgc.dcc.submission.validation.kv.data.KVIncrementalFileDataDigest;
 import org.icgc.dcc.submission.validation.kv.data.KVSubmissionDataDigest;
 import org.icgc.dcc.submission.validation.kv.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.kv.deletion.DeletionFileParser;
@@ -59,12 +59,6 @@ import com.google.common.collect.Sets;
  * Glue for the key validation.
  * <p>
  * Very primitive version. The non-genericity was a request from Bob.
- * <p>
- * TODO:<br/>
- * TO_BE_REMOVED<br/>
- * optional files<br/>
- * other feature types<br/>
- * consider removing the check* (costly)<br/>
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -72,32 +66,33 @@ public class KeyValidator {
 
   private final long logThreshold;
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
-  private final KVSubmissionDataDigest originalData = new KVSubmissionDataDigest();
-  private final KVSubmissionDataDigest newData = new KVSubmissionDataDigest();
+  private final KVSubmissionDataDigest existingData = new KVSubmissionDataDigest();
+  private final KVSubmissionDataDigest incrementalData = new KVSubmissionDataDigest();
   private final KVSubmissionErrors errors = new KVSubmissionErrors();
 
   public void validate() {
 
     // Validate deletion data
-    val deletionData = validateDeletions();
+    val deletionData = DeletionData.getInstance();
+    // validateDeletions(deletionData);
 
-    // Process old data
-    if (hasOriginalData()) {
-      loadOriginalData();
+    // Process existing data
+    if (hasExistingData()) {
+      loadExistingData();
     } else {
-      loadEmptyOriginalFiles();
+      loadPlaceholderExistingFiles();
     }
-    for (val entry : originalData.entrySet()) {
+    for (val entry : existingData.entrySet()) {
       log.info("{}: {}", entry.getKey(), entry.getValue());
     }
 
-    // Process new data
-    loadNewData(deletionData);
-    for (val entry : newData.entrySet()) {
+    // Process incremental data
+    loadIncrementalData(deletionData);
+    for (val entry : incrementalData.entrySet()) {
       log.info("{}: {}", entry.getKey(), entry.getValue());
     }
 
-    // Surjection validation
+    // Surjection validation (can only be done at the very end)
     validateComplexSurjection();
 
     // Report
@@ -106,130 +101,138 @@ public class KeyValidator {
     log.info("done.");
   }
 
-  public DeletionData validateDeletions() {
-    val deletionData = DeletionData.getInstance();
-
+  public void validateDeletions(DeletionData deletionData) {
     boolean valid;
     valid = deletionData.validateWellFormedness();
     if (!valid) {
       log.error("Deletion well-formedness errors found");
     }
 
-    val oldDonorIds = hasOriginalClinicalData() ? DeletionFileParser.getOldDonorIds() : Sets.<String> newTreeSet();
-    valid = deletionData.validateAgainstOldClinicalData(oldDonorIds);
+    val existingDonorIds = hasExistingClinicalData() ?
+        DeletionFileParser.getExistingDonorIds() :
+        Sets.<String> newTreeSet();
+    valid = deletionData.validateAgainstOldClinicalData(existingDonorIds);
     if (!valid) {
       log.error("Deletion previous data errors found");
     }
 
-    if (hasNewClinicalData()) {
-      valid = deletionData.validateAgainstNewClinicalData(oldDonorIds, DeletionFileParser.getNewDonorIds());
+    if (hasIncrementalClinicalData()) {
+      valid = deletionData.validateAgainstIncrementalClinicalData(
+          existingDonorIds, DeletionFileParser.getIncrementalDonorIds());
       if (!valid) {
-        log.error("Deletion new data errors found");
+        log.error("Deletion incremental data errors found");
       }
     }
-
-    return deletionData;
   }
 
-  private void loadOriginalData() {
+  private void loadExistingData() {
+    log.info("Loading existing data");
 
-    // Original clinical
-    checkState(hasOriginalClinicalData(), "TODO"); // At this point we expect it
-    loadOriginalFile(DONOR);
-    loadOriginalFile(SPECIMEN);
-    loadOriginalFile(SAMPLE);
+    // Existing clinical
+    checkState(hasExistingClinicalData(), "TODO"); // At this point we expect it
+    loadExistingFile(DONOR);
+    loadExistingFile(SPECIMEN);
+    loadExistingFile(SAMPLE);
 
-    // Original ssm
-    if (hasOriginalSsmData()) {
-      loadOriginalFile(SSM_M);
-      loadOriginalFile(SSM_P);
+    // Existing ssm
+    if (hasExistingSsmData()) {
+      loadExistingFile(SSM_M);
+      loadExistingFile(SSM_P);
     } else {
-      loadEmptyOriginalFile(SSM_M);
-      loadEmptyOriginalFile(SSM_P);
+      loadPlaceholderExistingFile(SSM_M);
+      loadPlaceholderExistingFile(SSM_P);
     }
 
-    // Original cnsm
-    if (hasOriginalCnsmData()) {
-      loadOriginalFile(CNSM_M);
-      loadOriginalFile(CNSM_P);
-      loadOriginalFile(CNSM_S);
+    // Existing cnsm
+    if (hasExistingCnsmData()) {
+      loadExistingFile(CNSM_M);
+      loadExistingFile(CNSM_P);
+      loadExistingFile(CNSM_S);
     } else {
-      loadEmptyOriginalFile(CNSM_M);
-      loadEmptyOriginalFile(CNSM_P);
-      loadEmptyOriginalFile(CNSM_S);
+      loadPlaceholderExistingFile(CNSM_M);
+      loadPlaceholderExistingFile(CNSM_P);
+      loadPlaceholderExistingFile(CNSM_S);
     }
   }
 
   /**
    * Order matters!
    */
-  private void loadNewData(DeletionData deletionData) {
+  private void loadIncrementalData(DeletionData deletionData) {
+    log.info("Loading incremental data");
 
-    // New clinical
-    if (hasNewClinicalData()) {
-      loadNewFile(DONOR, TREATED_AS_ORIGINAL, deletionData);
-      loadNewFile(SPECIMEN, TREATED_AS_ORIGINAL, deletionData);
-      loadNewFile(SAMPLE, TREATED_AS_ORIGINAL, deletionData);
+    // Incremental clinical
+    if (hasIncrementalClinicalData()) {
+      loadIncrementalFile(DONOR, TREATED_AS_ORIGINAL, deletionData);
+      loadIncrementalFile(SPECIMEN, TREATED_AS_ORIGINAL, deletionData);
+      loadIncrementalFile(SAMPLE, TREATED_AS_ORIGINAL, deletionData);
     }
 
-    // New ssm
-    if (hasNewSsmData()) {
-      loadNewFile(SSM_M, NEW_FILE, deletionData);
-      loadNewFile(SSM_P, NEW_FILE, deletionData);
+    // Incremental ssm
+    if (hasIncrementalSsmData()) {
+      loadIncrementalFile(SSM_M, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(SSM_P, INCREMENTAL_FILE, deletionData);
     }
 
-    // New cnsm
-    if (hasNewCnsmData()) {
-      loadNewFile(CNSM_M, NEW_FILE, deletionData);
-      loadNewFile(CNSM_P, NEW_FILE, deletionData);
-      loadNewFile(CNSM_S, NEW_FILE, deletionData);
+    // Incremental cnsm
+    if (hasIncrementalCnsmData()) {
+      loadIncrementalFile(CNSM_M, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(CNSM_P, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(CNSM_S, INCREMENTAL_FILE, deletionData);
     }
   }
 
-  private void loadOriginalFile(KVFileType fileType) {
-    originalData.put(
+  private void loadExistingFile(KVFileType fileType) {
+    log.info("Loading existing file: '{}'", fileType);
+    existingData.put(
         fileType,
-        new KVExistingFileDataDigest(ORIGINAL_FILE, fileType, getDataFilePath(ORIGINAL_FILE, fileType), logThreshold));
+        new KVExistingFileDataDigest(EXISTING_FILE, fileType, getDataFilePath(EXISTING_FILE, fileType), logThreshold)
+            .processFile());
   }
 
-  private void loadNewFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
-    newData.put(
+  private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
+    log.info("Loading incremental file: '{}.{}'", fileType, submissionType);
+    incrementalData.put(
         fileType,
-        new KVNewFileDataDigest( // TODO: address ugliness
-            submissionType, fileType, getDataFilePath(NEW_FILE, fileType), logThreshold,
+        new KVIncrementalFileDataDigest( // TODO: address ugliness
+            submissionType, fileType, getDataFilePath(INCREMENTAL_FILE, fileType), logThreshold,
             deletionData,
 
-            originalData.get(fileType),
-            originalData.get(RELATIONS.get(fileType)),
-            newData.get(RELATIONS.get(fileType)),
+            existingData.get(fileType),
+            existingData.get(RELATIONS.get(fileType)),
+            incrementalData.get(RELATIONS.get(fileType)),
 
             errors.getFileErrors(fileType),
             errors.getFileErrors(RELATIONS.get(fileType)), // May be null (for DONOR for instance)
 
-            surjectivityValidator));
+            surjectivityValidator)
+            .processFile());
   }
 
-  private void loadEmptyOriginalFiles() {
-    loadEmptyOriginalFile(DONOR);
-    loadEmptyOriginalFile(SPECIMEN);
-    loadEmptyOriginalFile(SAMPLE);
+  private void loadPlaceholderExistingFiles() {
+    log.info("Loading placeholder existing files");
+    loadPlaceholderExistingFile(DONOR);
+    loadPlaceholderExistingFile(SPECIMEN);
+    loadPlaceholderExistingFile(SAMPLE);
 
-    loadEmptyOriginalFile(SSM_M);
-    loadEmptyOriginalFile(SSM_P);
+    loadPlaceholderExistingFile(SSM_M);
+    loadPlaceholderExistingFile(SSM_P);
 
-    loadEmptyOriginalFile(CNSM_M);
-    loadEmptyOriginalFile(CNSM_P);
-    loadEmptyOriginalFile(CNSM_S);
+    loadPlaceholderExistingFile(CNSM_M);
+    loadPlaceholderExistingFile(CNSM_P);
+    loadPlaceholderExistingFile(CNSM_S);
   }
 
-  private void loadEmptyOriginalFile(KVFileType fileType) {
-    originalData.put(fileType, KVFileDataDigest.getEmptyInstance(ORIGINAL_FILE, fileType));
+  private void loadPlaceholderExistingFile(KVFileType fileType) {
+    log.info("Loading placeholder existing file: '{}'", fileType);
+    existingData.put(fileType, KVFileDataDigest.getEmptyInstance(EXISTING_FILE, fileType));
   }
 
   private void validateComplexSurjection() {
+    log.info("Validating complex surjection");
     surjectivityValidator.validateComplexSurjection(
-        originalData.get(SAMPLE),
-        newData.get(SAMPLE),
+        existingData.get(SAMPLE),
+        incrementalData.get(SAMPLE),
         errors.getFileErrors(SAMPLE));
   }
 }

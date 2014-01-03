@@ -19,16 +19,26 @@ package org.icgc.dcc.submission.validation.kv.data;
 
 import lombok.Value;
 
+/**
+ * Data relevant to the key validation for a given row.
+ */
 @Value
 public class KVTuple {
 
-  private final KVKeys pk;
-  private final KVKeys fk;
+  /**
+   * Applicable for most file except for the leafs (see dictionary DAG).
+   */
+  private final KVKeyValues pk;
+
+  /**
+   * Applicable for all files but 'donor'.
+   */
+  private final KVKeyValues fk;
 
   /**
    * Only applicable for some meta files
    */
-  private final KVKeys secondaryFk;
+  private final KVKeyValues secondaryFk;
 
   public boolean hasPk() {
     return pk != null;

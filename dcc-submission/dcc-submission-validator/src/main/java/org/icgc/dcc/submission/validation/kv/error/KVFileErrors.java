@@ -25,21 +25,20 @@ import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SECO
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.SURJECTION;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_NEW;
 import static org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType.UNIQUE_ORIGINAL;
+import static org.icgc.dcc.submission.validation.kv.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
 
 import java.util.List;
 import java.util.Map;
 
-import org.icgc.dcc.submission.validation.kv.data.KVKeys;
-import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
-
 import lombok.val;
+
+import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
+import org.icgc.dcc.submission.validation.kv.enumeration.KVErrorType;
 
 /**
  * Include file type?
  */
 public class KVFileErrors {
-
-  private static final long SURJECTION_ERROR_LINE_NUMBER = -1;
 
   private final Map<KVErrorType, List<Integer>> fieldIndicesPerErrorType = newLinkedHashMap();
   private final Map<Long, KVRowError> rowErrors = newTreeMap();
@@ -69,14 +68,14 @@ public class KVFileErrors {
     return rowErrors.containsKey(lineNumber);
   }
 
-  public void addSurjectionError(KVKeys keys) {
+  public void addSurjectionError(KVKeyValues keys) {
     addError(SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys);
   }
 
   /**
    * TODO: create other wrappers like the surjection one
    */
-  public void addError(long lineNumber, KVErrorType type, KVKeys keys) {
+  public void addError(long lineNumber, KVErrorType type, KVKeyValues keys) {
     rowErrors.put(lineNumber, new KVRowError(type, keys));
   }
 

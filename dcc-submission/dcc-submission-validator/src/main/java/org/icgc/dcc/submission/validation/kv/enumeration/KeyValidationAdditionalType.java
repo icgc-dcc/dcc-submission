@@ -19,6 +19,9 @@ package org.icgc.dcc.submission.validation.kv.enumeration;
 
 import org.icgc.dcc.core.model.DeletionType;
 
+/**
+ * For deletion only (TODO: expand)
+ */
 public enum KeyValidationAdditionalType implements DeletionType {
   ALL, ERROR;
 

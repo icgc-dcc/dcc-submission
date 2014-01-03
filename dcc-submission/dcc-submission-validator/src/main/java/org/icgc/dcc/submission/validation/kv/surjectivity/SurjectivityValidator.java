@@ -19,35 +19,40 @@ package org.icgc.dcc.submission.validation.kv.surjectivity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.kv.KVUtils.hasNewClinicalData;
+import static org.icgc.dcc.submission.validation.kv.KVUtils.hasIncrementalClinicalData;
 
 import java.util.Set;
 
 import lombok.val;
 
 import org.icgc.dcc.submission.validation.kv.data.KVFileDataDigest;
-import org.icgc.dcc.submission.validation.kv.data.KVKeys;
+import org.icgc.dcc.submission.validation.kv.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.kv.error.KVFileErrors;
 
 /**
- * 
+ * Validates surjective relations.
  */
 public class SurjectivityValidator {
+
+  public static final long SURJECTION_ERROR_LINE_NUMBER = -1;
 
   /**
    * TODO: explain very special case
    */
-  Set<KVKeys> sampleSurjectionEncountered = newTreeSet();
+  private final Set<KVKeyValues> sampleSurjectionEncountered = newTreeSet();
 
-  public void addEncounteredSamples(Set<KVKeys> surjectionEncountered) {
+  public void addEncounteredSamples(Set<KVKeyValues> surjectionEncountered) {
     sampleSurjectionEncountered.addAll(surjectionEncountered);
   }
 
-  public void validateSimpleSurjection(KVFileType fileType,
-      KVFileDataDigest originalData, KVFileDataDigest newData, KVFileErrors surjectionFileErrors,
-      Set<KVKeys> surjectionEncountered) {
-    val dataDigest = !fileType.isReplaceAll() || hasNewClinicalData() ? newData : originalData;
+  public void validateSimpleSurjection(
+      KVFileType fileType,
+      KVFileDataDigest originalData,
+      KVFileDataDigest newData,
+      KVFileErrors surjectionFileErrors,
+      Set<KVKeyValues> surjectionEncountered) {
+    val dataDigest = !fileType.isReplaceAll() || hasIncrementalClinicalData() ? newData : originalData;
     val expectedSujectionKeys = newTreeSet(checkNotNull(dataDigest, "TODO: '%s'", fileType).getPks());
     if (hasSurjectionErrors(expectedSujectionKeys, surjectionEncountered)) {
       collectSurjectionErrors(
@@ -58,9 +63,10 @@ public class SurjectivityValidator {
   }
 
   public void validateComplexSurjection(
-      KVFileDataDigest sampleOriginalData, KVFileDataDigest sampleNewData,
+      KVFileDataDigest sampleOriginalData,
+      KVFileDataDigest sampleNewData,
       KVFileErrors surjectionSampleFileErrors) {
-    val sampleDataDigest = hasNewClinicalData() ? sampleNewData : sampleOriginalData;
+    val sampleDataDigest = hasIncrementalClinicalData() ? sampleNewData : sampleOriginalData;
     val expectedSampleSujectionKeys = newTreeSet(checkNotNull(sampleDataDigest, "TODO: '%s'").getPks());
     if (hasSurjectionErrors(expectedSampleSujectionKeys, sampleSurjectionEncountered)) {
       collectSurjectionErrors(
@@ -70,18 +76,18 @@ public class SurjectivityValidator {
     }
   }
 
-  private boolean hasSurjectionErrors(Set<KVKeys> surjectionExpected, Set<KVKeys> surjectionEncountered) {
-    return surjectionExpected.size() != surjectionEncountered.size();
-  }
-
   private void collectSurjectionErrors(
-      Set<KVKeys> surjectionExpected, Set<KVKeys> surjectionEncountered,
+      Set<KVKeyValues> surjectionExpected,
+      Set<KVKeyValues> surjectionEncountered,
       KVFileErrors fileError) {
-    for (KVKeys keys : surjectionExpected) {
+    for (KVKeyValues keys : surjectionExpected) {
       if (!surjectionEncountered.contains(keys)) {
         fileError.addSurjectionError(keys);
       }
     }
   }
 
+  private boolean hasSurjectionErrors(Set<KVKeyValues> surjectionExpected, Set<KVKeyValues> surjectionEncountered) {
+    return surjectionExpected.size() != surjectionEncountered.size();
+  }
 }

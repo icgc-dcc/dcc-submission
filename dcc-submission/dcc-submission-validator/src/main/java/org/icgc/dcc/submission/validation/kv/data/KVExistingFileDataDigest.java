@@ -30,6 +30,9 @@ public class KVExistingFileDataDigest extends KVFileDataDigest {
     super(submissionType, fileType, path, logThreshold);
   }
 
+  /**
+   * In the case of existing data the processing consists in gathering the PKs.
+   */
   @Override
   protected void processTuple(KVTuple tuple, long lineCount) {
     checkState(submissionType.isExistingData(), "TODO");
