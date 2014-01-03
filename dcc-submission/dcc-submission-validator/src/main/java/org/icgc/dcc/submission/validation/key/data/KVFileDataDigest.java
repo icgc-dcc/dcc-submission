@@ -94,7 +94,7 @@ public class KVFileDataDigest {
       @Override
       public void process(long lineNumber, List<String> record) {
         val tuple = getTuple(kvFileDescription.getFileType(), record);
-        log.debug("tuple: {}", tuple);
+        log.debug("tuple: '{}'", tuple);
 
         processTuple(tuple, lineNumber);
 
