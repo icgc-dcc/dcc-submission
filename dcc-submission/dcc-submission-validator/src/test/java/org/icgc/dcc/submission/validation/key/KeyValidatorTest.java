@@ -42,7 +42,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import cascading.flow.local.LocalFlowConnector;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KVValidatorTest {
+public class KeyValidatorTest {
 
   /**
    * Test data.
@@ -58,11 +58,11 @@ public class KVValidatorTest {
   /**
    * Class under test.
    */
-  KVValidator validator;
+  KeyValidator validator;
 
   @Before
   public void setUp() {
-    this.validator = new KVValidator(1);
+    this.validator = new KeyValidator(1);
   }
 
   @Test
