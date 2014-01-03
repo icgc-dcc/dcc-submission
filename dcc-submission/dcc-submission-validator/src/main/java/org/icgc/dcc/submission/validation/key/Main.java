@@ -21,9 +21,11 @@ import java.util.List;
 
 import lombok.Delegate;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -48,7 +50,7 @@ public class Main {
   public static void main(String... args) throws InterruptedException {
     val logThreshold = args != null && args.length >= 1 ? Long.valueOf(args[0]) : 2;
 
-    new KVValidator(logThreshold).validate(new KeyValidationContext(
+    new KeyValidator(logThreshold).validate(new KeyValidationContext(
         "project1",
         "release1",
         "/tmp",
@@ -125,8 +127,9 @@ public class Main {
     }
 
     @Override
+    @SneakyThrows
     public FileSystem getFileSystem() {
-      return null;
+      return FileSystem.getLocal(new Configuration());
     }
 
     @Override

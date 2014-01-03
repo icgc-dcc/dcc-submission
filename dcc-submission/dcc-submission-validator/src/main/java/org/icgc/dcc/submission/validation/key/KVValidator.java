@@ -21,6 +21,7 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REVERSE_RELATION_FILE_ERROR;
 import static org.icgc.dcc.submission.validation.key.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.KVFileDescription.getExistingFileDescription;
 import static org.icgc.dcc.submission.validation.key.KVFileDescription.getIncrementalFileDescription;
@@ -44,6 +45,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
+import static org.icgc.dcc.submission.validation.key.error.KVError.kvError;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +59,7 @@ import org.icgc.dcc.submission.validation.key.deletion.DeletionFileParser;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
+import org.icgc.dcc.submission.validation.key.report.KVReport;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
@@ -66,7 +69,9 @@ import com.google.common.collect.Sets;
 @RequiredArgsConstructor
 public class KVValidator {
 
+  private final KVReport report;
   private final long logThreshold;
+
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
   private final KVSubmissionDataDigest existingData = new KVSubmissionDataDigest();
   private final KVSubmissionDataDigest incrementalData = new KVSubmissionDataDigest();
@@ -104,6 +109,12 @@ public class KVValidator {
     boolean valid = errors.describe(incrementalData.getFileDescriptions()); // TODO: prettify
     log.info("{}", valid);
     log.info("done.");
+
+    report.report(
+        kvError()
+            .fileName("ssm_p.txt")
+            .type(REVERSE_RELATION_FILE_ERROR)
+            .build());
   }
 
   public void validateDeletions(DeletionData deletionData) {
