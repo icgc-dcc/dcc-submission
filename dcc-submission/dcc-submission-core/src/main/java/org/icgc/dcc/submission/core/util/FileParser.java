@@ -40,20 +40,20 @@ public class FileParser<T> {
   private final FileSystem fileSystem;
   private final FileLineParser<T> lineParser;
 
-  public void parse(Path filePath, FileRecordProcessor<T> recordProcessor) throws IOException {
+  public void parse(Path filePath, FileRecordProcessor<T> recordProcessor) throws Exception {
     @Cleanup
     val inputStream = getInputStream(filePath, fileSystem);
 
     parse(inputStream, recordProcessor);
   }
 
-  public void parse(InputStream inputStream, FileRecordProcessor<T> recordProcessor) throws IOException {
+  public void parse(InputStream inputStream, FileRecordProcessor<T> recordProcessor) throws Exception {
     val reader = new LineReader(new InputStreamReader(inputStream));
 
     parse(reader, recordProcessor);
   }
 
-  public void parse(LineReader reader, FileRecordProcessor<T> recordProcessor) throws IOException {
+  public void parse(LineReader reader, FileRecordProcessor<T> recordProcessor) throws Exception {
     // Line state (one-based)
     long lineNumber = 1;
     String line;

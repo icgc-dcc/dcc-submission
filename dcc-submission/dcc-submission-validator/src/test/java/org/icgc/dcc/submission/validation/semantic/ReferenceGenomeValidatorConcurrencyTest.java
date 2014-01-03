@@ -50,14 +50,14 @@ public class ReferenceGenomeValidatorConcurrencyTest extends BaseReferenceGenome
 
   @Test
   public void testConcurrent() throws Exception {
-    val testFile = TEST_FILE;
+    val testFile = TEST_FILE_NAME;
     val n = 20;
     val executor = createExecutor(n);
 
     val callables = Lists.<Callable<ValidationContext>> newArrayList();
 
     for (int i = 0; i < n; i++) {
-      val context = mockContext(testFile);
+      val context = mockContext();
 
       callables.add(new Callable<ValidationContext>() {
 
@@ -76,7 +76,7 @@ public class ReferenceGenomeValidatorConcurrencyTest extends BaseReferenceGenome
     for (val context : results.get()) {
       // Verify
       verify(context, times(3)).reportError(
-          eq(testFile.getName()),
+          eq(testFile),
           anyLong(),
           eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
           anyString(),
@@ -84,7 +84,7 @@ public class ReferenceGenomeValidatorConcurrencyTest extends BaseReferenceGenome
           anyVararg());
 
       verify(context, times(1)).reportError(
-          eq(testFile.getName()),
+          eq(testFile),
           anyLong(),
           eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
           anyString(),

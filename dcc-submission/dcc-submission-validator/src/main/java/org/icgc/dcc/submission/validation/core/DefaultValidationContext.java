@@ -147,6 +147,11 @@ public class DefaultValidationContext implements ValidationContext {
     return Optional.<Path> absent();
   }
 
+  @Override
+  public FileSchema getSsmPrimaryFileSchema() {
+    return getSsmPrimaryFileSchema(getDictionary());
+  }
+
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
     for (val fileSchema : dictionary.getFiles()) {
       val fileType = SubmissionFileType.from(fileSchema.getName());

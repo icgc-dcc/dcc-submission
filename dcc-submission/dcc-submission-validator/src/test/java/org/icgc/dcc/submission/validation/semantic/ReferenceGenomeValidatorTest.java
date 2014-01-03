@@ -81,15 +81,15 @@ public class ReferenceGenomeValidatorTest extends BaseReferenceGenomeValidatorTe
 
   @Test
   public void testSsmSamplePrimaryFile() throws IOException {
-    val testFile = TEST_FILE;
-    val context = mockContext(testFile);
+    val testFile = TEST_FILE_NAME;
+    val context = mockContext();
 
     // Execute
     validator.validate(context);
 
     // Verify
     verify(context, times(3)).reportError(
-        eq(testFile.getName()),
+        eq(testFile),
         anyLong(),
         eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
         anyString(),
@@ -97,7 +97,7 @@ public class ReferenceGenomeValidatorTest extends BaseReferenceGenomeValidatorTe
         anyVararg());
 
     verify(context, times(1)).reportError(
-        eq(testFile.getName()),
+        eq(testFile),
         anyLong(),
         eq(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE),
         anyString(),

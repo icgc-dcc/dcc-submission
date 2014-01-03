@@ -19,6 +19,6 @@ package org.icgc.dcc.submission.core.util;
 
 public interface FileRecordProcessor<T> {
 
-  void process(long lineNumber, T record);
+  void process(long lineNumber, T record) throws Exception;
 
 }
