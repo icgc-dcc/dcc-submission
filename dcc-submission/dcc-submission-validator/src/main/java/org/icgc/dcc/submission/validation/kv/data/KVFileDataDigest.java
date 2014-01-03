@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.kv.data;
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.core.util.FileParsers.newListFileParser;
+import static org.icgc.dcc.submission.core.parser.FileParsers.newListFileParser;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_FKS2;
 import static org.icgc.dcc.submission.validation.kv.KVConstants.CNSM_M_PKS;
@@ -56,7 +56,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.util.FileRecordProcessor;
+import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.kv.enumeration.KVSubmissionType;
 

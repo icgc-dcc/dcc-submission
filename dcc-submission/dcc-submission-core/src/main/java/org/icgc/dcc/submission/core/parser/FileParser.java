@@ -15,14 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.submission.core.parser;
 
-import static com.google.common.io.Files.getFileExtension;
-
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +28,7 @@ import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.BZip2Codec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 
 import com.google.common.io.LineReader;
 
@@ -42,7 +40,7 @@ public class FileParser<T> {
 
   public void parse(Path filePath, FileRecordProcessor<T> recordProcessor) throws Exception {
     @Cleanup
-    val inputStream = getInputStream(filePath, fileSystem);
+    val inputStream = createInputStream(filePath);
 
     parse(inputStream, recordProcessor);
   }
@@ -72,21 +70,17 @@ public class FileParser<T> {
     }
   }
 
-  /**
-   * Returns an {@code InputStream} capable of reading {@code gz}, {@code bzip2} or plain text files.
-   */
-  private static InputStream getInputStream(Path path, FileSystem fileSystem) throws IOException {
-    val extension = getFileExtension(path.getName());
-    val gzip = extension.equals("gz");
-    val bzip2 = extension.equals("bz2");
+  private DataInputStream createInputStream(Path file) {
+    val factory = new CompressionCodecFactory(fileSystem.getConf());
 
-    // @formatter:off
-    val inputStream = fileSystem.open(path);
-    return 
-        gzip  ? new GZIPInputStream(inputStream)                : 
-        bzip2 ? new BZip2Codec().createInputStream(inputStream) :
-                inputStream;
-    // @formatter:on
+    try {
+      val codec = factory.getCodec(file);
+      InputStream inputStream =
+          (codec == null) ? fileSystem.open(file) : codec.createInputStream(fileSystem.open(file));
+      return new DataInputStream(inputStream);
+    } catch (IOException e) {
+      throw new RuntimeException("Error reading: '" + file.toString() + "'", e);
+    }
   }
 
 }

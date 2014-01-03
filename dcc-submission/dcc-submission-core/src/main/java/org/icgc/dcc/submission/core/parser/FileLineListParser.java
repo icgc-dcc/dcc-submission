@@ -15,45 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.submission.core.parser;
 
-import java.util.Iterator;
-import java.util.Map;
+import static com.google.common.collect.Lists.newArrayList;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import lombok.ToString;
-import lombok.val;
-
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-
-import com.google.common.collect.ImmutableMap;
 
 @ToString
-@RequiredArgsConstructor
-public class FileLineMapParser extends AbstractFileLineParser<Map<String, String>> {
-
-  @NonNull
-  protected final FileSchema schema;
+public class FileLineListParser extends AbstractFileLineParser<List<String>> {
 
   @Override
-  public Map<String, String> parse(String line) {
-    val values = split(line);
-    return parse(values);
+  public List<String> parse(String line) {
+    return split(line);
   }
 
-  private Map<String, String> parse(Iterator<String> values) {
-    val record = ImmutableMap.<String, String> builder();
-    for (val fieldName : schema.getFieldNames()) {
-      val fieldValue = values.next();
-      record.put(fieldName, fieldValue);
-    }
-
-    return record.build();
-  }
-
-  protected static Iterator<String> split(String line) {
-    return FIELD_SPLITTER.split(line).iterator();
+  protected static List<String> split(String line) {
+    return newArrayList(FIELD_SPLITTER.split(line));
   }
 
 }

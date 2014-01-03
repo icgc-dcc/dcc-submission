@@ -15,23 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.submission.core.parser;
 
-import lombok.RequiredArgsConstructor;
+public interface FileLineParser<T> {
 
-import com.google.common.base.Splitter;
-
-@RequiredArgsConstructor
-public abstract class AbstractFileLineParser<T> implements FileLineParser<T> {
-
-  /**
-   * Separator between fields.
-   */
-  protected static final String FIELD_SEPARATOR = "\t";
-
-  /**
-   * Splits fields in to a {@code String} iterable.
-   */
-  protected static final Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
+  T parse(String line);
 
 }
