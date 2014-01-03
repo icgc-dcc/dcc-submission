@@ -109,7 +109,7 @@ public class KVSubmissionErrors {
       val fileType = entry.getKey();
       val fileErrors = entry.getValue();
       log.info("{}", fileType);
-      boolean fileStatus = fileErrors.describe();
+      boolean fileStatus = fileErrors.describe(null);
       status &= fileStatus;
       log.info("{}: {}", fileType, fileStatus);
     }

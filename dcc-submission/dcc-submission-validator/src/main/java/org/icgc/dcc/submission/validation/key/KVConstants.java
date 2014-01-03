@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
@@ -41,6 +42,7 @@ import com.google.common.collect.ImmutableMap;
 public class KVConstants {
 
   public static final Splitter TAB_SPLITTER = Splitter.on('\t');
+  public static final ObjectMapper MAPPER = new ObjectMapper();
 
   // TODO: move elsewhere
   public static final Map<KVFileType, KVFileType> RELATIONS = // TODO: all necessary?

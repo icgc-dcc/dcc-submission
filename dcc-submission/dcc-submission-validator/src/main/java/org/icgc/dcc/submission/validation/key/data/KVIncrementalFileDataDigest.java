@@ -35,10 +35,10 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_
 import java.util.Set;
 
 import lombok.NonNull;
+import lombok.val;
 
+import org.icgc.dcc.submission.validation.key.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
@@ -62,7 +62,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
    * TODO: ! account for deletions (do not report errors for those)
    */
   public KVIncrementalFileDataDigest(
-      KVSubmissionType submissionType, KVFileType fileType, String path, long logThreshold,
+      KVFileDescription kvFileDescription, long logThreshold,
 
       @NonNull DeletionData deletionData,
 
@@ -74,7 +74,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       @NonNull KVFileErrors surjectionErrors, // TODO: better names (+explain)
 
       @NonNull SurjectivityValidator surjectivityValidator) {
-    super(submissionType, fileType, path, logThreshold);
+    super(kvFileDescription, logThreshold);
 
     this.deletionData = deletionData;
     this.oldData = oldData;
@@ -90,9 +90,10 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
    */
   @Override
   protected void processTuple(KVTuple tuple, long lineCount) {
-    checkState(submissionType.isIncrementalData(), "TODO");
+    checkState(kvFileDescription.getSubmissionType().isIncrementalData(), "TODO");
 
     // Clinical
+    val fileType = kvFileDescription.getFileType();
     if (fileType == DONOR) { // TODO: split per file type (subclass or compose)
 
       // Uniqueness check against original data
@@ -312,6 +313,8 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
   @Override
   protected void postProcessing() {
     // Surjectivity; TODO: externalize
+
+    val fileType = kvFileDescription.getFileType();
     if (fileType.hasSimpleSurjectiveRelation()) {
       surjectivityValidator.validateSimpleSurjection(
           fileType,
