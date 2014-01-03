@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
@@ -28,9 +28,9 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
 import static org.icgc.dcc.submission.normalization.Marking.CONTROLLED;
 import static org.icgc.dcc.submission.normalization.Marking.OPEN;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
-import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.validation.norm.steps.PreMarking.MARKING_FIELD;
 
 import java.util.List;
 
@@ -39,8 +39,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.Marking;
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

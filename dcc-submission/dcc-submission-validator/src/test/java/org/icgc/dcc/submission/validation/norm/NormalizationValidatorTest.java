@@ -15,15 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.validation.norm;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.io.Files.readLines;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.normalization.NormalizationValidator.COMPONENT_NAME;
-import static org.icgc.dcc.submission.normalization.NormalizationValidator.FOCUS_TYPE;
+import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
+import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.FOCUS_TYPE;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 import static org.mockito.Mockito.when;
 
@@ -38,11 +38,11 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
-import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGenerationTest;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
+import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGenerationTest;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.junit.Before;
 import org.junit.Test;

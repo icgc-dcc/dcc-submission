@@ -15,15 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.base.Joiner.on;
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
+import lombok.val;
 
-import org.icgc.dcc.submission.normalization.Marking;
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -35,19 +38,30 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 
 /**
- * Step in charge of pre-emptively marking all observations as {@link Marking#OPEN} for the {@link SensitiveRowMarking}
- * step.
+ * Step in charge of rebuilding {@link NormalizerFieldNames#NORMALIZER_MUTATION} field.
  */
-@RequiredArgsConstructor
-public final class PreMarking implements NormalizationStep {
+public final class MutationRebuilding implements NormalizationStep {
 
-  static final Fields MARKING_FIELD = new Fields(NORMALIZER_MARKING);
+  static final Fields MUTATED_FROM_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
+  static final Fields MUTATED_TO_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
+  static final Fields MUTATION_FIELD = new Fields(NORMALIZER_MUTATION);
+
+  /**
+   * Short name for the step.
+   */
+  private static final String SHORT_NAME = "mutation";
+
+  /**
+   * Joiner to use to concatenate the "from" and "to" allele fields.
+   */
+  private static final Joiner MUTATION_JOINER = on(">");
 
   @Override
   public String shortName() {
-    return "pre-marking";
+    return SHORT_NAME;
   }
 
   @Override
@@ -55,32 +69,37 @@ public final class PreMarking implements NormalizationStep {
     return new Each(
         pipe,
         ALL,
-        new PreMarker(),
+        new MutationRebuilder(),
         ALL);
   }
 
   /**
-   * Marks all observations as {@link Marking#OPEN}.
+   * Rebuilds the mutation by concatenating the "from" and "to" allele fields.
    */
   @VisibleForTesting
-  static final class PreMarker extends BaseOperation<Void> implements Function<Void> {
+  static final class MutationRebuilder extends BaseOperation<Void> implements Function<Void> {
 
     @VisibleForTesting
-    PreMarker() {
-      super(MARKING_FIELD);
+    MutationRebuilder() {
+      super(MUTATION_FIELD);
     }
 
+    /**
+     * Rebuild 'mutation' from 'control_genotype' and 'tumour_genotype' and TODO
+     */
     @Override
     public void operate(
         @SuppressWarnings("rawtypes") FlowProcess flowProcess,
         FunctionCall<Void> functionCall) {
 
+      val entry = functionCall.getArguments();
+      val mutatedFromAllele = entry.getString(MUTATED_FROM_ALLELE_FIELD);
+      val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
+      val mutation = MUTATION_JOINER.join(mutatedFromAllele, mutatedToAllele);
       functionCall
           .getOutputCollector()
-          .add(
-              // Until specified otherwise (if applicable as it can be turned off)
-              new Tuple(Marking.OPEN.name())
-          );
+          .add(new Tuple(mutation));
     }
   }
+
 }

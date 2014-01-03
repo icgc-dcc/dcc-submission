@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.validation.norm;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
@@ -26,8 +26,8 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
-import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
+import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
+import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;

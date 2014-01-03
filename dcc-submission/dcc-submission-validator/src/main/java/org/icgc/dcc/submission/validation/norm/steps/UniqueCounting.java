@@ -15,34 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static java.lang.String.format;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
 import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.EmitNothing;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
 
 import cascading.pipe.Each;
+import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
+import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.Unique;
+import cascading.tap.Tap;
+import cascading.tuple.Fields;
 
 /**
- * Performs final count of observations.
- * <p>
- * TODO: merge with {@link InitialCounting} by passing the counter to use.
+ * Counts unique occurrences of the given field.
  */
 @RequiredArgsConstructor
-public final class Counting implements NormalizationStep {
+public final class UniqueCounting implements NormalizationStep {
 
   /**
    * Short name for the step.
    */
-  private static final String SHORT_NAME = "count";
+  private static final String SHORT_NAME = "unique-count";
 
+  private final String fieldName;
   private final NormalizationCounter counter;
 
   @Override
@@ -52,10 +58,41 @@ public final class Counting implements NormalizationStep {
 
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Each(
+    return new CountUnique( // Will leave the pipe unaltered
         pipe,
-        ALL,
-        new Counter(counter, COUNT_INCREMENT),
-        RESULTS);
+        shortName(),
+        new Fields(fieldName),
+        counter);
+  }
+
+  /**
+   * Performs a unique count for the given field(s) and in a transparent manner to the flow it originates from (and
+   * eventually merges to).
+   * <p>
+   * This uses a trick whereby we split the flow, do the count, filter out all tuples and merge back in the original
+   * flow. This is to circumvent the issue with cascading of having to have sink {@link Tap} for a branch to be run
+   * (TODO: find better way?).
+   */
+  private final class CountUnique extends SubAssembly {
+
+    private CountUnique(Pipe pipe, String stepShortName, Fields fields, NormalizationCounter counter) {
+      Pipe unique = new Pipe(
+          format("%s-%s-pipe", stepShortName, counter),
+          pipe);
+
+      unique = new Unique(unique, fields);
+      unique = new Each(
+          unique,
+          ALL,
+          new Counter(counter, COUNT_INCREMENT),
+          RESULTS);
+
+      // Trick to re-join main branch without consequences (else side branch does not get executed)
+      unique = new Each(unique, new EmitNothing());
+
+      setTails(new Merge(
+          pipe, // Will effectively remain unaltered
+          unique));
+    }
   }
 }

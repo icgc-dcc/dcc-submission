@@ -15,18 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
-import static com.google.common.base.Joiner.on;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
-import lombok.val;
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
+import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames;
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -38,30 +35,19 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 
 /**
- * Step in charge of rebuilding {@link NormalizerFieldNames#NORMALIZER_MUTATION} field.
+ * Step in charge of pre-emptively marking all observations as {@link Marking#OPEN} for the {@link SensitiveRowMarking}
+ * step.
  */
-public final class MutationRebuilding implements NormalizationStep {
+@RequiredArgsConstructor
+public final class PreMarking implements NormalizationStep {
 
-  static final Fields MUTATED_FROM_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
-  static final Fields MUTATED_TO_ALLELE_FIELD = new Fields(SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE);
-  static final Fields MUTATION_FIELD = new Fields(NORMALIZER_MUTATION);
-
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "mutation";
-
-  /**
-   * Joiner to use to concatenate the "from" and "to" allele fields.
-   */
-  private static final Joiner MUTATION_JOINER = on(">");
+  static final Fields MARKING_FIELD = new Fields(NORMALIZER_MARKING);
 
   @Override
   public String shortName() {
-    return SHORT_NAME;
+    return "pre-marking";
   }
 
   @Override
@@ -69,37 +55,32 @@ public final class MutationRebuilding implements NormalizationStep {
     return new Each(
         pipe,
         ALL,
-        new MutationRebuilder(),
+        new PreMarker(),
         ALL);
   }
 
   /**
-   * Rebuilds the mutation by concatenating the "from" and "to" allele fields.
+   * Marks all observations as {@link Marking#OPEN}.
    */
   @VisibleForTesting
-  static final class MutationRebuilder extends BaseOperation<Void> implements Function<Void> {
+  static final class PreMarker extends BaseOperation<Void> implements Function<Void> {
 
     @VisibleForTesting
-    MutationRebuilder() {
-      super(MUTATION_FIELD);
+    PreMarker() {
+      super(MARKING_FIELD);
     }
 
-    /**
-     * Rebuild 'mutation' from 'control_genotype' and 'tumour_genotype' and TODO
-     */
     @Override
     public void operate(
         @SuppressWarnings("rawtypes") FlowProcess flowProcess,
         FunctionCall<Void> functionCall) {
 
-      val entry = functionCall.getArguments();
-      val mutatedFromAllele = entry.getString(MUTATED_FROM_ALLELE_FIELD);
-      val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
-      val mutation = MUTATION_JOINER.join(mutatedFromAllele, mutatedToAllele);
       functionCall
           .getOutputCollector()
-          .add(new Tuple(mutation));
+          .add(
+              // Until specified otherwise (if applicable as it can be turned off)
+              new Tuple(Marking.OPEN.name())
+          );
     }
   }
-
 }

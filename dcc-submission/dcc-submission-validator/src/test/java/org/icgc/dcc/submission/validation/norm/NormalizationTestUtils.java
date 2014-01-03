@@ -15,46 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm;
 
-import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Resources.getResource;
+import static lombok.AccessLevel.PRIVATE;
 
-import java.util.Iterator;
+import java.net.URL;
+import java.util.List;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.junit.Test;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
-import cascading.operation.Function;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
-public class MutationRebuildingTest {
+/**
+ * Mostly ported from TestUtils in the dcc-submission-server module (TODO: address code duplication).
+ */
+@NoArgsConstructor(access = PRIVATE)
+final class NormalizationTestUtils {
 
-  @Test
-  public void test_cascading_MutationRebuilder() {
-    Function<?> function = new MutationRebuilding.MutationRebuilder();
+  /**
+   * Jackson constants.
+   */
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
-    Fields inputFields =
-        new Fields("f1", "f2")
-            .append(MutationRebuilding.MUTATED_FROM_ALLELE_FIELD)
-            .append(MutationRebuilding.MUTATED_TO_ALLELE_FIELD);
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+  }
 
-    String dummyValue = "dummy";
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G")),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "C")),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C"))
-    };
-    Fields resultFields = MutationRebuilding.MUTATION_FIELD;
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
 
-    Tuple[] resultTuples = new Tuple[] {
-        new Tuple("A>G"),
-        new Tuple("A>C"),
-        new Tuple("T>C")
-    };
-
-    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
-    checkOperationResults(iterator, resultTuples);
+  public static List<String> getFieldNames(SubmissionFileType type) {
+    return newArrayList(dictionary()
+        .getFileSchema(type)
+        .getFieldNames());
   }
 }

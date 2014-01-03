@@ -15,44 +15,54 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import lombok.Value;
-import lombok.experimental.Builder;
+import static com.google.common.collect.ImmutableList.copyOf;
+import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.normalization.steps.ConfidentialFieldsRemoval;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
+
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
+import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * Common context object passed to all {@link NormalizationStep}s.
+ * May never be used.
  */
-public interface NormalizationContext {
+public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
+
+  public static final String STEP_NAME = "confidential-fields";
 
   /**
-   * Returns the list of fields that are marked as "controlled" (region of residence for instance).
+   * TODO
    */
-  ImmutableMap<String, ImmutableList<String>> getControlledFields();
-
-  @Value
-  @Builder
-  static final class DefaultNormalizationContext implements NormalizationContext {
-
-    /**
-     * See {@link NormalizationContext#getControlledFields()}.
-     */
-    private final ImmutableMap<String, ImmutableList<String>> controlledFields;
-
-    /**
-     * Creates the default {@link NormalizationContext}.
-     */
-    static NormalizationContext getNormalizationContext(Dictionary dictionary) {
-      return DefaultNormalizationContext
-          .builder()
-          .controlledFields(ConfidentialFieldsRemoval.getControlledFields(dictionary))
-          .build();
+  public static ImmutableMap<String, ImmutableList<String>> getControlledFields(Dictionary dictionary) {
+    val controlledFields = new ImmutableMap.Builder<String, ImmutableList<String>>();
+    for (val fileSchema : dictionary.getFiles()) {
+      controlledFields.put(
+          fileSchema.getName(),
+          copyOf(fileSchema.getControlledFieldNames()));
     }
+    return controlledFields.build();
   }
+
+  @Override
+  public String shortName() {
+    return STEP_NAME;
+  }
+
+  /**
+   * TODO
+   */
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Discard(pipe, new Fields("TODO"));
+  }
+
 }

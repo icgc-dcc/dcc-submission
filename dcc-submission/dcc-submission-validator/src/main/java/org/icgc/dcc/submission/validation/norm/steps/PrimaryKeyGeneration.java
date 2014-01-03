@@ -15,34 +15,76 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps.hacks;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import static cascading.tuple.Fields.ALL;
+import static java.util.UUID.randomUUID;
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
 
+import java.util.UUID;
+
+import lombok.val;
+
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Discard;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Temporary hack
+ * Step in charge of generating a primary key for each observations.
  */
-public class HackFieldDiscarding implements NormalizationStep {
+public final class PrimaryKeyGeneration implements NormalizationStep {
 
-  private final String fieldName;
+  static final Fields OBSERVATION_ID_FIELD = new Fields(NORMALIZER_OBSERVATION_ID);
+
+  /**
+   * Short name for the step.
+   */
+  private static final String SHORT_NAME = "pk";
 
   @Override
   public String shortName() {
-    return this.getClass().getSimpleName();
-  }
-
-  public HackFieldDiscarding(String fieldName) {
-    this.fieldName = fieldName;
+    return SHORT_NAME;
   }
 
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Discard(pipe, new Fields(fieldName));
+    return new Each(
+        pipe,
+        ALL,
+        new PrimaryKeyGenerator(),
+        ALL);
   }
 
+  /**
+   * Generates a primary key using {@link UUID}.
+   */
+  @VisibleForTesting
+  static final class PrimaryKeyGenerator extends BaseOperation<Void> implements Function<Void> {
+
+    @VisibleForTesting
+    PrimaryKeyGenerator() {
+      super(OBSERVATION_ID_FIELD);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+
+      val observationId = randomUUID().toString(); // Sub-optimal but approved by Bob for the time being
+      functionCall
+          .getOutputCollector()
+          .add(new Tuple(observationId));
+    }
+  }
 }

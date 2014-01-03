@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
 
@@ -23,6 +23,9 @@ import java.util.Iterator;
 
 import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
+import org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;
@@ -31,44 +34,50 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public class SensitiveRowMarkingTest extends CascadingTestCase {
+public class MaskedRowGeneratorTest extends CascadingTestCase {
 
   @Test
-  public void test_cascading_SensitiveRowMarker() {
-    Function<?> function = new SensitiveRowMarking.SensitiveRowMarker();
-
-    Fields resultFields = SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD
-        .append(SensitiveRowMarking.CONTROL_GENOTYPE_FIELD)
-        .append(SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD)
-        .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
-        .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
-        .append(PreMarking.MARKING_FIELD);
+  public void test_cascading_MaskedRowGenerator() {
+    Function<?> function = new MaskedRowGeneration.MaskedRowGenerator();
 
     Fields inputFields =
         new Fields("f1", "f2")
-            .append(resultFields);
+            .append(SensitiveRowMarking.CONTROL_GENOTYPE_FIELD)
+            .append(SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD)
+            .append(SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD)
+            .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
+            .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
+            .append(PreMarking.MARKING_FIELD);
 
     String dummyValue = "dummy";
-    TupleEntry[] entries =
-        new TupleEntry[] {
-            new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "A", "A/A", "A/T", "A", "T", Marking.OPEN.getTupleValue())),
-            new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "A", "G/G", "G/T", "G", "T", Marking.OPEN.getTupleValue())),
-            new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "T", "C/C", "G/G", "C", "G", Marking.OPEN.getTupleValue())),
-            new TupleEntry(inputFields, new Tuple(
-                dummyValue, dummyValue, "C", "C/C", "T/T", "C", "T", Marking.OPEN.getTupleValue()))
-        };
+    Tuple open = // Just passed through as is
+        new Tuple(dummyValue, dummyValue, "A/A", "A/T", "A", "A", "T", Marking.OPEN.getTupleValue());
+    Tuple nonTrivial = // They differ -> masked
+        new Tuple(dummyValue, dummyValue, "A/G", "A/T", "A", "G", "T", Marking.CONTROLLED.getTupleValue());
+    Tuple trivial = // reference genome allele equals mutation_to -> not masked
+        new Tuple(dummyValue, dummyValue, "A/G", "A/A", "A", "G", "A", Marking.CONTROLLED.getTupleValue());
 
-    Tuple[] resultTuples = new Tuple[] {
-        new Tuple("A", "A/A", "A/T", "A", "T", Marking.OPEN.getTupleValue()), // Untouched
-        new Tuple("A", "G/G", "G/T", "G", "T", Marking.CONTROLLED.getTupleValue()), // Marked
-        new Tuple("T", "C/C", "G/G", "C", "G", Marking.CONTROLLED.getTupleValue()), // Marked
-        new Tuple("C", "C/C", "T/T", "C", "T", Marking.CONTROLLED.getTupleValue()) // Marked
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, open),
+        new TupleEntry(inputFields, nonTrivial),
+        new TupleEntry(inputFields, trivial)
     };
+    Fields resultFields = inputFields;
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+
+    Tuple[] resultTuples = new Tuple[] {
+        open, // Untouched
+        nonTrivial, // Untouched
+        new Tuple(
+            dummyValue, dummyValue,
+            null, null, // Erased
+            "A",
+            "A", // Changed to match reference genome allele
+            "T",
+            Marking.MASKED.getTupleValue()), // Marked as masked
+        trivial, // Untouched
+    };
     checkOperationResults(iterator, resultTuples);
   }
 

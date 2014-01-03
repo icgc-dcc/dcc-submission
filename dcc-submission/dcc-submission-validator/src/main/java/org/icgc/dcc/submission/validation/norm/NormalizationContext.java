@@ -15,24 +15,44 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.validation.norm;
 
-import java.io.Serializable;
+import lombok.Value;
+import lombok.experimental.Builder;
 
-import cascading.pipe.Pipe;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.validation.norm.steps.ConfidentialFieldsRemoval;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Step in the normalization process. It is in charge of extending the main cascading {@link Pipe}.
+ * Common context object passed to all {@link NormalizationStep}s.
  */
-public interface NormalizationStep extends Serializable {
+public interface NormalizationContext {
 
   /**
-   * Returns a short name for the step.
+   * Returns the list of fields that are marked as "controlled" (region of residence for instance).
    */
-  String shortName();
+  ImmutableMap<String, ImmutableList<String>> getControlledFields();
 
-  /**
-   * 
-   */
-  Pipe extend(Pipe pipe, NormalizationContext context);
+  @Value
+  @Builder
+  static final class DefaultNormalizationContext implements NormalizationContext {
+
+    /**
+     * See {@link NormalizationContext#getControlledFields()}.
+     */
+    private final ImmutableMap<String, ImmutableList<String>> controlledFields;
+
+    /**
+     * Creates the default {@link NormalizationContext}.
+     */
+    static NormalizationContext getNormalizationContext(Dictionary dictionary) {
+      return DefaultNormalizationContext
+          .builder()
+          .controlledFields(ConfidentialFieldsRemoval.getControlledFields(dictionary))
+          .build();
+    }
+  }
 }

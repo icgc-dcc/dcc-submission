@@ -15,31 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.normalization.Marking.CONTROLLED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
-import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
-import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.CONTROL_GENOTYPE_FIELD;
-import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD;
-import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD;
-import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD;
-import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD;
 import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MASKED;
+import static org.icgc.dcc.submission.validation.norm.steps.PreMarking.MARKING_FIELD;
+import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.CONTROL_GENOTYPE_FIELD;
+import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD;
+import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD;
+import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD;
+import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
 import org.icgc.dcc.submission.normalization.Marking;
-import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

@@ -15,72 +15,63 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
 
 import java.util.Iterator;
-import java.util.UUID;
 
-import org.icgc.dcc.submission.normalization.NormalizationValidatorTest;
+import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
+import org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
+import cascading.CascadingTestCase;
 import cascading.operation.Function;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ PrimaryKeyGeneration.class })
-public class PrimaryKeyGenerationTest {
+public class SensitiveRowMarkingTest extends CascadingTestCase {
 
   @Test
-  public void test_cascading_PrimaryKeyGenerator() {
-    mockUUID();
+  public void test_cascading_SensitiveRowMarker() {
+    Function<?> function = new SensitiveRowMarking.SensitiveRowMarker();
 
-    Function<?> function = new PrimaryKeyGeneration.PrimaryKeyGenerator();
+    Fields resultFields = SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD
+        .append(SensitiveRowMarking.CONTROL_GENOTYPE_FIELD)
+        .append(SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD)
+        .append(SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD)
+        .append(SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD)
+        .append(PreMarking.MARKING_FIELD);
 
     Fields inputFields =
         new Fields("f1", "f2")
-            .append(MutationRebuilding.MUTATED_FROM_ALLELE_FIELD)
-            .append(MutationRebuilding.MUTATED_TO_ALLELE_FIELD);
+            .append(resultFields);
 
     String dummyValue = "dummy";
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
-    };
-    Fields resultFields = PrimaryKeyGeneration.OBSERVATION_ID_FIELD;
+    TupleEntry[] entries =
+        new TupleEntry[] {
+            new TupleEntry(inputFields, new Tuple(
+                dummyValue, dummyValue, "A", "A/A", "A/T", "A", "T", Marking.OPEN.getTupleValue())),
+            new TupleEntry(inputFields, new Tuple(
+                dummyValue, dummyValue, "A", "G/G", "G/T", "G", "T", Marking.OPEN.getTupleValue())),
+            new TupleEntry(inputFields, new Tuple(
+                dummyValue, dummyValue, "T", "C/C", "G/G", "C", "G", Marking.OPEN.getTupleValue())),
+            new TupleEntry(inputFields, new Tuple(
+                dummyValue, dummyValue, "C", "C/C", "T/T", "C", "T", Marking.OPEN.getTupleValue()))
+        };
 
     Tuple[] resultTuples = new Tuple[] {
-        new Tuple("v1"),
-        new Tuple("v2"),
-        new Tuple("v3")
+        new Tuple("A", "A/A", "A/T", "A", "T", Marking.OPEN.getTupleValue()), // Untouched
+        new Tuple("A", "G/G", "G/T", "G", "T", Marking.CONTROLLED.getTupleValue()), // Marked
+        new Tuple("T", "C/C", "G/G", "C", "G", Marking.CONTROLLED.getTupleValue()), // Marked
+        new Tuple("C", "C/C", "T/T", "C", "T", Marking.CONTROLLED.getTupleValue()) // Marked
     };
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
     checkOperationResults(iterator, resultTuples);
   }
 
-  /**
-   * If updating this method, also update its clone in {@link NormalizationValidatorTest#mockUUID()} (see comment on
-   * it).
-   */
-  public void mockUUID() {
-    PowerMockito.mockStatic(UUID.class);
-    UUID mockUuid = PowerMockito.mock(UUID.class);
-    PowerMockito.when(mockUuid.toString())
-        .thenReturn("v1")
-        .thenReturn("v2")
-        .thenReturn("v3");
-
-    PowerMockito.when(UUID.randomUUID())
-        .thenReturn(mockUuid);
-  }
 }

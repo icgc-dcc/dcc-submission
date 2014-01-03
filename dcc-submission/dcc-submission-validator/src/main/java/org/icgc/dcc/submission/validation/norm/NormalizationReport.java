@@ -15,13 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.validation.norm;
 
 import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,8 @@ import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
 
-import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
+import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
 
 import com.google.common.collect.ImmutableMap;
 

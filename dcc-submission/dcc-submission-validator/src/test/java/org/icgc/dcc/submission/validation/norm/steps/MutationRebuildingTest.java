@@ -15,54 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-import lombok.val;
+import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import java.util.Iterator;
 
-import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Discard;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
+import org.junit.Test;
+
+import cascading.operation.Function;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+public class MutationRebuildingTest {
 
-/**
- * May never be used.
- */
-public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
+  @Test
+  public void test_cascading_MutationRebuilder() {
+    Function<?> function = new MutationRebuilding.MutationRebuilder();
 
-  public static final String STEP_NAME = "confidential-fields";
+    Fields inputFields =
+        new Fields("f1", "f2")
+            .append(MutationRebuilding.MUTATED_FROM_ALLELE_FIELD)
+            .append(MutationRebuilding.MUTATED_TO_ALLELE_FIELD);
 
-  /**
-   * TODO
-   */
-  public static ImmutableMap<String, ImmutableList<String>> getControlledFields(Dictionary dictionary) {
-    val controlledFields = new ImmutableMap.Builder<String, ImmutableList<String>>();
-    for (val fileSchema : dictionary.getFiles()) {
-      controlledFields.put(
-          fileSchema.getName(),
-          copyOf(fileSchema.getControlledFieldNames()));
-    }
-    return controlledFields.build();
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "C")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C"))
+    };
+    Fields resultFields = MutationRebuilding.MUTATION_FIELD;
+
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("A>G"),
+        new Tuple("A>C"),
+        new Tuple("T>C")
+    };
+
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    checkOperationResults(iterator, resultTuples);
   }
-
-  @Override
-  public String shortName() {
-    return STEP_NAME;
-  }
-
-  /**
-   * TODO
-   */
-  @Override
-  public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Discard(pipe, new Fields("TODO"));
-  }
-
 }

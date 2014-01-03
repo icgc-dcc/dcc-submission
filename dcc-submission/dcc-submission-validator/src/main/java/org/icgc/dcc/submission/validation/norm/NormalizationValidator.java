@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.validation.norm;
 
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
@@ -23,11 +23,11 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_END;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
@@ -36,18 +36,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.steps.Counting;
-import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
-import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
-import org.icgc.dcc.submission.normalization.steps.PreMarking;
-import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
-import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
-import org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking;
-import org.icgc.dcc.submission.normalization.steps.UniqueCounting;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext.DefaultNormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.steps.Counting;
+import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
+import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
+import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
+import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
+import org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking;
+import org.icgc.dcc.submission.validation.norm.steps.UniqueCounting;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import cascading.cascade.Cascade;

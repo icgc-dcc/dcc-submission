@@ -15,38 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm;
 
-import java.util.Iterator;
+import java.io.Serializable;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.junit.Test;
+import cascading.pipe.Pipe;
 
-import cascading.operation.Buffer;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+/**
+ * Step in the normalization process. It is in charge of extending the main cascading {@link Pipe}.
+ */
+public interface NormalizationStep extends Serializable {
 
-public class RedundantObservationRemovalTest {
+  /**
+   * Returns a short name for the step.
+   */
+  String shortName();
 
-  @Test
-  public void test_cascading_FilterRedundantObservationBuffer() {
-    Buffer<?> buffer = new RedundantObservationRemoval.FilterRedundantObservationBuffer();
-
-    Fields inputFields = new Fields("f1", "f2");
-
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy1")),
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy2")),
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy3"))
-    };
-    Fields resultFields = inputFields;
-
-    Tuple[] resultTuples = new Tuple[] {
-        new Tuple("dummy", "dummy1") // Only one left
-    };
-
-    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeBuffer(buffer, entries, resultFields);
-    CascadingTestUtils.checkOperationResults(iterator, resultTuples);
-  }
+  /**
+   * 
+   */
+  Pipe extend(Pipe pipe, NormalizationContext context);
 }

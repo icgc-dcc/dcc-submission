@@ -15,47 +15,72 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
 
 import java.util.Iterator;
+import java.util.UUID;
 
-import org.icgc.dcc.submission.normalization.Marking;
-import org.icgc.dcc.submission.normalization.steps.PreMarking.PreMarker;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.NormalizationValidatorTest;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-import cascading.CascadingTestCase;
 import cascading.operation.Function;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public class PreMarkingTest extends CascadingTestCase {
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ PrimaryKeyGeneration.class })
+public class PrimaryKeyGenerationTest {
 
   @Test
-  public void test_cascading_PreMaskingMarker() {
-    Function<?> function = new PreMarker();
+  public void test_cascading_PrimaryKeyGenerator() {
+    mockUUID();
 
-    Fields inputFields = new Fields("f1", "f2");
+    Function<?> function = new PrimaryKeyGeneration.PrimaryKeyGenerator();
+
+    Fields inputFields =
+        new Fields("f1", "f2")
+            .append(MutationRebuilding.MUTATED_FROM_ALLELE_FIELD)
+            .append(MutationRebuilding.MUTATED_TO_ALLELE_FIELD);
+
     String dummyValue = "dummy";
     TupleEntry[] entries = new TupleEntry[] {
         new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
         new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
         new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
     };
-    Fields resultFields = PreMarking.MARKING_FIELD;
+    Fields resultFields = PrimaryKeyGeneration.OBSERVATION_ID_FIELD;
+
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("v1"),
+        new Tuple("v2"),
+        new Tuple("v3")
+    };
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
-    for (int i = 0; i < 3; i++) {
-      assertThat(iterator.hasNext());
-      TupleEntry entry = iterator.next();
-      Object object = entry.getObject(resultFields);
-      assertThat(object)
-          .isEqualTo(Marking.OPEN.getTupleValue());
-    }
-    assertFalse(iterator.hasNext());
+    checkOperationResults(iterator, resultTuples);
   }
 
+  /**
+   * If updating this method, also update its clone in {@link NormalizationValidatorTest#mockUUID()} (see comment on
+   * it).
+   */
+  public void mockUUID() {
+    PowerMockito.mockStatic(UUID.class);
+    UUID mockUuid = PowerMockito.mock(UUID.class);
+    PowerMockito.when(mockUuid.toString())
+        .thenReturn("v1")
+        .thenReturn("v2")
+        .thenReturn("v3");
+
+    PowerMockito.when(UUID.randomUUID())
+        .thenReturn(mockUuid);
+  }
 }

@@ -15,70 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps.hacks;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static cascading.tuple.Fields.ALL;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.icgc.dcc.submission.normalization.NormalizationContext;
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import java.util.Iterator;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
+import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking.PreMarker;
+import org.junit.Test;
+
+import cascading.CascadingTestCase;
 import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-/**
- * Temporary hack
- */
-public class HackNewFieldsSynthesis implements NormalizationStep {
+public class PreMarkingTest extends CascadingTestCase {
 
-  private final String field1;
-  private final String field2;
+  @Test
+  public void test_cascading_PreMaskingMarker() {
+    Function<?> function = new PreMarker();
 
-  public HackNewFieldsSynthesis(String field1, String field2) {
-    this.field1 = field1;
-    this.field2 = field2;
-  }
+    Fields inputFields = new Fields("f1", "f2");
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
+    };
+    Fields resultFields = PreMarking.MARKING_FIELD;
 
-  @Override
-  public String shortName() {
-    return this.getClass().getSimpleName();
-  }
-
-  @Override
-  public Pipe extend(Pipe pipe, NormalizationContext context) {
-
-    final class NewFieldsFakerFunction extends BaseOperation<Void> implements Function<Void> {
-
-      private NewFieldsFakerFunction(String field1, String field2) {
-        super(new Fields(field1, field2));
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        TupleEntry entry = functionCall.getArguments();
-        String controlGenotype = entry.getString("control_genotype");
-        String tumourGenotype = entry.getString("tumour_genotype");
-        String from = controlGenotype.split("/")[1];
-        String to = tumourGenotype.split("/")[1];
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(from, to));
-      }
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    for (int i = 0; i < 3; i++) {
+      assertThat(iterator.hasNext());
+      TupleEntry entry = iterator.next();
+      Object object = entry.getObject(resultFields);
+      assertThat(object)
+          .isEqualTo(Marking.OPEN.getTupleValue());
     }
-
-    return new Each(
-        pipe,
-        ALL,
-        new NewFieldsFakerFunction(field1, field2),
-        ALL);
+    assertFalse(iterator.hasNext());
   }
+
 }

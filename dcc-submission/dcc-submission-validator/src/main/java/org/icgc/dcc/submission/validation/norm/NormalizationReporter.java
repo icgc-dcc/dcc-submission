@@ -15,18 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.validation.norm;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MASKED;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_END;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
-import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.DROPPED;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MASKED;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_END;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_START;
 
 import java.util.List;
 
@@ -35,9 +35,9 @@ import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
 
-import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
-import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
 
 import com.typesafe.config.Config;
 
