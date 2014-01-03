@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.validation.key;
 
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.repeat;
@@ -72,11 +74,12 @@ import cascading.flow.Flow;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
-public class KeyValidator implements Validator {
+public class KVValidator implements Validator {
 
   public static final String COMPONENT_NAME = "Key Validator";
   private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
@@ -246,6 +249,7 @@ public class KeyValidator implements Validator {
     log.info("{}", repeat("=", 75));
     log.info("Loading incremental file: '{}.{}'", fileType, submissionType);
     val dataFilePath = getDataFilePath(INCREMENTAL_FILE, fileType);
+
     incrementalData.put(
         fileType,
         new KVIncrementalFileDataDigest(
@@ -256,7 +260,7 @@ public class KeyValidator implements Validator {
 
             existingData.get(fileType),
             existingData.get(RELATIONS.get(fileType)),
-            incrementalData.get(RELATIONS.get(fileType)),
+            getOptionalReferencedData(fileType),
 
             errors.getFileErrors(fileType),
             errors.getFileErrors(RELATIONS.get(fileType)), // May be null (for DONOR for instance)
@@ -284,6 +288,23 @@ public class KeyValidator implements Validator {
     existingData.put(
         fileType,
         KVFileDataDigest.getEmptyInstance(getPlaceholderFileDescription(fileType)));
+  }
+
+  private Optional<KVFileDataDigest> getOptionalReferencedData(KVFileType fileType) {
+    val referencedFileType = RELATIONS.get(fileType);
+    if (referencedFileType == null) {
+      log.info("No referenced file type for '{}'", DONOR);
+      checkState(fileType == DONOR, "TODO");
+      return absent();
+    } else {
+      if (incrementalData.contains(referencedFileType)) { // May not if not re-submitted
+        log.info("Incremental data contains '{}'", referencedFileType);
+        return of(incrementalData.get(referencedFileType));
+      } else { // Fall back on existing data
+        log.info("Incremental data does not contain '{}', falling back on existing data", referencedFileType);
+        return absent();
+      }
+    }
   }
 
   private void validateComplexSurjection() {

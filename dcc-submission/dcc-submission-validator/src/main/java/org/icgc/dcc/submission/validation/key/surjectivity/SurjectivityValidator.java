@@ -50,11 +50,9 @@ public class SurjectivityValidator {
 
   public void validateSimpleSurjection(
       KVFileType fileType,
-      KVFileDataDigest originalData,
-      KVFileDataDigest newData,
+      KVFileDataDigest dataDigest,
       KVFileErrors surjectionFileErrors,
       Set<KVKeyValues> surjectionEncountered) {
-    val dataDigest = !fileType.isReplaceAll() || hasIncrementalClinicalData() ? newData : originalData;
     val expectedSujectionKeys = newTreeSet(checkNotNull(dataDigest, "TODO: '%s'", fileType).getPks());
     if (hasSurjectionErrors(expectedSujectionKeys, surjectionEncountered)) {
       collectSurjectionErrors(
@@ -65,11 +63,11 @@ public class SurjectivityValidator {
   }
 
   public void validateComplexSurjection(
-      KVFileDataDigest sampleOriginalData,
+      KVFileDataDigest sampleExistingData,
       KVFileDataDigest sampleNewData,
       KVFileErrors surjectionSampleFileErrors) {
-    val sampleDataDigest = hasIncrementalClinicalData() ? sampleNewData : sampleOriginalData;
-    val expectedSampleSujectionKeys = newTreeSet(checkNotNull(sampleDataDigest, "TODO: '%s'").getPks());
+    val sampleDataDigest = hasIncrementalClinicalData() ? sampleNewData : sampleExistingData;
+    val expectedSampleSujectionKeys = newTreeSet(checkNotNull(sampleDataDigest, "TODO: '%s'").getPks()); // FIXME
     if (hasSurjectionErrors(expectedSampleSujectionKeys, sampleSurjectionEncountered)) {
       log.error("Some complex surjection errors detected");
       collectSurjectionErrors(

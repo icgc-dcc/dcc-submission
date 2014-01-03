@@ -28,11 +28,11 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public enum KVErrorType {
-  UNIQUE_ORIGINAL(PK),
-  UNIQUE_NEW(PK),
-  RELATION(FK),
+  EXISTING_UNIQUE(PK),
+  INCREMENTAL_UNIQUE(PK),
+  PRIMARY_RELATION(FK),
   SECONDARY_RELATION(SECONDARY_FK),
-  SURJECTION(PK);
+  SURJECTION(PK); // TODO: split
 
   /**
    * TODO: explain!

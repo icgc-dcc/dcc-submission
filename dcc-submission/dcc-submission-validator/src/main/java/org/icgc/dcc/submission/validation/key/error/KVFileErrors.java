@@ -20,11 +20,11 @@ package org.icgc.dcc.submission.validation.key.error;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SURJECTION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUE_NEW;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUE_ORIGINAL;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.INCREMENTAL_UNIQUE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.EXISTING_UNIQUE;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
 
 import java.util.List;
@@ -46,14 +46,14 @@ public class KVFileErrors {
   private final Map<Long, KVRowError> rowErrors = newTreeMap();
 
   public KVFileErrors(@NonNull List<Integer> pkIndices) {
-    this.fieldIndicesPerErrorType.put(UNIQUE_ORIGINAL, pkIndices);
-    this.fieldIndicesPerErrorType.put(UNIQUE_NEW, pkIndices);
+    this.fieldIndicesPerErrorType.put(EXISTING_UNIQUE, pkIndices);
+    this.fieldIndicesPerErrorType.put(INCREMENTAL_UNIQUE, pkIndices);
     this.fieldIndicesPerErrorType.put(SURJECTION, pkIndices); // FIXME
   }
 
   public KVFileErrors(List<Integer> pkIndices, List<Integer> fkIndices) {
     this(pkIndices);
-    fieldIndicesPerErrorType.put(RELATION, fkIndices);
+    fieldIndicesPerErrorType.put(PRIMARY_RELATION, fkIndices);
   }
 
   public KVFileErrors(
@@ -68,7 +68,7 @@ public class KVFileErrors {
   public KVFileErrors(
       @NonNull Object ignoreMe,
       @NonNull List<Integer> fkIndices) {
-    fieldIndicesPerErrorType.put(RELATION, fkIndices);
+    fieldIndicesPerErrorType.put(PRIMARY_RELATION, fkIndices);
   }
 
   public boolean hasError(long lineNumber) {

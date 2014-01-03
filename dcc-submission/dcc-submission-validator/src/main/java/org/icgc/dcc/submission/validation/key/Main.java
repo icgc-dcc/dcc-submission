@@ -48,7 +48,7 @@ public class Main {
   public static void main(String... args) throws InterruptedException {
     val logThreshold = args != null && args.length >= 1 ? Long.valueOf(args[0]) : 2;
 
-    new KeyValidator(logThreshold).validate(new KeyValidationContext(
+    new KVValidator(logThreshold).validate(new KeyValidationContext(
         "project1",
         "release1",
         "/tmp",

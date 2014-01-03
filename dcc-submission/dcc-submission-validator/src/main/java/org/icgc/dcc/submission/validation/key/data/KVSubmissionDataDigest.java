@@ -37,6 +37,11 @@ public class KVSubmissionDataDigest {
 
   private final Map<KVFileType, KVFileDataDigest> data = newLinkedHashMap();
 
+  // TODO: use delegate?
+  public boolean contains(KVFileType fileType) {
+    return data.containsKey(fileType);
+  }
+
   public Set<Entry<KVFileType, KVFileDataDigest>> entrySet() {
     return data.entrySet();
   }
