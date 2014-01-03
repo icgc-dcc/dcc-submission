@@ -37,7 +37,7 @@ public class PlatformStrategyFactoryProvider implements Provider<PlatformStrateg
   private final Config config;
 
   @Inject
-  PlatformStrategyFactoryProvider(Config config, FileSystem fs) {
+  public PlatformStrategyFactoryProvider(Config config, FileSystem fs) {
     checkArgument(fs != null);
     checkArgument(config != null);
     this.fs = fs;
@@ -48,10 +48,10 @@ public class PlatformStrategyFactoryProvider implements Provider<PlatformStrateg
   public PlatformStrategyFactory get() {
     String fsUrl = fs.getScheme();
 
-    if(fsUrl.equals("file")) {
+    if (fsUrl.equals("file")) {
       log.info("System configured for local filesystem");
       return new LocalPlatformStrategyFactory();
-    } else if(fsUrl.equals("hdfs")) {
+    } else if (fsUrl.equals("hdfs")) {
       log.info("System configured for Hadoop filesystem");
       return new HadoopPlatformStrategyFactory(config.getConfig(HADOOP_KEY), fs);
     } else {

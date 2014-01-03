@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key.surjectivity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalClinicalData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalClinicalData;
 
 import java.util.Set;
 

@@ -21,9 +21,9 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
-import static org.icgc.dcc.submission.validation.key.KVConstants.TAB_SPLITTER;
-import static org.icgc.dcc.submission.validation.key.KVUtils.getDataFilePath;
-import static org.icgc.dcc.submission.validation.key.KVUtils.getToBeRemovedFile;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.TAB_SPLITTER;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.getDataFilePath;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.getToBeRemovedFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.submission.validation.key.KVConstants;
+import org.icgc.dcc.submission.validation.key.core.KVConstants;
 import org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.base.Splitter;

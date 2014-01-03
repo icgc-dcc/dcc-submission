@@ -15,25 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REVERSE_RELATION_FILE_ERROR;
-import static org.icgc.dcc.submission.validation.key.KVConstants.RELATIONS;
-import static org.icgc.dcc.submission.validation.key.KVFileDescription.getExistingFileDescription;
-import static org.icgc.dcc.submission.validation.key.KVFileDescription.getIncrementalFileDescription;
-import static org.icgc.dcc.submission.validation.key.KVFileDescription.getPlaceholderFileDescription;
-import static org.icgc.dcc.submission.validation.key.KVUtils.getDataFilePath;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingClinicalData;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingCnsmData;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingData;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingSsmData;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalClinicalData;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalCnsmData;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalSsmData;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getExistingFileDescription;
+import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getIncrementalFileDescription;
+import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getPlaceholderFileDescription;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.getDataFilePath;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingClinicalData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingCnsmData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingSsmData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalClinicalData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalCnsmData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalSsmData;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
@@ -110,6 +110,7 @@ public class KVValidator {
     log.info("{}", valid);
     log.info("done.");
 
+    // TODO: Remove. This is just to show an example of how to report an error
     report.report(
         kvError()
             .fileName("ssm_p.txt")
@@ -295,4 +296,5 @@ public class KVValidator {
         errors.getFileErrors(SAMPLE));
     log.info("{}", repeat("=", 75));
   }
+
 }

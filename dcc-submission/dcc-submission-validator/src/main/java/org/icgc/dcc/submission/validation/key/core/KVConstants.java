@@ -15,9 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
@@ -30,16 +31,16 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_
 import java.util.List;
 import java.util.Map;
 
+import lombok.NoArgsConstructor;
+
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
-/**
- * 
- */
-public class KVConstants {
+@NoArgsConstructor(access = PRIVATE)
+public final class KVConstants {
 
   public static final Splitter TAB_SPLITTER = Splitter.on('\t');
   public static final ObjectMapper MAPPER = new ObjectMapper();

@@ -15,9 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.core;
 
 import static java.lang.String.format;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
@@ -25,6 +26,8 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionTyp
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 
 import java.io.File;
+
+import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
@@ -34,7 +37,8 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
  * <p>
  * In particular, it detects and retrieves files.
  */
-public class KVUtils {
+@NoArgsConstructor(access = PRIVATE)
+public final class KVUtils {
 
   public static final String TO_BE_REMOVED_FILE_NAME = "TO_BE_REMOVED";
   private static final String PARENT_DIR = "src/test/resources/DCC-1993-tmp";
@@ -80,4 +84,5 @@ public class KVUtils {
   public static boolean hasIncrementalCnsmData() {
     return new File(getDataFilePath(INCREMENTAL_FILE, CNSM_M)).exists();
   }
+
 }

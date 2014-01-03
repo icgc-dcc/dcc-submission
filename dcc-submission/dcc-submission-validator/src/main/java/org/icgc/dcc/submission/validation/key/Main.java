@@ -17,83 +17,94 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static com.google.common.io.Resources.getResource;
+import static com.typesafe.config.ConfigFactory.parseMap;
+import static java.lang.String.format;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
+
+import java.util.Arrays;
 import java.util.List;
 
-import lombok.Delegate;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.core.ReportContext;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.core.FieldReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
 
 /**
- * Entry point.
+ * Command-line utility to initiate key validation on a specified project stored locally or in HDFS. Will use Cascading
+ * local or Hadoop depending on the {@code fsUrl} argument's scheme.
  */
 public class Main {
 
   public static void main(String... args) throws InterruptedException {
-    val logThreshold = args != null && args.length >= 1 ? Long.valueOf(args[0]) : 2;
+    // Resolve configuration
+    val logThreshold = args.length >= 1 ? Long.valueOf(args[0]) : 2;
+    val releaseName = args.length >= 2 ? args[1] : "release1";
+    val projectKey = args.length >= 3 ? args[2] : "project1";
+    val fsRoot = args.length >= 4 ? args[3] : "/tmp/dcc_root_dir";
+    val fsUrl = args.length >= 5 ? args[4] : "file:///";
 
-    new KeyValidator(logThreshold).validate(new KeyValidationContext(
-        "project1",
-        "release1",
-        "/tmp",
-        "/tmp",
-        "/tmp"
-        ));
+    // Validate
+    val context = new KeyValidationContext(releaseName, projectKey, fsRoot, fsUrl);
+    val validator = new KeyValidator(logThreshold);
+    validator.validate(context);
   }
 
   @RequiredArgsConstructor
-  @Slf4j
   private static class KeyValidationContext implements ValidationContext {
 
-    private final String projectKey;
+    @NonNull
     private final String releaseName;
-
-    private final String inputDir;
-    private final String outputDir;
-    private final String systemDir;
-
-    @Delegate
-    private final ReportContext empty = null;
+    @NonNull
+    private final String projectKey;
+    @NonNull
+    private final String fsRoot;
+    @NonNull
+    private final String fsUrl;
 
     @Override
     public PlatformStrategy getPlatformStrategy() {
-      // Round about way to get the inputs and outputs
-      Path input = new Path(inputDir);
-      log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
-      Path output = new Path(outputDir);
-      log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);
-      Path system = new Path(systemDir);
-      log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
+      val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
+      val factory = provider.get();
 
-      return new LocalPlatformStrategy(input, output, system);
+      val dummy = new Path("/");
+      return factory.get(dummy, dummy, dummy);
     }
 
     @Override
     public String getProjectKey() {
-      return null;
+      return projectKey;
     }
 
     @Override
     public List<String> getEmails() {
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
@@ -102,44 +113,150 @@ public class Main {
     }
 
     @Override
+    @SneakyThrows
     public Dictionary getDictionary() {
-      return null;
+      val reader = new ObjectMapper().reader(Dictionary.class);
+      val path = "org/icgc/dcc/resources/Dictionary.json";
+      val url = getResource(path);
+
+      return reader.readValue(url);
     }
 
     @Override
     public SubmissionDirectory getSubmissionDirectory() {
-      return null;
+      return new SubmissionDirectory(getDccFileSystem(), getRelease(), getProjectKey(), getSubmission());
     }
 
     @Override
     public Optional<Path> getSsmPrimaryFile() {
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public FileSchema getSsmPrimaryFileSchema() {
-      return null;
+      return getSsmPrimaryFileSchema(getDictionary());
     }
 
     @Override
     public DccFileSystem getDccFileSystem() {
-      return null;
+      return new DccFileSystem(getConfig(), getFileSystem());
     }
 
     @Override
     @SneakyThrows
     public FileSystem getFileSystem() {
-      return FileSystem.getLocal(new Configuration());
+      return FileSystem.get(getConfiguration());
     }
 
     @Override
     public ReleaseFileSystem getReleaseFileSystem() {
-      return null;
+      return new ReleaseFileSystem(getDccFileSystem(), getRelease());
     }
 
     @Override
     public SubmissionReport getSubmissionReport() {
-      return null;
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean hasErrors() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getErrorCount() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void reportSummary(String fileName, String name, String value) {
+      new UnsupportedOperationException();
+    }
+
+    @Override
+    public void reportField(String fileName, FieldReport fieldReport) {
+      new UnsupportedOperationException();
+    }
+
+    @Override
+    public void reportError(String fileName, TupleError tupleError) {
+      logError(fileName,
+          tupleError.getLine(),
+          tupleError.getColumnNames().toString(),
+          tupleError.getValue(),
+          tupleError.getType(),
+          tupleError.getParameters().values().toArray());
+    }
+
+    @Override
+    public void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
+        Object... params) {
+      logError(fileName, lineNumber, columnName, value, type, params);
+    }
+
+    @Override
+    public void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params) {
+      logError(fileName, lineNumber, null, value, type, params);
+    }
+
+    @Override
+    public void reportError(String fileName, Object value, ErrorType type, Object... params) {
+      logError(fileName, -1, null, value, type, params);
+    }
+
+    @Override
+    public void reportError(String fileName, ErrorType type, Object... params) {
+      logError(fileName, -1, null, null, type, params);
+    }
+
+    @Override
+    public void reportError(String fileName, ErrorType type) {
+      logError(fileName, -1, null, null, type, (Object[]) null);
+    }
+
+    @Override
+    public void reportLineNumbers(Path path) {
+      new UnsupportedOperationException();
+    }
+
+    private static void logError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
+        Object... params) {
+      val message =
+          "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
+      val text = format(message, fileName, lineNumber, columnName, value, type, Arrays.toString(params));
+      System.out.println(text);
+    }
+
+    private Config getConfig() {
+      return parseMap(ImmutableMap.<String, Object> of(
+          "fs.root", fsRoot,
+          "fs.url", fsUrl
+          ));
+    }
+
+    private Configuration getConfiguration() {
+      val fsUrl = getConfig().getString(FS_URL);
+      val configuration = new Configuration();
+      configuration.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsUrl);
+
+      return configuration;
+    }
+
+    private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
+      for (val fileSchema : dictionary.getFiles()) {
+        val fileType = SubmissionFileType.from(fileSchema.getName());
+        val ssmPrimary = fileType == SSM_P_TYPE;
+        if (ssmPrimary) {
+          return fileSchema;
+        }
+      }
+
+      throw new IllegalStateException("'ssm_p' file schema missing");
+    }
+
+    private Submission getSubmission() {
+      val projectName = getProjectKey();
+      return new Submission(getProjectKey(), projectName, releaseName);
     }
 
   }

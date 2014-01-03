@@ -15,11 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.core;
 
 import java.io.IOException;
 import java.io.Serializable;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -34,44 +35,48 @@ import org.icgc.dcc.submission.validation.key.report.KVReport;
 @Slf4j
 public class KVValidatorRunner implements Runnable, Serializable {
 
+  @NonNull
+  private final Path reportPath;
   private final long logThreshold;
-  private final String reportPath;
 
   @Override
   public void run() {
     try {
-      val report = createReport();
-      try {
-        val validator = createValidator(report);
-
-        log.info("Starting key validation...");
-        validator.validate();
-        log.info("Finished key validation");
-      } finally {
-        report.close();
-      }
+      validate();
     } catch (Throwable t) {
       log.error("Error performing key validation:", t);
     }
   }
 
+  private void validate() throws IOException {
+    val report = createReport();
+    try {
+      val validator = createValidator(report);
+
+      log.info("Starting key validation...");
+      validator.validate();
+      log.info("Finished key validation");
+    } finally {
+      report.close();
+    }
+  }
+
   private KVValidator createValidator(KVReport report) {
     val validator = new KVValidator(report, logThreshold);
+
     return validator;
   }
 
   private KVReport createReport() throws IOException {
-    val fileSystem = getDefaultFileSystem();
-    val path = new Path(reportPath);
-    val report = new KVReport(fileSystem, path);
+    val report = new KVReport(getFileSystem(), reportPath);
 
     return report;
   }
 
   @SneakyThrows
-  private static FileSystem getDefaultFileSystem() {
-    // TODO: Resolve dynamically from context
-    return FileSystem.getLocal(new Configuration());
+  private static FileSystem getFileSystem() {
+    // Hopefully 'fs.defaultFS' on Hadoop nodes points to the name node
+    return FileSystem.get(new Configuration());
   }
 
 }

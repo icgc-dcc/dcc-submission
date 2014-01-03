@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalClinicalData;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalClinicalData;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.EXISTING_UNIQUE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.INCREMENTAL_UNIQUE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
@@ -38,7 +38,7 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.key.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;

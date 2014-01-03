@@ -22,8 +22,8 @@ import static com.google.common.collect.Sets.intersection;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
 import static com.google.common.collect.Sets.union;
-import static org.icgc.dcc.submission.validation.key.KVUtils.TO_BE_REMOVED_FILE_NAME;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasToBeRemovedFile;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.TO_BE_REMOVED_FILE_NAME;
+import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasToBeRemovedFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType.ERROR;
 
 import java.util.List;

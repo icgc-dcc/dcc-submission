@@ -35,6 +35,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.validation.cascading.CascadeExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
 import org.icgc.dcc.submission.validation.key.error.KVError;
 
 @RequiredArgsConstructor
@@ -52,13 +53,11 @@ public class KeyValidator implements Validator {
 
   @Override
   public void validate(ValidationContext context) throws InterruptedException {
-    // TODO: Get from context
-    val reportPath = "/tmp/report.json";
-    val executor = new CascadeExecutor(context.getPlatformStrategy());
-    val runnable = new KVValidatorRunner(logThreshold, reportPath);
+    val reportPath = getReportPath(context);
+    val runnable = new KVValidatorRunner(reportPath, logThreshold);
 
     log.info("Starting key validation...");
-    executor.execute(runnable);
+    execute(context, runnable);
     log.info("Finished key validation");
 
     log.info("Starting key validation report collection...");
@@ -66,19 +65,33 @@ public class KeyValidator implements Validator {
     log.info("Finished key validation report collection");
   }
 
+  private static Path getReportPath(ValidationContext context) {
+    val validationDir = context.getSubmissionDirectory().getValidationDirPath();
+    val reportPath = new Path(validationDir, "report.json");
+
+    return reportPath;
+  }
+
+  private static void execute(ValidationContext context, KVValidatorRunner runnable) {
+    val executor = new CascadeExecutor(context.getPlatformStrategy());
+
+    executor.execute(runnable);
+  }
+
   @SneakyThrows
-  private void report(ValidationContext context, String reportPath) {
+  private static void report(ValidationContext context, Path reportPath) {
     @Cleanup
-    val inputStream = createInputStream(context.getFileSystem(), new Path(reportPath));
+    val inputStream = createInputStream(context.getFileSystem(), reportPath);
     val errors = getErrors(inputStream);
 
     while (errors.hasNext()) {
       val error = errors.next();
+
       context.reportError(error.getFileName(), error.getType());
     }
   }
 
-  private DataInputStream createInputStream(FileSystem fileSystem, Path file) {
+  private static DataInputStream createInputStream(FileSystem fileSystem, Path file) {
     val factory = new CompressionCodecFactory(fileSystem.getConf());
 
     try {
@@ -92,7 +105,7 @@ public class KeyValidator implements Validator {
   }
 
   @SneakyThrows
-  private MappingIterator<KVError> getErrors(InputStream inputStream) {
+  private static MappingIterator<KVError> getErrors(InputStream inputStream) {
     val reader = new ObjectMapper().reader().withType(KVError.class);
 
     return reader.readValues(inputStream);
