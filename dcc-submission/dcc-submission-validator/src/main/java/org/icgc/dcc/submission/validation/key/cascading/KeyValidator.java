@@ -20,10 +20,8 @@ package org.icgc.dcc.submission.validation.key.cascading;
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
 import static java.lang.String.format;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -37,12 +35,6 @@ import cascading.pipe.Pipe;
 public class KeyValidator implements Validator {
 
   public static final String COMPONENT_NAME = "Key Validator";
-
-  /**
-   * Type that is the focus of normalization (there could be more in the future).
-   */
-  public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
-
   private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
   private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
 
