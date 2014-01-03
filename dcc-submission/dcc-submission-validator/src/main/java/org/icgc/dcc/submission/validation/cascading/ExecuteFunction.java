@@ -15,65 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.cascading;
+package org.icgc.dcc.submission.validation.cascading;
 
-import static cascading.cascade.CascadeDef.cascadeDef;
-import static cascading.flow.FlowDef.flowDef;
-import static java.lang.String.format;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
-
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-
-import cascading.cascade.Cascade;
-import cascading.cascade.CascadeConnector;
-import cascading.flow.Flow;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.operation.OperationCall;
 
 @RequiredArgsConstructor
-public class CascadeExecutor {
-
-  public static final String COMPONENT_NAME = "key-validator";
-  private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
-  private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
+@SuppressWarnings("rawtypes")
+class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
 
   @NonNull
-  private final PlatformStrategy platformStrategy;
+  private final Runnable runnable;
 
-  public void execute(Runnable runnable) throws InterruptedException {
-    val cascade = connectCascade(runnable);
-
-    cascade.complete();
+  @Override
+  public void operate(FlowProcess flowProcess, FunctionCall<Void> functionCall) {
+    // No-op
   }
 
-  private Cascade connectCascade(Runnable runnable) {
-    Pipe pipe = new Each("key-validation", new ExecuteFunction(runnable));
-
-    val flow = createFlow(platformStrategy, pipe);
-    val cascade = createCascade(flow);
-
-    return cascade;
-  }
-
-  private static Flow<?> createFlow(PlatformStrategy platformStrategy, Pipe pipe) {
-    Flow<?> flow = platformStrategy.getFlowConnector()
-        .connect(flowDef()
-            .setName(FLOW_NAME)
-            .addSource(pipe, new EmptySourceTap<Void>("empty"))
-            .addTailSink(pipe, new EmptySinkTap<Void>("empty")));
-
-    return flow;
-  }
-
-  private static Cascade createCascade(final Flow<?> flow) {
-    val cascade = new CascadeConnector()
-        .connect(cascadeDef()
-            .setName(CASCADE_NAME)
-            .addFlow(flow));
-
-    return cascade;
+  @Override
+  public void prepare(FlowProcess flowProcess, OperationCall<Void> operationCall) {
+    runnable.run();
   }
 
 }

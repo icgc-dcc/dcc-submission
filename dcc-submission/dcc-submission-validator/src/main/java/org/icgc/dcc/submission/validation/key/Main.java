@@ -63,6 +63,7 @@ public class Main {
 
     private final String projectKey;
     private final String releaseName;
+
     private final String inputDir;
     private final String outputDir;
     private final String systemDir;
@@ -139,4 +140,5 @@ public class Main {
     }
 
   }
+
 }

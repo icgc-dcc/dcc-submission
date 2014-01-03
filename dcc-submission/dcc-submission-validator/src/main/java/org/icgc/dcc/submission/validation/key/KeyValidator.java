@@ -42,9 +42,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.validation.cascading.CascadeExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.key.cascading.CascadeExecutor;
 import org.icgc.dcc.submission.validation.key.data.KVExistingFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVIncrementalFileDataDigest;
