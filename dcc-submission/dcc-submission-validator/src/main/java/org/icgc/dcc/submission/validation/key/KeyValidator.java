@@ -17,10 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static cascading.cascade.CascadeDef.cascadeDef;
-import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.key.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.KVUtils.getDataFilePath;
 import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingClinicalData;
@@ -47,9 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.key.cascading.EmptySinkTap;
-import org.icgc.dcc.submission.validation.key.cascading.EmptySourceTap;
-import org.icgc.dcc.submission.validation.key.cascading.ExecuteFunction;
+import org.icgc.dcc.submission.validation.key.cascading.CascadeExecutor;
 import org.icgc.dcc.submission.validation.key.data.KVExistingFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVIncrementalFileDataDigest;
@@ -60,23 +55,14 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-
-import cascading.cascade.Cascade;
-import cascading.cascade.CascadeConnector;
-import cascading.flow.Flow;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
 
 import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
-public class KeyValidator implements Validator {
+public class KeyValidator implements Validator, Runnable {
 
   public static final String COMPONENT_NAME = "Key Validator";
-  private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
-  private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
 
   private final long logThreshold;
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
@@ -91,10 +77,12 @@ public class KeyValidator implements Validator {
 
   @Override
   public void validate(ValidationContext context) throws InterruptedException {
-    val cascade =
-        connectCascade(context.getPlatformStrategy(), context.getRelease().getName(), context.getProjectKey());
+    new CascadeExecutor(context.getPlatformStrategy()).execute(this);
+  }
 
-    cascade.complete();
+  @Override
+  public void run() {
+    validate();
   }
 
   public void validate() {
@@ -260,44 +248,6 @@ public class KeyValidator implements Validator {
         existingData.get(SAMPLE),
         incrementalData.get(SAMPLE),
         errors.getFileErrors(SAMPLE));
-  }
-
-  private Cascade connectCascade(PlatformStrategy platformStrategy, String releaseName, String projectKey) {
-    Pipe pipe = new Each("key-validation", new ExecuteFunction(new Runnable() {
-
-      @Override
-      public void run() {
-        validate();
-      }
-
-    }));
-
-    val flow = createFlow(platformStrategy, projectKey, pipe);
-    val cascade = createCascade(projectKey, flow);
-
-    return cascade;
-  }
-
-  private static Flow<?> createFlow(PlatformStrategy platformStrategy, String projectKey, Pipe pipe) {
-    Flow<?> flow = platformStrategy.getFlowConnector()
-        .connect(flowDef()
-            .setName(FLOW_NAME)
-            .addSource(pipe, new EmptySourceTap<Void>(projectKey))
-            .addTailSink(pipe, new EmptySinkTap<Void>(projectKey)));
-    flow.writeDOT(format("/tmp/%s-%s.dot", projectKey, flow.getName()));
-    flow.writeStepsDOT(format("/tmp/%s-%s-steps.dot", projectKey, flow.getName()));
-
-    return flow;
-  }
-
-  private static Cascade createCascade(String projectKey, final Flow<?> flow) {
-    val cascade = new CascadeConnector()
-        .connect(cascadeDef()
-            .setName(CASCADE_NAME)
-            .addFlow(flow));
-    cascade.writeDOT(format("/tmp/%s-%s.dot", projectKey, cascade.getName()));
-
-    return cascade;
   }
 
 }

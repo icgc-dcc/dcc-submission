@@ -28,7 +28,7 @@ import cascading.tap.SourceTap;
 import cascading.tuple.TupleEntryIterator;
 import cascading.tuple.TupleEntrySchemeIterator;
 
-public class EmptySourceTap<T> extends SourceTap<T, Closeable> {
+class EmptySourceTap<T> extends SourceTap<T, Closeable> {
 
   @NonNull
   private final String identifier;

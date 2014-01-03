@@ -27,7 +27,7 @@ import cascading.operation.OperationCall;
 
 @RequiredArgsConstructor
 @SuppressWarnings("rawtypes")
-public class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
+class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
 
   @NonNull
   private final Runnable runnable;
