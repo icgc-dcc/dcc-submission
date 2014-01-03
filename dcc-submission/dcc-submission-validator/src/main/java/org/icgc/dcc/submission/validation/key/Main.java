@@ -21,9 +21,11 @@ import java.util.List;
 
 import lombok.Delegate;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -125,8 +127,9 @@ public class Main {
     }
 
     @Override
+    @SneakyThrows
     public FileSystem getFileSystem() {
-      return null;
+      return FileSystem.getLocal(new Configuration());
     }
 
     @Override

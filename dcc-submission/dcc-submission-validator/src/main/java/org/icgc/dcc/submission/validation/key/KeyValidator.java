@@ -17,15 +17,25 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import java.io.Serializable;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.codehaus.jackson.map.MappingIterator;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.validation.cascading.CascadeExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.key.error.KVError;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -42,29 +52,50 @@ public class KeyValidator implements Validator {
 
   @Override
   public void validate(ValidationContext context) throws InterruptedException {
+    // TODO: Get from context
+    val reportPath = "/tmp/report.json";
     val executor = new CascadeExecutor(context.getPlatformStrategy());
-    val runnable = new KVValidatorRunner(logThreshold);
+    val runnable = new KVValidatorRunner(logThreshold, reportPath);
 
     log.info("Starting key validation...");
     executor.execute(runnable);
     log.info("Finished key validation");
+
+    log.info("Starting key validation report collection...");
+    report(context, reportPath);
+    log.info("Finished key validation report collection");
   }
 
-  @RequiredArgsConstructor
-  @Slf4j
-  private static class KVValidatorRunner implements Runnable, Serializable {
+  @SneakyThrows
+  private void report(ValidationContext context, String reportPath) {
+    @Cleanup
+    val inputStream = createInputStream(context.getFileSystem(), new Path(reportPath));
+    val errors = getErrors(inputStream);
 
-    private final long logThreshold;
-
-    @Override
-    public void run() {
-      val validator = new KVValidator(logThreshold);
-
-      log.info("Starting key validation...");
-      validator.validate();
-      log.info("Finished key validation");
+    while (errors.hasNext()) {
+      val error = errors.next();
+      context.reportError(error.getFileName(), error.getType());
     }
+  }
 
+  private DataInputStream createInputStream(FileSystem fileSystem, Path file) {
+    val factory = new CompressionCodecFactory(fileSystem.getConf());
+
+    try {
+      val codec = factory.getCodec(file);
+      InputStream inputStream =
+          (codec == null) ? fileSystem.open(file) : codec.createInputStream(fileSystem.open(file));
+      return new DataInputStream(inputStream);
+    } catch (IOException e) {
+      throw new RuntimeException("Error reading: '" + file.toString() + "'", e);
+    }
+  }
+
+  @SneakyThrows
+  private MappingIterator<KVError> getErrors(InputStream inputStream) {
+    val reader = new ObjectMapper().reader().withType(KVError.class);
+
+    return reader.readValues(inputStream);
   }
 
 }
