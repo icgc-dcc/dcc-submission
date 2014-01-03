@@ -17,29 +17,24 @@
  */
 package org.icgc.dcc.submission.validation.semantic;
 
-import static com.google.common.io.Files.getFileExtension;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.google.common.primitives.Ints.tryParse;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.submission.core.parser.FileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
+import java.util.Map;
 
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -48,17 +43,16 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.BZip2Codec;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectWriter;
+import org.icgc.dcc.submission.core.parser.FileParser;
+import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 
 import com.google.common.base.Optional;
-import com.google.common.io.LineReader;
 
 /**
  * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input.
@@ -138,15 +132,14 @@ public class ReferenceGenomeValidator implements Validator {
     // It exists
     val ssmPrimaryFile = optionalSsmPrimaryFile.get();
 
-    // Source input
-    @Cleanup
-    val inputStream = getInputStream(ssmPrimaryFile, context.getFileSystem());
+    val fileParser = newMapFileParser(context.getFileSystem(), context.getSsmPrimaryFileSchema());
+
     @Cleanup
     val outputStream = getOutputStream(context, ssmPrimaryFile);
 
     // Get to work
     log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
-    validate(context, ssmPrimaryFile.getName(), inputStream, outputStream);
+    validate(context, ssmPrimaryFile, fileParser, outputStream);
     log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
   }
 
@@ -164,17 +157,22 @@ public class ReferenceGenomeValidator implements Validator {
     return text;
   }
 
-  private void validate(final ValidationContext context, final String fileName,
-      final InputStream inputStream, final OutputStream outputStream) {
-    val reader = new LineReader(new InputStreamReader(inputStream));
+  @SneakyThrows
+  private void validate(final ValidationContext context, final Path filePath,
+      final FileParser<Map<String, String>> fileParser, final OutputStream outputStream) {
+    val fileName = filePath.getName();
     val writer = createReportWriter();
 
-    parse(reader, new LineProcessor() {
+    fileParser.parse(filePath, new FileRecordProcessor<Map<String, String>>() {
 
       @Override
-      @SneakyThrows
-      public void process(long lineNumber, String mutationType, String start, String end, String chromosomeCode,
-          String referenceAllele) {
+      public void process(long lineNumber, Map<String, String> record) throws Exception {
+        val mutationType = record.get(SUBMISSION_OBSERVATION_MUTATION_TYPE);
+        val chromosomeCode = record.get(SUBMISSION_OBSERVATION_CHROMOSOME);
+        val start = record.get(SUBMISSION_OBSERVATION_CHROMOSOME_START);
+        val end = record.get(SUBMISSION_OBSERVATION_CHROMOSOME_END);
+        val referenceAllele = record.get(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
+
         if (isInsertionType(mutationType)) {
           // Insertion
           val mismatch = !referenceAllele.equals(REFERENCE_INSERTION_VALUE);
@@ -221,42 +219,6 @@ public class ReferenceGenomeValidator implements Validator {
     });
   }
 
-  @SneakyThrows
-  private static void parse(LineReader reader, LineProcessor callback) {
-    // @formatter:off
-    // Field indexes
-    int   mutationTypeIdx  = -1;
-    int      chromosomeIdx = -1;
-    int           startIdx = -1;
-    int             endIdx = -1;
-    int referenceAlleleIdx = -1;
-  
-    // Line state (one-based)
-    long lineNumber = 1;
-    String line;
-  
-    // Read all lines
-    while ((line = reader.readLine()) != null) {
-      val fields = parseLine(line);
-  
-      if (lineNumber == 1) {
-        // Header
-            mutationTypeIdx = fields.indexOf(SUBMISSION_OBSERVATION_MUTATION_TYPE);
-              chromosomeIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME);
-                   startIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME_START);
-                     endIdx = fields.indexOf(SUBMISSION_OBSERVATION_CHROMOSOME_END);
-         referenceAlleleIdx = fields.indexOf(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
-      } else {
-        // Delegate logic
-        callback.process(lineNumber, fields.get(mutationTypeIdx), fields.get(startIdx), fields.get(endIdx), fields.get(chromosomeIdx), fields.get(referenceAlleleIdx));
-      }
-  
-      // Book-keeping
-      lineNumber++;
-    }
-    // @formatter:on
-  }
-
   /**
    * Extracts the assembly version from the file name.
    * 
@@ -294,10 +256,6 @@ public class ReferenceGenomeValidator implements Validator {
     throw new IllegalStateException("Could not convert term for code '" + chromosomeCode + "'");
   }
 
-  private static List<String> parseLine(String line) {
-    return asList(line.split(FIELD_SEPARATOR));
-  }
-
   private static boolean isInsertionType(String mutationType) {
     return mutationType.equals(INSERTION_MUTATION_TYPE);
   }
@@ -308,23 +266,6 @@ public class ReferenceGenomeValidator implements Validator {
 
   private static String formatValue(String expected, String actual) {
     return String.format("Expected: %s, Actual: %s", expected, actual);
-  }
-
-  /**
-   * Returns an {@code InputStream} capable of reading {@code gz}, {@code bzip2} or plain text files.
-   */
-  private static InputStream getInputStream(Path path, FileSystem fileSystem) throws IOException {
-    val extension = getFileExtension(path.getName());
-    val gzip = extension.equals("gz");
-    val bzip2 = extension.equals("bz2");
-
-    // @formatter:off
-    val inputStream = fileSystem.open(path);
-    return 
-        gzip  ? new GZIPInputStream(inputStream)                : 
-        bzip2 ? new BZip2Codec().createInputStream(inputStream) :
-                inputStream;
-    // @formatter:on
   }
 
   /**
@@ -346,16 +287,6 @@ public class ReferenceGenomeValidator implements Validator {
         .configure(AUTO_CLOSE_TARGET, false)
         .writer()
         .withDefaultPrettyPrinter();
-  }
-
-  /**
-   * Simple callback for line processing.
-   */
-  private interface LineProcessor {
-
-    void process(long lineNumber, String mutationType, String start, String end, String chromosome,
-        String referenceAllele);
-
   }
 
 }

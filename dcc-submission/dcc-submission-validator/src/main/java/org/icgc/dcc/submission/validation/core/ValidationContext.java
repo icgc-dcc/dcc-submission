@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -69,6 +70,11 @@ public interface ValidationContext extends ReportContext {
    * Gets the optionally available SSM primary file of the associated project under validation.
    */
   Optional<Path> getSsmPrimaryFile();
+
+  /**
+   * Gets the {@code FileSchema} associated with the SSM primary file.
+   */
+  FileSchema getSsmPrimaryFileSchema();
 
   /**
    * Gets the root DCC filesystem.
