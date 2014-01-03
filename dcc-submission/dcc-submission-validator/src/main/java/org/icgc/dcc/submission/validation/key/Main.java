@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.key;
 
 import java.util.List;
 
-import lombok.Delegate;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -34,7 +33,9 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.core.ReportContext;
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.core.FieldReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
@@ -69,9 +70,6 @@ public class Main {
     private final String inputDir;
     private final String outputDir;
     private final String systemDir;
-
-    @Delegate
-    private final ReportContext empty = null;
 
     @Override
     public PlatformStrategy getPlatformStrategy() {
@@ -140,6 +138,54 @@ public class Main {
     @Override
     public SubmissionReport getSubmissionReport() {
       return null;
+    }
+
+    @Override
+    public boolean hasErrors() {
+      return false;
+    }
+
+    @Override
+    public int getErrorCount() {
+      return 0;
+    }
+
+    @Override
+    public void reportSummary(String fileName, String name, String value) {
+    }
+
+    @Override
+    public void reportField(String fileName, FieldReport fieldReport) {
+    }
+
+    @Override
+    public void reportError(String fileName, TupleError tupleError) {
+    }
+
+    @Override
+    public void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
+        Object... params) {
+    }
+
+    @Override
+    public void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params) {
+    }
+
+    @Override
+    public void reportError(String fileName, Object value, ErrorType type, Object... params) {
+    }
+
+    @Override
+    public void reportError(String fileName, ErrorType type, Object... params) {
+    }
+
+    @Override
+    public void reportError(String fileName, ErrorType type) {
+      System.out.println("reportError: " + fileName + " - " + type);
+    }
+
+    @Override
+    public void reportLineNumbers(Path path) {
     }
 
   }

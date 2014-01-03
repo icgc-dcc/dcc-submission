@@ -110,6 +110,7 @@ public class KVValidator {
     log.info("{}", valid);
     log.info("done.");
 
+    // TODO: Remove. This is just to show an example of how to report an error
     report.report(
         kvError()
             .fileName("ssm_p.txt")
