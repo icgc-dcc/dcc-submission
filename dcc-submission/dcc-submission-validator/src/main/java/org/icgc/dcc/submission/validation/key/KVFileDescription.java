@@ -17,8 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.key.KVConstants.MAPPER;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Value;
 
@@ -32,6 +38,7 @@ import com.google.common.base.Optional;
  * TODO: rename
  */
 @Value
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class KVFileDescription {
 
   @NonNull
@@ -42,11 +49,33 @@ public class KVFileDescription {
   /**
    * May just be a placeholder (hence the optional).
    */
-  private final Optional<String> filePath;
+  private final Optional<String> dataFilePath;
+
+  public static KVFileDescription getExistingFileDescription(KVFileType fileType, String dataFilePath) {
+    return new KVFileDescription(
+        EXISTING_FILE,
+        fileType,
+        Optional.<String> of(dataFilePath));
+  }
+
+  public static KVFileDescription getIncrementalFileDescription(
+      boolean asOriginal, KVFileType fileType, String dataFilePath) {
+    return new KVFileDescription(
+        asOriginal ? INCREMENTAL_TO_BE_TREATED_AS_EXISTING : INCREMENTAL_FILE,
+        fileType,
+        Optional.<String> of(dataFilePath));
+  }
+
+  public static KVFileDescription getPlaceholderFileDescription(KVFileType fileType) {
+    return new KVFileDescription(
+        EXISTING_FILE, // TODO: correct? does it matter?
+        fileType,
+        Optional.<String> absent());
+  }
 
   @JsonIgnore
   public boolean isPlaceholder() {
-    return !filePath.isPresent();
+    return !dataFilePath.isPresent();
   }
 
   @Override
@@ -56,8 +85,9 @@ public class KVFileDescription {
 
   @SneakyThrows
   public String toJsonSummaryString() {
-    return "\n" + MAPPER
-        .writerWithDefaultPrettyPrinter()
-        .writeValueAsString(this); // TODO: show sample only (first and last 10 for instance) + excluding nulls
+    return format("%s (%s)",
+        MAPPER.writeValueAsString(this),
+        isPlaceholder() ? "" : dataFilePath.get()); // Optional doesn't seem to print the actual value, only whether
+                                                    // present or not (TODO)
   }
 }

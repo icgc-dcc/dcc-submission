@@ -22,6 +22,9 @@ import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.key.KVConstants.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.KVFileDescription.getExistingFileDescription;
+import static org.icgc.dcc.submission.validation.key.KVFileDescription.getIncrementalFileDescription;
+import static org.icgc.dcc.submission.validation.key.KVFileDescription.getPlaceholderFileDescription;
 import static org.icgc.dcc.submission.validation.key.KVUtils.getDataFilePath;
 import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingClinicalData;
 import static org.icgc.dcc.submission.validation.key.KVUtils.hasExistingCnsmData;
@@ -40,7 +43,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.TREATED_AS_ORIGINAL;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +71,6 @@ import cascading.flow.Flow;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
 @Slf4j
@@ -123,7 +125,7 @@ public class KeyValidator implements Validator {
     validateComplexSurjection();
 
     // Report
-    boolean valid = errors.describe(); // TODO: prettify
+    boolean valid = errors.describe(incrementalData.getFileDescriptions()); // TODO: prettify
     log.info("{}", valid);
     log.info("done.");
   }
@@ -190,9 +192,9 @@ public class KeyValidator implements Validator {
 
     // Incremental clinical
     if (hasIncrementalClinicalData()) {
-      loadIncrementalFile(DONOR, TREATED_AS_ORIGINAL, deletionData);
-      loadIncrementalFile(SPECIMEN, TREATED_AS_ORIGINAL, deletionData);
-      loadIncrementalFile(SAMPLE, TREATED_AS_ORIGINAL, deletionData);
+      loadIncrementalFile(DONOR, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
+      loadIncrementalFile(SPECIMEN, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
+      loadIncrementalFile(SAMPLE, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
     }
 
     // Incremental ssm
@@ -211,26 +213,23 @@ public class KeyValidator implements Validator {
 
   private void loadExistingFile(KVFileType fileType) {
     log.info("Loading existing file: '{}'", fileType);
+    val dataFilePath = getDataFilePath(EXISTING_FILE, fileType);
     existingData.put(
         fileType,
         new KVExistingFileDataDigest(
-            new KVFileDescription(
-                EXISTING_FILE,
-                fileType,
-                Optional.<String> of(getDataFilePath(EXISTING_FILE, fileType))),
+            getExistingFileDescription(fileType, dataFilePath),
             logThreshold)
             .processFile());
   }
 
   private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
     log.info("Loading incremental file: '{}.{}'", fileType, submissionType);
+    val dataFilePath = getDataFilePath(INCREMENTAL_FILE, fileType);
     incrementalData.put(
         fileType,
-        new KVIncrementalFileDataDigest( // TODO: address ugliness
-            new KVFileDescription(
-                submissionType,
-                fileType,
-                Optional.<String> of(getDataFilePath(INCREMENTAL_FILE, fileType))),
+        new KVIncrementalFileDataDigest(
+            getIncrementalFileDescription(
+                submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
             logThreshold,
             deletionData,
 
@@ -263,12 +262,7 @@ public class KeyValidator implements Validator {
     log.info("Loading placeholder existing file: '{}'", fileType);
     existingData.put(
         fileType,
-        KVFileDataDigest.getEmptyInstance(
-            new KVFileDescription(
-                EXISTING_FILE,
-                fileType,
-                Optional.<String> absent())
-            ));
+        KVFileDataDigest.getEmptyInstance(getPlaceholderFileDescription(fileType)));
   }
 
   private void validateComplexSurjection() {

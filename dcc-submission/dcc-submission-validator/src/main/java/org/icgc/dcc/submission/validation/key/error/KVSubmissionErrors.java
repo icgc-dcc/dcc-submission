@@ -46,6 +46,8 @@ import java.util.Map;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.validation.key.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.collect.ImmutableMap;
@@ -103,13 +105,16 @@ public class KVSubmissionErrors {
     return errors.get(fileType);
   }
 
-  public boolean describe() {
+  /**
+   * TODO: PLK: we actually only need the KVFileDescription here, not the whole {@link KVSubmissionDataDigest}.
+   */
+  public boolean describe(Map<KVFileType, KVFileDescription> fileDescriptions) {
     boolean status = true;
     for (val entry : errors.entrySet()) {
       val fileType = entry.getKey();
       val fileErrors = entry.getValue();
-      log.info("{}", fileType);
-      boolean fileStatus = fileErrors.describe(null);
+
+      boolean fileStatus = fileErrors.describe(fileDescriptions.get(fileType));
       status &= fileStatus;
       log.info("{}: {}", fileType, fileStatus);
     }

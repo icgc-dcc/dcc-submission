@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
+import static lombok.AccessLevel.PROTECTED;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newListFileParser;
 import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS1;
@@ -68,10 +69,10 @@ import com.google.common.collect.Sets;
  * Not abstract because of the "empty" instance.
  */
 @Slf4j
-@RequiredArgsConstructor
-// (access = PRIVATE)
+@RequiredArgsConstructor(access = PROTECTED)
 public class KVFileDataDigest {
 
+  @Getter
   protected final KVFileDescription kvFileDescription;
   private final long logThreshold;
 
@@ -89,7 +90,7 @@ public class KVFileDataDigest {
 
     val parser = newListFileParser();
     checkState(!kvFileDescription.isPlaceholder(), "TODO");
-    parser.parse(new Path(kvFileDescription.getFilePath().get()), new FileRecordProcessor<List<String>>() {
+    parser.parse(new Path(kvFileDescription.getDataFilePath().get()), new FileRecordProcessor<List<String>>() {
 
       @Override
       public void process(long lineNumber, List<String> record) {

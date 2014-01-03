@@ -17,13 +17,18 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
+import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.collect.Maps.transformValues;
 
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.icgc.dcc.submission.validation.key.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+
+import com.google.common.base.Function;
 
 /**
  * Represents the data dagest for the whole submission, as either existing or incremental data.
@@ -42,5 +47,17 @@ public class KVSubmissionDataDigest {
 
   public KVFileDataDigest get(KVFileType fileType) {
     return data.get(fileType);
+  }
+
+  public Map<KVFileType, KVFileDescription> getFileDescriptions() {
+    return copyOf(transformValues(
+        data,
+        new Function<KVFileDataDigest, KVFileDescription>() {
+
+          @Override
+          public KVFileDescription apply(KVFileDataDigest datum) {
+            return datum.getKvFileDescription();
+          }
+        }));
   }
 }
