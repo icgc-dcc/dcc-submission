@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -45,10 +47,6 @@ public class KeyValidator implements Validator {
    * The name of the component.
    */
   public static final String COMPONENT_NAME = "Key Validator";
-  /**
-   * The file name of the produced key validation report.
-   */
-  public static final String REPORT_FILE_NAME = "all.keys--errors.json";
 
   @Override
   public String getName() {
@@ -58,25 +56,36 @@ public class KeyValidator implements Validator {
   @Override
   public void validate(ValidationContext context) throws InterruptedException {
     val reportPath = getReportPath(context);
-    val runner = createRunner(reportPath);
+    val runner = createRunner(context, reportPath);
 
     log.info("Starting key validation...");
     execute(context, runner);
     log.info("Finished key validation");
 
     log.info("Starting key validation report collection...");
-    report(context, reportPath);
+    collect(context, reportPath);
     log.info("Finished key validation report collection");
   }
 
-  private KVValidatorRunner createRunner(Path reportPath) {
-    return new KVValidatorRunner(reportPath);
+  private KVValidatorRunner createRunner(ValidationContext context, Path reportPath) {
+    return new KVValidatorRunner(
+        getOldReleasePath(context).toUri().toString(),
+        getNewReleasePath(context).toUri().toString(),
+        reportPath.toUri().toString());
   }
 
   private static Path getReportPath(ValidationContext context) {
     val validationDir = context.getSubmissionDirectory().getValidationDirPath();
 
     return new Path(validationDir, REPORT_FILE_NAME);
+  }
+
+  private static Path getOldReleasePath(ValidationContext context) {
+    return new Path(context.getPreviousSubmissionDirectory().getSubmissionDirPath());
+  }
+
+  private static Path getNewReleasePath(ValidationContext context) {
+    return new Path(context.getSubmissionDirectory().getSubmissionDirPath());
   }
 
   private static void execute(ValidationContext context, KVValidatorRunner runnable) {
@@ -86,7 +95,7 @@ public class KeyValidator implements Validator {
   }
 
   @SneakyThrows
-  private static void report(ValidationContext context, Path reportPath) {
+  private static void collect(ValidationContext context, Path reportPath) {
     @Cleanup
     val inputStream = createInputStream(context.getFileSystem(), reportPath);
     val errors = getErrors(inputStream);

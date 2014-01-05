@@ -19,13 +19,15 @@ package org.icgc.dcc.submission.validation.key.surjectivity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalClinicalData;
 
 import java.util.Set;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
 import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
@@ -34,10 +36,14 @@ import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 /**
  * Validates surjective relations.
  */
+@RequiredArgsConstructor
 @Slf4j
 public class SurjectivityValidator {
 
   public static final long SURJECTION_ERROR_LINE_NUMBER = -1;
+
+  @NonNull
+  private final KVFileSystem fileSystem;
 
   /**
    * TODO: explain very special case
@@ -66,7 +72,7 @@ public class SurjectivityValidator {
       KVFileDataDigest sampleExistingData,
       KVFileDataDigest sampleNewData,
       KVFileErrors surjectionSampleFileErrors) {
-    val sampleDataDigest = hasIncrementalClinicalData() ? sampleNewData : sampleExistingData;
+    val sampleDataDigest = fileSystem.hasIncrementalClinicalData() ? sampleNewData : sampleExistingData;
     val expectedSampleSujectionKeys = newTreeSet(checkNotNull(sampleDataDigest, "TODO: '%s'").getPks()); // FIXME
     if (hasSurjectionErrors(expectedSampleSujectionKeys, sampleSurjectionEncountered)) {
       log.error("Some complex surjection errors detected");

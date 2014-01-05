@@ -98,7 +98,7 @@ public class KeyValidatorIntegrationTest {
     val fsRoot = rootDir.toUri().toString();
     val fsUrl = fileSystem.getUri().toString();
 
-    return new KeyValidationContext(NEW_RELEASE_NAME, PROJECT_KEY, fsRoot, fsUrl);
+    return new KeyValidationContext(OLD_RELEASE_NAME, NEW_RELEASE_NAME, PROJECT_KEY, fsRoot, fsUrl);
   }
 
 }

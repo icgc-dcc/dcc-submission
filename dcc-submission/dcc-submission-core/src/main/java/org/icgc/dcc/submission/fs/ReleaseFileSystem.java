@@ -56,14 +56,12 @@ public class ReleaseFileSystem {
     this(dccFilesystem, release, null);
   }
 
-  public SubmissionDirectory getSubmissionDirectory(
-      @NonNull
-      String projectKey) {
-
+  public SubmissionDirectory getSubmissionDirectory(@NonNull String projectKey) {
     if (hasPrivileges(projectKey) == false) {
       throw new DccFileSystemException("User " + userSubject.getPrincipal()
           + " does not have permission to access project " + projectKey);
     }
+
     val submission = release.getSubmission(projectKey);
     return new SubmissionDirectory(dccFileSystem, release, projectKey, submission);
   }
@@ -71,12 +69,9 @@ public class ReleaseFileSystem {
   public void setUpNewReleaseFileSystem(
       String oldReleaseName, // Remove after DCC-1940
       String newReleaseName,
-      @NonNull
-      ReleaseFileSystem previous,
-      @NonNull
-      Iterable<String> signedOffProjectKeys,
-      @NonNull
-      Iterable<String> otherProjectKeys) {
+      @NonNull ReleaseFileSystem previous,
+      @NonNull Iterable<String> signedOffProjectKeys,
+      @NonNull Iterable<String> otherProjectKeys) {
     log.info("Setting up new release file system for: '{}'", newReleaseName);
 
     checkState(signedOffProjectKeys.iterator().hasNext() || otherProjectKeys.iterator().hasNext(),
@@ -114,8 +109,7 @@ public class ReleaseFileSystem {
   }
 
   public void resetValidationFolder(
-      @NonNull
-      String projectKey) {
+      @NonNull String projectKey) {
     val validationStringPath = dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);

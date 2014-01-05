@@ -22,8 +22,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.TAB_SPLITTER;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.getDataFilePath;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.getToBeRemovedFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
@@ -45,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.submission.validation.key.core.KVConstants;
+import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
 import org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.base.Splitter;
@@ -66,8 +65,8 @@ public class DeletionFileParser {
    * Does not perform any validation per se, simply parsing.
    */
   @SneakyThrows
-  public static DeletionData parseToBeDeletedFile() {
-    val toBeDetetedFile = getToBeRemovedFile();
+  public static DeletionData parseToBeDeletedFile(KVFileSystem fileSystem) {
+    val toBeDetetedFile = fileSystem.getToBeRemovedFile();
     log.info("{}", toBeDetetedFile);
 
     // TODO: use builder
@@ -115,14 +114,14 @@ public class DeletionFileParser {
     return donorIds;
   }
 
-  public static Set<String> getExistingDonorIds() {
-    val existingDonorFile = getDataFilePath(EXISTING_FILE, DONOR);
+  public static Set<String> getExistingDonorIds(KVFileSystem fileSystem) {
+    val existingDonorFile = fileSystem.getDataFilePath(EXISTING_FILE, DONOR);
     log.info("{}", existingDonorFile);
     return getDonorIds(existingDonorFile);
   }
 
-  public static Set<String> getIncrementalDonorIds() {
-    val incrementalDonorFile = getDataFilePath(INCREMENTAL_FILE, DONOR);
+  public static Set<String> getIncrementalDonorIds(KVFileSystem fileSystem) {
+    val incrementalDonorFile = fileSystem.getDataFilePath(INCREMENTAL_FILE, DONOR);
     log.info("{}", incrementalDonorFile);
     return getDonorIds(incrementalDonorFile);
   }

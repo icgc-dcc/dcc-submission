@@ -36,7 +36,11 @@ import org.icgc.dcc.submission.validation.key.report.KVReport;
 public class KVValidatorRunner implements Runnable, Serializable {
 
   @NonNull
-  private final Path reportPath;
+  private final String oldReleasePath;
+  @NonNull
+  private final String newReleasePath;
+  @NonNull
+  private final String reportPath;
 
   @Override
   public void run() {
@@ -48,9 +52,12 @@ public class KVValidatorRunner implements Runnable, Serializable {
   }
 
   private void validate() throws IOException {
-    val report = createReport();
+    val fileSystem = getFileSystem();
+    val report = new KVReport(fileSystem, new Path(reportPath));
     try {
-      val validator = createValidator(report);
+      val validator = new KVValidator(
+          new KVFileSystem(fileSystem, new Path(oldReleasePath), new Path(newReleasePath)),
+          report);
 
       log.info("Starting key validation...");
       validator.validate();
@@ -58,18 +65,6 @@ public class KVValidatorRunner implements Runnable, Serializable {
     } finally {
       report.close();
     }
-  }
-
-  private KVReport createReport() throws IOException {
-    val report = new KVReport(getFileSystem(), reportPath);
-
-    return report;
-  }
-
-  private KVValidator createValidator(KVReport report) {
-    val validator = new KVValidator(report);
-
-    return validator;
   }
 
   @SneakyThrows

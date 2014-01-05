@@ -26,14 +26,6 @@ import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getExistingFileDescription;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getIncrementalFileDescription;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getPlaceholderFileDescription;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.getDataFilePath;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingClinicalData;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingCnsmData;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingData;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasExistingSsmData;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalClinicalData;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalCnsmData;
-import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalSsmData;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
@@ -45,7 +37,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,23 +58,32 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
 @Slf4j
-@RequiredArgsConstructor
 public class KVValidator {
 
+  @NonNull
+  private final KVFileSystem fileSystem;
+  @NonNull
   private final KVReport report;
+  @NonNull
+  private final SurjectivityValidator surjectivityValidator;
 
-  private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
   private final KVSubmissionDataDigest existingData = new KVSubmissionDataDigest();
   private final KVSubmissionDataDigest incrementalData = new KVSubmissionDataDigest();
   private final KVSubmissionErrors errors = new KVSubmissionErrors();
 
+  public KVValidator(KVFileSystem fileSystem, KVReport report) {
+    this.fileSystem = fileSystem;
+    this.report = report;
+    this.surjectivityValidator = new SurjectivityValidator(fileSystem);
+  }
+
   public void validate() {
     // Validate deletion data
-    val deletionData = DeletionData.getInstance();
+    val deletionData = DeletionData.getInstance(fileSystem);
     // validateDeletions(deletionData);
 
     // Process existing data
-    if (hasExistingData()) {
+    if (fileSystem.hasExistingData()) {
       loadExistingData();
     } else {
       loadPlaceholderExistingFiles();
@@ -124,17 +125,17 @@ public class KVValidator {
       log.error("Deletion well-formedness errors found");
     }
 
-    val existingDonorIds = hasExistingClinicalData() ?
-        DeletionFileParser.getExistingDonorIds() :
+    val existingDonorIds = fileSystem.hasExistingClinicalData() ?
+        DeletionFileParser.getExistingDonorIds(fileSystem) :
         Sets.<String> newTreeSet();
     valid = deletionData.validateAgainstOldClinicalData(existingDonorIds);
     if (!valid) {
       log.error("Deletion previous data errors found");
     }
 
-    if (hasIncrementalClinicalData()) {
+    if (fileSystem.hasIncrementalClinicalData()) {
       valid = deletionData.validateAgainstIncrementalClinicalData(
-          existingDonorIds, DeletionFileParser.getIncrementalDonorIds());
+          existingDonorIds, DeletionFileParser.getIncrementalDonorIds(fileSystem));
       if (!valid) {
         log.error("Deletion incremental data errors found");
       }
@@ -145,14 +146,14 @@ public class KVValidator {
     log.info("Loading existing data");
 
     // Existing clinical
-    checkState(hasExistingClinicalData(), "TODO"); // At this point we expect it
+    checkState(fileSystem.hasExistingClinicalData(), "TODO"); // At this point we expect it
     log.info("Processing exiting clinical data");
     loadExistingFile(DONOR);
     loadExistingFile(SPECIMEN);
     loadExistingFile(SAMPLE);
 
     // Existing ssm
-    if (hasExistingSsmData()) {
+    if (fileSystem.hasExistingSsmData()) {
       log.info("Processing exiting ssm data");
       loadExistingFile(SSM_M);
       loadExistingFile(SSM_P);
@@ -163,7 +164,7 @@ public class KVValidator {
     }
 
     // Existing cnsm
-    if (hasExistingCnsmData()) {
+    if (fileSystem.hasExistingCnsmData()) {
       log.info("Processing exiting cnsm data");
       loadExistingFile(CNSM_M);
       loadExistingFile(CNSM_P);
@@ -183,7 +184,7 @@ public class KVValidator {
     log.info("Loading incremental data");
 
     // Incremental clinical
-    if (hasIncrementalClinicalData()) {
+    if (fileSystem.hasIncrementalClinicalData()) {
       log.info("Processing incremental clinical data");
       loadIncrementalFile(DONOR, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
       loadIncrementalFile(SPECIMEN, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
@@ -193,7 +194,7 @@ public class KVValidator {
     }
 
     // Incremental ssm
-    if (hasIncrementalSsmData()) {
+    if (fileSystem.hasIncrementalSsmData()) {
       log.info("Processing incremental ssm data");
       loadIncrementalFile(SSM_M, INCREMENTAL_FILE, deletionData);
       loadIncrementalFile(SSM_P, INCREMENTAL_FILE, deletionData);
@@ -202,7 +203,7 @@ public class KVValidator {
     }
 
     // Incremental cnsm
-    if (hasIncrementalCnsmData()) {
+    if (fileSystem.hasIncrementalCnsmData()) {
       log.info("Processing incremental cnsm data");
       loadIncrementalFile(CNSM_M, INCREMENTAL_FILE, deletionData);
       loadIncrementalFile(CNSM_P, INCREMENTAL_FILE, deletionData);
@@ -215,7 +216,7 @@ public class KVValidator {
   private void loadExistingFile(KVFileType fileType) {
     log.info("{}", repeat("=", 75));
     log.info("Loading existing file: '{}'", fileType);
-    val dataFilePath = getDataFilePath(EXISTING_FILE, fileType);
+    val dataFilePath = fileSystem.getDataFilePath(EXISTING_FILE, fileType);
     existingData.put(
         fileType,
         new KVExistingFileDataDigest(
@@ -227,7 +228,7 @@ public class KVValidator {
   private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
     log.info("{}", repeat("=", 75));
     log.info("Loading incremental file: '{}.{}'", fileType, submissionType);
-    val dataFilePath = getDataFilePath(INCREMENTAL_FILE, fileType);
+    val dataFilePath = fileSystem.getDataFilePath(INCREMENTAL_FILE, fileType);
 
     incrementalData.put(
         fileType,
@@ -235,6 +236,7 @@ public class KVValidator {
             getIncrementalFileDescription(
                 submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
             2,
+            fileSystem,
             deletionData,
 
             existingData.get(fileType),

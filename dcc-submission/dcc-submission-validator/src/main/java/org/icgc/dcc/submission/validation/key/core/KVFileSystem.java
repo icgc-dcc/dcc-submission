@@ -18,17 +18,18 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
-import java.io.File;
-
-import lombok.NoArgsConstructor;
-
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
@@ -37,52 +38,64 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
  * <p>
  * In particular, it detects and retrieves files.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class KVUtils {
+@RequiredArgsConstructor
+public final class KVFileSystem {
+
+  @NonNull
+  private final FileSystem fileSystem;
+  @NonNull
+  private final Path oldReleaseDir;
+  @NonNull
+  private final Path newReleaseDir;
 
   public static final String TO_BE_REMOVED_FILE_NAME = "TO_BE_REMOVED";
-  private static final String PARENT_DIR = "src/test/resources/DCC-1993-tmp";
 
-  public static String getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
-    return format("%s/%s/%s.txt",
-        PARENT_DIR, submissionType.getSubDirectory(), fileType.toString().toLowerCase());
+  public String getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
+    val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
+    return format("%s/%s.txt",
+        basePath.toUri().toString(), fileType.toString().toLowerCase());
   }
 
-  public static String getToBeRemovedFile() {
-    return format("%s/%s/%s.txt",
-        PARENT_DIR, INCREMENTAL_FILE.getSubDirectory(), TO_BE_REMOVED_FILE_NAME);
+  public String getToBeRemovedFile() {
+    val basePath = newReleaseDir;
+    return format("%s/%s.txt",
+        basePath.toUri().toString(), TO_BE_REMOVED_FILE_NAME);
   }
 
-  public static boolean hasToBeRemovedFile() {
-    return new File(getToBeRemovedFile()).exists();
+  public boolean hasToBeRemovedFile() {
+    return hasFile(getToBeRemovedFile());
   }
 
-  public static boolean hasExistingData() {
+  public boolean hasExistingData() {
     return hasExistingClinicalData();
   }
 
-  public static boolean hasExistingClinicalData() {
-    return new File(getDataFilePath(EXISTING_FILE, DONOR)).exists();
+  public boolean hasExistingClinicalData() {
+    return hasFile(getDataFilePath(EXISTING_FILE, DONOR));
   }
 
-  public static boolean hasExistingSsmData() {
-    return new File(getDataFilePath(EXISTING_FILE, SSM_M)).exists();
+  public boolean hasExistingSsmData() {
+    return hasFile(getDataFilePath(EXISTING_FILE, SSM_M));
   }
 
-  public static boolean hasExistingCnsmData() {
-    return new File(getDataFilePath(EXISTING_FILE, CNSM_M)).exists();
+  public boolean hasExistingCnsmData() {
+    return hasFile(getDataFilePath(EXISTING_FILE, CNSM_M));
   }
 
-  public static boolean hasIncrementalClinicalData() {
-    return new File(getDataFilePath(INCREMENTAL_FILE, DONOR)).exists();
+  public boolean hasIncrementalClinicalData() {
+    return hasFile(getDataFilePath(INCREMENTAL_FILE, DONOR));
   }
 
-  public static boolean hasIncrementalSsmData() {
-    return new File(getDataFilePath(INCREMENTAL_FILE, SSM_M)).exists();
+  public boolean hasIncrementalSsmData() {
+    return hasFile(getDataFilePath(INCREMENTAL_FILE, SSM_M));
   }
 
-  public static boolean hasIncrementalCnsmData() {
-    return new File(getDataFilePath(INCREMENTAL_FILE, CNSM_M)).exists();
+  public boolean hasIncrementalCnsmData() {
+    return hasFile(getDataFilePath(INCREMENTAL_FILE, CNSM_M));
+  }
+
+  private boolean hasFile(String filePath) {
+    return checkExistence(fileSystem, filePath);
   }
 
 }
