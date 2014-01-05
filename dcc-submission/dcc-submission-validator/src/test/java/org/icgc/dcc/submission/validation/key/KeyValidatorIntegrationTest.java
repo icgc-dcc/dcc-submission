@@ -17,10 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import java.io.File;
 import java.io.IOException;
 
 import lombok.val;
@@ -28,10 +25,6 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,21 +32,34 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import cascading.flow.local.LocalFlowConnector;
-
 @RunWith(MockitoJUnitRunner.class)
-public class KeyValidatorTest {
+public class KeyValidatorIntegrationTest {
+
+  /**
+   * Test file system.
+   */
+  static final File TEST_DIR = new File("src/test/resources/DCC-1993-tmp");
+  static final File OLD_RELEASE_DIR = new File(TEST_DIR, "original");
+  static final File NEW_RELEASE_DIR = new File(TEST_DIR, "new");
 
   /**
    * Test data.
    */
-  protected static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
+  static final String OLD_RELEASE_NAME = "release1";
+  static final String NEW_RELEASE_NAME = "release2";
+  static final String PROJECT_KEY = "project1";
 
   /**
    * Scratch space.
    */
   @Rule
-  public TemporaryFolder tmp = new TemporaryFolder();
+  public final TemporaryFolder tmp = new TemporaryFolder();
+
+  /**
+   * Environment.
+   */
+  FileSystem fileSystem;
+  Path rootDir;
 
   /**
    * Class under test.
@@ -61,48 +67,38 @@ public class KeyValidatorTest {
   KeyValidator validator;
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     this.validator = new KeyValidator();
+    this.fileSystem = FileSystem.getLocal(new Configuration());
+    this.rootDir = new Path(tmp.newFolder().getAbsolutePath());
+    System.out.println("Test root dir: '" + rootDir + "'");
+
+    copyDirectory(OLD_RELEASE_DIR, new Path(new Path(rootDir, OLD_RELEASE_NAME), PROJECT_KEY));
+    copyDirectory(NEW_RELEASE_DIR, new Path(new Path(rootDir, NEW_RELEASE_NAME), PROJECT_KEY));
   }
 
   @Test
-  public void testValidate() throws InterruptedException, IOException {
-    val context = mockContext();
+  public void testValidate() throws InterruptedException {
+    val context = createContext();
 
     validator.validate(context);
   }
 
-  private ValidationContext mockContext() throws IOException {
-    // Setup: Use local file system
-    val fileSystem = FileSystem.getLocal(new Configuration());
+  private void copyDirectory(File sourceDir, Path targetDir) throws IOException {
+    for (val file : sourceDir.listFiles()) {
+      val source = new Path(file.toURI());
+      val target = new Path(targetDir, file.getName());
 
-    // Setup: Establish input for the test
-    val directory = new Path(tmp.newFolder().getAbsolutePath());
-    // val path = new Path(directory, testFile.getName());
-    val validationDir = new Path(directory, VALIDATION_DIRNAME).toUri().toString();
+      System.out.println("Copying file: from '" + source + "' to '" + target + "'");
+      fileSystem.copyFromLocalFile(source, target);
+    }
+  }
 
-    // Setup: Mock
-    val release = mock(Release.class);
-    when(release.getName()).thenReturn("Release1");
+  private KeyValidationContext createContext() {
+    val fsRoot = rootDir.toUri().toString();
+    val fsUrl = fileSystem.getUri().toString();
 
-    val submissionDirectory = mock(SubmissionDirectory.class);
-    when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
-
-    val platformStrategy = mock(PlatformStrategy.class);
-    when(platformStrategy.getFlowConnector()).thenReturn(new LocalFlowConnector());
-
-    val context = mock(ValidationContext.class);
-    when(context.getFileSystem()).thenReturn(fileSystem);
-    when(context.getRelease()).thenReturn(release);
-    when(context.getProjectKey()).thenReturn("project1");
-    when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
-    when(context.getPlatformStrategy()).thenReturn(platformStrategy);
-
-    // Setup: "Submit" file
-    fileSystem.createNewFile(directory);
-    // fileSystem.copyFromLocalFile(testFile, path);
-
-    return context;
+    return new KeyValidationContext(NEW_RELEASE_NAME, PROJECT_KEY, fsRoot, fsUrl);
   }
 
 }

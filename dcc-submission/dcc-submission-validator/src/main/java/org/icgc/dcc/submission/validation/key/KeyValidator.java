@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.Cleanup;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
 import org.icgc.dcc.submission.validation.key.error.KVError;
 
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Slf4j
 public class KeyValidator implements Validator {
 
@@ -49,8 +49,6 @@ public class KeyValidator implements Validator {
    * The file name of the produced key validation report.
    */
   public static final String REPORT_FILE_NAME = "all.keys--errors.json";
-
-  private final long logThreshold;
 
   @Override
   public String getName() {
@@ -72,7 +70,7 @@ public class KeyValidator implements Validator {
   }
 
   private KVValidatorRunner createRunner(Path reportPath) {
-    return new KVValidatorRunner(reportPath, logThreshold);
+    return new KVValidatorRunner(reportPath);
   }
 
   private static Path getReportPath(ValidationContext context) {

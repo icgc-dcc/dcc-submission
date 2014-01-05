@@ -70,7 +70,6 @@ import com.google.common.collect.Sets;
 public class KVValidator {
 
   private final KVReport report;
-  private final long logThreshold;
 
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
   private final KVSubmissionDataDigest existingData = new KVSubmissionDataDigest();
@@ -221,7 +220,7 @@ public class KVValidator {
         fileType,
         new KVExistingFileDataDigest(
             getExistingFileDescription(fileType, dataFilePath),
-            logThreshold)
+            2)
             .processFile());
   }
 
@@ -235,7 +234,7 @@ public class KVValidator {
         new KVIncrementalFileDataDigest(
             getIncrementalFileDescription(
                 submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
-            logThreshold,
+            2,
             deletionData,
 
             existingData.get(fileType),

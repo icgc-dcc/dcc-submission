@@ -37,7 +37,6 @@ public class KVValidatorRunner implements Runnable, Serializable {
 
   @NonNull
   private final Path reportPath;
-  private final long logThreshold;
 
   @Override
   public void run() {
@@ -63,12 +62,12 @@ public class KVValidatorRunner implements Runnable, Serializable {
 
   private KVReport createReport() throws IOException {
     val report = new KVReport(getFileSystem(), reportPath);
-  
+
     return report;
   }
 
   private KVValidator createValidator(KVReport report) {
-    val validator = new KVValidator(report, logThreshold);
+    val validator = new KVValidator(report);
 
     return validator;
   }
