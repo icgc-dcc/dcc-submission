@@ -17,15 +17,18 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static com.google.common.io.Resources.getResource;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -97,11 +100,21 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   @SneakyThrows
   public Dictionary getDictionary() {
-    val reader = new ObjectMapper().reader(Dictionary.class);
-    val path = "org/icgc/dcc/resources/Dictionary.json";
-    val url = getResource(path);
+    val version = "0.7a";
+    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
+    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
+    val entryName = "org/icgc/dcc/resources/Dictionary.json";
+    URL url = new URL(format(template, basePath, version, version));
 
-    return reader.readValue(url);
+    @Cleanup
+    ZipInputStream zip = new ZipInputStream(url.openStream());
+    ZipEntry entry;
+    do {
+      entry = zip.getNextEntry();
+    } while (!entryName.equals(entry.getName()));
+
+    val reader = new ObjectMapper().reader(Dictionary.class);
+    return reader.readValue(zip);
   }
 
   @Override
