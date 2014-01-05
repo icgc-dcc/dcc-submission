@@ -27,14 +27,15 @@ public class Main {
 
   public static void main(String... args) throws InterruptedException {
     // Resolve configuration
-    val previousReleaseName = args.length >= 1 ? args[0] : "release1";
-    val releaseName = args.length >= 2 ? args[1] : "release2";
-    val projectKey = args.length >= 3 ? args[2] : "project1";
-    val fsRoot = args.length >= 4 ? args[3] : "/tmp/dcc_root_dir";
-    val fsUrl = args.length >= 5 ? args[4] : "file:///";
+    int i = 0;
+    val previousReleaseName = args.length >= ++i ? args[i - 1] : "release1";
+    val releaseName = args.length >= ++i ? args[i - 1] : "release2";
+    val projectKey = args.length >= ++i ? args[i - 1] : "project1";
+    val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
+    val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
+    val context = new KeyValidationContext(previousReleaseName, releaseName, projectKey, fsRoot, fsUrl);
 
     // Validate
-    val context = new KeyValidationContext(previousReleaseName, releaseName, projectKey, fsRoot, fsUrl);
     validate(context);
   }
 

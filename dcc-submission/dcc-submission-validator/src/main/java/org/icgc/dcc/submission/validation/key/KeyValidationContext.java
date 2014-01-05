@@ -22,6 +22,7 @@ import static java.lang.String.format;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +63,8 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor
 public class KeyValidationContext implements ValidationContext {
 
+  private static final String DICTIONARY_VERSION = "0.7a";
+
   @NonNull
   private final String previousReleaseName;
   @NonNull
@@ -78,6 +81,7 @@ public class KeyValidationContext implements ValidationContext {
     val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
     val factory = provider.get();
 
+    // Reuse primary validation component
     val dummy = new Path("/");
     return factory.get(dummy, dummy, dummy);
   }
@@ -100,11 +104,8 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   @SneakyThrows
   public Dictionary getDictionary() {
-    val version = "0.7a";
-    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
-    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
     val entryName = "org/icgc/dcc/resources/Dictionary.json";
-    URL url = new URL(format(template, basePath, version, version));
+    URL url = getDictionaryUrl(DICTIONARY_VERSION);
 
     @Cleanup
     ZipInputStream zip = new ZipInputStream(url.openStream());
@@ -225,6 +226,13 @@ public class KeyValidationContext implements ValidationContext {
         "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
     val text = format(message, fileName, lineNumber, columnName, value, type, Arrays.toString(params));
     System.out.println(text);
+  }
+
+  private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {
+    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
+    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
+    URL url = new URL(format(template, basePath, version, version));
+    return url;
   }
 
   private Config getConfig() {

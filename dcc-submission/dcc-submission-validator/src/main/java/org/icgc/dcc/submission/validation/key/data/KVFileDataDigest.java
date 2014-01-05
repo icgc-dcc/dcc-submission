@@ -199,4 +199,5 @@ public class KVFileDataDigest {
         .writerWithDefaultPrettyPrinter()
         .writeValueAsString(this); // TODO: show sample only (first and last 10 for instance) + excluding nulls
   }
+
 }
