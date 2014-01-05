@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -42,7 +41,14 @@ import org.icgc.dcc.submission.validation.key.error.KVError;
 @Slf4j
 public class KeyValidator implements Validator {
 
+  /**
+   * The name of the component.
+   */
   public static final String COMPONENT_NAME = "Key Validator";
+  /**
+   * The file name of the produced key validation report.
+   */
+  public static final String REPORT_FILE_NAME = "all.keys--errors.json";
 
   private final long logThreshold;
 
@@ -54,10 +60,10 @@ public class KeyValidator implements Validator {
   @Override
   public void validate(ValidationContext context) throws InterruptedException {
     val reportPath = getReportPath(context);
-    val runnable = new KVValidatorRunner(reportPath, logThreshold);
+    val runner = createRunner(reportPath);
 
     log.info("Starting key validation...");
-    execute(context, runnable);
+    execute(context, runner);
     log.info("Finished key validation");
 
     log.info("Starting key validation report collection...");
@@ -65,11 +71,14 @@ public class KeyValidator implements Validator {
     log.info("Finished key validation report collection");
   }
 
+  private KVValidatorRunner createRunner(Path reportPath) {
+    return new KVValidatorRunner(reportPath, logThreshold);
+  }
+
   private static Path getReportPath(ValidationContext context) {
     val validationDir = context.getSubmissionDirectory().getValidationDirPath();
-    val reportPath = new Path(validationDir, "report.json");
 
-    return reportPath;
+    return new Path(validationDir, REPORT_FILE_NAME);
   }
 
   private static void execute(ValidationContext context, KVValidatorRunner runnable) {
@@ -91,14 +100,13 @@ public class KeyValidator implements Validator {
     }
   }
 
-  private static DataInputStream createInputStream(FileSystem fileSystem, Path file) {
+  private static InputStream createInputStream(FileSystem fileSystem, Path file) {
     val factory = new CompressionCodecFactory(fileSystem.getConf());
 
     try {
       val codec = factory.getCodec(file);
-      InputStream inputStream =
-          (codec == null) ? fileSystem.open(file) : codec.createInputStream(fileSystem.open(file));
-      return new DataInputStream(inputStream);
+      val baseInputStream = fileSystem.open(file);
+      return codec == null ? baseInputStream : codec.createInputStream(fileSystem.open(file));
     } catch (IOException e) {
       throw new RuntimeException("Error reading: '" + file.toString() + "'", e);
     }

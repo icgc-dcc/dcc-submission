@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newTreeSet;
 import static lombok.AccessLevel.PROTECTED;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newListFileParser;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS1;
@@ -60,8 +61,6 @@ import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
-import com.google.common.collect.Sets;
-
 /**
  * Represents the relevant data for a given file (keys mostly).
  * <p>
@@ -76,7 +75,7 @@ public class KVFileDataDigest {
   private final long logThreshold;
 
   @Getter
-  protected final Set<KVKeyValues> pks = Sets.<KVKeyValues> newTreeSet(); // TODO: change to arrays?
+  protected final Set<KVKeyValues> pks = newTreeSet(); // TODO: change to arrays?
 
   public static KVFileDataDigest getEmptyInstance(@NonNull KVFileDescription kvFileDescription) {
     return new KVFileDataDigest(kvFileDescription, -1); // -1: no need for a threshold

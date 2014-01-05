@@ -45,7 +45,6 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
-import static org.icgc.dcc.submission.validation.key.error.KVError.kvError;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +57,7 @@ import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.key.deletion.DeletionFileParser;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
+import org.icgc.dcc.submission.validation.key.error.KVError;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
@@ -112,7 +112,7 @@ public class KVValidator {
 
     // TODO: Remove. This is just to show an example of how to report an error
     report.report(
-        kvError()
+        KVError.kvError()
             .fileName("ssm_p.txt")
             .type(REVERSE_RELATION_FILE_ERROR)
             .build());

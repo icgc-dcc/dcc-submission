@@ -24,7 +24,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 
 @Value
-@Builder
+@Builder(builderMethodName = "kvError")
 public class KVError {
 
   @JsonProperty
@@ -50,10 +50,6 @@ public class KVError {
     this.value = value;
     this.type = type;
     this.params = params;
-  }
-
-  public static KVErrorBuilder kvError() {
-    return builder();
   }
 
 }

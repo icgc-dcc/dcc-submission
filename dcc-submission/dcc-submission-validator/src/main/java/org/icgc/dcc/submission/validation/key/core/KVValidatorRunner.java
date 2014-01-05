@@ -61,16 +61,16 @@ public class KVValidatorRunner implements Runnable, Serializable {
     }
   }
 
+  private KVReport createReport() throws IOException {
+    val report = new KVReport(getFileSystem(), reportPath);
+  
+    return report;
+  }
+
   private KVValidator createValidator(KVReport report) {
     val validator = new KVValidator(report, logThreshold);
 
     return validator;
-  }
-
-  private KVReport createReport() throws IOException {
-    val report = new KVReport(getFileSystem(), reportPath);
-
-    return report;
   }
 
   @SneakyThrows

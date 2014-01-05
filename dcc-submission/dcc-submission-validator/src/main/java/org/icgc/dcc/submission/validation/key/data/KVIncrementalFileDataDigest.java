@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newTreeSet;
 import static org.icgc.dcc.submission.validation.key.core.KVUtils.hasIncrementalClinicalData;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.EXISTING_UNIQUE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.INCREMENTAL_UNIQUE;
@@ -44,7 +45,6 @@ import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Sets;
 
 public class KVIncrementalFileDataDigest extends KVFileDataDigest {
 
@@ -58,7 +58,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
   private final KVFileErrors surjectionErrors;
   private final SurjectivityValidator surjectivityValidator; // TODO: instantiate here?
 
-  private final Set<KVKeyValues> surjectionEncountered = Sets.<KVKeyValues> newTreeSet();
+  private final Set<KVKeyValues> surjectionEncountered = newTreeSet();
 
   /**
    * TODO: ! account for deletions (do not report errors for those)
