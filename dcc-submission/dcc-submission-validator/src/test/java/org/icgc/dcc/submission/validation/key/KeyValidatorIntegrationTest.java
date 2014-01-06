@@ -38,8 +38,8 @@ public class KeyValidatorIntegrationTest {
   /**
    * Test file system.
    */
-  static final File TEST_DIR = new File("src/test/resources/DCC-1993-tmp");
-  static final File OLD_RELEASE_DIR = new File(TEST_DIR, "original");
+  static final File TEST_DIR = new File("src/test/resources/fixtures/validation/key/fs");
+  static final File OLD_RELEASE_DIR = new File(TEST_DIR, "old");
   static final File NEW_RELEASE_DIR = new File(TEST_DIR, "new");
 
   /**
