@@ -33,7 +33,7 @@ import java.util.Map;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.key.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 

@@ -51,4 +51,5 @@ public class KVTuple {
   public boolean hasSecondaryFk() {
     return secondaryFk != null;
   }
+
 }

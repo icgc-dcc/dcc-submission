@@ -15,11 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.core;
 
 import java.io.IOException;
 import java.io.Serializable;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -34,44 +35,41 @@ import org.icgc.dcc.submission.validation.key.report.KVReport;
 @Slf4j
 public class KVValidatorRunner implements Runnable, Serializable {
 
-  private final long logThreshold;
+  private final String oldReleasePath;
+  @NonNull
+  private final String newReleasePath;
+  @NonNull
   private final String reportPath;
 
   @Override
   public void run() {
     try {
-      val report = createReport();
-      try {
-        val validator = createValidator(report);
-
-        log.info("Starting key validation...");
-        validator.validate();
-        log.info("Finished key validation");
-      } finally {
-        report.close();
-      }
+      validate();
     } catch (Throwable t) {
       log.error("Error performing key validation:", t);
     }
   }
 
-  private KVValidator createValidator(KVReport report) {
-    val validator = new KVValidator(report, logThreshold);
-    return validator;
-  }
+  private void validate() throws IOException {
+    val fileSystem = getFileSystem();
+    val report = new KVReport(fileSystem, new Path(reportPath));
+    try {
+      val validator = new KVValidator(
+          new KVFileSystem(fileSystem, new Path(oldReleasePath), new Path(newReleasePath)),
+          report);
 
-  private KVReport createReport() throws IOException {
-    val fileSystem = getDefaultFileSystem();
-    val path = new Path(reportPath);
-    val report = new KVReport(fileSystem, path);
-
-    return report;
+      log.info("Starting key validation...");
+      validator.validate();
+      log.info("Finished key validation");
+    } finally {
+      report.close();
+    }
   }
 
   @SneakyThrows
-  private static FileSystem getDefaultFileSystem() {
-    // TODO: Resolve dynamically from context
-    return FileSystem.getLocal(new Configuration());
+  private static FileSystem getFileSystem() {
+    // Hopefully 'fs.defaultFS' on Hadoop nodes points to the name node
+    return FileSystem.get(new Configuration());
   }
 
 }

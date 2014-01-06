@@ -17,21 +17,21 @@
  */
 package org.icgc.dcc.submission.validation.key.error;
 
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_P_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_P_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_S_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.DONOR_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SAMPLE_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SAMPLE_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SPECIMEN_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SPECIMEN_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_P_FKS;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
@@ -46,7 +46,7 @@ import java.util.Map;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 

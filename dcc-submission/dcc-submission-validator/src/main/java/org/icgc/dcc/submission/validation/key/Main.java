@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+<<<<<<< HEAD
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -42,24 +43,31 @@ import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import com.google.common.base.Optional;
+=======
+import lombok.val;
+>>>>>>> 5c9a53bc83b9ac49b4618a9f05988b41f72e3af8
 
 /**
- * Entry point.
+ * Command-line utility to initiate key validation on a specified project stored locally or in HDFS. Will use Cascading
+ * local or Hadoop depending on the {@code fsUrl} argument's scheme.
  */
 public class Main {
 
   public static void main(String... args) throws InterruptedException {
-    val logThreshold = args != null && args.length >= 1 ? Long.valueOf(args[0]) : 2;
+    // Resolve configuration
+    int i = 0;
+    val previousReleaseName = args.length >= ++i ? args[i - 1] : "release1";
+    val releaseName = args.length >= ++i ? args[i - 1] : "release2";
+    val projectKey = args.length >= ++i ? args[i - 1] : "project1";
+    val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
+    val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
+    val context = new KeyValidationContext(previousReleaseName, releaseName, projectKey, fsRoot, fsUrl);
 
-    new KeyValidator(logThreshold).validate(new KeyValidationContext(
-        "project1",
-        "release1",
-        "/tmp",
-        "/tmp",
-        "/tmp"
-        ));
+    // Validate
+    validate(context);
   }
 
+<<<<<<< HEAD
   @RequiredArgsConstructor
   @Slf4j
   private static class KeyValidationContext implements ValidationContext {
@@ -188,6 +196,12 @@ public class Main {
     public void reportLineNumbers(Path path) {
     }
 
+=======
+  private static void validate(KeyValidationContext context) throws InterruptedException {
+    val validator = new KeyValidator();
+
+    validator.validate(context);
+>>>>>>> 5c9a53bc83b9ac49b4618a9f05988b41f72e3af8
   }
 
 }

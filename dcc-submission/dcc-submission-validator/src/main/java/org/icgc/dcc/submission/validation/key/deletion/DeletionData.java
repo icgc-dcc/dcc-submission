@@ -22,8 +22,7 @@ import static com.google.common.collect.Sets.intersection;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
 import static com.google.common.collect.Sets.union;
-import static org.icgc.dcc.submission.validation.key.KVUtils.TO_BE_REMOVED_FILE_NAME;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasToBeRemovedFile;
+import static org.icgc.dcc.submission.validation.key.core.KVFileSystem.TO_BE_REMOVED_FILE_NAME;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType.ERROR;
 
 import java.util.List;
@@ -35,6 +34,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DeletionType;
+import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
 import org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType;
 
 import com.google.common.collect.Maps;
@@ -57,10 +57,10 @@ public class DeletionData {
   /**
    * 
    */
-  public static DeletionData getInstance() {
+  public static DeletionData getInstance(KVFileSystem fileSystem) {
     DeletionData deletionData;
-    if (hasToBeRemovedFile()) {
-      deletionData = DeletionFileParser.parseToBeDeletedFile();
+    if (fileSystem.hasToBeRemovedFile()) {
+      deletionData = DeletionFileParser.parseToBeDeletedFile(fileSystem);
     } else {
       deletionData = DeletionData.getEmptyInstance();
       log.info("No '{}' file provided", TO_BE_REMOVED_FILE_NAME);

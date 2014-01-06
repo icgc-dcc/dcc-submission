@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.icgc.dcc.submission.validation.key.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 
 public class KVExistingFileDataDigest extends KVFileDataDigest {
 
@@ -38,4 +38,5 @@ public class KVExistingFileDataDigest extends KVFileDataDigest {
     // Original data (old); This should already be valid, nothing to check
     updatePksIfApplicable(tuple);
   }
+
 }

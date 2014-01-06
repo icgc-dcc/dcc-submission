@@ -62,7 +62,7 @@ public class KeyValidatorTest {
 
   @Before
   public void setUp() {
-    this.validator = new KeyValidator(1);
+    this.validator = new KeyValidator();
   }
 
   @Test
@@ -85,8 +85,13 @@ public class KeyValidatorTest {
     val release = mock(Release.class);
     when(release.getName()).thenReturn("Release1");
 
+    val previousSubmissionDirectory = mock(SubmissionDirectory.class);
+    when(previousSubmissionDirectory.getValidationDirPath()).thenReturn(validationDir);
+    when(previousSubmissionDirectory.getSubmissionDirPath()).thenReturn(directory.toUri().toString());
+
     val submissionDirectory = mock(SubmissionDirectory.class);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
+    when(submissionDirectory.getSubmissionDirPath()).thenReturn(directory.toUri().toString());
 
     val platformStrategy = mock(PlatformStrategy.class);
     when(platformStrategy.getFlowConnector()).thenReturn(new LocalFlowConnector());
@@ -95,6 +100,7 @@ public class KeyValidatorTest {
     when(context.getFileSystem()).thenReturn(fileSystem);
     when(context.getRelease()).thenReturn(release);
     when(context.getProjectKey()).thenReturn("project1");
+    when(context.getPreviousSubmissionDirectory()).thenReturn(previousSubmissionDirectory);
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(context.getPlatformStrategy()).thenReturn(platformStrategy);
 

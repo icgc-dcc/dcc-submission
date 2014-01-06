@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.validation.key.KVUtils.hasIncrementalClinicalData;
+import static com.google.common.collect.Sets.newTreeSet;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.EXISTING_UNIQUE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.INCREMENTAL_UNIQUE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
@@ -38,15 +38,17 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.key.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
 import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Sets;
 
 public class KVIncrementalFileDataDigest extends KVFileDataDigest {
+
+  private final KVFileSystem fileSystem;
 
   @SuppressWarnings("unused")
   private final DeletionData deletionData;
@@ -58,13 +60,15 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
   private final KVFileErrors surjectionErrors;
   private final SurjectivityValidator surjectivityValidator; // TODO: instantiate here?
 
-  private final Set<KVKeyValues> surjectionEncountered = Sets.<KVKeyValues> newTreeSet();
+  private final Set<KVKeyValues> surjectionEncountered = newTreeSet();
 
   /**
    * TODO: ! account for deletions (do not report errors for those)
    */
   public KVIncrementalFileDataDigest(
       KVFileDescription kvFileDescription, long logThreshold,
+
+      @NonNull KVFileSystem fileSystem,
 
       @NonNull DeletionData deletionData,
 
@@ -78,6 +82,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       @NonNull SurjectivityValidator surjectivityValidator) {
     super(kvFileDescription, logThreshold);
 
+    this.fileSystem = fileSystem;
     this.deletionData = deletionData;
     this.existingData = oldData;
     this.existingReferencedData = existingReferencedData;
@@ -304,7 +309,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       surjectivityValidator
           .validateSimpleSurjection(
               fileType,
-              !fileType.isReplaceAll() || hasIncrementalClinicalData() ? existingReferencedData : optionalIncrementalReferencedData
+              !fileType.isReplaceAll() || fileSystem.hasIncrementalClinicalData() ? existingReferencedData : optionalIncrementalReferencedData
                   .get(), // FIXME
               surjectionErrors,
               surjectionEncountered);
@@ -314,4 +319,5 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       surjectivityValidator.addEncounteredSamples(surjectionEncountered);
     }
   }
+
 }

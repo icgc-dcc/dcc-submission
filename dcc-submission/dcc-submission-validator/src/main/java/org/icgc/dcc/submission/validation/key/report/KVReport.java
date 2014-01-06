@@ -36,6 +36,11 @@ import org.icgc.dcc.submission.validation.key.error.KVError;
 
 public class KVReport implements Closeable {
 
+  /**
+   * The file name of the produced key validation report.
+   */
+  public static final String REPORT_FILE_NAME = "all.keys--errors.json";
+
   private final static ObjectWriter WRITER = new ObjectMapper(new JsonFactory().disable(AUTO_CLOSE_TARGET))
       .configure(FAIL_ON_EMPTY_BEANS, false)
       .writer();

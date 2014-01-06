@@ -67,6 +67,11 @@ public interface ValidationContext extends ReportContext {
   SubmissionDirectory getSubmissionDirectory();
 
   /**
+   * Gets the previous submission directory of the associated project under validation.
+   */
+  SubmissionDirectory getPreviousSubmissionDirectory();
+
+  /**
    * Gets the optionally available SSM primary file of the associated project under validation.
    */
   Optional<Path> getSsmPrimaryFile();

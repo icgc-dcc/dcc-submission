@@ -17,12 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import java.io.DataInputStream;
+import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.Cleanup;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -35,15 +36,17 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.validation.cascading.CascadeExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
 import org.icgc.dcc.submission.validation.key.error.KVError;
 
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Slf4j
 public class KeyValidator implements Validator {
 
+  /**
+   * The name of the component.
+   */
   public static final String COMPONENT_NAME = "Key Validator";
-
-  private final long logThreshold;
 
   @Override
   public String getName() {
@@ -52,47 +55,72 @@ public class KeyValidator implements Validator {
 
   @Override
   public void validate(ValidationContext context) throws InterruptedException {
-    // TODO: Get from context
-    val reportPath = "/tmp/report.json";
-    val executor = new CascadeExecutor(context.getPlatformStrategy());
-    val runnable = new KVValidatorRunner(logThreshold, reportPath);
+    val reportPath = getReportPath(context);
+    val runner = createRunner(context, reportPath);
 
     log.info("Starting key validation...");
-    executor.execute(runnable);
+    execute(context, runner);
     log.info("Finished key validation");
 
     log.info("Starting key validation report collection...");
-    report(context, reportPath);
+    collect(context, reportPath);
     log.info("Finished key validation report collection");
   }
 
+  private KVValidatorRunner createRunner(ValidationContext context, Path reportPath) {
+    return new KVValidatorRunner(
+        getOldReleasePath(context).toUri().toString(),
+        getNewReleasePath(context).toUri().toString(),
+        reportPath.toUri().toString());
+  }
+
+  private static Path getReportPath(ValidationContext context) {
+    val validationDir = context.getSubmissionDirectory().getValidationDirPath();
+
+    return new Path(validationDir, REPORT_FILE_NAME);
+  }
+
+  private static Path getOldReleasePath(ValidationContext context) {
+    return new Path(context.getPreviousSubmissionDirectory().getSubmissionDirPath());
+  }
+
+  private static Path getNewReleasePath(ValidationContext context) {
+    return new Path(context.getSubmissionDirectory().getSubmissionDirPath());
+  }
+
+  private static void execute(ValidationContext context, KVValidatorRunner runnable) {
+    val executor = new CascadeExecutor(context.getPlatformStrategy());
+
+    executor.execute(runnable);
+  }
+
   @SneakyThrows
-  private void report(ValidationContext context, String reportPath) {
+  private static void collect(ValidationContext context, Path reportPath) {
     @Cleanup
-    val inputStream = createInputStream(context.getFileSystem(), new Path(reportPath));
+    val inputStream = createInputStream(context.getFileSystem(), reportPath);
     val errors = getErrors(inputStream);
 
     while (errors.hasNext()) {
       val error = errors.next();
+
       context.reportError(error.getFileName(), error.getType());
     }
   }
 
-  private DataInputStream createInputStream(FileSystem fileSystem, Path file) {
+  private static InputStream createInputStream(FileSystem fileSystem, Path file) {
     val factory = new CompressionCodecFactory(fileSystem.getConf());
 
     try {
       val codec = factory.getCodec(file);
-      InputStream inputStream =
-          (codec == null) ? fileSystem.open(file) : codec.createInputStream(fileSystem.open(file));
-      return new DataInputStream(inputStream);
+      val baseInputStream = fileSystem.open(file);
+      return codec == null ? baseInputStream : codec.createInputStream(fileSystem.open(file));
     } catch (IOException e) {
       throw new RuntimeException("Error reading: '" + file.toString() + "'", e);
     }
   }
 
   @SneakyThrows
-  private MappingIterator<KVError> getErrors(InputStream inputStream) {
+  private static MappingIterator<KVError> getErrors(InputStream inputStream) {
     val reader = new ObjectMapper().reader().withType(KVError.class);
 
     return reader.readValues(inputStream);

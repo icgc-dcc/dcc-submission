@@ -18,24 +18,25 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newTreeSet;
 import static lombok.AccessLevel.PROTECTED;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newListFileParser;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_M_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_P_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_P_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.CNSM_S_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.DONOR_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.MAPPER;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SAMPLE_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SAMPLE_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SPECIMEN_FKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SPECIMEN_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_FKS1;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_FKS2;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_M_PKS;
-import static org.icgc.dcc.submission.validation.key.KVConstants.SSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MAPPER;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_P_FKS;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
@@ -55,12 +56,9 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
-import org.icgc.dcc.submission.validation.key.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-
-import com.google.common.collect.Sets;
 
 /**
  * Represents the relevant data for a given file (keys mostly).
@@ -76,7 +74,7 @@ public class KVFileDataDigest {
   private final long logThreshold;
 
   @Getter
-  protected final Set<KVKeyValues> pks = Sets.<KVKeyValues> newTreeSet(); // TODO: change to arrays?
+  protected final Set<KVKeyValues> pks = newTreeSet(); // TODO: change to arrays?
 
   public static KVFileDataDigest getEmptyInstance(@NonNull KVFileDescription kvFileDescription) {
     return new KVFileDataDigest(kvFileDescription, -1); // -1: no need for a threshold
@@ -88,7 +86,7 @@ public class KVFileDataDigest {
 
     val parser = newListFileParser();
     checkState(!kvFileDescription.isPlaceholder(), "TODO");
-    parser.parse(new Path(kvFileDescription.getDataFilePath().get()), new FileRecordProcessor<List<String>>() {
+    parser.parse(kvFileDescription.getDataFilePath().get(), new FileRecordProcessor<List<String>>() {
 
       @Override
       public void process(long lineNumber, List<String> record) {
@@ -200,4 +198,5 @@ public class KVFileDataDigest {
         .writerWithDefaultPrettyPrinter()
         .writeValueAsString(this); // TODO: show sample only (first and last 10 for instance) + excluding nulls
   }
+
 }

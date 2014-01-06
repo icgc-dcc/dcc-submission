@@ -15,10 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.core;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.validation.key.KVConstants.MAPPER;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MAPPER;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
@@ -49,28 +50,28 @@ public class KVFileDescription {
   /**
    * May just be a placeholder (hence the optional).
    */
-  private final Optional<String> dataFilePath;
+  private final Optional<Path> dataFilePath;
 
-  public static KVFileDescription getExistingFileDescription(KVFileType fileType, String dataFilePath) {
+  public static KVFileDescription getExistingFileDescription(KVFileType fileType, Path dataFilePath) {
     return new KVFileDescription(
         EXISTING_FILE,
         fileType,
-        Optional.<String> of(dataFilePath));
+        Optional.<Path> of(dataFilePath));
   }
 
   public static KVFileDescription getIncrementalFileDescription(
-      boolean asOriginal, KVFileType fileType, String dataFilePath) {
+      boolean asOriginal, KVFileType fileType, Path dataFilePath) {
     return new KVFileDescription(
         asOriginal ? INCREMENTAL_TO_BE_TREATED_AS_EXISTING : INCREMENTAL_FILE,
         fileType,
-        Optional.<String> of(dataFilePath));
+        Optional.<Path> of(dataFilePath));
   }
 
   public static KVFileDescription getPlaceholderFileDescription(KVFileType fileType) {
     return new KVFileDescription(
         EXISTING_FILE, // TODO: correct? does it matter?
         fileType,
-        Optional.<String> absent());
+        Optional.<Path> absent());
   }
 
   @JsonIgnore
