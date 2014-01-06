@@ -56,7 +56,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
@@ -87,7 +86,7 @@ public class KVFileDataDigest {
 
     val parser = newListFileParser();
     checkState(!kvFileDescription.isPlaceholder(), "TODO");
-    parser.parse(new Path(kvFileDescription.getDataFilePath().get()), new FileRecordProcessor<List<String>>() {
+    parser.parse(kvFileDescription.getDataFilePath().get(), new FileRecordProcessor<List<String>>() {
 
       @Override
       public void process(long lineNumber, List<String> record) {

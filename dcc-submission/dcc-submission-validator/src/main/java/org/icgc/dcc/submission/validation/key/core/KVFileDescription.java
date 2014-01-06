@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
@@ -49,28 +50,28 @@ public class KVFileDescription {
   /**
    * May just be a placeholder (hence the optional).
    */
-  private final Optional<String> dataFilePath;
+  private final Optional<Path> dataFilePath;
 
-  public static KVFileDescription getExistingFileDescription(KVFileType fileType, String dataFilePath) {
+  public static KVFileDescription getExistingFileDescription(KVFileType fileType, Path dataFilePath) {
     return new KVFileDescription(
         EXISTING_FILE,
         fileType,
-        Optional.<String> of(dataFilePath));
+        Optional.<Path> of(dataFilePath));
   }
 
   public static KVFileDescription getIncrementalFileDescription(
-      boolean asOriginal, KVFileType fileType, String dataFilePath) {
+      boolean asOriginal, KVFileType fileType, Path dataFilePath) {
     return new KVFileDescription(
         asOriginal ? INCREMENTAL_TO_BE_TREATED_AS_EXISTING : INCREMENTAL_FILE,
         fileType,
-        Optional.<String> of(dataFilePath));
+        Optional.<Path> of(dataFilePath));
   }
 
   public static KVFileDescription getPlaceholderFileDescription(KVFileType fileType) {
     return new KVFileDescription(
         EXISTING_FILE, // TODO: correct? does it matter?
         fileType,
-        Optional.<String> absent());
+        Optional.<Path> absent());
   }
 
   @JsonIgnore

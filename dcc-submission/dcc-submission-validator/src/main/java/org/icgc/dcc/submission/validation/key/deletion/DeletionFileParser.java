@@ -29,8 +29,8 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAd
 import static org.icgc.dcc.submission.validation.key.enumeration.KeyValidationAdditionalType.ERROR;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +40,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DeletionType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.submission.validation.key.core.KVConstants;
@@ -66,7 +67,7 @@ public class DeletionFileParser {
    */
   @SneakyThrows
   public static DeletionData parseToBeDeletedFile(KVFileSystem fileSystem) {
-    val toBeDetetedFile = fileSystem.getToBeRemovedFile();
+    val toBeDetetedFile = fileSystem.getToBeRemovedFilePath();
     log.info("{}", toBeDetetedFile);
 
     // TODO: use builder
@@ -74,7 +75,7 @@ public class DeletionFileParser {
 
     // TODO: "with" construct
     @Cleanup
-    val reader = new BufferedReader(new FileReader(new File(toBeDetetedFile)));
+    val reader = createReader(fileSystem, toBeDetetedFile);
     long lineCount = 0;
     for (String line; (line = reader.readLine()) != null;) {
       if (lineCount != 0 && !line.trim().isEmpty()) {
@@ -97,10 +98,10 @@ public class DeletionFileParser {
 
   // TODO: use abstraction rather
   @SneakyThrows
-  private static Set<String> getDonorIds(String donorFile) {
+  private static Set<String> getDonorIds(KVFileSystem fileSystem, Path donorFile) {
     val donorIds = Sets.<String> newTreeSet();
     @Cleanup
-    val reader = new BufferedReader(new FileReader(new File(donorFile)));
+    val reader = createReader(fileSystem, donorFile);
     long lineCount = 0;
     for (String line; (line = reader.readLine()) != null;) {
       if (lineCount != 0 && !line.trim().isEmpty()) {
@@ -117,13 +118,13 @@ public class DeletionFileParser {
   public static Set<String> getExistingDonorIds(KVFileSystem fileSystem) {
     val existingDonorFile = fileSystem.getDataFilePath(EXISTING_FILE, DONOR);
     log.info("{}", existingDonorFile);
-    return getDonorIds(existingDonorFile);
+    return getDonorIds(fileSystem, existingDonorFile);
   }
 
   public static Set<String> getIncrementalDonorIds(KVFileSystem fileSystem) {
     val incrementalDonorFile = fileSystem.getDataFilePath(INCREMENTAL_FILE, DONOR);
     log.info("{}", incrementalDonorFile);
-    return getDonorIds(incrementalDonorFile);
+    return getDonorIds(fileSystem, incrementalDonorFile);
   }
 
   private static List<String> getFeatureTypeStringList(String featureTypesString) {
@@ -149,4 +150,10 @@ public class DeletionFileParser {
     }
     return deletionTypes;
   }
+
+  private static BufferedReader createReader(KVFileSystem fileSystem, Path path)
+      throws IOException {
+    return new BufferedReader(new InputStreamReader(fileSystem.open(path)));
+  }
+
 }

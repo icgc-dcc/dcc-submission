@@ -17,13 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
+
+import java.io.IOException;
+import java.io.InputStream;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -50,20 +53,21 @@ public final class KVFileSystem {
 
   public static final String TO_BE_REMOVED_FILE_NAME = "TO_BE_REMOVED";
 
-  public String getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
-    val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
-    return format("%s/%s.txt",
-        basePath.toUri().toString(), fileType.toString().toLowerCase());
+  public InputStream open(Path path) throws IOException {
+    return fileSystem.open(path);
   }
 
-  public String getToBeRemovedFile() {
-    val basePath = newReleaseDir;
-    return format("%s/%s.txt",
-        basePath.toUri().toString(), TO_BE_REMOVED_FILE_NAME);
+  public Path getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
+    val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
+    return new Path(basePath, fileType.toString().toLowerCase() + ".txt");
+  }
+
+  public Path getToBeRemovedFilePath() {
+    return new Path(newReleaseDir, TO_BE_REMOVED_FILE_NAME + ".txt");
   }
 
   public boolean hasToBeRemovedFile() {
-    return hasFile(getToBeRemovedFile());
+    return hasFile(getToBeRemovedFilePath());
   }
 
   public boolean hasExistingData() {
@@ -94,7 +98,7 @@ public final class KVFileSystem {
     return hasFile(getDataFilePath(INCREMENTAL_FILE, CNSM_M));
   }
 
-  private boolean hasFile(String filePath) {
+  private boolean hasFile(Path filePath) {
     return checkExistence(fileSystem, filePath);
   }
 
