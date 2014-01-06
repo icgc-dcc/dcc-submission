@@ -35,7 +35,6 @@ import org.icgc.dcc.submission.validation.key.report.KVReport;
 @Slf4j
 public class KVValidatorRunner implements Runnable, Serializable {
 
-  @NonNull
   private final String oldReleasePath;
   @NonNull
   private final String newReleasePath;

@@ -36,17 +36,11 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
-/**
- * Utils method for the key validation.
- * <p>
- * In particular, it detects and retrieves files.
- */
 @RequiredArgsConstructor
 public final class KVFileSystem {
 
   @NonNull
   private final FileSystem fileSystem;
-  @NonNull
   private final Path oldReleaseDir;
   @NonNull
   private final Path newReleaseDir;

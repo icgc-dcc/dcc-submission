@@ -59,10 +59,10 @@ public class SurjectivityValidator {
       KVFileDataDigest dataDigest,
       KVFileErrors surjectionFileErrors,
       Set<KVKeyValues> surjectionEncountered) {
-    val expectedSujectionKeys = newTreeSet(checkNotNull(dataDigest, "TODO: '%s'", fileType).getPks());
-    if (hasSurjectionErrors(expectedSujectionKeys, surjectionEncountered)) {
+    val expectedSurjectionKeys = newTreeSet(checkNotNull(dataDigest, "TODO: '%s'", fileType).getPks());
+    if (hasSurjectionErrors(expectedSurjectionKeys, surjectionEncountered)) {
       collectSurjectionErrors(
-          expectedSujectionKeys,
+          expectedSurjectionKeys,
           surjectionEncountered,
           surjectionFileErrors);
     }
