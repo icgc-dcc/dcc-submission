@@ -19,14 +19,35 @@ package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXPOSURE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.FAMILY;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SURGERY;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.THERAPY;
 
 import java.util.List;
 import java.util.Map;
@@ -50,11 +71,44 @@ public final class KVConstants {
       new ImmutableMap.Builder<KVFileType, KVFileType>()
           .put(SPECIMEN, DONOR)
           .put(SAMPLE, SPECIMEN)
+
+          .put(BIOMARKER, DONOR)
+          .put(EXPOSURE, DONOR)
+          .put(FAMILY, DONOR)
+          .put(SURGERY, DONOR)
+          .put(THERAPY, DONOR)
+
           .put(SSM_M, SAMPLE)
           .put(SSM_P, SSM_M)
+
           .put(CNSM_M, SAMPLE)
           .put(CNSM_P, CNSM_M)
           .put(CNSM_S, CNSM_P)
+
+          .put(STSM_M, SAMPLE)
+          .put(STSM_P, STSM_M)
+          .put(STSM_S, STSM_P)
+
+          .put(MIRNA_M, SAMPLE)
+          .put(MIRNA_P, MIRNA_M)
+          .put(MIRNA_S, MIRNA_P)
+
+          .put(METH_M, SAMPLE)
+          .put(METH_P, METH_M)
+          .put(METH_S, METH_P)
+
+          .put(EXP_M, SAMPLE)
+          .put(EXP_P, EXP_M)
+
+          .put(PEXP_M, SAMPLE)
+          .put(PEXP_P, PEXP_M)
+
+          .put(JCN_M, SAMPLE)
+          .put(JCN_P, JCN_M)
+
+          .put(SGV_M, SAMPLE)
+          .put(SGV_P, SGV_M)
+
           .build();
 
   // TODO: translate to Strings rather? + make map per file type/submission type?

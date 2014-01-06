@@ -21,11 +21,43 @@ public enum KVFileType {
   DONOR,
   SPECIMEN,
   SAMPLE,
-  SSM_M,
+
+  BIOMARKER,
+  EXPOSURE,
+  FAMILY,
+  SURGERY,
+  THERAPY,
+
+  // SSM_M,
   SSM_P,
+
   CNSM_M,
   CNSM_P,
-  CNSM_S;
+  CNSM_S,
+
+  STSM_M,
+  STSM_P,
+  STSM_S,
+
+  MIRNA_M,
+  MIRNA_P,
+  MIRNA_S,
+
+  METH_M,
+  METH_P,
+  METH_S,
+
+  EXP_M,
+  EXP_P,
+
+  PEXP_M,
+  PEXP_P,
+
+  JCN_M,
+  JCN_P,
+
+  SGV_M,
+  SGV_P;
 
   public boolean isReplaceAll() {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;
