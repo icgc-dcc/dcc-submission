@@ -28,10 +28,27 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
 
 import java.util.Set;
 
@@ -175,7 +192,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       }
     }
 
-    // Ssm
+    // SSM
     else if (fileType == SSM_M) {
       // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
 
@@ -207,7 +224,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
         }
       }
     } else if (fileType == SSM_P) {
-      ; // No uniqueness check for ssm_p
+      ; // No uniqueness check for SSM_P
 
       // Foreign key check
       if (!hasMatchingReference(tuple.getFk())) {
@@ -223,7 +240,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       }
     }
 
-    // Cnsm
+    // CNSM
     else if (fileType == CNSM_M) {
 
       // Uniqueness check against incremental data
@@ -273,7 +290,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
         checkState(!tuple.hasSecondaryFk());
       }
     } else if (fileType == CNSM_S) {
-      ; // No uniqueness check for cnsm_s
+      ; // No uniqueness check for CNSM
 
       // Foreign key check
       if (!hasMatchingReference(tuple.getFk())) {
@@ -285,6 +302,396 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       else {
         checkState(!tuple.hasPk(), "TODO");
         ; // No surjection between secondary and primary
+        checkState(!tuple.hasSecondaryFk());
+      }
+    }
+
+    // STSM
+    else if (fileType == STSM_M) {
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Secondary foreign key check
+      else if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+        errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
+          surjectionEncountered.add(tuple.getSecondaryFk());
+        }
+      }
+    } else if (fileType == STSM_P) {
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        checkState(!tuple.hasSecondaryFk());
+      }
+    } else if (fileType == STSM_S) {
+      ; // No uniqueness check for STSM_s
+
+      // Foreign key check
+      if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        checkState(!tuple.hasPk(), "TODO");
+        ; // No surjection between secondary and primary
+        checkState(!tuple.hasSecondaryFk());
+      }
+    }
+
+    // MIRNA
+    else if (fileType == MIRNA_M) {
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Secondary foreign key check
+      else if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+        errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
+          surjectionEncountered.add(tuple.getSecondaryFk());
+        }
+      }
+    } else if (fileType == MIRNA_P) {
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        checkState(!tuple.hasSecondaryFk());
+      }
+    } else if (fileType == MIRNA_S) {
+      ; // No uniqueness check for MIRNA_s
+
+      // Foreign key check
+      if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        checkState(!tuple.hasPk(), "TODO");
+        ; // No surjection between secondary and primary
+        checkState(!tuple.hasSecondaryFk());
+      }
+    }
+
+    // METH
+    else if (fileType == METH_M) {
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Secondary foreign key check
+      else if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+        errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
+          surjectionEncountered.add(tuple.getSecondaryFk());
+        }
+      }
+    } else if (fileType == METH_P) {
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        checkState(!tuple.hasSecondaryFk());
+      }
+    } else if (fileType == METH_S) {
+      ; // No uniqueness check for METH_s
+
+      // Foreign key check
+      if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        checkState(!tuple.hasPk(), "TODO");
+        ; // No surjection between secondary and primary
+        checkState(!tuple.hasSecondaryFk());
+      }
+    }
+
+    // EXP
+    else if (fileType == EXP_M) {
+      // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Secondary foreign key check
+      else if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+
+        errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
+          surjectionEncountered.add(tuple.getSecondaryFk());
+        }
+      }
+    } else if (fileType == EXP_P) {
+      ; // No uniqueness check for EXP_P
+
+      // Foreign key check
+      if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        checkState(!tuple.hasPk(), "TODO");
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        checkState(!tuple.hasSecondaryFk());
+      }
+    }
+
+    // PEXP
+    else if (fileType == PEXP_M) {
+      // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Secondary foreign key check
+      else if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+
+        errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
+          surjectionEncountered.add(tuple.getSecondaryFk());
+        }
+      }
+    } else if (fileType == PEXP_P) {
+      ; // No uniqueness check for PEXP_P
+
+      // Foreign key check
+      if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        checkState(!tuple.hasPk(), "TODO");
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        checkState(!tuple.hasSecondaryFk());
+      }
+    }
+
+    // JCN
+    else if (fileType == JCN_M) {
+      // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Secondary foreign key check
+      else if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+
+        errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
+          surjectionEncountered.add(tuple.getSecondaryFk());
+        }
+      }
+    } else if (fileType == JCN_P) {
+      ; // No uniqueness check for JCN_P
+
+      // Foreign key check
+      if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        checkState(!tuple.hasPk(), "TODO");
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        checkState(!tuple.hasSecondaryFk());
+      }
+    }
+
+    // SGV
+    else if (fileType == SGV_M) {
+      // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
+
+      // Uniqueness check against incremental data
+      if (pks.contains(tuple.getPk())) {
+        errors.addError(lineCount, INCREMENTAL_UNIQUE, tuple.getPk());
+        return;
+      }
+
+      // Foreign key check
+      else if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Secondary foreign key check
+      else if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+
+        errors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        updatePksIfApplicable(tuple);
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
+        if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
+          surjectionEncountered.add(tuple.getSecondaryFk());
+        }
+      }
+    } else if (fileType == SGV_P) {
+      ; // No uniqueness check for SGV_P
+
+      // Foreign key check
+      if (!hasMatchingReference(tuple.getFk())) {
+        errors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
+        return;
+      }
+
+      // Valid data
+      else {
+        checkState(!tuple.hasPk(), "TODO");
+        surjectionEncountered.add(checkNotNull(tuple.getFk()));
         checkState(!tuple.hasSecondaryFk());
       }
     }

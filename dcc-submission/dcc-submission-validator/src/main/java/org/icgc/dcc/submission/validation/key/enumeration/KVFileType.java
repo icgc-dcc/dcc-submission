@@ -28,7 +28,7 @@ public enum KVFileType {
   SURGERY,
   THERAPY,
 
-  // SSM_M,
+  SSM_M,
   SSM_P,
 
   CNSM_M,

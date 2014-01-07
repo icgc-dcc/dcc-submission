@@ -112,20 +112,99 @@ public final class KVConstants {
           .build();
 
   // TODO: translate to Strings rather? + make map per file type/submission type?
-  public static final List<Integer> DONOR_PKS = newArrayList(0);
-  public static final List<Integer> SPECIMEN_FKS = newArrayList(0);
-  public static final List<Integer> SPECIMEN_PKS = newArrayList(1);
-  public static final List<Integer> SAMPLE_FKS = newArrayList(1);
-  public static final List<Integer> SAMPLE_PKS = newArrayList(0);
-  public static final List<Integer> SSM_M_FKS1 = newArrayList(1); // Tumour
-  public static final List<Integer> SSM_M_FKS2 = newArrayList(2); // Control
-  public static final List<Integer> SSM_M_PKS = newArrayList(0, SSM_M_FKS1.get(0));
-  public static final List<Integer> SSM_P_FKS = newArrayList(0, 1);
-  public static final List<Integer> CNSM_M_FKS1 = newArrayList(1); // Tumour
-  public static final List<Integer> CNSM_M_FKS2 = newArrayList(2); // Control
-  public static final List<Integer> CNSM_M_PKS = newArrayList(0, CNSM_M_FKS1.get(0));
+  public static final List<Integer> CNSM_M_FKS1 = newArrayList(1);
+  public static final List<Integer> CNSM_M_FKS2 = newArrayList(2);
+  public static final List<Integer> CNSM_M_PKS = newArrayList(0, 1);
   public static final List<Integer> CNSM_P_FKS = newArrayList(0, 1);
   public static final List<Integer> CNSM_P_PKS = newArrayList(0, 1, 2);
   public static final List<Integer> CNSM_S_FKS = newArrayList(0, 1, 2);
+  public static final List<Integer> DONOR_PKS = newArrayList(0);
+  public static final List<Integer> EXP_G_FKS = newArrayList(0, 1);
+  public static final List<Integer> EXP_M_FKS = newArrayList(1);
+  public static final List<Integer> EXP_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> JCN_M_FKS = newArrayList(1);
+  public static final List<Integer> JCN_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> JCN_P_FKS = newArrayList(0, 1);
+  public static final List<Integer> MIRNA_M_FKS = newArrayList(1);
+  public static final List<Integer> MIRNA_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> MIRNA_P_FKS = newArrayList(0, 1);
+  public static final List<Integer> MIRNA_S_FKS = newArrayList(0);
+  public static final List<Integer> MIRNA_S_PKS = newArrayList(0, 1, 2, 3, 4);
+  public static final List<Integer> PEXP_M_FKS = newArrayList(1);
+  public static final List<Integer> PEXP_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> PEXP_P_FKS = newArrayList(0, 1);
+  public static final List<Integer> SAMPLE_FKS = newArrayList(1);
+  public static final List<Integer> SAMPLE_PKS = newArrayList(0);
+  public static final List<Integer> SGV_M_FKS = newArrayList(1);
+  public static final List<Integer> SGV_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> SGV_P_FKS = newArrayList(0, 1);
+  public static final List<Integer> SPECIMEN_FKS = newArrayList(0);
+  public static final List<Integer> SPECIMEN_PKS = newArrayList(1);
+  public static final List<Integer> SSM_M_FKS1 = newArrayList(1);
+  public static final List<Integer> SSM_M_FKS2 = newArrayList(2);
+  public static final List<Integer> SSM_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> SSM_P_FKS = newArrayList(0, 1);
+  public static final List<Integer> STSM_M_FKS1 = newArrayList(1);
+  public static final List<Integer> STSM_M_FKS2 = newArrayList(2);
+  public static final List<Integer> STSM_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> STSM_P_FKS = newArrayList(0, 1);
+  public static final List<Integer> STSM_P_PKS = newArrayList(0, 1, 2, 3);
+  public static final List<Integer> STSM_S_FKS = newArrayList(0, 1, 2, 3);
+  public static final List<Integer> METH_M_FKS1 = newArrayList(1);
+  public static final List<Integer> METH_M_FKS2 = newArrayList(2);
+  public static final List<Integer> METH_M_PKS = newArrayList(0, 1);
+  public static final List<Integer> METH_P_FKS = newArrayList(0, 1);
+  public static final List<Integer> METH_P_PKS = newArrayList(0, 1, 2);
+  public static final List<Integer> METH_S_FKS = newArrayList(0, 1, 2);
 
+  public static final List<String> CNSM_M_FK1_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> CNSM_M_FK2_NAMES = newArrayList("matched_sample_id");
+  public static final List<String> CNSM_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> CNSM_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> CNSM_P_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id", "mutation_id");
+  public static final List<String> CNSM_S_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id", "mutation_id");
+  public static final List<String> DONOR_PK_NAMES = newArrayList("donor_id");
+  public static final List<String> EXP_G_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> EXP_M_FK_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> EXP_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> JCN_M_FK_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> JCN_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> JCN_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> MIRNA_M_FK_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> MIRNA_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> MIRNA_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> MIRNA_S_FK_NAMES = newArrayList("mirna_seq");
+  public static final List<String> MIRNA_S_PK_NAMES = newArrayList("mirna_seq", "chromosome", "chromosome_start",
+      "chromosome_end", "chromosome_strand");
+
+  public static final List<String> PEXP_M_FK_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> PEXP_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> PEXP_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> SAMPLE_FK_NAMES = newArrayList("specimen_id");
+  public static final List<String> SAMPLE_PK_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> SGV_M_FK_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> SGV_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> SGV_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> SPECIMEN_FK_NAMES = newArrayList("donor_id");
+  public static final List<String> SPECIMEN_PK_NAMES = newArrayList("specimen_id");
+  public static final List<String> SSM_M_FK1_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> SSM_M_FK2_NAMES = newArrayList("matched_sample_id");
+  public static final List<String> SSM_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> SSM_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> STSM_M_FK1_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> STSM_M_FK2_NAMES = newArrayList("matched_sample_id");
+  public static final List<String> STSM_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> STSM_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> STSM_P_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id", "placement",
+      "sv_id");
+  public static final List<String> STSM_S_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id", "sv_id",
+      "placement");
+  public static final List<String> METH_M_FK1_NAMES = newArrayList("analyzed_sample_id");
+  public static final List<String> METH_M_FK2_NAMES = newArrayList("matched_sample_id");
+  public static final List<String> METH_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> METH_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
+  public static final List<String> METH_P_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id",
+      "methylated_fragment_id");
+  public static final List<String> METH_S_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id",
+      "methylated_fragment_id");
 }

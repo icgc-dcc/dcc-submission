@@ -18,9 +18,7 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 
@@ -33,6 +31,7 @@ import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
@@ -72,28 +71,19 @@ public final class KVFileSystem {
     return hasFile(getDataFilePath(EXISTING_FILE, DONOR));
   }
 
-  public boolean hasExistingSsmData() {
-    return hasFile(getDataFilePath(EXISTING_FILE, SSM_M));
-  }
-
-  public boolean hasExistingCnsmData() {
-    return hasFile(getDataFilePath(EXISTING_FILE, CNSM_M));
-  }
-
   public boolean hasIncrementalClinicalData() {
     return hasFile(getDataFilePath(INCREMENTAL_FILE, DONOR));
   }
 
-  public boolean hasIncrementalSsmData() {
-    return hasFile(getDataFilePath(INCREMENTAL_FILE, SSM_M));
+  public boolean hasIncrementalData(KVExperimentalDataType dataType) {
+    return hasFile(getDataFilePath(INCREMENTAL_FILE, dataType.getTaleTellerFileType()));
   }
 
-  public boolean hasIncrementalCnsmData() {
-    return hasFile(getDataFilePath(INCREMENTAL_FILE, CNSM_M));
+  public boolean hasExistingData(KVExperimentalDataType dataType) {
+    return hasFile(getDataFilePath(EXISTING_FILE, dataType.getTaleTellerFileType()));
   }
 
   private boolean hasFile(Path filePath) {
     return checkExistence(fileSystem, filePath);
   }
-
 }

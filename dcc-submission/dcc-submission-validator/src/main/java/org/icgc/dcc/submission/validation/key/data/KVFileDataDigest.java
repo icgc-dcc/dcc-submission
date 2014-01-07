@@ -28,23 +28,69 @@ import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_FKS
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_S_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_G_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MAPPER;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_P_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS2;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_S_FKS;
+import static org.icgc.dcc.submission.validation.key.data.KVKeyValues.NOT_APPLICABLE;
+import static org.icgc.dcc.submission.validation.key.data.KVKeyValues.from;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
 
 import java.util.List;
 import java.util.Set;
@@ -134,43 +180,132 @@ public class KVFileDataDigest {
 
     // Clinical
     if (fileType == DONOR) {
-      pk = KVKeyValues.from(row, DONOR_PKS);
-      fk1 = KVKeyValues.NOT_APPLICABLE;
-      fk2 = KVKeyValues.NOT_APPLICABLE;
+      pk = from(row, DONOR_PKS);
+      fk1 = NOT_APPLICABLE;
+      fk2 = NOT_APPLICABLE;
     } else if (fileType == SPECIMEN) {
-      pk = KVKeyValues.from(row, SPECIMEN_PKS);
-      fk1 = KVKeyValues.from(row, SPECIMEN_FKS);
-      fk2 = KVKeyValues.NOT_APPLICABLE;
+      pk = from(row, SPECIMEN_PKS);
+      fk1 = from(row, SPECIMEN_FKS);
+      fk2 = NOT_APPLICABLE;
     } else if (fileType == SAMPLE) {
-      pk = KVKeyValues.from(row, SAMPLE_PKS);
-      fk1 = KVKeyValues.from(row, SAMPLE_FKS);
-      fk2 = KVKeyValues.NOT_APPLICABLE;
+      pk = from(row, SAMPLE_PKS);
+      fk1 = from(row, SAMPLE_FKS);
+      fk2 = NOT_APPLICABLE;
     }
 
     // Ssm
     else if (fileType == SSM_M) {
-      pk = KVKeyValues.from(row, SSM_M_PKS);
-      fk1 = KVKeyValues.from(row, SSM_M_FKS1);
-      fk2 = KVKeyValues.from(row, SSM_M_FKS2); // TODO: handle case where value is null or a missing code
+      pk = from(row, SSM_M_PKS);
+      fk1 = from(row, SSM_M_FKS1);
+      fk2 = from(row, SSM_M_FKS2); // TODO: handle case where value is null or a missing code
     } else if (fileType == SSM_P) {
-      pk = KVKeyValues.NOT_APPLICABLE;
-      fk1 = KVKeyValues.from(row, SSM_P_FKS);
-      fk2 = KVKeyValues.NOT_APPLICABLE;
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, SSM_P_FKS);
+      fk2 = NOT_APPLICABLE;
     }
 
     // Cnsm
     else if (fileType == CNSM_M) {
-      pk = KVKeyValues.from(row, CNSM_M_PKS);
-      fk1 = KVKeyValues.from(row, CNSM_M_FKS1);
-      fk2 = KVKeyValues.from(row, CNSM_M_FKS2); // TODO: handle case where value is null or a missing code
+      pk = from(row, CNSM_M_PKS);
+      fk1 = from(row, CNSM_M_FKS1);
+      fk2 = from(row, CNSM_M_FKS2);
     } else if (fileType == CNSM_P) {
-      pk = KVKeyValues.from(row, CNSM_P_PKS);
-      fk1 = KVKeyValues.from(row, CNSM_P_FKS);
-      fk2 = KVKeyValues.NOT_APPLICABLE;
+      pk = from(row, CNSM_P_PKS);
+      fk1 = from(row, CNSM_P_FKS);
+      fk2 = NOT_APPLICABLE;
     } else if (fileType == CNSM_S) {
-      pk = KVKeyValues.NOT_APPLICABLE;
-      fk1 = KVKeyValues.from(row, CNSM_S_FKS);
-      fk2 = KVKeyValues.NOT_APPLICABLE;
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, CNSM_S_FKS);
+      fk2 = NOT_APPLICABLE;
+    }
+
+    // Stsm
+    else if (fileType == STSM_M) {
+      pk = from(row, STSM_M_PKS);
+      fk1 = from(row, STSM_M_FKS1);
+      fk2 = from(row, STSM_M_FKS2);
+    } else if (fileType == STSM_P) {
+      pk = from(row, STSM_P_PKS);
+      fk1 = from(row, STSM_P_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == STSM_S) {
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, STSM_S_FKS);
+      fk2 = NOT_APPLICABLE;
+    }
+
+    // Mirna
+    else if (fileType == MIRNA_M) {
+      pk = from(row, MIRNA_M_PKS);
+      fk1 = from(row, MIRNA_M_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == MIRNA_P) {
+      pk = from(row, MIRNA_P_PKS);
+      fk1 = from(row, MIRNA_P_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == MIRNA_S) {
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, MIRNA_S_FKS);
+      fk2 = NOT_APPLICABLE;
+    }
+
+    // Meth
+    else if (fileType == METH_M) {
+      pk = from(row, METH_M_PKS);
+      fk1 = from(row, METH_M_FKS1);
+      fk1 = from(row, METH_M_FKS2);
+    } else if (fileType == METH_P) {
+      pk = from(row, METH_P_PKS);
+      fk1 = from(row, METH_P_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == METH_S) {
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, METH_S_FKS);
+      fk2 = NOT_APPLICABLE;
+    }
+
+    // Exp
+    else if (fileType == EXP_M) {
+      pk = from(row, EXP_M_PKS);
+      fk1 = from(row, EXP_M_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == EXP_P) {
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, EXP_G_FKS);
+      fk2 = NOT_APPLICABLE;
+    }
+
+    // Pexp
+    else if (fileType == SSM_M) {
+      pk = from(row, PEXP_M_PKS);
+      fk1 = from(row, PEXP_M_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == PEXP_P) {
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, PEXP_P_FKS);
+      fk2 = NOT_APPLICABLE;
+    }
+
+    // Jcn
+    else if (fileType == JCN_M) {
+      pk = from(row, JCN_M_PKS);
+      fk1 = from(row, JCN_M_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == JCN_P) {
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, JCN_P_FKS);
+      fk2 = NOT_APPLICABLE;
+    }
+
+    // Sgv
+    else if (fileType == SGV_M) {
+      pk = from(row, SGV_M_PKS);
+      fk1 = from(row, SGV_M_FKS);
+      fk2 = NOT_APPLICABLE;
+    } else if (fileType == SGV_P) {
+      pk = NOT_APPLICABLE;
+      fk1 = from(row, SGV_P_FKS);
+      fk2 = NOT_APPLICABLE;
     }
 
     checkState(pk != null || fk1 != null, "TODO: '%s'", row);

@@ -24,22 +24,67 @@ import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_FKS
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_S_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.DONOR_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_G_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_P_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_M_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FKS2;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_FKS1;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_FKS2;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_S_FKS;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
 
 import java.util.Map;
 
@@ -72,6 +117,8 @@ public class KVSubmissionErrors {
           new KVFileErrors(
               SAMPLE_PKS,
               SAMPLE_FKS))
+
+      // SSM
       .put(
           SSM_M,
           new KVFileErrors(
@@ -83,6 +130,8 @@ public class KVSubmissionErrors {
           new KVFileErrors(
               new Object(), // TODO: factory
               SSM_P_FKS))
+
+      // CNSM
       .put(
           CNSM_M,
           new KVFileErrors(
@@ -99,6 +148,108 @@ public class KVSubmissionErrors {
           new KVFileErrors(
               new Object(),
               CNSM_S_FKS))
+
+      // STSM
+      .put(
+          STSM_M,
+          new KVFileErrors(
+              STSM_M_PKS,
+              STSM_M_FKS1,
+              STSM_M_FKS2))
+      .put(
+          STSM_P,
+          new KVFileErrors(
+              STSM_P_PKS,
+              STSM_P_FKS))
+      .put(
+          STSM_S,
+          new KVFileErrors(
+              new Object(),
+              STSM_S_FKS))
+
+      // MIRNA
+      .put(
+          MIRNA_M,
+          new KVFileErrors(
+              MIRNA_M_PKS,
+              MIRNA_M_FKS))
+      .put(
+          MIRNA_P,
+          new KVFileErrors(
+              MIRNA_P_PKS,
+              MIRNA_P_FKS))
+      .put(
+          MIRNA_S,
+          new KVFileErrors(
+              new Object(),
+              MIRNA_S_FKS))
+
+      // METH
+      .put(
+          METH_M,
+          new KVFileErrors(
+              METH_M_PKS,
+              METH_M_FKS1,
+              METH_M_FKS2))
+      .put(
+          METH_P,
+          new KVFileErrors(
+              METH_P_PKS,
+              METH_P_FKS))
+      .put(
+          METH_S,
+          new KVFileErrors(
+              new Object(),
+              METH_S_FKS))
+
+      // EXP
+      .put(
+          EXP_M,
+          new KVFileErrors(
+              EXP_M_PKS,
+              EXP_M_FKS))
+      .put(
+          EXP_P,
+          new KVFileErrors(
+              new Object(),
+              EXP_G_FKS))
+
+      // PEXP
+      .put(
+          PEXP_M,
+          new KVFileErrors(
+              PEXP_M_PKS,
+              PEXP_M_FKS))
+      .put(
+          PEXP_P,
+          new KVFileErrors(
+              new Object(),
+              PEXP_P_FKS))
+
+      // JCN
+      .put(
+          JCN_M,
+          new KVFileErrors(
+              JCN_M_PKS,
+              JCN_M_FKS))
+      .put(
+          JCN_P,
+          new KVFileErrors(
+              new Object(),
+              JCN_P_FKS))
+
+      // SGV
+      .put(
+          SGV_M,
+          new KVFileErrors(
+              SGV_M_PKS,
+              SGV_M_FKS))
+      .put(
+          SGV_P,
+          new KVFileErrors(
+              new Object(),
+              SGV_P_FKS))
+
       .build();
 
   public KVFileErrors getFileErrors(KVFileType fileType) {

@@ -26,14 +26,9 @@ import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getExistingFileDescription;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getIncrementalFileDescription;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getPlaceholderFileDescription;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
@@ -47,6 +42,7 @@ import org.icgc.dcc.submission.validation.key.data.KVIncrementalFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
 import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.key.deletion.DeletionFileParser;
+import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.key.error.KVError;
@@ -152,28 +148,23 @@ public class KVValidator {
     loadExistingFile(SPECIMEN);
     loadExistingFile(SAMPLE);
 
-    // Existing ssm
-    if (fileSystem.hasExistingSsmData()) {
-      log.info("Processing exiting ssm data");
-      loadExistingFile(SSM_M);
-      loadExistingFile(SSM_P);
-    } else {
-      log.info("No exiting ssm data");
-      loadPlaceholderExistingFile(SSM_M);
-      loadPlaceholderExistingFile(SSM_P);
-    }
+    for (val dataType : KVExperimentalDataType.values()) {
 
-    // Existing cnsm
-    if (fileSystem.hasExistingCnsmData()) {
-      log.info("Processing exiting cnsm data");
-      loadExistingFile(CNSM_M);
-      loadExistingFile(CNSM_P);
-      loadExistingFile(CNSM_S);
-    } else {
-      log.info("No exiting cnsm data");
-      loadPlaceholderExistingFile(CNSM_M);
-      loadPlaceholderExistingFile(CNSM_P);
-      loadPlaceholderExistingFile(CNSM_S);
+      // Existing data
+      if (fileSystem.hasExistingData(dataType)) {
+        log.info("Processing exiting '{}' data", dataType);
+        for (val fileType : dataType.getFileTypes()) {
+          loadExistingFile(fileType);
+        }
+      }
+
+      // No data
+      else {
+        log.info("No existing '{}' data", dataType);
+        for (val fileType : dataType.getFileTypes()) {
+          loadPlaceholderExistingFile(fileType);
+        }
+      }
     }
   }
 
@@ -183,7 +174,7 @@ public class KVValidator {
   private void loadIncrementalData(DeletionData deletionData) {
     log.info("Loading incremental data");
 
-    // Incremental clinical
+    // Incremental clinical data
     if (fileSystem.hasIncrementalClinicalData()) {
       log.info("Processing incremental clinical data");
       loadIncrementalFile(DONOR, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
@@ -193,23 +184,16 @@ public class KVValidator {
       log.info("No incremental clinical data");
     }
 
-    // Incremental ssm
-    if (fileSystem.hasIncrementalSsmData()) {
-      log.info("Processing incremental ssm data");
-      loadIncrementalFile(SSM_M, INCREMENTAL_FILE, deletionData);
-      loadIncrementalFile(SSM_P, INCREMENTAL_FILE, deletionData);
-    } else {
-      log.info("No incremental ssm data");
-    }
-
-    // Incremental cnsm
-    if (fileSystem.hasIncrementalCnsmData()) {
-      log.info("Processing incremental cnsm data");
-      loadIncrementalFile(CNSM_M, INCREMENTAL_FILE, deletionData);
-      loadIncrementalFile(CNSM_P, INCREMENTAL_FILE, deletionData);
-      loadIncrementalFile(CNSM_S, INCREMENTAL_FILE, deletionData);
-    } else {
-      log.info("No incremental cnsm data");
+    // Incremental experimental data
+    for (val dataType : KVExperimentalDataType.values()) {
+      if (fileSystem.hasIncrementalData(dataType)) {
+        log.info("Processing incremental '{}' data", dataType);
+        for (val fileType : dataType.getFileTypes()) {
+          loadIncrementalFile(fileType, INCREMENTAL_FILE, deletionData);
+        }
+      } else {
+        log.info("No incremental '{}' data", dataType);
+      }
     }
   }
 
@@ -256,12 +240,11 @@ public class KVValidator {
     loadPlaceholderExistingFile(SPECIMEN);
     loadPlaceholderExistingFile(SAMPLE);
 
-    loadPlaceholderExistingFile(SSM_M);
-    loadPlaceholderExistingFile(SSM_P);
-
-    loadPlaceholderExistingFile(CNSM_M);
-    loadPlaceholderExistingFile(CNSM_P);
-    loadPlaceholderExistingFile(CNSM_S);
+    for (val dataType : KVExperimentalDataType.values()) {
+      for (val fileType : dataType.getFileTypes()) {
+        loadPlaceholderExistingFile(fileType);
+      }
+    }
   }
 
   private void loadPlaceholderExistingFile(KVFileType fileType) {
