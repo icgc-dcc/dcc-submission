@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,10 +31,20 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 
-@RequiredArgsConstructor
+import cascading.flow.hadoop.HadoopFlowStep;
+
+/**
+ * Runner that operates within a Cascading step.
+ */
 @Slf4j
+@Value
 public class KVValidatorRunner implements Runnable, Serializable {
 
+  /**
+   * Fields that need to be {@link Serializable} to survive the trip to the cluster.
+   * 
+   * @see {@link HadoopFlowStep#pack()}
+   */
   private final String oldReleasePath;
   @NonNull
   private final String newReleasePath;
@@ -66,6 +76,9 @@ public class KVValidatorRunner implements Runnable, Serializable {
     }
   }
 
+  /**
+   * Re-establishes the file system cluster side.
+   */
   @SneakyThrows
   private static FileSystem getFileSystem() {
     // Hopefully 'fs.defaultFS' on Hadoop nodes points to the name node
