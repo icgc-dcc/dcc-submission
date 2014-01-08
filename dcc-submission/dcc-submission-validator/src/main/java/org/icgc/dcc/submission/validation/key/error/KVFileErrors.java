@@ -47,7 +47,7 @@ import com.google.common.collect.ImmutableMap;
 public class KVFileErrors {
 
   private final Map<KVErrorType, List<Integer>> fieldIndicesPerErrorType;
-  private final Map<Long, KVRowError> rowErrors = newTreeMap();
+  private final Map<Long, List<KVRowError>> lineToRowErrors = newTreeMap();
 
   // TODO: factory instead of constructor
   public KVFileErrors(
@@ -95,14 +95,19 @@ public class KVFileErrors {
   }
 
   public boolean hasError(long lineNumber) {
-    return rowErrors.containsKey(lineNumber);
+    return lineToRowErrors.containsKey(lineNumber);
   }
 
   /**
    * TODO: create other wrappers like the surjection one
    */
   public void addError(long lineNumber, KVErrorType type, KVKeyValues keys) {
-    rowErrors.put(lineNumber, new KVRowError(type, keys)); // FIXME
+    List<KVRowError> rowErrors = lineToRowErrors.get(lineNumber);
+    if (rowErrors == null) {
+      rowErrors = newArrayList();
+      lineToRowErrors.put(lineNumber, rowErrors);
+    }
+    rowErrors.add(new KVRowError(type, keys));
   }
 
   public void addSimpleSurjectionError(KVKeyValues keys) {
@@ -114,17 +119,19 @@ public class KVFileErrors {
   }
 
   public boolean describe(KVFileDescription kvFileDescription) {
-    if (rowErrors.isEmpty()) {
+    if (lineToRowErrors.isEmpty()) {
       return true;
     } else {
-      for (val entry : rowErrors.entrySet()) {
+      for (val entry : lineToRowErrors.entrySet()) {
         val lineNumber = entry.getKey();
-        val rowError = entry.getValue();
-        val fieldIndices = checkNotNull(
-            fieldIndicesPerErrorType
-                .get(rowError.getType()),
-            "TODO: %s, %s", fieldIndicesPerErrorType, rowError.getType());
-        rowError.describe(kvFileDescription, lineNumber, fieldIndices);
+        val rowErrors = entry.getValue();
+        for (val rowError : rowErrors) {
+          val fieldIndices = checkNotNull(
+              fieldIndicesPerErrorType
+                  .get(rowError.getType()),
+              "TODO: %s, %s, %s", fieldIndicesPerErrorType, rowError.getType(), kvFileDescription);
+          rowError.describe(kvFileDescription, lineNumber, fieldIndices);
+        }
       }
       return false;
     }

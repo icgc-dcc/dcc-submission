@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.key.surjectivity;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.Set;
@@ -94,7 +93,6 @@ public class SurjectivityValidator {
   private boolean hasSurjectionErrors(Set<KVKeyValues> surjectionExpected, Set<KVKeyValues> surjectionEncountered) {
     int expectedSize = surjectionExpected.size();
     int encounteredSize = surjectionEncountered.size();
-    checkState(encounteredSize <= expectedSize, "TODO");
     return expectedSize != encounteredSize;
   }
 

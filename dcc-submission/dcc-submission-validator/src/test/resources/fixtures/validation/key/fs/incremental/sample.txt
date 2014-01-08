@@ -13,3 +13,5 @@ sa-cnsm-03.01.T01	sp-cnsm-03.01	dummy
 sa-cnsm-03.01.C02	sp-cnsm-03.01	dummy
 sa-ssm-04.01.T01	sp-ssm-04.01	dummy
 sa-ssm-04.01.C02	sp-ssm-04.01	dummy
+sa-ssm-04.01.C02	sp-ssm-04.01b	dummy
+sa-ssm-04.01.C02	sp-ssm-04.01c	dummy

@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import java.util.List;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.val;
 
@@ -27,6 +28,7 @@ import lombok.val;
  */
 // TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
 @Value
+@EqualsAndHashCode
 public class KVKeyValues implements Comparable<KVKeyValues> {
 
   public static final KVKeyValues NOT_APPLICABLE = null;
@@ -44,7 +46,7 @@ public class KVKeyValues implements Comparable<KVKeyValues> {
   public static KVKeyValues from(List<String> row, List<Integer> indices) {
     short size = (short) indices.size();
     val keys = new String[size];
-    for (int index = 0; index < indices.size(); index++) {
+    for (int index = 0; index < size; index++) {
       keys[index] = row.get(indices.get(index));
     }
     // TODO: checks
