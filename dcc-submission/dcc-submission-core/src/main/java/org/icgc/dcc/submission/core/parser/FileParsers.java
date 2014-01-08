@@ -66,6 +66,14 @@ public class FileParsers {
     return new FileParser<List<String>>(fileSystem, new FileLineListParser());
   }
 
+  public static FileParser<String> newStringFileParser() {
+    return newStringFileParser(DEFAULT_FILE_SYSTEM);
+  }
+
+  public static FileParser<String> newStringFileParser(FileSystem fileSystem) {
+    return new FileParser<String>(fileSystem, new FileLineStringParser());
+  }
+
   @SneakyThrows
   private static FileSystem getDefaultFileSystem() {
     return FileSystem.getLocal(new Configuration());

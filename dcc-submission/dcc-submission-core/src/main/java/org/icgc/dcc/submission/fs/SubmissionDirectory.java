@@ -29,12 +29,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
@@ -49,11 +47,8 @@ import com.google.common.collect.Iterables;
 public class SubmissionDirectory {
 
   private final DccFileSystem dccFileSystem;
-
   private final Release release;
-
   private final String projectKey;
-
   private final Submission submission;
 
   public SubmissionDirectory(DccFileSystem dccFileSystem, Release release, String projectKey, Submission submission) {
@@ -102,8 +97,8 @@ public class SubmissionDirectory {
   }
 
   /**
-   * If there is a matching file for the pattern, returns the one matching file
-   * or nothing. Errors out if there are more than one matching file.
+   * If there is a matching file for the pattern, returns the one matching file or nothing. Errors out if there are more
+   * than one matching file.
    */
   public Optional<String> getFile(String filePattern) {
     Iterable<String> files = listFiles(newArrayList(filePattern));
@@ -169,8 +164,7 @@ public class SubmissionDirectory {
   }
 
   /**
-   * Removes all files pertaining to validation (not including normalization),
-   * leaving nested directories untouched.
+   * Removes all files pertaining to validation (not including normalization), leaving nested directories untouched.
    */
   public void removeValidationFiles() {
     val fs = dccFileSystem.getFileSystem();
@@ -192,15 +186,9 @@ public class SubmissionDirectory {
     return null;
   }
 
-  /**
-   * There's already a "SubmissionFile" class (for the UI)...
-   */
-  @Value
-  public class SubmissionDirectoryFile {
-
-    String fileName;
-    SubmissionFileType type;
-    Pattern pattern;
+  @Override
+  public String toString() {
+    return String.format("SubmissionDirectory [%s]", getSubmissionDirPath());
   }
 
 }
