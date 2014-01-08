@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.key.enumeration;
 
+import static com.google.common.base.Predicates.not;
+
+import com.google.common.base.Predicate;
+
 public enum KVFileType {
   DONOR,
   SPECIMEN,
@@ -63,21 +67,48 @@ public enum KVFileType {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;
   }
 
+  // TODO: get from dictionary
+  public static final Predicate<KVFileType> SIMPLE_SURJECTION_RELATION = new Predicate<KVFileType>() {
+
+    @Override
+    public boolean apply(KVFileType fileType) {
+      return
+      fileType != DONOR
+          && fileType != SSM_M
+          && fileType != CNSM_M
+          && fileType != STSM_M
+          && fileType != MIRNA_M
+          && fileType != METH_M
+          && fileType != EXP_M
+          && fileType != PEXP_M
+          && fileType != JCN_M
+          && fileType != SGV_M;
+    }
+  };
+
   public boolean hasComplexSurjectiveRelation() {
-    return this == SSM_M || this == CNSM_M;
+    return this != DONOR && not(SIMPLE_SURJECTION_RELATION).apply(this);
   }
 
   /**
    * Simple as opposd to TODO
    */
   public boolean hasSimpleSurjectiveRelation() {
-    return this == SPECIMEN || this == SAMPLE || this == SSM_P || this == CNSM_P;
+    return this != DONOR && SIMPLE_SURJECTION_RELATION.apply(this);
   }
 
   /**
-   * 
+   * TODO: get from dictionary
    */
   public boolean hasPk() {
-    return this != SSM_P && this != CNSM_S;
+    return this != SSM_P
+        && this != CNSM_S
+        && this != STSM_S
+        && this != MIRNA_P // MIRNA_S is the one that does (atypical)
+        && this != METH_S
+        && this != EXP_P
+        && this != PEXP_P
+        && this != JCN_P
+        && this != SGV_P;
   }
 }

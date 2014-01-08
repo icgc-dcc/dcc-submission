@@ -45,6 +45,7 @@ import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_FK
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_P_FKS;
@@ -115,6 +116,11 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 @RequiredArgsConstructor(access = PROTECTED)
 public class KVFileDataDigest {
 
+  /**
+   * TODO: temporarily...
+   */
+  public static final boolean TUPLE_CHECKS_ENABLED = true;
+
   @Getter
   protected final KVFileDescription kvFileDescription;
   private final long logThreshold;
@@ -171,7 +177,7 @@ public class KVFileDataDigest {
     if (tuple.hasPk()) {
       pks.add(tuple.getPk());
     } else {
-      checkState(!kvFileDescription.getFileType().hasPk(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) checkState(!kvFileDescription.getFileType().hasPk(), "TODO");
     }
   }
 
@@ -240,11 +246,11 @@ public class KVFileDataDigest {
       fk1 = from(row, MIRNA_M_FKS);
       fk2 = NOT_APPLICABLE;
     } else if (fileType == MIRNA_P) {
-      pk = from(row, MIRNA_P_PKS);
+      pk = NOT_APPLICABLE;
       fk1 = from(row, MIRNA_P_FKS);
       fk2 = NOT_APPLICABLE;
     } else if (fileType == MIRNA_S) {
-      pk = NOT_APPLICABLE;
+      pk = from(row, MIRNA_S_PKS);
       fk1 = from(row, MIRNA_S_FKS);
       fk2 = NOT_APPLICABLE;
     }
@@ -308,7 +314,7 @@ public class KVFileDataDigest {
       fk2 = NOT_APPLICABLE;
     }
 
-    checkState(pk != null || fk1 != null, "TODO: '%s'", row);
+    if (TUPLE_CHECKS_ENABLED) checkState(pk != null || fk1 != null, "TODO: '%s'", row);
     return new KVTuple(pk, fk1, fk2);
   }
 

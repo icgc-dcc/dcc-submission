@@ -22,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum KVSubmissionType {
-  EXISTING_FILE("original"),
-  INCREMENTAL_FILE("new"),
+  EXISTING_FILE("existing"),
+  INCREMENTAL_FILE("incremental"),
   INCREMENTAL_TO_BE_TREATED_AS_EXISTING(EXISTING_FILE.getSubDirectory()), // For clinical data re-submitted
   ;
 

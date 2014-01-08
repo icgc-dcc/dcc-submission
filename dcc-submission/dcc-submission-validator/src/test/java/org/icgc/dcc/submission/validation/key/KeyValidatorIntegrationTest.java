@@ -39,14 +39,14 @@ public class KeyValidatorIntegrationTest {
    * Test file system.
    */
   static final File TEST_DIR = new File("src/test/resources/fixtures/validation/key/fs");
-  static final File OLD_RELEASE_DIR = new File(TEST_DIR, "old");
-  static final File NEW_RELEASE_DIR = new File(TEST_DIR, "new");
+  static final File EXISTING_RELEASE_DIR = new File(TEST_DIR, "existing");
+  static final File INCREMENTAL_RELEASE_DIR = new File(TEST_DIR, "incremental");
 
   /**
    * Test data.
    */
-  static final String OLD_RELEASE_NAME = "release1";
-  static final String NEW_RELEASE_NAME = "release2";
+  static final String EXISTING_RELEASE_NAME = "release1";
+  static final String INCREMENTAL_RELEASE_NAME = "release2";
   static final String PROJECT_KEY = "project1";
 
   /**
@@ -73,8 +73,8 @@ public class KeyValidatorIntegrationTest {
     this.rootDir = new Path(tmp.newFolder().getAbsolutePath());
     System.out.println("Test root dir: '" + rootDir + "'");
 
-    copyDirectory(OLD_RELEASE_DIR, new Path(new Path(rootDir, OLD_RELEASE_NAME), PROJECT_KEY));
-    copyDirectory(NEW_RELEASE_DIR, new Path(new Path(rootDir, NEW_RELEASE_NAME), PROJECT_KEY));
+    copyDirectory(EXISTING_RELEASE_DIR, new Path(new Path(rootDir, EXISTING_RELEASE_NAME), PROJECT_KEY));
+    copyDirectory(INCREMENTAL_RELEASE_DIR, new Path(new Path(rootDir, INCREMENTAL_RELEASE_NAME), PROJECT_KEY));
   }
 
   @Test
@@ -98,7 +98,7 @@ public class KeyValidatorIntegrationTest {
     val fsRoot = rootDir.toUri().toString();
     val fsUrl = fileSystem.getUri().toString();
 
-    return new KeyValidationContext(OLD_RELEASE_NAME, NEW_RELEASE_NAME, PROJECT_KEY, fsRoot, fsUrl);
+    return new KeyValidationContext(EXISTING_RELEASE_NAME, INCREMENTAL_RELEASE_NAME, PROJECT_KEY, fsRoot, fsUrl);
   }
 
 }

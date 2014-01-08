@@ -40,6 +40,8 @@ import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_FK
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_PKS;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.NOT_APPLICABLE;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_P_FKS;
@@ -106,48 +108,38 @@ public class KVSubmissionErrors {
   private final Map<KVFileType, KVFileErrors> errors = new ImmutableMap.Builder<KVFileType, KVFileErrors>()
       .put(
           DONOR,
-          new KVFileErrors(DONOR_PKS))
+          new KVFileErrors(DONOR_PKS, NOT_APPLICABLE, NOT_APPLICABLE))
       .put(
           SPECIMEN,
-          new KVFileErrors(
-              SPECIMEN_PKS,
-              SPECIMEN_FKS))
+          new KVFileErrors(SPECIMEN_PKS, SPECIMEN_FKS, NOT_APPLICABLE))
       .put(
           SAMPLE,
-          new KVFileErrors(
-              SAMPLE_PKS,
-              SAMPLE_FKS))
+          new KVFileErrors(SAMPLE_PKS, SAMPLE_FKS, NOT_APPLICABLE))
 
       // SSM
       .put(
           SSM_M,
-          new KVFileErrors(
-              SSM_M_PKS,
-              SSM_M_FKS1,
-              SSM_M_FKS2))
+          new KVFileErrors(SSM_M_PKS, SSM_M_FKS1, SSM_M_FKS2))
       .put(
           SSM_P,
-          new KVFileErrors(
-              new Object(), // TODO: factory
-              SSM_P_FKS))
+          new KVFileErrors(NOT_APPLICABLE, SSM_P_FKS, NOT_APPLICABLE))
 
       // CNSM
       .put(
           CNSM_M,
-          new KVFileErrors(
-              CNSM_M_PKS,
-              CNSM_M_FKS1,
-              CNSM_M_FKS2))
+          new KVFileErrors(CNSM_M_PKS, CNSM_M_FKS1, CNSM_M_FKS2))
       .put(
           CNSM_P,
           new KVFileErrors(
+              NOT_APPLICABLE,
               CNSM_P_PKS,
               CNSM_P_FKS))
       .put(
           CNSM_S,
           new KVFileErrors(
-              new Object(),
-              CNSM_S_FKS))
+              NOT_APPLICABLE,
+              CNSM_S_FKS,
+              NOT_APPLICABLE))
 
       // STSM
       .put(
@@ -160,29 +152,34 @@ public class KVSubmissionErrors {
           STSM_P,
           new KVFileErrors(
               STSM_P_PKS,
-              STSM_P_FKS))
+              STSM_P_FKS,
+              NOT_APPLICABLE))
       .put(
           STSM_S,
           new KVFileErrors(
-              new Object(),
-              STSM_S_FKS))
+              NOT_APPLICABLE,
+              STSM_S_FKS,
+              NOT_APPLICABLE))
 
       // MIRNA
       .put(
           MIRNA_M,
           new KVFileErrors(
               MIRNA_M_PKS,
-              MIRNA_M_FKS))
+              MIRNA_M_FKS,
+              NOT_APPLICABLE))
       .put(
           MIRNA_P,
           new KVFileErrors(
-              MIRNA_P_PKS,
-              MIRNA_P_FKS))
+              NOT_APPLICABLE,
+              MIRNA_P_FKS,
+              NOT_APPLICABLE))
       .put(
           MIRNA_S,
           new KVFileErrors(
-              new Object(),
-              MIRNA_S_FKS))
+              MIRNA_S_PKS,
+              MIRNA_S_FKS,
+              NOT_APPLICABLE))
 
       // METH
       .put(
@@ -195,60 +192,70 @@ public class KVSubmissionErrors {
           METH_P,
           new KVFileErrors(
               METH_P_PKS,
-              METH_P_FKS))
+              METH_P_FKS,
+              NOT_APPLICABLE))
       .put(
           METH_S,
           new KVFileErrors(
-              new Object(),
-              METH_S_FKS))
+              NOT_APPLICABLE,
+              METH_S_FKS,
+              NOT_APPLICABLE))
 
       // EXP
       .put(
           EXP_M,
           new KVFileErrors(
               EXP_M_PKS,
-              EXP_M_FKS))
+              EXP_M_FKS,
+              NOT_APPLICABLE))
       .put(
           EXP_P,
           new KVFileErrors(
-              new Object(),
-              EXP_G_FKS))
+              NOT_APPLICABLE,
+              EXP_G_FKS,
+              NOT_APPLICABLE))
 
       // PEXP
       .put(
           PEXP_M,
           new KVFileErrors(
               PEXP_M_PKS,
-              PEXP_M_FKS))
+              PEXP_M_FKS,
+              NOT_APPLICABLE))
       .put(
           PEXP_P,
           new KVFileErrors(
-              new Object(),
-              PEXP_P_FKS))
+              NOT_APPLICABLE,
+              PEXP_P_FKS,
+              NOT_APPLICABLE))
 
       // JCN
       .put(
           JCN_M,
           new KVFileErrors(
               JCN_M_PKS,
-              JCN_M_FKS))
+              JCN_M_FKS,
+              NOT_APPLICABLE))
       .put(
           JCN_P,
           new KVFileErrors(
-              new Object(),
-              JCN_P_FKS))
+              NOT_APPLICABLE,
+              JCN_P_FKS,
+              NOT_APPLICABLE))
 
       // SGV
       .put(
           SGV_M,
           new KVFileErrors(
               SGV_M_PKS,
-              SGV_M_FKS))
+              SGV_M_FKS,
+              NOT_APPLICABLE))
       .put(
           SGV_P,
           new KVFileErrors(
-              new Object(),
-              SGV_P_FKS))
+              NOT_APPLICABLE,
+              SGV_P_FKS,
+              NOT_APPLICABLE))
 
       .build();
 

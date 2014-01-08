@@ -17,20 +17,18 @@
  */
 package org.icgc.dcc.submission.validation.key.surjectivity;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.Set;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
 import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 
 /**
@@ -40,63 +38,79 @@ import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 @Slf4j
 public class SurjectivityValidator {
 
-  public static final long SURJECTION_ERROR_LINE_NUMBER = -1;
+  public static final long SIMPLE_SURJECTION_ERROR_LINE_NUMBER = -1;
+  public static final long COMPLEX_SURJECTION_ERROR_LINE_NUMBER = -2;
 
   @NonNull
   private final KVFileSystem fileSystem;
 
   /**
-   * TODO: explain very special case
+   * TODO: explain very special case.
+   * <p>
+   * From potentially more than one file (hence "complex").
    */
-  private final Set<KVKeyValues> sampleSurjectionEncountered = newTreeSet();
+  private final Set<KVKeyValues> encounteredSampleKeys = newTreeSet();
 
-  public void addEncounteredSamples(Set<KVKeyValues> surjectionEncountered) {
-    sampleSurjectionEncountered.addAll(surjectionEncountered);
+  public Set<KVKeyValues> getSurjectionExpectedKeys(@NonNull KVFileDataDigest referencedData) {
+    return newTreeSet(referencedData.getPks());
+  }
+
+  public void addEncounteredSampleKeys(Set<KVKeyValues> surjectionEncountered) {
+    encounteredSampleKeys.addAll(surjectionEncountered);
   }
 
   public void validateSimpleSurjection(
-      KVFileType fileType,
-      KVFileDataDigest dataDigest,
-      KVFileErrors surjectionFileErrors,
-      Set<KVKeyValues> surjectionEncountered) {
-    val expectedSurjectionKeys = newTreeSet(checkNotNull(dataDigest, "TODO: '%s'", fileType).getPks());
-    if (hasSurjectionErrors(expectedSurjectionKeys, surjectionEncountered)) {
+      Set<KVKeyValues> expectedKeys,
+      Set<KVKeyValues> encounteredKeys, // From one file only (unlike for complex check)
+      KVFileErrors referencedFileErrors) {
+    if (hasSurjectionErrors(expectedKeys, encounteredKeys)) {
       collectSurjectionErrors(
-          expectedSurjectionKeys,
-          surjectionEncountered,
-          surjectionFileErrors);
+          false,
+          expectedKeys,
+          encounteredKeys,
+          referencedFileErrors);
     }
   }
 
   public void validateComplexSurjection(
-      KVFileDataDigest sampleExistingData,
-      KVFileDataDigest sampleNewData,
-      KVFileErrors surjectionSampleFileErrors) {
-    val sampleDataDigest = fileSystem.hasIncrementalClinicalData() ? sampleNewData : sampleExistingData;
-    val expectedSampleSujectionKeys = newTreeSet(checkNotNull(sampleDataDigest, "TODO: '%s'").getPks()); // FIXME
-    if (hasSurjectionErrors(expectedSampleSujectionKeys, sampleSurjectionEncountered)) {
+      Set<KVKeyValues> expectedSampleKeys,
+      KVFileErrors sampleFileErrors) {
+
+    if (encounteredSampleKeys.isEmpty()) {
+      log.warn("No sample encountered..."); // Could indicate an issue
+    }
+    if (hasSurjectionErrors(expectedSampleKeys, encounteredSampleKeys)) {
       log.error("Some complex surjection errors detected");
       collectSurjectionErrors(
-          expectedSampleSujectionKeys,
-          sampleSurjectionEncountered,
-          surjectionSampleFileErrors);
+          true,
+          expectedSampleKeys,
+          encounteredSampleKeys,
+          sampleFileErrors);
     } else {
       log.error("No complex surjection errors detected");
     }
   }
 
-  private void collectSurjectionErrors(
-      Set<KVKeyValues> surjectionExpected,
-      Set<KVKeyValues> surjectionEncountered,
-      KVFileErrors fileError) {
-    for (KVKeyValues keys : surjectionExpected) {
-      if (!surjectionEncountered.contains(keys)) {
-        fileError.addSurjectionError(keys);
-      }
-    }
+  private boolean hasSurjectionErrors(Set<KVKeyValues> surjectionExpected, Set<KVKeyValues> surjectionEncountered) {
+    int expectedSize = surjectionExpected.size();
+    int encounteredSize = surjectionEncountered.size();
+    checkState(encounteredSize <= expectedSize, "TODO");
+    return expectedSize != encounteredSize;
   }
 
-  private boolean hasSurjectionErrors(Set<KVKeyValues> surjectionExpected, Set<KVKeyValues> surjectionEncountered) {
-    return surjectionExpected.size() != surjectionEncountered.size();
+  private void collectSurjectionErrors(
+      boolean complex,
+      Set<KVKeyValues> expectedKeys,
+      Set<KVKeyValues> encounteredKeys,
+      KVFileErrors referencedFileError) {
+    for (KVKeyValues keys : expectedKeys) {
+      if (!encounteredKeys.contains(keys)) {
+        if (complex) {
+          referencedFileError.addComplexSurjectionError(keys);
+        } else {
+          referencedFileError.addSimpleSurjectionError(keys);
+        }
+      }
+    }
   }
 }

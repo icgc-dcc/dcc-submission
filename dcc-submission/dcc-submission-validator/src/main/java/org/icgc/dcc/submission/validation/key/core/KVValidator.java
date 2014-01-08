@@ -31,7 +31,6 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMP
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +45,7 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.key.error.KVError;
+import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
@@ -55,6 +55,8 @@ import com.google.common.collect.Sets;
 
 @Slf4j
 public class KVValidator {
+
+  public static final boolean SUPPORT_EXISTING = false;
 
   @NonNull
   private final KVFileSystem fileSystem;
@@ -78,20 +80,22 @@ public class KVValidator {
     val deletionData = DeletionData.getInstance(fileSystem);
     // validateDeletions(deletionData);
 
-    // Process existing data
-    if (fileSystem.hasExistingData()) {
-      loadExistingData();
-    } else {
-      loadPlaceholderExistingFiles();
+    if (SUPPORT_EXISTING) {
+      // Process existing data
+      if (fileSystem.hasExistingData()) {
+        loadExistingData();
+      } else {
+        loadPlaceholderExistingFiles();
+      }
+      log.info("{}", repeat("=", 75));
+      for (val entry : existingData.entrySet()) {
+        log.info("{}: {}", entry.getKey(), entry.getValue());
+      }
+      log.info("{}", repeat("=", 75));
     }
-    log.info("{}", repeat("=", 75));
-    for (val entry : existingData.entrySet()) {
-      log.info("{}: {}", entry.getKey(), entry.getValue());
-    }
-    log.info("{}", repeat("=", 75));
 
     // Process incremental data
-    loadIncrementalData(deletionData);
+    validateIncrementalData(deletionData);
     log.info("{}", repeat("=", 75));
     for (val entry : incrementalData.entrySet()) {
       log.info("{}: {}", entry.getKey(), entry.getValue());
@@ -171,16 +175,17 @@ public class KVValidator {
   /**
    * Order matters!
    */
-  private void loadIncrementalData(DeletionData deletionData) {
+  private void validateIncrementalData(DeletionData deletionData) {
     log.info("Loading incremental data");
 
     // Incremental clinical data
     if (fileSystem.hasIncrementalClinicalData()) {
       log.info("Processing incremental clinical data");
-      loadIncrementalFile(DONOR, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
-      loadIncrementalFile(SPECIMEN, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
-      loadIncrementalFile(SAMPLE, INCREMENTAL_TO_BE_TREATED_AS_EXISTING, deletionData);
+      loadIncrementalFile(DONOR, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(SPECIMEN, INCREMENTAL_FILE, deletionData);
+      loadIncrementalFile(SAMPLE, INCREMENTAL_FILE, deletionData);
     } else {
+      checkState(false, "NOT VALID ANYMORE"); // FIXME
       log.info("No incremental clinical data");
     }
 
@@ -210,25 +215,30 @@ public class KVValidator {
   }
 
   private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
-    log.info("{}", repeat("=", 75));
-    log.info("Loading incremental file: '{}.{}'", fileType, submissionType);
     val dataFilePath = fileSystem.getDataFilePath(INCREMENTAL_FILE, fileType);
+    val referencedType = RELATIONS.get(fileType);
+    log.info("{}", repeat("=", 75));
+    log.info("Loading incremental file: '{}.{}' ('{}'); Referencing '{}'",
+        new Object[] { fileType, submissionType, dataFilePath, referencedType });
 
     incrementalData.put(
         fileType,
         new KVIncrementalFileDataDigest(
             getIncrementalFileDescription(
                 submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
-            2,
+            100,
             fileSystem,
             deletionData,
 
-            existingData.get(fileType),
-            existingData.get(RELATIONS.get(fileType)),
-            getOptionalReferencedData(fileType),
+            referencedType != null ? // TODO: subclass?
+            Optional.of(incrementalData.get(referencedType)) : Optional.<KVFileDataDigest> absent(),
+            // existingData.get(fileType),
+            // existingData.get(RELATIONS.get(fileType)),
+            // getOptionalReferencedData(fileType),
 
             errors.getFileErrors(fileType),
-            errors.getFileErrors(RELATIONS.get(fileType)), // May be null (for DONOR for instance)
+            referencedType != null ?
+                Optional.of(errors.getFileErrors(referencedType)) : Optional.<KVFileErrors> absent(),
 
             surjectivityValidator)
             .processFile());
@@ -254,6 +264,7 @@ public class KVValidator {
         KVFileDataDigest.getEmptyInstance(getPlaceholderFileDescription(fileType)));
   }
 
+  @SuppressWarnings("unused")
   private Optional<KVFileDataDigest> getOptionalReferencedData(KVFileType fileType) {
     val referencedFileType = RELATIONS.get(fileType);
     if (referencedFileType == null) {
@@ -275,8 +286,8 @@ public class KVValidator {
     log.info("{}", repeat("=", 75));
     log.info("Validating complex surjection");
     surjectivityValidator.validateComplexSurjection(
-        existingData.get(SAMPLE),
-        incrementalData.get(SAMPLE),
+        // existingData.get(SAMPLE),
+        surjectivityValidator.getSurjectionExpectedKeys(incrementalData.get(SAMPLE)),
         errors.getFileErrors(SAMPLE));
     log.info("{}", repeat("=", 75));
   }

@@ -28,14 +28,14 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public enum KVErrorType {
-  EXISTING_UNIQUE(PK),
-  INCREMENTAL_UNIQUE(PK),
+  UNIQUENESS(PK),
   PRIMARY_RELATION(FK),
   SECONDARY_RELATION(SECONDARY_FK),
-  SURJECTION(PK); // TODO: split
+  SIMPLE_SURJECTION(PK),
+  COMPLEX_SURJECTION(PK);
 
   /**
-   * TODO: explain!
+   * The fields on which the error is reported.
    */
   @Getter
   private final KeysType keysType;

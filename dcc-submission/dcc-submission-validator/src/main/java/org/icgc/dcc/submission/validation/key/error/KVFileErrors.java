@@ -18,65 +18,84 @@
 package org.icgc.dcc.submission.validation.key.error;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SURJECTION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.INCREMENTAL_UNIQUE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.EXISTING_UNIQUE;
-import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
+import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.COMPLEX_SURJECTION_ERROR_LINE_NUMBER;
+import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SIMPLE_SURJECTION_ERROR_LINE_NUMBER;
 
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
+import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * 
  */
+@Slf4j
 public class KVFileErrors {
 
-  private final Map<KVErrorType, List<Integer>> fieldIndicesPerErrorType = newLinkedHashMap();
+  private final Map<KVErrorType, List<Integer>> fieldIndicesPerErrorType;
   private final Map<Long, KVRowError> rowErrors = newTreeMap();
 
-  public KVFileErrors(@NonNull List<Integer> pkIndices) {
-    this.fieldIndicesPerErrorType.put(EXISTING_UNIQUE, pkIndices);
-    this.fieldIndicesPerErrorType.put(INCREMENTAL_UNIQUE, pkIndices);
-    this.fieldIndicesPerErrorType.put(SURJECTION, pkIndices); // FIXME
-  }
-
-  public KVFileErrors(List<Integer> pkIndices, List<Integer> fkIndices) {
-    this(pkIndices);
-    fieldIndicesPerErrorType.put(PRIMARY_RELATION, fkIndices);
-  }
-
+  // TODO: factory instead of constructor
   public KVFileErrors(
-      @NonNull List<Integer> pkIndices,
-      @NonNull List<Integer> fkIndices,
-      @NonNull List<Integer> secondaryFkIndices) {
-    this(pkIndices, fkIndices);
-    fieldIndicesPerErrorType.put(SECONDARY_RELATION, secondaryFkIndices);
+      List<Integer> pkIndices,
+      List<Integer> fkIndices,
+      List<Integer> secondaryFkIndices) {
+    checkState(pkIndices != null || fkIndices != null || secondaryFkIndices != null, "TODO");
+    fieldIndicesPerErrorType = getFieldIndicesPerErrorType(pkIndices, fkIndices, secondaryFkIndices);
+    checkState(!fieldIndicesPerErrorType.isEmpty(), "TODO");
+    log.info("fieldIndicesPerErrorType: '{}'", fieldIndicesPerErrorType);
   }
 
-  // TODO: factory instead of constructors
-  public KVFileErrors(
-      @NonNull Object ignoreMe,
-      @NonNull List<Integer> fkIndices) {
-    fieldIndicesPerErrorType.put(PRIMARY_RELATION, fkIndices);
+  private final Map<KVErrorType, List<Integer>> getFieldIndicesPerErrorType(
+      List<Integer> pkIndices, List<Integer> fkIndices, List<Integer> secondaryFkIndices) {
+    val builder = new ImmutableMap.Builder<KVErrorType, List<Integer>>();
+    for (val errorType : KVErrorType.values()) {
+      val keysType = errorType.getKeysType();
+      val optionalIndices = getOptionalIndices(keysType,
+          pkIndices, fkIndices, secondaryFkIndices);
+      log.info("keysType, optionalIndices: '({}, {})'", keysType, optionalIndices);
+      if (optionalIndices.isPresent()) {
+        builder.put(errorType, optionalIndices.get());
+      }
+    }
+    return builder.build();
+  }
+
+  private final Optional<List<Integer>> getOptionalIndices(KeysType keysType,
+      List<Integer> pkIndices, List<Integer> fkIndices, List<Integer> secondaryFkIndices) {
+    List<Integer> indices = null;
+    switch (keysType) {
+    case PK:
+      indices = pkIndices == null ? null : newArrayList(pkIndices);
+      break;
+    case FK:
+      indices = fkIndices == null ? null : newArrayList(fkIndices);
+      break;
+    case SECONDARY_FK:
+      indices = secondaryFkIndices == null ? null : newArrayList(secondaryFkIndices);
+      break;
+    default:
+      checkState(false, "%s", keysType);
+    }
+    return indices == null ? Optional.<List<Integer>> absent() : Optional.of(indices);
   }
 
   public boolean hasError(long lineNumber) {
     return rowErrors.containsKey(lineNumber);
-  }
-
-  public void addSurjectionError(KVKeyValues keys) {
-    addError(SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys);
   }
 
   /**
@@ -84,6 +103,14 @@ public class KVFileErrors {
    */
   public void addError(long lineNumber, KVErrorType type, KVKeyValues keys) {
     rowErrors.put(lineNumber, new KVRowError(type, keys)); // FIXME
+  }
+
+  public void addSimpleSurjectionError(KVKeyValues keys) {
+    addError(SIMPLE_SURJECTION_ERROR_LINE_NUMBER, SIMPLE_SURJECTION, keys);
+  }
+
+  public void addComplexSurjectionError(KVKeyValues keys) {
+    addError(COMPLEX_SURJECTION_ERROR_LINE_NUMBER, COMPLEX_SURJECTION, keys);
   }
 
   public boolean describe(KVFileDescription kvFileDescription) {
@@ -96,7 +123,7 @@ public class KVFileErrors {
         val fieldIndices = checkNotNull(
             fieldIndicesPerErrorType
                 .get(rowError.getType()),
-            "TODO: %s", entry);
+            "TODO: %s, %s", fieldIndicesPerErrorType, rowError.getType());
         rowError.describe(kvFileDescription, lineNumber, fieldIndices);
       }
       return false;

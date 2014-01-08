@@ -42,6 +42,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMP
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
@@ -112,6 +113,7 @@ public final class KVConstants {
           .build();
 
   // TODO: translate to Strings rather? + make map per file type/submission type?
+  public static final List<Integer> NOT_APPLICABLE = null;
   public static final List<Integer> CNSM_M_FKS1 = newArrayList(1);
   public static final List<Integer> CNSM_M_FKS2 = newArrayList(2);
   public static final List<Integer> CNSM_M_PKS = newArrayList(0, 1);
@@ -176,7 +178,6 @@ public final class KVConstants {
   public static final List<String> MIRNA_S_FK_NAMES = newArrayList("mirna_seq");
   public static final List<String> MIRNA_S_PK_NAMES = newArrayList("mirna_seq", "chromosome", "chromosome_start",
       "chromosome_end", "chromosome_strand");
-
   public static final List<String> PEXP_M_FK_NAMES = newArrayList("analyzed_sample_id");
   public static final List<String> PEXP_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
   public static final List<String> PEXP_P_FK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
