@@ -29,12 +29,14 @@ import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityVa
 import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
 
 import com.google.common.base.Optional;
@@ -46,14 +48,17 @@ import com.google.common.collect.ImmutableMap;
 @Slf4j
 public class KVFileErrors {
 
+  private final KVFileType fileType;
   private final Map<KVErrorType, List<Integer>> fieldIndicesPerErrorType;
   private final Map<Long, List<KVRowError>> lineToRowErrors = newTreeMap();
 
   // TODO: factory instead of constructor
   public KVFileErrors(
+      @NonNull KVFileType fileType,
       List<Integer> pkIndices,
       List<Integer> fkIndices,
       List<Integer> secondaryFkIndices) {
+    this.fileType = fileType;
     checkState(pkIndices != null || fkIndices != null || secondaryFkIndices != null, "TODO");
     fieldIndicesPerErrorType = getFieldIndicesPerErrorType(pkIndices, fkIndices, secondaryFkIndices);
     checkState(!fieldIndicesPerErrorType.isEmpty(), "TODO");
@@ -67,7 +72,7 @@ public class KVFileErrors {
       val keysType = errorType.getKeysType();
       val optionalIndices = getOptionalIndices(keysType,
           pkIndices, fkIndices, secondaryFkIndices);
-      log.info("keysType, optionalIndices: '({}, {})'", keysType, optionalIndices);
+      log.info("keysType, optionalIndices: {}, '({}, {})'", new Object[] { fileType, keysType, optionalIndices });
       if (optionalIndices.isPresent()) {
         builder.put(errorType, optionalIndices.get());
       }
@@ -118,7 +123,7 @@ public class KVFileErrors {
     addError(COMPLEX_SURJECTION_ERROR_LINE_NUMBER, COMPLEX_SURJECTION, keys);
   }
 
-  public boolean describe(KVFileDescription kvFileDescription) {
+  public boolean describe(KVFileDescription kvFileDescription) { // TODO: remove full description?
     if (lineToRowErrors.isEmpty()) {
       return true;
     } else {
@@ -129,7 +134,7 @@ public class KVFileErrors {
           val fieldIndices = checkNotNull(
               fieldIndicesPerErrorType
                   .get(rowError.getType()),
-              "TODO: %s, %s, %s", fieldIndicesPerErrorType, rowError.getType(), kvFileDescription);
+              "TODO: %s, %s, %s, %s", fileType, fieldIndicesPerErrorType, rowError.getType(), kvFileDescription);
           rowError.describe(kvFileDescription, lineNumber, fieldIndices);
         }
       }
