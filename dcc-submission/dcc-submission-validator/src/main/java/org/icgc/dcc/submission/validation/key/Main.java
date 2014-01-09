@@ -19,6 +19,9 @@ package org.icgc.dcc.submission.validation.key;
 
 import lombok.val;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 /**
  * Command-line utility to initiate key validation on a specified project stored locally or in HDFS. Will use Cascading
  * local or Hadoop depending on the {@code fsUrl} argument's scheme.
@@ -26,6 +29,8 @@ import lombok.val;
 public class Main {
 
   public static void main(String... args) throws InterruptedException {
+    Logger.getRootLogger().setLevel(Level.INFO);
+
     // Resolve configuration
     int i = 0;
     val previousReleaseName = args.length >= ++i ? args[i - 1] : "release1";

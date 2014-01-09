@@ -67,7 +67,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -194,9 +194,9 @@ public class KVSubmissionErrors {
               EXP_M_FKS,
               NOT_APPLICABLE))
       .put(
-          EXP_P,
+          EXP_G,
           new KVFileErrors(
-              EXP_P, NOT_APPLICABLE,
+              EXP_G, NOT_APPLICABLE,
               EXP_G_FKS,
               NOT_APPLICABLE))
 

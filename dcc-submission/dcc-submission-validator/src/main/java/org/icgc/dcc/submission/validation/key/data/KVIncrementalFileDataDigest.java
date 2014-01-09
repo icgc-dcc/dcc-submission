@@ -28,7 +28,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -53,6 +53,7 @@ import java.util.Set;
 
 import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
@@ -62,6 +63,7 @@ import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator
 
 import com.google.common.base.Optional;
 
+@Slf4j
 public class KVIncrementalFileDataDigest extends KVFileDataDigest {
 
   @SuppressWarnings("unused")
@@ -470,7 +472,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
         encounteredKeys.add(tuple.getSecondaryFk());
       }
-    } else if (fileType == EXP_P) {
+    } else if (fileType == EXP_G) {
       ; // No uniqueness check for EXP_P
 
       // Foreign key check
@@ -620,10 +622,11 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
 
   @Override
   protected void postProcessing() {
-    // Surjectivity; TODO: externalize
+    // Surjectivity; TODO: externalize?
 
     val fileType = kvFileDescription.getFileType();
     if (fileType.hasSimpleSurjectiveRelation()) {
+      log.info("Post-processing: simply surjectivity check");
       checkState(optionalReferencedData.isPresent(), "TODO");
       checkState(optionalReferencedFileErrors.isPresent(), "TODO");
       surjectivityValidator
@@ -636,6 +639,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
     }
 
     if (fileType.hasComplexSurjectiveRelation()) {
+      log.info("Post-processing: complex surjectivity addition");
       // Simply adding them all for now, actual validation will have to take place after all meta files have been read
       // (unlike for "simple" surjection check).
       surjectivityValidator.addEncounteredSampleKeys(encounteredKeys);

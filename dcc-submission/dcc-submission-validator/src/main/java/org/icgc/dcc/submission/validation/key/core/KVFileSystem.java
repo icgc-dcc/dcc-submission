@@ -28,6 +28,7 @@ import java.io.InputStream;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,6 +37,7 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
 @RequiredArgsConstructor
+@Slf4j
 public final class KVFileSystem {
 
   @NonNull
@@ -52,7 +54,9 @@ public final class KVFileSystem {
 
   public Path getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
     val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
-    return new Path(basePath, fileType.toString().toLowerCase() + ".txt");
+    Path path = new Path(basePath, fileType.toString().toLowerCase() + ".txt");
+    log.info("Searching for '{}'", path);
+    return path;
   }
 
   public Path getToBeRemovedFilePath() {

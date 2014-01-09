@@ -20,6 +20,13 @@ package org.icgc.dcc.submission.validation.cascading;
 import java.io.IOException;
 
 import lombok.NonNull;
+import lombok.val;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.icgc.dcc.hadoop.io.NullOutputFormat;
+
 import cascading.flow.FlowProcess;
 import cascading.scheme.NullScheme;
 import cascading.scheme.Scheme;
@@ -28,7 +35,7 @@ import cascading.tap.SinkTap;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntrySchemeCollector;
 
-class EmptySinkTap<T> extends SinkTap<T, Void> {
+class EmptySinkTap<T> extends SinkTap<T, Object> {
 
   @NonNull
   private final String identifier;
@@ -38,9 +45,22 @@ class EmptySinkTap<T> extends SinkTap<T, Void> {
     this(new NullScheme(), identifier);
   }
 
-  public EmptySinkTap(Scheme<T, ?, Void, ?, ?> scheme, String identifier) {
+  public EmptySinkTap(Scheme<T, ?, Object, ?, ?> scheme, String identifier) {
     super(scheme, SinkMode.UPDATE);
     this.identifier = "empty://sink." + identifier;
+  }
+
+  @Override
+  public void sinkConfInit(FlowProcess<T> flowProcess, T t) {
+    super.sinkConfInit(flowProcess, t);
+
+    // FIXME
+    // https://groups.google.com/d/topic/cascading-user/ngLidsZQjIU/discussion
+    if (t instanceof JobConf) {
+      val jobConf = (JobConf) t;
+      FileOutputFormat.setOutputPath(jobConf, new Path("/tmp/ignoreme"));
+      jobConf.setOutputFormat(NullOutputFormat.class);
+    }
   }
 
   @Override
@@ -49,8 +69,8 @@ class EmptySinkTap<T> extends SinkTap<T, Void> {
   }
 
   @Override
-  public TupleEntryCollector openForWrite(FlowProcess<T> flowProcess, Void output) throws IOException {
-    return new TupleEntrySchemeCollector<T, Void>(flowProcess, getScheme(), output);
+  public TupleEntryCollector openForWrite(FlowProcess<T> flowProcess, Object output) throws IOException {
+    return new TupleEntrySchemeCollector<T, Object>(flowProcess, getScheme(), output);
   }
 
   @Override

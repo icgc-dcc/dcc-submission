@@ -21,6 +21,13 @@ import java.io.Closeable;
 import java.io.IOException;
 
 import lombok.NonNull;
+import lombok.val;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.icgc.dcc.hadoop.io.NullInputFormat;
+
 import cascading.flow.FlowProcess;
 import cascading.scheme.NullScheme;
 import cascading.scheme.Scheme;
@@ -41,6 +48,19 @@ class EmptySourceTap<T> extends SourceTap<T, Closeable> {
   public EmptySourceTap(Scheme<T, Closeable, ?, ?, ?> scheme, String identifier) {
     super(scheme);
     this.identifier = "empty://source." + identifier;
+  }
+
+  @Override
+  public void sourceConfInit(FlowProcess<T> flowProcess, T t) {
+    super.sourceConfInit(flowProcess, t);
+
+    // FIXME
+    // https://groups.google.com/d/topic/cascading-user/ngLidsZQjIU/discussion
+    if (t instanceof JobConf) {
+      val jobConf = (JobConf) t;
+      FileInputFormat.setInputPaths(jobConf, new Path("/tmp/ignoreme"));
+      jobConf.setInputFormat(NullInputFormat.class);
+    }
   }
 
   @Override
@@ -69,5 +89,4 @@ class EmptySourceTap<T> extends SourceTap<T, Closeable> {
   public long getModifiedTime(T conf) throws IOException {
     return System.currentTimeMillis();
   }
-
 }

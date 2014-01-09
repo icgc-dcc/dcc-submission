@@ -237,6 +237,10 @@ public class KeyValidationContext implements ValidationContext {
 
   private Config getConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
+        // FIXME
+        "hadoop.mapred.child.java.opts", "-Xmx31g",
+        "hadoop.mapred.input.format.class", "",
+
         "fs.root", fsRoot,
         "fs.url", fsUrl
         ));

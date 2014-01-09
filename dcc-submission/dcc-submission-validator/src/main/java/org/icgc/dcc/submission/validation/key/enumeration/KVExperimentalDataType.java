@@ -23,7 +23,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -57,7 +57,7 @@ public enum KVExperimentalDataType {
   STSM(STSM_M, of(STSM_M, STSM_P, STSM_S)),
   MIRNA(MIRNA_M, of(MIRNA_M, MIRNA_P, MIRNA_S)),
   METH(METH_M, of(METH_M, METH_P, METH_S)),
-  EXP(EXP_M, of(EXP_M, EXP_P)),
+  EXP(EXP_M, of(EXP_M, EXP_G)),
   PEXP(PEXP_M, of(PEXP_M, PEXP_P)),
   JCN(JCN_M, of(JCN_M, JCN_P)),
   SGV(SGV_M, of(SGV_M, SGV_P));

@@ -18,11 +18,11 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static java.lang.String.format;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MAPPER;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
-import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -39,7 +39,7 @@ import com.google.common.base.Optional;
  * TODO: rename
  */
 @Value
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = PRIVATE)
 public class KVFileDescription {
 
   @NonNull

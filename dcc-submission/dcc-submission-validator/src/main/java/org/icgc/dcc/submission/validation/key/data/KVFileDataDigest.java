@@ -73,7 +73,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -275,7 +275,7 @@ public class KVFileDataDigest {
       pk = from(row, EXP_M_PKS);
       fk1 = from(row, EXP_M_FKS);
       fk2 = NOT_APPLICABLE;
-    } else if (fileType == EXP_P) {
+    } else if (fileType == EXP_G) {
       pk = NOT_APPLICABLE;
       fk1 = from(row, EXP_G_FKS);
       fk2 = NOT_APPLICABLE;

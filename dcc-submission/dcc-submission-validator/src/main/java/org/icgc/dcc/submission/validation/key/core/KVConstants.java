@@ -26,7 +26,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXPOSURE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.FAMILY;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
@@ -99,7 +99,7 @@ public final class KVConstants {
           .put(METH_S, METH_P)
 
           .put(EXP_M, SAMPLE)
-          .put(EXP_P, EXP_M)
+          .put(EXP_G, EXP_M)
 
           .put(PEXP_M, SAMPLE)
           .put(PEXP_P, PEXP_M)

@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.validation.key.surjectivity;
 
 import static com.google.common.collect.Sets.newTreeSet;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
 
 import java.util.Set;
 
@@ -101,6 +103,7 @@ public class SurjectivityValidator {
       Set<KVKeyValues> expectedKeys,
       Set<KVKeyValues> encounteredKeys,
       KVFileErrors referencedFileError) {
+    log.info("Collecting '{}' surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
     for (KVKeyValues keys : expectedKeys) {
       if (!encounteredKeys.contains(keys)) {
         if (complex) {

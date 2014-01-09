@@ -52,7 +52,7 @@ public enum KVFileType {
   METH_S,
 
   EXP_M,
-  EXP_P,
+  EXP_G, // Naming exception..
 
   PEXP_M,
   PEXP_P,
@@ -106,7 +106,7 @@ public enum KVFileType {
         && this != STSM_S
         && this != MIRNA_P // MIRNA_S is the one that does (atypical)
         && this != METH_S
-        && this != EXP_P
+        && this != EXP_G
         && this != PEXP_P
         && this != JCN_P
         && this != SGV_P;

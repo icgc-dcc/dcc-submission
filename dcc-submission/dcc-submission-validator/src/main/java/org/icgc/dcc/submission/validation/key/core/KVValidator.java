@@ -210,7 +210,7 @@ public class KVValidator {
         fileType,
         new KVExistingFileDataDigest(
             getExistingFileDescription(fileType, dataFilePath),
-            2)
+            1000000)
             .processFile());
   }
 
@@ -223,15 +223,15 @@ public class KVValidator {
 
     incrementalData.put(
         fileType,
-        new KVIncrementalFileDataDigest(
+        new KVIncrementalFileDataDigest( // TODO: subclass for referencing/non-referencing?
             getIncrementalFileDescription(
                 submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
-            100,
+            1000000,
             fileSystem,
             deletionData,
 
-            referencedType != null ? // TODO: subclass?
-            Optional.of(incrementalData.get(referencedType)) : Optional.<KVFileDataDigest> absent(),
+            referencedType != null ?
+                Optional.of(incrementalData.get(referencedType)) : Optional.<KVFileDataDigest> absent(),
             // existingData.get(fileType),
             // existingData.get(RELATIONS.get(fileType)),
             // getOptionalReferencedData(fileType),
