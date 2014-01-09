@@ -26,7 +26,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.submission.fs.SubmissionFile;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.release.ReleaseException;
 
 import static com.google.common.base.Preconditions.checkNotNull;

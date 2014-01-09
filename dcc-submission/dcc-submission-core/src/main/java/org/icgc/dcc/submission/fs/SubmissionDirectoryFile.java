@@ -15,74 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.core;
+package org.icgc.dcc.submission.fs;
 
-import java.io.IOException;
-import java.io.Serializable;
+import java.util.regex.Pattern;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.key.report.KVReport;
-
-import cascading.flow.hadoop.HadoopFlowStep;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 
 /**
- * Runner that operates within a Cascading step.
+ * There's already a "SubmissionFile" class (for the UI)...
  */
-@Slf4j
 @Value
-public class KVValidatorRunner implements Runnable, Serializable {
+public class SubmissionDirectoryFile {
 
-  /**
-   * Fields that need to be {@link Serializable} to survive the trip to the cluster.
-   * 
-   * @see {@link HadoopFlowStep#pack()}
-   */
-  private final String oldReleasePath;
   @NonNull
-  private final String newReleasePath;
+  String fileName;
   @NonNull
-  private final String reportPath;
-
-  @Override
-  public void run() {
-    try {
-      validate();
-    } catch (Throwable t) {
-      log.error("Error performing key validation:", t);
-    }
-  }
-
-  private void validate() throws IOException {
-    val fileSystem = getFileSystem();
-    val report = new KVReport(fileSystem, new Path(reportPath));
-    try {
-      val validator = new KVValidator(
-          new KVFileSystem(fileSystem, new Path(oldReleasePath), new Path(newReleasePath)),
-          report);
-
-      log.info("Starting key validation...");
-      validator.validate();
-      log.info("Finished key validation");
-    } finally {
-      report.close();
-    }
-  }
-
-  /**
-   * Re-establishes the file system cluster side.
-   */
-  @SneakyThrows
-  private static FileSystem getFileSystem() {
-    // Hopefully 'fs.defaultFS' on Hadoop nodes points to the name node
-    return FileSystem.get(new Configuration());
-  }
+  SubmissionFileType type;
+  @NonNull
+  Pattern pattern;
 
 }

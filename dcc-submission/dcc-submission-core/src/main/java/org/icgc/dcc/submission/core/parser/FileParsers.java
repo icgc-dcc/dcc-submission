@@ -39,7 +39,12 @@ public class FileParsers {
   }
 
   public static FileParser<Map<String, String>> newMapFileParser(FileSystem fileSystem, FileSchema fileSchema) {
-    return new FileParser<Map<String, String>>(fileSystem, new FileLineMapParser(fileSchema));
+    return newMapFileParser(fileSystem, fileSchema, false);
+  }
+
+  public static FileParser<Map<String, String>> newMapFileParser(FileSystem fileSystem, FileSchema fileSchema,
+      boolean processHeader) {
+    return new FileParser<Map<String, String>>(fileSystem, new FileLineMapParser(fileSchema), processHeader);
   }
 
   public static FileParser<String[]> newArrayFileParser() {
@@ -47,7 +52,11 @@ public class FileParsers {
   }
 
   public static FileParser<String[]> newArrayFileParser(FileSystem fileSystem) {
-    return new FileParser<String[]>(fileSystem, new FileLineArrayParser());
+    return newArrayFileParser(fileSystem, false);
+  }
+
+  public static FileParser<String[]> newArrayFileParser(FileSystem fileSystem, boolean processHeader) {
+    return new FileParser<String[]>(fileSystem, new FileLineArrayParser(), processHeader);
   }
 
   public static FileParser<Iterable<String>> newIterableFileParser() {
@@ -55,7 +64,11 @@ public class FileParsers {
   }
 
   public static FileParser<Iterable<String>> newIterableFileParser(FileSystem fileSystem) {
-    return new FileParser<Iterable<String>>(fileSystem, new FileLineIterableParser());
+    return newIterableFileParser(fileSystem, false);
+  }
+
+  public static FileParser<Iterable<String>> newIterableFileParser(FileSystem fileSystem, boolean processHeader) {
+    return new FileParser<Iterable<String>>(fileSystem, new FileLineIterableParser(), processHeader);
   }
 
   public static FileParser<List<String>> newListFileParser() {
@@ -63,7 +76,23 @@ public class FileParsers {
   }
 
   public static FileParser<List<String>> newListFileParser(FileSystem fileSystem) {
-    return new FileParser<List<String>>(fileSystem, new FileLineListParser());
+    return newListFileParser(fileSystem, false);
+  }
+
+  public static FileParser<List<String>> newListFileParser(FileSystem fileSystem, boolean processHeader) {
+    return new FileParser<List<String>>(fileSystem, new FileLineListParser(), processHeader);
+  }
+
+  public static FileParser<String> newStringFileParser() {
+    return newStringFileParser(DEFAULT_FILE_SYSTEM);
+  }
+
+  public static FileParser<String> newStringFileParser(FileSystem fileSystem) {
+    return newStringFileParser(fileSystem, false);
+  }
+
+  public static FileParser<String> newStringFileParser(FileSystem fileSystem, boolean processHeader) {
+    return new FileParser<String>(fileSystem, new FileLineStringParser(), processHeader);
   }
 
   @SneakyThrows

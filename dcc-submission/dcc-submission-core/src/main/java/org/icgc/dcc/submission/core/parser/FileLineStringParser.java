@@ -15,59 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release.model;
+package org.icgc.dcc.submission.core.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.ToString;
 
-import javax.validation.Valid;
+@ToString
+public class FileLineStringParser extends AbstractFileLineParser<String> {
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
-
-import static com.google.common.base.Preconditions.checkArgument;
-
-// TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
-public class DetailedSubmission extends Submission {
-  @NotBlank
-  private String projectName;
-
-  private String projectAlias;
-
-  @Valid
-  private List<SubmissionFile> submissionFiles;
-
-  public DetailedSubmission() {
-    super();
+  @Override
+  public String parse(String line) {
+    return split(line);
   }
 
-  public DetailedSubmission(Submission submission, LiteProject liteProject) {
-    super();
-    checkArgument(submission.projectKey != null && //
-        submission.projectKey.equals(liteProject.getKey())); // By design
-    this.projectKey = liteProject.getKey();
-    this.projectName = liteProject.getName();
-    this.projectAlias = liteProject.getAlias();
-
-    this.state = submission.state;
-    this.report = submission.report;
-    this.lastUpdated = submission.lastUpdated;
-    this.submissionFiles = new ArrayList<SubmissionFile>();
+  protected static String split(String line) {
+    return line;
   }
 
-  public String getProjectName() {
-    return projectName;
-  }
-
-  public String getProjectAlias() {
-    return projectAlias;
-  }
-
-  public List<SubmissionFile> getSubmissionFiles() {
-    return submissionFiles;
-  }
-
-  public void setSubmissionFiles(List<SubmissionFile> submissionFiles) {
-    this.submissionFiles = submissionFiles;
-  }
 }

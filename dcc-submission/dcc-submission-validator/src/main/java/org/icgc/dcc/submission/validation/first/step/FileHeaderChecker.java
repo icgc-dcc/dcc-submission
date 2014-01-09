@@ -32,7 +32,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.fs.SubmissionDirectory.SubmissionDirectoryFile;
+import org.icgc.dcc.submission.fs.SubmissionDirectoryFile;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 import org.icgc.dcc.submission.validation.first.Util;
 

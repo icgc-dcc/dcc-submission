@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,6 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+@Slf4j
 public class KeyValidatorIntegrationTest {
 
   /**
@@ -68,7 +70,7 @@ public class KeyValidatorIntegrationTest {
     this.validator = new KeyValidator();
     this.fileSystem = FileSystem.getLocal(new Configuration());
     this.rootDir = new Path(tmp.newFolder().getAbsolutePath());
-    System.out.println("Test root dir: '" + rootDir + "'");
+    log.info("Test root dir: '{}'", rootDir);
 
     copyDirectory(EXISTING_RELEASE_DIR, new Path(new Path(rootDir, EXISTING_RELEASE_NAME), PROJECT_KEY));
     copyDirectory(INCREMENTAL_RELEASE_DIR, new Path(new Path(rootDir, INCREMENTAL_RELEASE_NAME), PROJECT_KEY));
@@ -86,7 +88,7 @@ public class KeyValidatorIntegrationTest {
       val source = new Path(file.toURI());
       val target = new Path(targetDir, file.getName());
 
-      System.out.println("Copying file: from '" + source + "' to '" + target + "'");
+      log.info("Copying file: from '{}' to '{}'", source, target);
       fileSystem.copyFromLocalFile(source, target);
     }
   }
