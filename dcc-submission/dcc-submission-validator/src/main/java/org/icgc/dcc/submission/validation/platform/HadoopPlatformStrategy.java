@@ -89,7 +89,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector() {
+  public FlowConnector getFlowConnector(Map<Object, Object> properties) {
     Map<Object, Object> flowProperties = newHashMap();
 
     // Custom serialization
@@ -131,6 +131,8 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
           MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
           GZIP_CODEC_PROPERTY_VALUE);
     }
+
+    flowProperties.putAll(properties);
 
     return new HadoopFlowConnector(flowProperties);
   }

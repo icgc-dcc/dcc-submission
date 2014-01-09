@@ -40,6 +40,10 @@ import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
 import org.icgc.dcc.submission.validation.key.error.KVError;
 
+import cascading.flow.FlowConnector;
+
+import com.google.common.collect.ImmutableMap;
+
 @NoArgsConstructor
 @Slf4j
 public class KeyValidator implements Validator {
@@ -48,6 +52,11 @@ public class KeyValidator implements Validator {
    * The name of the component.
    */
   public static final String COMPONENT_NAME = "Key Validator";
+
+  /**
+   * The size of the heap used when running in non-local mode.
+   */
+  private static final String DEFAULT_HEAP_SIZE = "31g";
 
   @Override
   public String getName() {
@@ -92,9 +101,16 @@ public class KeyValidator implements Validator {
   }
 
   private static void execute(ValidationContext context, KVValidatorRunner runnable) {
-    val executor = new CascadeExecutor(context.getPlatformStrategy());
+    val flowConnector = createFlowConnector(context);
+    val executor = new CascadeExecutor(flowConnector);
 
     executor.execute(runnable);
+  }
+
+  private static FlowConnector createFlowConnector(ValidationContext context) {
+    val propertyOverrides = ImmutableMap.<Object, Object> of("mapred.child.java.opts", "-Xmx" + DEFAULT_HEAP_SIZE);
+
+    return context.getPlatformStrategy().getFlowConnector(propertyOverrides);
   }
 
   @SneakyThrows

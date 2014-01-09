@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.platform;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -47,6 +48,8 @@ public interface PlatformStrategy {
   String FILE_NAME_SEPARATOR = "--";
 
   public FlowConnector getFlowConnector();
+
+  public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides);
 
   /**
    * TODO: Adapt submission code to use {@link #getSourceTap2(FileSchema)} since we can now assume the header is known
