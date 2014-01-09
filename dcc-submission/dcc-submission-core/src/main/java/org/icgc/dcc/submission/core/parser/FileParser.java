@@ -37,6 +37,7 @@ public class FileParser<T> {
 
   private final FileSystem fileSystem;
   private final FileLineParser<T> lineParser;
+  private final boolean processHeader;
 
   public long parse(Path filePath, FileRecordProcessor<T> recordProcessor) throws Exception {
     @Cleanup
@@ -60,7 +61,7 @@ public class FileParser<T> {
     while ((line = reader.readLine()) != null) {
       val record = lineParser.parse(line);
 
-      if (lineNumber > 1) {
+      if (processHeader || lineNumber > 1) {
         // Delegate logic
         recordProcessor.process(lineNumber, record);
       }
@@ -69,7 +70,7 @@ public class FileParser<T> {
       lineNumber++;
     }
 
-    return lineNumber;
+    return lineNumber - 1;
   }
 
   private DataInputStream createInputStream(Path file) {

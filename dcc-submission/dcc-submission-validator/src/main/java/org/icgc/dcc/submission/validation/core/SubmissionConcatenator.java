@@ -17,11 +17,18 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newTreeMap;
+import static org.icgc.dcc.submission.core.parser.FileParsers.newStringFileParser;
+
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.regex.Pattern;
 
 import lombok.Cleanup;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -30,11 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.submission.core.parser.FileParsers;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
@@ -43,23 +50,69 @@ import com.google.common.collect.ListMultimap;
 public class SubmissionConcatenator {
 
   public static final String CONCAT_DIR_NAME = ".concatenation";
+  public static final String CONCAT_FILE_EXTENSION = "txt";
 
   @NonNull
   private final FileSystem fileSystem;
   @NonNull
   private final Dictionary dictionary;
 
-  public void concat(SubmissionDirectory submissionDirectory) throws Exception {
+  public List<SubmissionConcatFile> concat(SubmissionDirectory submissionDirectory) throws Exception {
     log.info("Concatenating: {}", submissionDirectory);
 
+    val concatFiles = ImmutableList.<SubmissionConcatFile> builder();
     val concatDirectory = getConcatDirectory(submissionDirectory);
-    val map = getSubmissionFilesByType(submissionDirectory);
+    val concatPartFiles = getSubmissionFilesByType(submissionDirectory);
 
-    for (val fileType : map.keySet()) {
-      val files = map.get(fileType);
+    int concatFileNumber = 1;
+    int concatFileCount = concatPartFiles.size();
+    for (val fileType : concatPartFiles.keySet()) {
+      val partFiles = concatPartFiles.get(fileType);
+      val concatFilePath = getConcatFilePath(concatDirectory, fileType);
 
-      concatFileType(concatDirectory, fileType, files);
+      log.info("  - [{}/{}] Concatenating file '{}' to '{}'",
+          new Object[] { concatFileNumber, concatFileCount, fileType, concatFilePath });
+      val concatFile = concatFileType(concatFilePath, fileType, partFiles);
+
+      concatFiles.add(concatFile);
+      concatFileNumber++;
     }
+
+    return concatFiles.build();
+  }
+
+  private SubmissionConcatFile concatFileType(Path concatFilePath, SubmissionFileType fileType, List<Path> partFiles)
+      throws Exception {
+    @Cleanup
+    val concatWriter = new PrintWriter(fileSystem.create(concatFilePath));
+    val concatFile = new SubmissionConcatFile(concatFilePath);
+
+    int partNumber = 1;
+    int partTotalCount = partFiles.size();
+
+    for (val partFile : partFiles) {
+      val writeHeader = partNumber == 1;
+      val partFileParser = newStringFileParser(fileSystem, true);
+
+      log.info("    * [{}/{}] Concatenating part file '{}'", new Object[] { partNumber, partTotalCount, partFile });
+      val lineCount = partFileParser.parse(partFile, new FileRecordProcessor<String>() {
+
+        @Override
+        public void process(long lineNumber, String record) throws Exception {
+          if (!writeHeader && lineNumber == 1) {
+            return;
+          }
+
+          concatWriter.println(record);
+        }
+
+      });
+
+      concatFile.addPart(partFile, lineCount);
+      partNumber++;
+    }
+
+    return concatFile;
   }
 
   private ListMultimap<SubmissionFileType, Path> getSubmissionFilesByType(SubmissionDirectory submissionDirectory) {
@@ -68,9 +121,9 @@ public class SubmissionConcatenator {
 
     for (val fileSchema : dictionary.getFiles()) {
       val fileType = SubmissionFileType.from(fileSchema.getName());
-      val regex = fileSchema.getPattern();
+      val fileRegex = fileSchema.getPattern();
+      val fileNames = submissionDirectory.listFile(Pattern.compile(fileRegex));
 
-      val fileNames = submissionDirectory.listFile(Pattern.compile(regex));
       for (val fileName : fileNames) {
         map.put(fileType, new Path(basePath, fileName));
       }
@@ -79,39 +132,54 @@ public class SubmissionConcatenator {
     return map.build();
   }
 
-  private void concatFileType(Path concatDirectory, SubmissionFileType fileType, List<Path> files) throws Exception {
-    val concatFile = getConcatFile(concatDirectory, fileType);
-    log.info("  - Concatenating file '{}' to '{}'", fileType, concatFile);
-
-    @Cleanup
-    val concatWriter = new PrintWriter(fileSystem.create(concatFile));
-
-    for (val file : files) {
-      val fileParser = FileParsers.newStringFileParser();
-
-      log.info("    * Concatenating file entry '{}'", file);
-      fileParser.parse(file, new FileRecordProcessor<String>() {
-
-        @Override
-        public void process(long lineNumber, String record) throws Exception {
-          concatWriter.println(record);
-        }
-
-      });
-    }
-  }
-
   private static Path getConcatDirectory(SubmissionDirectory submissionDirectory) {
     val parentPath = submissionDirectory.getValidationDirPath();
 
     return new Path(parentPath, CONCAT_DIR_NAME);
   }
 
-  private static Path getConcatFile(Path concatDirectory, SubmissionFileType fileType) {
+  private static Path getConcatFilePath(Path concatDirectory, SubmissionFileType fileType) {
     val baseName = fileType.getTypeName().toLowerCase();
-    val fileName = baseName + ".txt";
+    val fileName = baseName + "." + CONCAT_FILE_EXTENSION;
 
     return new Path(concatDirectory, fileName);
+  }
+
+  @RequiredArgsConstructor
+  public static class SubmissionConcatFile {
+
+    private static final long HEADER_LINE_COUNT = 1;
+
+    private final NavigableMap<Long, Path> partLineMapping = newTreeMap();
+
+    @NonNull
+    @Getter
+    private final Path path;
+    @Getter
+    private long lineCount = HEADER_LINE_COUNT;
+
+    public void addPart(Path partPath, long partLineCount) {
+      lineCount += partLineCount - HEADER_LINE_COUNT;
+
+      partLineMapping.put(lineCount, partPath);
+    }
+
+    public Path getPart(long lineNumber) {
+      checkArgument(lineNumber != 1, "Ambiguous line number for header");
+      checkArgument(lineNumber > 0, "Line number must be positive");
+      checkArgument(lineNumber <= lineCount, "Line number is out of range");
+
+      val entry = partLineMapping.floorEntry(lineNumber);
+      return entry.getValue();
+    }
+
+    /**
+     * Respects the order of addition.
+     */
+    public Collection<Path> getParts() {
+      return partLineMapping.values();
+    }
+
   }
 
 }

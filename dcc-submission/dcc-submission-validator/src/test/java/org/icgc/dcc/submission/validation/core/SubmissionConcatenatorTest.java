@@ -1,6 +1,13 @@
 package org.icgc.dcc.submission.validation.core;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Files.readLines;
 import static com.typesafe.config.ConfigFactory.parseMap;
+import static org.apache.commons.lang.StringUtils.join;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
+import static org.fest.util.Files.contentOf;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +19,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -23,6 +31,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.PatternFilenameFilter;
 import com.typesafe.config.Config;
 
 @Slf4j
@@ -61,7 +70,7 @@ public class SubmissionConcatenatorTest {
     this.fileSystem = FileSystem.getLocal(new Configuration());
     this.rootDir = new Path(tmp.newFolder().getAbsolutePath());
     this.concatenator = new SubmissionConcatenator(fileSystem, getDictionary());
-    System.out.println("Test root dir: '" + rootDir + "'");
+    log.info("Test root dir: '{}'", rootDir);
 
     copyDirectory(TEST_DIR, new Path(rootDir, new Path(RELEASE_NAME, PROJECT_KEY)));
   }
@@ -70,7 +79,61 @@ public class SubmissionConcatenatorTest {
   public void testConcat() throws Exception {
     val submissionDirectory = createSubmissionDirectory();
 
-    concatenator.concat(submissionDirectory);
+    val concatFiles = concatenator.concat(submissionDirectory);
+    assertThat(concatFiles.size()).isEqualTo(1);
+
+    val concatFile = concatFiles.get(0);
+    val testFiles = getTestFiles("donor.*.txt");
+    assertThat(concatFile.getParts().size()).isEqualTo(testFiles.length);
+
+    val lineCount = concatFile.getLineCount();
+    assertThat(lineCount).isEqualTo(4);
+
+    try {
+      concatFile.getPart(-1);
+      fail("Negative line number");
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    try {
+      concatFile.getPart(1);
+      fail("Header line number");
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    val part1 = concatFile.getPart(2);
+    assertThat(part1.getName()).isEqualTo("donor.1.txt");
+    val part2 = concatFile.getPart(3);
+    assertThat(part2.getName()).isEqualTo("donor.2.txt");
+    val part3 = concatFile.getPart(4);
+    assertThat(part3.getName()).isEqualTo("donor.3.txt");
+
+    try {
+      concatFile.getPart(5);
+      fail("Invalid line number");
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    val testLines1 = readLines(testFiles[0], UTF_8);
+    val testLines2 = readLines(testFiles[1], UTF_8);
+    val testLines3 = readLines(testFiles[2], UTF_8);
+
+    // Remove headers
+    testLines2.remove(0);
+    testLines3.remove(0);
+
+    val testLines = newArrayList();
+    testLines.addAll(testLines1);
+    testLines.addAll(testLines2);
+    testLines.addAll(testLines3);
+
+    val expectedContent = join(testLines, "\n") + "\n";
+    val actualContent = contentOf(new File(concatFile.getPath().toUri().toString()), UTF_8);
+    assertThat(actualContent).isEqualTo(expectedContent);
+
   }
 
   private void copyDirectory(File sourceDir, Path targetDir) throws IOException {
@@ -78,25 +141,30 @@ public class SubmissionConcatenatorTest {
       val source = new Path(file.toURI());
       val target = new Path(targetDir, file.getName());
 
-      System.out.println("Copying file: from '" + source + "' to '" + target + "'");
+      log.info("Copying file: from '{}' to '{}'", source, target);
       fileSystem.copyFromLocalFile(source, target);
     }
   }
 
   private Dictionary getDictionary() {
+    val dictionary = TestUtils.dictionary();
+
     // Patch file name patterns to support multiple files per file type
     // TODO: Remove patching
-    val dictionary = TestUtils.dictionary();
     for (val fileSchema : dictionary.getFiles()) {
-      val regex = fileSchema.getPattern();
-      val patchedRegex = regex.replaceFirst("\\.", "\\.(?:[^.]+\\\\.)?");
-      fileSchema.setPattern(patchedRegex);
-
-      log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
-          new Object[] { fileSchema.getName(), regex, patchedRegex });
+      patchFileSchema(fileSchema);
     }
 
     return dictionary;
+  }
+
+  private void patchFileSchema(FileSchema fileSchema) {
+    val regex = fileSchema.getPattern();
+    val patchedRegex = regex.replaceFirst("\\.", "\\.(?:[^.]+\\\\.)?");
+    fileSchema.setPattern(patchedRegex);
+
+    log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
+        new Object[] { fileSchema.getName(), regex, patchedRegex });
   }
 
   private SubmissionDirectory createSubmissionDirectory() {
@@ -115,6 +183,10 @@ public class SubmissionConcatenatorTest {
         "fs.root", fsRoot,
         "fs.url", fsUrl
         ));
+  }
+
+  private File[] getTestFiles(String regex) {
+    return TEST_DIR.listFiles(new PatternFilenameFilter(regex));
   }
 
 }
