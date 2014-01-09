@@ -87,20 +87,20 @@ public class KVValidator {
       } else {
         loadPlaceholderExistingFiles();
       }
-      log.info("{}", repeat("=", 75));
+      log.debug("{}", repeat("=", 75));
       for (val entry : existingData.entrySet()) {
-        log.info("{}: {}", entry.getKey(), entry.getValue());
+        log.debug("{}: {}", entry.getKey(), entry.getValue());
       }
-      log.info("{}", repeat("=", 75));
+      log.debug("{}", repeat("=", 75));
     }
 
     // Process incremental data
     validateIncrementalData(deletionData);
     log.info("{}", repeat("=", 75));
     for (val entry : incrementalData.entrySet()) {
-      log.info("{}: {}", entry.getKey(), entry.getValue());
+      log.debug("{}: {}", entry.getKey(), entry.getValue());
     }
-    log.info("{}", repeat("=", 75));
+    log.debug("{}", repeat("=", 75));
 
     // Surjection validation (can only be done at the very end)
     validateComplexSurjection();
