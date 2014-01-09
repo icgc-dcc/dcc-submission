@@ -73,7 +73,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.LineReader;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigValue;
 
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
@@ -97,7 +96,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
-    for (Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
+    for (val configEntry : hadoopConfig.entrySet()) {
       flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
