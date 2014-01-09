@@ -38,7 +38,8 @@ public class Main {
     val projectKey = args.length >= ++i ? args[i - 1] : "project1";
     val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
     val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
-    val context = new KeyValidationContext(previousReleaseName, releaseName, projectKey, fsRoot, fsUrl);
+    val jobTracker = args.length >= ++i ? args[i - 1] : "localhost";
+    val context = new KeyValidationContext(previousReleaseName, releaseName, projectKey, fsRoot, fsUrl, jobTracker);
 
     // Validate
     validate(context);

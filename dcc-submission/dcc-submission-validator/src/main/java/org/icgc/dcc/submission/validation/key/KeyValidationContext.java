@@ -71,10 +71,13 @@ public class KeyValidationContext implements ValidationContext {
   private final String releaseName;
   @NonNull
   private final String projectKey;
+
   @NonNull
   private final String fsRoot;
   @NonNull
   private final String fsUrl;
+  @NonNull
+  private final String jobTracker;
 
   @Override
   public PlatformStrategy getPlatformStrategy() {
@@ -237,8 +240,9 @@ public class KeyValidationContext implements ValidationContext {
 
   private Config getConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
-        // FIXME
+        // TODO: Move to KeyValidatorExecutor somehow
         "hadoop.mapred.child.java.opts", "-Xmx31g",
+        "hadoop.mapred.job.tracker", jobTracker,
 
         "fs.root", fsRoot,
         "fs.url", fsUrl

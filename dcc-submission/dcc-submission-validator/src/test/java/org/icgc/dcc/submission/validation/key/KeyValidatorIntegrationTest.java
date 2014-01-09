@@ -68,7 +68,7 @@ public class KeyValidatorIntegrationTest {
   @Before
   public void setUp() throws IOException {
     this.validator = new KeyValidator();
-    this.fileSystem = FileSystem.getLocal(new Configuration());
+    this.fileSystem = createFileSystem();
     this.rootDir = new Path(tmp.newFolder().getAbsolutePath());
     log.info("Test root dir: '{}'", rootDir);
 
@@ -96,8 +96,15 @@ public class KeyValidatorIntegrationTest {
   private KeyValidationContext createContext() {
     val fsRoot = rootDir.toUri().toString();
     val fsUrl = fileSystem.getUri().toString();
+    val jobTracker = "localhost"; // Not used
 
-    return new KeyValidationContext(EXISTING_RELEASE_NAME, INCREMENTAL_RELEASE_NAME, PROJECT_KEY, fsRoot, fsUrl);
+    return new KeyValidationContext(
+        EXISTING_RELEASE_NAME, INCREMENTAL_RELEASE_NAME, PROJECT_KEY,
+        fsRoot, fsUrl, jobTracker);
+  }
+
+  private FileSystem createFileSystem() throws IOException {
+    return FileSystem.get(new Configuration());
   }
 
 }
