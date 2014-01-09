@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Cleanup;
 
@@ -47,9 +48,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.io.LineReader;
 
-/**
- * 
- */
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   public LocalPlatformStrategy(Path source, Path output, Path system) {
@@ -57,8 +55,8 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
+  public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides) {
+    return new LocalFlowConnector(propertyOverrides);
   }
 
   @Override

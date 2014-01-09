@@ -26,12 +26,10 @@ import java.util.concurrent.Executor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.flow.Flow;
+import cascading.flow.FlowConnector;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 
@@ -43,7 +41,7 @@ public class CascadeExecutor implements Executor {
   private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
 
   @NonNull
-  private final PlatformStrategy platformStrategy;
+  private final FlowConnector flowConnector;
 
   @Override
   public void execute(Runnable runnable) {
@@ -55,14 +53,14 @@ public class CascadeExecutor implements Executor {
   private Cascade connectCascade(Runnable runnable) {
     Pipe pipe = new Each("key-validation", new ExecuteFunction(runnable));
 
-    val flow = createFlow(platformStrategy, pipe);
+    val flow = createFlow(flowConnector, pipe);
     val cascade = createCascade(flow);
 
     return cascade;
   }
 
-  private static Flow<?> createFlow(PlatformStrategy platformStrategy, Pipe pipe) {
-    Flow<?> flow = platformStrategy.getFlowConnector()
+  private static Flow<?> createFlow(FlowConnector flowConnector, Pipe pipe) {
+    Flow<?> flow = flowConnector
         .connect(flowDef()
             .setName(FLOW_NAME)
             .addSource(pipe, new EmptySourceTap<Void>("empty"))

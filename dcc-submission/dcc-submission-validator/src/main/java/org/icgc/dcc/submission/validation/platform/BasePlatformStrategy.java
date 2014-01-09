@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static java.util.Collections.emptyMap;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -38,6 +40,7 @@ import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 
+import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
@@ -65,6 +68,11 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     this.system = system;
     this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
     this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
+  }
+
+  @Override
+  public FlowConnector getFlowConnector() {
+    return getFlowConnector(emptyMap());
   }
 
   /**

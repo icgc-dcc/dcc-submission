@@ -240,8 +240,6 @@ public class KeyValidationContext implements ValidationContext {
 
   private Config getConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
-        // TODO: Move to KeyValidatorExecutor somehow
-        "hadoop.mapred.child.java.opts", "-Xmx31g",
         "hadoop.mapred.job.tracker", jobTracker,
 
         "fs.root", fsRoot,
