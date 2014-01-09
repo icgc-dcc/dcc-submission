@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.key.enumeration;
 
-import static com.google.common.base.Predicates.not;
-
 import com.google.common.base.Predicate;
 
 public enum KVFileType {
@@ -72,29 +70,29 @@ public enum KVFileType {
 
     @Override
     public boolean apply(KVFileType fileType) {
-      return
-      fileType != DONOR
-          && fileType != SSM_M
-          && fileType != CNSM_M
-          && fileType != STSM_M
-          && fileType != MIRNA_M
-          && fileType != METH_M
-          && fileType != EXP_M
-          && fileType != PEXP_M
-          && fileType != JCN_M
-          && fileType != SGV_M;
+      return fileType == SPECIMEN
+          || fileType == SAMPLE
+
+          || fileType == SSM_P
+          || fileType == CNSM_P
+          || fileType == STSM_P
+          || fileType == MIRNA_P
+          || fileType == METH_P
+          || fileType == EXP_G
+          || fileType == PEXP_P
+          || fileType == JCN_P;
     }
   };
 
-  public boolean hasComplexSurjectiveRelation() {
-    return this != DONOR && not(SIMPLE_SURJECTION_RELATION).apply(this);
+  public boolean hasOutgoingComplexSurjectiveRelation() {
+    return this.name().toLowerCase().endsWith("_m"); // TODO: improve
   }
 
   /**
    * Simple as opposd to TODO
    */
-  public boolean hasSimpleSurjectiveRelation() {
-    return this != DONOR && SIMPLE_SURJECTION_RELATION.apply(this);
+  public boolean hasOutgoingSimpleSurjectiveRelation() {
+    return SIMPLE_SURJECTION_RELATION.apply(this);
   }
 
   /**
