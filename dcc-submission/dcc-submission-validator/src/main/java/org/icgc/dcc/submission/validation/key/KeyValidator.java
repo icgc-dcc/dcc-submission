@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
 
 import java.io.IOException;
@@ -62,12 +63,14 @@ public class KeyValidator implements Validator {
     execute(context, runner);
     log.info("Finished key validation");
 
+    checkInterrupted(getName());
+
     log.info("Starting key validation report collection...");
     collect(context, reportPath);
     log.info("Finished key validation report collection");
   }
 
-  private KVValidatorRunner createRunner(ValidationContext context, Path reportPath) {
+  private static KVValidatorRunner createRunner(ValidationContext context, Path reportPath) {
     return new KVValidatorRunner(
         getOldReleasePath(context).toUri().toString(),
         getNewReleasePath(context).toUri().toString(),
