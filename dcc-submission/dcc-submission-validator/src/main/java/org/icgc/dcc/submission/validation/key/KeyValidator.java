@@ -56,7 +56,7 @@ public class KeyValidator implements Validator {
   /**
    * The size of the heap used when running in non-local mode.
    */
-  private static final String DEFAULT_HEAP_SIZE = "31g";
+  private static final String DEFAULT_HEAP_SIZE = "16g";
 
   @Override
   public String getName() {
