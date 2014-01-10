@@ -57,7 +57,7 @@ public class KeyValidator implements Validator {
   /**
    * The size of the heap used when running in non-local mode.
    */
-  private static final String DEFAULT_HEAP_SIZE = "31g";
+  private static final String DEFAULT_HEAP_SIZE = "16g";
 
   @Override
   public String getName() {
@@ -124,8 +124,13 @@ public class KeyValidator implements Validator {
 
     while (errors.hasNext()) {
       val error = errors.next();
-
-      context.reportError(error.getFileName(), error.getType());
+      context.reportError(
+          error.getFileName(),
+          error.getLineNumber(),
+          error.getFieldNames().toString(), // TODO: homogenize
+          error.getValue(),
+          error.getType(),
+          error.getParams());
     }
   }
 

@@ -364,6 +364,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
      * For instance specimen -> donor, specimen would be on the LHS and donor would be on the RHS.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       while (iter.hasNext()) {

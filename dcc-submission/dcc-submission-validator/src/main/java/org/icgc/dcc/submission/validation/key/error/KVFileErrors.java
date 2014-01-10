@@ -21,7 +21,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
+import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.COMPLEX_SURJECTION_ERROR_LINE_NUMBER;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SIMPLE_SURJECTION_ERROR_LINE_NUMBER;
@@ -33,6 +36,7 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.validation.key.core.KVConstants;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
@@ -50,54 +54,54 @@ import com.google.common.collect.ImmutableMap;
 public class KVFileErrors {
 
   private final KVFileType fileType;
-  private final Map<KVErrorType, List<Integer>> fieldIndicesPerErrorType;
+  private final Map<KVErrorType, List<String>> fieldNamesPerErrorType;
   private final Map<Long, List<KVRowError>> lineToRowErrors = newTreeMap();
 
   // TODO: factory instead of constructor
   public KVFileErrors(
       @NonNull KVFileType fileType,
-      List<Integer> pkIndices,
-      List<Integer> fkIndices,
-      List<Integer> secondaryFkIndices) {
+      List<String> pkNames,
+      List<String> fkNames,
+      List<String> secondaryFkNames) {
     this.fileType = fileType;
-    checkState(pkIndices != null || fkIndices != null || secondaryFkIndices != null, "TODO");
-    fieldIndicesPerErrorType = getFieldIndicesPerErrorType(pkIndices, fkIndices, secondaryFkIndices);
-    checkState(!fieldIndicesPerErrorType.isEmpty(), "TODO");
-    log.info("fieldIndicesPerErrorType: '{}'", fieldIndicesPerErrorType);
+    checkState(pkNames != null || fkNames != null || secondaryFkNames != null, "TODO");
+    fieldNamesPerErrorType = getFieldNamesPerErrorType(pkNames, fkNames, secondaryFkNames);
+    checkState(!fieldNamesPerErrorType.isEmpty(), "TODO");
+    log.info("fieldNamesPerErrorType: '{}'", fieldNamesPerErrorType);
   }
 
-  private final Map<KVErrorType, List<Integer>> getFieldIndicesPerErrorType(
-      List<Integer> pkIndices, List<Integer> fkIndices, List<Integer> secondaryFkIndices) {
-    val builder = new ImmutableMap.Builder<KVErrorType, List<Integer>>();
+  private final Map<KVErrorType, List<String>> getFieldNamesPerErrorType(
+      List<String> pkNames, List<String> fkNames, List<String> secondaryFkNames) {
+    val builder = new ImmutableMap.Builder<KVErrorType, List<String>>();
     for (val errorType : KVErrorType.values()) {
       val keysType = errorType.getKeysType();
-      val optionalIndices = getOptionalIndices(keysType,
-          pkIndices, fkIndices, secondaryFkIndices);
-      log.info("keysType, optionalIndices: {}, '({}, {})'", new Object[] { fileType, keysType, optionalIndices });
-      if (optionalIndices.isPresent()) {
-        builder.put(errorType, optionalIndices.get());
+      val optionalNames = getOptionalNames(keysType,
+          pkNames, fkNames, secondaryFkNames);
+      log.info("keysType, optionalIndices: {}, '({}, {})'", new Object[] { fileType, keysType, optionalNames });
+      if (optionalNames.isPresent()) {
+        builder.put(errorType, optionalNames.get());
       }
     }
     return builder.build();
   }
 
-  private final Optional<List<Integer>> getOptionalIndices(KeysType keysType,
-      List<Integer> pkIndices, List<Integer> fkIndices, List<Integer> secondaryFkIndices) {
-    List<Integer> indices = null;
+  private final Optional<List<String>> getOptionalNames(KeysType keysType,
+      List<String> pkNames, List<String> fkNames, List<String> secondaryFkNames) {
+    List<String> names = null;
     switch (keysType) {
     case PK:
-      indices = pkIndices == null ? null : newArrayList(pkIndices);
+      names = pkNames == null ? null : newArrayList(pkNames);
       break;
     case FK:
-      indices = fkIndices == null ? null : newArrayList(fkIndices);
+      names = fkNames == null ? null : newArrayList(fkNames);
       break;
     case SECONDARY_FK:
-      indices = secondaryFkIndices == null ? null : newArrayList(secondaryFkIndices);
+      names = secondaryFkNames == null ? null : newArrayList(secondaryFkNames);
       break;
     default:
       checkState(false, "%s", keysType);
     }
-    return indices == null ? Optional.<List<Integer>> absent() : Optional.of(indices);
+    return names == null ? Optional.<List<String>> absent() : Optional.of(names);
   }
 
   public boolean hasError(long lineNumber) {
@@ -132,16 +136,48 @@ public class KVFileErrors {
         val lineNumber = entry.getKey();
         val rowErrors = entry.getValue();
         for (val rowError : rowErrors) {
-          val fieldIndices = checkNotNull(
-              fieldIndicesPerErrorType
+          val errorType = rowError.getType();
+          val fieldNames = checkNotNull(
+              fieldNamesPerErrorType
                   .get(rowError.getType()),
-              "TODO: %s, %s, %s, %s", fileType, fieldIndicesPerErrorType, rowError.getType(), kvFileDescription);
+              "TODO: %s, %s, %s, %s", fileType, fieldNamesPerErrorType, errorType, kvFileDescription);
           val dataFileName = kvFileDescription.getDataFileName();
-          rowError.describe(report, dataFileName, lineNumber, fieldIndices, kvFileDescription);
+          rowError.describe(report, dataFileName, lineNumber, fieldNames, getErrorParams(errorType), kvFileDescription);
         }
       }
       return false;
     }
+  }
+
+  private Object[] getErrorParams(KVErrorType errorType) {
+    Object[] errorParams = null;
+    if (errorType == PRIMARY_RELATION || errorType == SECONDARY_RELATION) {
+      val referencedFileType = RELATIONS.get(fileType);
+      val referencedFields = KVConstants.PKS.get(referencedFileType);
+      errorParams = new Object[] { referencedFileType, referencedFields };
+    } else if (errorType == SIMPLE_SURJECTION) {
+      val referencingFileType = getReferencingFileType(fileType);
+      val referencingFields = KVConstants.PKS.get(referencingFileType);
+      errorParams = new Object[] { referencingFileType, referencingFields };
+    } else if (errorType == COMPLEX_SURJECTION) {
+      val referencingFileType = getReferencingFileType(fileType);
+      errorParams = new Object[] { referencingFileType }; // TODO: reconsider providing fields as well (more challenging)?
+    }
+    return errorParams;
+  }
+
+  /**
+   * Should NOT be called in the context of complex surjection.
+   */
+  private KVFileType getReferencingFileType(KVFileType fileType) {
+    KVFileType referencingFileType = null;
+    for (val entry : RELATIONS.entrySet()) {
+      if (entry.getValue() == fileType) {
+        checkState(referencingFileType == null, "TODO");
+        return entry.getKey();
+      }
+    }
+    return checkNotNull(referencingFileType, "TODO");
   }
 
 }

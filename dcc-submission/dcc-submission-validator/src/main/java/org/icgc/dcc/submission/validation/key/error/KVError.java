@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key.error;
 
+import java.util.List;
+
 import lombok.Value;
 import lombok.experimental.Builder;
 
@@ -30,6 +32,8 @@ public class KVError {
   @JsonProperty
   String fileName;
   @JsonProperty
+  List<String> fieldNames;
+  @JsonProperty
   long lineNumber;
   @JsonProperty
   Object value;
@@ -40,12 +44,14 @@ public class KVError {
 
   private KVError(
       @JsonProperty("fileName") String fileName,
+      @JsonProperty("fieldNames") List<String> fieldNames,
       @JsonProperty("lineNumber") long lineNumber,
       @JsonProperty("value") Object value,
       @JsonProperty("type") ErrorType type,
       @JsonProperty("params") Object[] params)
   {
     this.fileName = fileName;
+    this.fieldNames = fieldNames;
     this.lineNumber = lineNumber;
     this.value = value;
     this.type = type;

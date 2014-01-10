@@ -45,12 +45,12 @@ public class KVKeyValues implements Comparable<KVKeyValues> {
 
   public static KVKeyValues from(List<String> row, List<Integer> indices) {
     short size = (short) indices.size();
-    val keys = new String[size];
+    val values = new String[size];
     for (int index = 0; index < size; index++) {
-      keys[index] = row.get(indices.get(index));
+      values[index] = row.get(indices.get(index));
     }
     // TODO: checks
-    return new KVKeyValues(keys, size);
+    return new KVKeyValues(values, size);
   }
 
   /**
@@ -87,6 +87,7 @@ public class KVKeyValues implements Comparable<KVKeyValues> {
         return compared2;
       }
     }
+    // TODO: general case!!!!
     return 0;
   }
 
