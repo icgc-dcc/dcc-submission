@@ -27,8 +27,8 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -613,19 +613,12 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
     return optionalReferencedData.get().pksContains(fk);
   }
 
-  // private boolean hasMatchingReference(KVKeyValues fk) {
-  // return existingReferencedData.pksContains(fk)
-  // || (
-  // optionalIncrementalReferencedData.isPresent()
-  // && optionalIncrementalReferencedData.get().pksContains(fk));
-  // }
-
   @Override
   protected void postProcessing() {
     // Surjectivity; TODO: externalize?
 
     val fileType = kvFileDescription.getFileType();
-    if (fileType.hasSimpleSurjectiveRelation()) {
+    if (fileType.hasOutgoingSimpleSurjectiveRelation()) {
       log.info("Post-processing: simply surjectivity check");
       checkState(optionalReferencedData.isPresent(), "TODO");
       checkState(optionalReferencedFileErrors.isPresent(), "TODO");
@@ -638,7 +631,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
               optionalReferencedFileErrors.get());
     }
 
-    if (fileType.hasComplexSurjectiveRelation()) {
+    if (fileType.hasOutgoingComplexSurjectiveRelation()) {
       log.info("Post-processing: complex surjectivity addition");
       // Simply adding them all for now, actual validation will have to take place after all meta files have been read
       // (unlike for "simple" surjection check).
