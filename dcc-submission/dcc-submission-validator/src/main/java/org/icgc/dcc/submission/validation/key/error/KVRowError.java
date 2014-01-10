@@ -45,7 +45,7 @@ public class KVRowError {
     report.report(
         KVError.kvError()
             .fileName(dataFileName)
-            .type(type.dodo())
+            .type(type.getErrorType())
             .build());
   }
 }
