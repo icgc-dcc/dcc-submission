@@ -159,9 +159,6 @@ public class KVFileErrors {
       val referencingFileType = getReferencingFileType(fileType);
       val referencingFields = KVConstants.PKS.get(referencingFileType);
       errorParams = new Object[] { referencingFileType, referencingFields };
-    } else if (errorType == COMPLEX_SURJECTION) {
-      val referencingFileType = getReferencingFileType(fileType);
-      errorParams = new Object[] { referencingFileType }; // TODO: reconsider providing fields as well (more challenging)?
     }
     return errorParams;
   }
