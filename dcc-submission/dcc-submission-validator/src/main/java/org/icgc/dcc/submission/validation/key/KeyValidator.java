@@ -122,8 +122,13 @@ public class KeyValidator implements Validator {
 
     while (errors.hasNext()) {
       val error = errors.next();
-
-      context.reportError(error.getFileName(), error.getType());
+      context.reportError(
+          error.getFileName(),
+          error.getLineNumber(),
+          error.getFieldNames().toString(), // TODO: homogenize
+          error.getValue(),
+          error.getType(),
+          error.getParams());
     }
   }
 

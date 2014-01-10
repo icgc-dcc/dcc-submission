@@ -38,18 +38,18 @@ public class KVRowError {
   private final KVKeyValues keyValues;
 
   public void describe(
-      KVReport report, String dataFileName, long lineNumber, List<Integer> fieldIndices,
+      KVReport report, String dataFileName, long lineNumber, List<String> fieldNames, Object[] params,
       KVFileDescription kvFileDescription) {
-    log.error("'{}' error at location '{}.{}' (line/fields): '{}' ('{}')",
-        new Object[] { type, lineNumber, fieldIndices, keyValues, kvFileDescription });
+    log.debug(
+        "'{}' error: '{}'",
+        new Object[] { type, new Object[] { lineNumber, fieldNames, params, keyValues.getValues(), kvFileDescription } });
     report.report(
         KVError.kvError()
             .fileName(dataFileName)
-            // .fieldNames(fieldNames)
+            .fieldNames(fieldNames)
             .type(type.getErrorType())
             .lineNumber(lineNumber)
-            // .value(value)
-            // .params(params)
-            .build());
+            .value(keyValues.getValues())
+            .params(params).build());
   }
 }

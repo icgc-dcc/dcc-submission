@@ -72,8 +72,8 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -181,6 +181,9 @@ public class KVFileDataDigest {
     }
   }
 
+  /**
+   * TODO: encode in dictionary data structure rather (hardcoded elsewhere, at least the PKs)
+   */
   protected KVTuple getTuple(KVFileType fileType, List<String> row) {
     KVKeyValues pk = null, fk1 = null, fk2 = null;
 
@@ -246,7 +249,7 @@ public class KVFileDataDigest {
       fk1 = from(row, MIRNA_M_FKS);
       fk2 = NOT_APPLICABLE;
     } else if (fileType == MIRNA_P) {
-      pk = NOT_APPLICABLE;
+      pk = NOT_APPLICABLE; // Special case: uniqueness is not enforced
       fk1 = from(row, MIRNA_P_FKS);
       fk2 = NOT_APPLICABLE;
     } else if (fileType == MIRNA_S) {

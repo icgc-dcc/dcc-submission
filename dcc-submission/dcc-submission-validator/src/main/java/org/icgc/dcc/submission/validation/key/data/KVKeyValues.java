@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.List;
 
 import lombok.EqualsAndHashCode;
@@ -44,10 +42,6 @@ public class KVKeyValues implements Comparable<KVKeyValues> {
    * Size of the key for optimization purposes (may be 1 if the key is not a composite one).
    */
   private final short size;
-
-  public String toDisplayString() {
-    return newArrayList(values).toString();
-  }
 
   public static KVKeyValues from(List<String> row, List<Integer> indices) {
     short size = (short) indices.size();
