@@ -17,26 +17,34 @@
  */
 package org.icgc.dcc.submission.validation.key.enumeration;
 
+import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_PARENT_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.UNIQUE_VALUE_ERROR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.FK;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.PK;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.SECONDARY_FK;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import org.icgc.dcc.submission.validation.core.ErrorType;
+
 /**
  * 
  */
 @RequiredArgsConstructor
 public enum KVErrorType {
-  UNIQUENESS(PK),
-  PRIMARY_RELATION(FK),
-  SECONDARY_RELATION(SECONDARY_FK),
-  SIMPLE_SURJECTION(PK),
-  COMPLEX_SURJECTION(PK);
+  UNIQUENESS(PK, UNIQUE_VALUE_ERROR),
+  PRIMARY_RELATION(FK, RELATION_VALUE_ERROR),
+  SECONDARY_RELATION(SECONDARY_FK, RELATION_VALUE_ERROR), // TODO: we should distinguish
+  SIMPLE_SURJECTION(PK, RELATION_PARENT_VALUE_ERROR),
+  COMPLEX_SURJECTION(PK, RELATION_PARENT_VALUE_ERROR); // TODO: we should distinguish
 
   /**
    * The fields on which the error is reported.
    */
   @Getter
   private final KeysType keysType;
+
+  @Getter
+  private final ErrorType errorType;
 }

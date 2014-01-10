@@ -66,8 +66,8 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -96,6 +96,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.report.KVReport;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -253,13 +254,13 @@ public class KVSubmissionErrors {
   /**
    * TODO: PLK: we actually only need the KVFileDescription here, not the whole {@link KVSubmissionDataDigest}.
    */
-  public boolean describe(Map<KVFileType, KVFileDescription> fileDescriptions) {
+  public boolean describe(KVReport report, Map<KVFileType, KVFileDescription> fileDescriptions) {
     boolean status = true;
     for (val entry : errors.entrySet()) {
       val fileType = entry.getKey();
       val fileErrors = entry.getValue();
 
-      boolean fileStatus = fileErrors.describe(fileDescriptions.get(fileType));
+      boolean fileStatus = fileErrors.describe(report, fileDescriptions.get(fileType));
       status &= fileStatus;
       log.info("{}: {}", fileType, fileStatus);
     }
