@@ -38,6 +38,7 @@ import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
+import org.icgc.dcc.submission.validation.key.report.KVReport;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -123,7 +124,7 @@ public class KVFileErrors {
     addError(COMPLEX_SURJECTION_ERROR_LINE_NUMBER, COMPLEX_SURJECTION, keys);
   }
 
-  public boolean describe(KVFileDescription kvFileDescription) { // TODO: remove full description?
+  public boolean describe(KVReport report, KVFileDescription kvFileDescription) { // TODO: remove full description?
     if (lineToRowErrors.isEmpty()) {
       return true;
     } else {
@@ -135,7 +136,8 @@ public class KVFileErrors {
               fieldIndicesPerErrorType
                   .get(rowError.getType()),
               "TODO: %s, %s, %s, %s", fileType, fieldIndicesPerErrorType, rowError.getType(), kvFileDescription);
-          rowError.describe(kvFileDescription, lineNumber, fieldIndices);
+          val dataFileName = kvFileDescription.getDataFileName();
+          rowError.describe(report, dataFileName, lineNumber, fieldIndices, kvFileDescription);
         }
       }
       return false;

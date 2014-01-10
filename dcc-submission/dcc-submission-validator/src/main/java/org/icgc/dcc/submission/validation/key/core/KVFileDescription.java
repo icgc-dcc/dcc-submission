@@ -17,12 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MAPPER;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
+
+import java.io.File;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -77,6 +81,12 @@ public class KVFileDescription {
   @JsonIgnore
   public boolean isPlaceholder() {
     return !dataFilePath.isPresent();
+  }
+
+  @JsonIgnore
+  public String getDataFileName() {
+    checkState(!isPlaceholder(), "TODO");
+    return new File(dataFilePath.get().toUri()).getName();
   }
 
   @Override

@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
+import org.icgc.dcc.submission.validation.key.report.KVReport;
 
 /**
  * 
@@ -36,8 +37,15 @@ public class KVRowError {
   private final KVErrorType type;
   private final KVKeyValues keyValues;
 
-  public void describe(KVFileDescription kvFileDescription, long lineNumber, List<Integer> fieldIndices) {
+  public void describe(
+      KVReport report, String dataFileName, long lineNumber, List<Integer> fieldIndices,
+      KVFileDescription kvFileDescription) {
     log.error("'{}' error at location '{}.{}' (line/fields): '{}' ('{}')",
         new Object[] { type, lineNumber, fieldIndices, keyValues, kvFileDescription });
+    report.report(
+        KVError.kvError()
+            .fileName(dataFileName)
+            .type(type.dodo())
+            .build());
   }
 }

@@ -21,7 +21,6 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REVERSE_RELATION_FILE_ERROR;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getExistingFileDescription;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getIncrementalFileDescription;
@@ -44,7 +43,6 @@ import org.icgc.dcc.submission.validation.key.deletion.DeletionFileParser;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
-import org.icgc.dcc.submission.validation.key.error.KVError;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
@@ -106,16 +104,9 @@ public class KVValidator {
     validateComplexSurjection();
 
     // Report
-    boolean valid = errors.describe(incrementalData.getFileDescriptions()); // TODO: prettify
+    boolean valid = errors.describe(report, incrementalData.getFileDescriptions()); // TODO: prettify
     log.info("{}", valid);
     log.info("done.");
-
-    // TODO: Remove. This is just to show an example of how to report an error
-    report.report(
-        KVError.kvError()
-            .fileName("ssm_p.txt")
-            .type(REVERSE_RELATION_FILE_ERROR)
-            .build());
   }
 
   public void validateDeletions(DeletionData deletionData) {
