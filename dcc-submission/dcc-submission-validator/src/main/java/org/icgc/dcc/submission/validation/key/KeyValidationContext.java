@@ -256,6 +256,7 @@ public class KeyValidationContext implements ValidationContext {
   private Config getConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
         "hadoop.mapred.job.tracker", jobTracker,
+        "hadoop.fs.defaultFS", fsUrl,
 
         "fs.root", fsRoot,
         "fs.url", fsUrl

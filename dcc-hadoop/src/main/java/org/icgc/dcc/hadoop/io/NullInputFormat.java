@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.hadoop.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.hadoop.io.NullWritable;
@@ -29,6 +27,9 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 public class NullInputFormat implements InputFormat<NullWritable, NullWritable> {
+
+  public NullInputFormat() {
+  }
 
   @Override
   public RecordReader<NullWritable, NullWritable> getRecordReader(InputSplit split, JobConf job, Reporter reporter) {
@@ -49,30 +50,10 @@ public class NullInputFormat implements InputFormat<NullWritable, NullWritable> 
   public void validateInput(JobConf job) {
   }
 
-  public static class NullInputSplit implements InputSplit {
-
-    @Override
-    public long getLength() {
-      return 0;
-    }
-
-    @Override
-    public String[] getLocations() {
-      String[] locs = {};
-      return locs;
-    }
-
-    @Override
-    public void readFields(DataInput in) throws IOException {
-    }
-
-    @Override
-    public void write(DataOutput out) throws IOException {
-    }
-
-  }
-
   public static class NullRecordReader implements RecordReader<NullWritable, NullWritable> {
+
+    public NullRecordReader() {
+    }
 
     private boolean returnRecord = true;
 

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
 
@@ -82,7 +83,7 @@ public class KeyValidator implements Validator {
   private static KVValidatorRunner createRunner(ValidationContext context, Path reportPath) {
     return new KVValidatorRunner(
         context.getDictionary(),
-        getOldReleasePath(context).toUri().toString(),
+        "dummy",
         getNewReleasePath(context).toUri().toString(),
         reportPath.toUri().toString());
   }
@@ -91,10 +92,6 @@ public class KeyValidator implements Validator {
     val validationDir = context.getSubmissionDirectory().getValidationDirPath();
 
     return new Path(validationDir, REPORT_FILE_NAME);
-  }
-
-  private static Path getOldReleasePath(ValidationContext context) {
-    return new Path(context.getPreviousSubmissionDirectory().getSubmissionDirPath());
   }
 
   private static Path getNewReleasePath(ValidationContext context) {
@@ -116,6 +113,11 @@ public class KeyValidator implements Validator {
 
   @SneakyThrows
   private static void collect(ValidationContext context, Path reportPath) {
+    if (!checkExistence(context.getFileSystem(), reportPath)) {
+      log.info("Report file '{}' does not exist. Skipping report collection", reportPath);
+      return;
+    }
+
     @Cleanup
     val inputStream = createInputStream(context.getFileSystem(), reportPath);
     val errors = getErrors(inputStream);
@@ -127,15 +129,15 @@ public class KeyValidator implements Validator {
     }
   }
 
-  private static InputStream createInputStream(FileSystem fileSystem, Path file) {
+  private static InputStream createInputStream(FileSystem fileSystem, Path path) {
     val factory = new CompressionCodecFactory(fileSystem.getConf());
 
     try {
-      val codec = factory.getCodec(file);
-      val baseInputStream = fileSystem.open(file);
-      return codec == null ? baseInputStream : codec.createInputStream(fileSystem.open(file));
+      val codec = factory.getCodec(path);
+      val baseInputStream = fileSystem.open(path);
+      return codec == null ? baseInputStream : codec.createInputStream(fileSystem.open(path));
     } catch (IOException e) {
-      throw new RuntimeException("Error reading: '" + file.toString() + "'", e);
+      throw new RuntimeException("Error reading: '" + path.toString() + "'", e);
     }
   }
 
