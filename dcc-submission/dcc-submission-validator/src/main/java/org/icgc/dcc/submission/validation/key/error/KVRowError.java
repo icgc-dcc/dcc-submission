@@ -45,7 +45,11 @@ public class KVRowError {
     report.report(
         KVError.kvError()
             .fileName(dataFileName)
+            .fieldNames(fieldNames)
             .type(type.getErrorType())
+            .lineNumber(lineNumber)
+            .value(value)
+            .params(params)
             .build());
   }
 }
