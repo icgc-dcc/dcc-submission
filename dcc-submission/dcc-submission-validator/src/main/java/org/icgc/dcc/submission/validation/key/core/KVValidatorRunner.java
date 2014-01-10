@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 
 import cascading.flow.hadoop.HadoopFlowStep;
@@ -45,6 +46,8 @@ public class KVValidatorRunner implements Runnable, Serializable {
    * 
    * @see {@link HadoopFlowStep#pack()}
    */
+  @NonNull
+  private final Dictionary dictionary;
   private final String oldReleasePath;
   @NonNull
   private final String newReleasePath;
@@ -62,10 +65,11 @@ public class KVValidatorRunner implements Runnable, Serializable {
 
   private void validate() throws IOException {
     val fileSystem = getFileSystem();
+    val dictionary = getDictionary();
     val report = new KVReport(fileSystem, new Path(reportPath));
     try {
       val validator = new KVValidator(
-          new KVFileSystem(fileSystem, new Path(oldReleasePath), new Path(newReleasePath)),
+          new KVFileSystem(fileSystem, dictionary, new Path(oldReleasePath), new Path(newReleasePath)),
           report);
 
       log.info("Starting key validation...");
@@ -77,11 +81,11 @@ public class KVValidatorRunner implements Runnable, Serializable {
   }
 
   /**
-   * Re-establishes the file system cluster side.
+   * Re-establishes the file system cluster-side.
    */
   @SneakyThrows
   private static FileSystem getFileSystem() {
-    // Hopefully 'fs.defaultFS' on Hadoop nodes points to the name node
+    // Sources the defaults on the current system (e.g. 'fs.defaultFS')
     return FileSystem.get(new Configuration());
   }
 

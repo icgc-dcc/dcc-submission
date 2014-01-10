@@ -17,7 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
@@ -28,20 +31,23 @@ import java.io.InputStream;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
 @RequiredArgsConstructor
-@Slf4j
 public final class KVFileSystem {
 
   @NonNull
   private final FileSystem fileSystem;
+  @NonNull
+  private final Dictionary dictionary;
+
   private final Path oldReleaseDir;
   @NonNull
   private final Path newReleaseDir;
@@ -54,9 +60,18 @@ public final class KVFileSystem {
 
   public Path getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
     val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
-    Path path = new Path(basePath, fileType.toString().toLowerCase() + ".txt");
-    log.info("Searching for '{}'", path);
-    return path;
+    val fileSchema = getFileSchema(fileType);
+    val fileRegex = fileSchema.getPattern();
+    val filePattern = compile(fileRegex);
+    val filePaths = lsFile(fileSystem, basePath, filePattern);
+    if (filePaths.isEmpty()) {
+      return null;
+    }
+
+    checkState(filePaths.size() == 1, "Expected at most 1 file path but found %s. File paths: %s",
+        filePaths.size(), filePaths);
+
+    return filePaths.get(0);
   }
 
   public Path getToBeRemovedFilePath() {
@@ -88,6 +103,22 @@ public final class KVFileSystem {
   }
 
   private boolean hasFile(Path filePath) {
+    if (filePath == null) {
+      return false;
+    }
+
     return checkExistence(fileSystem, filePath);
   }
+
+  private FileSchema getFileSchema(KVFileType fileType) {
+    val targetName = fileType.toString().toLowerCase();
+    for (val fileSchema : dictionary.getFiles()) {
+      if (targetName.equals(fileSchema.getName())) {
+        return fileSchema;
+      }
+    }
+
+    throw new IllegalArgumentException("No file schema found for file type: " + fileType);
+  }
+
 }
