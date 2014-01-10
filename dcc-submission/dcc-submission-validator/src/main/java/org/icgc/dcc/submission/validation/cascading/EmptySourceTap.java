@@ -35,7 +35,7 @@ import cascading.tap.SourceTap;
 import cascading.tuple.TupleEntryIterator;
 import cascading.tuple.TupleEntrySchemeIterator;
 
-class EmptySourceTap<T> extends SourceTap<T, Closeable> {
+class EmptySourceTap<T> extends SourceTap<T, Object> {
 
   @NonNull
   private final String identifier;
@@ -45,7 +45,7 @@ class EmptySourceTap<T> extends SourceTap<T, Closeable> {
     this(new NullScheme(), identifier);
   }
 
-  public EmptySourceTap(Scheme<T, Closeable, ?, ?, ?> scheme, String identifier) {
+  public EmptySourceTap(Scheme<T, Object, ?, ?, ?> scheme, String identifier) {
     super(scheme);
     this.identifier = "empty://source." + identifier;
   }
@@ -69,7 +69,7 @@ class EmptySourceTap<T> extends SourceTap<T, Closeable> {
   }
 
   @Override
-  public TupleEntryIterator openForRead(FlowProcess<T> flowProcess, Closeable input)
+  public TupleEntryIterator openForRead(FlowProcess<T> flowProcess, Object input)
       throws IOException {
     return new TupleEntrySchemeIterator<T, Closeable>(flowProcess, getScheme(), new Closeable() {
 
@@ -89,4 +89,5 @@ class EmptySourceTap<T> extends SourceTap<T, Closeable> {
   public long getModifiedTime(T conf) throws IOException {
     return System.currentTimeMillis();
   }
+
 }
