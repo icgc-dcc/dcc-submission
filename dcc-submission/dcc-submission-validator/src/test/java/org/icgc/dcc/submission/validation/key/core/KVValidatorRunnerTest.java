@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.validation.TestUtils;
 import org.junit.Test;
 
 import cascading.flow.hadoop.HadoopFlowStep;
@@ -23,7 +25,7 @@ public class KVValidatorRunnerTest {
    */
   @Test
   public void testSerializable() {
-    val runner = new KVValidatorRunner("", "", "");
+    val runner = new KVValidatorRunner(getDictionary(), "", "", "");
     val serialized = cascadingSerialize(runner);
     log.info("runner: {}, serialized: {}", runner, serialized);
 
@@ -39,6 +41,10 @@ public class KVValidatorRunnerTest {
   @SneakyThrows
   private String cascadingSerialize(Object object) {
     return HadoopUtil.serializeBase64(object, new JobConf(new Configuration()));
+  }
+
+  private Dictionary getDictionary() {
+    return TestUtils.dictionary();
   }
 
 }

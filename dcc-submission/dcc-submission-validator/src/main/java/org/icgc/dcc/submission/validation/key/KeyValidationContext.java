@@ -19,7 +19,12 @@ package org.icgc.dcc.submission.validation.key;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_S_TYPE;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.net.MalformedURLException;
@@ -63,7 +68,7 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor
 public class KeyValidationContext implements ValidationContext {
 
-  private static final String DICTIONARY_VERSION = "0.7a";
+  private static final String DICTIONARY_VERSION = "0.7c";
 
   @NonNull
   private final String previousReleaseName;
@@ -107,18 +112,28 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   @SneakyThrows
   public Dictionary getDictionary() {
+    // Resolve
     val entryName = "org/icgc/dcc/resources/Dictionary.json";
     URL url = getDictionaryUrl(DICTIONARY_VERSION);
-
     @Cleanup
-    ZipInputStream zip = new ZipInputStream(url.openStream());
+    val zip = new ZipInputStream(url.openStream());
     ZipEntry entry;
+
     do {
       entry = zip.getNextEntry();
     } while (!entryName.equals(entry.getName()));
 
+    // Deserialize
     val reader = new ObjectMapper().reader(Dictionary.class);
-    return reader.readValue(zip);
+    Dictionary dictionary = reader.readValue(zip);
+
+    // Add file schemata
+    dictionary.addFile(readFileSchema(SSM_S_TYPE));
+    dictionary.addFile(readFileSchema(METH_M_TYPE));
+    dictionary.addFile(readFileSchema(METH_P_TYPE));
+    dictionary.addFile(readFileSchema(METH_S_TYPE));
+
+    return dictionary;
   }
 
   @Override
