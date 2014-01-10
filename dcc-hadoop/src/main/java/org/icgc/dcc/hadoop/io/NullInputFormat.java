@@ -49,7 +49,7 @@ public class NullInputFormat implements InputFormat<NullWritable, NullWritable> 
   public void validateInput(JobConf job) {
   }
 
-  public class NullInputSplit implements InputSplit {
+  public static class NullInputSplit implements InputSplit {
 
     @Override
     public long getLength() {
