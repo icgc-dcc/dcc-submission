@@ -56,6 +56,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileParser;
 import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
 import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
@@ -90,6 +91,8 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
    * TODO: ! account for deletions (do not report errors for those)
    */
   public KVIncrementalFileDataDigest(
+      @NonNull KVFileParser kvFileParser,
+
       KVFileDescription kvFileDescription, long logThreshold,
 
       @NonNull KVFileSystem fileSystem,
@@ -106,7 +109,7 @@ public class KVIncrementalFileDataDigest extends KVFileDataDigest {
       @NonNull Optional<KVFileErrors> optionalReferencedFileErrors,
 
       @NonNull SurjectivityValidator surjectivityValidator) {
-    super(kvFileDescription, logThreshold);
+    super(kvFileParser, kvFileDescription, logThreshold);
 
     this.fileSystem = fileSystem;
     this.deletionData = deletionData;

@@ -1,6 +1,10 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +28,8 @@ public class KVValidatorRunnerTest {
    * @see {@link HadoopFlowStep#pack()}
    */
   @Test
-  public void testSerializable() {
-    val runner = new KVValidatorRunner(getDictionary(), "", "", "");
+  public void testSerializable() throws URISyntaxException {
+    val runner = new KVValidatorRunner(new URI("file:///"), getDictionary(), "", "", "");
     val serialized = cascadingSerialize(runner);
     log.info("runner: {}, serialized: {}", runner, serialized);
 

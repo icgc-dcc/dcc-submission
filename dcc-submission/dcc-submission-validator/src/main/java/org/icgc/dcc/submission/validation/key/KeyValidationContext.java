@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.key;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
@@ -39,9 +40,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
@@ -65,6 +66,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
+@Slf4j
 @RequiredArgsConstructor
 public class KeyValidationContext implements ValidationContext {
 
@@ -243,13 +245,14 @@ public class KeyValidationContext implements ValidationContext {
     val message =
         "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
     val text = format(message, fileName, lineNumber, columnName, value, type, Arrays.toString(params));
-    System.out.println(text);
+    log.error("{}", text);
   }
 
   private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {
     val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
     val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
     URL url = new URL(format(template, basePath, version, version));
+
     return url;
   }
 
@@ -266,7 +269,7 @@ public class KeyValidationContext implements ValidationContext {
   private Configuration getConfiguration() {
     val fsUrl = getConfig().getString(FS_URL);
     val configuration = new Configuration();
-    configuration.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsUrl);
+    configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
 
     return configuration;
   }

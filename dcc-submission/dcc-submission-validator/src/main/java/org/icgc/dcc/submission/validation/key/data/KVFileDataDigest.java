@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newTreeSet;
 import static lombok.AccessLevel.PROTECTED;
-import static org.icgc.dcc.submission.core.parser.FileParsers.newListFileParser;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS2;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_PKS;
@@ -105,6 +104,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
+import org.icgc.dcc.submission.validation.key.core.KVFileParser;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 /**
@@ -121,6 +121,7 @@ public class KVFileDataDigest {
    */
   public static final boolean TUPLE_CHECKS_ENABLED = true;
 
+  protected final KVFileParser kvFileParser;
   @Getter
   protected final KVFileDescription kvFileDescription;
   private final long logThreshold;
@@ -128,17 +129,18 @@ public class KVFileDataDigest {
   @Getter
   protected final Set<KVKeyValues> pks = newTreeSet(); // TODO: change to arrays?
 
-  public static KVFileDataDigest getEmptyInstance(@NonNull KVFileDescription kvFileDescription) {
-    return new KVFileDataDigest(kvFileDescription, -1); // -1: no need for a threshold
+  public static KVFileDataDigest getEmptyInstance(
+      @NonNull KVFileParser kvFileParser,
+      @NonNull KVFileDescription kvFileDescription) {
+    return new KVFileDataDigest(kvFileParser, kvFileDescription, -1); // -1: no need for a threshold
   }
 
   @SneakyThrows
   public KVFileDataDigest processFile() {
     log.info("{}", kvFileDescription);
 
-    val parser = newListFileParser();
     checkState(!kvFileDescription.isPlaceholder(), "TODO");
-    parser.parse(kvFileDescription.getDataFilePath().get(), new FileRecordProcessor<List<String>>() {
+    kvFileParser.parse(kvFileDescription.getDataFilePath().get(), new FileRecordProcessor<List<String>>() {
 
       @Override
       public void process(long lineNumber, List<String> record) {

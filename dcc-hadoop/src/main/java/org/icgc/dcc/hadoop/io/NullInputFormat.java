@@ -43,8 +43,7 @@ public class NullInputFormat implements InputFormat<NullWritable, NullWritable> 
     for (int i = 0; i < numSplits; i++)
       splits[i] = new NullInputSplit();
 
-    return splits;
-
+    return new InputSplit[] { new NullInputSplit() };
   }
 
   public void validateInput(JobConf job) {

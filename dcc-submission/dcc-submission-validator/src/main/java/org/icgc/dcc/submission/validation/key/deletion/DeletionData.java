@@ -57,10 +57,10 @@ public class DeletionData {
   /**
    * 
    */
-  public static DeletionData getInstance(KVFileSystem fileSystem) {
+  public static DeletionData getInstance(KVFileSystem kvFileSystem) {
     DeletionData deletionData;
-    if (fileSystem.hasToBeRemovedFile()) {
-      deletionData = DeletionFileParser.parseToBeDeletedFile(fileSystem);
+    if (kvFileSystem.hasToBeRemovedFile()) {
+      deletionData = DeletionFileParser.parseToBeDeletedFile(kvFileSystem);
     } else {
       deletionData = DeletionData.getEmptyInstance();
       log.info("No '{}' file provided", TO_BE_REMOVED_FILE_NAME);
