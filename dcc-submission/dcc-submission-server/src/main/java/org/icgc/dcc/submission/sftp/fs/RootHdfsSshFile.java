@@ -91,8 +91,9 @@ public class RootHdfsSshFile extends HdfsSshFile {
     try {
       List<Path> paths = lsAll(fs, path);
       List<SshFile> sshFiles = newArrayList();
+      val userProjectKeys = context.getUserProjectKeys();
       for (Path path : paths) {
-        Optional<SshFile> sshFile = listSshFile(path);
+        val sshFile = listSshFile(path, userProjectKeys);
         if (sshFile.isPresent()) {
           sshFiles.add(sshFile.get());
         }
@@ -128,14 +129,20 @@ public class RootHdfsSshFile extends HdfsSshFile {
     // No-op
   }
 
-  private Optional<SshFile> listSshFile(Path path) {
+  private Optional<SshFile> listSshFile(Path path, List<String> userProjectKeys) {
     try {
-      // if it is System File directory and admin user, add to file list
       if (context.isSystemDirectory(path)) {
+        // System file directory and admin user, add to file list
         return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName()));
       } else {
-        SubmissionDirectoryHdfsSshFile submissionDir =
-            new SubmissionDirectoryHdfsSshFile(context, this, path.getName());
+        // Represents a submission directory
+        val projectKey = path.getName();
+        val viewable = userProjectKeys.contains(projectKey);
+        if (!viewable) {
+          return Optional.<SshFile> absent();
+        }
+
+        val submissionDir = new SubmissionDirectoryHdfsSshFile(context, this, projectKey);
         if (submissionDir.doesExist()) {
           // Necessary because of error handling workaround
           return Optional.<SshFile> of(submissionDir);
@@ -144,7 +151,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
     } catch (Exception e) {
       log.warn("Path '{}' skipped due to exception", path.getName(), e.getMessage());
     }
-  
+
     return Optional.<SshFile> absent();
   }
 

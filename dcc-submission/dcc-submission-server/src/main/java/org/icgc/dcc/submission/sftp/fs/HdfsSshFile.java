@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp.fs;
 
+import static org.apache.commons.io.IOUtils.skip;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
@@ -28,6 +29,7 @@ import java.io.OutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Delegate;
 import lombok.NonNull;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -39,6 +41,14 @@ import org.icgc.dcc.submission.sftp.SftpContext;
 @Slf4j
 @AllArgsConstructor
 public abstract class HdfsSshFile implements SshFile {
+
+  /**
+   * Based on Jerry's experimentation with {@code ReadonlyExportedDataSshFile} this seems like a good nominal value
+   * compared to Hadoop's default of 4096.
+   * 
+   * @see {@link FileSystem#open(Path)}
+   */
+  private static final int HDFS_READ_BUFFER_SIZE_BYTES = 32768;
 
   protected static final String SEPARATOR = "/";
 
@@ -177,13 +187,26 @@ public abstract class HdfsSshFile implements SshFile {
     }
   }
 
+  /**
+   * Opens the underlying {@code path} for SFTP download streaming.
+   * <p>
+   * Added download to support "Incremental Submission"
+   * 
+   * @see https://issues.apache.org/jira/browse/HDFS-246
+   * @see https://jira.oicr.on.ca/browse/DCC-412
+   */
   @Override
   public InputStream createInputStream(long offset) throws IOException {
-    // because of DCC-412, the download size bug, we will temporarily disable download
-    // return fs.open(path);
-    // Ideally we would throw an Unsupported Exception, but mina will kick user out
-    // so we have to use a low level IOException to keep user connected
-    throw new IOException("Download from SFTP is disabled");
+    val inputStream = fs.open(path, HDFS_READ_BUFFER_SIZE_BYTES);
+    try {
+      inputStream.seek(offset);
+    } catch (IOException e) {
+      // Seek fails when the offset requested passes the file length,
+      // this line guarantee we are positioned at the end of the file
+      skip(inputStream, offset);
+    }
+
+    return inputStream;
   }
 
   @Override
