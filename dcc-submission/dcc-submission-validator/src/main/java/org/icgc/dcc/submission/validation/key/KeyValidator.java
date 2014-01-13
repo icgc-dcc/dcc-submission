@@ -17,7 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import static org.apache.hadoop.mapred.JobConf.MAPRED_MAP_TASK_JAVA_OPTS;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
 
@@ -41,8 +45,6 @@ import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
 import org.icgc.dcc.submission.validation.key.error.KVError;
-
-import com.google.common.collect.ImmutableMap;
 
 @NoArgsConstructor
 @Slf4j
@@ -106,12 +108,16 @@ public class KeyValidator implements Validator {
   }
 
   private static Map<Object, Object> getProperties(ValidationContext context) {
-    val properties = context.getPlatformStrategy().getFlowConnector().getProperties();
-    return ImmutableMap.<Object, Object> of(
-        "mapred.child.java.opts", "-Xmx" + DEFAULT_HEAP_SIZE,
-        "fs.defaultFS", properties.get("fs.defaultFS"),
-        "mapred.job.tracker", properties.get("mapred.job.tracker")
-        );
+    // Needed for the core hadoop properties
+    val hadoop = context.getPlatformStrategy().getFlowConnector().getProperties();
+
+    // This can't be an immutable map since the values can be null
+    val properties = newHashMap();
+    properties.put(MAPRED_MAP_TASK_JAVA_OPTS, "-Xmx" + DEFAULT_HEAP_SIZE);
+    properties.put(FS_DEFAULT_NAME_KEY, hadoop.get(FS_DEFAULT_NAME_KEY));
+    properties.put(MR_JOBTRACKER_ADDRESS_KEY, hadoop.get(MR_JOBTRACKER_ADDRESS_KEY));
+
+    return properties;
   }
 
   @SneakyThrows
