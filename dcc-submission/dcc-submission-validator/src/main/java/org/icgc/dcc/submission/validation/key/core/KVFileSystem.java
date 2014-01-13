@@ -28,6 +28,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionTyp
 import java.io.IOException;
 import java.io.InputStream;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -43,6 +44,7 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 @RequiredArgsConstructor
 public final class KVFileSystem {
 
+  @Getter
   @NonNull
   private final FileSystem fileSystem;
   @NonNull

@@ -57,9 +57,11 @@ public class KVValidator {
   public static final boolean SUPPORT_EXISTING = false;
 
   @NonNull
-  private final KVFileSystem fileSystem;
+  private final KVFileParser kvFileParser;
   @NonNull
-  private final KVReport report;
+  private final KVFileSystem kvFileSystem;
+  @NonNull
+  private final KVReport kvReport;
   @NonNull
   private final SurjectivityValidator surjectivityValidator;
 
@@ -67,20 +69,21 @@ public class KVValidator {
   private final KVSubmissionDataDigest incrementalData = new KVSubmissionDataDigest();
   private final KVSubmissionErrors errors = new KVSubmissionErrors();
 
-  public KVValidator(KVFileSystem fileSystem, KVReport report) {
-    this.fileSystem = fileSystem;
-    this.report = report;
-    this.surjectivityValidator = new SurjectivityValidator(fileSystem);
+  public KVValidator(KVFileParser kvFileParser, KVFileSystem kvFileSystem, KVReport kvReport) {
+    this.kvFileParser = kvFileParser;
+    this.kvFileSystem = kvFileSystem;
+    this.kvReport = kvReport;
+    this.surjectivityValidator = new SurjectivityValidator(kvFileSystem);
   }
 
   public void validate() {
     // Validate deletion data
-    val deletionData = DeletionData.getInstance(fileSystem);
+    val deletionData = DeletionData.getInstance(kvFileSystem);
     // validateDeletions(deletionData);
 
     if (SUPPORT_EXISTING) {
       // Process existing data
-      if (fileSystem.hasExistingData()) {
+      if (kvFileSystem.hasExistingData()) {
         loadExistingData();
       } else {
         loadPlaceholderExistingFiles();
@@ -104,7 +107,7 @@ public class KVValidator {
     validateComplexSurjection();
 
     // Report
-    boolean valid = errors.describe(report, incrementalData.getFileDescriptions()); // TODO: prettify
+    boolean valid = errors.describe(kvReport, incrementalData.getFileDescriptions()); // TODO: prettify
     log.info("{}", valid);
     log.info("done.");
   }
@@ -116,17 +119,17 @@ public class KVValidator {
       log.error("Deletion well-formedness errors found");
     }
 
-    val existingDonorIds = fileSystem.hasExistingClinicalData() ?
-        DeletionFileParser.getExistingDonorIds(fileSystem) :
+    val existingDonorIds = kvFileSystem.hasExistingClinicalData() ?
+        DeletionFileParser.getExistingDonorIds(kvFileSystem) :
         Sets.<String> newTreeSet();
     valid = deletionData.validateAgainstOldClinicalData(existingDonorIds);
     if (!valid) {
       log.error("Deletion previous data errors found");
     }
 
-    if (fileSystem.hasIncrementalClinicalData()) {
+    if (kvFileSystem.hasIncrementalClinicalData()) {
       valid = deletionData.validateAgainstIncrementalClinicalData(
-          existingDonorIds, DeletionFileParser.getIncrementalDonorIds(fileSystem));
+          existingDonorIds, DeletionFileParser.getIncrementalDonorIds(kvFileSystem));
       if (!valid) {
         log.error("Deletion incremental data errors found");
       }
@@ -137,7 +140,7 @@ public class KVValidator {
     log.info("Loading existing data");
 
     // Existing clinical
-    checkState(fileSystem.hasExistingClinicalData(), "TODO"); // At this point we expect it
+    checkState(kvFileSystem.hasExistingClinicalData(), "TODO"); // At this point we expect it
     log.info("Processing exiting clinical data");
     loadExistingFile(DONOR);
     loadExistingFile(SPECIMEN);
@@ -146,7 +149,7 @@ public class KVValidator {
     for (val dataType : KVExperimentalDataType.values()) {
 
       // Existing data
-      if (fileSystem.hasExistingData(dataType)) {
+      if (kvFileSystem.hasExistingData(dataType)) {
         log.info("Processing exiting '{}' data", dataType);
         for (val fileType : dataType.getFileTypes()) {
           loadExistingFile(fileType);
@@ -170,7 +173,7 @@ public class KVValidator {
     log.info("Loading incremental data");
 
     // Incremental clinical data
-    if (fileSystem.hasIncrementalClinicalData()) {
+    if (kvFileSystem.hasIncrementalClinicalData()) {
       log.info("Processing incremental clinical data");
       loadIncrementalFile(DONOR, INCREMENTAL_FILE, deletionData);
       loadIncrementalFile(SPECIMEN, INCREMENTAL_FILE, deletionData);
@@ -182,7 +185,7 @@ public class KVValidator {
 
     // Incremental experimental data
     for (val dataType : KVExperimentalDataType.values()) {
-      if (fileSystem.hasIncrementalData(dataType)) {
+      if (kvFileSystem.hasIncrementalData(dataType)) {
         log.info("Processing incremental '{}' data", dataType);
         for (val fileType : dataType.getFileTypes()) {
           loadIncrementalFile(fileType, INCREMENTAL_FILE, deletionData);
@@ -196,17 +199,18 @@ public class KVValidator {
   private void loadExistingFile(KVFileType fileType) {
     log.info("{}", repeat("=", 75));
     log.info("Loading existing file: '{}'", fileType);
-    val dataFilePath = fileSystem.getDataFilePath(EXISTING_FILE, fileType);
+    val dataFilePath = kvFileSystem.getDataFilePath(EXISTING_FILE, fileType);
     existingData.put(
         fileType,
         new KVExistingFileDataDigest(
+            kvFileParser,
             getExistingFileDescription(fileType, dataFilePath),
             1000000)
             .processFile());
   }
 
   private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
-    val dataFilePath = fileSystem.getDataFilePath(INCREMENTAL_FILE, fileType);
+    val dataFilePath = kvFileSystem.getDataFilePath(INCREMENTAL_FILE, fileType);
     val referencedType = RELATIONS.get(fileType);
     log.info("{}", repeat("=", 75));
     log.info("Loading incremental file: '{}.{}' ('{}'); Referencing '{}'",
@@ -215,10 +219,11 @@ public class KVValidator {
     incrementalData.put(
         fileType,
         new KVIncrementalFileDataDigest( // TODO: subclass for referencing/non-referencing?
+            kvFileParser,
             getIncrementalFileDescription(
                 submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
             1000000,
-            fileSystem,
+            kvFileSystem,
             deletionData,
 
             referencedType != null ?
@@ -252,7 +257,7 @@ public class KVValidator {
     log.info("Loading placeholder existing file: '{}'", fileType);
     existingData.put(
         fileType,
-        KVFileDataDigest.getEmptyInstance(getPlaceholderFileDescription(fileType)));
+        KVFileDataDigest.getEmptyInstance(kvFileParser, getPlaceholderFileDescription(fileType)));
   }
 
   @SuppressWarnings("unused")

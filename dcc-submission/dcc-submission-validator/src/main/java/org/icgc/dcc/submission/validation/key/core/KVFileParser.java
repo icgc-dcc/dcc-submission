@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,29 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Preconditions.checkState;
+import java.util.List;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
-import org.icgc.dcc.submission.validation.key.core.KVFileParser;
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.submission.core.parser.FileLineParser;
+import org.icgc.dcc.submission.core.parser.FileParser;
 
-public class KVExistingFileDataDigest extends KVFileDataDigest {
+/**
+ * "typedef" for parsers used by the key validation framework.
+ */
+public class KVFileParser extends FileParser<List<String>> {
 
-  // TODO: lombok delegation?
-  public KVExistingFileDataDigest(KVFileParser kvFileParser, KVFileDescription kvFileDescription, long logThreshold) {
-    super(kvFileParser, kvFileDescription, logThreshold);
-  }
-
-  /**
-   * In the case of existing data the processing consists in gathering the PKs.
-   */
-  @Override
-  protected void processTuple(KVTuple tuple, long lineCount) {
-    checkState(kvFileDescription.getSubmissionType().isExistingData(), "TODO");
-
-    // Original data (old); This should already be valid, nothing to check
-    updatePksIfApplicable(tuple);
+  public KVFileParser(FileSystem fileSystem, FileLineParser<List<String>> lineParser, boolean processHeader) {
+    super(fileSystem, lineParser, processHeader);
   }
 
 }

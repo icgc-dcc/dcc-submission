@@ -26,6 +26,11 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_S_TYPE;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 
 import java.io.File;
 import java.net.URL;
@@ -143,7 +148,15 @@ public final class TestUtils {
 
   @SneakyThrows
   public static Dictionary dictionary() {
-    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+    Dictionary dictionary = MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+
+    // Add file schemata
+    dictionary.addFile(readFileSchema(SSM_S_TYPE));
+    dictionary.addFile(readFileSchema(METH_M_TYPE));
+    dictionary.addFile(readFileSchema(METH_P_TYPE));
+    dictionary.addFile(readFileSchema(METH_S_TYPE));
+
+    return dictionary;
   }
 
   public static List<String> getFieldNames(SubmissionFileType type) {

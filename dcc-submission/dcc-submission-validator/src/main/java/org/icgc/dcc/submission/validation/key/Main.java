@@ -17,19 +17,27 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import java.util.logging.LogManager;
+
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * Command-line utility to initiate key validation on a specified project stored locally or in HDFS. Will use Cascading
  * local or Hadoop depending on the {@code fsUrl} argument's scheme.
  */
+@Slf4j
 public class Main {
 
   public static void main(String... args) throws InterruptedException {
+    LogManager.getLogManager().reset();
+    SLF4JBridgeHandler.install();
     Logger.getRootLogger().setLevel(Level.INFO);
+    log.info("Starting...");
 
     // Resolve configuration
     int i = 0;

@@ -133,7 +133,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     }
 
     flowProperties.putAll(properties);
-
     return new HadoopFlowConnector(flowProperties);
   }
 

@@ -66,8 +66,8 @@ public class DeletionFileParser {
    * Does not perform any validation per se, simply parsing.
    */
   @SneakyThrows
-  public static DeletionData parseToBeDeletedFile(KVFileSystem fileSystem) {
-    val toBeDetetedFile = fileSystem.getToBeRemovedFilePath();
+  public static DeletionData parseToBeDeletedFile(KVFileSystem kvFileSystem) {
+    val toBeDetetedFile = kvFileSystem.getToBeRemovedFilePath();
     log.info("{}", toBeDetetedFile);
 
     // TODO: use builder
@@ -75,7 +75,7 @@ public class DeletionFileParser {
 
     // TODO: "with" construct
     @Cleanup
-    val reader = createReader(fileSystem, toBeDetetedFile);
+    val reader = createReader(kvFileSystem, toBeDetetedFile);
     long lineCount = 0;
     for (String line; (line = reader.readLine()) != null;) {
       if (lineCount != 0 && !line.trim().isEmpty()) {
@@ -115,10 +115,10 @@ public class DeletionFileParser {
     return donorIds;
   }
 
-  public static Set<String> getExistingDonorIds(KVFileSystem fileSystem) {
-    val existingDonorFile = fileSystem.getDataFilePath(EXISTING_FILE, DONOR);
+  public static Set<String> getExistingDonorIds(KVFileSystem kvFileSystem) {
+    val existingDonorFile = kvFileSystem.getDataFilePath(EXISTING_FILE, DONOR);
     log.info("{}", existingDonorFile);
-    return getDonorIds(fileSystem, existingDonorFile);
+    return getDonorIds(kvFileSystem, existingDonorFile);
   }
 
   public static Set<String> getIncrementalDonorIds(KVFileSystem fileSystem) {
@@ -151,9 +151,9 @@ public class DeletionFileParser {
     return deletionTypes;
   }
 
-  private static BufferedReader createReader(KVFileSystem fileSystem, Path path)
+  private static BufferedReader createReader(KVFileSystem kvFileSystem, Path path)
       throws IOException {
-    return new BufferedReader(new InputStreamReader(fileSystem.open(path)));
+    return new BufferedReader(new InputStreamReader(kvFileSystem.open(path)));
   }
 
 }

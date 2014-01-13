@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.key.core;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.core.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 
@@ -46,6 +48,8 @@ public class KVValidatorRunner implements Runnable, Serializable {
    * 
    * @see {@link HadoopFlowStep#pack()}
    */
+  @NonNull
+  private final URI fsUri;
   @NonNull
   private final Dictionary dictionary;
   private final String oldReleasePath;
@@ -69,6 +73,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
     val report = new KVReport(fileSystem, new Path(reportPath));
     try {
       val validator = new KVValidator(
+          new KVFileParser(fileSystem, new FileLineListParser(), false),
           new KVFileSystem(fileSystem, dictionary, new Path(oldReleasePath), new Path(newReleasePath)),
           report);
 
@@ -84,9 +89,8 @@ public class KVValidatorRunner implements Runnable, Serializable {
    * Re-establishes the file system cluster-side.
    */
   @SneakyThrows
-  private static FileSystem getFileSystem() {
-    // Sources the defaults on the current system (e.g. 'fs.defaultFS')
-    return FileSystem.get(new Configuration());
+  private FileSystem getFileSystem() {
+    return FileSystem.get(fsUri, new Configuration());
   }
 
 }
