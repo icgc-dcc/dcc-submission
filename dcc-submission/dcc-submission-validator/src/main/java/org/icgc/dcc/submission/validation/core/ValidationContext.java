@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -55,7 +56,7 @@ public interface ValidationContext extends ReportContext {
   /**
    * Gets the list of data types to validate.
    */
-  List<SubmissionDataType> getDataTypes();
+  Collection<SubmissionDataType> getDataTypes();
 
   /**
    * Gets the current release.

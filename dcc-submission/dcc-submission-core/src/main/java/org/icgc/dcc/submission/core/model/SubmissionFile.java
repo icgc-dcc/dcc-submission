@@ -35,7 +35,7 @@ public class SubmissionFile {
   private final Date lastUpdate;
   private final long size;
   private final String schemaName;
-  private final String featureTypeName;
+  private final String dataType;
 
   @JsonCreator
   public SubmissionFile(
@@ -43,12 +43,12 @@ public class SubmissionFile {
       @NonNull @JsonProperty("lastUpdate") Date lastUpdate,
       @JsonProperty("size") long size,
       @JsonProperty("schema") String schemaName,
-      @JsonProperty("featureTypeName") String featureTypeName) {
+      @JsonProperty("dataType") String dataType) {
     this.name = name;
     this.lastUpdate = lastUpdate;
     this.size = size;
     this.schemaName = schemaName;
-    this.featureTypeName = featureTypeName;
+    this.dataType = dataType;
   }
 
 }

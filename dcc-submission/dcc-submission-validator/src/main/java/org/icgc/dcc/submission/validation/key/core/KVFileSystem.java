@@ -27,7 +27,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionTyp
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Collection;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -50,7 +50,7 @@ public final class KVFileSystem {
   @NonNull
   private final FileSystem fileSystem;
   @NonNull
-  private final List<SubmissionDataType> dataTypes;
+  private final Collection<SubmissionDataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
 

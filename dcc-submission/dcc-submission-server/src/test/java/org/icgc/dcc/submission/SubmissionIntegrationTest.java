@@ -46,11 +46,11 @@ import static org.icgc.dcc.submission.TestUtils.asRelease;
 import static org.icgc.dcc.submission.TestUtils.asReleaseView;
 import static org.icgc.dcc.submission.TestUtils.asString;
 import static org.icgc.dcc.submission.TestUtils.codeListsToString;
+import static org.icgc.dcc.submission.TestUtils.dataTypesToString;
 import static org.icgc.dcc.submission.TestUtils.delete;
 import static org.icgc.dcc.submission.TestUtils.dictionary;
 import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
 import static org.icgc.dcc.submission.TestUtils.dictionaryVersion;
-import static org.icgc.dcc.submission.TestUtils.featureTypesToString;
 import static org.icgc.dcc.submission.TestUtils.get;
 import static org.icgc.dcc.submission.TestUtils.post;
 import static org.icgc.dcc.submission.TestUtils.put;
@@ -186,22 +186,22 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * @see http://stackoverflow.com/questions/1368163/is-there-a-standard-domain-for-testing-throwaway-email
    */
   private static final String PROJECT_TO_SIGN_OFF = "['" + PROJECT1_KEY + "']";
-  private static final String PROJECT_FEATURE_TYPES = featureTypesToString();
+  private static final String PROJECT_DATA_TYPES = dataTypesToString();
   private static final String PROJECTS_TO_ENQUEUE = "["
-      + "{key:'" + PROJECT1_KEY + "',emails:['project1@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "}]";
+      + "{key:'" + PROJECT1_KEY + "',emails:['project1@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}]";
 
   private static final String PROJECTS_TO_ENQUEUE2 = "["
-      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "},"
-      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], featureTypes: " + PROJECT_FEATURE_TYPES + "}]";
+      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}]";
 
   /**
    * Submission file system.

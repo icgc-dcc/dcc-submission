@@ -30,7 +30,7 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFeatureType;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getDataType;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchema;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
@@ -881,18 +881,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     val fileSchema = getFileSchema(dictionary, fileName);
     String schemaName = null;
-    String featureTypeName = null;
+    String dataType = null;
     if (fileSchema.isPresent()) {
-      val featureType = getFeatureType(fileSchema.get());
-
       schemaName = fileSchema.get().getName();
-      featureTypeName = featureType.isPresent() ? featureType.get().name() : null;
+      dataType = getDataType(fileSchema.get()).name();
     } else {
       schemaName = null;
-      featureTypeName = null;
+      dataType = null;
     }
 
-    return new SubmissionFile(fileName, lastUpdate, size, schemaName, featureTypeName);
+    return new SubmissionFile(fileName, lastUpdate, size, schemaName, dataType);
   }
 
   private Submission fetchAndCheckSubmission(Release nextRelease, String projectKey, SubmissionState expectedState)

@@ -27,10 +27,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.collect.ImmutableList;
@@ -49,22 +51,27 @@ public class QueuedProject {
   @NotEmpty
   private List<String> emails;
   @NotNull
-  private List<FeatureType> featureTypes;
+  private List<String> dataTypes;
 
   public QueuedProject() {
-    this(null, Collections.<String> emptyList(), Collections.<FeatureType> emptyList());
+    this(null, Collections.<String> emptyList(), Collections.<String> emptyList());
   }
 
   public QueuedProject(String key, List<String> emails) {
-    this(key, emails, Collections.<FeatureType> emptyList());
+    this(key, emails, Collections.<String> emptyList());
   }
 
-  public ImmutableList<String> getEmails() {
+  public List<String> getEmails() {
     return ImmutableList.copyOf(emails);
   }
 
-  public ImmutableList<FeatureType> getFeatureTypes() {
-    return ImmutableList.copyOf(featureTypes);
+  public List<SubmissionDataType> getDataTypes() {
+    val builder = ImmutableList.<SubmissionDataType> builder();
+    for (val name : dataTypes) {
+      builder.add(SubmissionDataTypes.valueOf(name));
+    }
+
+    return builder.build();
   }
 
 }

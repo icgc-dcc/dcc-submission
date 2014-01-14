@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.key.core;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
-import java.util.List;
+import java.util.Collection;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -53,7 +53,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
   @NonNull
   private final URI fsUri;
   @NonNull
-  private final List<SubmissionDataType> dataTypes;
+  private final Collection<SubmissionDataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
   private final String oldReleasePath;

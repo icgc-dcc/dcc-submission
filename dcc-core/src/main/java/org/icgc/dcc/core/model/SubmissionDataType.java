@@ -48,6 +48,8 @@ public interface SubmissionDataType {
    */
   String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
 
+  String name();
+
   String getTypeName();
 
   boolean isClinicalType();
@@ -101,6 +103,25 @@ public interface SubmissionDataType {
       }
 
       return checkNotNull(type, "Could not find a match for type %s", typeName);
+    }
+
+    /**
+     * Returns an enum matching the supplied name
+     */
+    public static SubmissionDataType valueOf(String name) {
+      SubmissionDataType type = null;
+      try {
+        return FeatureType.valueOf(name);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+      try {
+        return ClinicalType.valueOf(name);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+
+      return checkNotNull(type, "Could not find a match for name %s", name);
     }
 
     /**

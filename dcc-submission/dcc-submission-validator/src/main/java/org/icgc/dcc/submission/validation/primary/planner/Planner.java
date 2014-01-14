@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -26,7 +26,7 @@ import org.icgc.dcc.submission.validation.primary.core.Plan;
 
 public interface Planner {
 
-  public Plan plan(String projectKey, List<SubmissionDataType> dataTypes, PlatformStrategy strategy,
+  public Plan plan(String projectKey, Collection<SubmissionDataType> dataTypes, PlatformStrategy strategy,
       Dictionary dictionary) throws PlanningException;
 
 }

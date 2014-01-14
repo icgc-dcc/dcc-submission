@@ -52,7 +52,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -190,8 +190,8 @@ public final class TestUtils {
   }
 
   @SneakyThrows
-  public static String featureTypesToString() {
-    return MAPPER.writeValueAsString(FeatureType.values());
+  public static String dataTypesToString() {
+    return MAPPER.writeValueAsString(SubmissionDataTypes.values());
   }
 
   @SneakyThrows

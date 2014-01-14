@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.primary.planner;
 
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchemata;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +55,7 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Plan plan(@NonNull String projectKey, @NonNull List<SubmissionDataType> dataTypes,
+  public Plan plan(@NonNull String projectKey, @NonNull Collection<SubmissionDataType> dataTypes,
       @NonNull PlatformStrategy strategy, @NonNull Dictionary dictionary) {
     val plan = new Plan(projectKey, dictionary, strategy);
 
@@ -67,7 +68,7 @@ public class DefaultPlanner implements Planner {
     return plan;
   }
 
-  private static void includePlanners(Plan plan, String projectKey, List<SubmissionDataType> dataTypes,
+  private static void includePlanners(Plan plan, String projectKey, Collection<SubmissionDataType> dataTypes,
       PlatformStrategy strategy, Dictionary dictionary) {
     val systemDirectory = strategy.getSystemDirectory();
 

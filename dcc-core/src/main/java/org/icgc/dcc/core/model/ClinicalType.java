@@ -67,7 +67,7 @@ public enum ClinicalType implements SubmissionDataType {
    */
   public static SubmissionDataType from(String typeName) {
     checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
+        "Only '%s' is allowed for now, '%s' provided instead",
         CLINICAL_CORE_TYPE.getTypeName(), typeName);
     return CLINICAL_CORE_TYPE;
   }
