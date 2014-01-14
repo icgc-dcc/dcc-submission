@@ -17,8 +17,10 @@
  */
 package org.icgc.dcc.submission.core.model;
 
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFeatureType;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchema;
+
 import java.util.Date;
-import java.util.regex.Pattern;
 
 import lombok.Getter;
 import lombok.val;
@@ -28,10 +30,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 /**
  * For serializing file data through the REST interface
@@ -42,9 +42,8 @@ public class SubmissionFile {
   private final String name;
   private final Date lastUpdate;
   private final long size;
-
-  private String schemaName;
-  private String featureTypeName;
+  private final String schemaName;
+  private final String featureTypeName;
 
   @JsonCreator
   public SubmissionFile(
@@ -68,32 +67,15 @@ public class SubmissionFile {
     this.size = fileStatus.getLen();
 
     val fileSchema = getFileSchema(dictionary, this.name);
-    if (fileSchema != null) {
-      this.schemaName = fileSchema.getName();
-      this.featureTypeName = getFeatureTypeName(fileSchema);
+    if (fileSchema.isPresent()) {
+      val featureType = getFeatureType(fileSchema.get());
+
+      this.schemaName = fileSchema.get().getName();
+      this.featureTypeName = featureType.isPresent() ? featureType.get().name() : null;
+    } else {
+      this.schemaName = null;
+      this.featureTypeName = null;
     }
-  }
-
-  private static FileSchema getFileSchema(Dictionary dictionary, String fileName) {
-    for (val schema : dictionary.getFiles()) {
-      val match = Pattern.matches(schema.getPattern(), fileName);
-      if (match) {
-        return schema;
-      }
-    }
-
-    return null;
-  }
-
-  private static String getFeatureTypeName(FileSchema fileSchema) {
-    val dataType = SubmissionFileType.from(fileSchema.getName()).getDataType();
-    if (dataType.isFeatureType()) {
-      val featureType = dataType.asFeatureType();
-
-      return featureType.name();
-    }
-
-    return null;
   }
 
 }
