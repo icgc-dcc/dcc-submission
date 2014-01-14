@@ -54,8 +54,6 @@ module.exports = class ValidateSubmissionView extends View
     @features[idx].selected = not @features[idx].selected
     @featureTable.fnUpdate(@features[idx], idx)
 
-    console.log "clicked", feature, idx
-    console.log _.pluck(@features, 'selected')
 
   initialize: ->
     #console.debug "ValidateSubmissionView#initialize", @options
@@ -66,10 +64,15 @@ module.exports = class ValidateSubmissionView extends View
     submissionFiles = @model.get "submissionFiles"
     console.log submissionFiles
     @features = []
-    @features.push {'name':f.name, 'selected':true} for f in submissionFiles
+
+    for f in  submissionFiles
+      name = f.featureTypeName
+      idx = _.pluck(@features, 'name').indexOf(name)
+      if name != null and idx == -1
+        @features.push {'name':name, 'selected':true}
+
     @featureTable = null
 
-    console.log @features
 
     release = new NextRelease()
     release.fetch
@@ -126,7 +129,6 @@ module.exports = class ValidateSubmissionView extends View
       sAjaxDataProp: ""
       aoColumns: aoColumns
       fnServerData: (sSource, aoData, fnCallback) =>
-        console.log "aaaaaa"
         fnCallback @features
 
 
@@ -151,11 +153,15 @@ module.exports = class ValidateSubmissionView extends View
 
     nextRelease = new NextRelease()
 
+    # Grab the selected feature types
+    featureToValidate = _.filter @features, (f) -> f.selected == true
+    featureParams = _.pluck featureToValidate, 'name'
+
     #TODO: Need to add file types
     nextRelease.queue [{
       key: @options.submission.get("projectKey")
       emails: @.$('#emails').val().split(',')
-      featureTypes: []
+      featureTypes: featureParams
     }],
     success: =>
       @$el.modal 'hide'
