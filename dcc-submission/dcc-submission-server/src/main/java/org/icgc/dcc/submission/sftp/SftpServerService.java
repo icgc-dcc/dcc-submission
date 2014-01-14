@@ -27,6 +27,7 @@ import java.util.Map;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.core.session.IoSession;
@@ -72,7 +73,7 @@ public class SftpServerService extends AbstractService {
     for (AbstractSession activeSession : activeSessions) {
 
       // Shorthands
-      IoSession ioSession = activeSession.getIoSession();
+      val ioSession = activeSession.getIoSession();
       long creationTime = ioSession.getCreationTime();
       long lastWriteTime = ioSession.getLastWriteTime();
       String username = activeSession.getUsername();

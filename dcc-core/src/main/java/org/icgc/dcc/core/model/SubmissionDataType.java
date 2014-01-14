@@ -40,7 +40,7 @@ import com.google.common.collect.Iterables;
  */
 public interface SubmissionDataType {
 
-  String TYPE_SUFFIX = "_TYPE";
+  String TYPE_SUFFIX = "TYPE";
 
   /**
    * Not really used anywhere (but here for consistency).

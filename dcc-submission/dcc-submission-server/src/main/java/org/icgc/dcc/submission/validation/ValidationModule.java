@@ -25,10 +25,11 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.normalization.NormalizationConfig;
-import org.icgc.dcc.submission.normalization.NormalizationValidator;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
+import org.icgc.dcc.submission.validation.key.KeyValidator;
+import org.icgc.dcc.submission.validation.norm.NormalizationConfig;
+import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
@@ -128,8 +129,7 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   /**
-   * Any restrictions added in here should also be added in
-   * {@link ValidationTestModule} for testing.
+   * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
    */
   private void bindRestrictionTypes() {
     // Set binder will preserve bind order as iteration order for injectees
@@ -158,6 +158,7 @@ public class ValidationModule extends AbstractDccModule {
 
     // Order: Syntactic, primary then semantic
     bindValidator(validators, FirstPassValidator.class);
+    bindValidator(validators, KeyValidator.class);
     bindValidator(validators, PrimaryValidator.class);
     bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
 
@@ -206,8 +207,7 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   /**
-   * Near clone of {@link LoaderModule} - maintain both at the same time until
-   * DCC-1876 is addressed.
+   * Near clone of {@link LoaderModule} - maintain both at the same time until DCC-1876 is addressed.
    * <p>
    * TODO: This is temporary until DCC-1876 is addressed.
    * <p>

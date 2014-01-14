@@ -254,7 +254,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   }
 
   /**
-   * Intenal {@code ValidationContext} factory method.
+   * Internal {@code ValidationContext} factory method.
    * 
    * @param release the current release
    * @param project the project to create a validation for

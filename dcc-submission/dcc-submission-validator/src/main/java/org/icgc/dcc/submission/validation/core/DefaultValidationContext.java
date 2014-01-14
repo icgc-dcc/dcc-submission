@@ -103,6 +103,13 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
+  public SubmissionDirectory getPreviousSubmissionDirectory() {
+    // TODO: Implement
+    throw new UnsupportedOperationException(
+        "There currently is no way to get the previous submission directory. This requires implementation effort.");
+  }
+
+  @Override
   public DccFileSystem getDccFileSystem() {
     return dccFileSystem;
   }
@@ -145,6 +152,11 @@ public class DefaultValidationContext implements ValidationContext {
     }
 
     return Optional.<Path> absent();
+  }
+
+  @Override
+  public FileSchema getSsmPrimaryFileSchema() {
+    return getSsmPrimaryFileSchema(getDictionary());
   }
 
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {

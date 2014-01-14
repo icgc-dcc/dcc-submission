@@ -651,8 +651,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         + "errors.json");
     assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR
         + "errors.json");
-    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR
-        + "errors.json");
   }
 
   private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState) {

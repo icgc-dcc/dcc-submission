@@ -115,6 +115,27 @@ public enum ErrorType {
   },
 
   /**
+   * No matching value(s) for referencING field(s) (only applicable if relation is set to bidirectional/surjective).
+   * <p>
+   * Example: e.g,. for specimen report: if specimen.donor_id does not hold value "my_donor_B" but donor.donor_id does
+   * (would not be a problem with family.donor_id as the relation from family to donor is not bidirectional with donor,
+   * unlike the one from specimen to donor)
+   * <p>
+   * Not quite the value-counterpart to {@code REVERSE_RELATION_FILE_ERROR}
+   */
+  SIMPLE_SURJECTION_ERROR(CELL_LEVEL, "No corresponding values in %s.%s for value(s) %s in %s.%s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 2);
+      checkArgument(params[0] instanceof String);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(OTHER_SCHEMA, params[0], OTHER_FIELDS, params[1]);
+    }
+  },
+
+  /**
    * No matching value(s) for referencING field(s) (only applicable if relation is set to bidirectional).
    * <p>
    * Example: e.g,. for specimen report: if specimen.donor_id does not hold value "my_donor_B" but donor.donor_id does
@@ -123,6 +144,7 @@ public enum ErrorType {
    * <p>
    * Not quite the value-counterpart to {@code REVERSE_RELATION_FILE_ERROR}
    */
+  @Deprecated
   RELATION_PARENT_VALUE_ERROR(CELL_LEVEL, "No corresponding values in %s.%s for value(s) %s in %s.%s") {
 
     @Override

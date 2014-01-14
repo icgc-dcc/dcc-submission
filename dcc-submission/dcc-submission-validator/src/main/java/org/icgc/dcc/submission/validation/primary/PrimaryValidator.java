@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.primary;
 import static com.google.common.collect.Iterables.size;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -39,11 +38,14 @@ import com.google.inject.Inject;
  * @see https://groups.google.com/d/msg/cascading-user/gjxB2Bg-56w/R1h5lhn-g2IJ
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class PrimaryValidator implements Validator {
 
-  @NonNull
   private final Planner planner;
+
+  @Inject
+  public PrimaryValidator(@NonNull Planner planner) {
+    this.planner = planner;
+  }
 
   @Override
   public String getName() {

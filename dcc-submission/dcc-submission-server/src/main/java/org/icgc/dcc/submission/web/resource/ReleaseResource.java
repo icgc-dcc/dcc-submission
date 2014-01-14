@@ -44,8 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.shiro.subject.Subject;
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.model.Views.Digest;
-import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;

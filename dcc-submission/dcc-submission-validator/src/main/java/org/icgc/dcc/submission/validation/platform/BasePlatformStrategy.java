@@ -17,11 +17,15 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static java.util.Collections.emptyMap;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import lombok.NonNull;
 
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,6 +40,7 @@ import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 
+import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
@@ -46,14 +51,14 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   protected final FileSystem fileSystem;
 
+  @NonNull
   private final Path input;
-
+  @NonNull
   private final Path output;
-
+  @NonNull
   private final Path system;
 
   private final FileSchemaDirectory fileSchemaDirectory;
-
   private final FileSchemaDirectory systemDirectory;
 
   protected BasePlatformStrategy(FileSystem fileSystem, Path input, Path output, Path system) {
@@ -63,6 +68,11 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     this.system = system;
     this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
     this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
+  }
+
+  @Override
+  public FlowConnector getFlowConnector() {
+    return getFlowConnector(emptyMap());
   }
 
   /**
