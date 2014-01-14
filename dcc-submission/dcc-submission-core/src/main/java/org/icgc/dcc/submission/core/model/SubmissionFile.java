@@ -17,21 +17,13 @@
  */
 package org.icgc.dcc.submission.core.model;
 
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFeatureType;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchema;
-
 import java.util.Date;
 
 import lombok.Getter;
-import lombok.val;
+import lombok.NonNull;
 
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 /**
  * For serializing file data through the REST interface
@@ -47,8 +39,8 @@ public class SubmissionFile {
 
   @JsonCreator
   public SubmissionFile(
-      @JsonProperty("name") String name,
-      @JsonProperty("lastUpdate") Date lastUpdate,
+      @NonNull @JsonProperty("name") String name,
+      @NonNull @JsonProperty("lastUpdate") Date lastUpdate,
       @JsonProperty("size") long size,
       @JsonProperty("schema") String schemaName,
       @JsonProperty("featureTypeName") String featureTypeName) {
@@ -57,25 +49,6 @@ public class SubmissionFile {
     this.size = size;
     this.schemaName = schemaName;
     this.featureTypeName = featureTypeName;
-  }
-
-  public SubmissionFile(Path path, FileSystem fs, Dictionary dictionary) {
-    this.name = path.getName();
-
-    FileStatus fileStatus = HadoopUtils.getFileStatus(fs, path);
-    this.lastUpdate = new Date(fileStatus.getModificationTime());
-    this.size = fileStatus.getLen();
-
-    val fileSchema = getFileSchema(dictionary, this.name);
-    if (fileSchema.isPresent()) {
-      val featureType = getFeatureType(fileSchema.get());
-
-      this.schemaName = fileSchema.get().getName();
-      this.featureTypeName = featureType.isPresent() ? featureType.get().name() : null;
-    } else {
-      this.schemaName = null;
-      this.featureTypeName = null;
-    }
   }
 
 }

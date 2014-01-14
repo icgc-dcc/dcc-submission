@@ -17,85 +17,54 @@
  */
 package org.icgc.dcc.submission.release.model;
 
-import static com.google.common.collect.Lists.newArrayList;
-
+import java.util.Collections;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 import com.google.code.morphia.annotations.Embedded;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 @Embedded
-public class QueuedProject { // TODO: rename as Queued is misleading (also applies to Validating)
+@Setter
+@Getter
+@EqualsAndHashCode
+@ToString
+@AllArgsConstructor
+// TODO: rename as Queued is misleading (also applies to Validating)
+public class QueuedProject {
 
   @NotBlank
   private String key;
-
+  @NotEmpty
   private List<String> emails;
+  @NotNull
+  private List<FeatureType> featureTypes;
 
   public QueuedProject() {
-    super();
+    this(null, Collections.<String> emptyList(), Collections.<FeatureType> emptyList());
   }
 
   public QueuedProject(String key, List<String> emails) {
-    super();
-    this.key = key;
-    this.emails = emails;
-  }
-
-  public QueuedProject(String key, String... emails) {
-    this(key, newArrayList(emails));
+    this(key, emails, Collections.<FeatureType> emptyList());
   }
 
   public ImmutableList<String> getEmails() {
-    return ImmutableList.copyOf(this.emails);
+    return ImmutableList.copyOf(emails);
   }
 
-  public String getKey() {
-    return this.key;
-  }
-
-  public void setKey(String key) {
-    this.key = key;
-  }
-
-  public void setEmails(List<String> emails) {
-    this.emails = emails;
-  }
-
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(QueuedProject.class) //
-        .add("key", this.key) //
-        .add("emails", this.emails) //
-        .toString();
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((emails == null) ? 0 : emails.hashCode());
-    result = prime * result + ((key == null) ? 0 : key.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (obj == this) {
-      return true;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final QueuedProject other = (QueuedProject) obj;
-    return Objects.equal(this.key, other.key) //
-        && Objects.equal(this.emails, other.emails);
+  public ImmutableList<FeatureType> getFeatureTypes() {
+    return ImmutableList.copyOf(featureTypes);
   }
 
 }

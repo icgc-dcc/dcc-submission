@@ -73,10 +73,11 @@ module.exports = class ValidateSubmissionView extends View
 
     nextRelease = new NextRelease()
 
-    nextRelease.queue [
-      {key: @options.submission.get("projectKey")
-      emails: @.$('#emails').val().split(',')}
-      ],
+    nextRelease.queue [{
+        key: @options.submission.get("projectKey")
+        emails: @.$('#emails').val().split(',')
+        featureTypes: []
+      }],
       success: =>
         @$el.modal 'hide'
         mediator.publish "validateSubmission"

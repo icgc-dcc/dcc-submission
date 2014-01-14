@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
-import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -55,6 +55,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -63,7 +64,7 @@ public class ValidationSchedulerTest {
   /**
    * Test data.
    */
-  final QueuedProject queuedProject = new QueuedProject("project", "user@project.com");
+  final QueuedProject queuedProject = new QueuedProject("project", ImmutableList.<String> of("user@project.com"));
 
   /**
    * Primary collaborators.

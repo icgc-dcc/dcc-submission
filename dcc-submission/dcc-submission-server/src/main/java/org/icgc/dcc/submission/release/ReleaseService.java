@@ -29,6 +29,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFeatureType;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchema;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
@@ -41,6 +44,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -859,14 +863,36 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       throw new ReleaseException("No Dictionary " + release.getDictionaryVersion());
     }
 
-    List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
+    val submissionFiles = new ArrayList<SubmissionFile>();
     val buildProjectStringPath = new Path(fs.buildProjectStringPath(release.getName(), projectKey));
 
-    for (val path : HadoopUtils.lsFile(fs.getFileSystem(), buildProjectStringPath)) {
-      // TODO: use DccFileSystem sabstraction instead
-      submissionFileList.add(new SubmissionFile(path, fs.getFileSystem(), dictionary));
+    for (val path : lsFile(fs.getFileSystem(), buildProjectStringPath)) {
+      submissionFiles.add(getSubmissionFile(dictionary, path));
     }
-    return submissionFileList;
+
+    return submissionFiles;
+  }
+
+  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path path) {
+    val fileName = path.getName();
+    val fileStatus = HadoopUtils.getFileStatus(fs.getFileSystem(), path);
+    val lastUpdate = new Date(fileStatus.getModificationTime());
+    val size = fileStatus.getLen();
+
+    val fileSchema = getFileSchema(dictionary, fileName);
+    String schemaName = null;
+    String featureTypeName = null;
+    if (fileSchema.isPresent()) {
+      val featureType = getFeatureType(fileSchema.get());
+
+      schemaName = fileSchema.get().getName();
+      featureTypeName = featureType.isPresent() ? featureType.get().name() : null;
+    } else {
+      schemaName = null;
+      featureTypeName = null;
+    }
+
+    return new SubmissionFile(fileName, lastUpdate, size, schemaName, featureTypeName);
   }
 
   private Submission fetchAndCheckSubmission(Release nextRelease, String projectKey, SubmissionState expectedState)
