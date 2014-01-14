@@ -39,6 +39,7 @@ import lombok.experimental.Builder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -88,10 +89,11 @@ public class BaseReferenceGenomeValidatorTest {
     // Setup: Mock
     val context = mock(ValidationContext.class);
     val submissionDirectory = mock(SubmissionDirectory.class);
+    when(context.getProjectKey()).thenReturn("project.test");
+    when(context.getDataTypes()).thenReturn(SubmissionDataTypes.values());
     when(context.getFileSystem()).thenReturn(fileSystem);
     when(context.getSsmPrimaryFile()).thenReturn(ssmPrimaryFile);
     when(context.getSsmPrimaryFileSchema()).thenReturn(ssmPrimaryFileSchema);
-    when(context.getProjectKey()).thenReturn("project.test");
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
 
@@ -110,7 +112,7 @@ public class BaseReferenceGenomeValidatorTest {
     return fileSchema;
   }
 
-  protected String createSsmPrimaryLines() {
+  private String createSsmPrimaryLines() {
     return createSsmPrimaryLines(
         record().mutationType("1").chromosomeCode("5").start("106706335").end("106706335").referenceAllele("C"),
         record().mutationType("3").chromosomeCode("4").start("114381846").end("114381846").referenceAllele("C"),

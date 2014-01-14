@@ -33,6 +33,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -41,7 +42,6 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
@@ -209,9 +209,10 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
+    val dataTypes = SubmissionDataTypes.values();
+    val platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = planner.plan(PROJECT_KEY, platformStrategy, dictionary);
+    Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
     plan.connect(platformStrategy);
 
     plan.getCascade().complete();

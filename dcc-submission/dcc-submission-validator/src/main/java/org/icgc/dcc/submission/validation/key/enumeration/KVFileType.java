@@ -17,49 +17,58 @@
  */
 package org.icgc.dcc.submission.validation.key.enumeration;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+
 import com.google.common.base.Predicate;
 
+@RequiredArgsConstructor
 public enum KVFileType {
-  DONOR,
-  SPECIMEN,
-  SAMPLE,
+  DONOR(SubmissionFileType.DONOR_TYPE),
+  SPECIMEN(SubmissionFileType.SPECIMEN_TYPE),
+  SAMPLE(SubmissionFileType.SAMPLE_TYPE),
 
-  BIOMARKER,
-  EXPOSURE,
-  FAMILY,
-  SURGERY,
-  THERAPY,
+  BIOMARKER(SubmissionFileType.BIOMARKER_TYPE),
+  EXPOSURE(SubmissionFileType.EXPOSURE_TYPE),
+  FAMILY(SubmissionFileType.FAMILY_TYPE),
+  SURGERY(SubmissionFileType.SURGERY_TYPE),
+  THERAPY(SubmissionFileType.THERAPY_TYPE),
 
-  SSM_M,
-  SSM_P,
+  SSM_M(SubmissionFileType.SSM_M_TYPE),
+  SSM_P(SubmissionFileType.SSM_P_TYPE),
 
-  CNSM_M,
-  CNSM_P,
-  CNSM_S,
+  CNSM_M(SubmissionFileType.CNSM_M_TYPE),
+  CNSM_P(SubmissionFileType.CNSM_P_TYPE),
+  CNSM_S(SubmissionFileType.CNSM_S_TYPE),
 
-  STSM_M,
-  STSM_P,
-  STSM_S,
+  STSM_M(SubmissionFileType.STSM_M_TYPE),
+  STSM_P(SubmissionFileType.STSM_P_TYPE),
+  STSM_S(SubmissionFileType.STSM_S_TYPE),
 
-  MIRNA_M,
-  MIRNA_P,
-  MIRNA_S,
+  MIRNA_M(SubmissionFileType.MIRNA_M_TYPE),
+  MIRNA_P(SubmissionFileType.MIRNA_P_TYPE),
+  MIRNA_S(SubmissionFileType.MIRNA_S_TYPE),
 
-  METH_M,
-  METH_P,
-  METH_S,
+  METH_M(SubmissionFileType.METH_M_TYPE),
+  METH_P(SubmissionFileType.METH_P_TYPE),
+  METH_S(SubmissionFileType.METH_S_TYPE),
 
-  EXP_M,
-  EXP_G, // Naming exception..
+  EXP_M(SubmissionFileType.EXP_M_TYPE),
+  EXP_G(SubmissionFileType.EXP_G_TYPE), // Naming exception..
 
-  PEXP_M,
-  PEXP_P,
+  PEXP_M(SubmissionFileType.PEXP_M_TYPE),
+  PEXP_P(SubmissionFileType.PEXP_P_TYPE),
 
-  JCN_M,
-  JCN_P,
+  JCN_M(SubmissionFileType.JCN_M_TYPE),
+  JCN_P(SubmissionFileType.JCN_P_TYPE),
 
-  SGV_M,
-  SGV_P;
+  SGV_M(SubmissionFileType.SGV_M_TYPE),
+  SGV_P(SubmissionFileType.SGV_P_TYPE);
+
+  @Getter
+  private final SubmissionFileType submissionFileType;
 
   public boolean isReplaceAll() {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;

@@ -23,12 +23,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.Set;
 
+import lombok.val;
+
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -106,13 +107,14 @@ public interface SubmissionDataType {
      * Returns the values for all enums that implements the interface.
      */
     public static List<SubmissionDataType> values() {
-      Builder<SubmissionDataType> builder = new ImmutableList.Builder<SubmissionDataType>();
-      for (FeatureType type : FeatureType.values()) {
+      val builder = new ImmutableList.Builder<SubmissionDataType>();
+      for (val type : FeatureType.values()) {
         builder.add(type);
       }
-      for (ClinicalType type : ClinicalType.values()) {
+      for (val type : ClinicalType.values()) {
         builder.add(type);
       }
+
       return builder.build();
     }
 

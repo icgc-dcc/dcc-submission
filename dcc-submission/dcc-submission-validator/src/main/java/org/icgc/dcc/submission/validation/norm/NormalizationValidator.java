@@ -21,6 +21,7 @@ import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
@@ -141,6 +142,14 @@ public final class NormalizationValidator implements Validator {
 
   @Override
   public void validate(ValidationContext validationContext) {
+    // Selective validation filtering
+    val requested = validationContext.getDataTypes().contains(SSM_TYPE);
+    if (!requested) {
+      log.info("SSM validation not requested for '{}'. Skipping...", validationContext.getProjectKey());
+
+      return;
+    }
+
     val optional = grabSubmissionFile(FOCUS_TYPE, validationContext);
 
     // Only perform normalization of there is a file to normalize

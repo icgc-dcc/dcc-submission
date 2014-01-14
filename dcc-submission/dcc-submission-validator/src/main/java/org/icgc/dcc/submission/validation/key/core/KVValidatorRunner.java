@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.key.core;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.List;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.core.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
@@ -50,6 +52,8 @@ public class KVValidatorRunner implements Runnable, Serializable {
    */
   @NonNull
   private final URI fsUri;
+  @NonNull
+  private final List<SubmissionDataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
   private final String oldReleasePath;
@@ -74,7 +78,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
     try {
       val validator = new KVValidator(
           new KVFileParser(fileSystem, new FileLineListParser(), false),
-          new KVFileSystem(fileSystem, dictionary, new Path(oldReleasePath), new Path(newReleasePath)),
+          new KVFileSystem(fileSystem, dataTypes, dictionary, new Path(oldReleasePath), new Path(newReleasePath)),
           report);
 
       log.info("Starting key validation...");

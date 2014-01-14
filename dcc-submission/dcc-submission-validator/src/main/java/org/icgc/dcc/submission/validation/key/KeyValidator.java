@@ -84,6 +84,7 @@ public class KeyValidator implements Validator {
   private static KVValidatorRunner createRunner(ValidationContext context, Path reportPath) {
     return new KVValidatorRunner(
         context.getFileSystem().getUri(),
+        context.getDataTypes(),
         context.getDictionary(),
         "dummy", // TODO: Remove?
         getNewReleasePath(context).toUri().toString(),

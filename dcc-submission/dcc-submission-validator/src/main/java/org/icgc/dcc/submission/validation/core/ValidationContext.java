@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -50,6 +51,11 @@ public interface ValidationContext extends ReportContext {
    * Gets the email addresses of whom to email after validation.
    */
   List<String> getEmails();
+
+  /**
+   * Gets the list of data types to validate.
+   */
+  List<SubmissionDataType> getDataTypes();
 
   /**
    * Gets the current release.
@@ -82,7 +88,7 @@ public interface ValidationContext extends ReportContext {
   FileSchema getSsmPrimaryFileSchema();
 
   /**
-   * Gets the root DCC filesystem.
+   * Gets the root DCC file system.
    */
   DccFileSystem getDccFileSystem();
 

@@ -30,6 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.ClinicalType;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -41,6 +44,7 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 /**
  * The "default" implementation of the {@link ValidationContext}.
@@ -64,6 +68,8 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   List<String> emails;
   @NonNull
+  List<FeatureType> featureTypes;
+  @NonNull
   Release release;
   @NonNull
   Dictionary dictionary;
@@ -80,6 +86,20 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public List<String> getEmails() {
     return emails;
+  }
+
+  @Override
+  public List<SubmissionDataType> getDataTypes() {
+    val dataTypes = ImmutableList.<SubmissionDataType> builder();
+    dataTypes.add(ClinicalType.values());
+
+    if (featureTypes.isEmpty()) {
+      dataTypes.add(FeatureType.values());
+    } else {
+      dataTypes.addAll(featureTypes);
+    }
+
+    return dataTypes.build();
   }
 
   @Override

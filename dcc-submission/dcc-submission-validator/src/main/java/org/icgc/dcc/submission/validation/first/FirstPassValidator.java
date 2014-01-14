@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchemata;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
@@ -33,6 +34,7 @@ import org.icgc.dcc.submission.validation.first.FileChecker.FileCheckers;
 import org.icgc.dcc.submission.validation.first.RowChecker.RowCheckers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 
 @Slf4j
 @NoArgsConstructor
@@ -43,9 +45,6 @@ public class FirstPassValidator implements Validator {
   @NotNull
   private RowChecker rowChecker;
 
-  /**
-   * For testing purposes only.
-   */
   @VisibleForTesting
   FirstPassValidator(FileChecker fileChecker, RowChecker rowChecker) {
     this.fileChecker = fileChecker;
@@ -66,26 +65,30 @@ public class FirstPassValidator implements Validator {
         RowCheckers.getDefaultRowChecker(validationContext) :
         this.rowChecker;
 
-    for (String filename : listRelevantFiles(validationContext)) {
-      log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, filename);
+    for (val fileName : listRelevantFiles(validationContext)) {
+      log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, fileName);
 
-      fileChecker.check(filename);
+      fileChecker.check(fileName);
       checkInterrupted(getName());
 
       if (fileChecker.canContinue()) {
-        log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, filename);
-        rowChecker.check(filename);
+        log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, fileName);
+        rowChecker.check(fileName);
         checkInterrupted(getName());
       }
     }
   }
 
   private Iterable<String> listRelevantFiles(ValidationContext context) {
-    val dictionary = context.getDictionary();
-    val submissionDirectory = context.getSubmissionDirectory();
-    val relevantPatterns = dictionary.getFilePatterns();
+    // Selective validation filtering
+    val fileSchemata = getFileSchemata(context.getDictionary(), context.getDataTypes());
 
-    return submissionDirectory.listFiles(relevantPatterns);
+    val patterns = Lists.<String> newArrayList();
+    for (val fileSchema : fileSchemata) {
+      patterns.add(fileSchema.getPattern());
+    }
+
+    return context.getSubmissionDirectory().listFiles(patterns);
   }
 
 }

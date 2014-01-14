@@ -57,12 +57,13 @@ public class PrimaryValidator implements Validator {
   public void validate(ValidationContext context) {
     // Shorthands
     val projectKey = context.getProjectKey();
+    val dataTypes = context.getDataTypes();
     val dictionary = context.getDictionary();
     val platformStrategy = context.getPlatformStrategy();
 
     // Plan
     log.info("Planning cascade for project '{}'", projectKey);
-    Plan plan = planner.plan(projectKey, platformStrategy, dictionary);
+    Plan plan = planner.plan(projectKey, dataTypes, platformStrategy, dictionary);
     log.info("Planned cascade for project '{}', # of internal flows: {}, # of external flows: {}",
         new Object[] { projectKey, size(plan.getInternalFlows()), size(plan.getExternalFlows()) });
 

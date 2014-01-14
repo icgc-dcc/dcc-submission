@@ -21,6 +21,7 @@ import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.google.common.primitives.Ints.tryParse;
 import static java.lang.String.format;
 import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
@@ -120,11 +121,19 @@ public class ReferenceGenomeValidator implements Validator {
   public void validate(ValidationContext context) {
     log.info("Starting...");
 
+    // Selective validation filtering
+    val requested = context.getDataTypes().contains(SSM_TYPE);
+    if (!requested) {
+      log.info("SSM validation not requested for '{}'. Skipping...", context.getProjectKey());
+
+      return;
+    }
+
     // This validation is only applicable if ssm_p is available
     Optional<Path> optionalSsmPrimaryFile = context.getSsmPrimaryFile();
     val skip = !optionalSsmPrimaryFile.isPresent();
     if (skip) {
-      log.info("No ssm_p file for '{}'", context.getProjectKey());
+      log.info("No ssm_p file for '{}'. Skipping...", context.getProjectKey());
 
       return;
     }

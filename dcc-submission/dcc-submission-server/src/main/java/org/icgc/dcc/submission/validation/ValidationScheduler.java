@@ -266,6 +266,7 @@ public class ValidationScheduler extends AbstractScheduledService {
         new SubmissionReportContext(),
         project.getKey(),
         project.getEmails(),
+        project.getFeatureTypes(),
         release, dictionary,
         dccFileSystem,
         platformStrategyFactory);

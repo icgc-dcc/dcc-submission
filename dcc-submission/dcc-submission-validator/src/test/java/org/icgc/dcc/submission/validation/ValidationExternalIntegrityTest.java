@@ -32,6 +32,7 @@ import lombok.val;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -39,7 +40,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.junit.Before;
 import org.junit.Test;
@@ -168,9 +168,10 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
+    val dataTypes = SubmissionDataTypes.values();
+    val platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = planner.plan(PROJECT_KEY, platformStrategy, dictionary);
+    Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
     plan.connect(platformStrategy);
     assertEquals(5, plan.getCascade().getFlows().size());
 

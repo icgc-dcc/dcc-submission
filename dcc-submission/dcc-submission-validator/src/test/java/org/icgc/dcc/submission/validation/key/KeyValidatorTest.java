@@ -28,6 +28,7 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -100,9 +101,10 @@ public class KeyValidatorTest {
     when(platformStrategy.getFlowConnector()).thenReturn(new LocalFlowConnector());
 
     val context = mock(ValidationContext.class);
+    when(context.getProjectKey()).thenReturn("project1");
+    when(context.getDataTypes()).thenReturn(SubmissionDataTypes.values());
     when(context.getFileSystem()).thenReturn(fileSystem);
     when(context.getRelease()).thenReturn(release);
-    when(context.getProjectKey()).thenReturn("project1");
     when(context.getPreviousSubmissionDirectory()).thenReturn(previousSubmissionDirectory);
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(context.getPlatformStrategy()).thenReturn(platformStrategy);

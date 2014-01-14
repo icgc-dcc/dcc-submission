@@ -32,6 +32,7 @@ import org.icgc.dcc.submission.validation.core.ErrorType;
  * 
  */
 @RequiredArgsConstructor
+@SuppressWarnings("deprecation")
 public enum KVErrorType {
   UNIQUENESS(PK, UNIQUE_VALUE_ERROR),
   PRIMARY_RELATION(FK, RELATION_VALUE_ERROR),

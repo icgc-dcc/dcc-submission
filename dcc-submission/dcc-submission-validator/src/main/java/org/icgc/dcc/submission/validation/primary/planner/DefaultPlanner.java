@@ -17,14 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchemata;
+
 import java.util.List;
 import java.util.Set;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -45,19 +47,19 @@ import com.google.inject.Inject;
 public class DefaultPlanner implements Planner {
 
   private final Set<RestrictionType> restrictionTypes;
-  
+
   @Inject
   public DefaultPlanner(@NonNull Set<RestrictionType> restrictionTypes) {
     this.restrictionTypes = restrictionTypes;
   }
 
-
   @Override
-  public Plan plan(@NonNull String projectKey, @NonNull PlatformStrategy strategy, @NonNull Dictionary dictionary) {
+  public Plan plan(@NonNull String projectKey, @NonNull List<SubmissionDataType> dataTypes,
+      @NonNull PlatformStrategy strategy, @NonNull Dictionary dictionary) {
     val plan = new Plan(projectKey, dictionary, strategy);
 
     log.info("Including flow planners for '{}'", projectKey);
-    includePlanners(plan, projectKey, strategy, dictionary);
+    includePlanners(plan, projectKey, dataTypes, strategy, dictionary);
 
     log.info("Applying planning visitors for '{}'", projectKey);
     applyVisitors(plan, projectKey);
@@ -65,10 +67,13 @@ public class DefaultPlanner implements Planner {
     return plan;
   }
 
-  private static void includePlanners(Plan plan, String projectKey, PlatformStrategy strategy, Dictionary dictionary) {
+  private static void includePlanners(Plan plan, String projectKey, List<SubmissionDataType> dataTypes,
+      PlatformStrategy strategy, Dictionary dictionary) {
     val systemDirectory = strategy.getSystemDirectory();
 
-    for (val fileSchema : dictionary.getFiles()) {
+    // Selective validation filtering
+    val fileSchemata = getFileSchemata(dictionary, dataTypes);
+    for (val fileSchema : fileSchemata) {
       val fileSchemaDirectory = strategy.getFileSchemaDirectory();
       val fileSchemaName = fileSchema.getName();
 

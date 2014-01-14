@@ -27,6 +27,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionTyp
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -35,6 +36,7 @@ import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
@@ -47,6 +49,8 @@ public final class KVFileSystem {
   @Getter
   @NonNull
   private final FileSystem fileSystem;
+  @NonNull
+  private final List<SubmissionDataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
 
@@ -61,6 +65,12 @@ public final class KVFileSystem {
   }
 
   public Path getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
+    // Selective validation filtering
+    val requested = dataTypes.contains(fileType.getSubmissionFileType().getDataType());
+    if (!requested) {
+      return null;
+    }
+
     val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
     val fileSchema = getFileSchema(fileType);
     val fileRegex = fileSchema.getPattern();

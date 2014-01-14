@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.TestUtils;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class KVValidatorRunnerTest {
    */
   @Test
   public void testSerializable() throws URISyntaxException {
-    val runner = new KVValidatorRunner(new URI("file:///"), getDictionary(), "", "", "");
+    val runner = new KVValidatorRunner(new URI("file:///"), SubmissionDataTypes.values(), getDictionary(), "", "", "");
     val serialized = cascadingSerialize(runner);
     log.info("runner: {}, serialized: {}", runner, serialized);
 

@@ -45,6 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -104,6 +106,12 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   public List<String> getEmails() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<SubmissionDataType> getDataTypes() {
+    // Include all
+    return SubmissionDataTypes.values();
   }
 
   @Override

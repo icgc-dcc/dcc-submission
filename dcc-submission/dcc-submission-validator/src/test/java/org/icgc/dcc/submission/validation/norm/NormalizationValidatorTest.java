@@ -34,6 +34,7 @@ import java.util.UUID;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -143,6 +144,8 @@ public class NormalizationValidatorTest {
         .thenReturn(mockRelease);
     when(mockValidationContext.getProjectKey())
         .thenReturn(PROJECT_NAME);
+    when(mockValidationContext.getDataTypes())
+        .thenReturn(SubmissionDataTypes.values());
     when(mockValidationContext.getPlatformStrategy())
         .thenReturn(mockPlatformStrategy);
   }
@@ -233,8 +236,6 @@ public class NormalizationValidatorTest {
         .thenReturn(mockUuid);
   }
 
-  // ===========================================================================
-
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
   private void mockInputTap(String inputFile) {
@@ -268,4 +269,5 @@ public class NormalizationValidatorTest {
             FIELD_SEPARATOR),
         outputFile);
   }
+
 }
