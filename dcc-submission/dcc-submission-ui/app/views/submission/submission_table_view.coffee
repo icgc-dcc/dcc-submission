@@ -187,7 +187,7 @@ module.exports = class SubmissionTableView extends DataTableView
               when "NOT_VALIDATED"
                 if source.submissionFiles.length
                   files = source.submissionFiles
-                  show = _.without((f.matchedSchemaName for f in files), null)
+                  show = _.without((f.schemaName for f in files), null)
                   if show.length
                     ds = source.projectKey.replace(/<.*?>/g, '')
                     """

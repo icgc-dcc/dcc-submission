@@ -20,11 +20,15 @@ package org.icgc.dcc.submission.fs;
 import java.util.Date;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -32,53 +36,64 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 /**
  * For serializing file data through the REST interface
  */
+@Getter
 public class SubmissionFile {
+
   private final String name;
-
   private final Date lastUpdate;
-
   private final long size;
 
-  private String matchedSchemaName;
+  private String schemaName;
+  private String featureTypeName;
 
   @JsonCreator
-  public SubmissionFile(@JsonProperty("name") String name, @JsonProperty("lastUpdate") Date lastUpdate,
-      @JsonProperty("size") long size, @JsonProperty("schema") String schema) {
+  public SubmissionFile(
+      @JsonProperty("name") String name,
+      @JsonProperty("lastUpdate") Date lastUpdate,
+      @JsonProperty("size") long size,
+      @JsonProperty("schema") String schemaName,
+      @JsonProperty("featureTypeName") String featureTypeName) {
     this.name = name;
     this.lastUpdate = lastUpdate;
     this.size = size;
-    this.matchedSchemaName = schema;
+    this.schemaName = schemaName;
+    this.featureTypeName = featureTypeName;
   }
 
-  public SubmissionFile(Path path, FileSystem fs, Dictionary dict) {
+  public SubmissionFile(Path path, FileSystem fs, Dictionary dictionary) {
     this.name = path.getName();
 
     FileStatus fileStatus = HadoopUtils.getFileStatus(fs, path);
     this.lastUpdate = new Date(fileStatus.getModificationTime());
     this.size = fileStatus.getLen();
 
-    this.matchedSchemaName = null;
-    for(FileSchema schema : dict.getFiles()) {
-      if(Pattern.matches(schema.getPattern(), this.name)) {
-        this.matchedSchemaName = schema.getName();
-        break;
-      }
+    val fileSchema = getFileSchema(dictionary, this.name);
+    if (fileSchema != null) {
+      this.schemaName = fileSchema.getName();
+      this.featureTypeName = getFeatureTypeName(fileSchema);
     }
   }
 
-  public String getName() {
-    return name;
+  private static FileSchema getFileSchema(Dictionary dictionary, String fileName) {
+    for (val schema : dictionary.getFiles()) {
+      val match = Pattern.matches(schema.getPattern(), fileName);
+      if (match) {
+        return schema;
+      }
+    }
+
+    return null;
   }
 
-  public Date getLastUpdate() {
-    return lastUpdate;
+  private static String getFeatureTypeName(FileSchema fileSchema) {
+    val dataType = SubmissionFileType.from(fileSchema.getName()).getDataType();
+    if (dataType.isFeatureType()) {
+      val featureType = dataType.asFeatureType();
+
+      return featureType.name();
+    }
+
+    return null;
   }
 
-  public long getSize() {
-    return size;
-  }
-
-  public String getMatchedSchemaName() {
-    return matchedSchemaName;
-  }
 }

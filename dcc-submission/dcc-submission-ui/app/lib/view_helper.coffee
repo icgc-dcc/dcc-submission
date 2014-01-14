@@ -60,7 +60,7 @@ Handlebars.registerHelper 'if_completed', (state, options) ->
 Handlebars.registerHelper 'show_submission_action_button', (files, options) ->
   show = false
   if files
-    show = _.without((f.matchedSchemaName for f in files), null).length
+    show = _.without((f.schemaName for f in files), null).length
   if show
     options.fn(this)
   else
