@@ -38,19 +38,97 @@ module.exports = class ValidateSubmissionView extends View
   className: "modal hide fade"
   id: 'validate-submission-popup'
 
+  selectNone: ->
+    for f, idx in @features
+      f.selected = false
+      @featureTable.fnUpdate(@features[idx], idx)
+
+  selectAll: ->
+    for f, idx in @features
+      f.selected = true
+      @featureTable.fnUpdate(@features[idx], idx)
+
+  toggleFeature: (e) ->
+    feature = $(e.currentTarget).data('feature-type')
+    idx = _.pluck(@features, 'name').indexOf(feature)
+    @features[idx].selected = not @features[idx].selected
+    @featureTable.fnUpdate(@features[idx], idx)
+
+    console.log "clicked", feature, idx
+    console.log _.pluck(@features, 'selected')
+
   initialize: ->
     #console.debug "ValidateSubmissionView#initialize", @options
     @model = new Model @options.submission.getAttributes()
     @model.set({email: mediator.user.get("email")}, {silent: true})
+
+    # TODO: probably need to run unique on this on live
+    submissionFiles = @model.get "submissionFiles"
+    console.log submissionFiles
+    @features = []
+    @features.push {'name':f.name, 'selected':true} for f in submissionFiles
+    @featureTable = null
+
+    console.log @features
+
     release = new NextRelease()
     release.fetch
       success: (data) =>
         @model.set 'queue', data.get('queue').length
 
+
     super
 
     @modelBind 'change', @render
     @delegate 'click', '#validate-submission-button', @validateSubmission
+    @delegate 'click', '#toggle-feature', @toggleFeature
+    @delegate 'click', '#feature-all', @selectAll
+    @delegate 'click', '#feature-clear', @selectNone
+
+  render: ->
+    super
+
+    # Create a feature type selection table
+    aoColumns = [
+      {
+         sTitle: "Feature Types To Validate"
+         mData: (source) ->
+           return source.name
+      }
+      {
+         sTitle: "Select"
+         mData: (source) ->
+           if source.selected == false
+             """
+             <i id="toggle-feature"
+                class="icon icon-check-empty"
+                data-feature-type="#{source.name}">
+             </i>
+             """
+           else
+             """
+             <i id="toggle-feature"
+                class="icon icon-check"
+                data-feature-type="#{source.name}">
+             </i>
+             """
+           #return "abcdefg"
+      }
+    ]
+
+    @featureTable = $("#validate-file-types").dataTable
+      bDestroy: true
+      bPaginate: false
+      bFilter: false
+      bSort:false
+      bInfo: false
+      sAjaxSource: ""
+      sAjaxDataProp: ""
+      aoColumns: aoColumns
+      fnServerData: (sSource, aoData, fnCallback) =>
+        console.log "aaaaaa"
+        fnCallback @features
+
 
   validateSubmission: (e) ->
     #console.debug "ValidateSubmissionView#completeRelease", @model
@@ -73,14 +151,15 @@ module.exports = class ValidateSubmissionView extends View
 
     nextRelease = new NextRelease()
 
+    #TODO: Need to add file types
     nextRelease.queue [{
-        key: @options.submission.get("projectKey")
-        emails: @.$('#emails').val().split(',')
-        featureTypes: []
-      }],
-      success: =>
-        @$el.modal 'hide'
-        mediator.publish "validateSubmission"
-        mediator.publish "notify", "Submission for Project "+
-          "#{@model.get('projectName')} has been queued for Validation."
+      key: @options.submission.get("projectKey")
+      emails: @.$('#emails').val().split(',')
+      featureTypes: []
+    }],
+    success: =>
+      @$el.modal 'hide'
+      mediator.publish "validateSubmission"
+      mediator.publish "notify", "Submission for Project "+
+        "#{@model.get('projectName')} has been queued for Validation."
 
