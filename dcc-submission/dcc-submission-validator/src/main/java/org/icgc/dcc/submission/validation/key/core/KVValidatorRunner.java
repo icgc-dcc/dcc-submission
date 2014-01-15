@@ -52,9 +52,8 @@ public class KVValidatorRunner implements Runnable, Serializable {
   private final URI fsUri;
   @NonNull
   private final Dictionary dictionary;
-  private final String oldReleasePath;
   @NonNull
-  private final String newReleasePath;
+  private final String releasePath;
   @NonNull
   private final String reportPath;
 
@@ -74,9 +73,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
     try {
       val validator = new KVValidator(
           new KVFileParser(fileSystem, new FileLineListParser(), false),
-          new KVFileSystem(fileSystem, dictionary, new Path(oldReleasePath), new Path(newReleasePath)),
-          report);
-
+          new KVFileSystem(fileSystem, dictionary, new Path(releasePath)), report);
       log.info("Starting key validation...");
       validator.validate();
       log.info("Finished key validation");

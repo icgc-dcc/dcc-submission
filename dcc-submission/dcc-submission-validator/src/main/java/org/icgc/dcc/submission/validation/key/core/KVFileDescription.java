@@ -21,9 +21,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.MAPPER;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_TO_BE_TREATED_AS_EXISTING;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -31,7 +28,6 @@ import lombok.Value;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Optional;
@@ -44,8 +40,6 @@ import com.google.common.base.Optional;
 public class KVFileDescription {
 
   @NonNull
-  private final KVSubmissionType submissionType;
-  @NonNull
   private final KVFileType fileType;
 
   /**
@@ -53,26 +47,12 @@ public class KVFileDescription {
    */
   private final Optional<Path> dataFilePath;
 
-  public static KVFileDescription getExistingFileDescription(KVFileType fileType, Path dataFilePath) {
-    return new KVFileDescription(
-        EXISTING_FILE,
-        fileType,
-        Optional.<Path> of(dataFilePath));
-  }
-
-  public static KVFileDescription getIncrementalFileDescription(
-      boolean asOriginal, KVFileType fileType, Path dataFilePath) {
-    return new KVFileDescription(
-        asOriginal ? INCREMENTAL_TO_BE_TREATED_AS_EXISTING : INCREMENTAL_FILE,
-        fileType,
-        Optional.<Path> of(dataFilePath));
+  public static KVFileDescription getFileDescription(KVFileType fileType, Path dataFilePath) {
+    return new KVFileDescription(fileType, Optional.<Path> of(dataFilePath));
   }
 
   public static KVFileDescription getPlaceholderFileDescription(KVFileType fileType) {
-    return new KVFileDescription(
-        EXISTING_FILE, // TODO: correct? does it matter?
-        fileType,
-        Optional.<Path> absent());
+    return new KVFileDescription(fileType, Optional.<Path> absent());
   }
 
   @JsonIgnore

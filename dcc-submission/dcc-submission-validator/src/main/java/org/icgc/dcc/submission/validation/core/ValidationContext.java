@@ -27,11 +27,9 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.core.SubmissionConcatenator.SubmissionConcatFile;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 
 /**
  * The umbilical cord to the rest of the system provided to {@link Validator}s to act as a "façade" that reduces
@@ -72,13 +70,6 @@ public interface ValidationContext extends ReportContext {
    * Gets the previous submission directory of the associated project under validation.
    */
   SubmissionDirectory getPreviousSubmissionDirectory();
-
-  /**
-   * TODO
-   * <p>
-   * TODO: limit scope?
-   */
-  ImmutableList<SubmissionConcatFile> getConcatFiles();
 
   /**
    * Gets the optionally available SSM primary file of the associated project under validation.

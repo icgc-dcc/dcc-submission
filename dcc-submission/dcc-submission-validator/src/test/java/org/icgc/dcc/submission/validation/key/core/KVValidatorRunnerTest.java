@@ -29,7 +29,7 @@ public class KVValidatorRunnerTest {
    */
   @Test
   public void testSerializable() throws URISyntaxException {
-    val runner = new KVValidatorRunner(new URI("file:///"), getDictionary(), "", "", "");
+    val runner = new KVValidatorRunner(new URI("file:///"), getDictionary(), "", "");
     val serialized = cascadingSerialize(runner);
     log.info("runner: {}, serialized: {}", runner, serialized);
 

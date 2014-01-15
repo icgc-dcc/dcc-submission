@@ -22,8 +22,6 @@ import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +37,6 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 
 @RequiredArgsConstructor
 public final class KVFileSystem {
@@ -49,19 +46,15 @@ public final class KVFileSystem {
   private final FileSystem fileSystem;
   @NonNull
   private final Dictionary dictionary;
-
-  private final Path oldReleaseDir;
   @NonNull
-  private final Path newReleaseDir;
-
-  public static final String TO_BE_REMOVED_FILE_NAME = "TO_BE_REMOVED";
+  private final Path releaseDir;
 
   public InputStream open(Path path) throws IOException {
     return fileSystem.open(path);
   }
 
-  public Path getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
-    val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
+  public Path getDataFilePath(KVFileType fileType) {
+    val basePath = releaseDir;
     val fileSchema = getFileSchema(fileType);
     val fileRegex = fileSchema.getPattern();
     val filePattern = compile(fileRegex);
@@ -76,32 +69,12 @@ public final class KVFileSystem {
     return filePaths.get(0);
   }
 
-  public Path getToBeRemovedFilePath() {
-    return new Path(newReleaseDir, TO_BE_REMOVED_FILE_NAME + ".txt");
+  public boolean hasClinicalData() {
+    return hasFile(getDataFilePath(DONOR));
   }
 
-  public boolean hasToBeRemovedFile() {
-    return hasFile(getToBeRemovedFilePath());
-  }
-
-  public boolean hasExistingData() {
-    return hasExistingClinicalData();
-  }
-
-  public boolean hasExistingClinicalData() {
-    return hasFile(getDataFilePath(EXISTING_FILE, DONOR));
-  }
-
-  public boolean hasIncrementalClinicalData() {
-    return hasFile(getDataFilePath(INCREMENTAL_FILE, DONOR));
-  }
-
-  public boolean hasIncrementalData(KVExperimentalDataType dataType) {
-    return hasFile(getDataFilePath(INCREMENTAL_FILE, dataType.getTaleTellerFileType()));
-  }
-
-  public boolean hasExistingData(KVExperimentalDataType dataType) {
-    return hasFile(getDataFilePath(EXISTING_FILE, dataType.getTaleTellerFileType()));
+  public boolean hasType(KVExperimentalDataType dataType) {
+    return hasFile(getDataFilePath(dataType.getTaleTellerFileType()));
   }
 
   private boolean hasFile(Path filePath) {

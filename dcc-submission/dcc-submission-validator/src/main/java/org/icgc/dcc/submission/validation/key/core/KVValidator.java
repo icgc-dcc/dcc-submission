@@ -22,39 +22,29 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
-import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getExistingFileDescription;
-import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getIncrementalFileDescription;
-import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getPlaceholderFileDescription;
+import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getFileDescription;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.data.KVExistingFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
-import org.icgc.dcc.submission.validation.key.data.KVIncrementalFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
-import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
-import org.icgc.dcc.submission.validation.key.deletion.DeletionFileParser;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Sets;
 
 @Slf4j
 public class KVValidator {
 
-  public static final boolean SUPPORT_EXISTING = false;
+  private static final int DEFAULT_LOG_THRESHOLD = 1000000;
 
   @NonNull
   private final KVFileParser kvFileParser;
@@ -64,9 +54,7 @@ public class KVValidator {
   private final KVReport kvReport;
   @NonNull
   private final SurjectivityValidator surjectivityValidator;
-
-  private final KVSubmissionDataDigest existingData = new KVSubmissionDataDigest();
-  private final KVSubmissionDataDigest incrementalData = new KVSubmissionDataDigest();
+  private final KVSubmissionDataDigest data = new KVSubmissionDataDigest();
   private final KVSubmissionErrors errors = new KVSubmissionErrors();
 
   public KVValidator(KVFileParser kvFileParser, KVFileSystem kvFileSystem, KVReport kvReport) {
@@ -76,29 +64,32 @@ public class KVValidator {
     this.surjectivityValidator = new SurjectivityValidator(kvFileSystem);
   }
 
+  /**
+   * Order matters!
+   */
   public void validate() {
-    // Validate deletion data
-    val deletionData = DeletionData.getInstance(kvFileSystem);
-    // validateDeletions(deletionData);
+    log.info("Loading data");
 
-    if (SUPPORT_EXISTING) {
-      // Process existing data
-      if (kvFileSystem.hasExistingData()) {
-        loadExistingData();
+    // Process clinical data
+    log.info("Processing clinical data");
+    processFile(DONOR);
+    processFile(SPECIMEN);
+    processFile(SAMPLE);
+
+    // Process experimental data
+    for (val dataType : KVExperimentalDataType.values()) {
+      if (kvFileSystem.hasType(dataType)) {
+        log.info("Processing '{}' data", dataType);
+        for (val fileType : dataType.getFileTypes()) {
+          processFile(fileType);
+        }
       } else {
-        loadPlaceholderExistingFiles();
+        log.info("No '{}' data", dataType);
       }
-      log.debug("{}", repeat("=", 75));
-      for (val entry : existingData.entrySet()) {
-        log.debug("{}: {}", entry.getKey(), entry.getValue());
-      }
-      log.debug("{}", repeat("=", 75));
     }
 
-    // Process incremental data
-    validateIncrementalData(deletionData);
     log.info("{}", repeat("=", 75));
-    for (val entry : incrementalData.entrySet()) {
+    for (val entry : data.entrySet()) {
       log.debug("{}: {}", entry.getKey(), entry.getValue());
     }
     log.debug("{}", repeat("=", 75));
@@ -107,157 +98,33 @@ public class KVValidator {
     validateComplexSurjection();
 
     // Report
-    boolean valid = errors.describe(kvReport, incrementalData.getFileDescriptions()); // TODO: prettify
+    boolean valid = errors.describe(kvReport, data.getFileDescriptions()); // TODO: prettify
     log.info("{}", valid);
     log.info("done.");
   }
 
-  public void validateDeletions(DeletionData deletionData) {
-    boolean valid;
-    valid = deletionData.validateWellFormedness();
-    if (!valid) {
-      log.error("Deletion well-formedness errors found");
-    }
-
-    val existingDonorIds = kvFileSystem.hasExistingClinicalData() ?
-        DeletionFileParser.getExistingDonorIds(kvFileSystem) :
-        Sets.<String> newTreeSet();
-    valid = deletionData.validateAgainstOldClinicalData(existingDonorIds);
-    if (!valid) {
-      log.error("Deletion previous data errors found");
-    }
-
-    if (kvFileSystem.hasIncrementalClinicalData()) {
-      valid = deletionData.validateAgainstIncrementalClinicalData(
-          existingDonorIds, DeletionFileParser.getIncrementalDonorIds(kvFileSystem));
-      if (!valid) {
-        log.error("Deletion incremental data errors found");
-      }
-    }
-  }
-
-  private void loadExistingData() {
-    log.info("Loading existing data");
-
-    // Existing clinical
-    checkState(kvFileSystem.hasExistingClinicalData(), "TODO"); // At this point we expect it
-    log.info("Processing exiting clinical data");
-    loadExistingFile(DONOR);
-    loadExistingFile(SPECIMEN);
-    loadExistingFile(SAMPLE);
-
-    for (val dataType : KVExperimentalDataType.values()) {
-
-      // Existing data
-      if (kvFileSystem.hasExistingData(dataType)) {
-        log.info("Processing exiting '{}' data", dataType);
-        for (val fileType : dataType.getFileTypes()) {
-          loadExistingFile(fileType);
-        }
-      }
-
-      // No data
-      else {
-        log.info("No existing '{}' data", dataType);
-        for (val fileType : dataType.getFileTypes()) {
-          loadPlaceholderExistingFile(fileType);
-        }
-      }
-    }
-  }
-
-  /**
-   * Order matters!
-   */
-  private void validateIncrementalData(DeletionData deletionData) {
-    log.info("Loading incremental data");
-
-    // Incremental clinical data
-    if (kvFileSystem.hasIncrementalClinicalData()) {
-      log.info("Processing incremental clinical data");
-      loadIncrementalFile(DONOR, INCREMENTAL_FILE, deletionData);
-      loadIncrementalFile(SPECIMEN, INCREMENTAL_FILE, deletionData);
-      loadIncrementalFile(SAMPLE, INCREMENTAL_FILE, deletionData);
-    } else {
-      checkState(false, "NOT VALID ANYMORE"); // FIXME
-      log.info("No incremental clinical data");
-    }
-
-    // Incremental experimental data
-    for (val dataType : KVExperimentalDataType.values()) {
-      if (kvFileSystem.hasIncrementalData(dataType)) {
-        log.info("Processing incremental '{}' data", dataType);
-        for (val fileType : dataType.getFileTypes()) {
-          loadIncrementalFile(fileType, INCREMENTAL_FILE, deletionData);
-        }
-      } else {
-        log.info("No incremental '{}' data", dataType);
-      }
-    }
-  }
-
-  private void loadExistingFile(KVFileType fileType) {
-    log.info("{}", repeat("=", 75));
-    log.info("Loading existing file: '{}'", fileType);
-    val dataFilePath = kvFileSystem.getDataFilePath(EXISTING_FILE, fileType);
-    existingData.put(
-        fileType,
-        new KVExistingFileDataDigest(
-            kvFileParser,
-            getExistingFileDescription(fileType, dataFilePath),
-            1000000)
-            .processFile());
-  }
-
-  private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
-    val dataFilePath = kvFileSystem.getDataFilePath(INCREMENTAL_FILE, fileType);
+  private void processFile(KVFileType fileType) {
+    val dataFilePath = kvFileSystem.getDataFilePath(fileType);
     val referencedType = RELATIONS.get(fileType);
     log.info("{}", repeat("=", 75));
-    log.info("Loading incremental file: '{}.{}' ('{}'); Referencing '{}'",
-        new Object[] { fileType, submissionType, dataFilePath, referencedType });
+    log.info("Loading file: '{}.' ('{}'); Referencing '{}'",
+        new Object[] { fileType, dataFilePath, referencedType });
 
-    incrementalData.put(
+    data.put(
         fileType,
-        new KVIncrementalFileDataDigest( // TODO: subclass for referencing/non-referencing?
+        new KVFileDataDigest( // TODO: subclass for referencing/non-referencing?
             kvFileParser,
-            getIncrementalFileDescription(
-                submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
-            1000000,
-            kvFileSystem,
-            deletionData,
-
+            getFileDescription(fileType, dataFilePath),
+            DEFAULT_LOG_THRESHOLD,
             referencedType != null ?
-                Optional.of(incrementalData.get(referencedType)) : Optional.<KVFileDataDigest> absent(),
-            // existingData.get(fileType),
-            // existingData.get(RELATIONS.get(fileType)),
-            // getOptionalReferencedData(fileType),
-
+                Optional.of(data.get(referencedType)) :
+                Optional.<KVFileDataDigest> absent(),
             errors.getFileErrors(fileType),
             referencedType != null ?
-                Optional.of(errors.getFileErrors(referencedType)) : Optional.<KVFileErrors> absent(),
-
+                Optional.of(errors.getFileErrors(referencedType)) :
+                Optional.<KVFileErrors> absent(),
             surjectivityValidator)
             .processFile());
-  }
-
-  private void loadPlaceholderExistingFiles() {
-    log.info("Loading placeholder existing files");
-    loadPlaceholderExistingFile(DONOR);
-    loadPlaceholderExistingFile(SPECIMEN);
-    loadPlaceholderExistingFile(SAMPLE);
-
-    for (val dataType : KVExperimentalDataType.values()) {
-      for (val fileType : dataType.getFileTypes()) {
-        loadPlaceholderExistingFile(fileType);
-      }
-    }
-  }
-
-  private void loadPlaceholderExistingFile(KVFileType fileType) {
-    log.info("Loading placeholder existing file: '{}'", fileType);
-    existingData.put(
-        fileType,
-        KVFileDataDigest.getEmptyInstance(kvFileParser, getPlaceholderFileDescription(fileType)));
   }
 
   @SuppressWarnings("unused")
@@ -268,11 +135,11 @@ public class KVValidator {
       checkState(fileType == DONOR, "TODO");
       return absent();
     } else {
-      if (incrementalData.contains(referencedFileType)) { // May not if not re-submitted
-        log.info("Incremental data contains '{}'", referencedFileType);
-        return of(incrementalData.get(referencedFileType));
+      if (data.contains(referencedFileType)) { // May not if not re-submitted
+        log.info("Data contains '{}'", referencedFileType);
+        return of(data.get(referencedFileType));
       } else { // Fall back on existing data
-        log.info("Incremental data does not contain '{}', falling back on existing data", referencedFileType);
+        log.info("Data does not contain '{}', falling back on existing data", referencedFileType);
         return absent();
       }
     }
@@ -283,7 +150,7 @@ public class KVValidator {
     log.info("Validating complex surjection");
     surjectivityValidator.validateComplexSurjection(
         // existingData.get(SAMPLE),
-        surjectivityValidator.getSurjectionExpectedKeys(incrementalData.get(SAMPLE)),
+        surjectivityValidator.getSurjectionExpectedKeys(data.get(SAMPLE)),
         errors.getFileErrors(SAMPLE));
     log.info("{}", repeat("=", 75));
   }
