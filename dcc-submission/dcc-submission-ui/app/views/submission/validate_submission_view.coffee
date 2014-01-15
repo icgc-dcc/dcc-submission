@@ -40,7 +40,7 @@ module.exports = class ValidateSubmissionView extends View
 
   selectNone: ->
     for f, idx in @features
-      f.selected = false
+      f.selected = false unless f.name == "CLINICAL_CORE_TYPE"
       @featureTable.fnUpdate(@features[idx], idx)
 
   selectAll: ->
@@ -60,25 +60,21 @@ module.exports = class ValidateSubmissionView extends View
     @model = new Model @options.submission.getAttributes()
     @model.set({email: mediator.user.get("email")}, {silent: true})
 
-    # TODO: probably need to run unique on this on live
+    @features = []
+    @featureTable = null
+
     submissionFiles = @model.get "submissionFiles"
     console.log submissionFiles
-    @features = []
-
     for f in  submissionFiles
-      name = f.featureTypeName
+      name = f.dataType
       idx = _.pluck(@features, 'name').indexOf(name)
       if name != null and idx == -1
         @features.push {'name':name, 'selected':true}
-
-    @featureTable = null
-
 
     release = new NextRelease()
     release.fetch
       success: (data) =>
         @model.set 'queue', data.get('queue').length
-
 
     super
 
@@ -94,28 +90,31 @@ module.exports = class ValidateSubmissionView extends View
     # Create a feature type selection table
     aoColumns = [
       {
-         sTitle: "Feature Types To Validate"
+         sTitle: "Data Types To Valdiate"
          mData: (source) ->
-           return source.name
-      }
-      {
-         sTitle: "Select"
-         mData: (source) ->
-           if source.selected == false
-             """
-             <i id="toggle-feature"
-                class="icon icon-check-empty"
-                data-feature-type="#{source.name}">
-             </i>
-             """
+           if source.name != "CLINICAL_CORE_TYPE"
+             if source.selected == false
+               """
+               <span id="toggle-feature"
+                  style="cursor:pointer"
+                  data-feature-type="#{source.name}">
+                  <i class="icon icon-check-empty"></i> #{source.name}
+               </span>
+               """
+             else
+               """
+               <span id="toggle-feature"
+                  style="cursor:pointer"
+                  data-feature-type="#{source.name}">
+                  <i class="icon icon-check"></i> #{source.name}
+               </span>
+               """
            else
              """
-             <i id="toggle-feature"
-                class="icon icon-check"
-                data-feature-type="#{source.name}">
-             </i>
+             <span data-feature-type="#{source.name}">
+               <i class="icon icon-check"></i> #{source.name}
+             </span>
              """
-           #return "abcdefg"
       }
     ]
 
@@ -127,6 +126,9 @@ module.exports = class ValidateSubmissionView extends View
       bInfo: false
       sAjaxSource: ""
       sAjaxDataProp: ""
+      fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
+        if aData.name == "CLINICAL_CORE_TYPE"
+          $(nRow).css {'color': '#999', 'font-style': 'italic'}
       aoColumns: aoColumns
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @features
@@ -157,11 +159,11 @@ module.exports = class ValidateSubmissionView extends View
     featureToValidate = _.filter @features, (f) -> f.selected == true
     featureParams = _.pluck featureToValidate, 'name'
 
-    #TODO: Need to add file types
     nextRelease.queue [{
       key: @options.submission.get("projectKey")
       emails: @.$('#emails').val().split(',')
-      featureTypes: featureParams
+      dataTypes: featureParams
+      #featureTypes: featureParams
     }],
     success: =>
       @$el.modal 'hide'

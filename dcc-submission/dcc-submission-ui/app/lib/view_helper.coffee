@@ -76,10 +76,18 @@ Handlebars.registerHelper 'submission_action', (state) ->
         id="signoff-submission-popup-button"
         data-toggle="modal"
         href="#signoff-submission-popup">
+        <i class="icon-ok icon-white"></i>
         Sign Off
       </button>
+      <button
+        class="m-btn green"
+        id="validate-submission-popup-button"
+        data-toggle="modal"
+        href="#validate-submission-popup">
+        Launch Validation
+      </button>
       """
-    when "NOT_VALIDATED"
+    when "NOT_VALIDATED", "INVALID"
       new Handlebars.SafeString """
       <button
         class="m-btn green"
