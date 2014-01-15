@@ -90,28 +90,28 @@ public class SubmissionConcatenatorTest {
     assertThat(lineCount).isEqualTo(4);
 
     try {
-      concatFile.getPart(-1);
+      concatFile.getCoordinates(-1); // TODO: add test for original line number too
       fail("Negative line number");
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalArgumentException.class);
     }
 
     try {
-      concatFile.getPart(1);
+      concatFile.getCoordinates(1);
       fail("Header line number");
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalArgumentException.class);
     }
 
-    val part1 = concatFile.getPart(2);
-    assertThat(part1.getName()).isEqualTo("donor.1.txt");
-    val part2 = concatFile.getPart(3);
-    assertThat(part2.getName()).isEqualTo("donor.2.txt");
-    val part3 = concatFile.getPart(4);
-    assertThat(part3.getName()).isEqualTo("donor.3.txt");
+    val part1 = concatFile.getCoordinates(2);
+    assertThat(part1.getOriginalPath().getName()).isEqualTo("donor.1.txt");
+    val part2 = concatFile.getCoordinates(3);
+    assertThat(part2.getOriginalPath().getName()).isEqualTo("donor.2.txt");
+    val part3 = concatFile.getCoordinates(4);
+    assertThat(part3.getOriginalPath().getName()).isEqualTo("donor.3.txt");
 
     try {
-      concatFile.getPart(5);
+      concatFile.getCoordinates(5);
       fail("Invalid line number");
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalArgumentException.class);

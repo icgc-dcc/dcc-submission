@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static java.util.regex.Pattern.matches;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 
@@ -37,10 +38,12 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.validation.core.SubmissionConcatenator.SubmissionConcatFile;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 /**
  * The "default" implementation of the {@link ValidationContext}.
@@ -69,6 +72,8 @@ public class DefaultValidationContext implements ValidationContext {
   Dictionary dictionary;
   @NonNull
   DccFileSystem dccFileSystem;
+  @NonNull
+  List<SubmissionConcatFile> concatFiles;
   @NonNull
   PlatformStrategyFactory platformStrategyFactory;
 
@@ -100,6 +105,11 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public SubmissionDirectory getSubmissionDirectory() {
     return getReleaseFileSystem().getSubmissionDirectory(projectKey);
+  }
+
+  @Override
+  public ImmutableList<SubmissionConcatFile> getConcatFiles() {
+    return copyOf(concatFiles);
   }
 
   @Override

@@ -57,7 +57,8 @@ import com.google.common.collect.Iterables;
 import com.mongodb.BasicDBObject;
 
 /**
- * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
+ * Describes a dictionary that contains {@code FileSchema}ta and that may be
+ * used by some releases
  */
 @Entity
 @ToString(of = { "version", "state" })
@@ -141,7 +142,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
-   * Optionally returns a {@link FileSchema} matching the file schema name provided.
+   * Optionally returns a {@link FileSchema} matching the file schema name
+   * provided.
    * <p>
    * TODO: phase out in favour of {@link #getFileSchema(SubmissionFileType)}.
    */
@@ -157,7 +159,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
-   * Optionally returns a {@link FileSchema} for which the file name provided would be matching the pattern.
+   * Optionally returns a {@link FileSchema} for which the file name provided
+   * would be matching the pattern.
    */
   @JsonIgnore
   public Optional<FileSchema> getFileSchemaByFileName(String fileName) {
@@ -168,6 +171,19 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       }
     }
     return optional;
+  }
+
+  /**
+   * Optionally returns a {@link SubmissionFileType} for which the file name
+   * provided would match the pattern.
+   */
+  @JsonIgnore
+  public Optional<SubmissionFileType> getFileType(String fileName) {
+    val fileSchema = getFileSchemaByFileName(fileName);
+    return fileSchema.isPresent() ?
+        Optional.of(SubmissionFileType.from(
+            fileSchema.get().getName())) :
+        Optional.<SubmissionFileType> absent();
   }
 
   /**
@@ -203,7 +219,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
-   * Returns a non-null String matching the file pattern for the given {@link SubmissionFileType}.
+   * Returns a non-null String matching the file pattern for the given
+   * {@link SubmissionFileType}.
    */
   @JsonIgnore
   public String getFilePattern(SubmissionFileType type) {
@@ -249,7 +266,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   @JsonIgnore
-  public Set<String> getCodeListNames() { // TODO: add corresponding unit test(s) - see DCC-905
+  public Set<String> getCodeListNames() { // TODO: add corresponding unit
+                                          // test(s) - see DCC-905
     Set<String> codeListNames = newLinkedHashSet();
     for (FileSchema fileSchema : getFiles()) {
       for (Field field : fileSchema.getFields()) {
@@ -276,9 +294,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   public Map<SubmissionFileType, String> getPatterns() {
     val map = new ImmutableMap.Builder<SubmissionFileType, String>();
     for (val fileSchema : files) {
-      map.put(
-          SubmissionFileType.from(fileSchema.getName()),
-          fileSchema.getPattern());
+      map.put(SubmissionFileType.from(fileSchema.getName()), fileSchema.getPattern());
     }
     return map.build();
   }

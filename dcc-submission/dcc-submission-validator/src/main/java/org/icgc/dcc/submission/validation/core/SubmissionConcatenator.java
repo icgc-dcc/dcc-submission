@@ -31,6 +31,8 @@ import lombok.Cleanup;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,7 +59,9 @@ public class SubmissionConcatenator {
   @NonNull
   private final Dictionary dictionary;
 
-  public List<SubmissionConcatFile> concat(SubmissionDirectory submissionDirectory) throws Exception {
+  // TODO: throw checked exception?
+  @SneakyThrows
+  public List<SubmissionConcatFile> concat(SubmissionDirectory submissionDirectory) {
     log.info("Concatenating: {}", submissionDirectory);
 
     val concatFiles = ImmutableList.<SubmissionConcatFile> builder();
@@ -85,7 +89,7 @@ public class SubmissionConcatenator {
       throws Exception {
     @Cleanup
     val concatWriter = new PrintWriter(fileSystem.create(concatFilePath));
-    val concatFile = new SubmissionConcatFile(concatFilePath);
+    val concatFile = new SubmissionConcatFile(fileType, concatFilePath);
 
     int partNumber = 1;
     int partTotalCount = partFiles.size();
@@ -132,7 +136,7 @@ public class SubmissionConcatenator {
     return map.build();
   }
 
-  private static Path getConcatDirectory(SubmissionDirectory submissionDirectory) {
+  public static Path getConcatDirectory(SubmissionDirectory submissionDirectory) {
     val parentPath = submissionDirectory.getValidationDirPath();
 
     return new Path(parentPath, CONCAT_DIR_NAME);
@@ -154,6 +158,10 @@ public class SubmissionConcatenator {
 
     @NonNull
     @Getter
+    private final SubmissionFileType fileType;
+
+    @NonNull
+    @Getter
     private final Path path;
     @Getter
     private long lineCount = HEADER_LINE_COUNT;
@@ -164,13 +172,15 @@ public class SubmissionConcatenator {
       partLineMapping.put(lineCount, partPath);
     }
 
-    public Path getPart(long lineNumber) {
-      checkArgument(lineNumber != 1, "Ambiguous line number for header");
+    public ConcatenationCoordinate getCoordinates(long lineNumber) {
+      checkArgument(lineNumber != HEADER_LINE_COUNT, "Ambiguous line number for header");
       checkArgument(lineNumber > 0, "Line number must be positive");
       checkArgument(lineNumber <= lineCount, "Line number is out of range");
 
       val entry = partLineMapping.floorEntry(lineNumber);
-      return entry.getValue();
+      val originalFilePath = entry.getValue();
+      val relativeLineNumber = lineNumber - entry.getKey() + HEADER_LINE_COUNT; // TODO: check OBOE
+      return new ConcatenationCoordinate(originalFilePath, relativeLineNumber);
     }
 
     /**
@@ -180,6 +190,13 @@ public class SubmissionConcatenator {
       return partLineMapping.values();
     }
 
+  }
+
+  @Value
+  public static class ConcatenationCoordinate {
+
+    private final Path originalPath;
+    private final Long originalLineNumber;
   }
 
 }

@@ -17,7 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.find;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.submission.validation.core.SubmissionConcatenator.getConcatDirectory;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
 
@@ -36,12 +39,17 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
+import org.icgc.dcc.submission.validation.core.SubmissionConcatenator.ConcatenationCoordinate;
+import org.icgc.dcc.submission.validation.core.SubmissionConcatenator.SubmissionConcatFile;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
 import org.icgc.dcc.submission.validation.key.error.KVError;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @NoArgsConstructor
@@ -84,7 +92,7 @@ public class KeyValidator implements Validator {
         context.getFileSystem().getUri(),
         context.getDictionary(),
         "dummy", // TODO: Remove?
-        getNewReleasePath(context).toUri().toString(),
+        getConcatDirectory(context.getSubmissionDirectory()).toUri().toString(),
         reportPath.toUri().toString());
   }
 
@@ -92,10 +100,6 @@ public class KeyValidator implements Validator {
     val validationDir = context.getSubmissionDirectory().getValidationDirPath();
 
     return new Path(validationDir, REPORT_FILE_NAME);
-  }
-
-  private static Path getNewReleasePath(ValidationContext context) {
-    return new Path(context.getSubmissionDirectory().getSubmissionDirPath());
   }
 
   private static void execute(ValidationContext context, KVValidatorRunner runnable) {
@@ -127,9 +131,17 @@ public class KeyValidator implements Validator {
 
     while (errors.hasNext()) {
       val error = errors.next();
+      val fileType = context.getDictionary().getFileType(error.getFileName()); // TODO: store error type...
+      checkState(fileType.isPresent(), "TODO");
+      val coordinate = translate( // TODO: create abstraction
+          context.getConcatFiles(),
+          fileType.get(),
+
+          // Concatenated file's line number (to be translated back to the original's)
+          error.getLineNumber());
       context.reportError(
-          error.getFileName(),
-          error.getLineNumber(),
+          coordinate.getOriginalPath().toUri().toString(),
+          coordinate.getOriginalLineNumber(),
           error.getFieldNames().toString(), // TODO: homogenize
           error.getValue(),
           error.getType(),
@@ -156,4 +168,14 @@ public class KeyValidator implements Validator {
     return reader.readValues(inputStream);
   }
 
+  private static ConcatenationCoordinate translate(
+      ImmutableList<SubmissionConcatFile> concatFiles, final SubmissionFileType fileType, long lineNumber) {
+    return find(concatFiles, new Predicate<SubmissionConcatFile>() {
+
+      @Override
+      public boolean apply(SubmissionConcatFile concatFile) {
+        return concatFile.getFileType() == fileType;
+      }
+    }).getCoordinates(lineNumber);
+  }
 }

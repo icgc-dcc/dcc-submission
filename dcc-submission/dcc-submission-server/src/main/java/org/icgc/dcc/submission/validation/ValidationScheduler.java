@@ -31,6 +31,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -42,12 +43,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
+import org.icgc.dcc.submission.validation.core.SubmissionConcatenator;
+import org.icgc.dcc.submission.validation.core.SubmissionConcatenator.SubmissionConcatFile;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReportContext;
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -195,8 +199,18 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @throws ValidationRejectedException if the validation could not be executed
    */
   private void tryValidation(Release release, final QueuedProject project) {
+    // Get dictionary
+    val dictionary = releaseService.getNextDictionary();
+
+    // Run concatenation
+    val concatFiles =
+        new SubmissionConcatenator(dccFileSystem.getFileSystem(), dictionary)
+            .concat(dccFileSystem
+                .getReleaseFilesystem(release)
+                .getSubmissionDirectory(project.getKey()));
+
     // Prepare validation
-    val validation = createValidation(release, project);
+    val validation = createValidation(release, project, dictionary, concatFiles);
 
     // Submit validation asynchronously for execution
     val future = executor.execute(validation);
@@ -245,8 +259,9 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param project the project to create a validation for
    * @return
    */
-  private Validation createValidation(Release release, QueuedProject project) {
-    val context = createValidationContext(release, project);
+  private Validation createValidation(
+      Release release, QueuedProject project, Dictionary dictionary, List<SubmissionConcatFile> concatFiles) {
+    val context = createValidationContext(release, project, dictionary, concatFiles);
     val validators = ImmutableList.<Validator> copyOf(this.validators);
     val validation = new Validation(context, validators);
 
@@ -260,14 +275,14 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param project the project to create a validation for
    * @return
    */
-  private ValidationContext createValidationContext(Release release, QueuedProject project) {
-    val dictionary = releaseService.getNextDictionary();
+  private ValidationContext createValidationContext(
+      Release release, QueuedProject project, Dictionary dictionary, List<SubmissionConcatFile> concatFiles) {
     val context = new DefaultValidationContext(
         new SubmissionReportContext(),
         project.getKey(),
         project.getEmails(),
         release, dictionary,
-        dccFileSystem,
+        dccFileSystem, concatFiles,
         platformStrategyFactory);
 
     return context;

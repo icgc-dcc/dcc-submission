@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
@@ -56,6 +57,8 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.core.FieldReport;
+import org.icgc.dcc.submission.validation.core.SubmissionConcatenator;
+import org.icgc.dcc.submission.validation.core.SubmissionConcatenator.SubmissionConcatFile;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -63,11 +66,12 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvid
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor()
 public class KeyValidationContext implements ValidationContext {
 
   private static final String DICTIONARY_VERSION = "0.7c";
@@ -85,6 +89,8 @@ public class KeyValidationContext implements ValidationContext {
   private final String fsUrl;
   @NonNull
   private final String jobTracker;
+
+  private List<SubmissionConcatFile> concatFiles;
 
   @Override
   public PlatformStrategy getPlatformStrategy() {
@@ -109,6 +115,20 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   public Release getRelease() {
     return new Release(releaseName);
+  }
+
+  @Override
+  public ImmutableList<SubmissionConcatFile> getConcatFiles() {
+    if (concatFiles == null) {
+
+      // Get dictionary
+      val dictionary = getDictionary();
+
+      // Run concatenation
+      concatFiles = new SubmissionConcatenator(getFileSystem(), dictionary)
+          .concat(getSubmissionDirectory());
+    }
+    return copyOf(concatFiles);
   }
 
   @Override
