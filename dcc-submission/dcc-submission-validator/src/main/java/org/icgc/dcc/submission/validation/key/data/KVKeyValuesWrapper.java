@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,53 +17,26 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.collect.Maps.transformValues;
+import static com.google.common.collect.Sets.newTreeSet;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.Set;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-
-import com.google.common.base.Function;
-
 /**
- * Represents the data dagest for the whole submission, as either existing or incremental data.
+ * 
  */
-public class KVSubmissionDataDigest {
+public abstract class KVKeyValuesWrapper implements Iterable<KVKeys> {
 
-  private final Map<KVFileType, KVFileDataDigest> data = newLinkedHashMap();
+  protected final Set<KVKeys> keys = newTreeSet(); // TODO: change to array (optimization)?
 
-  // TODO: use delegate?
-  public boolean contains(KVFileType fileType) {
-    return data.containsKey(fileType);
+  @Override
+  public Iterator<KVKeys> iterator() {
+    return keys.iterator();
   }
 
-  public Set<Entry<KVFileType, KVFileDataDigest>> entrySet() {
-    return data.entrySet();
+  public static boolean sameSize(
+      KVKeyValuesWrapper v1,
+      KVKeyValuesWrapper v2) {
+    return v1.keys.size() == v2.keys.size();
   }
-
-  public void put(KVFileType fileType, KVFileDataDigest fileData) {
-    data.put(fileType, fileData);
-  }
-
-  public KVFileDataDigest get(KVFileType fileType) {
-    return data.get(fileType);
-  }
-
-  public Map<KVFileType, KVFileDescription> getFileDescriptions() {
-    return copyOf(transformValues(
-        data,
-        new Function<KVFileDataDigest, KVFileDescription>() {
-
-          @Override
-          public KVFileDescription apply(KVFileDataDigest datum) {
-            return datum.getKvFileDescription();
-          }
-        }));
-  }
-
 }

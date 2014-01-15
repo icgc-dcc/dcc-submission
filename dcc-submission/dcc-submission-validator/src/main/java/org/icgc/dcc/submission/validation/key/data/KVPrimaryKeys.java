@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,39 +17,32 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import lombok.Value;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 /**
- * Data relevant to the key validation for a given row.
+ * 
  */
-@Value
-public class KVTuple {
+@RequiredArgsConstructor
+public final class KVPrimaryKeys extends KVKeyValuesWrapper {
 
-  /**
-   * Applicable for most file except for the leafs (see dictionary DAG).
-   */
-  private final KVKeys pk;
+  private final KVFileType fileType;
 
-  /**
-   * Applicable for all files but 'donor'.
-   */
-  private final KVKeys fk;
-
-  /**
-   * Only applicable for some meta files
-   */
-  private final KVKeys secondaryFk;
-
-  public boolean hasPk() {
-    return pk != null;
+  public void updatePksIfApplicable(KVTuple tuple) {
+    if (tuple.hasPk()) {
+      keys.add(tuple.getPk());
+    } else {
+      if (TUPLE_CHECKS_ENABLED) checkState(!fileType.hasPk(), "TODO");
+    }
   }
 
-  public boolean hasFk() {
-    return fk != null;
+  public boolean containsPk(
+      @NonNull// TODO: consider removing such time consuming checks?
+      KVKeys keys) {
+    return this.keys.contains(keys);
   }
-
-  public boolean hasSecondaryFk() {
-    return secondaryFk != null;
-  }
-
 }

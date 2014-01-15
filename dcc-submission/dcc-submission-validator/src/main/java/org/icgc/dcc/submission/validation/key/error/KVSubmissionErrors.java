@@ -94,7 +94,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
-import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 

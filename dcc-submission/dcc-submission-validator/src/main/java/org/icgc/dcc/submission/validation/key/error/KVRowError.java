@@ -23,7 +23,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
-import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
+import org.icgc.dcc.submission.validation.key.data.KVKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 
@@ -35,7 +35,7 @@ import org.icgc.dcc.submission.validation.key.report.KVReport;
 public class KVRowError {
 
   private final KVErrorType type;
-  private final KVKeyValues keyValues;
+  private final KVKeys keyValues;
 
   public void describe(
       KVReport report, String dataFileName, long lineNumber, List<String> fieldNames, Object[] params,

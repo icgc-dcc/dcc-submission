@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVConstants;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
-import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
+import org.icgc.dcc.submission.validation.key.data.KVKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
@@ -111,7 +111,7 @@ public class KVFileErrors {
   /**
    * TODO: create other wrappers like the surjection one
    */
-  public void addError(long lineNumber, KVErrorType type, KVKeyValues keys) {
+  public void addError(long lineNumber, KVErrorType type, KVKeys keys) {
     List<KVRowError> rowErrors = lineToRowErrors.get(lineNumber);
     if (rowErrors == null) {
       rowErrors = newArrayList();
@@ -120,11 +120,11 @@ public class KVFileErrors {
     rowErrors.add(new KVRowError(type, keys));
   }
 
-  public void addSimpleSurjectionError(KVKeyValues keys) {
+  public void addSimpleSurjectionError(KVKeys keys) {
     addError(SIMPLE_SURJECTION_ERROR_LINE_NUMBER, SIMPLE_SURJECTION, keys);
   }
 
-  public void addComplexSurjectionError(KVKeyValues keys) {
+  public void addComplexSurjectionError(KVKeys keys) {
     addError(COMPLEX_SURJECTION_ERROR_LINE_NUMBER, COMPLEX_SURJECTION, keys);
   }
 

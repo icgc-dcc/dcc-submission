@@ -17,9 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Sets.newTreeSet;
+import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS1;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FKS2;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_PKS;
@@ -65,8 +64,9 @@ import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_PKS
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_PKS;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_S_FKS;
-import static org.icgc.dcc.submission.validation.key.data.KVKeyValues.NOT_APPLICABLE;
-import static org.icgc.dcc.submission.validation.key.data.KVKeyValues.from;
+import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.data.KVKeys.NOT_APPLICABLE;
+import static org.icgc.dcc.submission.validation.key.data.KVKeys.from;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUENESS;
@@ -97,10 +97,10 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
 
 import java.util.List;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -110,71 +110,30 @@ import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.core.KVFileParser;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
-import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
 
 @Slf4j
-public class KVFileDataDigest {
+@RequiredArgsConstructor(access = PUBLIC)
+public final class KVFileDataDigest {
 
-  /**
-   * TODO: temporarily...
-   */
-  public static final boolean TUPLE_CHECKS_ENABLED = true;
-
-  protected final KVFileParser kvFileParser;
-  @Getter
-  protected final KVFileDescription kvFileDescription;
-  private final long logThreshold;
+  private static final int DEFAULT_LOG_THRESHOLD = 1000000;
 
   @Getter
-  protected final Set<KVKeyValues> pks = newTreeSet(); // TODO: change to arrays?
-  private Optional<KVFileDataDigest> optionalReferencedData;
+  private final KVFileDescription kvFileDescription;
 
-  private KVFileErrors fileErrors; // To collect all but surjection errors
-  private Optional<KVFileErrors> optionalReferencedFileErrors; // To collect simple surjection errors (complex ones are
-                                                               // collected later)
-
-  private SurjectivityValidator surjectivityValidator; // TODO: instantiate here?
-
-  private final Set<KVKeyValues> encounteredKeys = newTreeSet();
-
-  private KVFileDataDigest(
-      @NonNull KVFileParser kvFileParser,
-      @NonNull KVFileDescription kvFileDescription,
-      long logThreshold) {
-    this.kvFileParser = kvFileParser;
-    this.kvFileDescription = kvFileDescription;
-    this.logThreshold = logThreshold;
-  }
-
-  public static KVFileDataDigest getEmptyInstance(
-      @NonNull KVFileParser kvFileParser,
-      @NonNull KVFileDescription kvFileDescription) {
-    return new KVFileDataDigest(kvFileParser, kvFileDescription, -1); // -1: no need for a threshold
-  }
-
-  public KVFileDataDigest(
-      @NonNull KVFileParser kvFileParser,
-      @NonNull KVFileDescription kvFileDescription,
-      long logThreshold,
-
-      @NonNull Optional<KVFileDataDigest> optionalReferencedData, // Not for DONOR for instance
-      @NonNull KVFileErrors fileErrors,
-      @NonNull Optional<KVFileErrors> optionalReferencedFileErrors,
-      @NonNull SurjectivityValidator surjectivityValidator) {
-    this.kvFileParser = kvFileParser;
-    this.kvFileDescription = kvFileDescription;
-    this.logThreshold = logThreshold;
-
-    this.optionalReferencedData = checkNotNull(optionalReferencedData);
-    this.fileErrors = fileErrors;
-    this.optionalReferencedFileErrors = optionalReferencedFileErrors;
-    this.surjectivityValidator = surjectivityValidator;
+  public static KVFileDataDigest getEmptyInstance(@NonNull KVFileDescription kvFileDescription) {
+    return new KVFileDataDigest(kvFileDescription);
   }
 
   @SneakyThrows
-  public KVFileDataDigest processFile() {
+  public KVFileDataDigest processFile(
+      KVFileParser kvFileParser,
+      final KVFileErrors fileErrors, // To collect all but surjection errors
+      final KVPrimaryKeys primaryKeys,
+      final Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, // N/A for DONOR for instance
+      final Optional<KVEncounteredForeignKeys> optionalEncounteredKeys // N/A for SSM_P for instance
+  ) {
     log.info("{}", kvFileDescription);
 
     checkState(!kvFileDescription.isPlaceholder(), "TODO");
@@ -185,16 +144,14 @@ public class KVFileDataDigest {
         val tuple = getTuple(kvFileDescription.getFileType(), record);
         log.debug("tuple: '{}'", tuple);
 
-        processTuple(tuple, lineNumber);
+        processTuple(tuple, lineNumber, fileErrors, primaryKeys, optionalReferencedPrimaryKeys, optionalEncounteredKeys);
 
-        if ((lineNumber % logThreshold) == 0) {
+        if ((lineNumber % DEFAULT_LOG_THRESHOLD) == 0) {
           logProcessedLine(lineNumber, false);
         }
       }
 
     });
-
-    postProcessing();
 
     return this;
   }
@@ -202,54 +159,60 @@ public class KVFileDataDigest {
   /**
    * Also validates; TODO: include lineCount in tuple?
    */
-  protected void processTuple(KVTuple tuple, long lineCount) {
+  private void processTuple(
+      KVTuple tuple,
+      long lineCount,
+      KVFileErrors fileErrors,
+      KVPrimaryKeys primaryKeys,
+      Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys,
+      Optional<KVEncounteredForeignKeys> optionalEncounteredKeys) {
 
     // Clinical
     val fileType = kvFileDescription.getFileType();
     if (fileType == DONOR) { // TODO: split per file type (subclass or compose)
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // No foreign key check for DONOR
 
-      updatePksIfApplicable(tuple);
+      primaryKeys.updatePksIfApplicable(tuple);
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasFk()); // Hence no surjection
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     } else if (fileType == SPECIMEN) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
-
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
-
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     } else if (fileType == SAMPLE) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
 
@@ -257,39 +220,43 @@ public class KVFileDataDigest {
     else if (fileType == SSM_M) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk() // May not have a secondary FK (optional)
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      addEncounteredForeignKey(optionalEncounteredKeys, tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        addEncounteredForeignKey(optionalEncounteredKeys, tuple.getSecondaryFk());
       }
     } else if (fileType == SSM_P) {
       ; // No uniqueness check for SSM_P
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
 
@@ -297,50 +264,56 @@ public class KVFileDataDigest {
     else if (fileType == CNSM_M) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == CNSM_P) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     } else if (fileType == CNSM_S) {
       ; // No uniqueness check for CNSM
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
@@ -354,50 +327,56 @@ public class KVFileDataDigest {
     else if (fileType == STSM_M) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == STSM_P) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     } else if (fileType == STSM_S) {
       ; // No uniqueness check for STSM_s
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
@@ -411,50 +390,56 @@ public class KVFileDataDigest {
     else if (fileType == MIRNA_M) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == MIRNA_P) {
       ; // No uniqueness check for MIRNA_P (unlike for other types, the PK is on the secondary file for MIRNA)
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     } else if (fileType == MIRNA_S) {
 
       // Uniqueness check (unlike for other types, the PK is on the secondary file for MIRNA)
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
@@ -468,50 +453,56 @@ public class KVFileDataDigest {
     else if (fileType == METH_M) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == METH_P) {
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     } else if (fileType == METH_S) {
       ; // No uniqueness check for METH_s
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
@@ -526,40 +517,46 @@ public class KVFileDataDigest {
       // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
 
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == EXP_G) {
       ; // No uniqueness check for EXP_P
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
 
@@ -568,37 +565,43 @@ public class KVFileDataDigest {
       // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == PEXP_P) {
       ; // No uniqueness check for PEXP_P
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
 
@@ -607,37 +610,43 @@ public class KVFileDataDigest {
       // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == JCN_P) {
       ; // No uniqueness check for JCN_P
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
 
@@ -646,36 +655,42 @@ public class KVFileDataDigest {
       // TODO: later on, report on diff using: oldData.pksContains(tuple.getPk())
 
       // Uniqueness check
-      if (pks.contains(tuple.getPk())) {
+      if (primaryKeys.containsPk(tuple.getPk())) {
         fileErrors.addError(lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
-      if (tuple.hasSecondaryFk() && !hasMatchingReference(tuple.getSecondaryFk())) { // May not have a secondary FK
+      if (tuple.hasSecondaryFk()
+          && !hasMatchingReference(
+              optionalReferencedPrimaryKeys,
+              tuple.getSecondaryFk())) {
 
         fileErrors.addError(lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
-      updatePksIfApplicable(tuple);
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      primaryKeys.updatePksIfApplicable(tuple);
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        encounteredKeys.add(tuple.getSecondaryFk());
+        checkState(optionalEncounteredKeys.isPresent(), "TODO");
+        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
       }
     } else if (fileType == SGV_P) {
       ; // No uniqueness check for SGV_P
 
       // Foreign key check
-      if (!hasMatchingReference(tuple.getFk())) {
+      if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         fileErrors.addError(lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      encounteredKeys.add(checkNotNull(tuple.getFk()));
+      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
   }
@@ -683,8 +698,8 @@ public class KVFileDataDigest {
   /**
    * TODO: encode in dictionary data structure rather (hardcoded elsewhere, at least the PKs)
    */
-  protected KVTuple getTuple(KVFileType fileType, List<String> row) {
-    KVKeyValues pk = null, fk1 = null, fk2 = null;
+  private KVTuple getTuple(KVFileType fileType, List<String> row) {
+    KVKeys pk = null, fk1 = null, fk2 = null;
 
     // Clinical
     if (fileType == DONOR) {
@@ -821,56 +836,19 @@ public class KVFileDataDigest {
   }
 
   /**
-   * For surjection checks.
-   */
-  protected void postProcessing() {
-    // Surjectivity; TODO: externalize?
-
-    val fileType = kvFileDescription.getFileType();
-    if (fileType.hasOutgoingSimpleSurjectiveRelation()) {
-      log.info("Post-processing: simply surjectivity check");
-      checkState(optionalReferencedData.isPresent(), "TODO");
-      checkState(optionalReferencedFileErrors.isPresent(), "TODO");
-      surjectivityValidator
-          .validateSimpleSurjection(
-              surjectivityValidator.getSurjectionExpectedKeys(optionalReferencedData.get()),
-              encounteredKeys,
-              optionalReferencedFileErrors.get());
-    }
-
-    if (fileType.hasOutgoingComplexSurjectiveRelation()) {
-      log.info("Post-processing: complex surjectivity addition");
-      // Simply adding them all for now, actual validation will have to take place after all meta files have been read
-      // (unlike for "simple" surjection check).
-      surjectivityValidator.addEncounteredSampleKeys(encounteredKeys);
-    }
-  }
-
-  /**
    * @param fk May be primary or secondary FK.
    */
-  private boolean hasMatchingReference(KVKeyValues fk) {
-    if (TUPLE_CHECKS_ENABLED) {
-      checkState(optionalReferencedData.isPresent(), "TODO");
-    }
-    return optionalReferencedData.get().pksContains(fk);
+  private boolean hasMatchingReference(Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, KVKeys fk) {
+    if (TUPLE_CHECKS_ENABLED) checkState(optionalReferencedPrimaryKeys.isPresent(), "TODO");
+    return optionalReferencedPrimaryKeys.get().containsPk(fk);
   }
 
-  protected void updatePksIfApplicable(KVTuple tuple) {
-    if (tuple.hasPk()) {
-      pks.add(tuple.getPk());
-    } else {
-      if (TUPLE_CHECKS_ENABLED) checkState(!kvFileDescription.getFileType().hasPk(), "TODO");
-    }
+  private void addEncounteredForeignKey(Optional<KVEncounteredForeignKeys> optionalEncounteredKeys, KVKeys fk) {
+    checkState(optionalEncounteredKeys.isPresent(), "TODO");
+    optionalEncounteredKeys.get().addEncounteredForeignKey(fk);
   }
 
-  public boolean pksContains(
-      @NonNull// TODO: consider removing such time consuming checks?
-      KVKeyValues keys) {
-    return pks.contains(keys);
-  }
-
-  protected void logProcessedLine(long lineCount, boolean finished) {
+  private void logProcessedLine(long lineCount, boolean finished) {
     log.info("'{}' lines processed" + (finished ? " (finished)" : ""), lineCount);
   }
 

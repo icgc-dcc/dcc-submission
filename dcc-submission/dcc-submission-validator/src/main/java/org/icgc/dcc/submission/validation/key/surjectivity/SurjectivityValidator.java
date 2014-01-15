@@ -17,19 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.key.surjectivity;
 
-import static com.google.common.collect.Sets.newTreeSet;
+import static org.icgc.dcc.submission.validation.key.data.KVKeyValuesWrapper.sameSize;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
-
-import java.util.Set;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
-import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
-import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
+import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
+import org.icgc.dcc.submission.validation.key.data.KVKeys;
+import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 
 /**
@@ -50,19 +48,15 @@ public class SurjectivityValidator {
    * <p>
    * From potentially more than one file (hence "complex").
    */
-  private final Set<KVKeyValues> encounteredSampleKeys = newTreeSet();
+  private final KVEncounteredForeignKeys encounteredSampleForeignKeys = new KVEncounteredForeignKeys();
 
-  public Set<KVKeyValues> getSurjectionExpectedKeys(@NonNull KVFileDataDigest referencedData) {
-    return newTreeSet(referencedData.getPks());
-  }
-
-  public void addEncounteredSampleKeys(Set<KVKeyValues> surjectionEncountered) {
-    encounteredSampleKeys.addAll(surjectionEncountered);
+  public void addEncounteredSampleKeys(KVEncounteredForeignKeys encounteredSampleForeignKeys) {
+    this.encounteredSampleForeignKeys.addEncounteredForeignKeys(encounteredSampleForeignKeys);
   }
 
   public void validateSimpleSurjection(
-      Set<KVKeyValues> expectedKeys,
-      Set<KVKeyValues> encounteredKeys, // From one file only (unlike for complex check)
+      KVPrimaryKeys expectedKeys,
+      KVEncounteredForeignKeys encounteredKeys, // From one file only (unlike for complex check)
       KVFileErrors referencedFileErrors) {
     if (hasSurjectionErrors(expectedKeys, encounteredKeys)) {
       collectSurjectionErrors(
@@ -74,42 +68,42 @@ public class SurjectivityValidator {
   }
 
   public void validateComplexSurjection(
-      Set<KVKeyValues> expectedSampleKeys,
+      KVPrimaryKeys expectedSampleKeys,
       KVFileErrors sampleFileErrors) {
 
-    if (encounteredSampleKeys.isEmpty()) {
+    if (encounteredSampleForeignKeys.noneEncountered()) {
       log.warn("No sample encountered..."); // Could indicate an issue
     }
-    if (hasSurjectionErrors(expectedSampleKeys, encounteredSampleKeys)) {
+    if (hasSurjectionErrors(expectedSampleKeys, encounteredSampleForeignKeys)) {
       log.error("Some complex surjection errors detected");
       collectSurjectionErrors(
           true,
           expectedSampleKeys,
-          encounteredSampleKeys,
+          encounteredSampleForeignKeys,
           sampleFileErrors);
     } else {
       log.error("No complex surjection errors detected");
     }
   }
 
-  private boolean hasSurjectionErrors(Set<KVKeyValues> surjectionExpected, Set<KVKeyValues> surjectionEncountered) {
-    int expectedSize = surjectionExpected.size();
-    int encounteredSize = surjectionEncountered.size();
-    return expectedSize != encounteredSize;
+  private boolean hasSurjectionErrors(
+      KVPrimaryKeys surjectionExpected,
+      KVEncounteredForeignKeys surjectionEncountered) {
+    return !sameSize(surjectionExpected, surjectionEncountered);
   }
 
   private void collectSurjectionErrors(
       boolean complex,
-      Set<KVKeyValues> expectedKeys,
-      Set<KVKeyValues> encounteredKeys,
+      KVPrimaryKeys expectedKeys,
+      KVEncounteredForeignKeys encounteredKeys,
       KVFileErrors referencedFileError) {
     log.info("Collecting '{}' surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
-    for (KVKeyValues keys : expectedKeys) {
-      if (!encounteredKeys.contains(keys)) {
+    for (KVKeys expected : expectedKeys) {
+      if (!encounteredKeys.encountered(expected)) {
         if (complex) {
-          referencedFileError.addComplexSurjectionError(keys);
+          referencedFileError.addComplexSurjectionError(expected);
         } else {
-          referencedFileError.addSimpleSurjectionError(keys);
+          referencedFileError.addSimpleSurjectionError(expected);
         }
       }
     }

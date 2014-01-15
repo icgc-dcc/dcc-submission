@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,28 +15,30 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.enumeration;
+package org.icgc.dcc.submission.validation.key.data;
 
-import org.icgc.dcc.core.model.DeletionType;
+import static com.google.common.base.Preconditions.checkNotNull;
+import lombok.RequiredArgsConstructor;
 
 /**
- * For deletion only (TODO: expand)
+ * TODO: inclusive delegate possible with lombok?
  */
-public enum KeyValidationAdditionalType implements DeletionType {
-  ALL, ERROR;
+@RequiredArgsConstructor
+public final class KVEncounteredForeignKeys extends KVKeyValuesWrapper {
 
-  @Override
-  public boolean isAllDeletionType() {
-    return this == ALL;
+  public void addEncounteredForeignKey(KVKeys fk) {
+    keys.add(checkNotNull(fk));
   }
 
-  @Override
-  public boolean isErroneousDeletionType() {
-    return this == ERROR;
+  public void addEncounteredForeignKeys(KVEncounteredForeignKeys surjectionEncountered) {
+    keys.addAll(surjectionEncountered.keys);
   }
 
-  // TODO: move to FeatureTypeDeletion?
-  public static boolean matchesAllDeletionType(String value) {
-    return ALL.name().equalsIgnoreCase(value);
+  public boolean noneEncountered() {
+    return keys.isEmpty();
+  }
+
+  public boolean encountered(KVKeys encounteredKeys) {
+    return this.keys.contains(encounteredKeys);
   }
 }

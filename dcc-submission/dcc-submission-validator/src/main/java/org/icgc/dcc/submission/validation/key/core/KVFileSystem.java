@@ -17,14 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Preconditions.checkState;
 import static java.util.regex.Pattern.compile;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -37,6 +36,8 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+
+import com.google.common.base.Optional;
 
 @RequiredArgsConstructor
 public final class KVFileSystem {
@@ -53,36 +54,21 @@ public final class KVFileSystem {
     return fileSystem.open(path);
   }
 
-  public Path getDataFilePath(KVFileType fileType) {
+  public Optional<List<Path>> getDataFilePaths(KVFileType fileType) {
     val basePath = releaseDir;
     val fileSchema = getFileSchema(fileType);
     val fileRegex = fileSchema.getPattern();
     val filePattern = compile(fileRegex);
     val filePaths = lsFile(fileSystem, basePath, filePattern);
-    if (filePaths.isEmpty()) {
-      return null;
-    }
-
-    checkState(filePaths.size() == 1, "Expected at most 1 file path but found %s. File paths: %s",
-        filePaths.size(), filePaths);
-
-    return filePaths.get(0);
+    return filePaths.isEmpty() ? Optional.<List<Path>> absent() : Optional.of(filePaths);
   }
 
   public boolean hasClinicalData() {
-    return hasFile(getDataFilePath(DONOR));
+    return getDataFilePaths(DONOR).isPresent();
   }
 
-  public boolean hasType(KVExperimentalDataType dataType) {
-    return hasFile(getDataFilePath(dataType.getTaleTellerFileType()));
-  }
-
-  private boolean hasFile(Path filePath) {
-    if (filePath == null) {
-      return false;
-    }
-
-    return checkExistence(fileSystem, filePath);
+  public boolean hasDataType(KVExperimentalDataType dataType) {
+    return getDataFilePaths(dataType.getTaleTellerFileType()).isPresent();
   }
 
   private FileSchema getFileSchema(KVFileType fileType) {
