@@ -59,6 +59,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -735,45 +737,89 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * see DCC-901
    */
   @Synchronized
-  public void resetSubmission(final String releaseName, final String projectKey, final Path path) {
+  public void resetSubmission(String releaseName, String projectKey, Path path) {
     log.info("Resetting submission for project '{}' and path '{}'", projectKey, path);
 
+    val dictionary = getNextDictionary();
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+    // Ensure it is managed first
+    if (path != null) {
+      val managed = dictionary.getFileSchemaByFileName(path.getName()).isPresent();
+      if (!managed) {
+        log.info("Aborting reset due to file '{}' not being managed by the dictionary", path);
+        return;
+      }
+    }
+
+    // Initialize each available data type to not validated
+    val dataTypes = Sets.<SubmissionDataType> newHashSet();
+    for (val submissionFile : submissionFiles) {
+      val dataType = submissionFile.getDataType();
+      if (dataType != null) {
+        dataTypes.add(SubmissionDataTypes.valueOf(dataType));
+      }
+    }
+    val nextDataState = Lists.<DataTypeState> newArrayList();
+    for (val dataType : dataTypes) {
+      nextDataState.add(new DataTypeState(dataType, NOT_VALIDATED));
+    }
+
+    // Resolve the submission from storage
     val submission = getSubmission(releaseName, projectKey);
+
     val all = path == null;
     if (all) {
       // Reset all data types
       submission.setState(NOT_VALIDATED);
+      submission.setDataState(nextDataState);
       submission.setReport(null);
-      for (val dataTypeState : submission.getDataState()) {
-        dataTypeState.setState(NOT_VALIDATED);
-      }
     } else {
-      val dictionary = getNextDictionary();
       val fileSchema = dictionary.getFileSchemaByFileName(path.getName()).get();
       val fileDataType = fileSchema.getDataType();
-      SubmissionReport nextReport = new SubmissionReport();
+
+      val transitive = fileDataType.isClinicalType();
+      if (transitive) {
+        // Reset all data types
+        resetSubmission(releaseName, projectKey, null);
+
+        return;
+      }
 
       // Reset file data type only
-      SubmissionState nextState = NOT_VALIDATED;
+      SubmissionReport nextReport = null;
       val previousReport = (SubmissionReport) submission.getReport();
-      for (val schemaReport : previousReport.getSchemaReports()) {
-        val schema = dictionary.getFileSchemaByFileName(schemaReport.getName()).get();
-        val schemaDataType = schema.getDataType();
+      if (previousReport != null) {
+        nextReport = new SubmissionReport();
 
-        val maintain = schemaDataType != fileDataType;
+        for (val schemaReport : previousReport.getSchemaReports()) {
+          val schema = dictionary.getFileSchemaByFileName(schemaReport.getName()).get();
+          val schemaDataType = schema.getDataType();
+
+          val maintain = schemaDataType != fileDataType;
+          if (maintain) {
+            nextReport.addSchemaReport(schemaReport);
+          }
+        }
+      }
+
+      val previousDataState = submission.getDataState();
+      for (val previousDataTypeState : previousDataState) {
+        val previousDataType = previousDataTypeState.getDataType();
+        val maintain = previousDataType != fileDataType && dataTypes.contains(previousDataType);
         if (maintain) {
-          nextReport.addSchemaReport(schemaReport);
+          for (val nextDataTypeState : nextDataState) {
+            if (nextDataTypeState.getDataType() == previousDataType) {
+              // Copy
+              nextDataTypeState.setState(previousDataTypeState.getState());
+            }
+          }
         }
       }
 
-      submission.setState(nextState);
+      submission.setState(NOT_VALIDATED);
+      submission.setDataState(nextDataState);
       submission.setReport(nextReport);
-      for (val dataTypeState : submission.getDataState()) {
-        val reset = fileDataType == dataTypeState.getDataType();
-        if (reset) {
-          dataTypeState.setState(NOT_VALIDATED);
-        }
-      }
     }
 
     updateSubmission(releaseName, submission);

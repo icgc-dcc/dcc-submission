@@ -110,6 +110,10 @@ public class SftpContext {
     return new Path(releasePath);
   }
 
+  public boolean isSystemDirectory(Path path) {
+    return getReleaseFileSystem().isSystemDirectory(path);
+  }
+
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
   public void notifySubmissionChange(Submission submission, Path path) {
     log.info("Resetting submission '{}'...", submission.getProjectKey());
@@ -121,10 +125,6 @@ public class SftpContext {
       // TODO: DCC-903 (only if open release uses it)
       notifySubmissionChange(submission, null);
     }
-  }
-
-  public boolean isSystemDirectory(Path path) {
-    return getReleaseFileSystem().isSystemDirectory(path);
   }
 
   public void notifyFileTransferred(Path path) {

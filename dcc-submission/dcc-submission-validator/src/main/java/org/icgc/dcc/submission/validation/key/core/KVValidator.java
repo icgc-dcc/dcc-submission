@@ -278,6 +278,7 @@ public class KVValidator {
     }
   }
 
+  @SuppressWarnings("unused")
   private void validateComplexSurjection() {
     log.info("{}", repeat("=", 75));
     log.info("Validating complex surjection");
