@@ -133,7 +133,22 @@ public class KeyValidationContext implements ValidationContext {
     dictionary.addFile(readFileSchema(METH_P_TYPE));
     dictionary.addFile(readFileSchema(METH_S_TYPE));
 
+    // Patch file name patterns to support multiple files per file type
+    // TODO: Remove patching
+    for (val fileSchema : dictionary.getFiles()) {
+      patchFileSchema(fileSchema);
+    }
+
     return dictionary;
+  }
+
+  private void patchFileSchema(FileSchema fileSchema) {
+    val regex = fileSchema.getPattern();
+    val patchedRegex = regex.replaceFirst("\\.", "\\.(?:[^.]+\\\\.)?");
+    fileSchema.setPattern(patchedRegex);
+
+    log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
+        new Object[] { fileSchema.getName(), regex, patchedRegex });
   }
 
   @Override

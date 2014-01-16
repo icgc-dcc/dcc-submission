@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,12 +44,11 @@ import com.google.inject.Inject;
 public class DefaultPlanner implements Planner {
 
   private final Set<RestrictionType> restrictionTypes;
-  
+
   @Inject
   public DefaultPlanner(@NonNull Set<RestrictionType> restrictionTypes) {
     this.restrictionTypes = restrictionTypes;
   }
-
 
   @Override
   public Plan plan(@NonNull String projectKey, @NonNull PlatformStrategy strategy, @NonNull Dictionary dictionary) {

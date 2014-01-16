@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static org.icgc.dcc.submission.validation.key.KVTestUtils.TEST_DIR;
+import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
 
 import java.io.File;
@@ -69,7 +69,7 @@ public class KeyValidatorIntegrationTest {
 
     copyDirectory(
         fileSystem,
-        new File(TEST_DIR),
+        new File(FS_DIR),
         new Path(new Path(rootDir, RELEASE_NAME), PROJECT_KEY));
   }
 

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.icgc.dcc.submission.validation.MiniHadoop;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cascading.flow.FlowException;
@@ -18,11 +19,13 @@ import com.google.common.collect.ImmutableMap;
 @Slf4j
 public class FlowExecutorTest {
 
+  @Ignore
   @Test
   public void testExecuteHadoopSuccess() throws IOException {
     executeHadoop(new SuccessTask());
   }
 
+  @Ignore
   @Test(expected = FlowException.class)
   public void testExecuteHadoopFailure() throws IOException {
     executeHadoop(new FailureTask());

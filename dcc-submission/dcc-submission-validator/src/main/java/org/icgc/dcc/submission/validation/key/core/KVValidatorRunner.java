@@ -70,7 +70,6 @@ public class KVValidatorRunner implements Runnable, Serializable {
 
   private void validate() throws IOException {
     val fileSystem = getFileSystem();
-    val dictionary = getDictionary();
     val report = new KVReport(fileSystem, new Path(reportPath));
     try {
       val validator = new KVValidator(
