@@ -51,7 +51,6 @@ import cascading.flow.hadoop.MapReduceFlow;
 import cascading.flow.hadoop.util.JavaObjectSerializer;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.pipe.Each;
-import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 
 import com.google.common.collect.ImmutableMap;
@@ -63,13 +62,12 @@ public class FlowExecutor implements Executor {
   private final Map<Object, Object> properties;
 
   @Override
-  @SneakyThrows
   public void execute(Runnable runnable) {
     val flow = createFlow(runnable);
     flow.complete();
   }
 
-  private Flow<?> createFlow(Runnable runnable) throws IOException {
+  private Flow<?> createFlow(Runnable runnable) {
     if (isLocal()) {
       return createLocalFlow(runnable);
     } else {
@@ -88,17 +86,16 @@ public class FlowExecutor implements Executor {
   }
 
   private Flow<?> createLocalFlow(Runnable runnable) {
-    Pipe pipe = new Each("flow-executor", new ExecuteFunction(runnable));
+    val pipe = new Each("flow-executor", new ExecuteFunction(runnable));
 
-    Flow<?> flow = new LocalFlowConnector(properties)
+    return new LocalFlowConnector(properties)
         .connect(flowDef()
             .addSource(pipe, new EmptySourceTap<Void>("empty"))
             .addTailSink(pipe, new EmptySinkTap<Void>("empty")));
-
-    return flow;
   }
 
-  private Flow<?> createHadoopFlow(Runnable runnable) throws IOException {
+  @SneakyThrows
+  private Flow<?> createHadoopFlow(Runnable runnable) {
     val jobConf = createJobConf(runnable);
     val flow = new MapReduceFlow(jobConf, false) {
 
@@ -143,6 +140,7 @@ public class FlowExecutor implements Executor {
     val executorState = serializeBase64(runnable, jobConf, true);
     val maxSize = Short.MAX_VALUE;
 
+    // TODO: Constants
     jobConf.set("cascading.util.serializer", JavaObjectSerializer.class.getName());
     jobConf.set("org.icgc.dcc.class.name", runnable.getClass().getName());
     if (isHadoopLocalMode(jobConf) || executorState.length() < maxSize) {
@@ -153,6 +151,7 @@ public class FlowExecutor implements Executor {
   }
 
   private boolean isHadoopLocalMode(JobConf conf) {
+    // TODO: Constants
     return "local".equals(conf.get("mapred.job.tracker"));
   }
 
@@ -187,8 +186,8 @@ public class FlowExecutor implements Executor {
     public void map(NullWritable key, NullWritable value, OutputCollector<NullWritable, NullWritable> output,
         Reporter reporter) throws IOException {
       log.info("Starting...");
-      val runnable = readRunnable();
-      val beat = new FlowExecutorHeartbeat(reporter) {
+      Runnable runnable = readRunnable();
+      FlowExecutorHeartbeat beat = new FlowExecutorHeartbeat(reporter) {
 
         @Override
         protected void progress() {
@@ -208,9 +207,9 @@ public class FlowExecutor implements Executor {
 
     private Runnable readRunnable() throws IOException, ClassNotFoundException {
       val executorState = readExecutorState();
-      System.out.println("Executor state:" + executorState);
       val runnable =
           (Runnable) deserializeBase64(executorState, jobConf, Class.forName(jobConf.get("org.icgc.dcc.class.name")));
+
       return runnable;
     }
 

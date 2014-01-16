@@ -42,11 +42,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class DefaultPlanner implements Planner {
 
-  @NonNull
   private final Set<RestrictionType> restrictionTypes;
+  
+  @Inject
+  public DefaultPlanner(@NonNull Set<RestrictionType> restrictionTypes) {
+    this.restrictionTypes = restrictionTypes;
+  }
+
 
   @Override
   public Plan plan(@NonNull String projectKey, @NonNull PlatformStrategy strategy, @NonNull Dictionary dictionary) {
