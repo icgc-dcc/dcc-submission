@@ -93,6 +93,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
     release.addSubmission(submission);
     fs.createNewProjectDirectoryStructure(release.getName(), project.getKey());
 
+    // TODO: Check for existing files and add to dataState?
+
     addSubmission(release.getName(), submission);
   }
 

@@ -219,11 +219,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       val newSubmission =
           new Submission(submission.getProjectKey(), submission.getProjectName(), nextRelease.getName());
       if (submission.getState() == SubmissionState.SIGNED_OFF) {
+        // Reset
+        val nextDataState = Lists.<DataTypeState> newArrayList();
+        for (val dataTypeState : submission.getDataState()) {
+          nextDataState.add(new DataTypeState(dataTypeState.getDataType(), SubmissionState.NOT_VALIDATED));
+        }
+
         newSubmission.setState(SubmissionState.NOT_VALIDATED);
+        newSubmission.setDataState(nextDataState);
       } else {
+        // Migrate
         newSubmission.setState(submission.getState());
         newSubmission.setReport(submission.getReport());
+        newSubmission.setDataState(submission.getDataState());
       }
+
       nextRelease.addSubmission(newSubmission);
     }
 
