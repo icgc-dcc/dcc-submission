@@ -58,11 +58,13 @@ public class KVValidatorRunner implements Runnable, Serializable {
   private final String reportPath;
 
   @Override
+  @SneakyThrows
   public void run() {
     try {
       validate();
     } catch (Throwable t) {
       log.error("Error performing key validation:", t);
+      throw t;
     }
   }
 
