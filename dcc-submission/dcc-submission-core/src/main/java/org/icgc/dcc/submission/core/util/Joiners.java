@@ -26,4 +26,5 @@ import com.google.common.base.Joiner;
  */
 public class Joiners {
   public static final Joiner PATH_JOINER = on('/');
+  public static final Joiner NEWLINE_JOINER = on('\n');
 }

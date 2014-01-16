@@ -66,7 +66,6 @@ public class FlowExecutor implements Executor {
   @SneakyThrows
   public void execute(Runnable runnable) {
     val flow = createFlow(runnable);
-
     flow.complete();
   }
 

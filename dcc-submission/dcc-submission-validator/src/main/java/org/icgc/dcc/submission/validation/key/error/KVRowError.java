@@ -40,7 +40,7 @@ public class KVRowError {
   public void describe(
       KVReport report, String dataFileName, long lineNumber, List<String> fieldNames, Object[] params,
       KVFileDescription kvFileDescription) {
-    log.debug(
+    log.error(
         "'{}' error: '{}'",
         new Object[] { type, new Object[] { lineNumber, fieldNames, params, keyValues.getValues(), kvFileDescription } });
     report.report(
