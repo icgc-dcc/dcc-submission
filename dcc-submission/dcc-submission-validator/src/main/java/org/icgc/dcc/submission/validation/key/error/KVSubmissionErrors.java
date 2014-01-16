@@ -88,6 +88,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.val;
@@ -253,15 +254,17 @@ public class KVSubmissionErrors {
   /**
    * TODO: PLK: we actually only need the KVFileDescription here, not the whole {@link KVSubmissionDataDigest}.
    */
-  public boolean describe(KVReport report, Map<KVFileType, KVFileDescription> fileDescriptions) {
+  public boolean describe(KVReport report, Map<KVFileType, List<KVFileDescription>> fileTypeToFileDescriptions) {
     boolean status = true;
     for (val entry : errors.entrySet()) {
       val fileType = entry.getKey();
       val fileErrors = entry.getValue();
 
-      boolean fileStatus = fileErrors.describe(report, fileDescriptions.get(fileType));
-      status &= fileStatus;
-      log.info("{}: {}", fileType, fileStatus);
+      for (KVFileDescription fileDescription : fileTypeToFileDescriptions.get(fileType)) {
+        boolean fileStatus = fileErrors.describe(report, fileDescription);
+        status &= fileStatus;
+        log.info("{}: {}", fileType, fileStatus);
+      }
     }
     return status;
   }

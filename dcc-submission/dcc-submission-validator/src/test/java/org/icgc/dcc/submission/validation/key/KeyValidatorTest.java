@@ -58,8 +58,8 @@ import com.google.common.collect.ImmutableMap;
 @RunWith(MockitoJUnitRunner.class)
 public class KeyValidatorTest {
 
-  private static final String RELEASE_NAME = "Release1";
-  private static final String PROJECT_NAME = "project1";
+  private static final String RELEASE_NAME = "myrelease";
+  private static final String PROJECT_NAME = "myproject";
 
   /**
    * Scratch space.

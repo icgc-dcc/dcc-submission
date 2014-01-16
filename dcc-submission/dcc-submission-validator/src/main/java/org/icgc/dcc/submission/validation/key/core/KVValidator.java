@@ -19,10 +19,7 @@ package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableMap.copyOf;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.collect.Maps.transformValues;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getFileDescription;
@@ -33,6 +30,7 @@ import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.ENCOUNTER
 import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.NO_REFERENCED_TYPE;
 import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.REFERENCED_PK_NOT_APPLICABLE;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.NonNull;
@@ -48,7 +46,6 @@ import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
 @Slf4j
@@ -68,9 +65,8 @@ public class KVValidator {
   @NonNull
   private final SurjectivityValidator surjectivityValidator;
 
-  private final Map<KVFileType, KVFileDataDigest> data = newLinkedHashMap(); // TODO: still needed?
-
-  // TODO: create new file type abstraction to hold those
+  // TODO: combine the two maps
+  private final Map<KVFileType, List<KVFileDescription>> fileTypeToFileDescriptions = newHashMap();
   private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap();
 
   private final KVSubmissionErrors errors = new KVSubmissionErrors();
@@ -103,29 +99,19 @@ public class KVValidator {
       }
     }
 
-    log.info("{}", repeat("=", 75));
-    for (val fileType : data.keySet()) {
-      log.debug("{}: {}", fileType, data.get(fileType));
-      log.debug("{}", repeat("-", 75));
+    log.info("{}", banner("="));
+    for (val fileType : fileTypeToPrimaryKeys.keySet()) {
+      log.debug("{}: {}", fileType, fileTypeToFileDescriptions.get(fileType));
+      log.debug("{}", banner("-"));
       log.debug("{}: {}", fileType, fileTypeToPrimaryKeys.get(fileType));
     }
-    log.debug("{}", repeat("=", 75));
+    log.debug("{}", banner("="));
 
     // Surjection validation (can only be done at the very end)
     // validateComplexSurjection(); // TODO: to be re-enabled later
 
     // Report
-    boolean valid = errors.describe(
-        kvReport,
-        copyOf(transformValues(
-            data,
-            new Function<KVFileDataDigest, KVFileDescription>() {
-
-              @Override
-              public KVFileDescription apply(KVFileDataDigest datum) {
-                return datum.getKvFileDescription();
-              }
-            })));
+    boolean valid = errors.describe(kvReport, fileTypeToFileDescriptions);
     log.info("{}", valid);
     log.info("done.");
   }
@@ -152,30 +138,30 @@ public class KVValidator {
         of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
         REFERENCED_PK_NOT_APPLICABLE;
 
-    log.info("{}", repeat("=", 75));
-    log.info("Processing file type: '{}' ('{}'); Referencing '{}'", fileType, optionalReferencedType);
+    log.info("{}", banner("="));
+    log.info("Processing file type: '{}'; Referencing '{}'", fileType, optionalReferencedType);
 
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
     checkState(dataFilePaths.isPresent(),
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
-      log.info("{}", repeat("-", 75));
-      log.info("Processing file: '{}' ('{}'); Referencing '{}'",
-          new Object[] { dataFilePath, fileType, optionalReferencedType });
-      data.put( // TODO: map still needed?
-          fileType,
+      val fileDescription = getFileDescription(fileType, dataFilePath);
 
-          // TODO: subclass for referencing/non-referencing?
-          new KVFileDataDigest(getFileDescription(fileType, dataFilePath))
+      log.info("{}", banner("-"));
+      log.info("Processing file: '{}' ('{}'); Referencing '{}': '{}'",
+          new Object[] { dataFilePath, fileType, optionalReferencedType, fileDescription });
 
-              // Process file
-              .processFile(
-                  kvFileParser,
-                  errors.getFileErrors(fileType),
-                  primaryKeys,
-                  optionalReferencedPrimaryKeys,
-                  optionalEncounteredForeignKeys
-              ));
+      // TODO: subclass for referencing/non-referencing?
+      new KVFileDataDigest(fileDescription)
+
+          // Process file
+          .processFile(
+              kvFileParser,
+              errors.getFileErrors(fileType),
+              primaryKeys,
+              optionalReferencedPrimaryKeys,
+              optionalEncounteredForeignKeys
+          );
     }
 
     postProcessing(fileType, optionalReferencedType, optionalEncounteredForeignKeys);
@@ -192,7 +178,7 @@ public class KVValidator {
       Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys) {
 
     if (fileType.hasOutgoingSimpleSurjectiveRelation()) {
-      log.info("Post-processing: simply surjectivity check");
+      log.info("Post-processing: simple surjectivity check");
 
       checkState(optionalReferencedType.isPresent());
       val referencedType = optionalReferencedType.get();
@@ -216,11 +202,15 @@ public class KVValidator {
 
   @SuppressWarnings("unused")
   private void validateComplexSurjection() {
-    log.info("{}", repeat("=", 75));
+    log.info("{}", banner("="));
     log.info("Validating complex surjection");
     surjectivityValidator.validateComplexSurjection(
         fileTypeToPrimaryKeys.get(SAMPLE),
         errors.getFileErrors(SAMPLE));
-    log.info("{}", repeat("=", 75));
+    log.info("{}", banner("="));
+  }
+
+  private String banner(String symbol) {
+    return repeat(symbol, 75);
   }
 }

@@ -127,7 +127,7 @@ public final class KVFileDataDigest {
   }
 
   @SneakyThrows
-  public KVFileDataDigest processFile(
+  public void processFile(
       KVFileParser kvFileParser,
       final KVFileErrors fileErrors, // To collect all but surjection errors
       final KVPrimaryKeys primaryKeys,
@@ -152,8 +152,6 @@ public final class KVFileDataDigest {
       }
 
     });
-
-    return this;
   }
 
   /**
