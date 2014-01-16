@@ -42,10 +42,13 @@ import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
 
+//Unique and relation checks have been moved to the KV
+@Ignore
 public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest {
 
   /**
