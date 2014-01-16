@@ -15,53 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.util;
+package org.icgc.dcc.submission.core.util;
 
 import static com.google.common.io.Resources.getResource;
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
 import java.net.URL;
 
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
+/**
+ * TODO
+ */
+public class DccResources {
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-
-@NoArgsConstructor(access = PRIVATE)
-public class Dictionaries {
-
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final ObjectReader FILE_SCHEMA_READER = MAPPER.reader(FileSchema.class);
-  private static final ObjectReader DICTIONARY_SCHEMA_READER = MAPPER.reader(Dictionary.class);
-  private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
-
-  @SneakyThrows
-  public static FileSchema readFileSchema(SubmissionFileType fileType) {
-    val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
-
-    return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDccResourcesDictionary() {
-    return readDictionary(getDccResource("Dictionary.json"));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDictionary(String dictionaryResourcePath) {
-    return readDictionary(getResource(dictionaryResourcePath));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDictionary(URL dictionaryURL) {
-    return DICTIONARY_SCHEMA_READER.readValue(dictionaryURL);
+  public static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
   }
 }

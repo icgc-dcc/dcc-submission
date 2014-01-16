@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static org.icgc.dcc.submission.validation.key.KVTestUtils.TEST_DIR;
+import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -35,17 +38,9 @@ import org.junit.rules.TemporaryFolder;
 public class KeyValidatorIntegrationTest {
 
   /**
-   * Test file system.
-   */
-  static final File TEST_DIR = new File("src/test/resources/fixtures/validation/key/fs");
-  static final File EXISTING_RELEASE_DIR = new File(TEST_DIR, "existing");
-  static final File INCREMENTAL_RELEASE_DIR = new File(TEST_DIR, "incremental");
-
-  /**
    * Test data.
    */
-  static final String EXISTING_RELEASE_NAME = "release1";
-  static final String INCREMENTAL_RELEASE_NAME = "release2";
+  static final String RELEASE_NAME = "myrelease";
   static final String PROJECT_KEY = "project1";
 
   /**
@@ -72,8 +67,10 @@ public class KeyValidatorIntegrationTest {
     this.rootDir = new Path(tmp.newFolder().getAbsolutePath());
     log.info("Test root dir: '{}'", rootDir);
 
-    copyDirectory(EXISTING_RELEASE_DIR, new Path(new Path(rootDir, EXISTING_RELEASE_NAME), PROJECT_KEY));
-    copyDirectory(INCREMENTAL_RELEASE_DIR, new Path(new Path(rootDir, INCREMENTAL_RELEASE_NAME), PROJECT_KEY));
+    copyDirectory(
+        fileSystem,
+        new File(TEST_DIR),
+        new Path(new Path(rootDir, RELEASE_NAME), PROJECT_KEY));
   }
 
   @Test
@@ -83,23 +80,13 @@ public class KeyValidatorIntegrationTest {
     validator.validate(context);
   }
 
-  private void copyDirectory(File sourceDir, Path targetDir) throws IOException {
-    for (val file : sourceDir.listFiles()) {
-      val source = new Path(file.toURI());
-      val target = new Path(targetDir, file.getName());
-
-      log.info("Copying file: from '{}' to '{}'", source, target);
-      fileSystem.copyFromLocalFile(source, target);
-    }
-  }
-
   private KeyValidationContext createContext() {
     val fsRoot = rootDir.toUri().toString();
     val fsUrl = fileSystem.getUri().toString();
     val jobTracker = "localhost"; // Not used
 
     return new KeyValidationContext(
-        EXISTING_RELEASE_NAME, INCREMENTAL_RELEASE_NAME, PROJECT_KEY,
+        RELEASE_NAME, PROJECT_KEY,
         fsRoot, fsUrl, jobTracker);
   }
 

@@ -202,7 +202,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     // Submit validation asynchronously for execution
     val future = executor.execute(validation);
 
-    // If we made it here then the validation was accepted
+    // If we made it here then the validation was accepted (which is a synchronous check, unlike the actual validation)
     log.info("Accepting next project in queue: '{}'", project);
     acceptValidation(project, release);
     log.info("Accepted: '{}'", project);

@@ -29,6 +29,9 @@ import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getF
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.ENCOUNTERED_FK_NOT_APPLICABLE;
+import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.NO_REFERENCED_TYPE;
+import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.REFERENCED_PK_NOT_APPLICABLE;
 
 import java.util.Map;
 
@@ -55,10 +58,6 @@ public class KVValidator {
    * TODO: temporarily...
    */
   public static final boolean TUPLE_CHECKS_ENABLED = true;
-  private static final Optional<KVPrimaryKeys> REFERENCED_PRIMARY_KEY_NOT_APPLICABLE =
-      Optional.<KVPrimaryKeys> absent();
-  private static final Optional<KVEncounteredForeignKeys> NA =
-      Optional.<KVEncounteredForeignKeys> absent();
 
   @NonNull
   private final KVFileParser kvFileParser;
@@ -142,15 +141,23 @@ public class KVValidator {
     // Encountered foreign keys in the case where we need to check for surjection
     val optionalEncounteredForeignKeys = fileType.hasOutgoingSurjectiveRelation() ?
         of(new KVEncounteredForeignKeys()) :
-        NA;
+        ENCOUNTERED_FK_NOT_APPLICABLE;
 
+    // TODO
     val optionalReferencedType = RELATIONS.containsKey(fileType) ?
-        Optional.of(RELATIONS.get(fileType)) : Optional.<KVFileType> absent();
+        Optional.of(RELATIONS.get(fileType)) : NO_REFERENCED_TYPE;
+
+    // TODO
+    val optionalReferencedPrimaryKeys = optionalReferencedType.isPresent() ?
+        of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
+        REFERENCED_PK_NOT_APPLICABLE;
+
     log.info("{}", repeat("=", 75));
     log.info("Processing file type: '{}' ('{}'); Referencing '{}'", fileType, optionalReferencedType);
 
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
-    checkState(dataFilePaths.isPresent(), "TODO");
+    checkState(dataFilePaths.isPresent(),
+        "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
       log.info("{}", repeat("-", 75));
       log.info("Processing file: '{}' ('{}'); Referencing '{}'",
@@ -166,9 +173,7 @@ public class KVValidator {
                   kvFileParser,
                   errors.getFileErrors(fileType),
                   primaryKeys,
-                  optionalReferencedType.isPresent() ?
-                      of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
-                      REFERENCED_PRIMARY_KEY_NOT_APPLICABLE,
+                  optionalReferencedPrimaryKeys,
                   optionalEncounteredForeignKeys
               ));
     }
@@ -179,7 +184,7 @@ public class KVValidator {
   }
 
   /**
-   * For surjection checks.
+   * For simple surjection checks.
    */
   private void postProcessing(
       KVFileType fileType,

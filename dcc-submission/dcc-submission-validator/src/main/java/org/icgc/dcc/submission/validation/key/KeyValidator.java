@@ -84,12 +84,8 @@ public class KeyValidator implements Validator {
     return new KVValidatorRunner(
         context.getFileSystem().getUri(),
         context.getDictionary(),
-        getReleasePath(context).toUri().toString(),
+        context.getSubmissionDirectory().getSubmissionDirPath(),
         reportPath.toUri().toString());
-  }
-
-  private static Path getReleasePath(ValidationContext context) {
-    return new Path(context.getSubmissionDirectory().getSubmissionDirPath());
   }
 
   private static Path getReportPath(ValidationContext context) {

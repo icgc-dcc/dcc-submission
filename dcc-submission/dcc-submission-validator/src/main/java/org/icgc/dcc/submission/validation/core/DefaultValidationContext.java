@@ -103,13 +103,6 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public SubmissionDirectory getPreviousSubmissionDirectory() {
-    // TODO: Implement
-    throw new UnsupportedOperationException(
-        "There currently is no way to get the previous submission directory. This requires implementation effort.");
-  }
-
-  @Override
   public DccFileSystem getDccFileSystem() {
     return dccFileSystem;
   }

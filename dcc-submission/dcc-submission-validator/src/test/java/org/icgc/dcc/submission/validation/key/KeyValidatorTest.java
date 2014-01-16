@@ -17,10 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static com.google.common.collect.Maps.newLinkedHashMap;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.DONOR_TYPE;
+import static org.icgc.dcc.submission.core.util.Joiners.PATH_JOINER;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.submission.validation.key.KVTestUtils.TEST_DIR;
+import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 
 import lombok.val;
@@ -33,7 +40,6 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -42,13 +48,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import cascading.flow.local.LocalFlowConnector;
 
+import com.google.common.collect.ImmutableMap;
+
 @RunWith(MockitoJUnitRunner.class)
 public class KeyValidatorTest {
 
-  /**
-   * Test data.
-   */
-  protected static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
+  private static final String RELEASE_NAME = "Release1";
+  private static final String PROJECT_NAME = "project1";
 
   /**
    * Scratch space.
@@ -59,19 +65,16 @@ public class KeyValidatorTest {
   /**
    * Class under test.
    */
-  KeyValidator validator;
+  private KeyValidator validator;
 
   @Before
   public void setUp() {
     this.validator = new KeyValidator();
   }
 
-  @Ignore
-  // FIXME: it doens't seem to find files anymore (probably due to a wrong merge)
   @Test
   public void testValidate() throws InterruptedException, IOException {
     val context = mockContext();
-
     validator.validate(context);
   }
 
@@ -80,38 +83,45 @@ public class KeyValidatorTest {
     val fileSystem = FileSystem.getLocal(new Configuration());
 
     // Setup: Establish input for the test
-    val directory = new Path(tmp.newFolder().getAbsolutePath());
+    val rootDir = new Path(tmp.newFolder().getAbsolutePath());
+    copyDirectory(
+        fileSystem,
+        new File(TEST_DIR),
+        new Path(new Path(rootDir, RELEASE_NAME), PROJECT_NAME));
+
     // val path = new Path(directory, testFile.getName());
-    val validationDir = new Path(directory, VALIDATION_DIRNAME).toUri().toString();
+    val validationDir = new Path(rootDir, VALIDATION_DIRNAME).toUri().toString();
 
     // Setup: Mock
     val release = mock(Release.class);
-    when(release.getName()).thenReturn("Release1");
+    when(release.getName()).thenReturn(RELEASE_NAME);
 
-    val previousSubmissionDirectory = mock(SubmissionDirectory.class);
-    when(previousSubmissionDirectory.getValidationDirPath()).thenReturn(validationDir);
-    when(previousSubmissionDirectory.getSubmissionDirPath()).thenReturn(directory.toUri().toString());
+    val dictionary = readDccResourcesDictionary();
+    dictionary
+        .getFileSchema(DONOR_TYPE)
+        .setPattern("^donor\\.[0-9]+\\.txt(?:\\.gz|\\.bz2)?$");
 
     val submissionDirectory = mock(SubmissionDirectory.class);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
-    when(submissionDirectory.getSubmissionDirPath()).thenReturn(directory.toUri().toString());
+    when(submissionDirectory.getSubmissionDirPath()).thenReturn(
+        PATH_JOINER.join(rootDir.toUri().toString(), RELEASE_NAME, PROJECT_NAME));
 
     val platformStrategy = mock(PlatformStrategy.class);
-    when(platformStrategy.getFlowConnector()).thenReturn(new LocalFlowConnector());
+    val flowConnectorProperties = newLinkedHashMap(new ImmutableMap.Builder<Object, Object>()
+        .put("fs.defaultFS", "file:///")
+        .put("mapred.job.tracker", "")
+        .build());
+    val flowConnector = new LocalFlowConnector(flowConnectorProperties);
+    when(platformStrategy.getFlowConnector()).thenReturn(flowConnector);
 
     val context = mock(ValidationContext.class);
     when(context.getFileSystem()).thenReturn(fileSystem);
     when(context.getRelease()).thenReturn(release);
     when(context.getProjectKey()).thenReturn("project1");
-    when(context.getPreviousSubmissionDirectory()).thenReturn(previousSubmissionDirectory);
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(context.getPlatformStrategy()).thenReturn(platformStrategy);
-
-    // Setup: "Submit" file
-    fileSystem.createNewFile(directory);
-    // fileSystem.copyFromLocalFile(testFile, path);
+    when(context.getDictionary()).thenReturn(dictionary);
 
     return context;
   }
-
 }

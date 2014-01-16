@@ -17,9 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static com.google.common.base.Optional.of;
+import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.NO_FILES;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +32,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -40,6 +44,7 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import com.google.common.base.Optional;
 
 @RequiredArgsConstructor
+@Slf4j
 public final class KVFileSystem {
 
   @Getter
@@ -48,19 +53,21 @@ public final class KVFileSystem {
   @NonNull
   private final Dictionary dictionary;
   @NonNull
-  private final Path releaseDir;
+  private final Path submissionDir;
 
   public InputStream open(Path path) throws IOException {
     return fileSystem.open(path);
   }
 
   public Optional<List<Path>> getDataFilePaths(KVFileType fileType) {
-    val basePath = releaseDir;
+    val basePath = submissionDir;
     val fileSchema = getFileSchema(fileType);
     val fileRegex = fileSchema.getPattern();
     val filePattern = compile(fileRegex);
+
+    log.info("Listing '{}' with filter '{}'", basePath, filePattern);
     val filePaths = lsFile(fileSystem, basePath, filePattern);
-    return filePaths.isEmpty() ? Optional.<List<Path>> absent() : Optional.of(filePaths);
+    return filePaths.isEmpty() ? NO_FILES : of(filePaths);
   }
 
   public boolean hasClinicalData() {
@@ -79,7 +86,7 @@ public final class KVFileSystem {
       }
     }
 
-    throw new IllegalArgumentException("No file schema found for file type: " + fileType);
+    throw new IllegalArgumentException(format("No file schema found for file type: '%s'", fileType));
   }
 
 }

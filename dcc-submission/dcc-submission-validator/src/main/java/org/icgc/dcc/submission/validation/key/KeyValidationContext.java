@@ -73,8 +73,6 @@ public class KeyValidationContext implements ValidationContext {
   private static final String DICTIONARY_VERSION = "0.7c";
 
   @NonNull
-  private final String previousReleaseName;
-  @NonNull
   private final String releaseName;
   @NonNull
   private final String projectKey;
@@ -141,11 +139,6 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   public SubmissionDirectory getSubmissionDirectory() {
     return new SubmissionDirectory(getDccFileSystem(), getRelease(), getProjectKey(), getSubmission());
-  }
-
-  @Override
-  public SubmissionDirectory getPreviousSubmissionDirectory() {
-    return new SubmissionDirectory(getDccFileSystem(), getPreviousRelease(), getProjectKey(), getPreviousSubmission());
   }
 
   @Override
@@ -284,15 +277,6 @@ public class KeyValidationContext implements ValidationContext {
     }
 
     throw new IllegalStateException("'ssm_p' file schema missing");
-  }
-
-  private Release getPreviousRelease() {
-    return new Release(previousReleaseName);
-  }
-
-  private Submission getPreviousSubmission() {
-    val projectName = getProjectKey();
-    return new Submission(getProjectKey(), projectName, previousReleaseName);
   }
 
   private Submission getSubmission() {
