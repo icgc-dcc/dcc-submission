@@ -19,8 +19,12 @@ package org.icgc.dcc.submission.validation.key;
 
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.DONOR_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
 import static org.icgc.dcc.submission.core.util.Joiners.PATH_JOINER;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.TEST_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
@@ -35,6 +39,7 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -96,10 +101,7 @@ public class KeyValidatorTest {
     val release = mock(Release.class);
     when(release.getName()).thenReturn(RELEASE_NAME);
 
-    val dictionary = readDccResourcesDictionary();
-    dictionary
-        .getFileSchema(DONOR_TYPE)
-        .setPattern("^donor\\.[0-9]+\\.txt(?:\\.gz|\\.bz2)?$");
+    val dictionary = getDictionary();
 
     val submissionDirectory = mock(SubmissionDirectory.class);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
@@ -123,5 +125,16 @@ public class KeyValidatorTest {
     when(context.getDictionary()).thenReturn(dictionary);
 
     return context;
+  }
+
+  private Dictionary getDictionary() {
+    val dictionary = readDccResourcesDictionary();
+    dictionary
+        .getFileSchema(DONOR_TYPE)
+        .setPattern("^donor\\.[0-9]+\\.txt(?:\\.gz|\\.bz2)?$");
+    dictionary.addFile(readFileSchema(METH_M_TYPE));
+    dictionary.addFile(readFileSchema(METH_P_TYPE));
+    dictionary.addFile(readFileSchema(METH_S_TYPE));
+    return dictionary;
   }
 }
