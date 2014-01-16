@@ -260,10 +260,12 @@ public class KVSubmissionErrors {
       val fileType = entry.getKey();
       val fileErrors = entry.getValue();
 
-      for (KVFileDescription fileDescription : fileTypeToFileDescriptions.get(fileType)) {
-        boolean fileStatus = fileErrors.describe(report, fileDescription);
-        status &= fileStatus;
-        log.info("{}: {}", fileType, fileStatus);
+      if (fileTypeToFileDescriptions.containsKey(fileType)) {
+        for (KVFileDescription fileDescription : fileTypeToFileDescriptions.get(fileType)) {
+          boolean fileStatus = fileErrors.describe(report, fileDescription);
+          status &= fileStatus;
+          log.info("{}: {}", fileType, fileStatus);
+        }
       }
     }
     return status;

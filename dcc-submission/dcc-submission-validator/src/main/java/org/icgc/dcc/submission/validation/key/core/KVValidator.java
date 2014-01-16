@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
@@ -37,6 +38,7 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
@@ -65,10 +67,9 @@ public class KVValidator {
   @NonNull
   private final SurjectivityValidator surjectivityValidator;
 
-  // TODO: combine the two maps
+  // TODO: combine the tree maps (the last is just map wrapper)?
   private final Map<KVFileType, List<KVFileDescription>> fileTypeToFileDescriptions = newHashMap();
   private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap();
-
   private final KVSubmissionErrors errors = new KVSubmissionErrors();
 
   public KVValidator(KVFileParser kvFileParser, KVFileSystem kvFileSystem, KVReport kvReport) {
@@ -138,6 +139,12 @@ public class KVValidator {
         of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
         REFERENCED_PK_NOT_APPLICABLE;
 
+    List<KVFileDescription> fileDescriptions = fileTypeToFileDescriptions.get(fileType);
+    if (fileDescriptions == null) {
+      fileDescriptions = newArrayList();
+      fileTypeToFileDescriptions.put(fileType, fileDescriptions);
+    }
+
     log.info("{}", banner("="));
     log.info("Processing file type: '{}'; Referencing '{}'", fileType, optionalReferencedType);
 
@@ -146,27 +153,41 @@ public class KVValidator {
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
       val fileDescription = getFileDescription(fileType, dataFilePath);
-
-      log.info("{}", banner("-"));
-      log.info("Processing file: '{}' ('{}'); Referencing '{}': '{}'",
-          new Object[] { dataFilePath, fileType, optionalReferencedType, fileDescription });
-
-      // TODO: subclass for referencing/non-referencing?
-      new KVFileDataDigest(fileDescription)
-
-          // Process file
-          .processFile(
-              kvFileParser,
-              errors.getFileErrors(fileType),
-              primaryKeys,
-              optionalReferencedPrimaryKeys,
-              optionalEncounteredForeignKeys
-          );
+      processFile(
+          fileType, dataFilePath, fileDescription,
+          primaryKeys,
+          optionalEncounteredForeignKeys,
+          optionalReferencedType,
+          optionalReferencedPrimaryKeys);
+      fileDescriptions.add(fileDescription);
     }
+    fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
     postProcessing(fileType, optionalReferencedType, optionalEncounteredForeignKeys);
+  }
 
-    fileTypeToPrimaryKeys.put(fileType, primaryKeys);
+  private void processFile(
+      KVFileType fileType, Path filePath, KVFileDescription fileDescription,
+      KVPrimaryKeys primaryKeys,
+      Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys,
+      Optional<KVFileType> optionalReferencedType,
+      Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys) {
+
+    log.info("{}", banner("-"));
+    log.info("Processing file: '{}' ('{}'); Referencing '{}': '{}'",
+        new Object[] { filePath, fileType, optionalReferencedType, fileDescription });
+
+    // TODO: subclass for referencing/non-referencing?
+    new KVFileDataDigest(fileDescription)
+
+        // Process file
+        .processFile(
+            kvFileParser,
+            errors.getFileErrors(fileType), // TODO: return the errors rather than updating them?
+            primaryKeys, // TODO: likewise?
+            optionalReferencedPrimaryKeys,
+            optionalEncounteredForeignKeys
+        );
   }
 
   /**
