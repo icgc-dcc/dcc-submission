@@ -108,8 +108,7 @@ public class ReleaseFileSystem {
     }
   }
 
-  public void resetValidationFolder(
-      @NonNull String projectKey) {
+  public void resetValidationFolder(@NonNull String projectKey) {
     val validationStringPath = dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);

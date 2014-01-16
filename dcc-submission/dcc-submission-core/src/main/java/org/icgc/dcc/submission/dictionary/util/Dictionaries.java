@@ -90,10 +90,4 @@ public class Dictionaries {
     return Optional.absent();
   }
 
-  public static SubmissionDataType getDataType(FileSchema fileSchema) {
-    val dataType = SubmissionFileType.from(fileSchema.getName()).getDataType();
-
-    return dataType;
-  }
-
 }

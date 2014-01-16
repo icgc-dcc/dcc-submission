@@ -20,6 +20,9 @@ package org.icgc.dcc.submission.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
@@ -37,13 +40,12 @@ import org.icgc.dcc.submission.web.InvalidNameException;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.Query;
-import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.Predicate;
 
+@Slf4j
 public class ProjectService extends BaseMorphiaService<Project> {
 
   private final DccFileSystem fs;
@@ -80,19 +82,27 @@ public class ProjectService extends BaseMorphiaService<Project> {
       throw new DuplicateNameException(project.getKey());
     }
 
-    this.saveProject(project);
+    saveProject(project);
 
-    Release release = getOpenedRelease(QRelease.release.state.eq(ReleaseState.OPENED));
-    Submission submission = new Submission();
+    log.info("Creating submission for project '{}'...", project);
+    val submission = new Submission();
     submission.setProjectKey(project.getKey());
     submission.setState(SubmissionState.NOT_VALIDATED);
+
+    val release = getOpenedRelease(QRelease.release.state.eq(ReleaseState.OPENED));
     release.addSubmission(submission);
     fs.createNewProjectDirectoryStructure(release.getName(), project.getKey());
 
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", release.getName());
-    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).add("submissions", submission);
-    datastore().update(updateQuery, ops);
+    addSubmission(release.getName(), submission);
+  }
+
+  private void addSubmission(String releaseName, Submission submission) {
+    val updateQuery = datastore().createQuery(Release.class)
+        .filter("name = ", releaseName);
+    val operations = datastore().createUpdateOperations(Release.class)
+        .add("submissions", submission);
+
+    datastore().update(updateQuery, operations);
   }
 
   public List<Project> getProjects() {

@@ -30,9 +30,11 @@ import javax.validation.Valid;
 
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.val;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
@@ -210,6 +212,13 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   @JsonIgnore
+  public SubmissionDataType getDataType() {
+    val dataType = SubmissionFileType.from(name).getDataType();
+
+    return dataType;
+  }
+
+  @JsonIgnore
   private Iterable<String> getFieldNames(Iterable<Field> fields) {
     return Iterables.transform(fields, new Function<Field, String>() {
 
@@ -217,6 +226,7 @@ public class FileSchema implements DictionaryElement, Serializable {
       public String apply(Field field) {
         return field.getName();
       }
+
     });
   }
 
@@ -224,8 +234,7 @@ public class FileSchema implements DictionaryElement, Serializable {
    * Returns whether or not the provided file name matches the pattern for the current {@link FileSchema}.
    */
   public boolean matches(
-      @NonNull
-      String fileName) {
+      @NonNull String fileName) {
     return compile(pattern) // TODO: lazy-load
         .matcher(fileName)
         .matches();
@@ -248,4 +257,5 @@ public class FileSchema implements DictionaryElement, Serializable {
     }
     return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
   }
+
 }

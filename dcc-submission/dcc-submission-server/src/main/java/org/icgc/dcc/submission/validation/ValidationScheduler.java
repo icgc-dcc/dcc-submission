@@ -31,6 +31,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -40,14 +41,18 @@ import lombok.Synchronized;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
+import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
+import org.icgc.dcc.submission.validation.core.SchemaReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReportContext;
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -57,6 +62,9 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
@@ -257,13 +265,15 @@ public class ValidationScheduler extends AbstractScheduledService {
    * Internal {@code ValidationContext} factory method.
    * 
    * @param release the current release
-   * @param project the project to create a validation for
+   * @param project the project to create the validation context for
    * @return
    */
   private ValidationContext createValidationContext(Release release, QueuedProject project) {
-    val dictionary = releaseService.getNextDictionary();
+    val reportContext = createReportContext(release, project);
+    val dictionary = getDictionary();
+
     val context = new DefaultValidationContext(
-        new SubmissionReportContext(),
+        reportContext,
         project.getKey(),
         project.getEmails(),
         project.getDataTypes(),
@@ -272,6 +282,40 @@ public class ValidationScheduler extends AbstractScheduledService {
         platformStrategyFactory);
 
     return context;
+  }
+
+  /**
+   * Internal {@code ReportContext} factory method.
+   * 
+   * @param release the current release
+   * @param project the project to create the report context for
+   * @return
+   */
+  private SubmissionReportContext createReportContext(Release release, QueuedProject project) {
+    // Shorthands
+    val dictionary = getDictionary();
+    val submission = releaseService.getSubmission(release.getName(), project.getKey());
+    val dataTypes = project.getDataTypes();
+
+    // Remove any previously saved reports related to the requested data types
+    val report = submission.getReport() == null ? new SubmissionReport() : (SubmissionReport) submission.getReport();
+    val newReport = new SubmissionReport();
+
+    for (val schemaReport : report.getSchemaReports()) {
+      val fileName = schemaReport.getName();
+      val schema = dictionary.getFileSchemaByFileName(fileName).get();
+      val dataType = schema.getDataType();
+
+      // Maintain any reports not requested
+      val maintain = !dataTypes.contains(dataType);
+      if (maintain) {
+        newReport.addSchemaReport(schemaReport);
+      }
+    }
+
+    val reportContext = new SubmissionReportContext(report);
+
+    return reportContext;
   }
 
   /**
@@ -295,14 +339,65 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param submissionReport the report produced through the validation process
    */
   @Synchronized
-  private void completeValidation(QueuedProject project, SubmissionState state,
-      SubmissionReport submissionReport) {
+  private void completeValidation(QueuedProject project, SubmissionState state, SubmissionReport submissionReport) {
     log.info("Validation for '{}' completed with state '{}'", project, state);
+
     try {
       storeSubmissionReport(project.getKey(), submissionReport);
     } finally {
-      resolveSubmission(project, state);
+      val dictionary = getDictionary();
+      val submission = releaseService.getSubmission(project.getKey());
+      val previousDataState = submission.getDataState();
+      val validatedDataTypes = project.getDataTypes();
+
+      // Pass through data types that were not validated
+      val nextDataState = Lists.<DataTypeState> newArrayList();
+      for (val previousDataTypeState : previousDataState) {
+        val unchanged = !validatedDataTypes.contains(previousDataTypeState.getDataType());
+        if (unchanged) {
+          nextDataState.add(previousDataTypeState);
+        }
+      }
+
+      // Update data types that were validated
+      val map = getSchemaReportsByDataType(submissionReport, dictionary);
+      for (val dataType : map.keySet()) {
+        val unchanged = !validatedDataTypes.contains(dataType);
+        if (unchanged) {
+          continue;
+        }
+
+        // Inherit global error / cancellation
+        val inherit = state == ERROR || state == NOT_VALIDATED;
+        SubmissionState dataTypeState = inherit ? state : null;
+        for (val schemaReport : map.get(dataType)) {
+          val terminal = dataTypeState == ERROR || dataTypeState == INVALID || dataTypeState == NOT_VALIDATED;
+          if (terminal) {
+            continue;
+          }
+
+          dataTypeState = schemaReport.hasErrors() ? INVALID : VALID;
+        }
+
+        nextDataState.add(new DataTypeState(dataType, dataTypeState));
+      }
+
+      resolveSubmission(project, state, nextDataState);
     }
+  }
+
+  private Multimap<SubmissionDataType, SchemaReport> getSchemaReportsByDataType(SubmissionReport submissionReport,
+      Dictionary dictionary) {
+    val builder = ImmutableMultimap.<SubmissionDataType, SchemaReport> builder();
+    for (val schemaReport : submissionReport.getSchemaReports()) {
+      val fileName = schemaReport.getName();
+      val schema = dictionary.getFileSchemaByFileName(fileName).get();
+      val dataType = schema.getDataType();
+
+      builder.put(dataType, schemaReport);
+    }
+
+    return builder.build();
   }
 
   /**
@@ -327,11 +422,12 @@ public class ValidationScheduler extends AbstractScheduledService {
    * 
    * @param queuedProject the project to resolve
    * @param state the destination state of the resolution
+   * @param dataState the destination state of each data type
    */
-  private void resolveSubmission(QueuedProject queuedProject, SubmissionState state) {
+  private void resolveSubmission(QueuedProject queuedProject, SubmissionState state, List<DataTypeState> dataState) {
     val projectKey = queuedProject.getKey();
     log.info("Resolving project '{}' to submission state '{}'", projectKey, state);
-    releaseService.resolve(projectKey, state);
+    releaseService.resolve(projectKey, state, dataState);
 
     if (!queuedProject.getEmails().isEmpty()) {
       log.info("Sending notification email for project '{}'...", queuedProject);
@@ -351,6 +447,10 @@ public class ValidationScheduler extends AbstractScheduledService {
     val release = resolveOpenRelease();
 
     mailService.sendValidationResult(release.getName(), queuedProject.getKey(), queuedProject.getEmails(), state);
+  }
+
+  private Dictionary getDictionary() {
+    return releaseService.getNextDictionary();
   }
 
 }

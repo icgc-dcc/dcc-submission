@@ -104,7 +104,7 @@ public class KVValidator {
     log.debug("{}", repeat("=", 75));
 
     // Surjection validation (can only be done at the very end)
-    validateComplexSurjection();
+    // validateComplexSurjection();
 
     // Report
     boolean valid = errors.describe(kvReport, incrementalData.getFileDescriptions()); // TODO: prettify

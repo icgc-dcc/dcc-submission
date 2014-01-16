@@ -287,7 +287,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       adminCreatesRelease();
       userSubmitsFiles();
       userValidates();
-      adminTriesToValidate();
       adminTweaksCodeListAndTerms();
       adminRevalidates();
       adminPerformsRelease();
@@ -360,11 +359,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     // cancelValidation(PROJECT2_KEY,OK);
 
     checkValidations();
-  }
-
-  private void adminTriesToValidate() throws Exception {
-    // Test that only NOT_VALIDATED projects can be enqueued
-    enqueueProjects(PROJECTS_TO_ENQUEUE, BAD_REQUEST);
   }
 
   private void adminTweaksCodeListAndTerms() throws IOException, Exception {

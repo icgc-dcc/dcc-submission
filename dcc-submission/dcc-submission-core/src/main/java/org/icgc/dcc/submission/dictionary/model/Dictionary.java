@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.dictionary.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
@@ -147,12 +148,13 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public Optional<FileSchema> getFileSchemaByName(@NonNull final String fileSchemaName) {
-    return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
+    return tryFind(this.files, new Predicate<FileSchema>() {
 
       @Override
       public boolean apply(FileSchema input) {
         return input.getName().equals(fileSchemaName);
       }
+
     });
   }
 
@@ -162,11 +164,12 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public Optional<FileSchema> getFileSchemaByFileName(String fileName) {
     val optional = Optional.<FileSchema> absent();
-    for (FileSchema fileSchema : files) {
+    for (val fileSchema : files) {
       if (fileSchema.matches(fileName)) {
         return Optional.of(fileSchema);
       }
     }
+
     return optional;
   }
 
@@ -183,6 +186,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       public String apply(FileSchema input) {
         return input.getName();
       }
+
     }));
   }
 
@@ -199,6 +203,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       public String apply(FileSchema input) {
         return input.getPattern();
       }
+
     }));
   }
 

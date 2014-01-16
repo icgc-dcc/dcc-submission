@@ -17,8 +17,11 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.Valid;
 
@@ -48,13 +51,15 @@ public class Submission implements Serializable {
 
   protected SubmissionState state;
 
+  protected List<DataTypeState> dataState;
+
   // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
   // dcc-submission-server and dcc-submission-core.
   @Valid
   protected Object report;
 
   public Submission() {
-    super();
+    this.dataState = newArrayList();
   }
 
   public Submission(String projectKey, String projectName, String releaseName) {
@@ -79,6 +84,7 @@ public class Submission implements Serializable {
   public void setReport(Object report) {
     // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
     // dcc-submission-server and dcc-submission-core.
+    this.lastUpdated = new Date();
     this.report = report;
   }
 
@@ -95,11 +101,25 @@ public class Submission implements Serializable {
     this.state = state;
   }
 
+  public List<DataTypeState> getDataState() {
+    return dataState;
+  }
+
+  public void setDataState(List<DataTypeState> dataState) {
+    this.lastUpdated = new Date();
+    this.dataState = dataState;
+  }
+
+  public String getProjectName() {
+    return this.projectName;
+  }
+
   public String getProjectKey() {
     return projectKey;
   }
 
   public void setProjectKey(String projectKey) {
+    this.lastUpdated = new Date();
     this.projectKey = projectKey;
   }
 
@@ -135,14 +155,6 @@ public class Submission implements Serializable {
         .add("state", this.state) //
         .add("report", this.report) // TODO: toString for SubmissionReport
         .toString();
-  }
-
-  /**
-   * @return
-   */
-  public String getProjectName() {
-    // TODO Auto-generated method stub
-    return this.projectName;
   }
 
 }

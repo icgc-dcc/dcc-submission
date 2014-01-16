@@ -30,6 +30,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -40,6 +41,7 @@ import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
+import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -127,7 +129,7 @@ public class ValidationSchedulerTest {
     scheduler.runOneIteration();
 
     // Verify: Ensure "valid"
-    verify(releaseService).resolve(queuedProject.getKey(), VALID);
+    verify(releaseService).resolve(queuedProject.getKey(), VALID, Collections.<DataTypeState> emptyList());
   }
 
   @Test
@@ -147,7 +149,7 @@ public class ValidationSchedulerTest {
     scheduler.runOneIteration();
 
     // Verify: Ensure "invalid"
-    verify(releaseService).resolve(queuedProject.getKey(), INVALID);
+    verify(releaseService).resolve(queuedProject.getKey(), INVALID, Collections.<DataTypeState> emptyList());
   }
 
   @Test
@@ -166,7 +168,7 @@ public class ValidationSchedulerTest {
     scheduler.runOneIteration();
 
     // Verify: Ensure reset
-    verify(releaseService).resolve(queuedProject.getKey(), NOT_VALIDATED);
+    verify(releaseService).resolve(queuedProject.getKey(), NOT_VALIDATED, Collections.<DataTypeState> emptyList());
   }
 
   @Test
@@ -185,7 +187,7 @@ public class ValidationSchedulerTest {
     scheduler.runOneIteration();
 
     // Verify: Ensure "error"
-    verify(releaseService).resolve(queuedProject.getKey(), ERROR);
+    verify(releaseService).resolve(queuedProject.getKey(), ERROR, Collections.<DataTypeState> emptyList());
   }
 
   private static ListenableFuture<Validation> createSuccessfulFuture(ValidationContext context, Validator validator) {

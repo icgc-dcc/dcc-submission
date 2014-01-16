@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableList;
 public class SchemaReport implements Serializable {
 
   @Getter
-  protected String name;
+  protected String name; // File name, not file schema name
   protected List<SummaryReport> summaryReports = newArrayList();
   protected List<FieldReport> fieldReports = newArrayList();
   protected List<ErrorReport> errors = newArrayList();
@@ -48,6 +48,10 @@ public class SchemaReport implements Serializable {
 
   public List<FieldReport> getFieldReports() {
     return ImmutableList.copyOf(fieldReports);
+  }
+
+  public boolean hasErrors() {
+    return !errors.isEmpty();
   }
 
   public List<ErrorReport> getErrors() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,60 +17,37 @@
  */
 package org.icgc.dcc.submission.release.model;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
+import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.NONE;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 
-import javax.validation.Valid;
+import com.google.code.morphia.annotations.Embedded;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
+@Embedded
+@Data
+@NoArgsConstructor
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
+public class DataTypeState {
 
-// TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
-public class DetailedSubmission extends Submission {
+  private String dataType;
+  private SubmissionState state;
 
-  @NotBlank
-  private String projectName;
-
-  private String projectAlias;
-
-  @Valid
-  private List<SubmissionFile> submissionFiles;
-
-  public DetailedSubmission() {
-    super();
+  public DataTypeState(SubmissionDataType dataType, SubmissionState state) {
+    this.dataType = dataType.name();
+    this.state = state;
   }
 
-  public DetailedSubmission(Submission submission, LiteProject liteProject) {
-    super();
-    checkArgument(submission.projectKey != null && //
-        submission.projectKey.equals(liteProject.getKey())); // By design
-    this.projectKey = liteProject.getKey();
-    this.projectName = liteProject.getName();
-    this.projectAlias = liteProject.getAlias();
-
-    this.state = submission.state;
-    this.dataState = submission.dataState;
-    this.report = submission.report;
-    this.lastUpdated = submission.lastUpdated;
-    this.submissionFiles = new ArrayList<SubmissionFile>();
+  public SubmissionDataType getDataType() {
+    return SubmissionDataTypes.valueOf(dataType);
   }
 
-  @Override
-  public String getProjectName() {
-    return projectName;
+  public void setDataType(SubmissionDataType dataType) {
+    this.dataType = dataType.name();
   }
 
-  public String getProjectAlias() {
-    return projectAlias;
-  }
-
-  public List<SubmissionFile> getSubmissionFiles() {
-    return submissionFiles;
-  }
-
-  public void setSubmissionFiles(List<SubmissionFile> submissionFiles) {
-    this.submissionFiles = submissionFiles;
-  }
 }

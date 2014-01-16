@@ -139,6 +139,6 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
     }
   }
 
-  protected abstract void notifyModified();
+  protected abstract void notifyModified(Path path);
 
 }
