@@ -783,7 +783,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       // Reset all data types
       submission.setState(NOT_VALIDATED);
       submission.setDataState(nextDataState);
-      submission.setReport(null);
+      submission.setReport(new SubmissionReport());
     } else {
       val fileSchema = dictionary.getFileSchemaByFileName(path.getName()).get();
       val fileDataType = fileSchema.getDataType();
@@ -796,12 +796,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         return;
       }
 
-      // Reset file data type only
-      SubmissionReport nextReport = null;
+      // SubmissionReport: Reset file data type only
+      SubmissionReport nextReport = new SubmissionReport();
       val previousReport = (SubmissionReport) submission.getReport();
       if (previousReport != null) {
-        nextReport = new SubmissionReport();
-
         for (val schemaReport : previousReport.getSchemaReports()) {
           val schema = dictionary.getFileSchemaByFileName(schemaReport.getName()).get();
           val schemaDataType = schema.getDataType();
@@ -813,6 +811,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         }
       }
 
+      // Data state: Reset file data type only
       val previousDataState = submission.getDataState();
       for (val previousDataTypeState : previousDataState) {
         val previousDataType = previousDataTypeState.getDataType();
