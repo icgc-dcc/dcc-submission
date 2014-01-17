@@ -186,4 +186,34 @@ found on host #{host}"
     else
       Chaplin.mediator.publish '!startupController', 'session', 'login'
 
+  translateDataType: (dataType) ->
+    switch dataType
+      when "CLINICAL_CORE_TYPE"
+        "Clinical"
+      when "CLINICAL_OPTIONAL_TYPE"
+        "Clinical - optional"
+      when "SSM_TYPE"
+        "SSM"
+      when "SGV_TYPE"
+        "SGV"
+      when "CNSM_TYPE"
+        "CNSM"
+      when "STSM_TYPE"
+        "StSM"
+      when "STGV_TYPE"
+        "StGV"
+      when "METH_TYPE"
+        "METH"
+      when "MIRNA_TYPE"
+        "miRNA"
+      when "EXP_TYPE"
+        "EXP"
+      when "PEXP_TYPE"
+        "PEXP"
+      when "JCN_TYPE"
+        "JCN"
+      else
+        "Others"
+
+
 module.exports = utils

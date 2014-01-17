@@ -40,12 +40,6 @@ module.exports = class ReportDatatypeView extends View
     @files = []
     console.log @files
 
-    """
-    @$el.append("<table></table>")
-    @$el.append("<table></table>")
-    @$el.append("<table></table>")
-    @$el.append("<table></table>")
-    """
     super
 
     @modelBind 'change', @update
@@ -56,22 +50,34 @@ module.exports = class ReportDatatypeView extends View
     @report = @model.get "report"
 
     # Figure out all the table placements
+
+    # Extract unique datatypes for current update
     datatypes = []
     @schemaReports = @report.get "schemaReports"
     @schemaReports.each (report)->
       console.log report
       console.log report.get "dataType"
       datatype = report.get "dataType"
-      if datatypes.indexOf( datatype ) == -1 and datatype != null
+      if datatypes.indexOf( datatype ) == -1
+        if datatype == null
+          datatype = "Others"
         datatypes.push report.get "dataType"
 
     console.log datatypes
 
+    # Create data type tables if they do not exist
+    # TODO: Sort based on data type
+    # TODO: table headers
+    # TODO: section by clinical and experimental
+    # TODO: should clinical always be visible?
     container = @$el
     datatypes.forEach (datatype)=>
       elem = container.find("#"+datatype)
       if elem.length == 0
         container.append("<table id='#{datatype}'></table>")
+        container.append("<br>")
+        container.append("<br>")
+
         elem = container.find("##{datatype}")
         elem.addClass("report table table-striped table-bordered table-hover")
         @createDataTable(datatype)
@@ -86,35 +92,30 @@ module.exports = class ReportDatatypeView extends View
 
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
+    console.log @model.get("dataState")
+    dataState = @model.get("dataState")
+    dataStateMap = {}
+    dataState.forEach (ds)->
+      dataStateMap[ds.dataType] = ds.state
+
     @currentDatatypes.forEach (datatype)=>
       @files = _.filter @report.get("schemaReports").toJSON(), (d)->
         return d.dataType == datatype
       dt = @$el.find("#"+datatype).dataTable()
+
+      state = dataStateMap[datatype]
+      if state and state in ["INVALID", "VALID", "SIGNED_OFF"]
+        dt.fnSetColumnVis( 3, true )
+        dt.fnSetColumnVis( 4, true )
+      else
+        state = ""
+
       dt.fnClearTable()
       dt.fnAddData @files
+
+      title = utils.translateDataType(datatype)
+      $(".#{datatype}_title").html("<strong>#{title} - #{state}</strong>")
  
-    """
-    if @model.get("state") in ["VALID", "INVALID", "SIGNED_OFF"]
-
-      @files = @report.get("schemaReports").toJSON()
-      @files = _.filter @report.get("schemaReports").toJSON(), (d)=>
-        return d.dataType == @datatype
-      dt = @$el.find("#CLINICAL_CORE_TYPE").dataTable()
-      dt.fnSetColumnVis( 3, true )
-      dt.fnSetColumnVis( 4, true )
-      dt.fnClearTable()
-      dt.fnAddData @files
-
-      @files = @report.get("schemaReports").toJSON()
-      @files = _.filter @report.get("schemaReports").toJSON(), (d)=>
-        return d.dataType == "SSM_TYPE"
-      dt = @$el.find("#SSM_TYPE").dataTable()
-      dt.fnSetColumnVis( 3, true )
-      dt.fnSetColumnVis( 4, true )
-      dt.fnClearTable()
-      dt.fnAddData @files
-      """
-
 
   createDataTable: (datatype)->
     #console.debug "ReportTableView#createDataTable", @$el, @model.get "name"
@@ -180,40 +181,23 @@ module.exports = class ReportDatatypeView extends View
 
     @$el.find("##{datatype}").dataTable
       sDom:
-        "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-       oLanguage:
-        "sLengthMenu": "_MENU_ files per page"
-        "sEmptyTable": "You need to upload files for this submission."
-      bPaginate: false
-      aaSorting: [[ 1, "asc" ]]
-      aoColumns: aoColumns
-      sAjaxSource: ""
-      sAjaxDataProp: ""
-      fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        switch aData.schemaName
-          when null
-            $(nRow).css {'color': '#999', 'font-style': 'italic'}
-
-      fnServerData: (sSource, aoData, fnCallback) =>
-        fnCallback @files
-
-    """
-    @$el.find("#SSM_TYPE").dataTable
-      sDom:
-        "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-       oLanguage:
-        "sLengthMenu": "_MENU_ files per page"
-        "sEmptyTable": "You need to upload files for this submission."
-      bPaginate: false
-      aaSorting: [[ 1, "asc" ]]
-      aoColumns: aoColumns
-      sAjaxSource: ""
-      sAjaxDataProp: ""
-      fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        switch aData.schemaName
-          when null
-            $(nRow).css {'color': '#999', 'font-style': 'italic'}
-
-      fnServerData: (sSource, aoData, fnCallback) =>
-        fnCallback @files
         """
+        <'row-fluid'<'span6 #{datatype}_title'l>
+        <'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>
+        >
+        """
+       oLanguage:
+        "sLengthMenu": "_MENU_ files per page"
+        "sEmptyTable": "You need to upload files for this submission."
+      bPaginate: false
+      aaSorting: [[ 1, "asc" ]]
+      aoColumns: aoColumns
+      sAjaxSource: ""
+      sAjaxDataProp: ""
+      fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
+        switch aData.schemaName
+          when null
+            $(nRow).css {'color': '#999', 'font-style': 'italic'}
+      fnServerData: (sSource, aoData, fnCallback) =>
+        fnCallback @files
+
