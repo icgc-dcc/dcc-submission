@@ -382,6 +382,14 @@ public class ValidationScheduler extends AbstractScheduledService {
         nextDataState.add(new DataTypeState(dataType, dataTypeState));
       }
 
+      if (state == VALID) {
+        for (val nextDataTypeState : nextDataState) {
+          if (nextDataTypeState.getState() == NOT_VALIDATED) {
+            state = NOT_VALIDATED;
+          }
+        }
+      }
+
       resolveSubmission(project, state, nextDataState);
     }
   }
