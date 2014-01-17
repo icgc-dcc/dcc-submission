@@ -15,40 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.submission.validation.key.utils;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newTreeSet;
-
-import java.util.Set;
-
-import lombok.RequiredArgsConstructor;
+import static org.icgc.dcc.submission.validation.key.utils.KVConstants.MAPPER;
+import lombok.SneakyThrows;
 
 /**
- * TODO: inclusive delegate possible with lombok?
+ * 
  */
-@RequiredArgsConstructor
-public final class KVEncounteredForeignKeys {
+public class KVUtils {
 
-  private final Set<KVKey> encounteredFks = newTreeSet(); // TODO: change to array (optimization)?
-
-  public void addEncounteredForeignKey(KVKey fk) {
-    encounteredFks.add(checkNotNull(fk));
-  }
-
-  public void addEncounteredForeignKeys(KVEncounteredForeignKeys surjectionEncountered) {
-    encounteredFks.addAll(surjectionEncountered.encounteredFks);
-  }
-
-  public boolean noneEncountered() {
-    return encounteredFks.isEmpty();
-  }
-
-  public boolean encountered(KVKey encounteredKeys) {
-    return encounteredFks.contains(encounteredKeys);
-  }
-
-  public long getSize() {
-    return encounteredFks.size();
+  @SneakyThrows
+  public static String toJsonSummaryString(Object object) {
+    return "\n" + MAPPER
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(object);
   }
 }

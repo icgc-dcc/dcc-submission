@@ -17,15 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.key.surjectivity;
 
-import static org.icgc.dcc.submission.validation.key.data.KVKeyValuesWrapper.sameSize;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
-import org.icgc.dcc.submission.validation.key.data.KVKeys;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
@@ -90,14 +89,18 @@ public class SurjectivityValidator {
       KVSubmissionErrors errors,
       KVFileType offendedFileType) {
     log.info("Collecting '{}' surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
-    for (KVKeys expected : expectedKeys) {
-      if (!encounteredKeys.encountered(expected)) {
-        String offendedFileName = "TODO";
-        if (complex) {
-          errors.addComplexSurjectionError(offendedFileType, offendedFileName, expected);
-        } else {
-          errors.addSimpleSurjectionError(offendedFileType, offendedFileName, expected);
+    for (val fileName : expectedKeys.getFilePaths()) {
+      val expectedIterator = expectedKeys.getPrimaryKeys(fileName);
+      while (expectedIterator.hasNext()) {
+        val expected = expectedIterator.next();
+        if (encounteredKeys.encountered(expected)) {
+          if (complex) {
+            errors.addComplexSurjectionError(offendedFileType, fileName, expected);
+          } else {
+            errors.addSimpleSurjectionError(offendedFileType, fileName, expected);
+          }
         }
+
       }
     }
   }
@@ -105,6 +108,6 @@ public class SurjectivityValidator {
   private boolean hasSurjectionErrors(
       KVPrimaryKeys surjectionExpected,
       KVEncounteredForeignKeys surjectionEncountered) {
-    return !sameSize(surjectionExpected, surjectionEncountered);
+    return surjectionExpected.getSize() != surjectionEncountered.getSize();
   }
 }

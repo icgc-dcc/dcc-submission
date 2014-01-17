@@ -29,6 +29,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIM
 import static org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors.KVReportError.kvReportError;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.COMPLEX_SURJECTION_ERROR_LINE_NUMBER;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SIMPLE_SURJECTION_ERROR_LINE_NUMBER;
+import static org.icgc.dcc.submission.validation.key.utils.KVUtils.toJsonSummaryString;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVDictionary;
-import org.icgc.dcc.submission.validation.key.data.KVKeys;
+import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
@@ -61,7 +62,7 @@ public class KVSubmissionErrors {
   /**
    * TODO: create other wrappers like the surjection one
    */
-  public void addError(KVFileType fileType, String fileName, long lineNumber, KVErrorType errorType, KVKeys keys) {
+  public void addError(KVFileType fileType, String fileName, long lineNumber, KVErrorType errorType, KVKey keys) {
     log.debug("Reporting '{}' error for '{}.{}.{}': '{}'",
         new Object[] { errorType, fileType, fileName, lineNumber, keys });
     // TODO: address inefficiency
@@ -73,11 +74,11 @@ public class KVSubmissionErrors {
         .add(new KVRowError(errorType, keys, lineNumber));
   }
 
-  public void addSimpleSurjectionError(KVFileType fileType, String fileName, KVKeys keys) {
+  public void addSimpleSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
     addError(fileType, fileName, SIMPLE_SURJECTION_ERROR_LINE_NUMBER, SIMPLE_SURJECTION, keys);
   }
 
-  public void addComplexSurjectionError(KVFileType fileType, String fileName, KVKeys keys) {
+  public void addComplexSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
     addError(fileType, fileName, COMPLEX_SURJECTION_ERROR_LINE_NUMBER, COMPLEX_SURJECTION, keys);
   }
 
@@ -87,17 +88,17 @@ public class KVSubmissionErrors {
 
       val fileType = submissionEntry.getKey();
       val fileTypeErrors = submissionEntry.getValue();
-      log.info("Reporting file type errors for '{}' ('{}' errors)", fileType, fileTypeErrors.size());
+      log.info("Reporting file type errors for file type '{}' ('{}' errors)", fileType, fileTypeErrors.size());
 
       for (val fileTypeEntry : fileTypeErrors.entrySet()) {
         val fileName = fileTypeEntry.getKey();
         val fileErrors = fileTypeEntry.getValue();
-        log.info("Reporting file errors for '{}' ('{}' errors)", fileName, fileErrors.size());
+        log.info("Reporting file errors for file '{}' ('{}' errors)", fileName, fileErrors.size());
 
         for (val fileEntry : fileErrors.entrySet()) {
           val lineNumber = fileEntry.getKey();
           val rowErrors = fileEntry.getValue();
-          log.debug("Reporting row errors for '{}' ('{}' errors)", lineNumber, rowErrors.size());
+          log.debug("Reporting row errors for line '{}' ('{}' errors)", lineNumber, rowErrors.size());
 
           for (val rowError : rowErrors) {
             val errorType = rowError.getErrorType();
@@ -173,7 +174,7 @@ public class KVSubmissionErrors {
   public class KVRowError {
 
     private final KVErrorType errorType;
-    private final KVKeys keys;
+    private final KVKey keys;
     private final long lineNumber;
 
     public void report(
@@ -182,17 +183,18 @@ public class KVSubmissionErrors {
         List<String> fieldNames,
         Object[] errorParams
         ) {
-      report.report(
-          kvReportError()
+      val errorReport = kvReportError()
 
-              .fileName(fileName)
-              .fieldNames(fieldNames)
-              .params(errorParams)
-              .type(errorType.getErrorType())
-              .lineNumber(lineNumber)
-              .value(keys.getValues())
+          .fileName(fileName)
+          .fieldNames(fieldNames)
+          .params(errorParams)
+          .type(errorType.getErrorType())
+          .lineNumber(lineNumber)
+          .value(keys.getValues())
 
-              .build());
+          .build();
+      log.debug("Reporting error: '{}'", errorReport);
+      report.report(errorReport);
     }
   }
 
@@ -229,5 +231,9 @@ public class KVSubmissionErrors {
       this.params = params;
     }
 
+    @Override
+    public String toString() {
+      return toJsonSummaryString(this);
+    }
   }
 }

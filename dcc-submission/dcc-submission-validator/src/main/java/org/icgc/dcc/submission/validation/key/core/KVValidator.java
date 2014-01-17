@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
-import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
+import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
@@ -111,7 +111,7 @@ public class KVValidator {
   public void processFileType(KVFileType fileType) {
 
     // Primary keys for the type under consideration (each file will augment it)
-    val primaryKeys = new KVPrimaryKeys(fileType);
+    val primaryKeys = new KVPrimaryKeys();
 
     // Encountered foreign keys in the case where we need to check for surjection
     val optionalEncounteredForeignKeys = fileType.hasOutgoingSurjectiveRelation() ?
@@ -159,7 +159,7 @@ public class KVValidator {
         new Object[] { filePath, optionalReferencedType, fileDescription });
 
     // TODO: subclass for referencing/non-referencing?
-    new KVFileDataDigest(fileDescription)
+    new KVFileProcessor(fileDescription)
 
         // Process file
         .processFile(

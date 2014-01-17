@@ -28,17 +28,17 @@ public class KVTuple {
   /**
    * Applicable for most file except for the leafs (see dictionary DAG).
    */
-  private final KVKeys pk;
+  private final KVKey pk;
 
   /**
    * Applicable for all files but 'donor'.
    */
-  private final KVKeys fk;
+  private final KVKey fk;
 
   /**
    * Only applicable for some meta files
    */
-  private final KVKeys secondaryFk;
+  private final KVKey secondaryFk;
 
   public boolean hasPk() {
     return pk != null;

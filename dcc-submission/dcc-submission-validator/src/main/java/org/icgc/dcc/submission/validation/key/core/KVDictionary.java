@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
-import static org.icgc.dcc.submission.validation.key.data.KVKeys.KEYS_NOT_APPLICABLE;
-import static org.icgc.dcc.submission.validation.key.data.KVKeys.from;
+import static org.icgc.dcc.submission.validation.key.data.KVKey.KEYS_NOT_APPLICABLE;
+import static org.icgc.dcc.submission.validation.key.data.KVKey.from;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
@@ -60,20 +60,15 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
-import org.icgc.dcc.submission.validation.key.data.KVKeys;
+import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.data.KVTuple;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
 @NoArgsConstructor(access = PRIVATE)
-public final class KVDictionary { // Also acts as constants/utils... (FIXME)
-
-  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
-  public static final ObjectMapper MAPPER = new ObjectMapper();
+public final class KVDictionary {
 
   // TODO: translate to Strings rather? + make map per file type/submission type?
   public static final List<Integer> CNSM_M_FKS1 = newArrayList(1);
@@ -122,7 +117,7 @@ public final class KVDictionary { // Also acts as constants/utils... (FIXME)
   public static final List<Integer> METH_P_PKS = newArrayList(0, 1, 2);
   public static final List<Integer> METH_S_FKS = newArrayList(0, 1, 2);
 
-  public static final List<String> NOT_APPLICABLE = null;
+  public static final List<String> KEY_NAMES_NOT_APPLICABLE = null;
   public static final List<String> CNSM_M_FK1_NAMES = newArrayList("analyzed_sample_id");
   public static final List<String> CNSM_M_FK2_NAMES = newArrayList("matched_sample_id");
   public static final List<String> CNSM_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
@@ -245,7 +240,7 @@ public final class KVDictionary { // Also acts as constants/utils... (FIXME)
    * TODO: encode in dictionary data structure rather (hardcoded elsewhere, at least the PKs)
    */
   public static KVTuple getTuple(KVFileType fileType, List<String> row) {
-    KVKeys pk = null, fk1 = null, fk2 = null;
+    KVKey pk = null, fk1 = null, fk2 = null;
 
     // Clinical
     if (fileType == DONOR) {
@@ -385,13 +380,13 @@ public final class KVDictionary { // Also acts as constants/utils... (FIXME)
       new ImmutableMap.Builder<KVFileType, KVFileTypeErrorFields>()
           .put(
               DONOR,
-              new KVFileTypeErrorFields(DONOR, DONOR_PK_NAMES, NOT_APPLICABLE, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(DONOR, DONOR_PK_NAMES, KEY_NAMES_NOT_APPLICABLE, KEY_NAMES_NOT_APPLICABLE))
           .put(
               SPECIMEN,
-              new KVFileTypeErrorFields(SPECIMEN, SPECIMEN_PK_NAMES, SPECIMEN_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(SPECIMEN, SPECIMEN_PK_NAMES, SPECIMEN_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               SAMPLE,
-              new KVFileTypeErrorFields(SAMPLE, SAMPLE_PK_NAMES, SAMPLE_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(SAMPLE, SAMPLE_PK_NAMES, SAMPLE_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // SSM
           .put(
@@ -399,7 +394,7 @@ public final class KVDictionary { // Also acts as constants/utils... (FIXME)
               new KVFileTypeErrorFields(SSM_M, SSM_M_PK_NAMES, SSM_M_FK1_NAMES, SSM_M_FK2_NAMES))
           .put(
               SSM_P,
-              new KVFileTypeErrorFields(SSM_P, NOT_APPLICABLE, SSM_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(SSM_P, KEY_NAMES_NOT_APPLICABLE, SSM_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // CNSM
           .put(
@@ -407,10 +402,10 @@ public final class KVDictionary { // Also acts as constants/utils... (FIXME)
               new KVFileTypeErrorFields(CNSM_M, CNSM_M_PK_NAMES, CNSM_M_FK1_NAMES, CNSM_M_FK2_NAMES))
           .put(
               CNSM_P,
-              new KVFileTypeErrorFields(CNSM_P, CNSM_P_PK_NAMES, CNSM_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(CNSM_P, CNSM_P_PK_NAMES, CNSM_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               CNSM_S,
-              new KVFileTypeErrorFields(CNSM_S, NOT_APPLICABLE, CNSM_S_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(CNSM_S, KEY_NAMES_NOT_APPLICABLE, CNSM_S_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // STSM
           .put(
@@ -418,21 +413,21 @@ public final class KVDictionary { // Also acts as constants/utils... (FIXME)
               new KVFileTypeErrorFields(STSM_M, STSM_M_PK_NAMES, STSM_M_FK1_NAMES, STSM_M_FK2_NAMES))
           .put(
               STSM_P,
-              new KVFileTypeErrorFields(STSM_P, STSM_P_PK_NAMES, STSM_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(STSM_P, STSM_P_PK_NAMES, STSM_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               STSM_S,
-              new KVFileTypeErrorFields(STSM_S, NOT_APPLICABLE, STSM_S_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(STSM_S, KEY_NAMES_NOT_APPLICABLE, STSM_S_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // MIRNA
           .put(
               MIRNA_M,
-              new KVFileTypeErrorFields(MIRNA_M, MIRNA_M_PK_NAMES, MIRNA_M_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(MIRNA_M, MIRNA_M_PK_NAMES, MIRNA_M_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               MIRNA_P,
-              new KVFileTypeErrorFields(MIRNA_P, NOT_APPLICABLE, MIRNA_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(MIRNA_P, KEY_NAMES_NOT_APPLICABLE, MIRNA_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               MIRNA_S,
-              new KVFileTypeErrorFields(MIRNA_S, MIRNA_S_PK_NAMES, MIRNA_S_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(MIRNA_S, MIRNA_S_PK_NAMES, MIRNA_S_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // METH
           .put(
@@ -440,42 +435,42 @@ public final class KVDictionary { // Also acts as constants/utils... (FIXME)
               new KVFileTypeErrorFields(METH_M, METH_M_PK_NAMES, METH_M_FK1_NAMES, METH_M_FK2_NAMES))
           .put(
               METH_P,
-              new KVFileTypeErrorFields(METH_P, METH_P_PK_NAMES, METH_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(METH_P, METH_P_PK_NAMES, METH_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               METH_S,
-              new KVFileTypeErrorFields(METH_S, NOT_APPLICABLE, METH_S_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(METH_S, KEY_NAMES_NOT_APPLICABLE, METH_S_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // EXP
           .put(
               EXP_M,
-              new KVFileTypeErrorFields(EXP_M, EXP_M_PK_NAMES, EXP_M_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(EXP_M, EXP_M_PK_NAMES, EXP_M_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               EXP_G,
-              new KVFileTypeErrorFields(EXP_G, NOT_APPLICABLE, EXP_G_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(EXP_G, KEY_NAMES_NOT_APPLICABLE, EXP_G_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // PEXP
           .put(
               PEXP_M,
-              new KVFileTypeErrorFields(PEXP_M, PEXP_M_PK_NAMES, PEXP_M_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(PEXP_M, PEXP_M_PK_NAMES, PEXP_M_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               PEXP_P,
-              new KVFileTypeErrorFields(PEXP_P, NOT_APPLICABLE, PEXP_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(PEXP_P, KEY_NAMES_NOT_APPLICABLE, PEXP_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // JCN
           .put(
               JCN_M,
-              new KVFileTypeErrorFields(JCN_M, JCN_M_PK_NAMES, JCN_M_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(JCN_M, JCN_M_PK_NAMES, JCN_M_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               JCN_P,
-              new KVFileTypeErrorFields(JCN_P, NOT_APPLICABLE, JCN_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(JCN_P, KEY_NAMES_NOT_APPLICABLE, JCN_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           // SGV
           .put(
               SGV_M,
-              new KVFileTypeErrorFields(SGV_M, SGV_M_PK_NAMES, SGV_M_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(SGV_M, SGV_M_PK_NAMES, SGV_M_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
           .put(
               SGV_P,
-              new KVFileTypeErrorFields(SGV_P, NOT_APPLICABLE, SGV_P_FK_NAMES, NOT_APPLICABLE))
+              new KVFileTypeErrorFields(SGV_P, KEY_NAMES_NOT_APPLICABLE, SGV_P_FK_NAMES, KEY_NAMES_NOT_APPLICABLE))
 
           .build();
 

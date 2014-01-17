@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.key.core;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.MAPPER;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -28,6 +27,7 @@ import lombok.Value;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.utils.KVConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Optional;
@@ -74,7 +74,7 @@ public class KVFileDescription {
   @SneakyThrows
   public String toJsonSummaryString() {
     return format("%s (%s)",
-        MAPPER.writeValueAsString(this),
+        KVConstants.MAPPER.writeValueAsString(this),
         isPlaceholder() ? "" : dataFilePath.get()); // Optional doesn't seem to print the actual value, only whether
                                                     // present or not (TODO)
   }

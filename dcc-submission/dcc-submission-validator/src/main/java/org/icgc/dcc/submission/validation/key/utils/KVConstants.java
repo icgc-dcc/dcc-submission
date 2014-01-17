@@ -15,28 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.submission.validation.key.utils;
 
-import static com.google.common.collect.Sets.newTreeSet;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
 
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * 
  */
-public abstract class KVKeyValuesWrapper implements Iterable<KVKeys> {
+public class KVConstants {
 
-  protected final Set<KVKeys> keys = newTreeSet(); // TODO: change to array (optimization)?
+  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
+  public static final ObjectMapper MAPPER = new ObjectMapper();
 
-  @Override
-  public Iterator<KVKeys> iterator() {
-    return keys.iterator();
-  }
-
-  public static boolean sameSize(
-      KVKeyValuesWrapper v1,
-      KVKeyValuesWrapper v2) {
-    return v1.keys.size() == v2.keys.size();
-  }
 }

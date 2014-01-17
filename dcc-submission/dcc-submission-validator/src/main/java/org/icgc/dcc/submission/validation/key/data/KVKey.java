@@ -29,9 +29,9 @@ import lombok.val;
 // TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
 @Value
 @EqualsAndHashCode
-public class KVKeys implements Comparable<KVKeys> {
+public class KVKey implements Comparable<KVKey> {
 
-  public static final KVKeys KEYS_NOT_APPLICABLE = null;
+  public static final KVKey KEYS_NOT_APPLICABLE = null;
 
   /**
    * Values for the key.
@@ -43,21 +43,21 @@ public class KVKeys implements Comparable<KVKeys> {
    */
   private final short size;
 
-  public static KVKeys from(List<String> row, List<Integer> indices) {
+  public static KVKey from(List<String> row, List<Integer> indices) {
     short size = (short) indices.size();
     val values = new String[size];
     for (int index = 0; index < size; index++) {
       values[index] = row.get(indices.get(index));
     }
     // TODO: checks
-    return new KVKeys(values, size);
+    return new KVKey(values, size);
   }
 
   /**
    * Somewhat optimized...
    */
   @Override
-  public int compareTo(KVKeys keys) {
+  public int compareTo(KVKey keys) {
     // TODO: double-check for errors + guava way?
     if (size == 1) {
       val compared0 = this.values[0].compareTo(keys.values[0]);

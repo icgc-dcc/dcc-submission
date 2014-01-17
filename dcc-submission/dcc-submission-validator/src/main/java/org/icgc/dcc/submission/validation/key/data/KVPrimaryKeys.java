@@ -18,31 +18,67 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newTreeMap;
 import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.utils.KVUtils.toJsonSummaryString;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import com.google.common.collect.Sets;
 
 /**
- * 
+ * TODO: also keep track of line number?
  */
 @RequiredArgsConstructor
-public final class KVPrimaryKeys extends KVKeyValuesWrapper {
+public final class KVPrimaryKeys {
 
-  private final KVFileType fileType;
+  private final Map<String, Set<KVKey>> pks = newTreeMap();
 
-  public void updatePksIfApplicable(KVTuple tuple) {
-    if (tuple.hasPk()) {
-      keys.add(tuple.getPk());
-    } else {
-      if (TUPLE_CHECKS_ENABLED) checkState(!fileType.hasPk(), "TODO");
+  public void updatePks(String fileName, KVTuple tuple) {
+    if (TUPLE_CHECKS_ENABLED) checkState(tuple.hasPk(), "TODO");
+    if (!pks.containsKey(fileName)) {
+      pks.put(fileName, Sets.<KVKey> newTreeSet());
     }
+    pks.get(fileName).add(tuple.getPk());
+  }
+
+  public List<String> getFilePaths() {
+    return newArrayList(pks.keySet());
+  }
+
+  public Iterator<KVKey> getPrimaryKeys(String fileName) {
+    return pks.get(fileName).iterator();
   }
 
   public boolean containsPk(
       @NonNull// TODO: consider removing such time consuming checks?
-      KVKeys keys) {
-    return this.keys.contains(keys);
+      KVKey key) {
+    for (val filePks : pks.values()) {
+      if (filePks.contains(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public long getSize() {
+    long size = 0;
+    for (val filePks : pks.values()) {
+      size += filePks.size();
+    }
+    return size;
+  }
+
+  @Override
+  public String toString() {
+    return toJsonSummaryString(this);
   }
 }

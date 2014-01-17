@@ -7,3 +7,4 @@ dr-cnsm-01	sp-cnsm-01.01	dummy
 dr-cnsm-02	sp-cnsm-02.01	dummy
 dr-cnsm-03	sp-cnsm-03.01	dummy
 dr-cnsm-04	sp-cnsm-04.01	dummy
+dr-cnsm-04	mydanglingspecien	dummy

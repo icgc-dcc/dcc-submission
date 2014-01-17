@@ -26,6 +26,7 @@ import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.DON
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
 import static org.icgc.dcc.submission.core.util.Joiners.NEWLINE_JOINER;
 import static org.icgc.dcc.submission.core.util.Joiners.PATH_JOINER;
@@ -150,6 +151,9 @@ public class KeyValidatorTest {
     dictionary
         .getFileSchema(DONOR_TYPE)
         .setPattern("^donor\\.[0-9]+\\.txt(?:\\.gz|\\.bz2)?$");
+    dictionary
+        .getFileSchema(SAMPLE_TYPE)
+        .setPattern("^sample\\.[0-9]+\\.txt(?:\\.gz|\\.bz2)?$");
     dictionary.addFile(readFileSchema(METH_M_TYPE));
     dictionary.addFile(readFileSchema(METH_P_TYPE));
     dictionary.addFile(readFileSchema(METH_S_TYPE));
