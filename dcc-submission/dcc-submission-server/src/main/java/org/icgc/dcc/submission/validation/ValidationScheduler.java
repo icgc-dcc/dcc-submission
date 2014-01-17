@@ -194,17 +194,25 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param project the project to validate
    * @throws ValidationRejectedException if the validation could not be executed
    */
-  private void tryValidation(Release release, final QueuedProject project) {
+  private void tryValidation(final Release release, final QueuedProject project) {
     // Prepare validation
     val validation = createValidation(release, project);
 
     // Submit validation asynchronously for execution
-    val future = executor.execute(validation);
+    val future = executor.execute(validation, new Runnable() {
 
-    // If we made it here then the validation was accepted
-    log.info("Accepting next project in queue: '{}'", project);
-    acceptValidation(project, release);
-    log.info("Accepted: '{}'", project);
+      /**
+       * Called if and when validation is accepted (asynchronously).
+       */
+      @Override
+      public void run() {
+        // If we made it here then the validation was accepted
+        log.info("Accepting next project in queue: '{}'", project);
+        acceptValidation(project, release);
+        log.info("Accepted: '{}'", project);
+      }
+
+    });
 
     // Add callbacks to handle execution outcomes
     addCallback(future, new FutureCallback<Validation>() {

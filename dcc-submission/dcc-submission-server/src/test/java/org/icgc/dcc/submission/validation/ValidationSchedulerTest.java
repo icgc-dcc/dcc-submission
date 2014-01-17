@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
-import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -120,7 +120,7 @@ public class ValidationSchedulerTest {
     val future = createSuccessfulFuture(context, validator);
 
     // Setup: When submitted we will return the "valid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    when(executor.execute(any(Validation.class), any(Runnable.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();
@@ -140,7 +140,7 @@ public class ValidationSchedulerTest {
     val future = createSuccessfulFuture(context, validator);
 
     // Setup: When submitted we will return the "invalid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    when(executor.execute(any(Validation.class), any(Runnable.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();
@@ -159,7 +159,7 @@ public class ValidationSchedulerTest {
     val future = createFailedFuture(new CancellationException());
 
     // Setup: When submitted we will return the "invalid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    when(executor.execute(any(Validation.class), any(Runnable.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();
@@ -178,7 +178,7 @@ public class ValidationSchedulerTest {
     val future = createFailedFuture(new RuntimeException());
 
     // Setup: When submitted we will return the "invalid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    when(executor.execute(any(Validation.class), any(Runnable.class))).thenReturn(future);
 
     // Exercise
     scheduler.runOneIteration();

@@ -47,6 +47,18 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class ValidationExecutor {
 
   /**
+   * Default no-op callback that is called upon acceptance asynchronously.
+   */
+  private static final Runnable DEFAULT_ACCEPTED_CALLBACK = new Runnable() {
+
+    @Override
+    public void run() {
+      // No-op
+    }
+
+  };
+
+  /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
    */
   private final ConcurrentMap<String, Future<?>> futures = newConcurrentMap();
@@ -82,6 +94,19 @@ public class ValidationExecutor {
    * @throws RejectedExecutionException if there are no "slots" available
    */
   public ListenableFuture<Validation> execute(final Validation validation) {
+    return execute(validation, DEFAULT_ACCEPTED_CALLBACK);
+  }
+
+  /**
+   * Execute a validation job asynchronously.
+   * <p>
+   * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
+   * 
+   * @param validation
+   * @param acceptedCallback callback that executes synchronously when a validation is successfully accepted
+   * @throws RejectedExecutionException if there are no "slots" available
+   */
+  public ListenableFuture<Validation> execute(final Validation validation, final Runnable acceptedCallback) {
     val id = validation.getId();
 
     // Need to apply listening decorator here because we still need access to pool methods later
@@ -92,9 +117,13 @@ public class ValidationExecutor {
       @SneakyThrows
       public Validation call() throws Exception {
         try {
+          log.info("call: Executing validation accepted callback '{}'... {}", id, getStats());
+          acceptedCallback.run();
+          log.info("call: Finished validation accepted callback '{}'. {}", id, getStats());
+
           log.info("call: Executing validation '{}'... {}", id, getStats());
           validation.execute();
-          log.info("call: Finished executing validation '{}'... {}", id, getStats());
+          log.info("call: Finished executing validation '{}'. {}", id, getStats());
         } catch (Throwable t) {
           log.error(format("call: Exception executing validation '%s': %s", id, getStats()), t);
 
