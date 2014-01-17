@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.SIMPLE_SURJECTION_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
@@ -125,7 +126,7 @@ public class KVSubmissionErrors {
       errorParams = new Object[] { referencedFileType, referencedFields };
     } else if (errorType == SIMPLE_SURJECTION) {
       val referencingFileType = getReferencingFileType(fileType);
-      val referencingFields = KVDictionary.PKS.get(referencingFileType);
+      val referencingFields = SIMPLE_SURJECTION_FKS.get(referencingFileType);
       errorParams = new Object[] { referencingFileType, referencingFields };
     }
     return errorParams;

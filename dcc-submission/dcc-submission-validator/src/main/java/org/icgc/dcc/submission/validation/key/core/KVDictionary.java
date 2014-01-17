@@ -234,6 +234,29 @@ public final class KVDictionary {
           .put(STSM_P, STSM_P_PK_NAMES)
           .put(MIRNA_P, MIRNA_P_PK_NAMES)
           .put(METH_P, METH_P_PK_NAMES)
+
+          .build();
+
+  public static final Map<KVFileType, List<String>> SIMPLE_SURJECTION_FKS =
+      new ImmutableMap.Builder<KVFileType, List<String>>()
+          .put(SPECIMEN, SPECIMEN_FK_NAMES)
+          .put(SAMPLE, SAMPLE_FK_NAMES)
+
+          .put(SSM_P, SSM_P_FK_NAMES)
+          .put(CNSM_P, CNSM_P_FK_NAMES)
+          .put(STSM_P, STSM_P_FK_NAMES)
+          .put(MIRNA_P, MIRNA_P_FK_NAMES)
+          .put(METH_P, METH_P_FK_NAMES)
+          .put(EXP_G, EXP_G_FK_NAMES)
+          .put(PEXP_P, PEXP_P_FK_NAMES)
+          .put(JCN_P, JCN_P_FK_NAMES)
+          .put(SGV_P, SGV_P_FK_NAMES)
+
+          .put(CNSM_S, CNSM_S_FK_NAMES)
+          .put(STSM_S, STSM_S_FK_NAMES)
+          .put(MIRNA_S, MIRNA_S_FK_NAMES)
+          .put(METH_S, METH_S_FK_NAMES)
+
           .build();
 
   /**
