@@ -19,10 +19,9 @@ package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.RELATIONS;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getFileDescription;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
@@ -31,10 +30,10 @@ import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.ENCOUNTER
 import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.NO_REFERENCED_TYPE;
 import static org.icgc.dcc.submission.validation.key.utils.KVOptionals.REFERENCED_PK_NOT_APPLICABLE;
 
-import java.util.List;
 import java.util.Map;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +50,7 @@ import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator
 import com.google.common.base.Optional;
 
 @Slf4j
+@RequiredArgsConstructor
 public class KVValidator {
 
   /**
@@ -64,22 +64,12 @@ public class KVValidator {
   private final KVFileSystem kvFileSystem;
   @NonNull
   private final KVReport kvReport;
-  @NonNull
-  private final SurjectivityValidator surjectivityValidator;
 
-  // TODO: combine the tree maps (the last is just map wrapper)?
-  private final Map<KVFileType, List<KVFileDescription>> fileTypeToFileDescriptions = newHashMap();
-  private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap();
-  private final KVSubmissionErrors errors = new KVSubmissionErrors();
+  private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap(); // TODO: wrapper?
+  private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
+  private final KVSubmissionErrors submissionErrors = new KVSubmissionErrors();
 
-  public KVValidator(KVFileParser kvFileParser, KVFileSystem kvFileSystem, KVReport kvReport) {
-    this.kvFileParser = kvFileParser;
-    this.kvFileSystem = kvFileSystem;
-    this.kvReport = kvReport;
-    this.surjectivityValidator = new SurjectivityValidator(kvFileSystem);
-  }
-
-  public void validate() {
+  public void processSubmission() {
     log.info("Loading data");
 
     // Process clinical data
@@ -102,8 +92,6 @@ public class KVValidator {
 
     log.info("{}", banner("="));
     for (val fileType : fileTypeToPrimaryKeys.keySet()) {
-      log.debug("{}: {}", fileType, fileTypeToFileDescriptions.get(fileType));
-      log.debug("{}", banner("-"));
       log.debug("{}: {}", fileType, fileTypeToPrimaryKeys.get(fileType));
     }
     log.debug("{}", banner("="));
@@ -112,7 +100,7 @@ public class KVValidator {
     // validateComplexSurjection(); // TODO: to be re-enabled later
 
     // Report
-    boolean valid = errors.describe(kvReport, fileTypeToFileDescriptions);
+    boolean valid = submissionErrors.reportSubmissionErrors(kvReport);
     log.info("{}", valid);
     log.info("done.");
   }
@@ -120,7 +108,7 @@ public class KVValidator {
   /**
    * TODO: create abstraction for file type
    */
-  private void processFileType(KVFileType fileType) {
+  public void processFileType(KVFileType fileType) {
 
     // Primary keys for the type under consideration (each file will augment it)
     val primaryKeys = new KVPrimaryKeys(fileType);
@@ -139,12 +127,6 @@ public class KVValidator {
         of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
         REFERENCED_PK_NOT_APPLICABLE;
 
-    List<KVFileDescription> fileDescriptions = fileTypeToFileDescriptions.get(fileType);
-    if (fileDescriptions == null) {
-      fileDescriptions = newArrayList();
-      fileTypeToFileDescriptions.put(fileType, fileDescriptions);
-    }
-
     log.info("{}", banner("="));
     log.info("Processing file type: '{}'; Referencing '{}'", fileType, optionalReferencedType);
 
@@ -152,14 +134,13 @@ public class KVValidator {
     checkState(dataFilePaths.isPresent(),
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
-      val fileDescription = getFileDescription(fileType, dataFilePath);
       processFile(
-          fileType, dataFilePath, fileDescription,
+          getFileDescription(fileType, dataFilePath),
+          dataFilePath,
           primaryKeys,
           optionalEncounteredForeignKeys,
           optionalReferencedType,
           optionalReferencedPrimaryKeys);
-      fileDescriptions.add(fileDescription);
     }
     fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
@@ -167,15 +148,15 @@ public class KVValidator {
   }
 
   private void processFile(
-      KVFileType fileType, Path filePath, KVFileDescription fileDescription,
+      KVFileDescription fileDescription,
+      Path filePath,
       KVPrimaryKeys primaryKeys,
       Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys,
       Optional<KVFileType> optionalReferencedType,
       Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys) {
-
     log.info("{}", banner("-"));
     log.info("Processing file: '{}' ('{}'); Referencing '{}': '{}'",
-        new Object[] { filePath, fileType, optionalReferencedType, fileDescription });
+        new Object[] { filePath, optionalReferencedType, fileDescription });
 
     // TODO: subclass for referencing/non-referencing?
     new KVFileDataDigest(fileDescription)
@@ -183,8 +164,8 @@ public class KVValidator {
         // Process file
         .processFile(
             kvFileParser,
-            errors.getFileErrors(fileType), // TODO: return the errors rather than updating them?
-            primaryKeys, // TODO: likewise?
+            submissionErrors,
+            primaryKeys,
             optionalReferencedPrimaryKeys,
             optionalEncounteredForeignKeys
         );
@@ -209,7 +190,8 @@ public class KVValidator {
           .validateSimpleSurjection(
               fileTypeToPrimaryKeys.get(referencedType),
               optionalEncounteredForeignKeys.get(),
-              errors.getFileErrors(referencedType));
+              submissionErrors,
+              referencedType);
     }
 
     if (fileType.hasOutgoingComplexSurjectiveRelation()) {
@@ -225,9 +207,7 @@ public class KVValidator {
   private void validateComplexSurjection() {
     log.info("{}", banner("="));
     log.info("Validating complex surjection");
-    surjectivityValidator.validateComplexSurjection(
-        fileTypeToPrimaryKeys.get(SAMPLE),
-        errors.getFileErrors(SAMPLE));
+    // surjectivityValidator.validateComplexSurjection(fileTypeToPrimaryKeys.get(SAMPLE));
     log.info("{}", banner("="));
   }
 

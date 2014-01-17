@@ -31,7 +31,7 @@ import lombok.val;
 @EqualsAndHashCode
 public class KVKeys implements Comparable<KVKeys> {
 
-  public static final KVKeys NOT_APPLICABLE = null;
+  public static final KVKeys KEYS_NOT_APPLICABLE = null;
 
   /**
    * Values for the key.

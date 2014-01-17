@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.key.core;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.MAPPER;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.MAPPER;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

@@ -17,8 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.data.KVKeys.KEYS_NOT_APPLICABLE;
+import static org.icgc.dcc.submission.validation.key.data.KVKeys.from;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
@@ -55,6 +59,10 @@ import java.util.Map;
 
 import lombok.NoArgsConstructor;
 
+import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
+import org.icgc.dcc.submission.validation.key.data.KVKeys;
+import org.icgc.dcc.submission.validation.key.data.KVTuple;
+import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,7 +70,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
 @NoArgsConstructor(access = PRIVATE)
-public final class KVConstants {
+public final class KVDictionary { // Also acts as constants/utils... (FIXME)
 
   public static final Splitter TAB_SPLITTER = Splitter.on('\t');
   public static final ObjectMapper MAPPER = new ObjectMapper();
@@ -232,4 +240,248 @@ public final class KVConstants {
           .put(MIRNA_P, MIRNA_P_PK_NAMES)
           .put(METH_P, METH_P_PK_NAMES)
           .build();
+
+  /**
+   * TODO: encode in dictionary data structure rather (hardcoded elsewhere, at least the PKs)
+   */
+  public static KVTuple getTuple(KVFileType fileType, List<String> row) {
+    KVKeys pk = null, fk1 = null, fk2 = null;
+
+    // Clinical
+    if (fileType == DONOR) {
+      pk = from(row, DONOR_PKS);
+      fk1 = KEYS_NOT_APPLICABLE;
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == SPECIMEN) {
+      pk = from(row, SPECIMEN_PKS);
+      fk1 = from(row, SPECIMEN_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == SAMPLE) {
+      pk = from(row, SAMPLE_PKS);
+      fk1 = from(row, SAMPLE_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Ssm
+    else if (fileType == SSM_M) {
+      pk = from(row, SSM_M_PKS);
+      fk1 = from(row, SSM_M_FKS1);
+      fk2 = from(row, SSM_M_FKS2); // TODO: handle case where value is null or a missing code
+    } else if (fileType == SSM_P) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, SSM_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Cnsm
+    else if (fileType == CNSM_M) {
+      pk = from(row, CNSM_M_PKS);
+      fk1 = from(row, CNSM_M_FKS1);
+      fk2 = from(row, CNSM_M_FKS2);
+    } else if (fileType == CNSM_P) {
+      pk = from(row, CNSM_P_PKS);
+      fk1 = from(row, CNSM_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == CNSM_S) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, CNSM_S_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Stsm
+    else if (fileType == STSM_M) {
+      pk = from(row, STSM_M_PKS);
+      fk1 = from(row, STSM_M_FKS1);
+      fk2 = from(row, STSM_M_FKS2);
+    } else if (fileType == STSM_P) {
+      pk = from(row, STSM_P_PKS);
+      fk1 = from(row, STSM_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == STSM_S) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, STSM_S_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Mirna
+    else if (fileType == MIRNA_M) {
+      pk = from(row, MIRNA_M_PKS);
+      fk1 = from(row, MIRNA_M_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == MIRNA_P) {
+      pk = KEYS_NOT_APPLICABLE; // Special case: uniqueness is not enforced
+      fk1 = from(row, MIRNA_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == MIRNA_S) {
+      pk = from(row, MIRNA_S_PKS);
+      fk1 = from(row, MIRNA_S_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Meth
+    else if (fileType == METH_M) {
+      pk = from(row, METH_M_PKS);
+      fk1 = from(row, METH_M_FKS1);
+      fk1 = from(row, METH_M_FKS2);
+    } else if (fileType == METH_P) {
+      pk = from(row, METH_P_PKS);
+      fk1 = from(row, METH_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == METH_S) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, METH_S_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Exp
+    else if (fileType == EXP_M) {
+      pk = from(row, EXP_M_PKS);
+      fk1 = from(row, EXP_M_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == EXP_G) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, EXP_G_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Pexp
+    else if (fileType == SSM_M) {
+      pk = from(row, PEXP_M_PKS);
+      fk1 = from(row, PEXP_M_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == PEXP_P) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, PEXP_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Jcn
+    else if (fileType == JCN_M) {
+      pk = from(row, JCN_M_PKS);
+      fk1 = from(row, JCN_M_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == JCN_P) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, JCN_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    // Sgv
+    else if (fileType == SGV_M) {
+      pk = from(row, SGV_M_PKS);
+      fk1 = from(row, SGV_M_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    } else if (fileType == SGV_P) {
+      pk = KEYS_NOT_APPLICABLE;
+      fk1 = from(row, SGV_P_FKS);
+      fk2 = KEYS_NOT_APPLICABLE;
+    }
+
+    if (TUPLE_CHECKS_ENABLED) checkState(pk != null || fk1 != null, "TODO: '%s'", row);
+    return new KVTuple(pk, fk1, fk2);
+  }
+
+  private static final Map<KVFileType, KVFileTypeErrorFields> ERROR_TYPE_DESCRIPTIONS =
+      new ImmutableMap.Builder<KVFileType, KVFileTypeErrorFields>()
+          .put(
+              DONOR,
+              new KVFileTypeErrorFields(DONOR, DONOR_PK_NAMES, NOT_APPLICABLE, NOT_APPLICABLE))
+          .put(
+              SPECIMEN,
+              new KVFileTypeErrorFields(SPECIMEN, SPECIMEN_PK_NAMES, SPECIMEN_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              SAMPLE,
+              new KVFileTypeErrorFields(SAMPLE, SAMPLE_PK_NAMES, SAMPLE_FK_NAMES, NOT_APPLICABLE))
+
+          // SSM
+          .put(
+              SSM_M,
+              new KVFileTypeErrorFields(SSM_M, SSM_M_PK_NAMES, SSM_M_FK1_NAMES, SSM_M_FK2_NAMES))
+          .put(
+              SSM_P,
+              new KVFileTypeErrorFields(SSM_P, NOT_APPLICABLE, SSM_P_FK_NAMES, NOT_APPLICABLE))
+
+          // CNSM
+          .put(
+              CNSM_M,
+              new KVFileTypeErrorFields(CNSM_M, CNSM_M_PK_NAMES, CNSM_M_FK1_NAMES, CNSM_M_FK2_NAMES))
+          .put(
+              CNSM_P,
+              new KVFileTypeErrorFields(CNSM_P, CNSM_P_PK_NAMES, CNSM_P_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              CNSM_S,
+              new KVFileTypeErrorFields(CNSM_S, NOT_APPLICABLE, CNSM_S_FK_NAMES, NOT_APPLICABLE))
+
+          // STSM
+          .put(
+              STSM_M,
+              new KVFileTypeErrorFields(STSM_M, STSM_M_PK_NAMES, STSM_M_FK1_NAMES, STSM_M_FK2_NAMES))
+          .put(
+              STSM_P,
+              new KVFileTypeErrorFields(STSM_P, STSM_P_PK_NAMES, STSM_P_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              STSM_S,
+              new KVFileTypeErrorFields(STSM_S, NOT_APPLICABLE, STSM_S_FK_NAMES, NOT_APPLICABLE))
+
+          // MIRNA
+          .put(
+              MIRNA_M,
+              new KVFileTypeErrorFields(MIRNA_M, MIRNA_M_PK_NAMES, MIRNA_M_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              MIRNA_P,
+              new KVFileTypeErrorFields(MIRNA_P, NOT_APPLICABLE, MIRNA_P_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              MIRNA_S,
+              new KVFileTypeErrorFields(MIRNA_S, MIRNA_S_PK_NAMES, MIRNA_S_FK_NAMES, NOT_APPLICABLE))
+
+          // METH
+          .put(
+              METH_M,
+              new KVFileTypeErrorFields(METH_M, METH_M_PK_NAMES, METH_M_FK1_NAMES, METH_M_FK2_NAMES))
+          .put(
+              METH_P,
+              new KVFileTypeErrorFields(METH_P, METH_P_PK_NAMES, METH_P_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              METH_S,
+              new KVFileTypeErrorFields(METH_S, NOT_APPLICABLE, METH_S_FK_NAMES, NOT_APPLICABLE))
+
+          // EXP
+          .put(
+              EXP_M,
+              new KVFileTypeErrorFields(EXP_M, EXP_M_PK_NAMES, EXP_M_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              EXP_G,
+              new KVFileTypeErrorFields(EXP_G, NOT_APPLICABLE, EXP_G_FK_NAMES, NOT_APPLICABLE))
+
+          // PEXP
+          .put(
+              PEXP_M,
+              new KVFileTypeErrorFields(PEXP_M, PEXP_M_PK_NAMES, PEXP_M_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              PEXP_P,
+              new KVFileTypeErrorFields(PEXP_P, NOT_APPLICABLE, PEXP_P_FK_NAMES, NOT_APPLICABLE))
+
+          // JCN
+          .put(
+              JCN_M,
+              new KVFileTypeErrorFields(JCN_M, JCN_M_PK_NAMES, JCN_M_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              JCN_P,
+              new KVFileTypeErrorFields(JCN_P, NOT_APPLICABLE, JCN_P_FK_NAMES, NOT_APPLICABLE))
+
+          // SGV
+          .put(
+              SGV_M,
+              new KVFileTypeErrorFields(SGV_M, SGV_M_PK_NAMES, SGV_M_FK_NAMES, NOT_APPLICABLE))
+          .put(
+              SGV_P,
+              new KVFileTypeErrorFields(SGV_P, NOT_APPLICABLE, SGV_P_FK_NAMES, NOT_APPLICABLE))
+
+          .build();
+
+  public static List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType) {
+    return ERROR_TYPE_DESCRIPTIONS
+        .get(fileType)
+        .getErrorFieldNames(errorType);
+  }
 }

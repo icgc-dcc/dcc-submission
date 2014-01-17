@@ -20,15 +20,15 @@ package org.icgc.dcc.submission.validation.key.surjectivity;
 import static org.icgc.dcc.submission.validation.key.data.KVKeyValuesWrapper.sameSize;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
-import lombok.NonNull;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVKeys;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
-import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 
 /**
  * Validates surjective relations.
@@ -39,9 +39,6 @@ public class SurjectivityValidator {
 
   public static final long SIMPLE_SURJECTION_ERROR_LINE_NUMBER = -1;
   public static final long COMPLEX_SURJECTION_ERROR_LINE_NUMBER = -2;
-
-  @NonNull
-  private final KVFileSystem fileSystem;
 
   /**
    * TODO: explain very special case.
@@ -57,20 +54,19 @@ public class SurjectivityValidator {
   public void validateSimpleSurjection(
       KVPrimaryKeys expectedKeys,
       KVEncounteredForeignKeys encounteredKeys, // From one file only (unlike for complex check)
-      KVFileErrors referencedFileErrors) {
+      KVSubmissionErrors errors,
+      KVFileType offendedFileType) {
     if (hasSurjectionErrors(expectedKeys, encounteredKeys)) {
       collectSurjectionErrors(
           false,
           expectedKeys,
           encounteredKeys,
-          referencedFileErrors);
+          errors,
+          offendedFileType);
     }
   }
 
-  public void validateComplexSurjection(
-      KVPrimaryKeys expectedSampleKeys,
-      KVFileErrors sampleFileErrors) {
-
+  public void validateComplexSurjection(KVPrimaryKeys expectedSampleKeys, KVSubmissionErrors errors) {
     if (encounteredSampleForeignKeys.noneEncountered()) {
       log.warn("No sample encountered..."); // Could indicate an issue
     }
@@ -80,9 +76,29 @@ public class SurjectivityValidator {
           true,
           expectedSampleKeys,
           encounteredSampleForeignKeys,
-          sampleFileErrors);
+          errors,
+          SAMPLE);
     } else {
       log.error("No complex surjection errors detected");
+    }
+  }
+
+  private void collectSurjectionErrors(
+      boolean complex,
+      KVPrimaryKeys expectedKeys,
+      KVEncounteredForeignKeys encounteredKeys,
+      KVSubmissionErrors errors,
+      KVFileType offendedFileType) {
+    log.info("Collecting '{}' surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
+    for (KVKeys expected : expectedKeys) {
+      if (!encounteredKeys.encountered(expected)) {
+        String offendedFileName = "TODO";
+        if (complex) {
+          errors.addComplexSurjectionError(offendedFileType, offendedFileName, expected);
+        } else {
+          errors.addSimpleSurjectionError(offendedFileType, offendedFileName, expected);
+        }
+      }
     }
   }
 
@@ -90,22 +106,5 @@ public class SurjectivityValidator {
       KVPrimaryKeys surjectionExpected,
       KVEncounteredForeignKeys surjectionEncountered) {
     return !sameSize(surjectionExpected, surjectionEncountered);
-  }
-
-  private void collectSurjectionErrors(
-      boolean complex,
-      KVPrimaryKeys expectedKeys,
-      KVEncounteredForeignKeys encounteredKeys,
-      KVFileErrors referencedFileError) {
-    log.info("Collecting '{}' surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
-    for (KVKeys expected : expectedKeys) {
-      if (!encounteredKeys.encountered(expected)) {
-        if (complex) {
-          referencedFileError.addComplexSurjectionError(expected);
-        } else {
-          referencedFileError.addSimpleSurjectionError(expected);
-        }
-      }
-    }
   }
 }

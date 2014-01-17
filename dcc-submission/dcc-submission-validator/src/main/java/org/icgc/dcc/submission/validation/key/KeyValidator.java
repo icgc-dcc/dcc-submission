@@ -45,7 +45,7 @@ import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
-import org.icgc.dcc.submission.validation.key.error.KVError;
+import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors.KVReportError;
 
 @NoArgsConstructor
 @Slf4j
@@ -129,8 +129,9 @@ public class KeyValidator implements Validator {
 
     while (errors.hasNext()) {
       val error = errors.next();
-      val fileType = context.getDictionary().getFileType(error.getFileName()); // TODO: store error type...
-      checkState(fileType.isPresent(), "TODO");
+      val fileName = error.getFileName();
+      val fileType = context.getDictionary().getFileType(fileName); // TODO: store error type...?
+      checkState(fileType.isPresent(), "TODO: '{}'", fileName);
       context.reportError(
           error.getFileName(),
           error.getLineNumber(),
@@ -154,8 +155,8 @@ public class KeyValidator implements Validator {
   }
 
   @SneakyThrows
-  private static MappingIterator<KVError> getErrors(InputStream inputStream) {
-    val reader = new ObjectMapper().reader().withType(KVError.class);
+  private static MappingIterator<KVReportError> getErrors(InputStream inputStream) {
+    val reader = new ObjectMapper().reader().withType(KVReportError.class);
 
     return reader.readValues(inputStream);
   }

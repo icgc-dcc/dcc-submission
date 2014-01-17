@@ -76,7 +76,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
           new KVFileParser(fileSystem, new FileLineListParser(), false),
           new KVFileSystem(fileSystem, dictionary, new Path(submissionPath)), report);
       log.info("Starting key validation...");
-      validator.validate();
+      validator.processSubmission();
       log.info("Finished key validation");
     } finally {
       report.close();
