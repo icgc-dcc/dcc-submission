@@ -832,7 +832,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       submission.setReport(nextReport);
     }
 
+    // TODO: Combine
     updateSubmission(releaseName, submission);
+    updateSubmissionReport(releaseName, projectKey, (SubmissionReport) submission.getReport());
 
     // TODO: Make more granular to only reset the data type(s) of the validation files associated with the reset
     val release = getNextRelease();
@@ -977,7 +979,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) {
-    val release = where(QRelease.release.name.eq(releaseName)).singleResult();
+    val release = getReleaseByName(releaseName);
     if (release == null) {
       throw new ReleaseException("No such release");
     }
