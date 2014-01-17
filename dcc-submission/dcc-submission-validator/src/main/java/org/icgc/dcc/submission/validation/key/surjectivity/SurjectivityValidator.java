@@ -84,23 +84,24 @@ public class SurjectivityValidator {
       KVEncounteredForeignKeys encounteredKeys,
       KVSubmissionErrors errors,
       KVFileType offendedFileType) {
-    log.info("Collecting '{}' surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
+    log.info("Validating '{}' potential surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
 
-    boolean valid = true;
+    boolean validFileType = true;
     for (val fileName : expectedKeys.getFilePaths()) {
       val expectedIterator = expectedKeys.getPrimaryKeys(fileName);
       while (expectedIterator.hasNext()) {
         val expected = expectedIterator.next();
-        if (encounteredKeys.encountered(expected)) {
+        val validKey = encounteredKeys.encountered(expected);
+        if (!validKey) {
           if (complex) {
             errors.addComplexSurjectionError(offendedFileType, fileName, expected);
           } else {
             errors.addSimpleSurjectionError(offendedFileType, fileName, expected);
           }
-          valid = false;
+          validFileType = false;
         }
       }
     }
-    return valid;
+    return validFileType;
   }
 }

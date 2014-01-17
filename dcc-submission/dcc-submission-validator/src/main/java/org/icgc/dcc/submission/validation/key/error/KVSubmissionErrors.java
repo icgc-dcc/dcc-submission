@@ -64,15 +64,16 @@ public class KVSubmissionErrors {
    * TODO: create other wrappers like the surjection one
    */
   public void addError(KVFileType fileType, String fileName, long lineNumber, KVErrorType errorType, KVKey keys) {
-    log.debug("Reporting '{}' error for '{}.{}.{}': '{}'",
-        new Object[] { errorType, fileType, fileName, lineNumber, keys });
+    val rowError = new KVRowError(errorType, keys, lineNumber);
+    log.debug("Reporting error at '({}, {}, {})': '{}'",
+        new Object[] { fileType, fileName, lineNumber, rowError });
     // TODO: address inefficiency
     getRowErrors(
         getFileErrors(
             getFileTypeErrors(errors, fileType),
             fileName),
         lineNumber)
-        .add(new KVRowError(errorType, keys, lineNumber));
+        .add(rowError);
   }
 
   public void addSimpleSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
