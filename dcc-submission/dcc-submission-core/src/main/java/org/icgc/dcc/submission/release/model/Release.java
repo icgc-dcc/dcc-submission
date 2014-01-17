@@ -31,6 +31,8 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
+import lombok.val;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
@@ -125,6 +127,17 @@ public class Release extends BaseEntity implements HasName {
 
   public List<Submission> getSubmissions() {
     return submissions;
+  }
+
+  public Optional<Submission> getSubmissionByProjectKey(String projectKey) {
+    for (val submission : submissions) {
+      val match = submission.getProjectKey().equals(projectKey);
+      if (match) {
+        return Optional.of(submission);
+      }
+    }
+
+    return Optional.absent();
   }
 
   /**

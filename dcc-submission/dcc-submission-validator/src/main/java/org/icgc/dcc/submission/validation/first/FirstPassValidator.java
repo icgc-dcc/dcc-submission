@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchemata;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
@@ -81,7 +80,7 @@ public class FirstPassValidator implements Validator {
 
   private Iterable<String> listRelevantFiles(ValidationContext context) {
     // Selective validation filtering
-    val fileSchemata = getFileSchemata(context.getDictionary(), context.getDataTypes());
+    val fileSchemata = context.getDictionary().getFileSchemata(context.getDataTypes());
 
     val patterns = Lists.<String> newArrayList();
     for (val fileSchema : fileSchemata) {

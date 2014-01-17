@@ -29,6 +29,8 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
+import com.google.common.base.Optional;
+
 public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   @NonNull
@@ -74,7 +76,7 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
   protected void notifyModified(Path path) {
     try {
       Submission submission = directory.getSubmission();
-      context.notifySubmissionChange(submission, path);
+      context.notifySubmissionChange(submission, Optional.<Path> of(path));
     } catch (Exception e) {
       handleException(Boolean.class, e);
     }

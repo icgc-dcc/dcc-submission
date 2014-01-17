@@ -50,4 +50,14 @@ public class SubmissionReport implements Serializable {
     schemaReports.add(schemaReport);
   }
 
+  public boolean hasErrors() {
+    for (val schemaReport : schemaReports) {
+      if (schemaReport.hasErrors()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
 }

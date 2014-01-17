@@ -30,7 +30,6 @@ import javax.validation.Valid;
 
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.val;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
@@ -212,10 +211,13 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   @JsonIgnore
-  public SubmissionDataType getDataType() {
-    val dataType = SubmissionFileType.from(name).getDataType();
+  public SubmissionFileType getFileType() {
+    return SubmissionFileType.from(name);
+  }
 
-    return dataType;
+  @JsonIgnore
+  public SubmissionDataType getDataType() {
+    return getFileType().getDataType();
   }
 
   @JsonIgnore

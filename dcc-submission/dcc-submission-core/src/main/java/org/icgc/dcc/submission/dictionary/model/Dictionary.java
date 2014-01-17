@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.contains;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Lists.newArrayList;
@@ -40,6 +41,7 @@ import lombok.val;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
@@ -240,12 +242,29 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     return newArrayList(filter);
   }
 
+  /**
+   * Returns an iterable of {@link FileSchema}s for a given {@link SubmissionDataType}.
+   */
+  @JsonIgnore
+  public Iterable<FileSchema> getFileSchemata(final Iterable<? extends SubmissionDataType> dataTypes) {
+    val builder = ImmutableSet.<FileSchema> builder();
+    for (val fileSchema : files) {
+      val match = contains(dataTypes, fileSchema.getDataType());
+      if (match) {
+        builder.add(fileSchema);
+      }
+    }
+
+    return builder.build();
+  }
+
   public boolean hasFileSchema(String fileName) {
-    for (FileSchema fileSchema : this.files) {
+    for (val fileSchema : this.files) {
       if (fileSchema.getName().equals(fileName)) {
         return true;
       }
     }
+
     return false;
   }
 

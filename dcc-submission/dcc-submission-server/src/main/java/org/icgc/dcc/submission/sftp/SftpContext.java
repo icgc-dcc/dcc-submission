@@ -39,6 +39,7 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 /**
@@ -115,7 +116,7 @@ public class SftpContext {
   }
 
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
-  public void notifySubmissionChange(Submission submission, Path path) {
+  public void notifySubmissionChange(@NonNull Submission submission, @NonNull Optional<Path> path) {
     log.info("Resetting submission '{}'...", submission.getProjectKey());
     releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey(), path);
   }
@@ -123,7 +124,7 @@ public class SftpContext {
   public void notifySystemChange() {
     for (Submission submission : getNextRelease().getSubmissions()) {
       // TODO: DCC-903 (only if open release uses it)
-      notifySubmissionChange(submission, null);
+      notifySubmissionChange(submission, Optional.<Path> absent());
     }
   }
 

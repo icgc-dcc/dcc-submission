@@ -224,8 +224,8 @@ public class ValidationScheduler extends AbstractScheduledService {
       public void onSuccess(Validation validation) {
         log.info("onSuccess - Finished validation for '{}'", project.getKey());
 
-        val state = validation.getContext().hasErrors() ? INVALID : VALID;
         val submissionReport = validation.getContext().getSubmissionReport();
+        val state = submissionReport.hasErrors() ? INVALID : VALID;
         completeValidation(project, state, submissionReport);
         log.info("onSuccess - Completed '{}'", project.getKey());
       }
@@ -237,8 +237,8 @@ public class ValidationScheduler extends AbstractScheduledService {
       public void onFailure(Throwable t) {
         log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
 
-        val state = t instanceof CancellationException ? NOT_VALIDATED : ERROR;
         val submissionReport = validation.getContext().getSubmissionReport();
+        val state = t instanceof CancellationException ? NOT_VALIDATED : ERROR;
         completeValidation(project, state, submissionReport);
         log.info("onFailure - Completed '{}'.", project.getKey());
       }

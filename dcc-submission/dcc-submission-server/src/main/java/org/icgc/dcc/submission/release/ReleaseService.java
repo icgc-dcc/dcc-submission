@@ -31,7 +31,6 @@ import static java.util.Collections.singletonList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.ArrayUtils.contains;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchema;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
@@ -59,8 +58,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -116,7 +113,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   private final ReleaseRepository releaseRepository;
 
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, @NonNull DccFileSystem fs, MailService mailService) {
+  public ReleaseService(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull DccFileSystem fs,
+      MailService mailService) {
     super(morphia, datastore, QRelease.release, mailService);
     this.fs = fs;
     this.releaseRepository = new ReleaseRepository();
@@ -735,108 +733,25 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   @Synchronized
   public void resetSubmissions(final String releaseName, final Iterable<String> projectKeys) {
     for (val projectKey : projectKeys) {
-      resetSubmission(releaseName, projectKey, null);
+      resetSubmission(releaseName, projectKey, Optional.<Path> absent());
     }
   }
 
-  /**
-   * Resets submission to NOT_VALIDATED and empty report.
-   * <p>
-   * Note that one must also empty the .validation directory for cascading to re-run fully.
-   * <p>
-   * see DCC-901
-   */
   @Synchronized
-  public void resetSubmission(String releaseName, String projectKey, Path path) {
-    log.info("Resetting submission for project '{}' and path '{}'", projectKey, path);
+  public void resetSubmission(String releaseName, String projectKey, Optional<Path> path) {
+    val release = getReleaseByName(releaseName);
+    val dictionary = releaseRepository.getDictionaryForVersion(release.getDictionaryVersion());
+    val submission = release.getSubmissionByProjectKey(projectKey).get();
 
-    val dictionary = getNextDictionary();
-    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+    // Update in-memory state
+    val manager = new SubmissionManager(fs);
+    manager.resetSubmission(release, submission, dictionary, path);
 
-    // Ensure it is managed first
-    if (path != null) {
-      val managed = dictionary.getFileSchemaByFileName(path.getName()).isPresent();
-      if (!managed) {
-        log.info("Aborting reset due to file '{}' not being managed by the dictionary", path);
-        return;
-      }
-    }
-
-    // Initialize each available data type to not validated
-    val dataTypes = Sets.<SubmissionDataType> newHashSet();
-    for (val submissionFile : submissionFiles) {
-      val dataType = submissionFile.getDataType();
-      if (dataType != null) {
-        dataTypes.add(SubmissionDataTypes.valueOf(dataType));
-      }
-    }
-    val nextDataState = Lists.<DataTypeState> newArrayList();
-    for (val dataType : dataTypes) {
-      nextDataState.add(new DataTypeState(dataType, NOT_VALIDATED));
-    }
-
-    // Resolve the submission from storage
-    val submission = getSubmission(releaseName, projectKey);
-
-    val all = path == null;
-    if (all) {
-      // Reset all data types
-      submission.setState(NOT_VALIDATED);
-      submission.setDataState(nextDataState);
-      submission.setReport(new SubmissionReport());
-    } else {
-      val fileSchema = dictionary.getFileSchemaByFileName(path.getName()).get();
-      val fileDataType = fileSchema.getDataType();
-
-      val transitive = fileDataType.isClinicalType();
-      if (transitive) {
-        // Reset all data types
-        resetSubmission(releaseName, projectKey, null);
-
-        return;
-      }
-
-      // SubmissionReport: Reset file data type only
-      SubmissionReport nextReport = new SubmissionReport();
-      val previousReport = (SubmissionReport) submission.getReport();
-      if (previousReport != null) {
-        for (val schemaReport : previousReport.getSchemaReports()) {
-          val schema = dictionary.getFileSchemaByFileName(schemaReport.getName()).get();
-          val schemaDataType = schema.getDataType();
-
-          val maintain = schemaDataType != fileDataType;
-          if (maintain) {
-            nextReport.addSchemaReport(schemaReport);
-          }
-        }
-      }
-
-      // Data state: Reset file data type only
-      val previousDataState = submission.getDataState();
-      for (val previousDataTypeState : previousDataState) {
-        val previousDataType = previousDataTypeState.getDataType();
-        val maintain = previousDataType != fileDataType && dataTypes.contains(previousDataType);
-        if (maintain) {
-          for (val nextDataTypeState : nextDataState) {
-            if (nextDataTypeState.getDataType() == previousDataType) {
-              // Copy
-              nextDataTypeState.setState(previousDataTypeState.getState());
-            }
-          }
-        }
-      }
-
-      submission.setState(NOT_VALIDATED);
-      submission.setDataState(nextDataState);
-      submission.setReport(nextReport);
-    }
-
-    // TODO: Combine
+    // Update persisted state
     updateSubmission(releaseName, submission);
     updateSubmissionReport(releaseName, projectKey, (SubmissionReport) submission.getReport());
 
-    // TODO: Make more granular to only reset the data type(s) of the validation files associated with the reset
-    val release = getNextRelease();
+    // Update file system state
     resetValidationFolder(projectKey, release);
   }
 
@@ -1004,7 +919,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     val lastUpdate = new Date(fileStatus.getModificationTime());
     val size = fileStatus.getLen();
 
-    val fileSchema = getFileSchema(dictionary, fileName);
+    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
     String schemaName = null;
     String dataType = null;
     if (fileSchema.isPresent()) {

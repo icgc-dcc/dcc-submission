@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getFileSchemata;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -73,7 +71,7 @@ public class DefaultPlanner implements Planner {
     val systemDirectory = strategy.getSystemDirectory();
 
     // Selective validation filtering
-    val fileSchemata = getFileSchemata(dictionary, dataTypes);
+    val fileSchemata = dictionary.getFileSchemata(dataTypes);
     for (val fileSchema : fileSchemata) {
       val fileSchemaDirectory = strategy.getFileSchemaDirectory();
       val fileSchemaName = fileSchema.getName();

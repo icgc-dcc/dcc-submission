@@ -17,27 +17,18 @@
  */
 package org.icgc.dcc.submission.dictionary.util;
 
-import static com.google.common.collect.Iterables.contains;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-
-import java.util.regex.Pattern;
-
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
 
 @NoArgsConstructor(access = PRIVATE)
 public class Dictionaries {
@@ -50,44 +41,6 @@ public class Dictionaries {
     val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
 
     return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
-  }
-
-  public static Iterable<FileSchema> getFileSchemata(Dictionary dictionary,
-      Iterable<? extends SubmissionDataType> dataTypes) {
-    val builder = ImmutableSet.<FileSchema> builder();
-    for (val fileSchema : dictionary.getFiles()) {
-      for (val fileType : SubmissionFileType.values()) {
-        val dataType = fileType.getDataType();
-
-        if (contains(dataTypes, dataType)) {
-          builder.add(fileSchema);
-        }
-      }
-    }
-
-    return builder.build();
-  }
-
-  public static Optional<FileSchema> getFileSchema(Dictionary dictionary, String fileName) {
-    for (val fileSchema : dictionary.getFiles()) {
-      val match = Pattern.matches(fileSchema.getPattern(), fileName);
-      if (match) {
-        return Optional.of(fileSchema);
-      }
-    }
-
-    return Optional.absent();
-  }
-
-  public static Optional<FeatureType> getFeatureType(FileSchema fileSchema) {
-    val dataType = SubmissionFileType.from(fileSchema.getName()).getDataType();
-    if (dataType.isFeatureType()) {
-      val featureType = dataType.asFeatureType();
-
-      return Optional.of(featureType);
-    }
-
-    return Optional.absent();
   }
 
 }
