@@ -21,7 +21,6 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.util.concurrent.AbstractScheduledService.Scheduler.newFixedDelaySchedule;
-import static com.google.common.util.concurrent.Futures.addCallback;
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -199,7 +198,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     val validation = createValidation(release, project);
 
     // Submit validation asynchronously for execution
-    val future = executor.execute(validation, new Runnable() {
+    executor.execute(validation, new Runnable() {
 
       /**
        * Called if and when validation is accepted (asynchronously).
@@ -207,15 +206,12 @@ public class ValidationScheduler extends AbstractScheduledService {
       @Override
       public void run() {
         // If we made it here then the validation was accepted
-        log.info("Accepting next project in queue: '{}'", project);
+        log.info("onAccepted - Accepting next project in queue: '{}'", project);
         acceptValidation(project, release);
-        log.info("Accepted: '{}'", project);
+        log.info("onAccepted -  '{}'", project);
       }
 
-    });
-
-    // Add callbacks to handle execution outcomes
-    addCallback(future, new FutureCallback<Validation>() {
+    }, new FutureCallback<Validation>() {
 
       /**
        * Called when validation has completed (may not be VALID)

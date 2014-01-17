@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static com.google.common.util.concurrent.Futures.addCallback;
-import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
@@ -26,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -40,7 +39,6 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListenableFuture;
 
 public class ValidationExecutorTest {
 
@@ -67,30 +65,23 @@ public class ValidationExecutorTest {
   }
 
   @Test
-  public void testExecute() {
-    // "Promises" for results
-    val futures = Lists.<ListenableFuture<Validation>> newArrayList();
-    for (int i = 1; i <= MAX_VALIDATING; i++) {
+  public void testExecute() throws InterruptedException {
+    // Counter
+    val count = MAX_VALIDATING;
+    val latch = new CountDownLatch(count);
+
+    for (int i = 1; i <= count; i++) {
       // Setup: Create the ith validation container
       val projectKey = "project" + i;
       val validation = createValidation(projectKey);
 
       // Exercise: Should "immediately" begin asynchronously
-      val future = executor.execute(validation);
-      futures.add(future);
+      executor.execute(validation, acceptCallback(latch), completedCallback(latch, latch));
     }
-
-    // Sync: Wait for tasks to start running (timing not guaranteed)
-    sleepUninterruptibly(1, SECONDS);
 
     // Verify: Ensure that things are running concurrently
-    assertThat(executor.getActiveCount()).isEqualTo(MAX_VALIDATING);
-
-    // Verify: Ensure all futures produced are in flight
-    for (val future : futures) {
-      assertThat(future.isDone()).isFalse();
-      assertThat(future.isCancelled()).isFalse();
-    }
+    latch.await(1, SECONDS);
+    assertThat(executor.getActiveCount()).isEqualTo(count);
   }
 
   @Test(expected = ValidationRejectedException.class)
@@ -107,40 +98,85 @@ public class ValidationExecutorTest {
   }
 
   @Test
-  public void testCancel() {
+  public void testCancel() throws InterruptedException {
+    // Counters
+    val count = 1;
+    val parties = count + 1; // Include this method
+    val latch = new CountDownLatch(count);
+    val succeeded = new CountDownLatch(count);
+    val failed = new CountDownLatch(parties);
+
     // Setup: Create the validation container
     val projectKey = "project";
     val validation = createValidation(projectKey);
 
     // Setup: Start async validation
-    val future = executor.execute(validation);
-
-    // Exercise: Should succeed
-    val firstCancelled = executor.cancel(projectKey);
-    assertThat(firstCancelled).isTrue();
-    assertThat(future.isCancelled()).isTrue();
-
-    // Exercise: Should fail to find it
-    val secondCancelled = executor.cancel(projectKey);
-    assertThat(secondCancelled).isFalse();
-    assertThat(future.isCancelled()).isTrue();
-
-    // Verify: Things that happen upon "completion"
-    addCallback(future, new FutureCallback<Validation>() {
+    executor.execute(validation, acceptCallback(latch), new FutureCallback<Validation>() {
 
       @Override
       public void onSuccess(Validation result) {
-        // Nope
-        fail("Validation should not have succeeded after it has been cancelled");
+        try {
+          // Nope
+          fail("Validation should not have succeeded after it has been cancelled");
+        } finally {
+          succeeded.countDown();
+        }
       }
 
       @Override
       public void onFailure(Throwable t) {
-        // Yep
-        assertThat(t).isInstanceOf(CancellationException.class).as("Unexpected exception type");
+        try {
+          // Yep
+          assertThat(t).isInstanceOf(CancellationException.class).as("Unexpected exception type");
+        } finally {
+          failed.countDown();
+        }
       }
 
     });
+
+    // Exercise: Should succeed
+    val firstCancelled = executor.cancel(projectKey);
+    assertThat(firstCancelled).isTrue();
+
+    // Verify: Ensure that all have failed
+    failed.countDown();
+    failed.await(1, SECONDS);
+
+    // Verify: Ensure that none have passed
+    assertThat(succeeded.getCount()).isEqualTo(count);
+
+    // Exercise: Should fail to find it
+    val secondCancelled = executor.cancel(projectKey);
+    assertThat(secondCancelled).isFalse();
+  }
+
+  private static Runnable acceptCallback(final CountDownLatch latch) {
+    return new Runnable() {
+
+      @Override
+      public void run() {
+        latch.countDown();
+      }
+
+    };
+  }
+
+  private static FutureCallback<Validation> completedCallback(final CountDownLatch succeeded,
+      final CountDownLatch failed) {
+    return new FutureCallback<Validation>() {
+
+      @Override
+      public void onSuccess(Validation result) {
+        succeeded.countDown();
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        failed.countDown();
+      }
+
+    };
   }
 
   private static Validation createValidation(String projectKey) {
