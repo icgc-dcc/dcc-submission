@@ -45,8 +45,7 @@ module.exports = class ReportDatatypeView extends View
     @modelBind 'change', @update
 
   update: ->
-    #console.debug "ReportTableView#update", @model
-    console.log "ReportDatatypeView -> update"
+    #console.log "ReportDatatypeView -> update"
     @report = @model.get "report"
 
     # Figure out all the table placements
@@ -55,22 +54,30 @@ module.exports = class ReportDatatypeView extends View
     datatypes = []
     @schemaReports = @report.get "schemaReports"
     @schemaReports.each (report)->
-      console.log report
-      console.log report.get "dataType"
+      #console.log report
+      #console.log report.get "dataType"
       datatype = report.get "dataType"
       if datatypes.indexOf( datatype ) == -1
         if datatype == null
           datatype = "Others"
         datatypes.push report.get "dataType"
 
-    console.log datatypes
+    #console.log datatypes
 
     # Create data type tables if they do not exist
-    # TODO: Sort based on data type
-    # TODO: table headers
-    # TODO: section by clinical and experimental
     # TODO: should clinical always be visible?
     container = @$el
+    datatypes = _.sortBy datatypes, (datatype)->
+      switch datatype
+        when "CLINICAL_CORE_TYPE"
+          return 0
+        when "CLINICAL_OPTIONAL_TYPE"
+          return 1
+        when null
+          return 999
+        else
+          return 10
+
     datatypes.forEach (datatype)=>
       elem = container.find("#"+datatype)
       if elem.length == 0
@@ -92,7 +99,7 @@ module.exports = class ReportDatatypeView extends View
 
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
-    console.log @model.get("dataState")
+    #console.log @model.get("dataState")
     dataState = @model.get("dataState")
     dataStateMap = {}
     dataState.forEach (ds)->
@@ -104,17 +111,28 @@ module.exports = class ReportDatatypeView extends View
       dt = @$el.find("#"+datatype).dataTable()
 
       state = dataStateMap[datatype]
+      if not state
+        state = ""
+
       if state and state in ["INVALID", "VALID", "SIGNED_OFF"]
         dt.fnSetColumnVis( 3, true )
         dt.fnSetColumnVis( 4, true )
-      else
-        state = ""
 
       dt.fnClearTable()
       dt.fnAddData @files
 
+      target = "." + datatype + "_title"
       title = utils.translateDataType(datatype)
-      $(".#{datatype}_title").html("<strong>#{title} - #{state}</strong>")
+      lc_state = state.toLowerCase()
+      ui_state = state.replace("_", " ")
+
+      $(target).children().remove()
+      $(target).append("<span>#{title}</span>")
+      if state != ""
+        $(target).append("<span> - </span>")
+        $(target).append("<span class='#{lc_state}'>#{ui_state}</span>")
+
+        #.html("<strong>#{title} - #{underscore2space state}</strong>")
  
 
   createDataTable: (datatype)->

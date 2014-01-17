@@ -26,6 +26,7 @@ View = require 'views/base/view'
 Model = require 'models/base/model'
 NextRelease = require 'models/next_release'
 template = require 'views/templates/submission/validate_submission'
+utils = require 'lib/utils'
 
 module.exports = class ValidateSubmissionView extends View
   template: template
@@ -39,24 +40,35 @@ module.exports = class ValidateSubmissionView extends View
   id: 'validate-submission-popup'
 
   selectNone: ->
+    @featureTable.fnClearTable()
     for f, idx in @features
       f.selected = false unless f.name == "CLINICAL_CORE_TYPE"
-      @featureTable.fnUpdate(@features[idx], idx)
+      @featureTable.fnAddData @features[idx]
+      #@featureTable.fnUpdate(@features[idx], idx)
 
+  
   selectAll: ->
+    @featureTable.fnClearTable()
     for f, idx in @features
       f.selected = true
-      @featureTable.fnUpdate(@features[idx], idx)
+      @featureTable.fnAddData @features[idx]
+      #@featureTable.fnUpdate(@features[idx], idx)
 
   toggleFeature: (e) ->
     feature = $(e.currentTarget).data('feature-type')
     idx = _.pluck(@features, 'name').indexOf(feature)
     @features[idx].selected = not @features[idx].selected
-    @featureTable.fnUpdate(@features[idx], idx)
+
+    # For some reason update seem to adjust td width,
+    # just clear and rebuild as there are only a handful of datatypes
+    @featureTable.fnClearTable()
+    for f, idx in @features
+      @featureTable.fnAddData @features[idx]
+    #@featureTable.fnUpdate(@features[idx], idx)
 
 
   initialize: ->
-    console.debug "ValidateSubmissionView#initialize", @options
+    #console.debug "ValidateSubmissionView#initialize", @options
     @model = new Model @options.submission.getAttributes()
     @model.set({email: mediator.user.get("email")}, {silent: true})
 
@@ -66,16 +78,14 @@ module.exports = class ValidateSubmissionView extends View
     @dataState = {}
     for d in @model.get("dataState")
       @dataState[d.dataType] = d.state
-    console.log @dataState
+    #console.log @dataState
   
     submissionFiles = @model.get "submissionFiles"
-    console.log submissionFiles
     for f in  submissionFiles
       name = f.dataType
       state = @dataState[name]
       idx = _.pluck(@features, 'name').indexOf(name)
 
-      console.log name, state
       if name != null and idx == -1
         @features.push {'name':name, 'selected':true}
 
@@ -100,7 +110,7 @@ module.exports = class ValidateSubmissionView extends View
       {
          sTitle: "Data Types To Valdiate"
          mData: (source) =>
-           displayName = @translateDataType(source.name)
+           displayName = utils.translateDataType(source.name)
            if source.name != "CLINICAL_CORE_TYPE"
              if source.selected == false
                """
@@ -130,9 +140,16 @@ module.exports = class ValidateSubmissionView extends View
         mData: (source) =>
           state = @dataState[source.name]
           if state
-            state
+            ui_state = state.replace("_", " ")
+            switch state
+              when "INVALID"
+                return "<span class='invalid'>"+ui_state+"</span>"
+              when "VALID"
+                return "<span class='valid'>"+ui_state+"</span>"
+              else
+                return "<span>Not Validated</span>"
           else
-            "Not Validated"
+            return "<span>Not Validated</span>"
       }
     ]
 
@@ -150,35 +167,6 @@ module.exports = class ValidateSubmissionView extends View
       aoColumns: aoColumns
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @features
-
-  translateDataType: (dataType) ->
-    switch dataType
-      when "CLINICAL_CORE_TYPE"
-        "Clinical"
-      when "CLINICAL_OPTIONAL_TYPE"
-        "Clinical - optional"
-      when "SSM_TYPE"
-        "SSM"
-      when "SGV_TYPE"
-        "SGV"
-      when "CNSM_TYPE"
-        "CNSM"
-      when "STSM_TYPE"
-        "StSM"
-      when "STGV_TYPE"
-        "StGV"
-      when "METH_TYPE"
-        "METH"
-      when "MIRNA_TYPE"
-        "miRNA"
-      when "EXP_TYPE"
-        "EXP"
-      when "PEXP_TYPE"
-        "PEXP"
-      when "JCN_TYPE"
-        "JCN"
-      else
-        "Unknown"
 
   validateSubmission: (e) ->
     #console.debug "ValidateSubmissionView#completeRelease", @model
