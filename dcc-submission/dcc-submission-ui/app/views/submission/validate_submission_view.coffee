@@ -56,18 +56,26 @@ module.exports = class ValidateSubmissionView extends View
 
 
   initialize: ->
-    #console.debug "ValidateSubmissionView#initialize", @options
+    console.debug "ValidateSubmissionView#initialize", @options
     @model = new Model @options.submission.getAttributes()
     @model.set({email: mediator.user.get("email")}, {silent: true})
 
     @features = []
     @featureTable = null
 
+    @dataState = {}
+    for d in @model.get("dataState")
+      @dataState[d.dataType] = d.state
+    console.log @dataState
+  
     submissionFiles = @model.get "submissionFiles"
     console.log submissionFiles
     for f in  submissionFiles
       name = f.dataType
+      state = @dataState[name]
       idx = _.pluck(@features, 'name').indexOf(name)
+
+      console.log name, state
       if name != null and idx == -1
         @features.push {'name':name, 'selected':true}
 
@@ -91,14 +99,15 @@ module.exports = class ValidateSubmissionView extends View
     aoColumns = [
       {
          sTitle: "Data Types To Valdiate"
-         mData: (source) ->
+         mData: (source) =>
+           displayName = @translateDataType(source.name)
            if source.name != "CLINICAL_CORE_TYPE"
              if source.selected == false
                """
                <span id="toggle-feature"
                   style="cursor:pointer"
                   data-feature-type="#{source.name}">
-                  <i class="icon icon-check-empty"></i> #{source.name}
+                  <i class="icon icon-check-empty"></i> #{displayName}
                </span>
                """
              else
@@ -106,15 +115,24 @@ module.exports = class ValidateSubmissionView extends View
                <span id="toggle-feature"
                   style="cursor:pointer"
                   data-feature-type="#{source.name}">
-                  <i class="icon icon-check"></i> #{source.name}
+                  <i class="icon icon-check"></i> #{displayName}
                </span>
                """
            else
              """
              <span data-feature-type="#{source.name}">
-               <i class="icon icon-check"></i> #{source.name}
+               <i class="icon icon-check"></i> #{displayName}
              </span>
              """
+      }
+      {
+        sTitle: "State"
+        mData: (source) =>
+          state = @dataState[source.name]
+          if state
+            state
+          else
+            "Not Validated"
       }
     ]
 
@@ -133,6 +151,34 @@ module.exports = class ValidateSubmissionView extends View
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @features
 
+  translateDataType: (dataType) ->
+    switch dataType
+      when "CLINICAL_CORE_TYPE"
+        "Clinical"
+      when "CLINICAL_OPTIONAL_TYPE"
+        "Clinical - optional"
+      when "SSM_TYPE"
+        "SSM"
+      when "SGV_TYPE"
+        "SGV"
+      when "CNSM_TYPE"
+        "CNSM"
+      when "STSM_TYPE"
+        "StSM"
+      when "STGV_TYPE"
+        "StGV"
+      when "METH_TYPE"
+        "METH"
+      when "MIRNA_TYPE"
+        "miRNA"
+      when "EXP_TYPE"
+        "EXP"
+      when "PEXP_TYPE"
+        "PEXP"
+      when "JCN_TYPE"
+        "JCN"
+      else
+        "Unknown"
 
   validateSubmission: (e) ->
     #console.debug "ValidateSubmissionView#completeRelease", @model

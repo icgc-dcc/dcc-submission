@@ -23,9 +23,7 @@
 
 View = require 'views/base/view'
 SubmissionHeaderView = require 'views/submission/submission_header_view'
-ReportTableView = require 'views/release/report_table_view'
-SubmissionFilesTableView =
-  require 'views/submission/submission_files_table_view'
+ReportDatatypeView = require 'views/release/report_datatype_view'
 SignOffSubmissionView = require 'views/submission/signoff_submission_view'
 ValidateSubmissionView = require 'views/submission/validate_submission_view'
 CancelSubmissionView = require 'views/submission/cancel_submission_view'
@@ -94,7 +92,7 @@ module.exports = class SubmissionView extends View
     )
 
   render: ->
-    #console.debug "SubmissionView#render", @model
+    console.debug "SubmissionView#render", @model
     super
 
     @subview('SubmissionHeadeView'
@@ -104,8 +102,8 @@ module.exports = class SubmissionView extends View
       }
     )
 
-    @subview('ReportTableView'
-      new ReportTableView {
+    @subview('Clinical_core'
+      new ReportDatatypeView {
         @model
         el: @.$("#report-container")
       }
