@@ -19,6 +19,9 @@ package org.icgc.dcc.submission.release;
 
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
+import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +42,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 
 import com.google.common.base.Optional;
@@ -52,7 +56,49 @@ public class SubmissionManager {
   @NonNull
   private final DccFileSystem fileSystem;
 
-  public void resetSubmission(@NonNull Release release, @NonNull Submission submission, @NonNull Dictionary dictionary,
+  public void queue(Submission submission, List<SubmissionDataType> dataTypes) {
+    // Set selected data types to validating
+    val nextDataState = Lists.<DataTypeState> newArrayList();
+    for (val dataTypeState : submission.getDataState()) {
+      val dataType = dataTypeState.getDataType();
+
+      val selected = dataTypes.contains(dataType);
+      if (selected) {
+        // Update
+        nextDataState.add(new DataTypeState(dataType, QUEUED));
+      } else {
+        // Maintain
+        nextDataState.add(dataTypeState);
+      }
+    }
+
+    // Update state
+    submission.setState(QUEUED);
+    submission.setDataState(nextDataState);
+  }
+
+  public void validate(Submission submission, List<SubmissionDataType> dataTypes) {
+    // Set selected data types to validating
+    val nextDataState = Lists.<DataTypeState> newArrayList();
+    for (val dataTypeState : submission.getDataState()) {
+      val dataType = dataTypeState.getDataType();
+
+      val selected = dataTypes.contains(dataType);
+      if (selected) {
+        // Update
+        nextDataState.add(new DataTypeState(dataType, VALIDATING));
+      } else {
+        // Maintain
+        nextDataState.add(dataTypeState);
+      }
+    }
+
+    // Update state
+    submission.setState(VALIDATING);
+    submission.setDataState(nextDataState);
+  }
+
+  public void modify(@NonNull Release release, @NonNull Submission submission, @NonNull Dictionary dictionary,
       @NonNull Optional<Path> path) {
     log.info("Resetting submission for project '{}' and path '{}'", submission.getProjectKey(), path);
 
@@ -94,7 +140,7 @@ public class SubmissionManager {
       val transitive = fileDataType.isClinicalType();
       if (transitive) {
         // Reset all data types
-        resetSubmission(release, submission, dictionary, Optional.<Path> absent());
+        modify(release, submission, dictionary, Optional.<Path> absent());
 
         return;
       }
@@ -135,7 +181,33 @@ public class SubmissionManager {
     }
   }
 
-  public List<SubmissionFile> getSubmissionFiles(Release release, Dictionary dictionary, String projectKey) {
+  public void signOff(Submission submission) {
+    submission.setState(SIGNED_OFF);
+  }
+
+  public Submission release(Release nextRelease, Submission submission) {
+    val newSubmission =
+        new Submission(submission.getProjectKey(), submission.getProjectName(), nextRelease.getName());
+    if (submission.getState() == SubmissionState.SIGNED_OFF) {
+      // Reset
+      val nextDataState = Lists.<DataTypeState> newArrayList();
+      for (val dataTypeState : submission.getDataState()) {
+        nextDataState.add(new DataTypeState(dataTypeState.getDataType(), SubmissionState.NOT_VALIDATED));
+      }
+
+      newSubmission.setState(SubmissionState.NOT_VALIDATED);
+      newSubmission.setDataState(nextDataState);
+    } else {
+      // Migrate
+      newSubmission.setState(submission.getState());
+      newSubmission.setReport(submission.getReport());
+      newSubmission.setDataState(submission.getDataState());
+    }
+
+    return newSubmission;
+  }
+
+  private List<SubmissionFile> getSubmissionFiles(Release release, Dictionary dictionary, String projectKey) {
     val submissionFiles = new ArrayList<SubmissionFile>();
     val buildProjectStringPath = new Path(fileSystem.buildProjectStringPath(release.getName(), projectKey));
 

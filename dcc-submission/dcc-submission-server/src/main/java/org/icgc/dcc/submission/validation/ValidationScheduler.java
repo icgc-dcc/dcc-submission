@@ -382,6 +382,7 @@ public class ValidationScheduler extends AbstractScheduledService {
         nextDataState.add(new DataTypeState(dataType, dataTypeState));
       }
 
+      // The submission is locally valid, but any data type not validated in this run can change this to not validated
       if (state == VALID) {
         for (val nextDataTypeState : nextDataState) {
           if (nextDataTypeState.getState() == NOT_VALIDATED) {
