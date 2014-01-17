@@ -51,4 +51,9 @@ public final class KVEncounteredForeignKeys {
   public long getSize() {
     return encounteredFks.size();
   }
+
+  @Override
+  public String toString() {
+    return encounteredFks.toString();
+  }
 }

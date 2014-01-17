@@ -29,11 +29,12 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIM
 import static org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors.KVReportError.kvReportError;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.COMPLEX_SURJECTION_ERROR_LINE_NUMBER;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SIMPLE_SURJECTION_ERROR_LINE_NUMBER;
-import static org.icgc.dcc.submission.validation.key.utils.KVUtils.toJsonSummaryString;
+import static org.icgc.dcc.submission.validation.key.utils.KVConstants.MAPPER;
 
 import java.util.List;
 import java.util.Map;
 
+import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
@@ -233,7 +234,14 @@ public class KVSubmissionErrors {
 
     @Override
     public String toString() {
-      return toJsonSummaryString(this);
+      return toJsonSummaryString();
+    }
+
+    @SneakyThrows
+    public String toJsonSummaryString() {
+      return "\n" + MAPPER
+          .writerWithDefaultPrettyPrinter()
+          .writeValueAsString(this);
     }
   }
 }

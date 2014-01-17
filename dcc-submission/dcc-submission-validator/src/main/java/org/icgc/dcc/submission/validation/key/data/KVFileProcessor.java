@@ -53,7 +53,6 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM
 import java.util.List;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -74,10 +73,6 @@ public final class KVFileProcessor {
 
   @Getter
   private final KVFileDescription fileDescription;
-
-  public static KVFileProcessor getEmptyInstance(@NonNull KVFileDescription kvFileDescription) {
-    return new KVFileProcessor(kvFileDescription);
-  }
 
   @SneakyThrows
   public void processFile(

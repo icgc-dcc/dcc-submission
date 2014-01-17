@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Optional;
 
 /**
- * TODO: rename
+ * TODO: is this still useful?
  */
 @Value
 @RequiredArgsConstructor(access = PRIVATE)

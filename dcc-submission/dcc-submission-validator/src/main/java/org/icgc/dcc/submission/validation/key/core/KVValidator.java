@@ -109,6 +109,7 @@ public class KVValidator {
    * TODO: create abstraction for file type
    */
   public void processFileType(KVFileType fileType) {
+    log.info("{}", banner("="));
 
     // Primary keys for the type under consideration (each file will augment it)
     val primaryKeys = new KVPrimaryKeys();
@@ -127,7 +128,6 @@ public class KVValidator {
         of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
         REFERENCED_PK_NOT_APPLICABLE;
 
-    log.info("{}", banner("="));
     log.info("Processing file type: '{}'; Referencing '{}'", fileType, optionalReferencedType);
 
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
@@ -179,8 +179,9 @@ public class KVValidator {
       Optional<KVFileType> optionalReferencedType,
       Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys) {
 
+    log.info("{}", banner("-"));
     if (fileType.hasOutgoingSimpleSurjectiveRelation()) {
-      log.info("Post-processing: simple surjectivity check");
+      log.info("Post-processing: simple surjectivity check for type '{}'", fileType);
 
       checkState(optionalReferencedType.isPresent());
       val referencedType = optionalReferencedType.get();
@@ -188,18 +189,24 @@ public class KVValidator {
       checkState(optionalEncounteredForeignKeys.isPresent(), "TODO");
       surjectivityValidator
           .validateSimpleSurjection(
+              fileType,
               fileTypeToPrimaryKeys.get(referencedType),
               optionalEncounteredForeignKeys.get(),
               submissionErrors,
               referencedType);
+    } else {
+      log.info("No outgoing simple surjection relation for file type: '{}'", fileType);
     }
 
+    log.info("{}", banner("-"));
     if (fileType.hasOutgoingComplexSurjectiveRelation()) {
-      log.info("Post-processing: complex surjectivity addition");
+      log.info("Post-processing: complex surjectivity addition for type '{}'", fileType);
       checkState(optionalEncounteredForeignKeys.isPresent(), "TODO");
       // Simply adding them all for now, actual validation will have to take place after all meta files have been read
       // (unlike for "simple" surjection check).
       surjectivityValidator.addEncounteredSampleKeys(optionalEncounteredForeignKeys.get());
+    } else {
+      log.info("No outgoing complex surjection relation for file type: '{}'", fileType);
     }
   }
 
