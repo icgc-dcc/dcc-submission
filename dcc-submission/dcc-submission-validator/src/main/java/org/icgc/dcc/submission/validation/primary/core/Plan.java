@@ -91,7 +91,7 @@ public class Plan {
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
     internalFlowPlanners.put(fileSchema.getName(), internal);
-    externalFlowPlanners.put(fileSchema.getName(), external);
+    // externalFlowPlanners.put(fileSchema.getName(), external);
   }
 
   public void collect(ReportContext reportContext) {

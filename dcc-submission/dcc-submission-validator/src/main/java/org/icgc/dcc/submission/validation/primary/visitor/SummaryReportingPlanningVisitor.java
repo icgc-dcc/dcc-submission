@@ -33,9 +33,9 @@ import org.icgc.dcc.submission.validation.primary.report.FrequencyPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.SummaryPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.UniqueCountPlanElement;
 
-public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
+public class SummaryReportingPlanningVisitor extends ReportingFlowPlanningVisitor {
 
-  public SummaryPlanningVisitor() {
+  public SummaryReportingPlanningVisitor() {
     super(FlowType.INTERNAL);
   }
 

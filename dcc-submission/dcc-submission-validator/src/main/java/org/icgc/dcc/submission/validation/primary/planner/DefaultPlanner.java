@@ -32,10 +32,9 @@ import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.visitor.ErrorReportingPlanningVisitor;
-import org.icgc.dcc.submission.validation.primary.visitor.ExternalRestrictionPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
-import org.icgc.dcc.submission.validation.primary.visitor.SummaryPlanningVisitor;
+import org.icgc.dcc.submission.validation.primary.visitor.SummaryReportingPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 
 import com.google.common.collect.ImmutableList;
@@ -93,15 +92,13 @@ public class DefaultPlanner implements Planner {
         // Internal
         new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
         new InternalRestrictionPlanningVisitor(restrictionTypes),
-
-        // Reporting
-        new SummaryPlanningVisitor(),
-        new ErrorReportingPlanningVisitor(FlowType.INTERNAL),
+        new SummaryReportingPlanningVisitor(),
+        new ErrorReportingPlanningVisitor(FlowType.INTERNAL)
 
         // External
         // Doesn't actually have any EXTERNAL restrictionTypes at the moment
-        new ExternalRestrictionPlanningVisitor(restrictionTypes),
-        new ErrorReportingPlanningVisitor(FlowType.EXTERNAL));
+        // new ExternalRestrictionPlanningVisitor(restrictionTypes),
+        // new ErrorReportingPlanningVisitor(FlowType.EXTERNAL)
+        );
   }
-
 }
