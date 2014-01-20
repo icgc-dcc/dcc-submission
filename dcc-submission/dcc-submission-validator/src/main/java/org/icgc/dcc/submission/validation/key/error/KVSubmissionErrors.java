@@ -27,22 +27,16 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COM
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
-import static org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors.KVReportError.kvReportError;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.COMPLEX_SURJECTION_ERROR_LINE_NUMBER;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SIMPLE_SURJECTION_ERROR_LINE_NUMBER;
-import static org.icgc.dcc.submission.validation.key.utils.KVConstants.MAPPER;
 
 import java.util.List;
 import java.util.Map;
 
-import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
-import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVDictionary;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
@@ -186,7 +180,7 @@ public class KVSubmissionErrors {
         List<String> fieldNames,
         Object[] errorParams
         ) {
-      val errorReport = kvReportError()
+      val errorReport = KVReportError.builder()
 
           .fileName(fileName)
           .fieldNames(fieldNames)
@@ -198,52 +192,6 @@ public class KVSubmissionErrors {
           .build();
       log.debug("Reporting error: '{}'", errorReport);
       report.report(errorReport);
-    }
-  }
-
-  @Value
-  @Builder(builderMethodName = "kvReportError")
-  public static class KVReportError {
-
-    @JsonProperty
-    String fileName;
-    @JsonProperty
-    List<String> fieldNames;
-    @JsonProperty
-    long lineNumber;
-    @JsonProperty
-    Object value;
-    @JsonProperty
-    ErrorType type;
-    @JsonProperty
-    Object[] params;
-
-    private KVReportError(
-        @JsonProperty("fileName") String fileName,
-        @JsonProperty("fieldNames") List<String> fieldNames,
-        @JsonProperty("lineNumber") long lineNumber,
-        @JsonProperty("value") Object value,
-        @JsonProperty("type") ErrorType type,
-        @JsonProperty("params") Object[] params)
-    {
-      this.fileName = fileName;
-      this.fieldNames = fieldNames;
-      this.lineNumber = lineNumber;
-      this.value = value;
-      this.type = type;
-      this.params = params;
-    }
-
-    @Override
-    public String toString() {
-      return toJsonSummaryString();
-    }
-
-    @SneakyThrows
-    public String toJsonSummaryString() {
-      return "\n" + MAPPER
-          .writerWithDefaultPrettyPrinter()
-          .writeValueAsString(this);
     }
   }
 }

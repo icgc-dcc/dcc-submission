@@ -45,7 +45,7 @@ import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
-import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors.KVReportError;
+import org.icgc.dcc.submission.validation.key.error.KVReportError;
 
 @NoArgsConstructor
 @Slf4j
@@ -155,7 +155,8 @@ public class KeyValidator implements Validator {
   }
 
   @SneakyThrows
-  private static MappingIterator<KVReportError> getErrors(InputStream inputStream) {
+  private static MappingIterator<org.icgc.dcc.submission.validation.key.error.KVReportError> getErrors(
+      InputStream inputStream) {
     val reader = new ObjectMapper().reader().withType(KVReportError.class);
 
     return reader.readValues(inputStream);

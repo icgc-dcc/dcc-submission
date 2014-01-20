@@ -15,58 +15,61 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.report;
+package org.icgc.dcc.submission.validation.key.error;
 
-import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
-import static org.codehaus.jackson.map.SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS;
+import static org.icgc.dcc.submission.validation.key.utils.KVConstants.MAPPER;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.util.List;
 
-import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.experimental.Builder;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
-import org.icgc.dcc.submission.validation.key.error.KVReportError;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
-public class KVReport implements Closeable {
+@Value
+@Builder
+public class KVReportError {
 
-  /**
-   * The file name of the produced key validation report.
-   */
-  public static final String REPORT_FILE_NAME = "all.keys--errors.json";
+  @JsonProperty
+  String fileName;
+  @JsonProperty
+  List<String> fieldNames;
+  @JsonProperty
+  long lineNumber;
+  @JsonProperty
+  Object value;
+  @JsonProperty
+  ErrorType type;
+  @JsonProperty
+  Object[] params;
 
-  private final static ObjectWriter WRITER = new ObjectMapper(new JsonFactory().disable(AUTO_CLOSE_TARGET))
-      .configure(FAIL_ON_EMPTY_BEANS, false)
-      .writer();
-
-  @NonNull
-  private final FileSystem fileSystem;
-  @NonNull
-  private final Path path;
-  @NonNull
-  private final OutputStream outputStream;
-
-  @SneakyThrows
-  public KVReport(FileSystem fileSystem, Path path) {
-    this.fileSystem = fileSystem;
-    this.path = path;
-    this.outputStream = fileSystem.create(path);
-  }
-
-  @SneakyThrows
-  public void report(KVReportError error) {
-    WRITER.writeValue(outputStream, error);
+  private KVReportError(
+      @JsonProperty("fileName") String fileName,
+      @JsonProperty("fieldNames") List<String> fieldNames,
+      @JsonProperty("lineNumber") long lineNumber,
+      @JsonProperty("value") Object value,
+      @JsonProperty("type") ErrorType type,
+      @JsonProperty("params") Object[] params)
+  {
+    this.fileName = fileName;
+    this.fieldNames = fieldNames;
+    this.lineNumber = lineNumber;
+    this.value = value;
+    this.type = type;
+    this.params = params;
   }
 
   @Override
-  public void close() throws IOException {
-    outputStream.close();
+  public String toString() {
+    return toJsonSummaryString();
   }
 
+  @SneakyThrows
+  public String toJsonSummaryString() {
+    return "\n" + MAPPER
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(this);
+  }
 }
