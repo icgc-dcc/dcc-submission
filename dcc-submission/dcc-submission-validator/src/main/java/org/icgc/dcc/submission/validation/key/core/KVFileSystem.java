@@ -66,8 +66,9 @@ public final class KVFileSystem {
     // Selective validation filtering
     val requested = dataTypes.contains(fileType.getSubmissionFileType().getDataType());
     if (!requested) {
-      return null;
+      return Optional.<List<Path>> absent();
     }
+
     val basePath = submissionDir;
     val fileSchema = getFileSchema(fileType);
     val fileRegex = fileSchema.getPattern();
