@@ -58,7 +58,7 @@ public class ByteOffsetToLineNumber {
 
   public static Map<Long, Long> convert(@NonNull Path file, @NonNull Collection<Long> offsets, boolean check) {
     if (check && !isHdfs()) {
-      log.info("Local filesystem: not remapping line numbers for path: {}" + file);
+      log.info("Local filesystem: not remapping line numbers for path: '{}'", file);
       return null;
     }
 
