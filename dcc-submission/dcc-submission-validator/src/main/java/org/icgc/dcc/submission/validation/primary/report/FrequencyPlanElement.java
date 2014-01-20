@@ -17,12 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.dictionary.model.SummaryType.FREQUENCY;
+
 import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -52,8 +54,8 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   private static final String MISSING_FLAG = "missing?";
 
-  public FrequencyPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fields, SummaryType.FREQUENCY, flowType);
+  public FrequencyPlanElement(FileSchema fileSchema, String fileName, List<Field> fields, FlowType flowType) {
+    super(fileSchema, fileName, fields, newArrayList(fileSchema.getFieldNames()), FREQUENCY, flowType);
   }
 
   @Override

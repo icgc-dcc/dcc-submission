@@ -18,32 +18,39 @@
 package org.icgc.dcc.submission.validation.primary.visitor;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.report.FrequencyPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.SummaryPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.UniqueCountPlanElement;
 
-public class SummaryReportingPlanningVisitor extends ReportingFlowPlanningVisitor {
+public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
 
-  public SummaryReportingPlanningVisitor() {
-    super(FlowType.INTERNAL);
+  public SummaryReportingPlanningVisitor(@NonNull PlatformStrategy platform) {
+    super(platform, INTERNAL);
   }
 
   @Override
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
-    Map<SummaryType, List<Field>> summaryTypeToFields = buildSummaryTypeToFields(fileSchema);
-    collectElements(fileSchema, summaryTypeToFields);
+    for (val fileName : listMatchingFiles(fileSchema.getPattern())) {
+      collectElements(
+          fileSchema,
+          fileName,
+          buildSummaryTypeToFields(fileSchema));
+    }
   }
 
   /**
@@ -69,30 +76,33 @@ public class SummaryReportingPlanningVisitor extends ReportingFlowPlanningVisito
   /**
    * Collects element based on the {@code Field}'s {@code SummaryType}, so they can later be applied
    */
-  private void collectElements(FileSchema fileSchema, Map<SummaryType, List<Field>> summaryTypeToFields) {
+  private void collectElements(FileSchema fileSchema, String fileName, Map<SummaryType, List<Field>> summaryTypeToFields) {
     for (val summaryType : summaryTypeToFields.keySet()) {
       List<Field> fields = summaryTypeToFields.get(summaryType);
       FlowType flowType = getFlowType();
+
       if (summaryType == null) {
-        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flowType));
+        collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fileName, fields,
+            flowType));
         continue;
       }
 
       switch (summaryType) {
       case AVERAGE:
-        collect(new SummaryPlanElement.AveragePlanElement(fileSchema, fields, flowType));
+        collectReportingPlanElement(new SummaryPlanElement.AveragePlanElement(fileSchema, fileName, fields, flowType));
         break;
       case MIN_MAX:
-        collect(new SummaryPlanElement.MinMaxPlanElement(fileSchema, fields, flowType));
+        collectReportingPlanElement(new SummaryPlanElement.MinMaxPlanElement(fileSchema, fileName, fields, flowType));
         break;
       case FREQUENCY:
-        collect(new FrequencyPlanElement(fileSchema, fields, flowType));
+        collectReportingPlanElement(new FrequencyPlanElement(fileSchema, fileName, fields, flowType));
         break;
       case UNIQUE_COUNT:
-        collect(new UniqueCountPlanElement(fileSchema, fields, flowType));
+        collectReportingPlanElement(new UniqueCountPlanElement(fileSchema, fileName, fields, flowType));
         break;
       default:
-        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flowType));
+        collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fileName, fields,
+            flowType));
         break;
       }
     }

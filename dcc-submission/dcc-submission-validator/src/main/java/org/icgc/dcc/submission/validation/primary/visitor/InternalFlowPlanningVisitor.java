@@ -30,9 +30,9 @@ public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanEle
 
   @Override
   public void apply(Plan plan) {
-    for(InternalFlowPlanner flowPlanner : plan.getInternalFlows()) {
-      flowPlanner.getSchema().accept(this);
-      for(InternalPlanElement e : getElements()) {
+    for (InternalFlowPlanner flowPlanner : plan.getInternalFlows()) {
+      flowPlanner.fileSchemaAccept(this);
+      for (InternalPlanElement e : getElements()) {
         flowPlanner.apply(e);
       }
     }

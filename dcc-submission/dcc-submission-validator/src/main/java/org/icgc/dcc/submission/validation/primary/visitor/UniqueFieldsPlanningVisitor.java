@@ -49,7 +49,7 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
     if(fileSchema.getUniqueFields().size() > 0) {
-      collect(new UniqueFieldsPlanElement(fileSchema.getUniqueFields()));
+      collectReportingPlanElement(new UniqueFieldsPlanElement(fileSchema.getUniqueFields()));
     }
   }
 

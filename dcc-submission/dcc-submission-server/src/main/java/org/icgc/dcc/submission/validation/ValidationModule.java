@@ -34,7 +34,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvid
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
-import org.icgc.dcc.submission.validation.primary.planner.DefaultPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.Planner;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
@@ -106,7 +105,7 @@ public class ValidationModule extends AbstractDccModule {
    */
   private void bindPrimaryValidation() {
     // Builder of plans
-    bind(Planner.class).to(DefaultPlanner.class);
+    bind(Planner.class).in(Singleton.class);
     bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
 
     // Primary restrictions
@@ -128,8 +127,7 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   /**
-   * Any restrictions added in here should also be added in
-   * {@link ValidationTestModule} for testing.
+   * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
    */
   private void bindRestrictionTypes() {
     // Set binder will preserve bind order as iteration order for injectees
@@ -206,8 +204,7 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   /**
-   * Near clone of {@link LoaderModule} - maintain both at the same time until
-   * DCC-1876 is addressed.
+   * Near clone of {@link LoaderModule} - maintain both at the same time until DCC-1876 is addressed.
    * <p>
    * TODO: This is temporary until DCC-1876 is addressed.
    * <p>

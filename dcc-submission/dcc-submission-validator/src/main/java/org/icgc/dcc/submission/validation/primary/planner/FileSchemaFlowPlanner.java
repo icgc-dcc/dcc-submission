@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
@@ -29,12 +29,15 @@ import cascading.flow.Flow;
  */
 public interface FileSchemaFlowPlanner {
 
-  public FileSchema getSchema();
+  /**
+   * TODO
+   */
+  void fileSchemaAccept(BaseDictionaryVisitor visitor);
 
-  public Flow<?> connect(PlatformStrategy cascadingStrategy);
+  Flow<?> connect(PlatformStrategy cascadingStrategy);
 
-  public void apply(ReportingPlanElement element);
+  void apply(ReportingPlanElement element);
 
-  public void collect(PlatformStrategy strategy, ReportContext context);
+  void collect(PlatformStrategy strategy, ReportContext context);
 
 }

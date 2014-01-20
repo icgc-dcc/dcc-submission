@@ -24,10 +24,12 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import lombok.Cleanup;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -43,31 +45,40 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 
-public class ErrorReportingPlanningVisitor extends ReportingFlowPlanningVisitor {
+public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 
-  public ErrorReportingPlanningVisitor(FlowType type) {
-    super(type);
+  public ErrorReportingPlanningVisitor(@NonNull PlatformStrategy platform, @NonNull FlowType type) {
+    super(platform, type);
   }
 
   @Override
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
-    collect(new ErrorsPlanElement(fileSchema, this.getFlowType()));
+    for (val fileName : listMatchingFiles(fileSchema.getPattern())) {
+      collectReportingPlanElement(new ErrorsPlanElement(
+          fileSchema.getName(),
+          fileName,
+          getFlowType()));
+    }
   }
 
   static class ErrorsPlanElement implements ReportingPlanElement {
 
-    private final FileSchema fileSchema;
+    @Getter
+    private final String fileSchemaName;
+
+    private final String fileName;
 
     private final FlowType flowType;
 
-    public ErrorsPlanElement(FileSchema fileSchema, FlowType flowType) {
-      this.fileSchema = fileSchema;
+    public ErrorsPlanElement(@NonNull String fileSchemaName, @NonNull String fileName, @NonNull FlowType flowType) {
+      this.fileSchemaName = fileSchemaName;
+      this.fileName = fileName;
       this.flowType = flowType;
     }
 
     @Override
-    public String getName() {
+    public String getElementName() {
       return "errors";
     }
 
@@ -81,29 +92,25 @@ public class ErrorReportingPlanningVisitor extends ReportingFlowPlanningVisitor 
       return new Retain(new Each(pipe, keepInvalidTuplesFilter()), STATE_FIELD);
     }
 
-    public FileSchema getFileSchema() {
-      return this.fileSchema;
-    }
-
     public FlowType getFlowType() {
       return this.flowType;
     }
 
     @Override
     public ReportCollector getCollector() {
-      return new ErrorReportCollector();
+      return new ErrorReportCollector(fileName);
     }
 
+    @RequiredArgsConstructor
     class ErrorReportCollector implements ReportCollector {
 
-      @Override
-      public void collect(PlatformStrategy strategy, ReportContext context) {
-        try {
-          Path path = strategy.path(getFileSchema());
-          val fileName = path.getName();
+      private final String fileName;
 
+      @Override
+      public void collect(PlatformStrategy platform, ReportContext context) {
+        try {
           @Cleanup
-          val reportInputStream = getReportInputStream(strategy);
+          val reportInputStream = getReportInputStream(platform);
           val tupleStates = getTupleStates(reportInputStream);
 
           while (tupleStates.hasNext()) {
@@ -115,7 +122,7 @@ public class ErrorReportingPlanningVisitor extends ReportingFlowPlanningVisitor 
             }
           }
 
-          context.reportLineNumbers(path);
+          context.reportLineNumbers(platform.getFilePath(fileName));
         } catch (FileNotFoundException fnfe) {
           // There were no errors
         } catch (Exception e) {
@@ -125,7 +132,7 @@ public class ErrorReportingPlanningVisitor extends ReportingFlowPlanningVisitor 
 
       @SneakyThrows
       private InputStream getReportInputStream(PlatformStrategy strategy) {
-        return strategy.readReportTap(getFileSchema(), getFlowType(), getName());
+        return strategy.readReportTap2(fileName, getFlowType(), getElementName());
       }
 
       @SneakyThrows

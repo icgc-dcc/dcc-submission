@@ -17,13 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.primary.core;
 
+import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
 
 import cascading.pipe.Pipe;
 
 public interface ReportingPlanElement extends PlanElement {
 
-  String getName();
+  /**
+   * TODO
+   * <p>
+   * TODO: Should create a parent interface for {@link SummaryType} and "error", rather than a {@link String} here...
+   */
+  String getElementName();
 
   /**
    * Produces a new derived report from the Pipe. The provided pipe is a unique split for this report. The value

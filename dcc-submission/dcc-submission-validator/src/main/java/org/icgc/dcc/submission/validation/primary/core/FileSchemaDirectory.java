@@ -41,7 +41,10 @@ import com.google.common.collect.Lists;
 /**
  * A directory that contains files associated with {@code FileSchema}. Each {@code FileSchema} is expected to have at
  * most one file in this directory.
+ * <p>
+ * @deprecated
  */
+@Deprecated
 @Slf4j
 @RequiredArgsConstructor
 public class FileSchemaDirectory {

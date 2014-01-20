@@ -36,11 +36,9 @@ import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VAL
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
 
-import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -48,11 +46,9 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
@@ -66,12 +62,8 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
-import com.google.common.io.LineReader;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValue;
 
@@ -87,12 +79,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   public HadoopPlatformStrategy(Config hadoopConfig, FileSystem fileSystem, Path source, Path output, Path system) {
     super(fileSystem, source, output, system);
     this.hadoopConfig = hadoopConfig;
-  }
-
-  @Override
-  public String getSubmissionDirPath() {
-    // TODO
-    return null;
   }
 
   @Override
@@ -143,17 +129,17 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
-    val reportPath = reportPath(schema, type, reportName);
+  public Tap<?, ?, ?> getReportTap2(String fileName, FlowType type, String reportName) {
+    val reportPath = reportPath2(fileName, type, reportName);
     val scheme = new HadoopJsonScheme();
     scheme.setSinkCompression(ENABLE);
-
     return new Hfs(scheme, reportPath.toUri().getPath());
   }
 
   @Override
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
-    val reportPath = reportPath(schema, type, reportName);
+  public InputStream readReportTap2(String fileName, FlowType type, String reportName)
+      throws IOException {
+    val reportPath = reportPath2(fileName, type, reportName);
     if (fileSystem.isFile(reportPath)) {
       return getInputStream(reportPath);
     }
@@ -197,14 +183,14 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  protected Tap<?, ?, ?> tapSource(Path path) {
+  public Tap<?, ?, ?> getInputTap(String fileName) {
     val scheme = new TextLine(
         new Fields(ValidationFields.OFFSET_FIELD_NAME,
             "line"));
     scheme.setSinkCompression(Compress.ENABLE);
     return new Hfs(
         scheme,
-        path.toUri().getPath());
+        getFilePath(fileName).toUri().getPath());
   }
 
   /**
@@ -219,27 +205,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     return new Hfs(
         scheme,
         path.toUri().getPath());
-  }
-
-  /**
-   * TODO: try and combine with validator's equivalent. (DCC-996)
-   */
-  @Override
-  public Fields getFileHeader(FileSchema fileSchema) throws IOException {
-    val path = path(fileSchema);
-
-    @Cleanup
-    InputStreamReader isr = new InputStreamReader(getInputStream(path), Charsets.UTF_8);
-
-    val lineReader = new LineReader(isr);
-    val firstLine = lineReader.readLine();
-    val header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
-    val dupHeader = checkDuplicateHeader(header);
-    if (!dupHeader.isEmpty()) {
-      throw new DuplicateHeaderException(dupHeader);
-    }
-
-    return new Fields(Iterables.toArray(header, String.class));
   }
 
   @SneakyThrows

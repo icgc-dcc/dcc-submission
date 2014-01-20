@@ -19,24 +19,20 @@ package org.icgc.dcc.submission.validation.primary.planner;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.REPLACE;
+import static cascading.tuple.Fields.SWAP;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.dictionary.model.FileSchemaRole.SUBMISSION;
 import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.submission.validation.cascading.RemoveEmptyValidationLineFilter;
@@ -45,13 +41,9 @@ import org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
-import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Key;
-import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 
 import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
@@ -109,7 +101,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     String[] keyFields = // in order to obtain offset of referencing side
         ObjectArrays.concat(fields, ValidationFields.OFFSET_FIELD_NAME);
 
-    Key key = new Key(getSchema(), keyFields);
+    Key key = new Key(getSchemaName(), SUBMISSION, keyFields); // TODO: support system again?
     if (trimmedTails.containsKey(key) == false) {
       String[] preKeyFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
 
@@ -124,7 +116,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   @Override
-  protected Pipe getTail(String basename) {
+  protected Pipe getReportTailPipe(String basename) {
     Pipe valid = new Pipe(basename + "_valid", structurallyValidTail);
     Pipe invalid = new Pipe(basename + "_invalid", structurallyInvalidTail);
     return new Merge(valid, invalid);
@@ -140,32 +132,23 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     return structurallyInvalidTail;
   }
 
+  private Pipe applyStructuralCheck(Pipe pipe) {
+    structuralCheckFunction = new StructuralCheckFunction(getFieldNames()); // TODO: due for a splitting
+    return new Each( // parse "line" into the actual expected fields
+        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheckFunction, SWAP);
+  }
+
   @Override
-  @SuppressWarnings("deprecation")
   protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy platformStrategy) {
-    checkState(structuralCheckFunction != null);
-    val sourceTap = platformStrategy.getSourceTap(getSchema());
-    try {
-      // TODO: address trick to know what the header contain: DCC-996
-      Fields header = platformStrategy.getFileHeader(getSchema());
-      structuralCheckFunction.declareFieldsPostPlanning(header);
 
-    } catch (IOException e) {
-      throw new PlanningException("Error processing file header");
-    } catch (DuplicateHeaderException e) {
-      String fileName = null;
-      try {
-        fileName = platformStrategy.path(getSchema()).getName();
-      } catch (FileNotFoundException fnfe) {
-        throw new PlanningException(fnfe);
-      } catch (IOException ioe) {
-        throw new PlanningException(ioe);
-      }
-      throw new PlanningFileLevelException(fileName, ErrorType.DUPLICATE_HEADER_ERROR,
-          e.getDuplicateHeaderFieldNames());
-    }
+    // TODO: address trick to know what the header contain: DCC-996
+    checkNotNull(structuralCheckFunction, "TODO")
+        .declareFieldsPostPlanning(
+            platformStrategy.getFileHeader(fileName));
 
-    flowDef.addSource(headPipe, sourceTap);
+    flowDef.addSource(
+        headPipe,
+        platformStrategy.getInputTap(fileName));
 
     // Not maintained anymore
     connectTrimmedTails(flowDef, platformStrategy);
@@ -179,34 +162,15 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     pipe = applyStructuralCheck(pipe);
 
     // TODO: DCC-1076 - Would be better done from within {@link RequiredRestriction}.
-    pipe = new Each(pipe, ALL, new ForbiddenValuesFunction(computeRequiredFieldnames()), REPLACE);
+    pipe = new Each(pipe, ALL, new ForbiddenValuesFunction(getRequiredFieldNames()), REPLACE);
 
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
   }
 
-  private Pipe applyStructuralCheck(Pipe pipe) {
-    structuralCheckFunction = new StructuralCheckFunction(getSchema().getFieldNames()); // TODO: due for a splitting
-    return new Each( // parse "line" into the actual expected fields
-        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheckFunction, Fields.SWAP);
-  }
-
   /**
-   * Returns the list of field names that have a {@link RequiredRestriction} set on them (irrespective of whether it's a
-   * strict one or not).
-   * <p>
-   * TODO: DCC-1076 will render it unnecessary (everything would take place in {@link RequiredRestriction}).
+   * Not maintained anymore and due for deletion.
    */
-  private List<String> computeRequiredFieldnames() {
-    List<String> requiredFieldnames = newArrayList();
-    for (Field field : getSchema().getFields()) {
-      if (field.hasRequiredRestriction()) {
-        requiredFieldnames.add(field.getName());
-      }
-    }
-    return copyOf(requiredFieldnames);
-  }
-
   private void connectTrimmedTails(FlowDef flowDef, PlatformStrategy platformStrategy) {
     for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
       flowDef.addTailSink(e.getValue(), platformStrategy.getTrimmedTap(e.getKey()));

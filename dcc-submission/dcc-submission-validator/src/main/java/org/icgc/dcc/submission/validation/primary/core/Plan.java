@@ -20,10 +20,7 @@ package org.icgc.dcc.submission.validation.primary.core;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.unmodifiableIterable;
 import static com.google.common.collect.Maps.newHashMap;
-import static java.lang.String.format;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Map;
 
 import lombok.NonNull;
@@ -32,10 +29,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.primary.MissingFileException;
 import org.icgc.dcc.submission.validation.primary.planner.ExternalFlowPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.FileSchemaFlowPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.InternalFlowPlanner;
@@ -69,10 +64,6 @@ public class Plan {
    */
   private Cascade cascade;
 
-  public String path(FileSchema schema) throws FileNotFoundException, IOException {
-    return platformStrategy.path(schema).getName();
-  }
-
   public void connect(PlatformStrategy platformStrategy) {
     val cascadeDef = new CascadeDef().setName(projectKey + " validation cascade");
     for (val flowPlanner : getFlowPlanners()) {
@@ -103,29 +94,16 @@ public class Plan {
     return dictionary;
   }
 
-  public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
-    val schemaPlan = internalFlowPlanners.get(schema);
-    if (schemaPlan == null) {
-      log.error(format("No corresponding file for schema %s, schemata with files are %s", schema,
-          internalFlowPlanners.keySet()));
-
-      throw new MissingFileException(schema);
-    }
-
-    return schemaPlan;
+  public InternalFlowPlanner getInternalFlow(String schema) {
+    return internalFlowPlanners.get(schema);
   }
 
   public Iterable<InternalFlowPlanner> getInternalFlows() {
     return unmodifiableIterable(internalFlowPlanners.values());
   }
 
-  public ExternalFlowPlanner getExternalFlow(String schema) throws MissingFileException {
-    val schemaPlan = externalFlowPlanners.get(schema);
-    if (schemaPlan == null) {
-      throw new MissingFileException(schema);
-    }
-
-    return schemaPlan;
+  public ExternalFlowPlanner getExternalFlow(String schema) {
+    return externalFlowPlanners.get(schema);
   }
 
   public Iterable<ExternalFlowPlanner> getExternalFlows() {

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -77,8 +79,8 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
 
   private static final Fields VALUE_FIELDS = new Fields(VALUE);
 
-  public UniqueCountPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fields, SummaryType.UNIQUE_COUNT, flowType);
+  public UniqueCountPlanElement(FileSchema fileSchema, String fileName, List<Field> fields, FlowType flowType) {
+    super(fileSchema, fileName, fields, newArrayList(fileSchema.getFieldNames()), SummaryType.UNIQUE_COUNT, flowType);
   }
 
   @Override
@@ -87,7 +89,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
 
     Pipe[] counts = new Pipe[fields.size()];
     int i = 0;
-    for(Field field : fields) {
+    for (Field field : fields) {
       counts[i++] = count(field.getName(), pipe);
     }
 
@@ -134,16 +136,16 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
       Iterator<TupleEntry> entries = bufferCall.getArgumentsIterator();
       long nulls = 0, missing = 0, populated = 0;
 
-      while(entries.hasNext()) { // TODO: improve (very inefficient)
+      while (entries.hasNext()) { // TODO: improve (very inefficient)
         TupleEntry entry = entries.next();
         TupleState state = ValidationFields.state(entry);
-        if(value == null) {
-          if(state.isFieldMissing(fieldName)) {
+        if (value == null) {
+          if (state.isFieldMissing(fieldName)) {
             missing++;
           } else {
             nulls++;
           }
-        } else if(value.isEmpty()) {
+        } else if (value.isEmpty()) {
           nulls++;
         } else {
           populated++;
@@ -159,6 +161,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
    */
   @SuppressWarnings("rawtypes")
   public static class CompletenessBuffer extends BaseOperation implements Buffer {
+
     public CompletenessBuffer() {
       super(4, COMPLETENESS_FIELDS.append(new Fields(UCOUNT)));
     }
@@ -168,7 +171,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
       @SuppressWarnings("unchecked")
       Iterator<TupleEntry> entries = bufferCall.getArgumentsIterator();
       long nulls = 0, missing = 0, populated = 0, uniqueCount = 0;
-      while(entries.hasNext()) {
+      while (entries.hasNext()) {
         TupleEntry entry = entries.next();
         nulls += entry.getLong(NULLS_TMP);
         missing += entry.getLong(MISSING_TMP);
