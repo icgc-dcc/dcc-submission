@@ -30,7 +30,6 @@ import lombok.val;
 import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.normalization.NormalizationValidator.ConnectedCascade;
-import org.icgc.dcc.submission.normalization.steps.Masking;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -86,8 +85,8 @@ public final class NormalizationReport {
     // Order matters
     TOTAL_START("Number of observations at the beginning of the process", EXTERNAL),
     UNIQUE_START(format("Number of unique '%s' before filtering", getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
-    MARKED_AS_CONTROLLED(format("Number of observations marked as '%s'", Masking.CONTROLLED), EXTERNAL),
-    MASKED(format("Number of observations for which a '%s' counterpart was generated", Masking.MASKED), INTERNAL),
+    MARKED_AS_CONTROLLED(format("Number of observations marked as '%s'", Marking.CONTROLLED), EXTERNAL),
+    MASKED(format("Number of observations for which a '%s' counterpart was generated", Marking.MASKED), INTERNAL),
     DROPPED(format("Number of redundant observations dropped (those only differing by their '%s')",
         getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
     UNIQUE_REMAINING(format("Number of unique '%s' remaining after filtering", getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),

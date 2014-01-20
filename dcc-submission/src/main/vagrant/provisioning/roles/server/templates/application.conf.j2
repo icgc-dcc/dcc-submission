@@ -11,7 +11,7 @@
 # {{ ansible_managed }}
 http {
   listen: "0.0.0.0"
-  port: 5380
+  port: {{ http_port }}
   ssl: false
   ws {
     path: "/ws"
@@ -28,13 +28,13 @@ shiro {
 }
 fs {
   # Root directory of DCC filesystem
-  root : "/tmp/dcc_root_dir"
+  root : "{{ root_dir }}"
   
   # FileSystem Scheme. This sets hadoop's fs.defaultFS. For local use: "file:///"
   url: "file:///"
 }
 sftp {
-  port : 5322
+  port : {{ sftp_port }}
   path : "../data/sshd.pem"
 }
 hadoop {
@@ -60,8 +60,23 @@ normalizer { # Configuration section for the normalizer component
 reference {
   # The reference genome assembly. Assumes the existence of a .fasta.fai file in the same directory. 
   # The filename is what will be reported to users as the assembly version.
-  fasta: "../data/GRCh37.fasta"
+  fasta: "../data/{{ reference_genome_version }}.fasta"
 }
 mail {
   enabled: false
+  smtp {
+    host: "localhost"
+  }
+  from {
+    email: "validator@example.org"
+    name: "Validator"
+  }
+  support {
+    email: "notifications@example.org"
+    name: "Support"
+  }
+  notification {
+    email: "notifications@example.org"
+    name: "Notifications"
+  }  
 }

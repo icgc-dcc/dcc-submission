@@ -21,6 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 
+import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.normalization.steps.PreMarking.PreMarker;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class PreMarkingTest extends CascadingTestCase {
         new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
         new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
     };
-    Fields resultFields = Masking.NORMALIZER_MARKING_FIELD;
+    Fields resultFields = PreMarking.MARKING_FIELD;
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
     for (int i = 0; i < 3; i++) {
@@ -52,7 +53,7 @@ public class PreMarkingTest extends CascadingTestCase {
       TupleEntry entry = iterator.next();
       Object object = entry.getObject(resultFields);
       assertThat(object)
-          .isEqualTo(Masking.OPEN.getTupleValue());
+          .isEqualTo(Marking.OPEN.getTupleValue());
     }
     assertFalse(iterator.hasNext());
   }

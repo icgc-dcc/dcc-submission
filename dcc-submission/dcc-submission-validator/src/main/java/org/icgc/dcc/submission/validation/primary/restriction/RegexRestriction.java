@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.primary.restriction;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REGEX_ERROR;
+import static org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.ParameterType.TEXT;
+
 import java.util.regex.Pattern;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -40,10 +44,6 @@ import cascading.tuple.TupleEntry;
 
 import com.mongodb.BasicDBObject;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REGEX_ERROR;
-import static org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.ParameterType.TEXT;
-
 public class RegexRestriction implements InternalPlanElement {
 
   public static final String NAME = "regex"; // TODO: this really should go in an enum
@@ -51,6 +51,8 @@ public class RegexRestriction implements InternalPlanElement {
   public static final String DESCRIPTION = "Regex that values must match.";
 
   public static final String PARAM = "pattern";
+
+  public static final String PARAM_EXAMPLES = "examples";
 
   private final String field;
 
@@ -121,7 +123,7 @@ public class RegexRestriction implements InternalPlanElement {
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry tupleEntry = functionCall.getArguments();
       String value = tupleEntry.getString(fieldname);
-      if(value != null && pattern.matcher(value).matches() == false) {
+      if (value != null && pattern.matcher(value).matches() == false) {
         ValidationFields.state(tupleEntry).reportError(REGEX_ERROR, fieldname, value, pattern.pattern());
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableSet.of;
 import static com.google.common.collect.Lists.newArrayList;
@@ -26,12 +27,19 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.META_SUBTYPE;
 
 import java.util.List;
 import java.util.Set;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.val;
+
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * Utilities for working with ICGC feature types.
@@ -58,10 +66,6 @@ public final class FeatureTypes {
     EXP_TYPE("exp", "_exp_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
-
-    private FeatureType(String typeName) {
-      this(typeName, null);
-    }
 
     private FeatureType(String typeName, String summaryFieldName) {
       this.typeName = typeName;
@@ -102,6 +106,43 @@ public final class FeatureTypes {
 
     public boolean isCountSummary() {
       return isSsm();
+    }
+
+    /**
+     * Returns the file types corresponding to the feature type.
+     * <p>
+     * TODO: move to {@link SubmissionFileTypes} rather
+     */
+    public Set<SubmissionFileType> getCorrespondingFileTypes() {
+      val dataType = this;
+      return newLinkedHashSet(Iterables.filter(
+          newArrayList(SubmissionFileType.values()),
+          new Predicate<SubmissionFileType>() {
+
+            @Override
+            public boolean apply(SubmissionFileType fileType) {
+              return fileType.getDataType() == dataType;
+            }
+          }));
+    }
+
+    /**
+     * Returns the file type whose presence indicates that the type is considered as "present" and therefore to be
+     * processed.
+     * <p>
+     * TODO: move to {@link SubmissionFileTypes} rather
+     */
+    public SubmissionFileType getFileTypeFlagship() {
+      SubmissionFileType fileTypeFlagship = null;
+      for (val fileType : getCorrespondingFileTypes()) {
+        checkState(fileType.getDataType() == this, "'%s' != '%s'", fileType, this); // By design
+        if (fileType.getSubType() == META_SUBTYPE) {
+          fileTypeFlagship = fileType;
+          break;
+        }
+      }
+      return checkNotNull(fileTypeFlagship,
+          "There should be at least one file type that acts as type presence flagship for the feature type '%s'", this);
     }
 
     /**

@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.release;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -78,6 +79,7 @@ public class ReleaseServiceNextReleaseTest {
 
   private DictionaryService mockDictionaryService;
 
+  private static final String FIRST_RELEASE_NAME = "release1";
   private static final String NEXT_RELEASE_NAME = "release2";
 
   @SuppressWarnings("unchecked")
@@ -98,7 +100,7 @@ public class ReleaseServiceNextReleaseTest {
     s.setState(SubmissionState.SIGNED_OFF);
     submissions.add(s);
     when(release.getSubmissions()).thenReturn(submissions);
-    when(release.getName()).thenReturn("my_release_name");
+    when(release.getName()).thenReturn(FIRST_RELEASE_NAME);
     when(release.getProjectKeys()).thenReturn(Arrays.asList("proj1"));
     when(release.getSubmissions()).thenReturn(submissions);
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
@@ -127,7 +129,7 @@ public class ReleaseServiceNextReleaseTest {
     doReturn(release).when(releaseService).getNextRelease();
 
     Dictionary dictionary = mock(Dictionary.class);
-    when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(dictionary);
+    when(mockDictionaryService.getDictionaryByVersion("existing_dictionary")).thenReturn(dictionary);
   }
 
   @Test
@@ -136,7 +138,12 @@ public class ReleaseServiceNextReleaseTest {
 
     releaseService.release(NEXT_RELEASE_NAME);
 
-    verify(release).setState(ReleaseState.COMPLETED);
+    verify(mockReleaseFileSystem)
+        .setUpNewReleaseFileSystem(
+            anyString(), anyString(),
+            any(ReleaseFileSystem.class),
+            anyListOf(String.class), anyListOf(String.class));
+    verify(release).complete();
   }
 
   @Test

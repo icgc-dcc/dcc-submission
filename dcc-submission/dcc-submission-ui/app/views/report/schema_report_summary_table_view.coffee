@@ -45,8 +45,7 @@ module.exports = class SchemaReportSummaryTableView extends DataTableView
   codeTable:
     TOTAL_START:
       """
-      Number of observations at the beginning of the
-      normalization process
+      Total number of submitted SSMs
       """
     TOTAL_END:
       """
@@ -67,8 +66,7 @@ module.exports = class SchemaReportSummaryTableView extends DataTableView
       """
     MARKED_AS_CONTROLLED:
       """
-      Number of observations marked as <em>controlled</em>
-      (contains sensitivie data)
+      Number of SSMs need to be masked for open access
       """
     MASKED:
       """
@@ -77,7 +75,7 @@ module.exports = class SchemaReportSummaryTableView extends DataTableView
       """
     RATIO:
       """
-      Percentage of observations marked as <em>controlled</em>
+      Percentage
       """
 
   createDataTable: ->

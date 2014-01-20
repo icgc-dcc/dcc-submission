@@ -115,7 +115,7 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public PlatformStrategy getPlatformStrategy() {
     // Round about way to get the inputs and outputs
-    Path inputDir = getSubmissionDirectory().getSubmissionDirPath();
+    Path inputDir = new Path(getSubmissionDirectory().getSubmissionDirPath());
     log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
     Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
     log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);

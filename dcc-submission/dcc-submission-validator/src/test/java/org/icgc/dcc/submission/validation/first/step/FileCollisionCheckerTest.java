@@ -30,8 +30,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.step.FileCollisionChecker;
-import org.icgc.dcc.submission.validation.first.step.NoOpFileChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

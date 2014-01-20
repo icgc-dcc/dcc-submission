@@ -17,36 +17,52 @@
  */
 package org.icgc.dcc.submission.normalization.steps;
 
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
-import lombok.NonNull;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
+import static com.google.common.collect.ImmutableList.copyOf;
+import lombok.val;
 
-import com.google.common.base.Optional;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
+import org.icgc.dcc.submission.normalization.NormalizationContext;
+import org.icgc.dcc.submission.normalization.NormalizationStep;
+
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
+import cascading.tuple.Fields;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Enum representing the states of an observation with regard to sensitive information.
+ * May never be used.
  */
-public enum Masking {
-  CONTROLLED, OPEN, MASKED;
+public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
 
-  static final Fields NORMALIZER_MARKING_FIELD = new Fields(NORMALIZER_MARKING);
-
-  /**
-   * Returns the value to be used in the context of a {@link Tuple} (to avoid serialization issues).
-   */
-  public String getTupleValue() {
-    return name();
-  }
+  public static final String STEP_NAME = "confidential-fields";
 
   /**
-   * Optionally returns a {@link Masking} from a given {@link String}.
+   * TODO
    */
-  public static Optional<Masking> getMasking(@NonNull String value) {
-    try {
-      return Optional.<Masking> of(Masking.valueOf(value));
-    } catch (IllegalArgumentException e) {
-      return Optional.absent();
+  public static ImmutableMap<String, ImmutableList<String>> getControlledFields(Dictionary dictionary) {
+    val controlledFields = new ImmutableMap.Builder<String, ImmutableList<String>>();
+    for (val fileSchema : dictionary.getFiles()) {
+      controlledFields.put(
+          fileSchema.getName(),
+          copyOf(fileSchema.getControlledFieldNames()));
     }
+    return controlledFields.build();
   }
+
+  @Override
+  public String shortName() {
+    return STEP_NAME;
+  }
+
+  /**
+   * TODO
+   */
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Discard(pipe, new Fields("TODO"));
+  }
+
 }

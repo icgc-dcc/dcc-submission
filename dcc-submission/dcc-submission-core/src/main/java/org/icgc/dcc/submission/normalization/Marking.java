@@ -15,60 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary;
+package org.icgc.dcc.submission.normalization;
 
-import static org.mockito.Mockito.when;
+import lombok.NonNull;
 
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.release.ReleaseService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import com.google.common.base.Optional;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.google.common.collect.Lists;
+/**
+ * Enum representing the states of an observation with regard to sensitive information.
+ */
+public enum Marking {
+  CONTROLLED, OPEN, MASKED;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DictionaryServiceTest2 {
-
-  private DictionaryService dictionaryService;
-
-  @Mock
-  private Morphia morphia;
-
-  @Mock
-  private Datastore datastore;
-
-  @Mock
-  private ReleaseService releaseService;
-
-  @Mock
-  private MailService mailService;
-
-  @Mock
-  private CodeList codeList1;
-
-  @Mock
-  private CodeList codeList2;
-
-  @Before
-  public void setUp() {
-    this.dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
-
-    // TODO: use partial mocking in order to mock queryCodeList() that has a constructor call (and is used by methods we
-    // want to test) - DCC-897
-
-    when(codeList1.getName()).thenReturn("codeList1");
-    when(codeList2.getName()).thenReturn("codeList2");
+  /**
+   * Returns the value to be used in the context of a tuple (to avoid serialization issues).
+   */
+  public String getTupleValue() {
+    return name();
   }
 
-  @Test(expected = DictionaryServiceException.class)
-  public void test_addCodeList_failOnUnexisting() {
-    dictionaryService.addCodeList(Lists.newArrayList(codeList1, codeList2));
-    // TODO: verifies
+  public boolean isControlled() {
+    return this == CONTROLLED;
+  }
+
+  public boolean isOpen() {
+    return this == OPEN;
+  }
+
+  public boolean isMasked() {
+    return this == MASKED;
+  }
+
+  /**
+   * Optionally returns a {@link Marking} from a given {@link String}.
+   */
+  public static Optional<Marking> from(@NonNull String value) {
+    try {
+      return Optional.<Marking> of(Marking.valueOf(value));
+    } catch (IllegalArgumentException e) {
+      return Optional.absent();
+    }
   }
 }

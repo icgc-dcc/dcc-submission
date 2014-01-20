@@ -39,8 +39,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.normalization.steps.Masking;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -241,13 +239,13 @@ public class ExecutableSpecConverter {
   }
 
   private static String unabbreviate(String abbrev) {
-    Masking masking = null;
+    Marking masking = null;
     if (abbrev.equalsIgnoreCase("OPEN")) {
-      masking = Masking.OPEN;
+      masking = Marking.OPEN;
     } else if (abbrev.equalsIgnoreCase("CTRL")) {
-      masking = Masking.CONTROLLED;
+      masking = Marking.CONTROLLED;
     } else if (abbrev.equalsIgnoreCase("MASK")) {
-      masking = Masking.MASKED;
+      masking = Marking.MASKED;
     } else {
       checkState(false, abbrev);
     }
