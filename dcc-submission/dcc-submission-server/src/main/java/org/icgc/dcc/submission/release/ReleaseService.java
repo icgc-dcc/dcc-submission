@@ -37,7 +37,6 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
@@ -213,24 +212,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     nextRelease.setDictionaryVersion(dictionaryVersion);
     nextRelease.setState(ReleaseState.OPENED);
 
+    val manager = new SubmissionManager(fs);
     for (val submission : oldRelease.getSubmissions()) {
-      val newSubmission =
-          new Submission(submission.getProjectKey(), submission.getProjectName(), nextRelease.getName());
-      if (submission.getState() == SubmissionState.SIGNED_OFF) {
-        // Reset
-        val nextDataState = Lists.<DataTypeState> newArrayList();
-        for (val dataTypeState : submission.getDataState()) {
-          nextDataState.add(new DataTypeState(dataTypeState.getDataType(), SubmissionState.NOT_VALIDATED));
-        }
-
-        newSubmission.setState(SubmissionState.NOT_VALIDATED);
-        newSubmission.setDataState(nextDataState);
-      } else {
-        // Migrate
-        newSubmission.setState(submission.getState());
-        newSubmission.setReport(submission.getReport());
-        newSubmission.setDataState(submission.getDataState());
-      }
+      val newSubmission = manager.release(nextRelease, submission);
 
       nextRelease.addSubmission(newSubmission);
     }
@@ -454,7 +438,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     nextRelease.removeFromQueue(projectKeys);
     for (val projectKey : projectKeys) {
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
-      submission.setState(SIGNED_OFF);
+
+      val manager = new SubmissionManager(fs);
+      manager.signOff(submission);
     }
 
     dbUpdateRelease(nextReleaseName, nextRelease);
@@ -528,8 +514,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   @Synchronized
-  public void queue(Release nextRelease, List<QueuedProject> queuedProjects)
-      throws InvalidStateException, DccModelOptimisticLockException {
+  public void queue(Release nextRelease, List<QueuedProject> queuedProjects) throws InvalidStateException,
+      DccModelOptimisticLockException {
     val nextReleaseName = nextRelease.getName();
     log.info("enqueuing {} for {}", queuedProjects, nextReleaseName);
 
@@ -539,7 +525,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     for (val queuedProject : queuedProjects) {
       val projectKey = queuedProject.getKey();
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, NOT_VALIDATED, VALID, INVALID, ERROR);
-      submission.setState(QUEUED);
+
+      val manager = new SubmissionManager(fs);
+      manager.queue(submission, queuedProject.getDataTypes());
     }
 
     dbUpdateRelease(nextReleaseName, nextRelease);
@@ -580,31 +568,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         // Update release object
         val submission = getSubmissionByName(nextRelease, nextProjectKey); // can't be null
         SubmissionState currentState = submission.getState();
-        SubmissionState destinationState = SubmissionState.VALIDATING;
+        SubmissionState nextState = SubmissionState.VALIDATING;
         if (expectedState != currentState) {
           throw new ReleaseException( // not recoverable
               "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState
-                  + " instead), cannot set to " + destinationState);
+                  + " instead), cannot set to " + nextState);
         }
 
-        // Set selected data types to validating
-        val destinationDataState = Lists.<DataTypeState> newArrayList();
-        for (val dataTypeState : submission.getDataState()) {
-          val dataType = dataTypeState.getDataType();
-
-          val selected = nextProject.getDataTypes().contains(dataType);
-          if (selected) {
-            // Update
-            destinationDataState.add(new DataTypeState(dataType, VALIDATING));
-          } else {
-            // Maintain
-            destinationDataState.add(dataTypeState);
-          }
-        }
-
-        // Update state
-        submission.setState(destinationState);
-        submission.setDataState(destinationDataState);
+        val manager = new SubmissionManager(fs);
+        manager.validate(submission, nextProject.getDataTypes());
 
         // Update corresponding database entity
         dbUpdateRelease(nextReleaseName, nextRelease);
@@ -624,18 +596,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void resolve(final String projectKey, final SubmissionState destinationState,
-      final List<DataTypeState> destinationDataState) {
+  public void resolve(final String projectKey, final SubmissionState nextState,
+      final List<DataTypeState> nextDataState) {
     // TODO: avoid code duplication
     checkArgument(
-    /**/VALID == destinationState ||
-        INVALID == destinationState ||
-        ERROR == destinationState ||
-        NOT_VALIDATED == destinationState /* Cancelled */);
+        /**/VALID == nextState ||
+            INVALID == nextState ||
+            ERROR == nextState ||
+            NOT_VALIDATED == nextState /* Cancelled */, "Not expecting submission state %s",
+        nextState);
 
     val expectedState = VALIDATING;
 
-    String description = format("resolve project '%s' with destination state '%s')", projectKey, destinationState);
+    String description = format("resolve project '%s' with destination state '%s')", projectKey, nextState);
     log.info("Attempting to {}", description);
 
     withRetry(description, new Callable<Optional<?>>() {
@@ -645,17 +618,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         val nextRelease = getNextRelease();
         String nextReleaseName = nextRelease.getName();
 
-        log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
+        log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, nextState, nextReleaseName });
 
         val submission = getSubmissionByName(nextRelease, projectKey);
         val currentState = submission.getState();
         if (expectedState != currentState) {
           throw new ReleaseException("project " + projectKey + " is not " + expectedState + " (" + currentState
-              + " instead), cannot set to " + destinationState);
+              + " instead), cannot set to " + nextState);
         }
 
         // Update corresponding database entity
-        updateSubmissionState(nextReleaseName, projectKey, destinationState, destinationDataState);
+        updateSubmissionState(nextReleaseName, projectKey, nextState, nextDataState);
 
         log.info("Resolved {} for {}", projectKey, nextReleaseName);
         return Optional.absent();
@@ -745,7 +718,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     // Update in-memory state
     val manager = new SubmissionManager(fs);
-    manager.resetSubmission(release, submission, dictionary, path);
+    manager.modify(release, submission, dictionary, path);
 
     // Update persisted state
     updateSubmission(releaseName, submission);

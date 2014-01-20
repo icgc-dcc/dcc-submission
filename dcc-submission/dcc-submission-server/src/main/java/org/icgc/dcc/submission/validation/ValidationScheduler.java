@@ -26,10 +26,6 @@ import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
-import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
 import java.util.List;
 import java.util.Set;
@@ -41,18 +37,17 @@ import lombok.Synchronized;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
+import org.icgc.dcc.submission.release.SubmissionManager;
 import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
-import org.icgc.dcc.submission.validation.core.SchemaReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReportContext;
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -62,9 +57,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
@@ -225,8 +217,8 @@ public class ValidationScheduler extends AbstractScheduledService {
         log.info("onSuccess - Finished validation for '{}'", project.getKey());
 
         val submissionReport = validation.getContext().getSubmissionReport();
-        val state = submissionReport.hasErrors() ? INVALID : VALID;
-        completeValidation(project, state, submissionReport);
+        val outcome = ValidationOutcome.SUCCEEDED;
+        completeValidation(project, outcome, submissionReport);
         log.info("onSuccess - Completed '{}'", project.getKey());
       }
 
@@ -238,8 +230,8 @@ public class ValidationScheduler extends AbstractScheduledService {
         log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
 
         val submissionReport = validation.getContext().getSubmissionReport();
-        val state = t instanceof CancellationException ? NOT_VALIDATED : ERROR;
-        completeValidation(project, state, submissionReport);
+        val outcome = t instanceof CancellationException ? ValidationOutcome.CANCELLED : ValidationOutcome.FAILED;
+        completeValidation(project, outcome, submissionReport);
         log.info("onFailure - Completed '{}'.", project.getKey());
       }
 
@@ -339,73 +331,15 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param submissionReport the report produced through the validation process
    */
   @Synchronized
-  private void completeValidation(QueuedProject project, SubmissionState state, SubmissionReport submissionReport) {
-    log.info("Validation for '{}' completed with state '{}'", project, state);
+  private void completeValidation(QueuedProject project, ValidationOutcome outcome, SubmissionReport submissionReport) {
+    log.info("Validation for '{}' completed with outcome '{}'", project, outcome);
 
-    try {
-      storeSubmissionReport(project.getKey(), submissionReport);
-    } finally {
-      val dictionary = getDictionary();
-      val submission = releaseService.getSubmission(project.getKey());
-      val previousDataState = submission.getDataState();
-      val validatedDataTypes = project.getDataTypes();
+    val submission = releaseService.getSubmission(project.getKey());
+    val manager = new SubmissionManager(dccFileSystem);
+    manager.resolve(submission, project.getDataTypes(), outcome, submissionReport, getDictionary());
 
-      // Pass through data types that were not validated
-      val nextDataState = Lists.<DataTypeState> newArrayList();
-      for (val previousDataTypeState : previousDataState) {
-        val unchanged = !validatedDataTypes.contains(previousDataTypeState.getDataType());
-        if (unchanged) {
-          nextDataState.add(previousDataTypeState);
-        }
-      }
-
-      // Update data types that were validated
-      val map = getSchemaReportsByDataType(submissionReport, dictionary);
-      for (val dataType : map.keySet()) {
-        val unchanged = !validatedDataTypes.contains(dataType);
-        if (unchanged) {
-          continue;
-        }
-
-        // Inherit global error / cancellation
-        val inherit = state == ERROR || state == NOT_VALIDATED;
-        SubmissionState dataTypeState = inherit ? state : null;
-        for (val schemaReport : map.get(dataType)) {
-          val terminal = dataTypeState == ERROR || dataTypeState == INVALID || dataTypeState == NOT_VALIDATED;
-          if (terminal) {
-            continue;
-          }
-
-          dataTypeState = schemaReport.hasErrors() ? INVALID : VALID;
-        }
-
-        nextDataState.add(new DataTypeState(dataType, dataTypeState));
-      }
-
-      if (state == VALID) {
-        for (val nextDataTypeState : nextDataState) {
-          if (nextDataTypeState.getState() == NOT_VALIDATED) {
-            state = NOT_VALIDATED;
-          }
-        }
-      }
-
-      resolveSubmission(project, state, nextDataState);
-    }
-  }
-
-  private Multimap<SubmissionDataType, SchemaReport> getSchemaReportsByDataType(SubmissionReport submissionReport,
-      Dictionary dictionary) {
-    val builder = ImmutableMultimap.<SubmissionDataType, SchemaReport> builder();
-    for (val schemaReport : submissionReport.getSchemaReports()) {
-      val fileName = schemaReport.getName();
-      val schema = dictionary.getFileSchemaByFileName(fileName).get();
-      val dataType = schema.getDataType();
-
-      builder.put(dataType, schemaReport);
-    }
-
-    return builder.build();
+    resolveSubmission(project, submission.getState(), submission.getDataState());
+    storeSubmissionReport(project.getKey(), (SubmissionReport) submission.getReport());
   }
 
   /**
