@@ -69,7 +69,7 @@ public class NormalizationValidatorTest {
   private static final String RELEASE_NAME = "dummy_release";
   private static final String PROJECT_NAME = "dummy_project";
 
-  private static final String FILE_NAME = "ssm__p.txt";
+  private static final String FILE_NAME = "ssm_p.txt";
   private static final String INPUT = "input";
   private static final String OUTPUT = "output";
   private static final String REFERENCE = "reference";
@@ -131,8 +131,7 @@ public class NormalizationValidatorTest {
     when(mockFileSchema.getFieldNames())
         .thenReturn(NormalizationTestUtils.getFieldNames(FOCUS_TYPE));
     when(mockDictionary.getFileSchema(FOCUS_TYPE))
-        .thenReturn(
-            Optional.<FileSchema> of(mockFileSchema));
+        .thenReturn(mockFileSchema);
     when(mockSubmissionDirectory.getFile(Mockito.anyString()))
         .thenReturn(Optional.<String> of(FILE_NAME));
 

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.ByteStreams.copy;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.conf.Configuration;
@@ -81,6 +84,22 @@ public class HadoopUtils {
     }
   }
 
+  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) {
+    return isFile(fileSystem, new Path(stringPath));
+  }
+
+  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) {
+    return getFileStatus(fileSystem, path).isFile();
+  }
+
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) {
+    return isDirectory(fileSystem, new Path(stringPath));
+  }
+
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) {
+    return getFileStatus(fileSystem, path).isDirectory();
+  }
+
   public static void rm(FileSystem fileSystem, String stringPath) {
     Path path = new Path(stringPath);
     rm(fileSystem, path);
@@ -118,7 +137,6 @@ public class HadoopUtils {
    */
   @Deprecated
   public static void createSymlink(FileSystem fileSystem, Path origin, Path destination) {
-
     try {
       FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
     } catch (IOException e) {
@@ -129,6 +147,7 @@ public class HadoopUtils {
   public static void mv(FileSystem fileSystem, String origin, String destination) {
     Path originPath = new Path(origin);
     Path destinationPath = new Path(destination);
+
     mv(fileSystem, originPath, destinationPath);
   }
 
@@ -139,6 +158,7 @@ public class HadoopUtils {
     } catch (IOException e) {
       throw new HdfsException(e);
     }
+
     if (!rename) {
       throw new HdfsException(String.format("could not rename %s to %s", originPath, destinationPath));
     }
@@ -155,6 +175,7 @@ public class HadoopUtils {
     } catch (IOException e) {
       throw new HdfsException(e);
     }
+
     return exists;
   }
 
@@ -212,21 +233,24 @@ public class HadoopUtils {
     return filenameList;
   }
 
-  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) {
-    FileStatus fileStatus = null;
-    try {
-      fileStatus = fileSystem.getFileStatus(path);
-    } catch (IOException e) {
-      throw new HdfsException(e);
-    }
-    return fileStatus;
-  }
-
   /**
    * This is not applicable for dir.
    */
   public static long duFile(FileSystem fileSystem, Path filePath) throws IOException {
     FileStatus status = fileSystem.getFileStatus(filePath);
     return status.getLen();
+  }
+
+  /**
+   * Returns the {@link FileStatus} for the given {@link Path}.
+   */
+  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) {
+    FileStatus status = null;
+    try {
+      status = fileSystem.getFileStatus(path);
+    } catch (IOException e) {
+      propagate(e);
+    }
+    return checkNotNull(status, "Expecting a non-null reference for '%s'", path);
   }
 }

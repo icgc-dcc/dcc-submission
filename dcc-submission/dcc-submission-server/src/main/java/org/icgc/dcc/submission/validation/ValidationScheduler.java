@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.validation;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.util.concurrent.AbstractScheduledService.Scheduler.newFixedDelaySchedule;
-import static com.google.common.util.concurrent.Futures.addCallback;
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -120,8 +120,16 @@ public class ValidationScheduler extends AbstractScheduledService {
    */
   @Override
   protected void runOneIteration() throws Exception {
-    pollOpenRelease();
-    pollQueue();
+    try {
+      pollOpenRelease();
+      pollQueue();
+    } catch (Exception e) {
+      log.error("Exception polling:", e);
+      mailService.sendSupportProblem(e.getMessage(), getStackTraceAsString(e));
+
+      // This will terminate the AbstractScheduledService thread but that is the safest thing to do here
+      throw e;
+    }
   }
 
   /**
@@ -149,6 +157,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       count = releaseService.countOpenReleases();
     } while (count == 0);
 
+    // This can happen during a release, see DCC-1931
     checkState(count == 1, "Expecting one and only one '%s' release, instead getting '%s'",
         OPENED, count);
   }
@@ -184,20 +193,25 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param project the project to validate
    * @throws ValidationRejectedException if the validation could not be executed
    */
-  private void tryValidation(Release release, final QueuedProject project) {
+  private void tryValidation(final Release release, final QueuedProject project) {
     // Prepare validation
     val validation = createValidation(release, project);
 
     // Submit validation asynchronously for execution
-    val future = executor.execute(validation);
+    executor.execute(validation, new Runnable() {
 
-    // If we made it here then the validation was accepted
-    log.info("Accepting next project in queue: '{}'", project);
-    acceptValidation(project, release);
-    log.info("Accepted: '{}'", project);
+      /**
+       * Called if and when validation is accepted (asynchronously).
+       */
+      @Override
+      public void run() {
+        // If we made it here then the validation was accepted
+        log.info("onAccepted - Accepting next project in queue: '{}'", project);
+        acceptValidation(project, release);
+        log.info("onAccepted -  '{}'", project);
+      }
 
-    // Add callbacks to handle execution outcomes
-    addCallback(future, new FutureCallback<Validation>() {
+    }, new FutureCallback<Validation>() {
 
       /**
        * Called when validation has completed (may not be VALID)
@@ -305,7 +319,7 @@ public class ValidationScheduler extends AbstractScheduledService {
 
   private void storeSubmissionReport(String projectKey, SubmissionReport report) {
     // Persist the report to DB
-    log.info("Storing validation submission report for project '{}'...", projectKey);
+    log.info("Storing validation submission report for project '{}': {}...", projectKey, report);
     val releaseName = resolveOpenRelease().getName();
     releaseService.updateSubmissionReport(releaseName, projectKey, report);
     log.info("Finished storing validation submission report for project '{}'", projectKey);

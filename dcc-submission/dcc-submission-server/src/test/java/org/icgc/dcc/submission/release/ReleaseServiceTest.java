@@ -165,7 +165,7 @@ public class ReleaseServiceTest {
     projectKeys.add("p1");
     projectKeys.add("p2");
     projectKeys.add("p3");
-    verify(this.fs).createReleaseFilesystem(release, projectKeys);
+    verify(this.fs).createInitialReleaseFilesystem(release, projectKeys);
   }
 
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,

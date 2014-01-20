@@ -17,12 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 import java.util.Set;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,15 +44,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class DefaultPlanner implements Planner {
 
-  private final List<? extends PlanningVisitor<?>> planningVisitors;
-
-  @Inject
-  public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
-    checkArgument(restrictionTypes != null);
-    planningVisitors = createVisitors(restrictionTypes);
-  }
+  @NonNull
+  private final Set<RestrictionType> restrictionTypes;
 
   @Override
   public Plan plan(@NonNull String projectKey, @NonNull PlatformStrategy strategy, @NonNull Dictionary dictionary) {
@@ -66,23 +61,6 @@ public class DefaultPlanner implements Planner {
     applyVisitors(plan, projectKey);
 
     return plan;
-  }
-
-  private static List<PlanningVisitor<? extends PlanElement>> createVisitors(Set<RestrictionType> restrictionTypes) {
-    return ImmutableList.of(
-        // Internal
-        new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
-        new UniqueFieldsPlanningVisitor(),
-        new InternalRestrictionPlanningVisitor(restrictionTypes),
-
-        // Reporting
-        new SummaryPlanningVisitor(),
-        new ErrorPlanningVisitor(FlowType.INTERNAL),
-
-        // External
-        new RelationPlanningVisitor(),
-        new ExternalRestrictionPlanningVisitor(restrictionTypes),
-        new ErrorPlanningVisitor(FlowType.EXTERNAL));
   }
 
   private static void includePlanners(Plan plan, String projectKey, PlatformStrategy strategy, Dictionary dictionary) {
@@ -106,10 +84,28 @@ public class DefaultPlanner implements Planner {
   }
 
   private void applyVisitors(Plan plan, String projectKey) {
-    for (val visitor : planningVisitors) {
+    val visitors = createVisitors(restrictionTypes);
+    for (val visitor : visitors) {
       log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), projectKey);
       visitor.apply(plan);
     }
+  }
+
+  private static List<PlanningVisitor<? extends PlanElement>> createVisitors(Set<RestrictionType> restrictionTypes) {
+    return ImmutableList.of(
+        // Internal
+        new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
+        new UniqueFieldsPlanningVisitor(),
+        new InternalRestrictionPlanningVisitor(restrictionTypes),
+
+        // Reporting
+        new SummaryPlanningVisitor(),
+        new ErrorPlanningVisitor(FlowType.INTERNAL),
+
+        // External
+        new RelationPlanningVisitor(),
+        new ExternalRestrictionPlanningVisitor(restrictionTypes),
+        new ErrorPlanningVisitor(FlowType.EXTERNAL));
   }
 
 }

@@ -32,6 +32,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
@@ -49,8 +51,6 @@ import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
@@ -69,18 +69,13 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
 
+@Slf4j
 class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
 
-  private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
-
   private final Pipe head;
-
   private Pipe structurallyValidTail;
-
   private Pipe structurallyInvalidTail;
-
   private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
-
   private StructuralCheckFunction structuralCheck;
 
   DefaultInternalFlowPlanner(FileSchema fileSchema) {

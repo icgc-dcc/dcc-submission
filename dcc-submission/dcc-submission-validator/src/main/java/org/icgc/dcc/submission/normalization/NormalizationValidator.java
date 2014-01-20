@@ -27,7 +27,6 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
-import static org.icgc.dcc.submission.normalization.NormalizationUtils.getFileSchema;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -165,18 +164,14 @@ public final class NormalizationValidator implements Validator {
     String projectKey = context.getProjectKey();
 
     // Plan cascade
-    val pipes = planCascade(
-        DefaultNormalizationContext.getNormalizationContext(
-            context.getDictionary(),
-            FOCUS_TYPE));
+    val pipes = planCascade(DefaultNormalizationContext.getNormalizationContext(context.getDictionary()));
 
     // Connect cascade
+    val ssmPFileSchema = context.getDictionary().getFileSchema(FOCUS_TYPE);
     val connectedCascade = connectCascade(
         pipes,
         context.getPlatformStrategy(),
-        getFileSchema(
-            context.getDictionary(),
-            FOCUS_TYPE),
+        ssmPFileSchema,
         releaseName,
         projectKey);
 

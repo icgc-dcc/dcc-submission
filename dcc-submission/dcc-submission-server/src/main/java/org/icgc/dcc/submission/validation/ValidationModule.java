@@ -128,7 +128,8 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   /**
-   * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
+   * Any restrictions added in here should also be added in
+   * {@link ValidationTestModule} for testing.
    */
   private void bindRestrictionTypes() {
     // Set binder will preserve bind order as iteration order for injectees
@@ -205,6 +206,9 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   /**
+   * Near clone of {@link LoaderModule} - maintain both at the same time until
+   * DCC-1876 is addressed.
+   * <p>
    * TODO: This is temporary until DCC-1876 is addressed.
    * <p>
    * TODO: address hard-codings
