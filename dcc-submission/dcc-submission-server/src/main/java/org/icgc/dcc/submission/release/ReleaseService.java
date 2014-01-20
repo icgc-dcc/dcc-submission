@@ -596,18 +596,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void resolve(final String projectKey, final SubmissionState destinationState,
-      final List<DataTypeState> destinationDataState) {
+  public void resolve(final String projectKey, final SubmissionState nextState,
+      final List<DataTypeState> nextDataState) {
     // TODO: avoid code duplication
     checkArgument(
-    /**/VALID == destinationState ||
-        INVALID == destinationState ||
-        ERROR == destinationState ||
-        NOT_VALIDATED == destinationState /* Cancelled */);
+        /**/VALID == nextState ||
+            INVALID == nextState ||
+            ERROR == nextState ||
+            NOT_VALIDATED == nextState /* Cancelled */, "Not expecting submission state %s",
+        nextState);
 
     val expectedState = VALIDATING;
 
-    String description = format("resolve project '%s' with destination state '%s')", projectKey, destinationState);
+    String description = format("resolve project '%s' with destination state '%s')", projectKey, nextState);
     log.info("Attempting to {}", description);
 
     withRetry(description, new Callable<Optional<?>>() {
@@ -617,17 +618,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         val nextRelease = getNextRelease();
         String nextReleaseName = nextRelease.getName();
 
-        log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
+        log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, nextState, nextReleaseName });
 
         val submission = getSubmissionByName(nextRelease, projectKey);
         val currentState = submission.getState();
         if (expectedState != currentState) {
           throw new ReleaseException("project " + projectKey + " is not " + expectedState + " (" + currentState
-              + " instead), cannot set to " + destinationState);
+              + " instead), cannot set to " + nextState);
         }
 
         // Update corresponding database entity
-        updateSubmissionState(nextReleaseName, projectKey, destinationState, destinationDataState);
+        updateSubmissionState(nextReleaseName, projectKey, nextState, nextDataState);
 
         log.info("Resolved {} for {}", projectKey, nextReleaseName);
         return Optional.absent();
