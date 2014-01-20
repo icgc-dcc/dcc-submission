@@ -90,6 +90,15 @@ module.exports = class ValidateSubmissionView extends View
       if name != null and idx == -1
         @features.push {'name':name, 'selected':true}
 
+    # Make clinical related files go first
+    @features = _.sortBy @features, (feature)->
+      switch feature.name
+        when "CLINICAL_CORE_TYPE"
+          return 0
+        when "CLINICAL_OPTIONAL_TYPE"
+          return 1
+        else
+          return 10
 
     # Pre-filter if datatype is provided
     if datatype
@@ -116,7 +125,7 @@ module.exports = class ValidateSubmissionView extends View
     aoColumns = [
       {
          sTitle: "Data Types To Valdiate"
-         mData: (source) =>
+         mData: (source) ->
            displayName = utils.translateDataType(source.name)
            if source.name != "CLINICAL_CORE_TYPE"
              if source.selected == false

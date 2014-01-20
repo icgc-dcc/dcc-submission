@@ -65,8 +65,6 @@ module.exports = class ReportDatatypeView extends View
         if datatype == null
           datatype = "MISCELLANEOUS"
         datatypes.push datatype
-        #datatypes.push report.get "dataType"
-
 
     # Create data type tables if they do not exist
     datatypes = _.sortBy datatypes, (datatype)->
@@ -136,7 +134,7 @@ module.exports = class ReportDatatypeView extends View
         """
         <span>#{title}</span>
         """
-      else if state == "ERROR"
+      else if state in ["ERROR", "VALIDATING"]
         """
         <span>#{title} - </span>
         <span class="#{lc_state}">#{ui_state}</span>
