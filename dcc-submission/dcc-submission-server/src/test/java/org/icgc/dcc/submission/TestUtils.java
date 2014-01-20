@@ -21,7 +21,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.io.Resources.getResource;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
@@ -30,6 +29,8 @@ import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.MET
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_S_TYPE;
+import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 
 import java.io.File;
@@ -149,7 +150,7 @@ public final class TestUtils {
 
   @SneakyThrows
   public static Dictionary dictionary() {
-    Dictionary dictionary = MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+    val dictionary = readDccResourcesDictionary();
 
     // Add file schemata
     dictionary.addFile(readFileSchema(SSM_S_TYPE));
@@ -299,10 +300,6 @@ public final class TestUtils {
   @SneakyThrows
   public static DetailedSubmission asDetailedSubmission(Response response) {
     return MAPPER.readValue(asString(response), DetailedSubmission.class);
-  }
-
-  private static URL getDccResource(String resourceName) {
-    return getResource("org/icgc/dcc/resources/" + resourceName);
   }
 
   @SneakyThrows

@@ -331,8 +331,10 @@ public class ProjectResourceTest extends ResourceTest {
     assertThat(reponse.readEntity(String.class))
         .isEqualTo(
             "[{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"releaseName\":\"REL1\",\"lastUpdated\":"
-                + submissionTwo.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null},"
+                + submissionTwo.getLastUpdated().getTime()
+                + ",\"state\":\"NOT_VALIDATED\",\"dataState\":null,\"report\":null},"
                 + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"releaseName\":\"REL1\",\"lastUpdated\":"
-                + submissionOne.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null}]");
+                + submissionOne.getLastUpdated().getTime()
+                + ",\"state\":\"NOT_VALIDATED\",\"dataState\":null,\"report\":null}]");
   }
 }

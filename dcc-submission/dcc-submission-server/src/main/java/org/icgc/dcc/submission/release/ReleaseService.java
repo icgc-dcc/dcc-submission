@@ -596,8 +596,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void resolve(final String projectKey, final SubmissionState nextState,
-      final List<DataTypeState> nextDataState) {
+  public void resolve(final String projectKey, final SubmissionState nextState, final List<DataTypeState> nextDataState) {
     // TODO: avoid code duplication
     checkArgument(
         /**/VALID == nextState ||

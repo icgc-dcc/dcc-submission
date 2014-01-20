@@ -25,6 +25,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +44,8 @@ import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -96,6 +99,8 @@ public class ValidationSchedulerTest {
   @Mock
   Release release;
   @Mock
+  Submission submission;
+  @Mock
   Dictionary dictionary;
 
   /**
@@ -112,6 +117,10 @@ public class ValidationSchedulerTest {
     when(releaseService.getNextRelease()).thenReturn(release);
     when(releaseService.countOpenReleases()).thenReturn(1L);
     when(releaseService.getNextDictionary()).thenReturn(dictionary);
+    when(releaseService.getSubmission(anyString(), anyString())).thenReturn(submission);
+    when(releaseService.getSubmission(anyString())).thenReturn(submission);
+    when(submission.getDataState()).thenReturn(Collections.<DataTypeState> emptyList());
+    when(submission.getReport()).thenReturn(new SubmissionReport());
   }
 
   @Test
@@ -122,6 +131,8 @@ public class ValidationSchedulerTest {
 
     // Setup: Create returned future with context that has no errors
     when(context.hasErrors()).thenReturn(false);
+    when(context.getSubmissionReport()).thenReturn(new SubmissionReport());
+    when(submission.getState()).thenReturn(VALID);
     val validation = createValidation(context, validator);
 
     // Setup: When submitted we will return the "valid" future
@@ -145,6 +156,8 @@ public class ValidationSchedulerTest {
 
     // Setup: Create returned future with context that has errors
     when(context.hasErrors()).thenReturn(true);
+    when(context.getSubmissionReport()).thenReturn(new SubmissionReport());
+    when(submission.getState()).thenReturn(INVALID);
     val validation = createValidation(context, validator);
 
     // Setup: When submitted we will return the "invalid" future
@@ -167,6 +180,7 @@ public class ValidationSchedulerTest {
     validators.add(validator);
 
     // Setup: When submitted we will return the "invalid" future
+    when(submission.getState()).thenReturn(NOT_VALIDATED);
     doAnswer(onFailure(new CancellationException())).when(executor).execute(
         any(Validation.class),
         any(Runnable.class),
@@ -186,6 +200,7 @@ public class ValidationSchedulerTest {
     validators.add(validator);
 
     // Setup: When submitted we will return the "invalid" future
+    when(submission.getState()).thenReturn(ERROR);
     doAnswer(onFailure(new RuntimeException())).when(executor).execute(
         any(Validation.class),
         any(Runnable.class),

@@ -17,20 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.key.surjectivity;
 
-import static com.google.common.collect.Sets.newTreeSet;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
-
-import java.util.Set;
-
-import lombok.NonNull;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileSystem;
-import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
-import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
-import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
+import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
+import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 
 /**
  * Validates surjective relations.
@@ -42,76 +39,69 @@ public class SurjectivityValidator {
   public static final long SIMPLE_SURJECTION_ERROR_LINE_NUMBER = -1;
   public static final long COMPLEX_SURJECTION_ERROR_LINE_NUMBER = -2;
 
-  @NonNull
-  private final KVFileSystem fileSystem;
-
   /**
    * TODO: explain very special case.
    * <p>
    * From potentially more than one file (hence "complex").
    */
-  private final Set<KVKeyValues> encounteredSampleKeys = newTreeSet();
+  private final KVEncounteredForeignKeys encounteredSampleForeignKeys = new KVEncounteredForeignKeys();
 
-  public Set<KVKeyValues> getSurjectionExpectedKeys(@NonNull KVFileDataDigest referencedData) {
-    return newTreeSet(referencedData.getPks());
-  }
-
-  public void addEncounteredSampleKeys(Set<KVKeyValues> surjectionEncountered) {
-    encounteredSampleKeys.addAll(surjectionEncountered);
+  public void addEncounteredSampleKeys(KVEncounteredForeignKeys encounteredSampleForeignKeys) {
+    this.encounteredSampleForeignKeys.addEncounteredForeignKeys(encounteredSampleForeignKeys);
   }
 
   public void validateSimpleSurjection(
-      Set<KVKeyValues> expectedKeys,
-      Set<KVKeyValues> encounteredKeys, // From one file only (unlike for complex check)
-      KVFileErrors referencedFileErrors) {
-    if (hasSurjectionErrors(expectedKeys, encounteredKeys)) {
-      collectSurjectionErrors(
-          false,
-          expectedKeys,
-          encounteredKeys,
-          referencedFileErrors);
-    }
+      KVFileType fileType,
+      KVPrimaryKeys expectedKeys,
+      KVEncounteredForeignKeys encounteredKeys, // From one file only (unlike for complex check)
+      KVSubmissionErrors errors,
+      KVFileType offendedFileType) {
+    val valid = validateSurjectionErrors(
+        false,
+        expectedKeys,
+        encounteredKeys,
+        errors,
+        offendedFileType);
+    log.info((valid ? "No" : "Some") + " simple surjection error found for file type '{}'", fileType);
   }
 
-  public void validateComplexSurjection(
-      Set<KVKeyValues> expectedSampleKeys,
-      KVFileErrors sampleFileErrors) {
-
-    if (encounteredSampleKeys.isEmpty()) {
+  public void validateComplexSurjection(KVPrimaryKeys expectedSampleKeys, KVSubmissionErrors errors) {
+    if (encounteredSampleForeignKeys.noneEncountered()) {
       log.warn("No sample encountered..."); // Could indicate an issue
     }
-    if (hasSurjectionErrors(expectedSampleKeys, encounteredSampleKeys)) {
-      log.error("Some complex surjection errors detected");
-      collectSurjectionErrors(
-          true,
-          expectedSampleKeys,
-          encounteredSampleKeys,
-          sampleFileErrors);
-    } else {
-      log.error("No complex surjection errors detected");
-    }
+    val valid = validateSurjectionErrors(
+        true,
+        expectedSampleKeys,
+        encounteredSampleForeignKeys,
+        errors,
+        SAMPLE);
+    log.info((valid ? "No" : "Some") + " complex surjection errors detected");
   }
 
-  private boolean hasSurjectionErrors(Set<KVKeyValues> surjectionExpected, Set<KVKeyValues> surjectionEncountered) {
-    int expectedSize = surjectionExpected.size();
-    int encounteredSize = surjectionEncountered.size();
-    return expectedSize != encounteredSize;
-  }
-
-  private void collectSurjectionErrors(
+  private boolean validateSurjectionErrors(
       boolean complex,
-      Set<KVKeyValues> expectedKeys,
-      Set<KVKeyValues> encounteredKeys,
-      KVFileErrors referencedFileError) {
-    log.info("Collecting '{}' surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
-    for (KVKeyValues keys : expectedKeys) {
-      if (!encounteredKeys.contains(keys)) {
-        if (complex) {
-          referencedFileError.addComplexSurjectionError(keys);
-        } else {
-          referencedFileError.addSimpleSurjectionError(keys);
+      KVPrimaryKeys expectedKeys,
+      KVEncounteredForeignKeys encounteredKeys,
+      KVSubmissionErrors errors,
+      KVFileType offendedFileType) {
+    log.info("Validating '{}' potential surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
+
+    boolean validFileType = true;
+    for (val fileName : expectedKeys.getFilePaths()) {
+      val expectedIterator = expectedKeys.getPrimaryKeys(fileName);
+      while (expectedIterator.hasNext()) {
+        val expected = expectedIterator.next();
+        val validKey = encounteredKeys.encountered(expected);
+        if (!validKey) {
+          if (complex) {
+            errors.addComplexSurjectionError(offendedFileType, fileName, expected);
+          } else {
+            errors.addSimpleSurjectionError(offendedFileType, fileName, expected);
+          }
+          validFileType = false;
         }
       }
     }
+    return validFileType;
   }
 }

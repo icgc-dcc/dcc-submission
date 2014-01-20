@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,41 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.error;
+package org.icgc.dcc.submission.core.util;
 
-import java.util.List;
+import static com.google.common.base.Splitter.on;
 
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
-import org.icgc.dcc.submission.validation.key.data.KVKeyValues;
-import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
-import org.icgc.dcc.submission.validation.key.report.KVReport;
+import com.google.common.base.Splitter;
 
 /**
- * 
+ * TODO
  */
-@Value
-@Slf4j
-public class KVRowError {
-
-  private final KVErrorType type;
-  private final KVKeyValues keyValues;
-
-  public void describe(
-      KVReport report, String dataFileName, long lineNumber, List<String> fieldNames, Object[] params,
-      KVFileDescription kvFileDescription) {
-    log.debug(
-        "'{}' error: '{}'",
-        new Object[] { type, new Object[] { lineNumber, fieldNames, params, keyValues.getValues(), kvFileDescription } });
-    report.report(
-        KVError.kvError()
-            .fileName(dataFileName)
-            .fieldNames(fieldNames)
-            .type(type.getErrorType())
-            .lineNumber(lineNumber)
-            .value(keyValues.getValues())
-            .params(params).build());
-  }
+public class Splitters {
+  public static final Splitter PATH_JOINER = on('/');
 }

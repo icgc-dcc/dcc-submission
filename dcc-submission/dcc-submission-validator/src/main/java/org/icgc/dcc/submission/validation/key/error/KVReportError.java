@@ -15,53 +15,61 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.util;
+package org.icgc.dcc.submission.validation.key.error;
 
-import static com.google.common.io.Resources.getResource;
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
+import static org.icgc.dcc.submission.validation.key.utils.KVConstants.MAPPER;
 
-import java.net.URL;
+import java.util.List;
 
-import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
+import lombok.Value;
+import lombok.experimental.Builder;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+@Value
+@Builder
+public class KVReportError {
 
-@NoArgsConstructor(access = PRIVATE)
-public class Dictionaries {
+  @JsonProperty
+  String fileName;
+  @JsonProperty
+  List<String> fieldNames;
+  @JsonProperty
+  long lineNumber;
+  @JsonProperty
+  Object value;
+  @JsonProperty
+  ErrorType type;
+  @JsonProperty
+  Object[] params;
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final ObjectReader FILE_SCHEMA_READER = MAPPER.reader(FileSchema.class);
-  private static final ObjectReader DICTIONARY_SCHEMA_READER = MAPPER.reader(Dictionary.class);
-  private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
+  private KVReportError(
+      @JsonProperty("fileName") String fileName,
+      @JsonProperty("fieldNames") List<String> fieldNames,
+      @JsonProperty("lineNumber") long lineNumber,
+      @JsonProperty("value") Object value,
+      @JsonProperty("type") ErrorType type,
+      @JsonProperty("params") Object[] params)
+  {
+    this.fileName = fileName;
+    this.fieldNames = fieldNames;
+    this.lineNumber = lineNumber;
+    this.value = value;
+    this.type = type;
+    this.params = params;
+  }
 
-  @SneakyThrows
-  public static FileSchema readFileSchema(SubmissionFileType fileType) {
-    val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
-
-    return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
+  @Override
+  public String toString() {
+    return toJsonSummaryString();
   }
 
   @SneakyThrows
-  public static Dictionary readDccResourcesDictionary() {
-    return readDictionary(getDccResource("Dictionary.json"));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDictionary(String dictionaryResourcePath) {
-    return readDictionary(getResource(dictionaryResourcePath));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDictionary(URL dictionaryURL) {
-    return DICTIONARY_SCHEMA_READER.readValue(dictionaryURL);
+  public String toJsonSummaryString() {
+    return "\n" + MAPPER
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(this);
   }
 }

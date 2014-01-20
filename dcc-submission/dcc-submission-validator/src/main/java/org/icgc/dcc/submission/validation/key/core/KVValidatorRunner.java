@@ -56,33 +56,32 @@ public class KVValidatorRunner implements Runnable, Serializable {
   private final Collection<SubmissionDataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
-  private final String oldReleasePath;
   @NonNull
-  private final String newReleasePath;
+  private final String submissionPath;
   @NonNull
   private final String reportPath;
 
   @Override
+  @SneakyThrows
   public void run() {
     try {
       validate();
     } catch (Throwable t) {
       log.error("Error performing key validation:", t);
+      throw t;
     }
   }
 
   private void validate() throws IOException {
     val fileSystem = getFileSystem();
-    val dictionary = getDictionary();
     val report = new KVReport(fileSystem, new Path(reportPath));
     try {
       val validator = new KVValidator(
           new KVFileParser(fileSystem, new FileLineListParser(), false),
-          new KVFileSystem(fileSystem, dataTypes, dictionary, new Path(oldReleasePath), new Path(newReleasePath)),
-          report);
+          new KVFileSystem(fileSystem, dataTypes, dictionary, new Path(submissionPath)), report);
 
       log.info("Starting key validation...");
-      validator.validate();
+      validator.processSubmission();
       log.info("Finished key validation");
     } finally {
       report.close();
