@@ -457,14 +457,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     Dictionary dictionary =
         addScript(dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "note != 'script_error_here'",
+            "if (note == null) { return true; } else { return note != \"script_error_here\";}",
             "Note field cannot be 'script_error_here'");
 
     status("admin", "Adding Script restriction #2 to OPENED dictionary");
     dictionary =
         addScript(dictionary, SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "! (note.indexOf('_') > 0)",
+            "if (note == null) { return true; } else { return note.indexOf('_') == -1; }",
             "Note field cannot contain the underscore(_) character");
 
     status("admin", "Updating to new dictionary with script restrictions");

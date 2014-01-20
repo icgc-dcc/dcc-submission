@@ -103,20 +103,16 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
         // !wouldBeSameMutation(referenceGenomeAllele, mutatedFromAllele)
         // &&
         !wouldBeTrivialMutation(referenceGenomeAllele, mutatedToAllele)) {
-          log.info("Creating mask for '{}'", entry); // Rare enough that we can
-                                                     // log
+          log.debug("Creating mask for '{}'", entry);
           val mask = mask(TupleEntries.clone(entry), referenceGenomeAllele);
 
-          log.info("Resulting mask for '{}': '{}'", entry, mask); // Rare enough
-                                                                  // that we can
-                                                                  // log
+          log.debug("Resulting mask for '{}': '{}'", entry, mask);
           functionCall.getOutputCollector().add(mask);
 
           // Increment counter
           flowProcess.increment(MASKED, COUNT_INCREMENT);
         } else {
-          log.info("Skipping trivial mask for '{}'", entry); // Rare enough that
-                                                             // we can log
+          log.debug("Skipping trivial mask for '{}'", entry);
         }
       }
     }
