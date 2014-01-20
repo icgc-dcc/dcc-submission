@@ -38,7 +38,7 @@ module.exports = class ReportDatatypeView extends View
     @currentDatatypes = []
 
     @files = []
-    console.log @files
+    #console.log @files
 
     super
 
@@ -52,6 +52,10 @@ module.exports = class ReportDatatypeView extends View
 
     # Extract unique datatypes for current update
     datatypes = []
+
+    # Make sure core table is always visible
+    datatypes.push("CLINICAL_CORE_TYPE")
+
     @schemaReports = @report.get "schemaReports"
     @schemaReports.each (report)->
       #console.log report
@@ -65,8 +69,6 @@ module.exports = class ReportDatatypeView extends View
     #console.log datatypes
 
     # Create data type tables if they do not exist
-    # TODO: should clinical always be visible?
-    container = @$el
     datatypes = _.sortBy datatypes, (datatype)->
       switch datatype
         when "CLINICAL_CORE_TYPE"
@@ -79,6 +81,12 @@ module.exports = class ReportDatatypeView extends View
           return 10
 
     datatypes.forEach (datatype)=>
+      container = null
+      if datatype in ["CLINICAL_OPTIONAL_TYPE", "CLINICAL_CORE_TYPE"]
+        container = @$el.find("#clinical-report-container")
+      else
+        container = @$el.find("#experimental-report-container")
+
       elem = container.find("#"+datatype)
       if elem.length == 0
         container.append("<table id='#{datatype}'></table>")
@@ -97,6 +105,41 @@ module.exports = class ReportDatatypeView extends View
         
     @updateDataTable()
 
+
+  getTitleBar: (datatype, state, globalState)->
+    title = utils.translateDataType(datatype)
+    lc_state = state.toLowerCase()
+    ui_state = state.replace("_", " ")
+
+    if globalState == "QUEUED"
+      """
+      <span>#{title} - </span>
+      <span class="queued">QUEUED</span>
+      """
+    else
+      if state == ""
+        """
+        <span>#{title}</span>
+        """
+      else if state == "ERROR"
+        """
+        <span>#{title} - </span>
+        <span class="#{lc_state}">#{ui_state}</span>
+        """
+      else
+        """
+        <span>#{title} - </span>
+        <span class="#{lc_state}">#{ui_state}</span>
+        <a data-toggle="modal"
+           class="m-btn mini green"
+           style="height:auto"
+           href="#validate-submission-popup"
+           id="validate-submission-popup-button">
+        Validate
+        </a>
+        """
+    
+
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
     #console.log @model.get("dataState")
@@ -104,6 +147,8 @@ module.exports = class ReportDatatypeView extends View
     dataStateMap = {}
     dataState.forEach (ds)->
       dataStateMap[ds.dataType] = ds.state
+
+    globalState = @model.get("state")
 
     @currentDatatypes.forEach (datatype)=>
       @files = _.filter @report.get("schemaReports").toJSON(), (d)->
@@ -114,26 +159,18 @@ module.exports = class ReportDatatypeView extends View
       if not state
         state = ""
 
-      if state and state in ["INVALID", "VALID", "SIGNED_OFF"]
-        dt.fnSetColumnVis( 3, true )
-        dt.fnSetColumnVis( 4, true )
+      #if state and state in ["INVALID", "VALID", "SIGNED_OFF"]
+      #  dt.fnSetColumnVis( 3, true )
+      #  dt.fnSetColumnVis( 4, true )
 
       dt.fnClearTable()
       dt.fnAddData @files
 
       target = "." + datatype + "_title"
-      title = utils.translateDataType(datatype)
-      lc_state = state.toLowerCase()
-      ui_state = state.replace("_", " ")
-
       $(target).children().remove()
-      $(target).append("<span>#{title}</span>")
-      if state != ""
-        $(target).append("<span> - </span>")
-        $(target).append("<span class='#{lc_state}'>#{ui_state}</span>")
+      $(target).data("datatype", datatype)
+      $(target).append( @getTitleBar(datatype, state, globalState) )
 
-        #.html("<strong>#{title} - #{underscore2space state}</strong>")
- 
 
   createDataTable: (datatype)->
     #console.debug "ReportTableView#createDataTable", @$el, @model.get "name"
@@ -157,7 +194,7 @@ module.exports = class ReportDatatypeView extends View
         }
         {
           sTitle: "Status"
-          bVisible: false
+          bVisible: true
           mData: (source, type) ->
             state = if source.schemaName
               if source.errors.length
@@ -185,7 +222,7 @@ module.exports = class ReportDatatypeView extends View
         {
           sTitle: "Report"
           bSortable: false
-          bVisible: false
+          bVisible: true
           mData: (source) =>
             if source.errors.length or source.fieldReports.length \
                 or source.summaryReports.length

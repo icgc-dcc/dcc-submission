@@ -57,8 +57,10 @@ module.exports = class SubmissionView extends View
 
     @delegate 'click', '#signoff-submission-popup-button',
       @signOffSubmissionPopup
+
     @delegate 'click', '#validate-submission-popup-button',
       @validateSubmissionPopup
+
     @delegate 'click', '#cancel-submission-popup-button',
       @cancelSubmissionPopup
 
@@ -80,9 +82,11 @@ module.exports = class SubmissionView extends View
 
   validateSubmissionPopup: (e) ->
     #console.debug "SubmissionView#validateSubmissionPopup", e
+    datatype = $(e.target.parentNode).data("datatype")
     @subview("validateSubmissionView"
       new ValidateSubmissionView
         "submission": @model
+        datatype: datatype
     )
 
   cancelSubmissionPopup: (e) ->
@@ -92,7 +96,7 @@ module.exports = class SubmissionView extends View
     )
 
   render: ->
-    console.debug "SubmissionView#render", @model
+    #console.debug "SubmissionView#render", @model
     super
 
     @subview('SubmissionHeadeView'
@@ -105,7 +109,7 @@ module.exports = class SubmissionView extends View
     @subview('Clinical_core'
       new ReportDatatypeView {
         @model
-        el: @.$("#report-container")
+        el: @.$("#datatype-report-container")
       }
     )
 
