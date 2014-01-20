@@ -56,17 +56,17 @@ module.exports = class ReportDatatypeView extends View
     # Make sure core table is always visible
     datatypes.push("CLINICAL_CORE_TYPE")
 
+   
+    # Normalize the datatype against the files submitted
     @schemaReports = @report.get "schemaReports"
     @schemaReports.each (report)->
-      #console.log report
-      #console.log report.get "dataType"
       datatype = report.get "dataType"
       if datatypes.indexOf( datatype ) == -1
         if datatype == null
-          datatype = "Others"
-        datatypes.push report.get "dataType"
+          datatype = "MISCELLANEOUS"
+        datatypes.push datatype
+        #datatypes.push report.get "dataType"
 
-    #console.log datatypes
 
     # Create data type tables if they do not exist
     datatypes = _.sortBy datatypes, (datatype)->
@@ -75,7 +75,7 @@ module.exports = class ReportDatatypeView extends View
           return 0
         when "CLINICAL_OPTIONAL_TYPE"
           return 1
-        when null
+        when "MISCELLANEOUS"
           return 999
         else
           return 10
@@ -84,6 +84,8 @@ module.exports = class ReportDatatypeView extends View
       container = null
       if datatype in ["CLINICAL_OPTIONAL_TYPE", "CLINICAL_CORE_TYPE"]
         container = @$el.find("#clinical-report-container")
+      else if datatype == "MISCELLANEOUS"
+        container = @$el.find("#miscellaneous-report-container")
       else
         container = @$el.find("#experimental-report-container")
 
@@ -98,10 +100,18 @@ module.exports = class ReportDatatypeView extends View
         @createDataTable(datatype)
 
     # Clean up (deletions)
-    @currentDatatypes.forEach (datatype)->
+    @currentDatatypes.forEach (datatype)=>
       if datatypes.indexOf(datatype) == -1
-        container.find("[id^="+datatype+"]").remove()
+        @$el.find("[id^="+datatype+"]").remove()
+        #container.find("[id^="+datatype+"]").remove()
     @currentDatatypes = datatypes
+
+    # Clean up (section visiblity)
+    if @$el.find("#miscellaneous-report-container table").length == 0
+      @$el.find("#miscellaneous-report-container").css("visibility", "hidden")
+    else
+      @$el.find("#miscellaneous-report-container").css("visibility", "visible")
+
         
     @updateDataTable()
 
@@ -115,6 +125,11 @@ module.exports = class ReportDatatypeView extends View
       """
       <span>#{title} - </span>
       <span class="queued">QUEUED</span>
+      """
+    else if globalState == "SIGNED_OFF"
+      """
+      <span>#{title} - </span>
+      <span class="signed_off">SIGNED OFF</span>
       """
     else
       if state == ""
@@ -131,8 +146,8 @@ module.exports = class ReportDatatypeView extends View
         <span>#{title} - </span>
         <span class="#{lc_state}">#{ui_state}</span>
         <a data-toggle="modal"
-           class="m-btn mini green"
-           style="height:auto"
+           class="m-btn mini green pull-right"
+           style="height:auto; margin-top:0"
            href="#validate-submission-popup"
            id="validate-submission-popup-button">
         Validate
@@ -152,7 +167,10 @@ module.exports = class ReportDatatypeView extends View
 
     @currentDatatypes.forEach (datatype)=>
       @files = _.filter @report.get("schemaReports").toJSON(), (d)->
-        return d.dataType == datatype
+        type = d.dataType
+        if type == null
+          type = "MISCELLANEOUS"
+        return type == datatype
       dt = @$el.find("#"+datatype).dataTable()
 
       state = dataStateMap[datatype]
@@ -236,10 +254,15 @@ module.exports = class ReportDatatypeView extends View
 
     @$el.find("##{datatype}").dataTable
       sDom:
+        #""" with footer
+        #<'row-fluid' <'span6 #{datatype}_title'l> <'span6'f>r>
+        #t
+        #<'row-fluid'<'span6'i><'span6'p>>
+        #"""
         """
-        <'row-fluid'<'span6 #{datatype}_title'l>
-        <'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>
-        >
+        <'row-fluid' <'span3 #{datatype}_title'l> <'span9'f>r>
+        t
+        #<'row-fluid'<'span6'><'span6'p>>
         """
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"

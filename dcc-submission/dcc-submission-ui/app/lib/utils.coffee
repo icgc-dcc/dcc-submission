@@ -213,7 +213,7 @@ found on host #{host}"
       when "JCN_TYPE"
         "JCN"
       else
-        "Others"
+        "Miscellaneous"
 
 
 module.exports = utils
