@@ -92,8 +92,8 @@ public class DefaultValidationContext implements ValidationContext {
   public Collection<SubmissionDataType> getDataTypes() {
     val effectiveDataTypes = ImmutableSet.<SubmissionDataType> builder();
 
-    // Ensure clinical is always validated
-    effectiveDataTypes.add(ClinicalType.values());
+    // Ensure clinical core is always validated
+    effectiveDataTypes.add(ClinicalType.CLINICAL_CORE_TYPE);
     effectiveDataTypes.addAll(dataTypes);
 
     return effectiveDataTypes.build();
