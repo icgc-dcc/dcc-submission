@@ -43,9 +43,9 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 
-public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
+public class ErrorReportingPlanningVisitor extends ReportingFlowPlanningVisitor {
 
-  public ErrorPlanningVisitor(FlowType type) {
+  public ErrorReportingPlanningVisitor(FlowType type) {
     super(type);
   }
 
