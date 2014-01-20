@@ -68,7 +68,8 @@ module.exports = class ValidateSubmissionView extends View
 
 
   initialize: ->
-    #console.debug "ValidateSubmissionView#initialize", @options
+    console.debug "ValidateSubmissionView#initialize", @options
+    datatype = @options.datatype
     @model = new Model @options.submission.getAttributes()
     @model.set({email: mediator.user.get("email")}, {silent: true})
 
@@ -88,6 +89,12 @@ module.exports = class ValidateSubmissionView extends View
 
       if name != null and idx == -1
         @features.push {'name':name, 'selected':true}
+
+
+    # Pre-filter if datatype is provided
+    if datatype
+      @features.forEach (f)->
+        f.selected = false unless (f.name == "CLINICAL_CORE_TYPE" or f.name == datatype)
 
     release = new NextRelease()
     release.fetch
