@@ -68,17 +68,16 @@ public class DefaultPlanner implements Planner {
 
     for (val fileSchema : dictionary.getFiles()) {
       val fileSchemaDirectory = strategy.getFileSchemaDirectory();
-      val fileSchemaName = fileSchema.getName();
 
       val include = fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema);
       if (include) {
-        log.info("Including file schema '{}' flow planners for '{}'", fileSchemaName, projectKey);
+        log.info("Including file schema '{}' flow planners for '{}'", fileSchema.getName(), projectKey);
         plan.include(fileSchema,
             new DefaultInternalFlowPlanner(fileSchema),
             new DefaultExternalFlowPlanner(plan, fileSchema));
       } else {
         log.info("File schema '{}' has no matching datafile in submission directory '{}' for '{}'",
-            new Object[] { fileSchemaName, fileSchemaDirectory.getDirectoryPath(), projectKey });
+            new Object[] { fileSchema.getName(), fileSchemaDirectory.getDirectoryPath(), projectKey });
       }
     }
   }

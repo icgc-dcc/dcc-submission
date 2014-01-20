@@ -19,13 +19,11 @@ package org.icgc.dcc.submission.validation.primary.core;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.unmodifiableIterable;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.String.format;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import lombok.NonNull;
@@ -63,9 +61,8 @@ public class Plan {
   /**
    * Metadata.
    */
-  private final List<FileSchema> plannedSchema = newArrayList();
-  private final Map<String, InternalFlowPlanner> internalPlanners = newHashMap();
-  private final Map<String, ExternalFlowPlanner> externalPlanners = newHashMap();
+  private final Map<String, InternalFlowPlanner> internalFlowPlanners = newHashMap();
+  private final Map<String, ExternalFlowPlanner> externalFlowPlanners = newHashMap();
 
   /**
    * Transient state
@@ -78,8 +75,8 @@ public class Plan {
 
   public void connect(PlatformStrategy platformStrategy) {
     val cascadeDef = new CascadeDef().setName(projectKey + " validation cascade");
-    for (val planner : getPlanners()) {
-      val flow = planner.connect(platformStrategy);
+    for (val flowPlanner : getFlowPlanners()) {
+      val flow = flowPlanner.connect(platformStrategy);
       if (flow != null) {
         flow.writeDOT("/tmp/validation-flow-" + flow.getName() + ".dot");
         flow.writeStepsDOT("/tmp/validation-flow-steps-" + flow.getName() + ".dot");
@@ -93,25 +90,14 @@ public class Plan {
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
-    plannedSchema.add(fileSchema);
-    internalPlanners.put(fileSchema.getName(), internal);
-    externalPlanners.put(fileSchema.getName(), external);
+    internalFlowPlanners.put(fileSchema.getName(), internal);
+    externalFlowPlanners.put(fileSchema.getName(), external);
   }
 
   public void collect(ReportContext reportContext) {
-    for (val planner : getPlanners()) {
+    for (val planner : getFlowPlanners()) {
       planner.collect(cascadingStrategy, reportContext);
     }
-  }
-
-  public FileSchema getFileSchema(String name) {
-    for (val schema : plannedSchema) {
-      if (schema.getName().equals(name)) {
-        return schema;
-      }
-    }
-
-    return null;
   }
 
   public Dictionary getDictionary() {
@@ -119,10 +105,10 @@ public class Plan {
   }
 
   public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
-    val schemaPlan = internalPlanners.get(schema);
+    val schemaPlan = internalFlowPlanners.get(schema);
     if (schemaPlan == null) {
       log.error(format("No corresponding file for schema %s, schemata with files are %s", schema,
-          internalPlanners.keySet()));
+          internalFlowPlanners.keySet()));
 
       throw new MissingFileException(schema);
     }
@@ -131,11 +117,11 @@ public class Plan {
   }
 
   public Iterable<InternalFlowPlanner> getInternalFlows() {
-    return unmodifiableIterable(internalPlanners.values());
+    return unmodifiableIterable(internalFlowPlanners.values());
   }
 
   public ExternalFlowPlanner getExternalFlow(String schema) throws MissingFileException {
-    val schemaPlan = externalPlanners.get(schema);
+    val schemaPlan = externalFlowPlanners.get(schema);
     if (schemaPlan == null) {
       throw new MissingFileException(schema);
     }
@@ -144,15 +130,15 @@ public class Plan {
   }
 
   public Iterable<ExternalFlowPlanner> getExternalFlows() {
-    return unmodifiableIterable(externalPlanners.values());
+    return unmodifiableIterable(externalFlowPlanners.values());
   }
 
   public Iterable<? extends FileSchemaFlowPlanner> getFlows(FlowType type) {
     switch (type) {
     case INTERNAL:
-      return unmodifiableIterable(internalPlanners.values());
+      return unmodifiableIterable(internalFlowPlanners.values());
     case EXTERNAL:
-      return unmodifiableIterable(externalPlanners.values());
+      return unmodifiableIterable(externalFlowPlanners.values());
     default:
       throw new IllegalArgumentException();
     }
@@ -162,8 +148,8 @@ public class Plan {
     return cascade;
   }
 
-  private Iterable<FileSchemaFlowPlanner> getPlanners() {
-    return concat(internalPlanners.values(), externalPlanners.values());
+  private Iterable<FileSchemaFlowPlanner> getFlowPlanners() {
+    return concat(internalFlowPlanners.values(), externalFlowPlanners.values());
   }
 
 }

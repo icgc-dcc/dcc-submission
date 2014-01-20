@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.primary.planner;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -63,6 +64,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   @Override
   public void apply(ExternalPlanElement element) {
+    checkState(false, "TODO");
     checkArgument(element != null);
 
     String currentFileSchemaName = getSchema().getName();
@@ -71,9 +73,9 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
     String fileName = null;
     try {
       fileName = this.plan.path(getSchema());
-    } catch(FileNotFoundException fnfe) {
+    } catch (FileNotFoundException fnfe) {
       throw new PlanningException(fnfe);
-    } catch(IOException ioe) {
+    } catch (IOException ioe) {
       throw new PlanningException(ioe);
     }
 
@@ -82,22 +84,22 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
     try {
       lhsInternalFlow = plan.getInternalFlow(currentFileSchemaName);
       rhsInternalFlow = plan.getInternalFlow(referencedFileSchema);
-    } catch(MissingFileException e) {
+    } catch (MissingFileException e) {
       log.error(String.format("missing corresponding file for %s in relation coming from %s", referencedFileSchema,
           currentFileSchemaName));
       throw new PlanningFileLevelException(fileName, ErrorType.RELATION_FILE_ERROR, referencedFileSchema);
     }
 
-    if(element instanceof RelationPlanElement) { // FIXME: see DCC-391; lesser of all evils for now, file-level error
-                                                 // reporting should be thought through as a whole as we are currently
-                                                 // too dependent on visiting FileSchema-ta based on file presence (see
-                                                 // visitors' apply() method); visiting dictionary may be the way to go
+    if (element instanceof RelationPlanElement) { // FIXME: see DCC-391; lesser of all evils for now, file-level error
+                                                  // reporting should be thought through as a whole as we are currently
+                                                  // too dependent on visiting FileSchema-ta based on file presence (see
+                                                  // visitors' apply() method); visiting dictionary may be the way to go
       RelationPlanElement relationPlanElement = (RelationPlanElement) element;
-      for(FileSchema afferentFileSchemata : relationPlanElement.getAfferentFileSchemata()) {
+      for (FileSchema afferentFileSchemata : relationPlanElement.getAfferentFileSchemata()) {
         String afferentFileSchemataName = afferentFileSchemata.getName();
         try {
           plan.getInternalFlow(afferentFileSchemataName);
-        } catch(MissingFileException e) { // FIXME: this will only catch the first one (consider DCC-391)
+        } catch (MissingFileException e) { // FIXME: this will only catch the first one (consider DCC-391)
           log.error(String.format("missing corresponding file for %s in relation going to %s", referencedFileSchema,
               currentFileSchemaName));
           throw new PlanningFileLevelException(fileName, ErrorType.REVERSE_RELATION_FILE_ERROR,
@@ -118,7 +120,8 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   @Override
   protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy) {
-    for(Key key : trimmedHeads.keySet()) {
+    checkState(false, "TODO");
+    for (Key key : trimmedHeads.keySet()) {
       flowDef.addSource(key.getName(), strategy.getTrimmedTap(key));
     }
     return flowDef;
@@ -136,7 +139,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   private Pipe getTrimmedHead(Key key) {
     Pipe head = trimmedHeads.get(key);
-    if(head == null) {
+    if (head == null) {
       head = new Pipe(key.getName());
       trimmedHeads.put(key, head);
     }

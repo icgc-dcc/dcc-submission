@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -61,7 +62,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
-import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -76,7 +76,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   private Pipe structurallyValidTail;
   private Pipe structurallyInvalidTail;
   private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
-  private StructuralCheckFunction structuralCheck;
+  private StructuralCheckFunction structuralCheckFunction;
 
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
     super(fileSchema, FlowType.INTERNAL);
@@ -133,20 +133,21 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   @Override
-  protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy) {
-    checkState(structuralCheck != null);
-    Tap<?, ?, ?> source = getSourceTap(strategy);
+  @SuppressWarnings("deprecation")
+  protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy platformStrategy) {
+    checkState(structuralCheckFunction != null);
+    val source = platformStrategy.getSourceTap(getSchema());
     try {
       // TODO: address trick to know what the header contain: DCC-996
-      Fields header = strategy.getFileHeader(getSchema());
-      structuralCheck.declareFieldsPostPlanning(header);
+      Fields header = platformStrategy.getFileHeader(getSchema());
+      structuralCheckFunction.declareFieldsPostPlanning(header);
 
     } catch (IOException e) {
       throw new PlanningException("Error processing file header");
     } catch (DuplicateHeaderException e) {
       String fileName = null;
       try {
-        fileName = strategy.path(getSchema()).getName();
+        fileName = platformStrategy.path(getSchema()).getName();
       } catch (FileNotFoundException fnfe) {
         throw new PlanningException(fnfe);
       } catch (IOException ioe) {
@@ -159,7 +160,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     flowDef.addSource(head, source);
 
     for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
-      flowDef.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
+      flowDef.addTailSink(e.getValue(), platformStrategy.getTrimmedTap(e.getKey()));
     }
     return flowDef;
   }
@@ -177,9 +178,9 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   private Pipe applyStructuralCheck(Pipe pipe) {
-    structuralCheck = new StructuralCheckFunction(getSchema().getFieldNames()); // TODO: due for a splitting
+    structuralCheckFunction = new StructuralCheckFunction(getSchema().getFieldNames()); // TODO: due for a splitting
     return new Each( // parse "line" into the actual expected fields
-        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheck, Fields.SWAP);
+        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheckFunction, Fields.SWAP);
   }
 
   /**
@@ -212,10 +213,4 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       functionCall.getOutputCollector().add(new Tuple(state.getOffset()));
     }
   }
-
-  @SuppressWarnings("all")
-  private Tap<?, ?, ?> getSourceTap(PlatformStrategy strategy) {
-    return strategy.getSourceTap(getSchema());
-  }
-
 }
