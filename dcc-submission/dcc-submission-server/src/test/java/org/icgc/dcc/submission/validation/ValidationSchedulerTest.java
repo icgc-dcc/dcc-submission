@@ -19,14 +19,13 @@ package org.icgc.dcc.submission.validation;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
-import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,12 +53,15 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.FutureCallback;
 
+@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
 public class ValidationSchedulerTest {
 
@@ -120,10 +122,13 @@ public class ValidationSchedulerTest {
 
     // Setup: Create returned future with context that has no errors
     when(context.hasErrors()).thenReturn(false);
-    val future = createSuccessfulFuture(context, validator);
+    val validation = createValidation(context, validator);
 
     // Setup: When submitted we will return the "valid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    doAnswer(onSuccess(validation)).when(executor).execute(
+        any(Validation.class),
+        any(Runnable.class),
+        any(FutureCallback.class));
 
     // Exercise
     scheduler.runOneIteration();
@@ -140,10 +145,13 @@ public class ValidationSchedulerTest {
 
     // Setup: Create returned future with context that has errors
     when(context.hasErrors()).thenReturn(true);
-    val future = createSuccessfulFuture(context, validator);
+    val validation = createValidation(context, validator);
 
     // Setup: When submitted we will return the "invalid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    doAnswer(onSuccess(validation)).when(executor).execute(
+        any(Validation.class),
+        any(Runnable.class),
+        any(FutureCallback.class));
 
     // Exercise
     scheduler.runOneIteration();
@@ -158,11 +166,11 @@ public class ValidationSchedulerTest {
     // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Setup: Create returned future with context that has errors
-    val future = createFailedFuture(new CancellationException());
-
     // Setup: When submitted we will return the "invalid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    doAnswer(onFailure(new CancellationException())).when(executor).execute(
+        any(Validation.class),
+        any(Runnable.class),
+        any(FutureCallback.class));
 
     // Exercise
     scheduler.runOneIteration();
@@ -177,11 +185,11 @@ public class ValidationSchedulerTest {
     // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Setup: Create returned future with context that has errors
-    val future = createFailedFuture(new RuntimeException());
-
     // Setup: When submitted we will return the "invalid" future
-    when(executor.execute(any(Validation.class))).thenReturn(future);
+    doAnswer(onFailure(new RuntimeException())).when(executor).execute(
+        any(Validation.class),
+        any(Runnable.class),
+        any(FutureCallback.class));
 
     // Exercise
     scheduler.runOneIteration();
@@ -190,12 +198,36 @@ public class ValidationSchedulerTest {
     verify(releaseService).resolve(queuedProject.getKey(), ERROR, Collections.<DataTypeState> emptyList());
   }
 
-  private static ListenableFuture<Validation> createSuccessfulFuture(ValidationContext context, Validator validator) {
-    return immediateFuture(new Validation(context, newArrayList(validator)));
+  private static Answer<Object> onSuccess(final Validation validation) {
+    return new Answer<Object>() {
+
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        val completedCallback = (FutureCallback<Validation>) invocation.getArguments()[2];
+        completedCallback.onSuccess(validation);
+
+        return null;
+      }
+
+    };
   }
 
-  private static ListenableFuture<Validation> createFailedFuture(Throwable throwable) {
-    return immediateFailedFuture(throwable);
+  private static Answer<Object> onFailure(final Throwable throwable) {
+    return new Answer<Object>() {
+
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        val completedCallback = (FutureCallback<Validation>) invocation.getArguments()[2];
+        completedCallback.onFailure(throwable);
+
+        return null;
+      }
+
+    };
+  }
+
+  private static Validation createValidation(ValidationContext context, Validator validator) {
+    return new Validation(context, newArrayList(validator));
   }
 
 }
