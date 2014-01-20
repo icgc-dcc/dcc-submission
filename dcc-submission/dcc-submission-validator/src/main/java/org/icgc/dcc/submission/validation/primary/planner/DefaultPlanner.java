@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
+
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
@@ -60,21 +61,24 @@ public class DefaultPlanner implements Planner {
     return plan;
   }
 
-  private static void includePlanners(Plan plan, String projectKey, PlatformStrategy strategy, Dictionary dictionary) {
-    val systemDirectory = strategy.getSystemDirectory();
+  private static void includePlanners(
+      Plan plan, String projectKey, PlatformStrategy platformStrategy, Dictionary dictionary) {
 
     for (val fileSchema : dictionary.getFiles()) {
-      val fileSchemaDirectory = strategy.getFileSchemaDirectory();
-
-      val include = fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema);
-      if (include) {
-        log.info("Including file schema '{}' flow planners for '{}'", fileSchema.getName(), projectKey);
-        plan.include(fileSchema,
-            new DefaultInternalFlowPlanner(fileSchema),
-            new DefaultExternalFlowPlanner(plan, fileSchema));
-      } else {
+      val matchingFileNames = platformStrategy.listFileNames(fileSchema.getPattern());
+      if (matchingFileNames.isEmpty()) {
         log.info("File schema '{}' has no matching datafile in submission directory '{}' for '{}'",
-            new Object[] { fileSchema.getName(), fileSchemaDirectory.getDirectoryPath(), projectKey });
+            new Object[] { fileSchema.getName(), platformStrategy.getSubmissionDirPath(), projectKey });
+      } else {
+        for (val fileName : matchingFileNames) {
+          log.info("Including file '{}' with file schema '{}' flow planners for '{}'",
+              new Object[] { fileName, fileSchema.getName(), projectKey });
+          plan.include(
+              fileName,
+              new DefaultInternalFlowPlanner(fileSchema, fileName)
+              // new DefaultExternalFlowPlanner(plan, fileSchema)
+              );
+        }
       }
     }
   }
@@ -93,7 +97,7 @@ public class DefaultPlanner implements Planner {
         new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
         new InternalRestrictionPlanningVisitor(restrictionTypes),
         new SummaryReportingPlanningVisitor(),
-        new ErrorReportingPlanningVisitor(FlowType.INTERNAL)
+        new ErrorReportingPlanningVisitor(INTERNAL)
 
         // External
         // Doesn't actually have any EXTERNAL restrictionTypes at the moment

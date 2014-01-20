@@ -29,8 +29,6 @@ import cascading.flow.Flow;
  */
 public interface FileSchemaFlowPlanner {
 
-  public String getName();
-
   public FileSchema getSchema();
 
   public Flow<?> connect(PlatformStrategy cascadingStrategy);

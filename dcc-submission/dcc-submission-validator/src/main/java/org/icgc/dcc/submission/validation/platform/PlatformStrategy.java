@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.platform;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -81,7 +82,17 @@ public interface PlatformStrategy {
 
   public Path path(final FileSchema schema) throws FileNotFoundException, IOException;
 
-  public FileSchemaDirectory getFileSchemaDirectory();
+  // public FileSchemaDirectory getFileSchemaDirectory();
 
   public FileSchemaDirectory getSystemDirectory();
+
+  /**
+   * TODO
+   */
+  public String getSubmissionDirPath();
+
+  /**
+   * TODO
+   */
+  public List<String> listFileNames(String pattern);
 }

@@ -25,6 +25,7 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -48,7 +49,6 @@ import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
 import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
@@ -72,27 +72,34 @@ import com.google.common.collect.ObjectArrays;
 @Slf4j
 class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
 
-  private final Pipe head;
+  private final Pipe headPipe;
   private Pipe structurallyValidTail;
   private Pipe structurallyInvalidTail;
-  private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
   private StructuralCheckFunction structuralCheckFunction;
 
-  DefaultInternalFlowPlanner(FileSchema fileSchema) {
-    super(fileSchema, FlowType.INTERNAL);
-    this.head = new Pipe(fileSchema.getName());
+  /**
+   * Not used or maintained anymore (TODO: remove).
+   */
+  private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
+
+  DefaultInternalFlowPlanner(FileSchema fileSchema, String fileName) {
+    super(fileSchema, fileName, INTERNAL);
+    this.headPipe = new Pipe(getSourcePipeName());
 
     // apply system pipe
-    applySystemPipes(this.head);
+    applySystemPipes(this.headPipe);
   }
 
   @Override
   public void apply(InternalPlanElement element) {
     checkArgument(element != null);
-    log.info("[{}] applying element [{}]", getName(), element.describe());
+    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
     structurallyValidTail = element.extend(structurallyValidTail);
   }
 
+  /**
+   * 
+   */
   @Override
   public Key addTrimmedOutput(String... fields) {
     checkState(false, "TODO");
@@ -110,7 +117,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       Pipe tail = new Retain(newHead, new Fields(preKeyFields));
       tail = new Each(tail, ValidationFields.STATE_FIELD, new OffsetFunction(), Fields.SWAP);
 
-      log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(key.getFields()));
+      log.info("[{}] planned trimmed output with {}", getFlowName(), Arrays.toString(key.getFields()));
       trimmedTails.put(key, tail);
     }
     return key;
@@ -137,7 +144,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   @SuppressWarnings("deprecation")
   protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy platformStrategy) {
     checkState(structuralCheckFunction != null);
-    val source = platformStrategy.getSourceTap(getSchema());
+    val sourceTap = platformStrategy.getSourceTap(getSchema());
     try {
       // TODO: address trick to know what the header contain: DCC-996
       Fields header = platformStrategy.getFileHeader(getSchema());
@@ -158,11 +165,11 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
           e.getDuplicateHeaderFieldNames());
     }
 
-    flowDef.addSource(head, source);
+    flowDef.addSource(headPipe, sourceTap);
 
-    for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
-      flowDef.addTailSink(e.getValue(), platformStrategy.getTrimmedTap(e.getKey()));
-    }
+    // Not maintained anymore
+    connectTrimmedTails(flowDef, platformStrategy);
+
     return flowDef;
   }
 
@@ -198,6 +205,12 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       }
     }
     return copyOf(requiredFieldnames);
+  }
+
+  private void connectTrimmedTails(FlowDef flowDef, PlatformStrategy platformStrategy) {
+    for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
+      flowDef.addTailSink(e.getValue(), platformStrategy.getTrimmedTap(e.getKey()));
+    }
   }
 
   @SuppressWarnings("rawtypes")

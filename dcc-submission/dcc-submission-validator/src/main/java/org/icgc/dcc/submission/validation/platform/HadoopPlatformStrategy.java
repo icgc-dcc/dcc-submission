@@ -90,6 +90,12 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
+  public String getSubmissionDirPath() {
+    // TODO
+    return null;
+  }
+
+  @Override
   public FlowConnector getFlowConnector() {
     Map<Object, Object> flowProperties = newHashMap();
 
@@ -256,5 +262,4 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     // See SubmissionIntegrationTest#setUp
     return System.getProperty("dcc.hadoop.test") == null;
   }
-
 }

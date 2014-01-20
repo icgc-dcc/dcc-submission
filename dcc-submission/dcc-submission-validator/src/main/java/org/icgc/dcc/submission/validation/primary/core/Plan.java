@@ -56,7 +56,7 @@ public class Plan {
   @NonNull
   private final Dictionary dictionary;
   @NonNull
-  private final PlatformStrategy cascadingStrategy;
+  private final PlatformStrategy platformStrategy;
 
   /**
    * Metadata.
@@ -70,7 +70,7 @@ public class Plan {
   private Cascade cascade;
 
   public String path(FileSchema schema) throws FileNotFoundException, IOException {
-    return cascadingStrategy.path(schema).getName();
+    return platformStrategy.path(schema).getName();
   }
 
   public void connect(PlatformStrategy platformStrategy) {
@@ -89,14 +89,13 @@ public class Plan {
     cascade.writeDOT("/tmp/validation-cascade.dot");
   }
 
-  public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
-    internalFlowPlanners.put(fileSchema.getName(), internal);
-    // externalFlowPlanners.put(fileSchema.getName(), external);
+  public void include(String fileName, InternalFlowPlanner internalFlowPlanner) {
+    internalFlowPlanners.put(fileName, internalFlowPlanner);
   }
 
   public void collect(ReportContext reportContext) {
     for (val planner : getFlowPlanners()) {
-      planner.collect(cascadingStrategy, reportContext);
+      planner.collect(platformStrategy, reportContext);
     }
   }
 

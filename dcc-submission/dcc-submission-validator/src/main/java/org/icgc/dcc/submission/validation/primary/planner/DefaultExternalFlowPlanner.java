@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.primary.planner;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.EXTERNAL;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,7 +32,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.MissingFileException;
 import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.primary.core.ExternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.visitor.RelationPlanningVisitor.RelationPlanElement;
@@ -56,7 +56,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
   DefaultExternalFlowPlanner(Plan plan, FileSchema fileSchema) {
-    super(fileSchema, FlowType.EXTERNAL);
+    super(fileSchema, null, EXTERNAL); // FIXME: provide file name if ever re-enabled
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.plan = plan;
@@ -108,7 +108,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
       }
     }
 
-    log.info("[{}] applying element [{}]", getName(), element.describe());
+    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
     Key lhsKey = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
     Key rhsKey = rhsInternalFlow.addTrimmedOutput(element.rhsFields());
 

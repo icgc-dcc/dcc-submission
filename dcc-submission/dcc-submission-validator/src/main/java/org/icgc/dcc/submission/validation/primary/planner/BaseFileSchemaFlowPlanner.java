@@ -17,10 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
 
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,22 +43,21 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   private final FileSchema fileSchema;
 
+  private final String fileName;
+
   private final FlowType flowType;
 
   private final Map<String, Pipe> reports = Maps.newHashMap();
 
   private final Map<String, ReportCollector> collectors = Maps.newHashMap();
 
-  protected BaseFileSchemaFlowPlanner(FileSchema fileSchema, FlowType flowType) {
-    checkArgument(fileSchema != null);
-    checkArgument(flowType != null);
+  protected BaseFileSchemaFlowPlanner(
+      @NonNull FileSchema fileSchema,
+      @NonNull String fileName,
+      @NonNull FlowType flowType) {
     this.fileSchema = fileSchema;
+    this.fileName = fileName;
     this.flowType = flowType;
-  }
-
-  @Override
-  public String getName() {
-    return getSchema().getName() + "." + flowType.toString();
   }
 
   @Override
@@ -65,10 +65,14 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     return fileSchema;
   }
 
+  protected String getSourcePipeName() {
+    return fileName;
+  }
+
   @Override
   public final void apply(ReportingPlanElement element) {
     Pipe pipe = getTail(element.getName());
-    log.info("[{}] applying element [{}]", getName(), element.describe());
+    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
     reports.put(element.getName(), element.report(pipe));
     this.collectors.put(element.getName(), element.getCollector());
   }
@@ -78,20 +82,21 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public Flow<?> connect(PlatformStrategy strategy) {
-    FlowDef def = new FlowDef().setName(getName());
+  public Flow<?> connect(PlatformStrategy platformStrategy) {
+    FlowDef def = new FlowDef().setName(getFlowName());
 
     for (Map.Entry<String, Pipe> p : reports.entrySet()) {
-      def.addTailSink(p.getValue(), strategy.getReportTap(getSchema(), flowType, p.getKey()));
+      def.addTailSink(p.getValue(), platformStrategy.getReportTap(getSchema(), flowType, p.getKey()));
     }
 
-    onConnect(def, strategy);
+    onConnect(def, platformStrategy);
 
     // Make a flow only if there's something to do
-    if (def.getSinks().size() > 0 && def.getSources().size() > 0) {
-      Flow<?> flow = strategy.getFlowConnector().connect(def);
-
-      return flow;
+    val hasSourcesAndSinks = def.getSinks().size() > 0 && def.getSources().size() > 0;
+    if (hasSourcesAndSinks) {
+      return platformStrategy
+          .getFlowConnector()
+          .connect(def);
     }
 
     return null;
@@ -102,6 +107,13 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     for (val reportCollector : collectors.values()) {
       reportCollector.collect(strategy, context);
     }
+  }
+
+  /**
+   * Returns the name of the current flow planner, which will also be used a {@link Flow} name.
+   */
+  protected String getFlowName() {
+    return format("%s.%s", fileName, flowType);
   }
 
   protected abstract Pipe getStructurallyValidTail();

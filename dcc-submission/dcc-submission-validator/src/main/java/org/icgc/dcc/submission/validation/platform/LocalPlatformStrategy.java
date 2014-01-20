@@ -57,6 +57,12 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
+  public String getSubmissionDirPath() {
+    // TODO
+    return null;
+  }
+
+  @Override
   public FlowConnector getFlowConnector() {
     return new LocalFlowConnector();
   }
@@ -128,5 +134,4 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
     return new Fields(Iterables.toArray(header, String.class));
   }
-
 }

@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -29,6 +32,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -46,22 +50,22 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   protected final FileSystem fileSystem;
 
-  private final Path input;
+  private final Path submissionDir;
 
   private final Path output;
 
   private final Path system;
 
-  private final FileSchemaDirectory fileSchemaDirectory;
+  // private final FileSchemaDirectory fileSchemaDirectory;
 
   private final FileSchemaDirectory systemDirectory;
 
   protected BasePlatformStrategy(FileSystem fileSystem, Path input, Path output, Path system) {
     this.fileSystem = fileSystem;
-    this.input = input;
+    this.submissionDir = input;
     this.output = output;
     this.system = system;
-    this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
+    // this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
     this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
   }
 
@@ -147,7 +151,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
     RemoteIterator<LocatedFileStatus> files;
     if (fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
-      files = fileSystem.listFiles(input, false);
+      files = fileSystem.listFiles(submissionDir, false);
     } else if (fileSchema.getRole() == FileSchemaRole.SYSTEM) {
       files = fileSystem.listFiles(system, false);
     } else {
@@ -166,10 +170,10 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     throw new FileNotFoundException("no file for schema " + fileSchema.getName());
   }
 
-  @Override
-  public FileSchemaDirectory getFileSchemaDirectory() {
-    return this.fileSchemaDirectory;
-  }
+  // @Override
+  // public FileSchemaDirectory getFileSchemaDirectory() {
+  // return this.fileSchemaDirectory;
+  // }
 
   @Override
   public FileSchemaDirectory getSystemDirectory() {
@@ -186,5 +190,10 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
       }
     }
     return dupHeaders;
+  }
+
+  @Override
+  public List<String> listFileNames(String pattern) {
+    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir, compile(pattern)));
   }
 }

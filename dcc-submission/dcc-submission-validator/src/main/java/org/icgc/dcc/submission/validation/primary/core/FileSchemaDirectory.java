@@ -78,7 +78,7 @@ public class FileSchemaDirectory {
   }
 
   /**
-   * FIXME: https://jira.oicr.on.ca/browse/DCC-1233.
+   * Obsolete code now (checked in the FPV).
    */
   private void checkCompression(FileSchema fileSchema, Path path) {
     try {
