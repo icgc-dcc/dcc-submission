@@ -84,6 +84,8 @@ module.exports = class ReportDatatypeView extends View
       container = null
       if datatype in ["CLINICAL_OPTIONAL_TYPE", "CLINICAL_CORE_TYPE"]
         container = @$el.find("#clinical-report-container")
+      else if datatype == null
+        container = @$el.find("#miscellaneous-report-container")
       else
         container = @$el.find("#experimental-report-container")
 
@@ -116,6 +118,11 @@ module.exports = class ReportDatatypeView extends View
       <span>#{title} - </span>
       <span class="queued">QUEUED</span>
       """
+    else if globalState == "SIGNED_OFF"
+      """
+      <span>#{title} - </span>
+      <span class="signed_off">SIGNED OFF</span>
+      """
     else
       if state == ""
         """
@@ -131,8 +138,8 @@ module.exports = class ReportDatatypeView extends View
         <span>#{title} - </span>
         <span class="#{lc_state}">#{ui_state}</span>
         <a data-toggle="modal"
-           class="m-btn mini green"
-           style="height:auto"
+           class="m-btn mini green pull-right"
+           style="height:auto; margin-top:0"
            href="#validate-submission-popup"
            id="validate-submission-popup-button">
         Validate
@@ -236,10 +243,15 @@ module.exports = class ReportDatatypeView extends View
 
     @$el.find("##{datatype}").dataTable
       sDom:
+        #""" with footer
+        #<'row-fluid' <'span6 #{datatype}_title'l> <'span6'f>r>
+        #t
+        #<'row-fluid'<'span6'i><'span6'p>>
+        #"""
         """
-        <'row-fluid'<'span6 #{datatype}_title'l>
-        <'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>
-        >
+        <'row-fluid' <'span3 #{datatype}_title'l> <'span9'f>r>
+        t
+        #<'row-fluid'<'span6'><'span6'p>>
         """
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
