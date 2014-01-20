@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -26,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.fest.util.Files.contentOf;
 import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
@@ -56,6 +58,7 @@ import static org.icgc.dcc.submission.TestUtils.post;
 import static org.icgc.dcc.submission.TestUtils.put;
 import static org.icgc.dcc.submission.TestUtils.replaceDictionaryVersion;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
+import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -94,8 +97,10 @@ import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.sftp.Sftp;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -218,6 +223,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private MiniHadoop hadoop;
   private FileSystem fileSystem;
 
+  @Rule
+  public Sftp sftp = new Sftp("admin", "adminspasswd", false);
+
   @Before
   public void setUp() throws IOException {
     banner("Setting up ...");
@@ -335,9 +343,35 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void userSubmitsFiles() throws IOException {
     val source = new Path(FS_DIR);
     val destination = new Path(DCC_ROOT_DIR);
-    status("user", "'Submitting' files from '{}' to '{}'...", source, destination);
-    fileSystem.delete(destination, true);
-    fileSystem.copyFromLocalFile(source, destination);
+    status("user", "SFTP transferring files from '{}' to '{}'...", source, destination);
+
+    try {
+      sftp.connect();
+      for (val releaseDir : new File(FS_DIR).listFiles()) {
+        for (val projectDir : releaseDir.listFiles()) {
+          val releaseName = projectDir.getParentFile().getName();
+          for (val file : projectDir.listFiles()) {
+            val projectName = file.getParentFile().getName();
+
+            // Cannot submit system files via SFTP
+            val system = projectName.equals(SYSTEM_FILES_DIR_NAME);
+            if (system) {
+              val path = new Path(destination, releaseName + "/" + SYSTEM_FILES_DIR_NAME + "/" + file.getName());
+              status("user", "Installing system file from '{}' to '{}'...", file, path);
+              fileSystem.copyFromLocalFile(new Path(file.getAbsolutePath()), path);
+            } else {
+              val path = projectName + "/" + file.getName();
+              status("user", "SFTP transferring file from '{}' to '{}'...", file, path);
+              sftp.put(path, contentOf(file, UTF_8));
+            }
+          }
+        }
+      }
+    } finally {
+      sftp.disconnect();
+    }
+
+    // sftp.put(sourceFileName, destFileName, fileContent);
 
     val list = fileSystem.listFiles(destination, true);
     while (list.hasNext()) {

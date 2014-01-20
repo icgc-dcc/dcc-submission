@@ -108,11 +108,16 @@ public class SubmissionReportContext implements ReportContext {
 
   @Override
   public void reportLineNumbers(Path path) {
-    val schemaReport = submissionReport.getSchemaReport(path.getName());
+    val fileName = path.getName();
+    val schemaReport = submissionReport.getSchemaReport(fileName);
     val missing = schemaReport == null;
     if (missing) {
       // This could happen for optional files (which don't report statistics) that don't have errors
       log.warn("No schema report found for name '{}' with path '{}'. Skipping...", path.getName(), path);
+
+      val emptySchemaReport = new SchemaReport();
+      emptySchemaReport.setName(fileName);
+      submissionReport.addSchemaReport(emptySchemaReport);
 
       return;
     }
