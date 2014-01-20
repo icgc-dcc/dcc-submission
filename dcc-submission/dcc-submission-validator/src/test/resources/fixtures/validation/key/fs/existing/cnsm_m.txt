@@ -1,5 +1,0 @@
-analysis_id	analyzed_sample_id	matched_sample_id	other_cnsm_m
-an-cnsm-01	sa-cnsm-01.01.T01	sa-cnsm-01.01.C01	dummy
-an-cnsm-02	sa-cnsm-02.01.T01	sa-cnsm-02.01.C01	dummy
-an-cnsm-03	sa-cnsm-03.01.T01	sa-cnsm-03.01.C01	dummy
-an-cnsm-04	sa-cnsm-04.01.T01	sa-cnsm-04.01.C01	dummy

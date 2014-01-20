@@ -21,8 +21,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.ByteStreams.copy;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -33,6 +35,7 @@ import java.util.regex.Pattern;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -40,6 +43,8 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import com.google.common.collect.Lists;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
@@ -252,5 +257,26 @@ public class HadoopUtils {
       propagate(e);
     }
     return checkNotNull(status, "Expecting a non-null reference for '%s'", path);
+  }
+
+  /**
+   * See {@link #readSmallTextFile(FileSystem, Path)}.
+   */
+  public static List<String> catSmallTextFile(FileSystem fileSystem, Path path) {
+    return readSmallTextFile(fileSystem, path);
+  }
+
+  /**
+   * Intended for small files only.
+   */
+  @SneakyThrows
+  public static List<String> readSmallTextFile(FileSystem fileSystem, Path path) {
+    @Cleanup
+    BufferedReader br = new BufferedReader(new InputStreamReader(fileSystem.open(path)));
+    val lines = Lists.<String> newArrayList();
+    for (String line; (line = br.readLine()) != null;) {
+      lines.add(line);
+    }
+    return lines;
   }
 }

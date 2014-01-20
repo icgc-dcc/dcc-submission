@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.apache.hadoop.mapred.JobConf.MAPRED_MAP_TASK_JAVA_OPTS;
@@ -44,7 +45,7 @@ import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
-import org.icgc.dcc.submission.validation.key.error.KVError;
+import org.icgc.dcc.submission.validation.key.error.KVReportError;
 
 @NoArgsConstructor
 @Slf4j
@@ -86,8 +87,7 @@ public class KeyValidator implements Validator {
         context.getFileSystem().getUri(),
         context.getDataTypes(),
         context.getDictionary(),
-        "dummy", // TODO: Remove?
-        getNewReleasePath(context).toUri().toString(),
+        context.getSubmissionDirectory().getSubmissionDirPath(),
         reportPath.toUri().toString());
   }
 
@@ -95,10 +95,6 @@ public class KeyValidator implements Validator {
     val validationDir = context.getSubmissionDirectory().getValidationDirPath();
 
     return new Path(validationDir, REPORT_FILE_NAME);
-  }
-
-  private static Path getNewReleasePath(ValidationContext context) {
-    return new Path(context.getSubmissionDirectory().getSubmissionDirPath());
   }
 
   private static void execute(ValidationContext context, KVValidatorRunner runnable) {
@@ -134,6 +130,9 @@ public class KeyValidator implements Validator {
 
     while (errors.hasNext()) {
       val error = errors.next();
+      val fileName = error.getFileName();
+      val fileType = context.getDictionary().getFileType(fileName); // TODO: store error type...?
+      checkState(fileType.isPresent(), "TODO: '{}'", fileName);
       context.reportError(
           error.getFileName(),
           error.getLineNumber(),
@@ -157,10 +156,10 @@ public class KeyValidator implements Validator {
   }
 
   @SneakyThrows
-  private static MappingIterator<KVError> getErrors(InputStream inputStream) {
-    val reader = new ObjectMapper().reader().withType(KVError.class);
+  private static MappingIterator<org.icgc.dcc.submission.validation.key.error.KVReportError> getErrors(
+      InputStream inputStream) {
+    val reader = new ObjectMapper().reader().withType(KVReportError.class);
 
     return reader.readValues(inputStream);
   }
-
 }

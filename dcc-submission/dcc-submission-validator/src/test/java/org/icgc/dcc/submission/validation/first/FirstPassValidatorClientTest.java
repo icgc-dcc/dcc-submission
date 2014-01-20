@@ -21,6 +21,7 @@ import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
 import static org.icgc.dcc.submission.dictionary.model.ValueType.INTEGER;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -33,6 +34,7 @@ import lombok.val;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -142,10 +144,14 @@ public class FirstPassValidatorClientTest {
     dict.addFile(Schema.TESTFILE1.getSchema());
     dict.addFile(Schema.TESTFILE2.getSchema());
     dict.addFile(Schema.TESTFILE3.getSchema());
-    when(dict.getFileSchemaByFileName(anyString()))
-        .thenReturn(Optional.of(Schema.TESTFILE1.getSchema()))
-        .thenReturn(Optional.of(Schema.TESTFILE2.getSchema()))
-        .thenReturn(Optional.of(Schema.TESTFILE3.getSchema()));
+    doReturn(Optional.of(Schema.TESTFILE1.getSchema())).when(dict).getFileSchemaByFileName(anyString());
+    doReturn(Optional.of(Schema.TESTFILE2.getSchema())).when(dict).getFileSchemaByFileName(anyString());
+    doReturn(Optional.of(Schema.TESTFILE3.getSchema())).when(dict).getFileSchemaByFileName(anyString());
+    doReturn(ImmutableList.<FileSchema> of(
+        Schema.TESTFILE1.getSchema(),
+        Schema.TESTFILE2.getSchema(),
+        Schema.TESTFILE3.getSchema()))
+        .when(dict).getFileSchemata(anyDataTypeIterable());
 
     when(config.getString(FsConfig.FS_ROOT)).thenReturn(file1.getParent());
     fs = new DccFileSystem(config, FileSystem.getLocal(new Configuration()));
@@ -181,6 +187,10 @@ public class FirstPassValidatorClientTest {
     FirstPassValidator fpc = new FirstPassValidator();
     fpc.validate(validationContext);
     TestUtils.checkNoErrorsReported(validationContext);
+  }
+
+  private static Iterable<SubmissionDataType> anyDataTypeIterable() {
+    return any();
   }
 
 }

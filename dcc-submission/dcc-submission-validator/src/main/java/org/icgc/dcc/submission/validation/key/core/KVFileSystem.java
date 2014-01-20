@@ -17,22 +17,22 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Optional.of;
+import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -41,9 +41,11 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
+
+import com.google.common.base.Optional;
 
 @RequiredArgsConstructor
+@Slf4j
 public final class KVFileSystem {
 
   @Getter
@@ -53,73 +55,35 @@ public final class KVFileSystem {
   private final Collection<SubmissionDataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
-
-  private final Path oldReleaseDir;
   @NonNull
-  private final Path newReleaseDir;
-
-  public static final String TO_BE_REMOVED_FILE_NAME = "TO_BE_REMOVED";
+  private final Path submissionDir;
 
   public InputStream open(Path path) throws IOException {
     return fileSystem.open(path);
   }
 
-  public Path getDataFilePath(KVSubmissionType submissionType, KVFileType fileType) {
+  public Optional<List<Path>> getDataFilePaths(KVFileType fileType) {
     // Selective validation filtering
     val requested = dataTypes.contains(fileType.getSubmissionFileType().getDataType());
     if (!requested) {
       return null;
     }
-
-    val basePath = submissionType == EXISTING_FILE ? oldReleaseDir : newReleaseDir;
+    val basePath = submissionDir;
     val fileSchema = getFileSchema(fileType);
     val fileRegex = fileSchema.getPattern();
     val filePattern = compile(fileRegex);
+
+    log.info("Listing '{}' with filter '{}'", basePath, filePattern);
     val filePaths = lsFile(fileSystem, basePath, filePattern);
-    if (filePaths.isEmpty()) {
-      return null;
-    }
-
-    checkState(filePaths.size() == 1, "Expected at most 1 file path but found %s. File paths: %s",
-        filePaths.size(), filePaths);
-
-    return filePaths.get(0);
+    return filePaths.isEmpty() ? Optional.<List<Path>> absent() : of(filePaths);
   }
 
-  public Path getToBeRemovedFilePath() {
-    return new Path(newReleaseDir, TO_BE_REMOVED_FILE_NAME + ".txt");
+  public boolean hasClinicalData() {
+    return getDataFilePaths(DONOR).isPresent();
   }
 
-  public boolean hasToBeRemovedFile() {
-    return hasFile(getToBeRemovedFilePath());
-  }
-
-  public boolean hasExistingData() {
-    return hasExistingClinicalData();
-  }
-
-  public boolean hasExistingClinicalData() {
-    return hasFile(getDataFilePath(EXISTING_FILE, DONOR));
-  }
-
-  public boolean hasIncrementalClinicalData() {
-    return hasFile(getDataFilePath(INCREMENTAL_FILE, DONOR));
-  }
-
-  public boolean hasIncrementalData(KVExperimentalDataType dataType) {
-    return hasFile(getDataFilePath(INCREMENTAL_FILE, dataType.getTaleTellerFileType()));
-  }
-
-  public boolean hasExistingData(KVExperimentalDataType dataType) {
-    return hasFile(getDataFilePath(EXISTING_FILE, dataType.getTaleTellerFileType()));
-  }
-
-  private boolean hasFile(Path filePath) {
-    if (filePath == null) {
-      return false;
-    }
-
-    return checkExistence(fileSystem, filePath);
+  public boolean hasDataType(KVExperimentalDataType dataType) {
+    return getDataFilePaths(dataType.getTaleTellerFileType()).isPresent();
   }
 
   private FileSchema getFileSchema(KVFileType fileType) {
@@ -130,7 +94,7 @@ public final class KVFileSystem {
       }
     }
 
-    throw new IllegalArgumentException("No file schema found for file type: " + fileType);
+    throw new IllegalArgumentException(format("No file schema found for file type: '%s'", fileType));
   }
 
 }

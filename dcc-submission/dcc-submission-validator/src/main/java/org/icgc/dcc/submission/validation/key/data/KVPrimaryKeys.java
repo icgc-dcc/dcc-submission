@@ -15,47 +15,69 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.error;
+package org.icgc.dcc.submission.validation.key.data;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newTreeMap;
+import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import lombok.Value;
-import lombok.experimental.Builder;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import com.google.common.collect.Sets;
 
-@Value
-@Builder(builderMethodName = "kvError")
-public class KVError {
+/**
+ * TODO: also keep track of line number?
+ */
+@RequiredArgsConstructor
+public final class KVPrimaryKeys {
 
-  @JsonProperty
-  String fileName;
-  @JsonProperty
-  List<String> fieldNames;
-  @JsonProperty
-  long lineNumber;
-  @JsonProperty
-  Object value;
-  @JsonProperty
-  ErrorType type;
-  @JsonProperty
-  Object[] params;
+  private final Map<String, Set<KVKey>> pks = newTreeMap();
 
-  private KVError(
-      @JsonProperty("fileName") String fileName,
-      @JsonProperty("fieldNames") List<String> fieldNames,
-      @JsonProperty("lineNumber") long lineNumber,
-      @JsonProperty("value") Object value,
-      @JsonProperty("type") ErrorType type,
-      @JsonProperty("params") Object[] params)
-  {
-    this.fileName = fileName;
-    this.fieldNames = fieldNames;
-    this.lineNumber = lineNumber;
-    this.value = value;
-    this.type = type;
-    this.params = params;
+  public void updatePks(String fileName, KVTuple tuple) {
+    if (TUPLE_CHECKS_ENABLED) checkState(tuple.hasPk(), "TODO");
+    if (!pks.containsKey(fileName)) {
+      pks.put(fileName, Sets.<KVKey> newTreeSet());
+    }
+    pks.get(fileName).add(tuple.getPk());
   }
 
+  public List<String> getFilePaths() {
+    return newArrayList(pks.keySet());
+  }
+
+  public Iterator<KVKey> getPrimaryKeys(String fileName) {
+    return pks.get(fileName).iterator();
+  }
+
+  public boolean containsPk(
+      @NonNull// TODO: consider removing such time consuming checks?
+      KVKey key) {
+    for (val filePks : pks.values()) {
+      if (filePks.contains(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public long getSize() {
+    long size = 0;
+    for (val filePks : pks.values()) {
+      size += filePks.size();
+    }
+    return size;
+  }
+
+  @Override
+  public String toString() {
+    return pks.toString();
+  }
 }

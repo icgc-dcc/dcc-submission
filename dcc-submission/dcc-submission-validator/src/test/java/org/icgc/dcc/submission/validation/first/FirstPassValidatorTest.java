@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -74,6 +75,7 @@ public class FirstPassValidatorTest {
     schema.setPattern("anyfile");
     when(dict.getFiles()).thenReturn(newArrayList(schema));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(schema));
+    when(dict.getFileSchemata(anyDataTypeIterable())).thenReturn(ImmutableList.<FileSchema> of(schema));
 
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
@@ -192,6 +194,11 @@ public class FirstPassValidatorTest {
 
     }
 
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Iterable<SubmissionDataType> anyDataTypeIterable() {
+    return any(Iterable.class);
   }
 
 }

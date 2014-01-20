@@ -3,7 +3,4 @@ dr-ssm-01	dummy
 dr-ssm-02	dummy
 dr-ssm-03	dummy
 dr-ssm-04	dummy
-dr-cnsm-01	dummy
-dr-cnsm-02	dummy
-dr-cnsm-03	dummy
-dr-cnsm-04	dummy
+dr-ssm-03	dummy

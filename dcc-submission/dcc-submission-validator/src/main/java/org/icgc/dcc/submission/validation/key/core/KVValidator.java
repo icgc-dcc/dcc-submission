@@ -17,44 +17,43 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.RELATIONS;
-import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getExistingFileDescription;
-import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getIncrementalFileDescription;
-import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getPlaceholderFileDescription;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getFileDescription;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.EXISTING_FILE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType.INCREMENTAL_FILE;
+
+import java.util.Map;
+
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.data.KVExistingFileDataDigest;
-import org.icgc.dcc.submission.validation.key.data.KVFileDataDigest;
-import org.icgc.dcc.submission.validation.key.data.KVIncrementalFileDataDigest;
-import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
-import org.icgc.dcc.submission.validation.key.deletion.DeletionData;
-import org.icgc.dcc.submission.validation.key.deletion.DeletionFileParser;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
+import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
+import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVSubmissionType;
-import org.icgc.dcc.submission.validation.key.error.KVFileErrors;
 import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Sets;
 
 @Slf4j
+@RequiredArgsConstructor
 public class KVValidator {
 
-  public static final boolean SUPPORT_EXISTING = false;
+  /**
+   * TODO: temporarily...
+   */
+  public static final boolean TUPLE_CHECKS_ENABLED = true;
 
   @NonNull
   private final KVFileParser kvFileParser;
@@ -62,231 +61,161 @@ public class KVValidator {
   private final KVFileSystem kvFileSystem;
   @NonNull
   private final KVReport kvReport;
-  @NonNull
-  private final SurjectivityValidator surjectivityValidator;
 
-  private final KVSubmissionDataDigest existingData = new KVSubmissionDataDigest();
-  private final KVSubmissionDataDigest incrementalData = new KVSubmissionDataDigest();
-  private final KVSubmissionErrors errors = new KVSubmissionErrors();
+  private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap(); // TODO: wrapper?
+  private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
+  private final KVSubmissionErrors submissionErrors = new KVSubmissionErrors();
 
-  public KVValidator(KVFileParser kvFileParser, KVFileSystem kvFileSystem, KVReport kvReport) {
-    this.kvFileParser = kvFileParser;
-    this.kvFileSystem = kvFileSystem;
-    this.kvReport = kvReport;
-    this.surjectivityValidator = new SurjectivityValidator(kvFileSystem);
-  }
+  public void processSubmission() {
+    log.info("Loading data");
 
-  public void validate() {
-    // Validate deletion data
-    val deletionData = DeletionData.getInstance(kvFileSystem);
-    // validateDeletions(deletionData);
+    // Process clinical data
+    log.info("Processing clinical data");
+    processFileType(DONOR);
+    processFileType(SPECIMEN);
+    processFileType(SAMPLE);
 
-    if (SUPPORT_EXISTING) {
-      // Process existing data
-      if (kvFileSystem.hasExistingData()) {
-        loadExistingData();
+    // Process experimental data
+    for (val dataType : KVExperimentalDataType.values()) {
+      if (kvFileSystem.hasDataType(dataType)) {
+        log.info("Processing '{}' data", dataType);
+        for (val fileType : dataType.getFileTypes()) { // Order matters!
+          processFileType(fileType);
+        }
       } else {
-        loadPlaceholderExistingFiles();
+        log.info("No '{}' data", dataType);
       }
-      log.debug("{}", repeat("=", 75));
-      for (val entry : existingData.entrySet()) {
-        log.debug("{}: {}", entry.getKey(), entry.getValue());
-      }
-      log.debug("{}", repeat("=", 75));
     }
 
-    // Process incremental data
-    validateIncrementalData(deletionData);
-    log.info("{}", repeat("=", 75));
-    for (val entry : incrementalData.entrySet()) {
-      log.debug("{}: {}", entry.getKey(), entry.getValue());
+    log.info("{}", banner("="));
+    for (val fileType : fileTypeToPrimaryKeys.keySet()) {
+      log.debug("{}: {}", fileType, fileTypeToPrimaryKeys.get(fileType));
     }
-    log.debug("{}", repeat("=", 75));
+    log.debug("{}", banner("="));
 
     // Surjection validation (can only be done at the very end)
-    // validateComplexSurjection();
+    // validateComplexSurjection(); // TODO: to be re-enabled later
 
     // Report
-    boolean valid = errors.describe(kvReport, incrementalData.getFileDescriptions()); // TODO: prettify
+    boolean valid = submissionErrors.reportSubmissionErrors(kvReport);
     log.info("{}", valid);
     log.info("done.");
   }
 
-  public void validateDeletions(DeletionData deletionData) {
-    boolean valid;
-    valid = deletionData.validateWellFormedness();
-    if (!valid) {
-      log.error("Deletion well-formedness errors found");
-    }
+  /**
+   * TODO: create abstraction for file type
+   */
+  public void processFileType(KVFileType fileType) {
+    log.info("{}", banner("="));
 
-    val existingDonorIds = kvFileSystem.hasExistingClinicalData() ?
-        DeletionFileParser.getExistingDonorIds(kvFileSystem) :
-        Sets.<String> newTreeSet();
-    valid = deletionData.validateAgainstOldClinicalData(existingDonorIds);
-    if (!valid) {
-      log.error("Deletion previous data errors found");
-    }
+    // Primary keys for the type under consideration (each file will augment it)
+    val primaryKeys = new KVPrimaryKeys();
 
-    if (kvFileSystem.hasIncrementalClinicalData()) {
-      valid = deletionData.validateAgainstIncrementalClinicalData(
-          existingDonorIds, DeletionFileParser.getIncrementalDonorIds(kvFileSystem));
-      if (!valid) {
-        log.error("Deletion incremental data errors found");
-      }
+    // Encountered foreign keys in the case where we need to check for surjection
+    val optionalEncounteredForeignKeys = fileType.hasOutgoingSurjectiveRelation() ?
+        of(new KVEncounteredForeignKeys()) :
+        Optional.<KVEncounteredForeignKeys> absent();
+
+    // TODO
+    val optionalReferencedType = RELATIONS.containsKey(fileType) ?
+        Optional.of(RELATIONS.get(fileType)) : Optional.<KVFileType> absent();
+
+    // TODO
+    val optionalReferencedPrimaryKeys = optionalReferencedType.isPresent() ?
+        of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
+        Optional.<KVPrimaryKeys> absent();
+
+    log.info("Processing file type: '{}'; Referencing '{}'", fileType, optionalReferencedType);
+
+    val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
+    checkState(dataFilePaths.isPresent(),
+        "Expecting to find at least one matching file at this point for: '%s'", fileType);
+    for (val dataFilePath : dataFilePaths.get()) {
+      processFile(
+          getFileDescription(fileType, dataFilePath),
+          dataFilePath,
+          primaryKeys,
+          optionalEncounteredForeignKeys,
+          optionalReferencedType,
+          optionalReferencedPrimaryKeys);
     }
+    fileTypeToPrimaryKeys.put(fileType, primaryKeys);
+
+    postProcessing(fileType, optionalReferencedType, optionalEncounteredForeignKeys);
   }
 
-  private void loadExistingData() {
-    log.info("Loading existing data");
+  private void processFile(
+      KVFileDescription fileDescription,
+      Path filePath,
+      KVPrimaryKeys primaryKeys,
+      Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys,
+      Optional<KVFileType> optionalReferencedType,
+      Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys) {
+    log.info("{}", banner("-"));
+    log.info("Processing file: '{}' ('{}'); Referencing '{}': '{}'",
+        new Object[] { filePath, optionalReferencedType, fileDescription });
 
-    // Existing clinical
-    checkState(kvFileSystem.hasExistingClinicalData(), "TODO"); // At this point we expect it
-    log.info("Processing exiting clinical data");
-    loadExistingFile(DONOR);
-    loadExistingFile(SPECIMEN);
-    loadExistingFile(SAMPLE);
+    // TODO: subclass for referencing/non-referencing?
+    new KVFileProcessor(fileDescription)
 
-    for (val dataType : KVExperimentalDataType.values()) {
-
-      // Existing data
-      if (kvFileSystem.hasExistingData(dataType)) {
-        log.info("Processing exiting '{}' data", dataType);
-        for (val fileType : dataType.getFileTypes()) {
-          loadExistingFile(fileType);
-        }
-      }
-
-      // No data
-      else {
-        log.info("No existing '{}' data", dataType);
-        for (val fileType : dataType.getFileTypes()) {
-          loadPlaceholderExistingFile(fileType);
-        }
-      }
-    }
+        // Process file
+        .processFile(
+            kvFileParser,
+            submissionErrors,
+            primaryKeys,
+            optionalReferencedPrimaryKeys,
+            optionalEncounteredForeignKeys
+        );
   }
 
   /**
-   * Order matters!
+   * For simple surjection checks.
    */
-  private void validateIncrementalData(DeletionData deletionData) {
-    log.info("Loading incremental data");
+  private void postProcessing(
+      KVFileType fileType,
+      Optional<KVFileType> optionalReferencedType,
+      Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys) {
 
-    // Incremental clinical data
-    if (kvFileSystem.hasIncrementalClinicalData()) {
-      log.info("Processing incremental clinical data");
-      loadIncrementalFile(DONOR, INCREMENTAL_FILE, deletionData);
-      loadIncrementalFile(SPECIMEN, INCREMENTAL_FILE, deletionData);
-      loadIncrementalFile(SAMPLE, INCREMENTAL_FILE, deletionData);
+    log.info("{}", banner("-"));
+    if (fileType.hasOutgoingSimpleSurjectiveRelation()) {
+      log.info("Post-processing: simple surjectivity check for type '{}'", fileType);
+
+      checkState(optionalReferencedType.isPresent());
+      val referencedType = optionalReferencedType.get();
+
+      checkState(optionalEncounteredForeignKeys.isPresent(), "TODO");
+      surjectivityValidator
+          .validateSimpleSurjection(
+              fileType,
+              fileTypeToPrimaryKeys.get(referencedType),
+              optionalEncounteredForeignKeys.get(),
+              submissionErrors,
+              referencedType);
     } else {
-      checkState(false, "NOT VALID ANYMORE"); // FIXME
-      log.info("No incremental clinical data");
+      log.info("No outgoing simple surjection relation for file type: '{}'", fileType);
     }
 
-    // Incremental experimental data
-    for (val dataType : KVExperimentalDataType.values()) {
-      if (kvFileSystem.hasIncrementalData(dataType)) {
-        log.info("Processing incremental '{}' data", dataType);
-        for (val fileType : dataType.getFileTypes()) {
-          loadIncrementalFile(fileType, INCREMENTAL_FILE, deletionData);
-        }
-      } else {
-        log.info("No incremental '{}' data", dataType);
-      }
-    }
-  }
-
-  private void loadExistingFile(KVFileType fileType) {
-    log.info("{}", repeat("=", 75));
-    log.info("Loading existing file: '{}'", fileType);
-    val dataFilePath = kvFileSystem.getDataFilePath(EXISTING_FILE, fileType);
-    existingData.put(
-        fileType,
-        new KVExistingFileDataDigest(
-            kvFileParser,
-            getExistingFileDescription(fileType, dataFilePath),
-            1000000)
-            .processFile());
-  }
-
-  private void loadIncrementalFile(KVFileType fileType, KVSubmissionType submissionType, DeletionData deletionData) {
-    val dataFilePath = kvFileSystem.getDataFilePath(INCREMENTAL_FILE, fileType);
-    val referencedType = RELATIONS.get(fileType);
-    log.info("{}", repeat("=", 75));
-    log.info("Loading incremental file: '{}.{}' ('{}'); Referencing '{}'",
-        new Object[] { fileType, submissionType, dataFilePath, referencedType });
-
-    incrementalData.put(
-        fileType,
-        new KVIncrementalFileDataDigest( // TODO: subclass for referencing/non-referencing?
-            kvFileParser,
-            getIncrementalFileDescription(
-                submissionType.isIncrementalToBeTreatedAsExisting(), fileType, dataFilePath),
-            1000000,
-            kvFileSystem,
-            deletionData,
-
-            referencedType != null ?
-                Optional.of(incrementalData.get(referencedType)) : Optional.<KVFileDataDigest> absent(),
-            // existingData.get(fileType),
-            // existingData.get(RELATIONS.get(fileType)),
-            // getOptionalReferencedData(fileType),
-
-            errors.getFileErrors(fileType),
-            referencedType != null ?
-                Optional.of(errors.getFileErrors(referencedType)) : Optional.<KVFileErrors> absent(),
-
-            surjectivityValidator)
-            .processFile());
-  }
-
-  private void loadPlaceholderExistingFiles() {
-    log.info("Loading placeholder existing files");
-    loadPlaceholderExistingFile(DONOR);
-    loadPlaceholderExistingFile(SPECIMEN);
-    loadPlaceholderExistingFile(SAMPLE);
-
-    for (val dataType : KVExperimentalDataType.values()) {
-      for (val fileType : dataType.getFileTypes()) {
-        loadPlaceholderExistingFile(fileType);
-      }
-    }
-  }
-
-  private void loadPlaceholderExistingFile(KVFileType fileType) {
-    log.info("Loading placeholder existing file: '{}'", fileType);
-    existingData.put(
-        fileType,
-        KVFileDataDigest.getEmptyInstance(kvFileParser, getPlaceholderFileDescription(fileType)));
-  }
-
-  @SuppressWarnings("unused")
-  private Optional<KVFileDataDigest> getOptionalReferencedData(KVFileType fileType) {
-    val referencedFileType = RELATIONS.get(fileType);
-    if (referencedFileType == null) {
-      log.info("No referenced file type for '{}'", DONOR);
-      checkState(fileType == DONOR, "TODO");
-      return absent();
+    log.info("{}", banner("-"));
+    if (fileType.hasOutgoingComplexSurjectiveRelation()) {
+      log.info("Post-processing: complex surjectivity addition for type '{}'", fileType);
+      checkState(optionalEncounteredForeignKeys.isPresent(), "TODO");
+      // Simply adding them all for now, actual validation will have to take place after all meta files have been read
+      // (unlike for "simple" surjection check).
+      surjectivityValidator.addEncounteredSampleKeys(optionalEncounteredForeignKeys.get());
     } else {
-      if (incrementalData.contains(referencedFileType)) { // May not if not re-submitted
-        log.info("Incremental data contains '{}'", referencedFileType);
-        return of(incrementalData.get(referencedFileType));
-      } else { // Fall back on existing data
-        log.info("Incremental data does not contain '{}', falling back on existing data", referencedFileType);
-        return absent();
-      }
+      log.info("No outgoing complex surjection relation for file type: '{}'", fileType);
     }
   }
 
   @SuppressWarnings("unused")
   private void validateComplexSurjection() {
-    log.info("{}", repeat("=", 75));
+    log.info("{}", banner("="));
     log.info("Validating complex surjection");
-    surjectivityValidator.validateComplexSurjection(
-        // existingData.get(SAMPLE),
-        surjectivityValidator.getSurjectionExpectedKeys(incrementalData.get(SAMPLE)),
-        errors.getFileErrors(SAMPLE));
-    log.info("{}", repeat("=", 75));
+    // surjectivityValidator.validateComplexSurjection(fileTypeToPrimaryKeys.get(SAMPLE));
+    log.info("{}", banner("="));
   }
 
+  private String banner(String symbol) {
+    return repeat(symbol, 75);
+  }
 }

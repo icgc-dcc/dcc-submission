@@ -63,8 +63,7 @@ public class FlowExecutor implements Executor {
 
   @Override
   public void execute(Runnable runnable) {
-    Flow<?> flow = createFlow(runnable);
-
+    val flow = createFlow(runnable);
     flow.complete();
   }
 

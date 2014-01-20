@@ -17,253 +17,181 @@
  */
 package org.icgc.dcc.submission.validation.key.error;
 
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FK1_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_FK2_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_P_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.CNSM_S_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.DONOR_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_G_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_M_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.EXP_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_M_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.JCN_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_FK1_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_FK2_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_P_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.METH_S_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.MIRNA_S_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.NOT_APPLICABLE;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.PEXP_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SAMPLE_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_M_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SGV_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SPECIMEN_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FK1_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_FK2_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.SSM_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_FK1_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_FK2_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_M_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_P_PK_NAMES;
-import static org.icgc.dcc.submission.validation.key.core.KVConstants.STSM_S_FK_NAMES;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newLinkedHashMap;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.SIMPLE_SURJECTION_FKS;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
+import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.COMPLEX_SURJECTION_ERROR_LINE_NUMBER;
+import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SIMPLE_SURJECTION_ERROR_LINE_NUMBER;
 
+import java.util.List;
 import java.util.Map;
 
+import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
-import org.icgc.dcc.submission.validation.key.data.KVSubmissionDataDigest;
+import org.icgc.dcc.submission.validation.key.core.KVDictionary;
+import org.icgc.dcc.submission.validation.key.data.KVKey;
+import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
- * 
+ * TODO: pretty inefficient
  */
 @Slf4j
 public class KVSubmissionErrors {
 
-  private final Map<KVFileType, KVFileErrors> errors = new ImmutableMap.Builder<KVFileType, KVFileErrors>()
-      .put(
-          DONOR,
-          new KVFileErrors(DONOR, DONOR_PK_NAMES, NOT_APPLICABLE, NOT_APPLICABLE))
-      .put(
-          SPECIMEN,
-          new KVFileErrors(SPECIMEN, SPECIMEN_PK_NAMES, SPECIMEN_FK_NAMES, NOT_APPLICABLE))
-      .put(
-          SAMPLE,
-          new KVFileErrors(SAMPLE, SAMPLE_PK_NAMES, SAMPLE_FK_NAMES, NOT_APPLICABLE))
+  // TODO: create proper data structure
+  private final Map<KVFileType, Map<String, Map<Long, List<KVRowError>>>> errors = newLinkedHashMap();
 
-      // SSM
-      .put(
-          SSM_M,
-          new KVFileErrors(SSM_M, SSM_M_PK_NAMES, SSM_M_FK1_NAMES, SSM_M_FK2_NAMES))
-      .put(
-          SSM_P,
-          new KVFileErrors(SSM_P, NOT_APPLICABLE, SSM_P_FK_NAMES, NOT_APPLICABLE))
+  /**
+   * TODO: create other wrappers like the surjection one
+   */
+  public void addError(KVFileType fileType, String fileName, long lineNumber, KVErrorType errorType, KVKey keys) {
+    val rowError = new KVRowError(errorType, keys, lineNumber);
+    log.debug("Reporting error at '({}, {}, {})': '{}'",
+        new Object[] { fileType, fileName, lineNumber, rowError });
+    // TODO: address inefficiency
+    getRowErrors(
+        getFileErrors(
+            getFileTypeErrors(errors, fileType),
+            fileName),
+        lineNumber)
+        .add(rowError);
+  }
 
-      // CNSM
-      .put(
-          CNSM_M,
-          new KVFileErrors(CNSM_M, CNSM_M_PK_NAMES, CNSM_M_FK1_NAMES, CNSM_M_FK2_NAMES))
-      .put(
-          CNSM_P,
-          new KVFileErrors(CNSM_P, CNSM_P_PK_NAMES, CNSM_P_FK_NAMES, NOT_APPLICABLE))
-      .put(
-          CNSM_S,
-          new KVFileErrors(CNSM_S, NOT_APPLICABLE, CNSM_S_FK_NAMES, NOT_APPLICABLE))
+  public void addSimpleSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
+    addError(fileType, fileName, SIMPLE_SURJECTION_ERROR_LINE_NUMBER, SIMPLE_SURJECTION, keys);
+  }
 
-      // STSM
-      .put(
-          STSM_M,
-          new KVFileErrors(STSM_M, STSM_M_PK_NAMES, STSM_M_FK1_NAMES, STSM_M_FK2_NAMES))
-      .put(
-          STSM_P,
-          new KVFileErrors(STSM_P, STSM_P_PK_NAMES, STSM_P_FK_NAMES, NOT_APPLICABLE))
-      .put(
-          STSM_S,
-          new KVFileErrors(STSM_S, NOT_APPLICABLE, STSM_S_FK_NAMES, NOT_APPLICABLE))
+  public void addComplexSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
+    addError(fileType, fileName, COMPLEX_SURJECTION_ERROR_LINE_NUMBER, COMPLEX_SURJECTION, keys);
+  }
 
-      // MIRNA
-      .put(
-          MIRNA_M,
-          new KVFileErrors(
-              MIRNA_M, MIRNA_M_PK_NAMES,
-              MIRNA_M_FK_NAMES,
-              NOT_APPLICABLE))
-      .put(
-          MIRNA_P,
-          new KVFileErrors(
-              MIRNA_P, NOT_APPLICABLE,
-              MIRNA_P_FK_NAMES,
-              NOT_APPLICABLE))
-      .put(
-          MIRNA_S,
-          new KVFileErrors(
-              MIRNA_S, MIRNA_S_PK_NAMES,
-              MIRNA_S_FK_NAMES,
-              NOT_APPLICABLE))
+  public boolean reportSubmissionErrors(KVReport report) {
+    boolean status = true;
+    for (val submissionEntry : errors.entrySet()) {
 
-      // METH
-      .put(
-          METH_M,
-          new KVFileErrors(
-              METH_M, METH_M_PK_NAMES,
-              METH_M_FK1_NAMES,
-              METH_M_FK2_NAMES))
-      .put(
-          METH_P,
-          new KVFileErrors(
-              METH_P, METH_P_PK_NAMES,
-              METH_P_FK_NAMES,
-              NOT_APPLICABLE))
-      .put(
-          METH_S,
-          new KVFileErrors(
-              METH_S, NOT_APPLICABLE,
-              METH_S_FK_NAMES,
-              NOT_APPLICABLE))
+      val fileType = submissionEntry.getKey();
+      val fileTypeErrors = submissionEntry.getValue();
+      log.info("Reporting file type errors for file type '{}' ('{}' errors)", fileType, fileTypeErrors.size());
 
-      // EXP
-      .put(
-          EXP_M,
-          new KVFileErrors(
-              EXP_M, EXP_M_PK_NAMES,
-              EXP_M_FK_NAMES,
-              NOT_APPLICABLE))
-      .put(
-          EXP_G,
-          new KVFileErrors(
-              EXP_G, NOT_APPLICABLE,
-              EXP_G_FK_NAMES,
-              NOT_APPLICABLE))
+      for (val fileTypeEntry : fileTypeErrors.entrySet()) {
+        val fileName = fileTypeEntry.getKey();
+        val fileErrors = fileTypeEntry.getValue();
+        log.info("Reporting file errors for file '{}' ('{}' errors)", fileName, fileErrors.size());
 
-      // PEXP
-      .put(
-          PEXP_M,
-          new KVFileErrors(
-              PEXP_M, PEXP_M_PK_NAMES,
-              PEXP_M_FK_NAMES,
-              NOT_APPLICABLE))
-      .put(
-          PEXP_P,
-          new KVFileErrors(
-              PEXP_P, NOT_APPLICABLE,
-              PEXP_P_FK_NAMES,
-              NOT_APPLICABLE))
+        for (val fileEntry : fileErrors.entrySet()) {
+          val lineNumber = fileEntry.getKey();
+          val rowErrors = fileEntry.getValue();
+          log.debug("Reporting row errors for line '{}' ('{}' errors)", lineNumber, rowErrors.size());
 
-      // JCN
-      .put(
-          JCN_M,
-          new KVFileErrors(
-              JCN_M, JCN_M_PK_NAMES,
-              JCN_M_FK_NAMES,
-              NOT_APPLICABLE))
-      .put(
-          JCN_P,
-          new KVFileErrors(
-              JCN_P, NOT_APPLICABLE,
-              JCN_P_FK_NAMES,
-              NOT_APPLICABLE))
+          for (val rowError : rowErrors) {
+            val errorType = rowError.getErrorType();
+            rowError.report(
+                report,
+                fileName,
+                getErrorFieldNames(fileType, errorType),
+                getErrorParams(fileType, errorType));
+            status = false;
+          }
+        }
+      }
+    }
+    return status;
+  }
 
-      // SGV
-      .put(
-          SGV_M,
-          new KVFileErrors(
-              SGV_M,
-              SGV_M_PK_NAMES,
-              SGV_M_FK_NAMES,
-              NOT_APPLICABLE))
-      .put(
-          SGV_P,
-          new KVFileErrors(
-              SGV_P,
-              NOT_APPLICABLE,
-              SGV_P_FK_NAMES,
-              NOT_APPLICABLE))
-
-      .build();
-
-  public KVFileErrors getFileErrors(KVFileType fileType) {
-    return errors.get(fileType);
+  private Object[] getErrorParams(KVFileType fileType, KVErrorType errorType) {
+    Object[] errorParams = null;
+    if (errorType == PRIMARY_RELATION || errorType == SECONDARY_RELATION) {
+      val referencedFileType = RELATIONS.get(fileType);
+      val referencedFields = KVDictionary.PKS.get(referencedFileType);
+      errorParams = new Object[] { referencedFileType, referencedFields };
+    } else if (errorType == SIMPLE_SURJECTION) {
+      val referencingFileType = getReferencingFileType(fileType);
+      val referencingFields = SIMPLE_SURJECTION_FKS.get(referencingFileType);
+      errorParams = new Object[] { referencingFileType, referencingFields };
+    }
+    return errorParams;
   }
 
   /**
-   * TODO: PLK: we actually only need the KVFileDescription here, not the whole {@link KVSubmissionDataDigest}.
+   * Should NOT be called in the context of complex surjection as it can only return one such type.
    */
-  public boolean describe(KVReport report, Map<KVFileType, KVFileDescription> fileDescriptions) {
-    boolean status = true;
-    for (val entry : errors.entrySet()) {
-      val fileType = entry.getKey();
-      val fileErrors = entry.getValue();
-
-      boolean fileStatus = fileErrors.describe(report, fileDescriptions.get(fileType));
-      status &= fileStatus;
-      log.info("{}: {}", fileType, fileStatus);
+  private KVFileType getReferencingFileType(KVFileType fileType) {
+    KVFileType referencingFileType = null;
+    for (val entry : RELATIONS.entrySet()) {
+      if (entry.getValue() == fileType) {
+        checkState(referencingFileType == null, "TODO");
+        return entry.getKey();
+      }
     }
-    return status;
+    return checkNotNull(referencingFileType, "TODO");
+  }
+
+  private Map<String, Map<Long, List<KVRowError>>> getFileTypeErrors(
+      Map<KVFileType, Map<String, Map<Long, List<KVRowError>>>> submissionErrors,
+      KVFileType fileType) {
+    if (!submissionErrors.containsKey(fileType)) {
+      submissionErrors.put(fileType, Maps.<String, Map<Long, List<KVRowError>>> newLinkedHashMap());
+    }
+    return submissionErrors.get(fileType);
+  }
+
+  private Map<Long, List<KVRowError>> getFileErrors(
+      Map<String, Map<Long, List<KVRowError>>> fileTypeErrors,
+      String fileName) {
+    if (!fileTypeErrors.containsKey(fileName)) {
+      fileTypeErrors.put(fileName, Maps.<Long, List<KVRowError>> newLinkedHashMap());
+    }
+    return fileTypeErrors.get(fileName);
+  }
+
+  private List<KVRowError> getRowErrors(
+      Map<Long, List<KVRowError>> fileErrors,
+      long lineNumber) {
+    if (!fileErrors.containsKey(lineNumber)) {
+      fileErrors.put(lineNumber, Lists.<KVRowError> newArrayList());
+    }
+    return fileErrors.get(lineNumber);
+  }
+
+  @Value
+  public class KVRowError {
+
+    private final KVErrorType errorType;
+    private final KVKey keys;
+    private final long lineNumber;
+
+    public void report(
+        KVReport report,
+        String fileName,
+        List<String> fieldNames,
+        Object[] errorParams
+        ) {
+      val errorReport = KVReportError.builder()
+
+          .fileName(fileName)
+          .fieldNames(fieldNames)
+          .params(errorParams)
+          .type(errorType.getErrorType())
+          .lineNumber(lineNumber)
+          .value(keys.getValues())
+
+          .build();
+      log.debug("Reporting error: '{}'", errorReport);
+      report.report(errorReport);
+    }
   }
 }

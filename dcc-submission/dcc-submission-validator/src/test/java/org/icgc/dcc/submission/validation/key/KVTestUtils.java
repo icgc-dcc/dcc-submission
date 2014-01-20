@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,45 +17,37 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import java.util.logging.LogManager;
+import static org.icgc.dcc.submission.core.util.Joiners.PATH_JOINER;
+
+import java.io.File;
+import java.io.IOException;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 /**
- * Command-line utility to initiate key validation on a specified project stored locally or in HDFS. Will use Cascading
- * local or Hadoop depending on the {@code fsUrl} argument's scheme.
+ * TODO
  */
 @Slf4j
-public class Main {
+public class KVTestUtils {
 
-  public static void main(String... args) throws InterruptedException {
-    LogManager.getLogManager().reset();
-    SLF4JBridgeHandler.install();
-    Logger.getRootLogger().setLevel(Level.INFO);
-    log.info("Starting...");
+  /**
+   * Test data.
+   */
+  public static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
+  public static final String FS_DIR = PATH_JOINER.join(TEST_DIR, "fs");
+  public static final String REFERENCE_FILE_NAME = "reference.jsons";
 
-    // Resolve configuration
-    int i = 0;
-    val releaseName = args.length >= ++i ? args[i - 1] : "release2";
-    val projectKey = args.length >= ++i ? args[i - 1] : "project1";
-    val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
-    val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
-    val jobTracker = args.length >= ++i ? args[i - 1] : "localhost";
-    val context = new KeyValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
+  public static void copyDirectory(FileSystem fileSystem, File sourceDir, Path targetDir) throws IOException {
+    for (val file : sourceDir.listFiles()) {
+      val source = new Path(file.toURI());
+      val target = new Path(targetDir, file.getName());
 
-    // Validate
-    validate(context);
+      log.info("Copying file: from '{}' to '{}'", source, target);
+      fileSystem.copyFromLocalFile(source, target);
+    }
   }
-
-  private static void validate(KeyValidationContext context) throws InterruptedException {
-    val validator = new KeyValidator();
-
-    validator.validate(context);
-  }
-
 }

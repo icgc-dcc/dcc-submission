@@ -52,6 +52,7 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.primary.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
@@ -163,6 +164,8 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
     testErrorType(RegexRestriction.NAME);
   }
 
+  // Unique and relation checks have been moved to the KV
+  @Ignore
   @Test
   public void test_validate_invalidUniqueFieldsCombination() {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");

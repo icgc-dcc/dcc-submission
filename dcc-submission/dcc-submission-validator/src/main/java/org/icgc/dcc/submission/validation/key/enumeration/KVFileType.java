@@ -104,6 +104,11 @@ public enum KVFileType {
     return SIMPLE_SURJECTION_RELATION.apply(this);
   }
 
+  public boolean hasOutgoingSurjectiveRelation() {
+    return hasOutgoingSimpleSurjectiveRelation()
+        || hasOutgoingComplexSurjectiveRelation();
+  }
+
   /**
    * TODO: get from dictionary
    */

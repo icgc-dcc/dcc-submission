@@ -32,7 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectWriter;
-import org.icgc.dcc.submission.validation.key.error.KVError;
+import org.icgc.dcc.submission.validation.key.error.KVReportError;
 
 public class KVReport implements Closeable {
 
@@ -60,7 +60,7 @@ public class KVReport implements Closeable {
   }
 
   @SneakyThrows
-  public void report(KVError error) {
+  public void report(KVReportError error) {
     WRITER.writeValue(outputStream, error);
   }
 

@@ -1,5 +1,0 @@
-donor_id	specimen_id	other_specimen
-dr01	sp01.01	dummy
-dr02	sp02.01	dummy
-dr03	sp03.01	dummy
-dr04	sp04.01	dummy
