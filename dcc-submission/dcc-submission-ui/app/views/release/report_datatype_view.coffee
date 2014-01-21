@@ -35,10 +35,14 @@ module.exports = class ReportDatatypeView extends View
   initialize: ->
     #console.debug "ReportTableView#initialize", @model, @el
     @report = @model.get "report"
+
+    # For determining table visibility if files were added/removed
     @currentDatatypes = []
 
+    # Lookup table for status
+    @dataStateMap = {}
+
     @files = []
-    #console.log @files
 
     super
 
@@ -48,7 +52,12 @@ module.exports = class ReportDatatypeView extends View
     #console.log "ReportDatatypeView -> update"
     @report = @model.get "report"
 
-    # Figure out all the table placements
+    # Update new lookup table
+    @dataStateMap = {}
+    dataState = @model.get("dataState")
+    dataState.forEach (ds)=>
+      @dataStateMap[ds.dataType] = ds.state
+
 
     # Extract unique datatypes for current update
     datatypes = []
@@ -90,8 +99,6 @@ module.exports = class ReportDatatypeView extends View
       elem = container.find("#"+datatype)
       if elem.length == 0
         container.append("<table id='#{datatype}'></table>")
-        container.append("<br>")
-        container.append("<br>")
 
         elem = container.find("##{datatype}")
         elem.addClass("report table table-striped table-bordered table-hover")
@@ -119,47 +126,32 @@ module.exports = class ReportDatatypeView extends View
     lc_state = state.toLowerCase()
     ui_state = state.replace("_", " ")
 
-    if globalState == "QUEUED"
+    if state == ""
+      """
+      <span>#{title}</span>
+      """
+    else if state in ["ERROR", "VALIDATING"]
       """
       <span>#{title} - </span>
-      <span class="queued">QUEUED</span>
-      """
-    else if globalState == "SIGNED_OFF"
-      """
-      <span>#{title} - </span>
-      <span class="signed_off">SIGNED OFF</span>
+      <span class="#{lc_state}">#{ui_state}</span>
       """
     else
-      if state == ""
-        """
-        <span>#{title}</span>
-        """
-      else if state in ["ERROR", "VALIDATING"]
-        """
-        <span>#{title} - </span>
-        <span class="#{lc_state}">#{ui_state}</span>
-        """
-      else
-        """
-        <span>#{title} - </span>
-        <span class="#{lc_state}">#{ui_state}</span>
-        <a data-toggle="modal"
-           class="m-btn mini green pull-right"
-           style="height:auto; margin-top:0"
-           href="#validate-submission-popup"
-           id="validate-submission-popup-button">
-        Validate
-        </a>
-        """
+      """
+      <span>#{title} - </span>
+      <span class="#{lc_state}">#{ui_state}</span>
+      <a data-toggle="modal"
+         class="m-btn mini green pull-right"
+         style="height:auto; margin-top:0"
+         href="#validate-submission-popup"
+         id="validate-submission-popup-button">
+      Validate
+      </a>
+      """
     
 
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
     #console.log @model.get("dataState")
-    dataState = @model.get("dataState")
-    dataStateMap = {}
-    dataState.forEach (ds)->
-      dataStateMap[ds.dataType] = ds.state
 
     globalState = @model.get("state")
 
@@ -171,13 +163,9 @@ module.exports = class ReportDatatypeView extends View
         return type == datatype
       dt = @$el.find("#"+datatype).dataTable()
 
-      state = dataStateMap[datatype]
+      state = @dataStateMap[datatype]
       if not state
         state = ""
-
-      #if state and state in ["INVALID", "VALID", "SIGNED_OFF"]
-      #  dt.fnSetColumnVis( 3, true )
-      #  dt.fnSetColumnVis( 4, true )
 
       dt.fnClearTable()
       dt.fnAddData @files
@@ -211,16 +199,26 @@ module.exports = class ReportDatatypeView extends View
         {
           sTitle: "Status"
           bVisible: true
-          mData: (source, type) ->
-            state = if source.schemaName
-              if source.errors.length
-                "INVALID"
-              else if source.fieldReports.length or source.summaryReports.length
-                "VALID"
+          mData: (source, type) =>
+            state = @dataStateMap[source.dataType]
+            if source.schemaName
+              if state
+                state = state.replace("_", " ")
               else
-                "NOT VALIDATED"
+                state = "NOT VALIDATED"
             else
-              "SKIPPED"
+              state = "SKIPPED"
+
+
+            #state = if source.schemaName
+            #  if source.errors.length
+            #    "INVALID"
+            #  else if source.fieldReports.length or source.summaryReports.length
+            #    "VALID"
+            #  else
+            #    "NOT VALIDATED"
+            #else
+            #  "SKIPPED"
 
             if type == "display"
               return switch state
@@ -240,7 +238,11 @@ module.exports = class ReportDatatypeView extends View
           bSortable: false
           bVisible: true
           mData: (source) =>
-            if source.errors.length or source.fieldReports.length \
+            # Allow viewing reports if status is idle
+            fileState = @dataStateMap[source.dataType]
+            if fileState in ["QUEUED", "VALIDATING"]
+              ""
+            else if source.errors.length or source.fieldReports.length \
                 or source.summaryReports.length
               "<a href='/releases/#{@model.get('release')}" +
               "/submissions/#{@model.get('projectKey')}" +
