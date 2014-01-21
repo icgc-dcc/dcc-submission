@@ -22,7 +22,6 @@ import static org.icgc.dcc.submission.dictionary.model.SummaryType.FREQUENCY;
 import java.util.Iterator;
 import java.util.List;
 
-import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
@@ -53,18 +52,18 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   private static final String MISSING_FLAG = "missing?";
 
-  public FrequencyPlanElement(FileSchema fileSchema, String fileName, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fileName, fields, fileSchema.getFieldNames(), FREQUENCY, flowType);
+  public FrequencyPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
+    super(fileSchema, fileName, fieldNames, FREQUENCY, flowType);
   }
 
   @Override
   public Pipe report(Pipe pipe) {
     pipe = keepStructurallyValidTuples(pipe);
 
-    Pipe[] freqs = new Pipe[fields.size()];
+    Pipe[] freqs = new Pipe[fieldNames.size()];
     int i = 0;
-    for (Field field : fields) {
-      freqs[i++] = frequency(field.getName(), pipe);
+    for (String fieldName : fieldNames) {
+      freqs[i++] = frequency(fieldName, pipe);
     }
     pipe = new Merge(freqs);
     pipe = new GroupBy(pipe, new Fields(FIELD));

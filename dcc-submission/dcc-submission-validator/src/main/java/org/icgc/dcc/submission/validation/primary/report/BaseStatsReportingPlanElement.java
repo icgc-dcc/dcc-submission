@@ -45,6 +45,7 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 
 public abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
@@ -52,36 +53,31 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   static final String FIELD = "field";
-
   static final String VALUE = "value";
-
   static final String REPORT = "report";
-
   static final Fields FIELD_FIELDS = new Fields(FIELD);
-
   static final Fields VALUE_FIELDS = new Fields(VALUE);
-
   static final Fields FIELD_VALUE_FIELDS = new Fields(FIELD, VALUE);
-
   static final Fields REPORT_FIELDS = new Fields(REPORT);
 
   protected final FileSchema fileSchema;
   protected final String fileName;
   protected final FlowType flowType;
+
+  /**
+   * TODO: use {@link Optional}.
+   */
   protected final SummaryType summaryType;
 
   /**
-   * TODO: only need field name and summary type?
+   * Subset of fields from the file schema matching the summary type under consideration.
    */
-  protected final List<Field> fields;
   protected final List<String> fieldNames;
 
   protected BaseStatsReportingPlanElement(
-      FileSchema fileSchema, String fileName, List<Field> fields, List<String> fieldNames,
-      SummaryType summaryType, FlowType flowType) {
+      FileSchema fileSchema, String fileName, List<String> fieldNames, SummaryType summaryType, FlowType flowType) {
     this.fileSchema = fileSchema;
     this.fileName = fileName;
-    this.fields = fields;
     this.fieldNames = fieldNames;
     this.summaryType = summaryType;
     this.flowType = flowType;
