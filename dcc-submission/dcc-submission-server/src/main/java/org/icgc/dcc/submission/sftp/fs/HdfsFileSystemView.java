@@ -102,7 +102,7 @@ public class HdfsFileSystemView implements FileSystemView {
     FileHdfsSshFile submissionFile = new FileHdfsSshFile(context, submissionDirectory, submissionFileName);
 
     if (!submissionFile.doesExist()) {
-      new FileNotFoundException("Invalid file path: " + file);
+      throw new FileNotFoundException("Invalid file path: " + file);
     }
 
     return submissionFile;
