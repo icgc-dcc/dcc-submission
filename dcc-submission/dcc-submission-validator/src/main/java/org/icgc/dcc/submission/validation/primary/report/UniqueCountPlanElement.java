@@ -50,6 +50,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Optional;
+
 /**
  * Plans unique count and completeness (see DCC-770 about completeness) reporting.
  * <p>
@@ -72,7 +74,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
   private static final Fields VALUE_FIELDS = new Fields(VALUE);
 
   public UniqueCountPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-    super(fileSchema, fileName, fieldNames, UNIQUE_COUNT, flowType);
+    super(flowType, Optional.of(UNIQUE_COUNT), fileSchema, fileName, fieldNames);
   }
 
   @Override

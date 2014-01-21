@@ -46,14 +46,15 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Optional;
+
 public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   private static final String FREQ = "freq";
-
   private static final String MISSING_FLAG = "missing?";
 
   public FrequencyPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-    super(fileSchema, fileName, fieldNames, FREQUENCY, flowType);
+    super(flowType, Optional.of(FREQUENCY), fileSchema, fileName, fieldNames);
   }
 
   @Override

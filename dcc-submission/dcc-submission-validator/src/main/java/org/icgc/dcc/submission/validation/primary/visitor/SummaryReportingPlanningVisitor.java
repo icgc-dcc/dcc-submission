@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.visitor;
 
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
 
 import java.util.List;
@@ -79,9 +80,7 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
               fileSchema, fileName, fieldNames, flowType));
           break;
         default:
-          collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(
-              fileSchema, fileName, fieldNames, flowType));
-          break;
+          throw new IllegalStateException(format("Unknown summary type: '{}'", optionalSummaryType.get()));
         }
       } else {
         collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(

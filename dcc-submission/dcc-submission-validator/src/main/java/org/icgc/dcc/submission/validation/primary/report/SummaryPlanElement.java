@@ -52,6 +52,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -65,8 +66,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
   }
 
   protected SummaryPlanElement(
-      FileSchema fileSchema, String fileName, List<String> fieldNames, SummaryType summaryType, FlowType flowType) {
-    super(fileSchema, fileName, fieldNames, summaryType, flowType);
+      FlowType flowType, Optional<SummaryType> optionalSummaryType,
+      FileSchema fileSchema, String fileName, List<String> fieldNames) {
+    super(flowType, optionalSummaryType, fileSchema, fileName, fieldNames);
   }
 
   @Override
@@ -208,7 +210,7 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
   public static class CompletenessPlanElement extends SummaryPlanElement {
 
     public CompletenessPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-      super(fileSchema, fileName, fieldNames, null, flowType);
+      super(flowType, Optional.<SummaryType> absent(), fileSchema, fileName, fieldNames);
     }
 
     @Override
@@ -225,7 +227,7 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
   public static class MinMaxPlanElement extends SummaryPlanElement {
 
     public MinMaxPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-      super(fileSchema, fileName, fieldNames, MIN_MAX, flowType);
+      super(flowType, Optional.of(MIN_MAX), fileSchema, fileName, fieldNames);
     }
 
     @Override
@@ -242,7 +244,7 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
   public static class AveragePlanElement extends SummaryPlanElement {
 
     public AveragePlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-      super(fileSchema, fileName, fieldNames, AVERAGE, flowType);
+      super(flowType, Optional.of(AVERAGE), fileSchema, fileName, fieldNames);
     }
 
     @Override

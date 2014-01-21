@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
+import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.COMPLETENESS;
+
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +33,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
-import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.core.FieldReport;
 import org.icgc.dcc.submission.validation.core.ReportContext;
@@ -60,14 +61,13 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
   static final Fields FIELD_VALUE_FIELDS = new Fields(FIELD, VALUE);
   static final Fields REPORT_FIELDS = new Fields(REPORT);
 
+  protected final FlowType flowType;
+  /**
+   * May be none in the case of COMPLETENESS-only.
+   */
+  protected final Optional<SummaryType> optionalSummaryType;
   protected final FileSchema fileSchema;
   protected final String fileName;
-  protected final FlowType flowType;
-
-  /**
-   * TODO: use {@link Optional}.
-   */
-  protected final SummaryType summaryType;
 
   /**
    * Subset of fields from the file schema matching the summary type under consideration.
@@ -75,11 +75,12 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
   protected final List<String> fieldNames;
 
   protected BaseStatsReportingPlanElement(
-      FileSchema fileSchema, String fileName, List<String> fieldNames, SummaryType summaryType, FlowType flowType) {
+      FlowType flowType, Optional<SummaryType> optionalSummaryType,
+      FileSchema fileSchema, String fileName, List<String> fieldNames) {
     this.fileSchema = fileSchema;
     this.fileName = fileName;
     this.fieldNames = fieldNames;
-    this.summaryType = summaryType;
+    this.optionalSummaryType = optionalSummaryType;
     this.flowType = flowType;
   }
 
@@ -89,7 +90,8 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
   @Override
   public String getElementName() {
-    return this.summaryType != null ? this.summaryType.getDescription() : CompletenessBy.COMPLETENESS;
+    return optionalSummaryType.isPresent() ?
+        optionalSummaryType.get().getDescription() : COMPLETENESS;
   }
 
   @Override
