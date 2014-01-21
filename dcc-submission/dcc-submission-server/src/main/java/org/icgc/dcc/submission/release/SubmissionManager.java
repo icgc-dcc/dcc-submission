@@ -293,7 +293,7 @@ public class SubmissionManager {
         val dataTypeState = inheritedNextState != null ? inheritedNextState : VALID;
         nextDataState.add(new DataTypeState(previousDataTypeState.getDataType(), dataTypeState));
       } else {
-        nextDataState.add(new DataTypeState(previousDataTypeState.getDataType(), NOT_VALIDATED));
+        nextDataState.add(previousDataTypeState);
       }
     }
 
