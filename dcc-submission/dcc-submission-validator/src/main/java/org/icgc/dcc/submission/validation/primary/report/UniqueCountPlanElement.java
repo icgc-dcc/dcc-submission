@@ -24,9 +24,8 @@ import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.POPULA
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -73,8 +72,9 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
   private static final Fields FIELD_FIELDS = new Fields(FIELD);
   private static final Fields VALUE_FIELDS = new Fields(VALUE);
 
-  public UniqueCountPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-    super(flowType, Optional.of(UNIQUE_COUNT), fileSchema, fileName, fieldNames);
+  public UniqueCountPlanElement(
+      FlowType flowType, String fileName, Map<String, FieldStatDigest> fieldStatDigests) {
+    super(flowType, Optional.of(UNIQUE_COUNT), fileName, fieldStatDigests);
   }
 
   @Override
@@ -97,7 +97,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
   }
 
   protected Pipe count(String fieldName, Pipe pipe) {
-    pipe = new Pipe(buildSubPipeName(UCOUNT + "_" + fieldName), pipe);
+    pipe = new Pipe(getSubPipeName(UCOUNT + "_" + fieldName), pipe);
 
     pipe = new Retain(pipe, new Fields(fieldName).append(ValidationFields.STATE_FIELD));
     pipe = new Rename(pipe, new Fields(fieldName), VALUE_FIELDS);

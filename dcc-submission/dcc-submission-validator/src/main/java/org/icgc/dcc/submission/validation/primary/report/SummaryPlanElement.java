@@ -30,10 +30,9 @@ import static org.icgc.dcc.submission.validation.primary.report.DeviationBy.STDD
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.hadoop.cascading.Fields2;
-//import org.icgc.dcc.submission.dictionary.model.Field;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
 import org.icgc.dcc.submission.validation.cascading.MinMaxBy;
@@ -55,6 +54,7 @@ import cascading.tuple.TupleEntry;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+//import org.icgc.dcc.submission.dictionary.model.Field;
 
 public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
@@ -67,8 +67,8 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
   protected SummaryPlanElement(
       FlowType flowType, Optional<SummaryType> optionalSummaryType,
-      FileSchema fileSchema, String fileName, List<String> fieldNames) {
-    super(flowType, optionalSummaryType, fileSchema, fileName, fieldNames);
+      String fileName, Map<String, FieldStatDigest> fieldStatDigests) {
+    super(flowType, optionalSummaryType, fileName, fieldStatDigests);
   }
 
   @Override
@@ -209,8 +209,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
   public static class CompletenessPlanElement extends SummaryPlanElement {
 
-    public CompletenessPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-      super(flowType, Optional.<SummaryType> absent(), fileSchema, fileName, fieldNames);
+    public CompletenessPlanElement(FlowType flowType, String fileName,
+        Map<String, FieldStatDigest> fieldStatDigests) {
+      super(flowType, Optional.<SummaryType> absent(), fileName, fieldStatDigests);
     }
 
     @Override
@@ -226,8 +227,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
   public static class MinMaxPlanElement extends SummaryPlanElement {
 
-    public MinMaxPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-      super(flowType, Optional.of(MIN_MAX), fileSchema, fileName, fieldNames);
+    public MinMaxPlanElement(FlowType flowType, String fileName,
+        Map<String, FieldStatDigest> fieldStatDigests) {
+      super(flowType, Optional.of(MIN_MAX), fileName, fieldStatDigests);
     }
 
     @Override
@@ -243,8 +245,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
   public static class AveragePlanElement extends SummaryPlanElement {
 
-    public AveragePlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-      super(flowType, Optional.of(AVERAGE), fileSchema, fileName, fieldNames);
+    public AveragePlanElement(FlowType flowType, String fileName,
+        Map<String, FieldStatDigest> fieldStatDigests) {
+      super(flowType, Optional.of(AVERAGE), fileName, fieldStatDigests);
     }
 
     @Override

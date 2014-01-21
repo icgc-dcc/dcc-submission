@@ -20,9 +20,8 @@ package org.icgc.dcc.submission.validation.primary.report;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.FREQUENCY;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -53,8 +52,9 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
   private static final String FREQ = "freq";
   private static final String MISSING_FLAG = "missing?";
 
-  public FrequencyPlanElement(FileSchema fileSchema, String fileName, List<String> fieldNames, FlowType flowType) {
-    super(flowType, Optional.of(FREQUENCY), fileSchema, fileName, fieldNames);
+  public FrequencyPlanElement(
+      FlowType flowType, String fileName, Map<String, FieldStatDigest> fieldStatDigests) {
+    super(flowType, Optional.of(FREQUENCY), fileName, fieldStatDigests);
   }
 
   @Override
@@ -109,7 +109,7 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
    * </table>
    */
   protected Pipe frequency(String field, Pipe pipe) {
-    pipe = new Pipe(buildSubPipeName(FREQ + "_" + field), pipe);
+    pipe = new Pipe(getSubPipeName(FREQ + "_" + field), pipe);
     pipe = new Retain(pipe, new Fields(field).append(ValidationFields.STATE_FIELD));
     pipe = new Each(pipe, ValidationFields.STATE_FIELD, new MissingFlaggerFunction(field), Fields.SWAP);
     pipe = new Rename(pipe, new Fields(field), new Fields(VALUE));

@@ -17,10 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.primary.visitor;
 
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
 
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import lombok.NonNull;
@@ -29,11 +30,13 @@ import lombok.val;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.report.FieldStatDigest;
 import org.icgc.dcc.submission.validation.primary.report.FrequencyPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.SummaryPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.UniqueCountPlanElement;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 
 public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
 
@@ -46,45 +49,66 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
     super.visit(fileSchema);
     for (val fileName : listMatchingFiles(fileSchema.getPattern())) {
       collectElements(
-          fileSchema,
           fileName,
-          fileSchema.getSummaryTypes());
+          getFieldStatsData(fileSchema)); // TODO: create dedicated object for that?
     }
+  }
+
+  /**
+   * Returns a map associating each {@code SummaryType} with a map of corresponding field name to field digests.
+   */
+  public ImmutableMap<Optional<SummaryType>, Map<String, FieldStatDigest>> getFieldStatsData(FileSchema fileSchema) {
+    val fieldStatsData = new LinkedHashMap<Optional<SummaryType>, Map<String, FieldStatDigest>>();
+    for (val field : fileSchema.getFields()) {
+      val optionalSummaryType = field.getSummaryType() == null ?
+          Optional.<SummaryType> absent() : Optional.of(field.getSummaryType());
+      Map<String, FieldStatDigest> fieldStatsDigests = fieldStatsData.get(optionalSummaryType);
+      if (fieldStatsDigests == null) {
+        fieldStatsDigests = newLinkedHashMap();
+        fieldStatsData.put(
+            optionalSummaryType,
+            fieldStatsDigests);
+      }
+      fieldStatsDigests.put(
+          field.getName(),
+          FieldStatDigest.from(field));
+    }
+    return ImmutableMap.<Optional<SummaryType>, Map<String, FieldStatDigest>> copyOf(fieldStatsData);
   }
 
   /**
    * Collects element based on the {@code Field}'s {@code SummaryType}, so they can later be applied
    */
-  private void collectElements(FileSchema fileSchema, String fileName,
-      Map<Optional<SummaryType>, List<String>> summaryTypes) {
+  private void collectElements(String fileName,
+      Map<Optional<SummaryType>, Map<String, FieldStatDigest>> fieldStatsData) {
 
     val flowType = getFlowType();
-    for (val optionalSummaryType : summaryTypes.keySet()) {
-      val fieldNames = summaryTypes.get(optionalSummaryType);
+    for (val optionalSummaryType : fieldStatsData.keySet()) {
+      val fieldStatDigests = fieldStatsData.get(optionalSummaryType);
       if (optionalSummaryType.isPresent()) {
         switch (optionalSummaryType.get()) {
         case AVERAGE:
           collectReportingPlanElement(new SummaryPlanElement.AveragePlanElement(
-              fileSchema, fileName, fieldNames, flowType));
+              flowType, fileName, fieldStatDigests));
           break;
         case MIN_MAX:
           collectReportingPlanElement(new SummaryPlanElement.MinMaxPlanElement(
-              fileSchema, fileName, fieldNames, flowType));
+              flowType, fileName, fieldStatDigests));
           break;
         case FREQUENCY:
           collectReportingPlanElement(new FrequencyPlanElement(
-              fileSchema, fileName, fieldNames, flowType));
+              flowType, fileName, fieldStatDigests));
           break;
         case UNIQUE_COUNT:
           collectReportingPlanElement(new UniqueCountPlanElement(
-              fileSchema, fileName, fieldNames, flowType));
+              flowType, fileName, fieldStatDigests));
           break;
         default:
           throw new IllegalStateException(format("Unknown summary type: '{}'", optionalSummaryType.get()));
         }
       } else {
         collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(
-            fileSchema, fileName, fieldNames, flowType));
+            flowType, fileName, fieldStatDigests));
         continue;
       }
     }

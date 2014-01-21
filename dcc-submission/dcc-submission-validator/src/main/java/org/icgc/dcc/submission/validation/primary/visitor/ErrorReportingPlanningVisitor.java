@@ -84,7 +84,7 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 
     @Override
     public String describe() {
-      return String.format("errors");
+      return String.format("%s-errors", fileName);
     }
 
     @Override

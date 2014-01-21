@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.COMPLETENESS;
 
 import java.io.InputStream;
@@ -30,8 +33,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.submission.dictionary.model.Field;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.core.FieldReport;
@@ -45,6 +46,7 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
@@ -66,22 +68,32 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
    * May be none in the case of COMPLETENESS-only.
    */
   protected final Optional<SummaryType> optionalSummaryType;
-  protected final FileSchema fileSchema;
   protected final String fileName;
-
   /**
-   * Subset of fields from the file schema matching the summary type under consideration.
+   * Subset of fields (digests) from the file schema matching the summary type under consideration.
    */
+  private final Map<String, FieldStatDigest> fieldStatDigests;
+
   protected final List<String> fieldNames;
 
   protected BaseStatsReportingPlanElement(
       FlowType flowType, Optional<SummaryType> optionalSummaryType,
-      FileSchema fileSchema, String fileName, List<String> fieldNames) {
-    this.fileSchema = fileSchema;
-    this.fileName = fileName;
-    this.fieldNames = fieldNames;
-    this.optionalSummaryType = optionalSummaryType;
+      String fileName, Map<String, FieldStatDigest> fieldStatDigests) {
     this.flowType = flowType;
+    this.optionalSummaryType = optionalSummaryType;
+    this.fileName = fileName;
+    this.fieldStatDigests = fieldStatDigests;
+
+    // Extract the names
+    this.fieldNames = newArrayList(transform(
+        fieldStatDigests.values(),
+        new Function<FieldStatDigest, String>() {
+
+          @Override
+          public String apply(FieldStatDigest fieldStatDigest) {
+            return fieldStatDigest.getName();
+          }
+        }));
   }
 
   public Pipe keepStructurallyValidTuples(Pipe pipe) {
@@ -96,15 +108,11 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
   @Override
   public String describe() {
-    return String.format("%s-%s", getElementName(), fieldNames);
+    return String.format("%s-%s-%s", fileName, getElementName(), fieldNames);
   }
 
-  protected String buildSubPipeName(String prefix) {
-    return fileSchema.getName() + "_" + prefix + "_" + "pipe";
-  }
-
-  public String getFileSchemaName() {
-    return this.fileSchema.getName();
+  protected String getSubPipeName(String prefix) {
+    return format("%s_%s_pipe", fileName, prefix);
   }
 
   public FlowType getFlowType() {
@@ -113,7 +121,9 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
   @Override
   public ReportCollector getCollector() {
-    return new SummaryReportCollector(this.fileSchema, fileName);
+    return new SummaryReportCollector(
+        fileName,
+        fieldStatDigests);
   }
 
   public static class FieldSummary {// TODO: use FieldReport instead?
@@ -148,16 +158,12 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
   class SummaryReportCollector implements ReportCollector {
 
-    /**
-     * TODO: full fileschema necessary?
-     */
-    private final FileSchema fileSchema;
-
     private final String fileName;
+    private final Map<String, FieldStatDigest> fieldStatDigests;
 
-    public SummaryReportCollector(@NonNull FileSchema fileSchema, @NonNull String fileName) {
-      this.fileSchema = fileSchema;
+    public SummaryReportCollector(@NonNull String fileName, @NonNull Map<String, FieldStatDigest> fieldStatDigests) {
       this.fileName = fileName;
+      this.fieldStatDigests = fieldStatDigests;
     }
 
     @Override
@@ -169,10 +175,11 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
         while (fieldSummary.hasNext()) {
           FieldReport fieldReport = FieldReport.convert(fieldSummary.next());
+          val fieldName = fieldReport.getName();
 
-          Field field = this.fileSchema.field(fieldReport.getName()).get();
-          fieldReport.setLabel(field.getLabel());
-          fieldReport.setType(field.getSummaryType());
+          val fieldStatDigest = fieldStatDigests.get(fieldName);
+          fieldReport.setLabel(fieldStatDigest.getLabel());
+          fieldReport.setType(fieldStatDigest.getSummaryType()); // May be null
 
           context.reportField(fileName, fieldReport);
         }

@@ -25,7 +25,6 @@ import static org.icgc.dcc.submission.dictionary.model.Field.IS_CONTROLLED;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -45,7 +44,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -271,25 +269,5 @@ public class FileSchema implements DictionaryElement, Serializable {
       }
     }
     return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
-  }
-
-  /**
-   * Returns a map associating each {@code SummaryType} with a list of
-   * corresponding field names.
-   */
-  @JsonIgnore
-  public ImmutableMap<Optional<SummaryType>, List<String>> getSummaryTypes() {
-    val summaryTypes = new LinkedHashMap<Optional<SummaryType>, List<String>>();
-    for (val field : fields) {
-      val optionalSummaryType = field.getSummaryType() == null ?
-          Optional.<SummaryType> absent() : Optional.of(field.getSummaryType());
-      List<String> fieldNames = summaryTypes.get(optionalSummaryType);
-      if (fieldNames == null) {
-        fieldNames = newArrayList();
-        summaryTypes.put(optionalSummaryType, fieldNames);
-      }
-      fieldNames.add(field.getName());
-    }
-    return ImmutableMap.<Optional<SummaryType>, List<String>> copyOf(summaryTypes);
   }
 }
