@@ -35,7 +35,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvid
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
-import org.icgc.dcc.submission.validation.primary.planner.DefaultPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.Planner;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
@@ -107,7 +106,7 @@ public class ValidationModule extends AbstractDccModule {
    */
   private void bindPrimaryValidation() {
     // Builder of plans
-    bind(Planner.class).to(DefaultPlanner.class);
+    bind(Planner.class).in(Singleton.class);
     bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
 
     // Primary restrictions

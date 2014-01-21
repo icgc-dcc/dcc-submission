@@ -17,26 +17,27 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
+import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 
-import lombok.NonNull;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 
-import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 
@@ -44,30 +45,24 @@ import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.io.LineReader;
 
 public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   protected final FileSystem fileSystem;
+  private final Path submissionDir;
+  private final Path validationOutputDir;
 
-  @NonNull
-  private final Path input;
-  @NonNull
-  private final Path output;
-  @NonNull
+  /**
+   * TODO: still needed?
+   */
   private final Path system;
-
-  private final FileSchemaDirectory fileSchemaDirectory;
-  private final FileSchemaDirectory systemDirectory;
 
   protected BasePlatformStrategy(FileSystem fileSystem, Path input, Path output, Path system) {
     this.fileSystem = fileSystem;
-    this.input = input;
-    this.output = output;
+    this.submissionDir = input;
+    this.validationOutputDir = output;
     this.system = system;
-    this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
-    this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
   }
 
   @Override
@@ -76,37 +71,11 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   /**
-   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}.
-   */
-  @Override
-  @Deprecated
-  public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
-    try {
-      Path path = path(schema);
-      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      return tapSource(resolvedPath);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
    * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}; Temporary: see DCC-1876
    */
   @Override
-  public Tap<?, ?, ?> getSourceTap2(FileSchema schema) {
-    try {
-      Path path = path(schema);
-      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      return tapSource2(resolvedPath);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public Tap<?, ?, ?> getFlowSinkTap(FileSchema schema, FlowType flowType) {
-    return tap(new Path(output, String.format("%s.%s.tsv", schema.getName(), flowType)));
+  public Tap<?, ?, ?> getSourceTap2(String fileName) {
+    return tapSource2(getFilePath(fileName));
   }
 
   @Override
@@ -115,19 +84,26 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   protected Path trimmedPath(Key key) {
-    if (key.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
-      return new Path(output, key.getName() + ".tsv");
-    } else if (key.getSchema().getRole() == FileSchemaRole.SYSTEM) {
+    checkState(false, "Should not be used"); // Not maintained anymore and due for deletion
+    if (key.getRole() == FileSchemaRole.SUBMISSION) {
+      return new Path(validationOutputDir, key.getName() + ".tsv");
+    } else if (key.getRole() == FileSchemaRole.SYSTEM) {
       return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), key.getName() + ".tsv"); // TODO: should use
                                                                                                    // DccFileSystem
                                                                                                    // abstraction
     } else {
-      throw new RuntimeException("Undefined File Schema Role " + key.getSchema().getRole());
+      throw new RuntimeException("Undefined File Schema Role " + key.getRole());
     }
   }
 
-  protected Path reportPath(FileSchema schema, FlowType type, String reportName) {
-    return new Path(output, String.format("%s.%s%s%s.json", schema.getName(), type, FILE_NAME_SEPARATOR, reportName));
+  protected Path reportPath(String fileName, FlowType type, String reportName) {
+    return new Path(
+        validationOutputDir,
+        format("%s.%s%s%s.json",
+            fileName,
+            type,
+            FILE_NAME_SEPARATOR,
+            reportName));
   }
 
   /**
@@ -140,61 +116,34 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   /**
    * See {@link #getSourceTap(FileSchema)} comment
    */
-  @Deprecated
-  protected abstract Tap<?, ?, ?> tapSource(Path path);
-
-  /**
-   * See {@link #getSourceTap(FileSchema)} comment
-   */
   protected abstract Tap<?, ?, ?> tapSource2(Path path);
 
   /**
-   * FIXME: This should not be happening in here, instead it should delegate to the filesystem abstraction (see
-   * DCC-1876).
+   * TODO: try and combine with loader's equivalent. (DCC-996)
    */
   @Override
-  public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
-
-    RemoteIterator<LocatedFileStatus> files;
-    if (fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
-      files = fileSystem.listFiles(input, false);
-    } else if (fileSchema.getRole() == FileSchemaRole.SYSTEM) {
-      files = fileSystem.listFiles(system, false);
-    } else {
-      throw new RuntimeException("undefined File Schema Role " + fileSchema.getRole());
-    }
-
-    while (files.hasNext()) {
-      LocatedFileStatus file = files.next();
-      if (file.isFile()) {
-        Path path = file.getPath();
-        if (Pattern.matches(fileSchema.getPattern(), path.getName())) {
-          return path;
-        }
-      }
-    }
-    throw new FileNotFoundException("no file for schema " + fileSchema.getName());
+  @SneakyThrows
+  public Fields getFileHeader(String fileName) {
+    @Cleanup
+    InputStreamReader isr = new InputStreamReader(
+        fileSystem.open(getFilePath(fileName)),
+        UTF_8);
+    return fields(FIELD_SPLITTER.split(new LineReader(isr).readLine()));
   }
 
   @Override
-  public FileSchemaDirectory getFileSchemaDirectory() {
-    return this.fileSchemaDirectory;
+  public List<String> listFileNames(String pattern) {
+    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir, compile(pattern)));
   }
 
   @Override
-  public FileSchemaDirectory getSystemDirectory() {
-    return this.systemDirectory;
+  public List<String> listFileNames() {
+    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir));
   }
 
-  protected List<String> checkDuplicateHeader(Iterable<String> header) {
-    Set<String> headerSet = Sets.newHashSet();
-    List<String> dupHeaders = Lists.newArrayList();
-
-    for (String strHeader : header) {
-      if (!headerSet.add(strHeader)) {
-        dupHeaders.add(strHeader);
-      }
-    }
-    return dupHeaders;
+  @Override
+  public Path getFilePath(String fileName) {
+    return new Path(submissionDir, fileName);
   }
+
 }

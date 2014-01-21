@@ -17,14 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
 
+import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -42,59 +45,86 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   private final FileSchema fileSchema;
 
+  protected final String fileName;
+
   private final FlowType flowType;
 
-  private final Map<String, Pipe> reports = Maps.newHashMap();
+  private final Map<String, Pipe> reportPipes = Maps.newHashMap();
 
   private final Map<String, ReportCollector> collectors = Maps.newHashMap();
 
-  protected BaseFileSchemaFlowPlanner(FileSchema fileSchema, FlowType flowType) {
-    checkArgument(fileSchema != null);
-    checkArgument(flowType != null);
+  protected BaseFileSchemaFlowPlanner(
+      @NonNull FileSchema fileSchema,
+      @NonNull String fileName,
+      @NonNull FlowType flowType) {
     this.fileSchema = fileSchema;
+    this.fileName = fileName;
     this.flowType = flowType;
   }
 
-  @Override
-  public String getName() {
-    return getSchema().getName() + "." + flowType.toString();
+  protected String getSchemaName() {
+    return fileSchema.getName();
+  }
+
+  protected List<String> getFieldNames() {
+    return fileSchema.getFieldNames();
+  }
+
+  protected List<String> getRequiredFieldNames() {
+    return fileSchema.getRequiredFieldNames();
+  }
+
+  protected String getSourcePipeName() {
+    return fileName;
+  }
+
+  /**
+   * Returns the name of the current flow planner, which will also be used a {@link Flow} name.
+   */
+  protected String getFlowName() {
+    return format("%s.%s", fileName, flowType);
   }
 
   @Override
-  public FileSchema getSchema() {
-    return fileSchema;
+  public void fileSchemaAccept(BaseDictionaryVisitor visitor) {
+    fileSchema.accept(visitor);
   }
 
   @Override
   public final void apply(ReportingPlanElement element) {
-    Pipe pipe = getTail(element.getName());
-    log.info("[{}] applying element [{}]", getName(), element.describe());
-    reports.put(element.getName(), element.report(pipe));
-    this.collectors.put(element.getName(), element.getCollector());
+    val elementName = element.getElementName();
+    val reportTailPipe = getReportTailPipe(elementName);
+    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
+
+    reportPipes.put(
+        elementName,
+        element.report(reportTailPipe));
+    collectors.put(
+        elementName,
+        element.getCollector());
   }
 
-  protected Pipe getTail(String basename) {
+  protected Pipe getReportTailPipe(String basename) {
     return getStructurallyValidTail(); // overwritten in the case of the internal version
   }
 
   @Override
-  public Flow<?> connect(PlatformStrategy strategy) {
-    FlowDef def = new FlowDef().setName(getName());
+  public Flow<?> connect(PlatformStrategy platform) {
+    val flowDef = new FlowDef().setName(getFlowName());
 
-    for (Map.Entry<String, Pipe> p : reports.entrySet()) {
-      def.addTailSink(p.getValue(), strategy.getReportTap(getSchema(), flowType, p.getKey()));
+    for (Map.Entry<String, Pipe> p : reportPipes.entrySet()) {
+      flowDef.addTailSink(p.getValue(), platform.getReportTap(fileName, flowType, p.getKey()));
     }
 
-    onConnect(def, strategy);
+    onConnect(flowDef, platform);
 
     // Make a flow only if there's something to do
-    if (def.getSinks().size() > 0 && def.getSources().size() > 0) {
-      Flow<?> flow = strategy.getFlowConnector().connect(def);
-
-      return flow;
-    }
-
-    return null;
+    val hasSourcesAndSinks = flowDef.getSinks().size() > 0 && flowDef.getSources().size() > 0;
+    return hasSourcesAndSinks ?
+        platform
+            .getFlowConnector()
+            .connect(flowDef) :
+        null;
   }
 
   @Override

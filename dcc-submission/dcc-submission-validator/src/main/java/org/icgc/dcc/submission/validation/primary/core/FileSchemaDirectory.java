@@ -41,7 +41,10 @@ import com.google.common.collect.Lists;
 /**
  * A directory that contains files associated with {@code FileSchema}. Each {@code FileSchema} is expected to have at
  * most one file in this directory.
+ * <p>
+ * @deprecated
  */
+@Deprecated
 @Slf4j
 @RequiredArgsConstructor
 public class FileSchemaDirectory {
@@ -78,7 +81,7 @@ public class FileSchemaDirectory {
   }
 
   /**
-   * FIXME: https://jira.oicr.on.ca/browse/DCC-1233.
+   * Obsolete code now (checked in the FPV).
    */
   private void checkCompression(FileSchema fileSchema, Path path) {
     try {

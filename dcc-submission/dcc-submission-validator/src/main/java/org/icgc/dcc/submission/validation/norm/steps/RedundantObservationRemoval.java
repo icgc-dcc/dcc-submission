@@ -21,7 +21,6 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
@@ -77,10 +76,8 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
   public static ImmutableList<String> getObservationUniqueFields(Dictionary dictionary, SubmissionFileType type) {
     FileSchema ssmP = dictionary.getFileSchema(type);
 
-    val observationUniqueFields = newArrayList(
-        ssmP.getFieldNames());
-    observationUniqueFields.remove(
-        getFieldName(ANALYSIS_ID_FIELD));
+    val observationUniqueFields = ssmP.getFieldNames();
+    observationUniqueFields.remove(getFieldName(ANALYSIS_ID_FIELD));
 
     return ImmutableList.<String> copyOf(observationUniqueFields);
   }

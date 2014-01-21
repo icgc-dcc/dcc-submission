@@ -48,7 +48,7 @@ public interface NormalizationContext {
     /**
      * Creates the default {@link NormalizationContext}.
      */
-    static NormalizationContext getNormalizationContext(Dictionary dictionary) {
+    static NormalizationContext getContext(Dictionary dictionary) {
       return DefaultNormalizationContext
           .builder()
           .controlledFields(ConfidentialFieldsRemoval.getControlledFields(dictionary))

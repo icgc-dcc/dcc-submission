@@ -17,20 +17,23 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
+import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.COMPLETENESS;
+
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.submission.dictionary.model.Field;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
-import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.core.FieldReport;
 import org.icgc.dcc.submission.validation.core.ReportContext;
@@ -45,39 +48,52 @@ import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.collect.Iterables;
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 
 public abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
   static final String FIELD = "field";
-
   static final String VALUE = "value";
-
   static final String REPORT = "report";
-
   static final Fields FIELD_FIELDS = new Fields(FIELD);
-
   static final Fields VALUE_FIELDS = new Fields(VALUE);
-
   static final Fields FIELD_VALUE_FIELDS = new Fields(FIELD, VALUE);
-
   static final Fields REPORT_FIELDS = new Fields(REPORT);
 
-  protected final FileSchema fileSchema;
-
   protected final FlowType flowType;
+  /**
+   * May be none in the case of COMPLETENESS-only.
+   */
+  protected final Optional<SummaryType> optionalSummaryType;
+  protected final String fileName;
+  /**
+   * Subset of fields (digests) from the file schema matching the summary type under consideration.
+   */
+  private final Map<String, FieldStatDigest> fieldStatDigests;
 
-  protected final SummaryType summaryType;
+  protected final List<String> fieldNames;
 
-  protected final List<Field> fields;
-
-  protected BaseStatsReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
-      FlowType flowType) {
-    this.fileSchema = fileSchema;
-    this.fields = fields;
-    this.summaryType = summaryType;
+  protected BaseStatsReportingPlanElement(
+      FlowType flowType, Optional<SummaryType> optionalSummaryType,
+      String fileName, Map<String, FieldStatDigest> fieldStatDigests) {
     this.flowType = flowType;
+    this.optionalSummaryType = optionalSummaryType;
+    this.fileName = fileName;
+    this.fieldStatDigests = fieldStatDigests;
+
+    // Extract the names
+    this.fieldNames = newArrayList(transform(
+        fieldStatDigests.values(),
+        new Function<FieldStatDigest, String>() {
+
+          @Override
+          public String apply(FieldStatDigest fieldStatDigest) {
+            return fieldStatDigest.getName();
+          }
+        }));
   }
 
   public Pipe keepStructurallyValidTuples(Pipe pipe) {
@@ -85,27 +101,18 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
   }
 
   @Override
-  public String getName() {
-    return this.summaryType != null ? this.summaryType.getDescription() : CompletenessBy.COMPLETENESS;
+  public String getElementName() {
+    return optionalSummaryType.isPresent() ?
+        optionalSummaryType.get().getDescription() : COMPLETENESS;
   }
 
   @Override
   public String describe() {
-    return String.format("%s-%s", this.getName(), Iterables.transform(fields, new Function<Field, String>() {
-
-      @Override
-      public String apply(Field input) {
-        return input.getName();
-      }
-    }));
+    return String.format("%s-%s-%s", fileName, getElementName(), fieldNames);
   }
 
-  protected String buildSubPipeName(String prefix) {
-    return fileSchema.getName() + "_" + prefix + "_" + "pipe";
-  }
-
-  public FileSchema getFileSchema() {
-    return this.fileSchema;
+  protected String getSubPipeName(String prefix) {
+    return format("%s_%s_pipe", fileName, prefix);
   }
 
   public FlowType getFlowType() {
@@ -114,7 +121,9 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
   @Override
   public ReportCollector getCollector() {
-    return new SummaryReportCollector(this.fileSchema);
+    return new SummaryReportCollector(
+        fileName,
+        fieldStatDigests);
   }
 
   public static class FieldSummary {// TODO: use FieldReport instead?
@@ -149,10 +158,12 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
   class SummaryReportCollector implements ReportCollector {
 
-    private final FileSchema fileSchema;
+    private final String fileName;
+    private final Map<String, FieldStatDigest> fieldStatDigests;
 
-    public SummaryReportCollector(FileSchema fileSchema) {
-      this.fileSchema = fileSchema;
+    public SummaryReportCollector(@NonNull String fileName, @NonNull Map<String, FieldStatDigest> fieldStatDigests) {
+      this.fileName = fileName;
+      this.fieldStatDigests = fieldStatDigests;
     }
 
     @Override
@@ -160,15 +171,15 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
       try {
         @Cleanup
         val reportIntputStream = getReportInputStream(strategy);
-        val fileName = strategy.path(getFileSchema()).getName();
         val fieldSummary = getFieldSummaries(reportIntputStream);
 
         while (fieldSummary.hasNext()) {
-          FieldReport fieldReport = FieldReport.convert(fieldSummary.next());
+          val fieldReport = FieldReport.convert(fieldSummary.next());
+          val fieldName = fieldReport.getName();
 
-          Field field = this.fileSchema.field(fieldReport.getName()).get();
-          fieldReport.setLabel(field.getLabel());
-          fieldReport.setType(field.getSummaryType());
+          val fieldStatDigest = fieldStatDigests.get(fieldName);
+          fieldReport.setLabel(fieldStatDigest.getLabel());
+          fieldReport.setType(fieldStatDigest.getSummaryType()); // May be null
 
           context.reportField(fileName, fieldReport);
         }
@@ -179,14 +190,15 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
     @SneakyThrows
     private InputStream getReportInputStream(PlatformStrategy strategy) {
-      return strategy.readReportTap(getFileSchema(), getFlowType(), getName());
+      return strategy.readReportTap(fileName, getFlowType(), getElementName());
     }
 
     @SneakyThrows
     private Iterator<FieldSummary> getFieldSummaries(InputStream reportIntputStream) {
-      val reader = new ObjectMapper().reader().withType(FieldSummary.class);
-
-      return reader.readValues(reportIntputStream);
+      return MAPPER
+          .reader()
+          .withType(FieldSummary.class)
+          .readValues(reportIntputStream);
     }
 
   }

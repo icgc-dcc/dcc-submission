@@ -175,7 +175,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     val platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
-    plan.connect(platformStrategy);
+    plan.connect();
     assertEquals(5, plan.getCascade().getFlows().size());
 
     plan.getCascade().complete();

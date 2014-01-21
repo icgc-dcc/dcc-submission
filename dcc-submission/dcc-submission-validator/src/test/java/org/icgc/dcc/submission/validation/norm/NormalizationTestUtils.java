@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.norm;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -55,8 +54,8 @@ final class NormalizationTestUtils {
   }
 
   public static List<String> getFieldNames(SubmissionFileType type) {
-    return newArrayList(dictionary()
+    return dictionary()
         .getFileSchema(type)
-        .getFieldNames());
+        .getFieldNames();
   }
 }

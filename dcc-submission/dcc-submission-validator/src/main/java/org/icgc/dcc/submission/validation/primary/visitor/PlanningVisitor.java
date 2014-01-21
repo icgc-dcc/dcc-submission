@@ -74,7 +74,7 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
     return elements;
   }
 
-  protected void collect(T element) {
+  protected void collectReportingPlanElement(T element) {
     elements.add(element);
   }
 

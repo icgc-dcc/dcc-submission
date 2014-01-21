@@ -19,22 +19,20 @@ package org.icgc.dcc.submission.validation.primary.planner;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.REPLACE;
+import static cascading.tuple.Fields.SWAP;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.dictionary.model.FileSchemaRole.SUBMISSION;
 import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.submission.validation.cascading.RemoveEmptyValidationLineFilter;
@@ -43,14 +41,9 @@ import org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
-import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Key;
-import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 
 import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
@@ -61,7 +54,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
-import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -72,36 +64,44 @@ import com.google.common.collect.ObjectArrays;
 @Slf4j
 class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
 
-  private final Pipe head;
+  private final Pipe headPipe;
   private Pipe structurallyValidTail;
   private Pipe structurallyInvalidTail;
-  private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
-  private StructuralCheckFunction structuralCheck;
+  private StructuralCheckFunction structuralCheckFunction;
 
-  DefaultInternalFlowPlanner(FileSchema fileSchema) {
-    super(fileSchema, FlowType.INTERNAL);
-    this.head = new Pipe(fileSchema.getName());
+  /**
+   * Not used or maintained anymore (TODO: remove).
+   */
+  private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
+
+  DefaultInternalFlowPlanner(FileSchema fileSchema, String fileName) {
+    super(fileSchema, fileName, INTERNAL);
+    this.headPipe = new Pipe(getSourcePipeName());
 
     // apply system pipe
-    applySystemPipes(this.head);
+    applySystemPipes(this.headPipe);
   }
 
   @Override
   public void apply(InternalPlanElement element) {
     checkArgument(element != null);
-    log.info("[{}] applying element [{}]", getName(), element.describe());
+    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
     structurallyValidTail = element.extend(structurallyValidTail);
   }
 
+  /**
+   * Not maintained anymore and due for deletion
+   */
   @Override
   public Key addTrimmedOutput(String... fields) {
+    checkState(false, "Should not be used");
     checkArgument(fields != null);
     checkArgument(fields.length > 0);
 
     String[] keyFields = // in order to obtain offset of referencing side
         ObjectArrays.concat(fields, ValidationFields.OFFSET_FIELD_NAME);
 
-    Key key = new Key(getSchema(), keyFields);
+    Key key = new Key(getSchemaName(), SUBMISSION, keyFields); // TODO: support system again?
     if (trimmedTails.containsKey(key) == false) {
       String[] preKeyFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
 
@@ -109,14 +109,14 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       Pipe tail = new Retain(newHead, new Fields(preKeyFields));
       tail = new Each(tail, ValidationFields.STATE_FIELD, new OffsetFunction(), Fields.SWAP);
 
-      log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(key.getFields()));
+      log.info("[{}] planned trimmed output with {}", getFlowName(), Arrays.toString(key.getFields()));
       trimmedTails.put(key, tail);
     }
     return key;
   }
 
   @Override
-  protected Pipe getTail(String basename) {
+  protected Pipe getReportTailPipe(String basename) {
     Pipe valid = new Pipe(basename + "_valid", structurallyValidTail);
     Pipe invalid = new Pipe(basename + "_invalid", structurallyInvalidTail);
     return new Merge(valid, invalid);
@@ -132,35 +132,27 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     return structurallyInvalidTail;
   }
 
+  private Pipe applyStructuralCheck(Pipe pipe) {
+    structuralCheckFunction = new StructuralCheckFunction(getFieldNames()); // TODO: due for a splitting
+    return new Each( // parse "line" into the actual expected fields
+        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheckFunction, SWAP);
+  }
+
   @Override
-  protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy) {
-    checkState(structuralCheck != null);
-    Tap<?, ?, ?> source = getSourceTap(strategy);
-    try {
-      // TODO: address trick to know what the header contain: DCC-996
-      Fields header = strategy.getFileHeader(getSchema());
-      structuralCheck.declareFieldsPostPlanning(header);
+  protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy platformStrategy) {
 
-    } catch (IOException e) {
-      throw new PlanningException("Error processing file header");
-    } catch (DuplicateHeaderException e) {
-      String fileName = null;
-      try {
-        fileName = strategy.path(getSchema()).getName();
-      } catch (FileNotFoundException fnfe) {
-        throw new PlanningException(fnfe);
-      } catch (IOException ioe) {
-        throw new PlanningException(ioe);
-      }
-      throw new PlanningFileLevelException(fileName, ErrorType.DUPLICATE_HEADER_ERROR,
-          e.getDuplicateHeaderFieldNames());
-    }
+    // TODO: address trick to know what the header contain: DCC-996
+    checkNotNull(structuralCheckFunction, "TODO")
+        .declareFieldsPostPlanning(
+            platformStrategy.getFileHeader(fileName));
 
-    flowDef.addSource(head, source);
+    flowDef.addSource(
+        headPipe,
+        platformStrategy.getSourceTap(fileName));
 
-    for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
-      flowDef.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
-    }
+    // Not maintained anymore
+    connectTrimmedTails(flowDef, platformStrategy);
+
     return flowDef;
   }
 
@@ -170,32 +162,19 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     pipe = applyStructuralCheck(pipe);
 
     // TODO: DCC-1076 - Would be better done from within {@link RequiredRestriction}.
-    pipe = new Each(pipe, ALL, new ForbiddenValuesFunction(computeRequiredFieldnames()), REPLACE);
+    pipe = new Each(pipe, ALL, new ForbiddenValuesFunction(getRequiredFieldNames()), REPLACE);
 
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
   }
 
-  private Pipe applyStructuralCheck(Pipe pipe) {
-    structuralCheck = new StructuralCheckFunction(getSchema().getFieldNames()); // TODO: due for a splitting
-    return new Each( // parse "line" into the actual expected fields
-        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheck, Fields.SWAP);
-  }
-
   /**
-   * Returns the list of field names that have a {@link RequiredRestriction} set on them (irrespective of whether it's a
-   * strict one or not).
-   * <p>
-   * TODO: DCC-1076 will render it unnecessary (everything would take place in {@link RequiredRestriction}).
+   * Not maintained anymore and due for deletion.
    */
-  private List<String> computeRequiredFieldnames() {
-    List<String> requiredFieldnames = newArrayList();
-    for (Field field : getSchema().getFields()) {
-      if (field.hasRequiredRestriction()) {
-        requiredFieldnames.add(field.getName());
-      }
+  private void connectTrimmedTails(FlowDef flowDef, PlatformStrategy platformStrategy) {
+    for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
+      flowDef.addTailSink(e.getValue(), platformStrategy.getTrimmedTap(e.getKey()));
     }
-    return copyOf(requiredFieldnames);
   }
 
   @SuppressWarnings("rawtypes")
@@ -211,11 +190,6 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       TupleState state = ValidationFields.state(entry);
       functionCall.getOutputCollector().add(new Tuple(state.getOffset()));
     }
-  }
-
-  @SuppressWarnings("all")
-  private Tap<?, ?, ?> getSourceTap(PlatformStrategy strategy) {
-    return strategy.getSourceTap(getSchema());
   }
 
 }

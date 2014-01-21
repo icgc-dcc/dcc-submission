@@ -17,28 +17,36 @@
  */
 package org.icgc.dcc.submission.validation.primary.visitor;
 
-import static org.icgc.dcc.submission.dictionary.model.FileSchemaRole.SUBMISSION;
+import java.util.List;
+
+import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 
-public abstract class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
+public abstract class ReportingPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
 
-  public ReportingFlowPlanningVisitor(FlowType type) {
+  protected final PlatformStrategy platform;
+
+  public ReportingPlanningVisitor(@NonNull PlatformStrategy platform, @NonNull FlowType type) {
     super(type);
+    this.platform = platform;
+  }
+
+  protected List<String> listMatchingFiles(String pattern) {
+    return platform.listFileNames(pattern);
   }
 
   @Override
   public void apply(Plan plan) {
     for (val flowPlanner : plan.getFlows(getFlowType())) {
-      flowPlanner.getSchema().accept(this);
+      flowPlanner.fileSchemaAccept(this);
 
       for (val e : getElements()) {
-        if (flowPlanner.getSchema().getRole() == SUBMISSION) {
-          flowPlanner.apply(e);
-        }
+        flowPlanner.apply(e);
       }
     }
   }

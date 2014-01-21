@@ -59,17 +59,17 @@ public class PrimaryValidator implements Validator {
     val projectKey = context.getProjectKey();
     val dataTypes = context.getDataTypes();
     val dictionary = context.getDictionary();
-    val platformStrategy = context.getPlatformStrategy();
+    val platform = context.getPlatformStrategy();
 
     // Plan
     log.info("Planning cascade for project '{}'", projectKey);
-    Plan plan = planner.plan(projectKey, dataTypes, platformStrategy, dictionary);
+    Plan plan = planner.plan(projectKey, dataTypes, platform, dictionary);
     log.info("Planned cascade for project '{}', # of internal flows: {}, # of external flows: {}",
         new Object[] { projectKey, size(plan.getInternalFlows()), size(plan.getExternalFlows()) });
 
     // Connect
     log.info("Connecting cascade for project '{}'", projectKey);
-    plan.connect(platformStrategy);
+    plan.connect();
     log.info("Connected cascade for project '{}'", projectKey);
     checkInterrupted(getName());
 

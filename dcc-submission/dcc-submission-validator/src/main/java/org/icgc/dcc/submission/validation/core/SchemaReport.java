@@ -32,12 +32,19 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * Misnomer now, this is more a FileReport (but changing it requires migration so we are putting it off as of 14/01/21).
+ */
 @Embedded
 @Setter
 public class SchemaReport implements Serializable {
 
+  /**
+   * The file name (formerly the schema name).
+   */
   @Getter
-  protected String name; // File name, not file schema name
+  protected String name;
+
   protected List<SummaryReport> summaryReports = newArrayList();
   protected List<FieldReport> fieldReports = newArrayList();
   protected List<ErrorReport> errors = newArrayList();

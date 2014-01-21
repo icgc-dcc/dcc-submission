@@ -202,7 +202,7 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
   private String validate(Dictionary dictionary, String submissionFilePath) {
     String rootDirString = this.getClass().getResource(submissionFilePath).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
-    String errorFileString = outputDirString + "/" + "donor.internal" + FILE_NAME_SEPARATOR + "errors.json";
+    String errorFileString = outputDirString + "/" + "donor.txt.internal" + FILE_NAME_SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
@@ -216,8 +216,7 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
     val platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
-    plan.connect(platformStrategy);
-
+    plan.connect();
     plan.getCascade().complete();
 
     assertTrue(errorFileString, errorFile.exists());
