@@ -199,7 +199,7 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   public boolean containsField(String fieldName) {
-    return newArrayList(getFieldNames()).contains(fieldName);
+    return getFieldNames().contains(fieldName);
   }
 
   @JsonIgnore
@@ -211,8 +211,26 @@ public class FileSchema implements DictionaryElement, Serializable {
    * TODO: change to List (never big)
    */
   @JsonIgnore
-  public Iterable<String> getFieldNames() {
-    return getFieldNames(getFields());
+  public List<String> getFieldNames() {
+    return newArrayList(getFieldNames(getFields()));
+  }
+
+  /**
+   * Returns the list of field names that have a {@link RequiredRestriction} set
+   * on them (irrespective of whether it's a strict one or not).
+   * <p>
+   * TODO: DCC-1076 will render it unnecessary (everything would take place in
+   * {@link RequiredRestriction}).
+   */
+  @JsonIgnore
+  public List<String> getRequiredFieldNames() {
+    List<String> requiredFieldnames = newArrayList();
+    for (val field : fields) {
+      if (field.hasRequiredRestriction()) {
+        requiredFieldnames.add(field.getName());
+      }
+    }
+    return copyOf(requiredFieldnames);
   }
 
   @JsonIgnore
@@ -251,23 +269,5 @@ public class FileSchema implements DictionaryElement, Serializable {
       }
     }
     return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
-  }
-
-  /**
-   * Returns the list of field names that have a {@link RequiredRestriction} set
-   * on them (irrespective of whether it's a strict one or not).
-   * <p>
-   * TODO: DCC-1076 will render it unnecessary (everything would take place in
-   * {@link RequiredRestriction}).
-   */
-  @JsonIgnore
-  public List<String> getRequiredFieldNames() {
-    List<String> requiredFieldnames = newArrayList();
-    for (val field : fields) {
-      if (field.hasRequiredRestriction()) {
-        requiredFieldnames.add(field.getName());
-      }
-    }
-    return copyOf(requiredFieldnames);
   }
 }

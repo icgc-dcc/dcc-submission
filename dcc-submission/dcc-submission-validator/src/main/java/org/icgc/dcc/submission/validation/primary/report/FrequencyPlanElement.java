@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.FREQUENCY;
 
 import java.util.Iterator;
@@ -55,7 +54,7 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
   private static final String MISSING_FLAG = "missing?";
 
   public FrequencyPlanElement(FileSchema fileSchema, String fileName, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fileName, fields, newArrayList(fileSchema.getFieldNames()), FREQUENCY, flowType);
+    super(fileSchema, fileName, fields, fileSchema.getFieldNames(), FREQUENCY, flowType);
   }
 
   @Override

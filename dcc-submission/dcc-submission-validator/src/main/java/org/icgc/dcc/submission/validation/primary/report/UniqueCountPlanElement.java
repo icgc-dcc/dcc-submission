@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -80,7 +78,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
   private static final Fields VALUE_FIELDS = new Fields(VALUE);
 
   public UniqueCountPlanElement(FileSchema fileSchema, String fileName, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fileName, fields, newArrayList(fileSchema.getFieldNames()), SummaryType.UNIQUE_COUNT, flowType);
+    super(fileSchema, fileName, fields, fileSchema.getFieldNames(), SummaryType.UNIQUE_COUNT, flowType);
   }
 
   @Override

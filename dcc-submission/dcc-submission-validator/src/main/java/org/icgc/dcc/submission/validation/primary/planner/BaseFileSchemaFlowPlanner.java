@@ -68,7 +68,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   protected List<String> getFieldNames() {
-    return newArrayList(fileSchema.getFieldNames());
+    return fileSchema.getFieldNames();
   }
 
   protected List<String> getRequiredFieldNames() {

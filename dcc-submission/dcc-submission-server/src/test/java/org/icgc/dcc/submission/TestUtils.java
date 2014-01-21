@@ -147,7 +147,7 @@ public final class TestUtils {
   }
 
   public static List<String> getFieldNames(SubmissionFileType type) {
-    return newArrayList(dictionary().getFileSchema(type).getFieldNames());
+    return dictionary().getFileSchema(type).getFieldNames();
   }
 
   @SneakyThrows

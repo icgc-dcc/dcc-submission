@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +64,7 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
   protected SummaryPlanElement(
       FileSchema fileSchema, String fileName, SummaryType summaryType, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fileName, fields, newArrayList(fileSchema.getFieldNames()), summaryType, flowType);
+    super(fileSchema, fileName, fields, fileSchema.getFieldNames(), summaryType, flowType);
   }
 
   @Override
