@@ -92,7 +92,11 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   protected Path reportPath(String fileName, FlowType type, String reportName) {
     return new Path(
         validationOutputDir,
-        format("%s.%s%s%s.json", fileName, type, FILE_NAME_SEPARATOR, reportName));
+        format("%s.%s%s%s.json",
+            fileName,
+            type,
+            FILE_NAME_SEPARATOR,
+            reportName));
   }
 
   /**

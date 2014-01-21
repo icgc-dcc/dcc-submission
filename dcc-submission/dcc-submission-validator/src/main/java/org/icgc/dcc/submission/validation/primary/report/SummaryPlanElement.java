@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.MIN_MAX;
 import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.MISSING;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.icgc.dcc.hadoop.cascading.Fields2;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
 import org.icgc.dcc.submission.validation.cascading.MinMaxBy;
@@ -54,15 +54,11 @@ import cascading.tuple.TupleEntry;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-//import org.icgc.dcc.submission.dictionary.model.Field;
 
 public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
-  /**
-   * TODO: use {@link Fields2} instead.
-   */
-  protected static String fieldName(String fieldName, String summaryName) {
-    return String.format("%s#%s", fieldName, summaryName);
+  protected static String summaryFieldName(String originalFieldName, String summaryName) {
+    return format("%s#%s", originalFieldName, summaryName);
   }
 
   protected SummaryPlanElement(
@@ -103,25 +99,25 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
         new Fields(fieldName),
         fieldName,
         new Fields(
-            fieldName(fieldName, AVG),
-            fieldName(fieldName, STDDEV)));
+            summaryFieldName(fieldName, AVG),
+            summaryFieldName(fieldName, STDDEV)));
   }
 
   protected AggregateBy makeMinMax(String fieldName) {
     return new MinMaxBy(
         new Fields(fieldName),
         new Fields(
-            fieldName(fieldName, MIN),
-            fieldName(fieldName, MAX)));
+            summaryFieldName(fieldName, MIN),
+            summaryFieldName(fieldName, MAX)));
   }
 
   protected AggregateBy makeCompleteness(String fieldName) {
     return new CompletenessBy(
         new Fields(fieldName, STATE_FIELD_NAME),
         new Fields(
-            fieldName(fieldName, NULLS),
-            fieldName(fieldName, MISSING),
-            fieldName(fieldName, POPULATED)));
+            summaryFieldName(fieldName, NULLS),
+            summaryFieldName(fieldName, MISSING),
+            summaryFieldName(fieldName, POPULATED)));
   }
 
   /**
@@ -196,11 +192,11 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
       for (String fieldName : fieldNames) {
         FieldSummary fs = new FieldSummary();
         fs.field = fieldName;
-        fs.nulls = te.getInteger(fieldName(fieldName, CompletenessBy.NULLS));
-        fs.missing = te.getInteger(fieldName(fieldName, CompletenessBy.MISSING));
-        fs.populated = te.getInteger(fieldName(fieldName, CompletenessBy.POPULATED));
+        fs.nulls = te.getInteger(summaryFieldName(fieldName, CompletenessBy.NULLS));
+        fs.missing = te.getInteger(summaryFieldName(fieldName, CompletenessBy.MISSING));
+        fs.populated = te.getInteger(summaryFieldName(fieldName, CompletenessBy.POPULATED));
         for (String summaryField : summaryFields) {
-          fs.summary.put(summaryField, te.getObject(fieldName(fieldName, summaryField)));
+          fs.summary.put(summaryField, te.getObject(summaryFieldName(fieldName, summaryField)));
         }
         functionCall.getOutputCollector().add(new Tuple(fs));
       }

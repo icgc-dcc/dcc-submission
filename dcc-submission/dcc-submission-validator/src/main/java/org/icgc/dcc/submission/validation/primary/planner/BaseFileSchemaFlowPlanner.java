@@ -92,10 +92,16 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   @Override
   public final void apply(ReportingPlanElement element) {
-    Pipe reportTailPipe = getReportTailPipe(element.getElementName());
+    val elementName = element.getElementName();
+    val reportTailPipe = getReportTailPipe(elementName);
     log.info("[{}] applying element [{}]", getFlowName(), element.describe());
-    reportPipes.put(element.getElementName(), element.report(reportTailPipe));
-    this.collectors.put(element.getElementName(), element.getCollector());
+
+    reportPipes.put(
+        elementName,
+        element.report(reportTailPipe));
+    collectors.put(
+        elementName,
+        element.getCollector());
   }
 
   protected Pipe getReportTailPipe(String basename) {
@@ -103,24 +109,22 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public Flow<?> connect(PlatformStrategy platformStrategy) {
+  public Flow<?> connect(PlatformStrategy platform) {
     val flowDef = new FlowDef().setName(getFlowName());
 
     for (Map.Entry<String, Pipe> p : reportPipes.entrySet()) {
-      flowDef.addTailSink(p.getValue(), platformStrategy.getReportTap(fileName, flowType, p.getKey()));
+      flowDef.addTailSink(p.getValue(), platform.getReportTap(fileName, flowType, p.getKey()));
     }
 
-    onConnect(flowDef, platformStrategy);
+    onConnect(flowDef, platform);
 
     // Make a flow only if there's something to do
     val hasSourcesAndSinks = flowDef.getSinks().size() > 0 && flowDef.getSources().size() > 0;
-    if (hasSourcesAndSinks) {
-      return platformStrategy
-          .getFlowConnector()
-          .connect(flowDef);
-    }
-
-    return null;
+    return hasSourcesAndSinks ?
+        platform
+            .getFlowConnector()
+            .connect(flowDef) :
+        null;
   }
 
   @Override

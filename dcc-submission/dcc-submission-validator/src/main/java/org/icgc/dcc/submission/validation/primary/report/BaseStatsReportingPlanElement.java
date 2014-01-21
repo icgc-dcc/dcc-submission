@@ -174,7 +174,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
         val fieldSummary = getFieldSummaries(reportIntputStream);
 
         while (fieldSummary.hasNext()) {
-          FieldReport fieldReport = FieldReport.convert(fieldSummary.next());
+          val fieldReport = FieldReport.convert(fieldSummary.next());
           val fieldName = fieldReport.getName();
 
           val fieldStatDigest = fieldStatDigests.get(fieldName);
