@@ -61,10 +61,10 @@ public class Planner {
   }
 
   private static void includePlanners(
-      Plan plan, String projectKey, PlatformStrategy platformStrategy, Dictionary dictionary) {
+      Plan plan, String projectKey, PlatformStrategy platform, Dictionary dictionary) {
 
     for (val fileSchema : dictionary.getFiles()) {
-      val matchingFileNames = platformStrategy.listFileNames(fileSchema.getPattern());
+      val matchingFileNames = platform.listFileNames(fileSchema.getPattern());
       if (matchingFileNames.isEmpty()) {
         log.info("File schema '{}' has no matching datafile in submission directory for '{}'",
             new Object[] { fileSchema.getName(), projectKey });
@@ -90,8 +90,8 @@ public class Planner {
     }
   }
 
-  private static List<PlanningVisitor<? extends PlanElement>> createVisitors(PlatformStrategy platform,
-      Set<RestrictionType> restrictionTypes) {
+  private static List<PlanningVisitor<? extends PlanElement>> createVisitors(
+      PlatformStrategy platform, Set<RestrictionType> restrictionTypes) {
     return ImmutableList.of(
         // Internal
         new ValueTypePlanningVisitor(), // Must happen before RangeRestriction

@@ -29,15 +29,12 @@ import cascading.flow.Flow;
  */
 public interface FileSchemaFlowPlanner {
 
-  /**
-   * TODO
-   */
   void fileSchemaAccept(BaseDictionaryVisitor visitor);
-
-  Flow<?> connect(PlatformStrategy cascadingStrategy);
 
   void apply(ReportingPlanElement element);
 
   void collect(PlatformStrategy strategy, ReportContext context);
+
+  Flow<?> connect(PlatformStrategy cascadingStrategy);
 
 }

@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 
 import java.util.List;
@@ -72,11 +71,18 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   protected List<String> getRequiredFieldNames() {
-    return newArrayList(fileSchema.getRequiredFieldNames());
+    return fileSchema.getRequiredFieldNames();
   }
 
   protected String getSourcePipeName() {
     return fileName;
+  }
+
+  /**
+   * Returns the name of the current flow planner, which will also be used a {@link Flow} name.
+   */
+  protected String getFlowName() {
+    return format("%s.%s", fileName, flowType);
   }
 
   @Override
@@ -98,7 +104,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   @Override
   public Flow<?> connect(PlatformStrategy platformStrategy) {
-    FlowDef flowDef = new FlowDef().setName(getFlowName());
+    val flowDef = new FlowDef().setName(getFlowName());
 
     for (Map.Entry<String, Pipe> p : reportPipes.entrySet()) {
       flowDef.addTailSink(p.getValue(), platformStrategy.getReportTap(fileName, flowType, p.getKey()));
@@ -107,8 +113,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     onConnect(flowDef, platformStrategy);
 
     // Make a flow only if there's something to do
-    val hasSourcesAndSinks = flowDef.getSinks().size() > 0
-        && flowDef.getSources().size() > 0;
+    val hasSourcesAndSinks = flowDef.getSinks().size() > 0 && flowDef.getSources().size() > 0;
     if (hasSourcesAndSinks) {
       return platformStrategy
           .getFlowConnector()
@@ -123,13 +128,6 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     for (val reportCollector : collectors.values()) {
       reportCollector.collect(strategy, context);
     }
-  }
-
-  /**
-   * Returns the name of the current flow planner, which will also be used a {@link Flow} name.
-   */
-  protected String getFlowName() {
-    return format("%s.%s", fileName, flowType);
   }
 
   protected abstract Pipe getStructurallyValidTail();

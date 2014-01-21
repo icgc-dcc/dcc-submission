@@ -90,11 +90,11 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   /**
-   * 
+   * Not maintained anymore and due for deletion
    */
   @Override
   public Key addTrimmedOutput(String... fields) {
-    checkState(false, "TODO");
+    checkState(false, "Should not be used");
     checkArgument(fields != null);
     checkArgument(fields.length > 0);
 

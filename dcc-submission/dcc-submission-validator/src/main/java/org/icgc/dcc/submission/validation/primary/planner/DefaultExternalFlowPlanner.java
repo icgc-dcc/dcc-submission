@@ -58,7 +58,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   @Override
   public void apply(ExternalPlanElement element) {
-    checkState(false, "TODO");
+    checkState(false, "Should not be used");
     checkArgument(element != null);
 
     String currentFileSchemaName = getSchemaName();
@@ -79,7 +79,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   @Override
   protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy) {
-    checkState(false, "TODO");
+    checkState(false, "Should not be used");
     for (Key key : trimmedHeads.keySet()) {
       flowDef.addSource(key.getName(), strategy.getTrimmedTap(key));
     }
