@@ -49,7 +49,7 @@ public class Plan {
   @NonNull
   private final Dictionary dictionary;
   @NonNull
-  private final PlatformStrategy platformStrategy;
+  private final PlatformStrategy platform;
 
   /**
    * Metadata.
@@ -62,10 +62,10 @@ public class Plan {
    */
   private Cascade cascade;
 
-  public void connect(PlatformStrategy platformStrategy) {
+  public void connect() {
     val cascadeDef = new CascadeDef().setName(projectKey + " validation cascade");
     for (val flowPlanner : getFlowPlanners()) {
-      val flow = flowPlanner.connect(platformStrategy);
+      val flow = flowPlanner.connect(platform);
       if (flow != null) {
         flow.writeDOT("/tmp/validation-flow-" + flow.getName() + ".dot");
         flow.writeStepsDOT("/tmp/validation-flow-steps-" + flow.getName() + ".dot");
@@ -84,7 +84,7 @@ public class Plan {
 
   public void collect(ReportContext reportContext) {
     for (val planner : getFlowPlanners()) {
-      planner.collect(platformStrategy, reportContext);
+      planner.collect(platform, reportContext);
     }
   }
 

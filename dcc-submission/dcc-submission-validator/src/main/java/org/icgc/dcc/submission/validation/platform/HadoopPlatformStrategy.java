@@ -129,17 +129,17 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap2(String fileName, FlowType type, String reportName) {
-    val reportPath = reportPath2(fileName, type, reportName);
+  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
+    val reportPath = reportPath(fileName, type, reportName);
     val scheme = new HadoopJsonScheme();
     scheme.setSinkCompression(ENABLE);
     return new Hfs(scheme, reportPath.toUri().getPath());
   }
 
   @Override
-  public InputStream readReportTap2(String fileName, FlowType type, String reportName)
-      throws IOException {
-    val reportPath = reportPath2(fileName, type, reportName);
+  @SneakyThrows
+  public InputStream readReportTap(String fileName, FlowType type, String reportName) {
+    val reportPath = reportPath(fileName, type, reportName);
     if (fileSystem.isFile(reportPath)) {
       return getInputStream(reportPath);
     }
@@ -183,7 +183,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getInputTap(String fileName) {
+  public Tap<?, ?, ?> getSourceTap(String fileName) {
     val scheme = new TextLine(
         new Fields(ValidationFields.OFFSET_FIELD_NAME,
             "line"));

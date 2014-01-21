@@ -148,7 +148,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
     flowDef.addSource(
         headPipe,
-        platformStrategy.getInputTap(fileName));
+        platformStrategy.getSourceTap(fileName));
 
     // Not maintained anymore
     connectTrimmedTails(flowDef, platformStrategy);

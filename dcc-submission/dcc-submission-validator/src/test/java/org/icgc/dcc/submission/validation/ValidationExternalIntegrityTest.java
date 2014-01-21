@@ -168,10 +168,10 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
+    PlatformStrategy platform = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = planner.plan(PROJECT_KEY, platformStrategy, dictionary);
-    plan.connect(platformStrategy);
+    Plan plan = planner.plan(PROJECT_KEY, platform, dictionary);
+    plan.connect();
     assertEquals(5, plan.getCascade().getFlows().size());
 
     plan.getCascade().complete();

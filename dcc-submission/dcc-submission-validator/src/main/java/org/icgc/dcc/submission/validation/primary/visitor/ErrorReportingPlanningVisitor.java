@@ -132,7 +132,7 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 
       @SneakyThrows
       private InputStream getReportInputStream(PlatformStrategy strategy) {
-        return strategy.readReportTap2(fileName, getFlowType(), getElementName());
+        return strategy.readReportTap(fileName, getFlowType(), getElementName());
       }
 
       @SneakyThrows

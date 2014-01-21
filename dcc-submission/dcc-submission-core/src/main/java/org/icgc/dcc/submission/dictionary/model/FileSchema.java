@@ -203,8 +203,8 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   @JsonIgnore
-  public Iterable<String> getControlledFieldNames() {
-    return getFieldNames(filter(fields, IS_CONTROLLED));
+  public List<String> getControlledFieldNames() {
+    return newArrayList(getFieldNames(filter(fields, IS_CONTROLLED)));
   }
 
   /**

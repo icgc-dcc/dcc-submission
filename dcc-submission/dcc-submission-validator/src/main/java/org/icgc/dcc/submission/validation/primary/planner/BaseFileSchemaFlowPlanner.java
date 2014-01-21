@@ -101,7 +101,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     FlowDef flowDef = new FlowDef().setName(getFlowName());
 
     for (Map.Entry<String, Pipe> p : reportPipes.entrySet()) {
-      flowDef.addTailSink(p.getValue(), platformStrategy.getReportTap2(fileName, flowType, p.getKey()));
+      flowDef.addTailSink(p.getValue(), platformStrategy.getReportTap(fileName, flowType, p.getKey()));
     }
 
     onConnect(flowDef, platformStrategy);

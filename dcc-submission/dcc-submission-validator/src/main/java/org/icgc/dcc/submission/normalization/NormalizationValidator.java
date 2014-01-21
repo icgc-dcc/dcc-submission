@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.normalization;
 
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
@@ -28,6 +29,7 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
@@ -35,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.steps.Counting;
@@ -164,16 +165,16 @@ public final class NormalizationValidator implements Validator {
     String projectKey = context.getProjectKey();
 
     // Plan cascade
-    val pipes = planCascade(DefaultNormalizationContext.getNormalizationContext(context.getDictionary()));
+    val pipes = planCascade(DefaultNormalizationContext.getContext(context.getDictionary()));
 
     // Connect cascade
     val ssmPFileSchema = context.getDictionary().getFileSchema(FOCUS_TYPE);
     val connectedCascade = connectCascade(
         pipes,
         context.getPlatformStrategy(),
-        ssmPFileSchema,
         releaseName,
-        projectKey);
+        projectKey,
+        ssmPFileSchema.getPattern());
 
     // Checks validator wasn't interrupted
     checkInterrupted(getName());
@@ -222,22 +223,25 @@ public final class NormalizationValidator implements Validator {
    */
   private ConnectedCascade connectCascade(
       Pipes pipes,
-      PlatformStrategy platformStrategy,
-      FileSchema fileSchema,
-      String releaseName,
-      String projectKey) {
+      PlatformStrategy platform,
+      @NonNull String releaseName,
+      @NonNull String projectKey,
+      @NonNull String pattern) {
+
+    val fileName = getFileName(platform, pattern);
+    log.info("Processing file '{}'", fileName);
 
     val flowDef =
         flowDef()
             .setName(FLOW_NAME)
             .addSource(
                 pipes.getStartPipe(),
-                getInputTap(platformStrategy, fileSchema))
+                getInputTap(platform, fileName))
             .addTailSink(
                 pipes.getEndPipe(),
                 getOutputTap(releaseName, projectKey));
 
-    Flow<?> flow = platformStrategy // TODO: not re-using the submission's platform strategy
+    Flow<?> flow = platform // TODO: not re-using the submission's platform strategy
         .getFlowConnector()
         .connect(flowDef);
     flow.writeDOT(format("/tmp/%s-%s.dot", projectKey, flow.getName())); // TODO: refactor /tmp
@@ -310,12 +314,20 @@ public final class NormalizationValidator implements Validator {
                 .getFilePattern(type));
   }
 
+  private String getFileName(PlatformStrategy platform, String pattern) {
+    val fileNames = platform.listFileNames(pattern);
+    checkState(fileNames.size() == 1,
+        "At this point there should only be one match, instead: '%s' for pattern '%s' ('%s')",
+        fileNames, pattern, platform.listFileNames());
+    return fileNames.get(0);
+  }
+
   /**
    * Returns the input tap for the cascade. Well-formedness validation has already ensured that we have a properly
    * formatted TSV file.
    */
-  private Tap<?, ?, ?> getInputTap(PlatformStrategy platformStrategy, FileSchema fileSchema) {
-    return platformStrategy.getSourceTap2(fileSchema);
+  private Tap<?, ?, ?> getInputTap(PlatformStrategy platform, String fileName) {
+    return platform.getSourceTap2(fileName);
   }
 
   /**

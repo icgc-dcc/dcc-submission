@@ -24,20 +24,14 @@ import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 
-import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -73,19 +67,8 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
    * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}; Temporary: see DCC-1876
    */
   @Override
-  public Tap<?, ?, ?> getSourceTap2(FileSchema schema) {
-    try {
-      Path path = path(schema);
-      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      return tapSource2(resolvedPath);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public Tap<?, ?, ?> getFlowSinkTap(String schemaName, FlowType flowType) {
-    return tap(new Path(validationOutputDir, String.format("%s.%s.tsv", schemaName, flowType)));
+  public Tap<?, ?, ?> getSourceTap2(String fileName) {
+    return tapSource2(getFilePath(fileName));
   }
 
   @Override
@@ -94,7 +77,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   protected Path trimmedPath(Key key) {
-    checkState(false, "TODO"); // Not maintained anymore and due for deletion
+    checkState(false, "Should not be used"); // Not maintained anymore and due for deletion
     if (key.getRole() == FileSchemaRole.SUBMISSION) {
       return new Path(validationOutputDir, key.getName() + ".tsv");
     } else if (key.getRole() == FileSchemaRole.SYSTEM) {
@@ -106,7 +89,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     }
   }
 
-  protected Path reportPath2(String fileName, FlowType type, String reportName) {
+  protected Path reportPath(String fileName, FlowType type, String reportName) {
     return new Path(
         validationOutputDir,
         format("%s.%s%s%s.json", fileName, type, FILE_NAME_SEPARATOR, reportName));
@@ -137,38 +120,14 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     return fields(FIELD_SPLITTER.split(new LineReader(isr).readLine()));
   }
 
-  /**
-   * FIXME: This should not be happening in here, instead it should delegate to the filesystem abstraction (see
-   * DCC-1876).
-   */
-  @Override
-  @Deprecated
-  public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
-
-    RemoteIterator<LocatedFileStatus> files;
-    if (fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
-      files = fileSystem.listFiles(submissionDir, false);
-    } else if (fileSchema.getRole() == FileSchemaRole.SYSTEM) {
-      files = fileSystem.listFiles(system, false);
-    } else {
-      throw new RuntimeException("undefined File Schema Role " + fileSchema.getRole());
-    }
-
-    while (files.hasNext()) {
-      LocatedFileStatus file = files.next();
-      if (file.isFile()) {
-        Path path = file.getPath();
-        if (Pattern.matches(fileSchema.getPattern(), path.getName())) {
-          return path;
-        }
-      }
-    }
-    throw new FileNotFoundException("no file for schema " + fileSchema.getName());
-  }
-
   @Override
   public List<String> listFileNames(String pattern) {
     return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir, compile(pattern)));
+  }
+
+  @Override
+  public List<String> listFileNames() {
+    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir));
   }
 
   @Override

@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -49,34 +47,27 @@ public interface PlatformStrategy {
    * TODO: Adapt submission code to use {@link #getSourceTap2(FileSchema)} since we can now assume the header is known
    * (and therefore we should use {@link TextDelimited} rather than {@link TextLine}.
    */
-  Tap<?, ?, ?> getInputTap(String fileName);
+  Tap<?, ?, ?> getSourceTap(String fileName);
 
   /**
-   * See comment in {@link #getSourceTap(FileSchema)}.
+   * See comment in {@link #getSourceTap(String)}.
    */
-  Tap<?, ?, ?> getSourceTap2(FileSchema schema);
-
-  Tap<?, ?, ?> getFlowSinkTap(String schemaName, FlowType type);
+  Tap<?, ?, ?> getSourceTap2(String fileName);
 
   Tap<?, ?, ?> getTrimmedTap(Key key);
 
-  Tap<?, ?, ?> getReportTap2(String fileName, FlowType type, String reportName);
+  Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName);
 
   /**
    * Used to read back a report that was produced during the execution of a Flow. This does not use a Tap so that it can
    * be executed outside of a Flow.
-   * @throws IOException
    */
-  InputStream readReportTap2(String fileName, FlowType type, String reportName)
-      throws FileNotFoundException, IOException;
+  InputStream readReportTap(String fileName, FlowType type, String reportName);
 
   /**
    * Necessary until DCC-996 is done (IF there is indeed a more elegant alternative).
    */
   Fields getFileHeader(String fileName);
-
-  @Deprecated
-  Path path(final FileSchema schema) throws FileNotFoundException, IOException;
 
   /**
    * TODO
@@ -87,4 +78,11 @@ public interface PlatformStrategy {
    * TODO
    */
   List<String> listFileNames(String pattern);
+
+  /**
+   * For log messages and to help debugging, use {@link #listFileNames(String)} for everything else (should be
+   * sufficient).
+   */
+  List<String> listFileNames();
+
 }

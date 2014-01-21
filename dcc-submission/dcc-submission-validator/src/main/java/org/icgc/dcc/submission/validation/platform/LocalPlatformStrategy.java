@@ -20,6 +20,8 @@ package org.icgc.dcc.submission.validation.platform;
 import java.io.IOException;
 import java.io.InputStream;
 
+import lombok.SneakyThrows;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -50,13 +52,14 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap2(String fileName, FlowType type, String reportName) {
-    return new FileTap(new LocalJsonScheme(), reportPath2(fileName, type, reportName).toUri().getPath());
+  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
+    return new FileTap(new LocalJsonScheme(), reportPath(fileName, type, reportName).toUri().getPath());
   }
 
   @Override
-  public InputStream readReportTap2(String fileName, FlowType type, String reportName) throws IOException {
-    return fileSystem.open(reportPath2(fileName, type, reportName));
+  @SneakyThrows
+  public InputStream readReportTap(String fileName, FlowType type, String reportName) {
+    return fileSystem.open(reportPath(fileName, type, reportName));
   }
 
   @Override
@@ -70,7 +73,7 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getInputTap(String fileName) {
+  public Tap<?, ?, ?> getSourceTap(String fileName) {
     return new FileTap(
         new TextLine(
             new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")),
