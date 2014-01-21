@@ -92,7 +92,7 @@ public class PrimaryValidator implements Validator {
       plan.getCascade().stop();
       log.info("Stopped cascade for project '{}'", projectKey);
 
-      // Rethrow for {@link Validator}
+      // Rethrow for Validation to handle
       throw t;
     }
   }

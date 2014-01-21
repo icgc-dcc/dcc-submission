@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.release;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -251,47 +252,62 @@ public class SubmissionManager {
       List<DataTypeState> previousDataState, SubmissionReport submissionReport, SubmissionState inheritedNextState) {
     val nextDataState = Lists.<DataTypeState> newArrayList();
 
-    // Update data types that were validated
-    val index = getSchemaReportsByDataType(submissionReport, dictionary);
-    val resultDataTypes = index.keySet();
-    for (val dataType : resultDataTypes) {
-      val unchanged = !dataTypes.contains(dataType);
+    val reports = getSchemaReportsByDataType(submissionReport, dictionary);
+
+    val reportedDataTypes = reports.keySet();
+    val specifiedDataTypes = newHashSet(dataTypes);
+    val nextDataTypes = Sets.<SubmissionDataType> newHashSet();
+
+    for (val reportedDataType : reportedDataTypes) {
+      val unchanged = !specifiedDataTypes.contains(reportedDataType);
       if (unchanged) {
-        continue;
-      }
-
-      boolean errors = false;
-      for (val schemaReport : index.get(dataType)) {
-        if (schemaReport.hasErrors()) {
-          errors = true;
-
-          break;
+        for (val previousDataTypeState : previousDataState) {
+          if (previousDataTypeState.getDataType() == reportedDataType) {
+            nextDataState.add(previousDataTypeState);
+            nextDataTypes.add(previousDataTypeState.getDataType());
+          }
         }
-      }
-
-      SubmissionState dataTypeState = null;
-      if (inheritedNextState != null) {
-        dataTypeState = inheritedNextState;
       } else {
-        dataTypeState = errors ? INVALID : VALID;
-      }
+        SubmissionState dataTypeState = null;
+        if (inheritedNextState != null) {
+          dataTypeState = inheritedNextState;
+        } else {
+          val dataTypeReports = reports.get(reportedDataType);
+          dataTypeState = hasErrors(dataTypeReports) ? INVALID : VALID;
+        }
 
-      nextDataState.add(new DataTypeState(dataType, dataTypeState));
+        nextDataState.add(new DataTypeState(reportedDataType, dataTypeState));
+        nextDataTypes.add(reportedDataType);
+      }
     }
 
     // Pass through data types that were not validated
     for (val previousDataTypeState : previousDataState) {
-      val notValidated = !resultDataTypes.contains(previousDataTypeState.getDataType());
-      if (notValidated) {
-        if (previousDataTypeState.getState() == VALIDATING) {
-          nextDataState.add(new DataTypeState(previousDataTypeState.getDataType(), NOT_VALIDATED));
-        } else {
-          nextDataState.add(previousDataTypeState);
-        }
+      val added = nextDataTypes.contains(previousDataTypeState.getDataType());
+      if (added) {
+        continue;
+      }
+
+      val validated = specifiedDataTypes.contains(previousDataTypeState.getDataType());
+      if (validated) {
+        val dataTypeState = inheritedNextState != null ? inheritedNextState : VALID;
+        nextDataState.add(new DataTypeState(previousDataTypeState.getDataType(), dataTypeState));
+      } else {
+        nextDataState.add(new DataTypeState(previousDataTypeState.getDataType(), NOT_VALIDATED));
       }
     }
 
     return nextDataState;
+  }
+
+  private boolean hasErrors(Iterable<SchemaReport> schemaReports) {
+    for (val schemaReport : schemaReports) {
+      if (schemaReport.hasErrors()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private SubmissionState resolveSubmissionState(List<DataTypeState> dataState) {
