@@ -293,11 +293,11 @@ public class ValidationScheduler extends AbstractScheduledService {
     val submission = releaseService.getSubmission(release.getName(), project.getKey());
     val dataTypes = project.getDataTypes();
 
-    val nextReport =
-        submission.getReport() == null ? new SubmissionReport() : (SubmissionReport) submission.getReport();
+    val report = submission.getReport() == null ? new SubmissionReport() : (SubmissionReport) submission.getReport();
+    val nextReport = new SubmissionReport();
 
     // Remove any previously saved reports related to the requested data types
-    for (val schemaReport : nextReport.getSchemaReports()) {
+    for (val schemaReport : report.getSchemaReports()) {
       val fileName = schemaReport.getName();
       val schema = dictionary.getFileSchemaByFileName(fileName).get();
       val dataType = schema.getDataType();
