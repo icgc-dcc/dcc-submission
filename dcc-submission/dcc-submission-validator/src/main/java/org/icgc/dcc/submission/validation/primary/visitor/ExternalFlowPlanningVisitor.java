@@ -32,7 +32,7 @@ public class ExternalFlowPlanningVisitor extends PlanningVisitor<ExternalPlanEle
   public void apply(Plan plan) {
     for (ExternalFlowPlanner flowPlanner : plan.getExternalFlows()) {
       flowPlanner.fileSchemaAccept(this);
-      for (ExternalPlanElement e : getElements()) {
+      for (ExternalPlanElement e : getCollectedPlanElements()) {
         flowPlanner.apply(e);
       }
     }

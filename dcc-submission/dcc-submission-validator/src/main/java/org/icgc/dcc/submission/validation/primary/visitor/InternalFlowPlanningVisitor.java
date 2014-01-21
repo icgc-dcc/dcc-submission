@@ -32,7 +32,7 @@ public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanEle
   public void apply(Plan plan) {
     for (InternalFlowPlanner flowPlanner : plan.getInternalFlows()) {
       flowPlanner.fileSchemaAccept(this);
-      for (InternalPlanElement e : getElements()) {
+      for (InternalPlanElement e : getCollectedPlanElements()) {
         flowPlanner.apply(e);
       }
     }

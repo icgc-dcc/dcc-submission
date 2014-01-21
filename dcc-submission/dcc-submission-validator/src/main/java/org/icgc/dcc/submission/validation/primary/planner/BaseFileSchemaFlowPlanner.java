@@ -91,17 +91,17 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public final void apply(ReportingPlanElement element) {
-    val elementName = element.getElementName();
+  public final void applyReportingPlanElement(ReportingPlanElement reportingPlanElement) {
+    val elementName = reportingPlanElement.getElementName();
     val reportTailPipe = getReportTailPipe(elementName);
-    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
+    log.info("[{}] applying element [{}]", getFlowName(), reportingPlanElement.describe());
 
     reportPipes.put(
         elementName,
-        element.report(reportTailPipe));
+        reportingPlanElement.report(reportTailPipe));
     collectors.put(
         elementName,
-        element.getCollector());
+        reportingPlanElement.getCollector());
   }
 
   protected Pipe getReportTailPipe(String basename) {
@@ -128,7 +128,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void collect(PlatformStrategy strategy, ReportContext context) {
+  public void collectFileReport(PlatformStrategy strategy, ReportContext context) {
     for (val reportCollector : collectors.values()) {
       reportCollector.collect(strategy, context);
     }

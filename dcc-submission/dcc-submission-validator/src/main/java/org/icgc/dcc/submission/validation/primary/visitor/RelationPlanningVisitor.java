@@ -81,7 +81,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     FileSchema currentSchema = getCurrentSchema();
     List<FileSchema> afferentStrictFileSchemata = currentSchema.getBidirectionalAfferentFileSchemata(dictionary);
     if (currentSchema.getRole() != FileSchemaRole.SYSTEM) { // skip checking relations in file to be re-annotated
-      collectReportingPlanElement(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+      collectPlanElement(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
     }
   }
 

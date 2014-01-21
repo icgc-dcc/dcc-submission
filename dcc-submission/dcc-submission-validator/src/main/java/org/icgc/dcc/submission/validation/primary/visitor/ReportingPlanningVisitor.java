@@ -45,8 +45,8 @@ public abstract class ReportingPlanningVisitor extends PlanningVisitor<Reporting
     for (val flowPlanner : plan.getFlows(getFlowType())) {
       flowPlanner.fileSchemaAccept(this);
 
-      for (val e : getElements()) {
-        flowPlanner.apply(e);
+      for (val collectedReportingPlanElement : getCollectedPlanElements()) {
+        flowPlanner.applyReportingPlanElement(collectedReportingPlanElement);
       }
     }
   }

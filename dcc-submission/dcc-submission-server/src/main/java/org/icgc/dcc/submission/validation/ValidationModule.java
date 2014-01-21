@@ -25,10 +25,7 @@ import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.normalization.NormalizationConfig;
-import org.icgc.dcc.submission.normalization.NormalizationValidator;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
@@ -42,7 +39,6 @@ import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestrict
 import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
@@ -155,44 +151,44 @@ public class ValidationModule extends AbstractDccModule {
     val validators = Multibinder.newSetBinder(binder(), Validator.class);
 
     // Order: Syntactic, primary then semantic
-    bindValidator(validators, FirstPassValidator.class);
+    // bindValidator(validators, FirstPassValidator.class);
     bindValidator(validators, PrimaryValidator.class);
-    bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
-
-      @Inject
-      private Config config;
-
-      @Override
-      public ReferenceGenomeValidator get() {
-        return new ReferenceGenomeValidator(getFastaFilePath());
-      }
-
-      private String getFastaFilePath() {
-        val path = FASTA_FILE_PATH_CONFIG_PARAM;
-        checkState(config.hasPath(path), "'%s' is should be present in the config", path);
-
-        return config.getString(path);
-      }
-
-    });
-    bindValidator(validators, new Provider<NormalizationValidator>() {
-
-      @Inject
-      private Config config;
-
-      @Inject
-      private DccFileSystem2 dccFileSystem2;
-
-      @Override
-      public NormalizationValidator get() {
-        return NormalizationValidator.getDefaultInstance(dccFileSystem2, getNormalizationConfig());
-      }
-
-      private Config getNormalizationConfig() {
-        return config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM);
-      }
-
-    });
+    // bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
+    //
+    // @Inject
+    // private Config config;
+    //
+    // @Override
+    // public ReferenceGenomeValidator get() {
+    // return new ReferenceGenomeValidator(getFastaFilePath());
+    // }
+    //
+    // private String getFastaFilePath() {
+    // val path = FASTA_FILE_PATH_CONFIG_PARAM;
+    // checkState(config.hasPath(path), "'%s' is should be present in the config", path);
+    //
+    // return config.getString(path);
+    // }
+    //
+    // });
+    // bindValidator(validators, new Provider<NormalizationValidator>() {
+    //
+    // @Inject
+    // private Config config;
+    //
+    // @Inject
+    // private DccFileSystem2 dccFileSystem2;
+    //
+    // @Override
+    // public NormalizationValidator get() {
+    // return NormalizationValidator.getDefaultInstance(dccFileSystem2, getNormalizationConfig());
+    // }
+    //
+    // private Config getNormalizationConfig() {
+    // return config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM);
+    // }
+    //
+    // });
   }
 
   private static void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {

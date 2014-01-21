@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -40,6 +42,7 @@ import cascading.tuple.Fields;
 /**
  * 
  */
+@Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   public LocalPlatformStrategy(Path source, Path output, Path system) {
@@ -53,13 +56,15 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
-    return new FileTap(new LocalJsonScheme(), reportPath(fileName, type, reportName).toUri().getPath());
+    return new FileTap(new LocalJsonScheme(), getReportPath(fileName, type, reportName).toUri().getPath());
   }
 
   @Override
   @SneakyThrows
   public InputStream readReportTap(String fileName, FlowType type, String reportName) {
-    return fileSystem.open(reportPath(fileName, type, reportName));
+    val reportPath = getReportPath(fileName, type, reportName);
+    log.info("Streaming through report: '{}'", reportPath);
+    return fileSystem.open(reportPath);
   }
 
   @Override

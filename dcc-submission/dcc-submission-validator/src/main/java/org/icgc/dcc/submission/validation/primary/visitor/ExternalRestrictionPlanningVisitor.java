@@ -48,7 +48,7 @@ public class ExternalRestrictionPlanningVisitor extends ExternalFlowPlanningVisi
     for (RestrictionType type : restrictionTypes) {
       if (type.builds(restriction.getType().getId())) {
         PlanElement element = type.build(getCurrentField(), restriction);
-        collectReportingPlanElement((ExternalPlanElement) element);
+        collectPlanElement((ExternalPlanElement) element);
       }
     }
   }

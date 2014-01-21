@@ -79,7 +79,7 @@ public class PrimaryValidator implements Validator {
 
       // Report
       log.info("Collecting report for project '{}'", projectKey);
-      plan.collect(context);
+      plan.collectSubmissionReport(context);
       log.info("Finished collecting report for project '{}'", projectKey);
     } catch (Throwable t) {
       log.info("Exception completing cascade for project '{}'", projectKey, t);

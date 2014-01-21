@@ -44,7 +44,7 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
 
   @NonNull
   private final FlowType flowType;
-  private final List<T> elements = newArrayList();
+  private final List<T> collectedPlanElements = newArrayList();
 
   /**
    * Transient state.
@@ -52,10 +52,16 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
   private FileSchema currentSchema;
   private Field currentField;
 
+  /**
+   * Applies the collected {@code PlanElement} to the specified {@code Plan}
+   * @param plan
+   */
+  public abstract void apply(Plan plan);
+
   @Override
   public void visit(FileSchema fileSchema) {
     // Clear the collected elements. This allows re-using this instance for multiple plans
-    elements.clear();
+    collectedPlanElements.clear();
     currentSchema = fileSchema;
   }
 
@@ -64,18 +70,12 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
     currentField = field;
   }
 
-  /**
-   * Applies the collected {@code PlanElement} to the specified {@code Plan}
-   * @param plan
-   */
-  public abstract void apply(Plan plan);
-
-  protected List<T> getElements() {
-    return elements;
+  protected void collectPlanElement(T planElement) {
+    collectedPlanElements.add(planElement);
   }
 
-  protected void collectReportingPlanElement(T element) {
-    elements.add(element);
+  protected List<T> getCollectedPlanElements() {
+    return collectedPlanElements;
   }
 
 }

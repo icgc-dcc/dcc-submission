@@ -88,26 +88,27 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
       if (optionalSummaryType.isPresent()) {
         switch (optionalSummaryType.get()) {
         case AVERAGE:
-          collectReportingPlanElement(new SummaryPlanElement.AveragePlanElement(
+          collectPlanElement(new SummaryPlanElement.AveragePlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         case MIN_MAX:
-          collectReportingPlanElement(new SummaryPlanElement.MinMaxPlanElement(
+          collectPlanElement(new SummaryPlanElement.MinMaxPlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         case FREQUENCY:
-          collectReportingPlanElement(new FrequencyPlanElement(
+          collectPlanElement(new FrequencyPlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         case UNIQUE_COUNT:
-          collectReportingPlanElement(new UniqueCountPlanElement(
+          collectPlanElement(new UniqueCountPlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         default:
-          throw new IllegalStateException(format("Unknown summary type: '{}'", optionalSummaryType.get()));
+          throw new IllegalStateException(
+              format("Unknown summary type: '{}'", optionalSummaryType.get()));
         }
       } else {
-        collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(
+        collectPlanElement(new SummaryPlanElement.CompletenessPlanElement(
             flowType, fileName, fieldStatDigests));
         continue;
       }

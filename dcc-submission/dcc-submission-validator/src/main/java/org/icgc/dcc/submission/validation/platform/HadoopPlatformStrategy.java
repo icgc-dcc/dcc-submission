@@ -41,6 +41,7 @@ import java.util.Map;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
@@ -67,6 +68,7 @@ import com.google.common.io.InputSupplier;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValue;
 
+@Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
   /**
@@ -130,7 +132,8 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
-    val reportPath = reportPath(fileName, type, reportName);
+    val reportPath = getReportPath(fileName, type, reportName);
+    log.info("Streaming through report: '{}'", reportPath);
     val scheme = new HadoopJsonScheme();
     scheme.setSinkCompression(ENABLE);
     return new Hfs(scheme, reportPath.toUri().getPath());
@@ -139,7 +142,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   @Override
   @SneakyThrows
   public InputStream readReportTap(String fileName, FlowType type, String reportName) {
-    val reportPath = reportPath(fileName, type, reportName);
+    val reportPath = getReportPath(fileName, type, reportName);
     if (fileSystem.isFile(reportPath)) {
       return getInputStream(reportPath);
     }

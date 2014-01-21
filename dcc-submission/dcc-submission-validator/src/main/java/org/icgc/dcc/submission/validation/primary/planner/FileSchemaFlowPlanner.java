@@ -31,9 +31,9 @@ public interface FileSchemaFlowPlanner {
 
   void fileSchemaAccept(BaseDictionaryVisitor visitor);
 
-  void apply(ReportingPlanElement element);
+  void applyReportingPlanElement(ReportingPlanElement element);
 
-  void collect(PlatformStrategy strategy, ReportContext context);
+  void collectFileReport(PlatformStrategy strategy, ReportContext context);
 
   Flow<?> connect(PlatformStrategy cascadingStrategy);
 

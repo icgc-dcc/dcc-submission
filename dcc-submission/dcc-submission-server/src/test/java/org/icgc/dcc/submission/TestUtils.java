@@ -26,6 +26,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 
 import java.io.File;
 import java.net.URL;
@@ -175,14 +176,15 @@ public final class TestUtils {
     return dictionary;
   }
 
-  @SneakyThrows
   public static String dictionaryToString() {
-    return MAPPER.writeValueAsString(dictionary());
+    return dictionaryToString(dictionary());
   }
 
   @SneakyThrows
-  public static String dictionaryToString(Dictionary dict) {
-    return MAPPER.writeValueAsString(dict);
+  public static String dictionaryToString(Dictionary dictionary) {
+    val ssmP = dictionary.getFileSchema(SSM_P_TYPE);
+    ssmP.setPattern("ssm_p(\\..+)?\\.txt");
+    return MAPPER.writeValueAsString(dictionary);
   }
 
   @SneakyThrows
