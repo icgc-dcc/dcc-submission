@@ -192,20 +192,30 @@ public class SubmissionManager {
   }
 
   public void signOff(Submission submission) {
-    submission.setState(SIGNED_OFF);
+    val nextState = SIGNED_OFF;
+    val nextDataState = Lists.<DataTypeState> newArrayList();
+
+    for (val dataTypeState : submission.getDataState()) {
+      val dataType = dataTypeState.getDataType();
+      nextDataState.add(new DataTypeState(dataType, nextState));
+    }
+
+    // Update everything to signed-off
+    submission.setState(nextState);
+    submission.setDataState(nextDataState);
   }
 
   public Submission release(Release nextRelease, Submission submission) {
     val newSubmission =
         new Submission(submission.getProjectKey(), submission.getProjectName(), nextRelease.getName());
-    if (submission.getState() == SubmissionState.SIGNED_OFF) {
+    if (submission.getState() == SIGNED_OFF) {
       // Reset
       val nextDataState = Lists.<DataTypeState> newArrayList();
       for (val dataTypeState : submission.getDataState()) {
         nextDataState.add(new DataTypeState(dataTypeState.getDataType(), SubmissionState.NOT_VALIDATED));
       }
 
-      newSubmission.setState(SubmissionState.NOT_VALIDATED);
+      newSubmission.setState(NOT_VALIDATED);
       newSubmission.setDataState(nextDataState);
     } else {
       // Migrate
