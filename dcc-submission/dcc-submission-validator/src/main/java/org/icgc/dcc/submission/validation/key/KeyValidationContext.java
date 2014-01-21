@@ -64,7 +64,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
@@ -165,7 +164,7 @@ public class KeyValidationContext implements ValidationContext {
   }
 
   @Override
-  public Optional<Path> getSsmPrimaryFile() {
+  public List<Path> getSsmPrimaryFiles() {
     throw new UnsupportedOperationException();
   }
 

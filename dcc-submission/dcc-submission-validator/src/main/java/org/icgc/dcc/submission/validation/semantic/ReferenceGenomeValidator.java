@@ -53,8 +53,6 @@ import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 
-import com.google.common.base.Optional;
-
 /**
  * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input.
  * <p>
@@ -130,26 +128,25 @@ public class ReferenceGenomeValidator implements Validator {
     }
 
     // This validation is only applicable if ssm_p is available
-    Optional<Path> optionalSsmPrimaryFile = context.getSsmPrimaryFile();
-    val skip = !optionalSsmPrimaryFile.isPresent();
+    val ssmPrimaryFiles = context.getSsmPrimaryFiles();
+    val skip = ssmPrimaryFiles.isEmpty();
     if (skip) {
-      log.info("No ssm_p file for '{}'. Skipping...", context.getProjectKey());
+      log.info("No ssm_p(s) file for '{}'. Skipping...", context.getProjectKey());
 
       return;
     }
 
-    // It exists
-    val ssmPrimaryFile = optionalSsmPrimaryFile.get();
-
     val fileParser = newMapFileParser(context.getFileSystem(), context.getSsmPrimaryFileSchema());
 
-    @Cleanup
-    val outputStream = getOutputStream(context, ssmPrimaryFile);
+    for (val ssmPrimaryFile : ssmPrimaryFiles) {
+      @Cleanup
+      val outputStream = getOutputStream(context, ssmPrimaryFile);
 
-    // Get to work
-    log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
-    validate(context, ssmPrimaryFile, fileParser, outputStream);
-    log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
+      // Get to work
+      log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
+      validate(context, ssmPrimaryFile, fileParser, outputStream);
+      log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
+    }
   }
 
   public String getReferenceGenomeSequence(String chromosome, String start, String end) {

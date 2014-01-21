@@ -43,7 +43,7 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -147,21 +147,22 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public Optional<Path> getSsmPrimaryFile() {
+  public List<Path> getSsmPrimaryFiles() {
     val submissionDirectory = getSubmissionDirectory();
     val ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
     val ssmPrimaryFileNamePattern = ssmPrimaryFileSchema.getPattern();
 
+    val builder = ImmutableList.<Path> builder();
     for (val submissionFileName : submissionDirectory.listFile()) {
       val ssmPrimary = matches(ssmPrimaryFileNamePattern, submissionFileName);
       if (ssmPrimary) {
         Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(submissionFileName));
 
-        return Optional.of(ssmPrimaryFile);
+        builder.add(ssmPrimaryFile);
       }
     }
 
-    return Optional.<Path> absent();
+    return builder.build();
   }
 
   @Override

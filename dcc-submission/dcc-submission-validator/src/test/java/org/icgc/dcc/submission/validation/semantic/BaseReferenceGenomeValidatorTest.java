@@ -48,7 +48,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class BaseReferenceGenomeValidatorTest {
@@ -82,7 +82,7 @@ public class BaseReferenceGenomeValidatorTest {
     // Setup: Establish input for the test
     val directory = new Path(tmp.newFolder().getAbsolutePath());
     val path = new Path(directory, "ssm_p.txt");
-    val ssmPrimaryFile = Optional.<Path> of(path);
+    val ssmPrimaryFile = path;
     val ssmPrimaryFileSchema = createSsmPrimaryFileSchema();
     val validationDir = new Path(directory, VALIDATION_DIRNAME).toUri().toString();
 
@@ -92,7 +92,7 @@ public class BaseReferenceGenomeValidatorTest {
     when(context.getProjectKey()).thenReturn("project.test");
     when(context.getDataTypes()).thenReturn(SubmissionDataTypes.values());
     when(context.getFileSystem()).thenReturn(fileSystem);
-    when(context.getSsmPrimaryFile()).thenReturn(ssmPrimaryFile);
+    when(context.getSsmPrimaryFiles()).thenReturn(ImmutableList.<Path> of(ssmPrimaryFile));
     when(context.getSsmPrimaryFileSchema()).thenReturn(ssmPrimaryFileSchema);
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);

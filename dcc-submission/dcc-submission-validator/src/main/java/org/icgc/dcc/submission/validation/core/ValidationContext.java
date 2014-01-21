@@ -31,8 +31,6 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
-import com.google.common.base.Optional;
-
 /**
  * The umbilical cord to the rest of the system provided to {@link Validator}s to act as a "façade" that reduces
  * coupling.
@@ -74,9 +72,9 @@ public interface ValidationContext extends ReportContext {
   SubmissionDirectory getSubmissionDirectory();
 
   /**
-   * Gets the optionally available SSM primary file of the associated project under validation.
+   * Gets the available SSM primary file(s) of the associated project under validation.
    */
-  Optional<Path> getSsmPrimaryFile();
+  List<Path> getSsmPrimaryFiles();
 
   /**
    * Gets the {@code FileSchema} associated with the SSM primary file.
