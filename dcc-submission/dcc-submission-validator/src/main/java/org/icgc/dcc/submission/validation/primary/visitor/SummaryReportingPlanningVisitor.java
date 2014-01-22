@@ -104,7 +104,7 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
               flowType, fileName, fieldStatDigests));
           break;
         default:
-          throw new IllegalStateException(format("Unknown summary type: '{}'", optionalSummaryType.get()));
+          throw new IllegalStateException(format("Unknown summary type: '%s'", optionalSummaryType.get()));
         }
       } else {
         collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(
