@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation;
 
 import static com.google.common.collect.Maps.newConcurrentMap;
+import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -37,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.util.NamingCallable;
 
-import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -45,6 +46,35 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 @Slf4j
 public class ValidationExecutor {
+
+  /**
+   * Default no-op callback that is called asynchronously upon acceptance.
+   */
+  private static final Runnable DEFAULT_ACCEPTED_CALLBACK = new Runnable() {
+
+    @Override
+    public void run() {
+      // No-op
+    }
+
+  };
+
+  /**
+   * Default no-op callback that is asynchronously called upon completion.
+   */
+  private static final FutureCallback<Validation> DEFAULT_COMPLETED_CALLBACK = new FutureCallback<Validation>() {
+
+    @Override
+    public void onSuccess(Validation result) {
+      // No-op
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+      // No-op
+    }
+
+  };
 
   /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
@@ -81,7 +111,35 @@ public class ValidationExecutor {
    * @param validation
    * @throws RejectedExecutionException if there are no "slots" available
    */
-  public ListenableFuture<Validation> execute(final Validation validation) {
+  public void execute(final Validation validation) {
+    execute(validation, DEFAULT_ACCEPTED_CALLBACK, DEFAULT_COMPLETED_CALLBACK);
+  }
+
+  /**
+   * Execute a validation job asynchronously.
+   * <p>
+   * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
+   * 
+   * @param validation
+   * @param acceptedCallback callback that executes synchronously when a validation is accepted *
+   * @throws RejectedExecutionException if there are no "slots" available
+   */
+  public void execute(final Validation validation, final Runnable acceptedCallback) {
+    execute(validation, acceptedCallback, DEFAULT_COMPLETED_CALLBACK);
+  }
+
+  /**
+   * Execute a validation job asynchronously.
+   * <p>
+   * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
+   * 
+   * @param validation
+   * @param acceptedCallback callback that executes synchronously when a validation is accepted
+   * @param completedCallback callback that executes synchronously when a validation is completed
+   * @throws RejectedExecutionException if there are no "slots" available
+   */
+  public void execute(final Validation validation, final Runnable acceptedCallback,
+      final FutureCallback<Validation> completedCallback) {
     val id = validation.getId();
 
     // Need to apply listening decorator here because we still need access to pool methods later
@@ -92,9 +150,13 @@ public class ValidationExecutor {
       @SneakyThrows
       public Validation call() throws Exception {
         try {
+          log.info("call: Executing validation accepted callback '{}'... {}", id, getStats());
+          acceptedCallback.run();
+          log.info("call: Finished validation accepted callback '{}'. {}", id, getStats());
+
           log.info("call: Executing validation '{}'... {}", id, getStats());
           validation.execute();
-          log.info("call: Finished executing validation '{}'... {}", id, getStats());
+          log.info("call: Finished executing validation '{}'. {}", id, getStats());
         } catch (Throwable t) {
           log.error(format("call: Exception executing validation '%s': %s", id, getStats()), t);
 
@@ -112,10 +174,11 @@ public class ValidationExecutor {
 
     }));
 
+    // Add success and failure callback
+    addCallback(future, completedCallback);
+
     // Track it for cancellation
     futures.put(id, future);
-
-    return future;
   }
 
   /**

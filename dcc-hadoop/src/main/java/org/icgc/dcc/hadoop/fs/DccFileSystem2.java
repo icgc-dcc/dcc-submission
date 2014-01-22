@@ -41,6 +41,7 @@ import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.local.FileTap;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 /**
@@ -53,6 +54,9 @@ import com.google.common.collect.Lists;
 @RequiredArgsConstructor
 @Slf4j
 public class DccFileSystem2 {
+
+  private static final String SSM_P_FILE_NAME = "ssm_p.txt";
+  private static final String SSM_S_FILE_NAME = "ssm_s.txt";
 
   private final FileSystem fileSystem;
 
@@ -109,13 +113,17 @@ public class DccFileSystem2 {
   }
 
   public String getNormalizationDataOutputFile(String releaseName, String projectKey) {
-    return format("%s/ssm_p.txt",
-        lazyDirCreation(getNormalizationDataDir(releaseName, projectKey)));
+    return format(
+        "%s/%s",
+        lazyDirCreation(getNormalizationDataDir(releaseName, projectKey)),
+        SSM_P_FILE_NAME);
   }
 
   public String getAnnotationDataOutputFile(String releaseName, String projectKey) {
-    return format("%s/ssm_s.txt",
-        lazyDirCreation(getAnnotationDataDir(releaseName, projectKey)));
+    return format(
+        "%s/%s",
+        lazyDirCreation(getAnnotationDataDir(releaseName, projectKey)),
+        SSM_S_FILE_NAME);
   }
 
   // TODO: move to a NormalizerDccFileSystem2-like class?
@@ -147,12 +155,13 @@ public class DccFileSystem2 {
   /**
    * List relevant files for the loader component, not necessarily all under the same directory.
    */
-  public List<String> listLoaderFiles(String releaseName, String projectKey, String ssmPPattern, String ssmSPattern) {
+  public List<String> listLoaderFiles(
+      String releaseName, String projectKey, String projectDefaultPath,
+      String ssmPPattern, String ssmSPattern) {
     val files = Lists.<String> newArrayList();
 
     // Handle all but ssm_p and ssm_s files (directly from the submission system)
-    val submissionDataDir = getSubmissionDataDir(releaseName, projectKey);
-    for (val filePath : lsFile(fileSystem, new Path(submissionDataDir))) {
+    for (val filePath : lsFile(fileSystem, new Path(projectDefaultPath))) {
       val file = filePath.toUri().toString();
       if (!matches(file, ssmPPattern) && !matches(file, ssmSPattern)) { // ssm_p and ssm_s are handled separately
         files.add(file);
@@ -161,7 +170,12 @@ public class DccFileSystem2 {
 
     // Handle ssm_p (from the normalizer)
     {
-      String normalizationDataOutputFile = getNormalizationDataOutputFile(releaseName, projectKey);
+      // Temporarily using the same directory until
+      // https://wiki.oicr.on.ca/display/DCCSOFT/Incremental+Submission+-+Discussion and
+      // https://wiki.oicr.on.ca/display/DCCSOFT/Overarching+Component are fleshed out
+      // val normalizationDataOutputFile = getNormalizationDataOutputFile(releaseName, projectKey);
+      val normalizationDataOutputFile = Joiner.on('/').join(projectDefaultPath, SSM_P_FILE_NAME);
+
       if (checkExistence(fileSystem, normalizationDataOutputFile)) {
         val fileName = new File(normalizationDataOutputFile).getName();
         val matchesSsmPPattern = compile(ssmPPattern).matcher(fileName).matches();
@@ -175,12 +189,17 @@ public class DccFileSystem2 {
 
     // Handle ssm_s (from the annotator)
     {
-      val annotationDataOutputFile = getAnnotationDataOutputFile(releaseName, projectKey);
+      // Temporarily using the same directory until
+      // https://wiki.oicr.on.ca/display/DCCSOFT/Incremental+Submission+-+Discussion and
+      // https://wiki.oicr.on.ca/display/DCCSOFT/Overarching+Component are fleshed out
+      // val annotationDataOutputFile = getAnnotationDataOutputFile(releaseName, projectKey);
+      val annotationDataOutputFile = Joiner.on('/').join(projectDefaultPath, SSM_S_FILE_NAME);
+
       if (checkExistence(fileSystem, annotationDataOutputFile)) {
         val fileName = new File(annotationDataOutputFile).getName();
         val matchesSsmSPattern = compile(ssmSPattern).matcher(fileName).matches();
         checkState(matchesSsmSPattern, // By design
-            "File '%s' does not match expected pattern: '%s'", ssmSPattern, fileName);
+            "File '%s' does not match expected pattern: '%s'", fileName, ssmSPattern);
         files.add(annotationDataOutputFile);
       } else {
         log.info("No ssm_s annotation file found at '{}'", annotationDataOutputFile);
