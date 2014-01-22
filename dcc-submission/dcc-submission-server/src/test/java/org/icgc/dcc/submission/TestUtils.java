@@ -57,6 +57,7 @@ import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
@@ -157,6 +158,8 @@ public final class TestUtils {
     dictionary.addFile(readFileSchema(METH_M_TYPE));
     dictionary.addFile(readFileSchema(METH_P_TYPE));
     dictionary.addFile(readFileSchema(METH_S_TYPE));
+
+    patchDictionary(dictionary);
 
     return dictionary;
   }
@@ -311,6 +314,22 @@ public final class TestUtils {
 
   private static void banner() {
     log.info("{}", repeat("\u00B7", 80));
+  }
+
+  private static void patchDictionary(Dictionary dictionary) {
+    // Patch file name patterns to support multiple files per file type
+    for (val fileSchema : dictionary.getFiles()) {
+      patchFileSchema(fileSchema);
+    }
+  }
+
+  private static void patchFileSchema(FileSchema fileSchema) {
+    val regex = fileSchema.getPattern();
+    val patchedRegex = regex.replaceFirst("\\.", "\\.(?:[^.]+\\\\.)?");
+    fileSchema.setPattern(patchedRegex);
+
+    log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
+        new Object[] { fileSchema.getName(), regex, patchedRegex });
   }
 
 }
