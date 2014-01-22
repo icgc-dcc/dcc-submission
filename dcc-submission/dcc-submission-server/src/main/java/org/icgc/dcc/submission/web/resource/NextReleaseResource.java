@@ -215,7 +215,7 @@ public class NextReleaseResource {
     ResponseTimestamper.evaluate(request, nextRelease);
 
     try {
-      releaseService.queue(nextRelease, queuedProjects);
+      releaseService.queueSubmissions(nextRelease, queuedProjects);
     } catch (ReleaseException e) {
       log.error("ProjectKeyNotFound", e);
 

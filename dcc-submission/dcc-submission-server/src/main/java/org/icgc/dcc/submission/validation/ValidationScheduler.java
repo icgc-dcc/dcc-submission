@@ -26,7 +26,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -41,11 +40,8 @@ import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseService;
-import org.icgc.dcc.submission.release.SubmissionManager;
-import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReportContext;
@@ -324,75 +320,32 @@ public class ValidationScheduler extends AbstractScheduledService {
     log.info("Validation for '{}' accepted", project);
     mailService.sendValidationStarted(release.getName(), project.getKey(), project.getEmails());
     releaseService.resetValidationFolder(project.getKey(), release);
-    releaseService.dequeueToValidating(project);
+    releaseService.dequeueSubmission(project);
   }
 
   /**
    * Always called after validation has completed to record the submission report and update the submission's state.
    * 
    * @param project the project to complete
-   * @param state completion state
+   * @param outcome validation outcome
    * @param submissionReport the report produced through the validation process
    */
   @Synchronized
   private void completeValidation(QueuedProject project, ValidationOutcome outcome, SubmissionReport submissionReport) {
     log.info("Validation for '{}' completed with outcome '{}'", project, outcome);
 
-    val submission = releaseService.getSubmission(project.getKey());
-    val manager = new SubmissionManager(dccFileSystem);
-    manager.resolve(submission, project.getDataTypes(), outcome, submissionReport, getDictionary());
+    val projectKey = project.getKey();
+    val emails = project.getEmails();
+    val dataTypes = project.getDataTypes();
 
-    resolveSubmission(project, submission.getState(), submission.getDataState());
-    storeSubmissionReport(project.getKey(), (SubmissionReport) submission.getReport());
+    releaseService.resolveSubmission(projectKey, emails, dataTypes, outcome, submissionReport);
   }
 
   /**
    * Utility method to give the current "next release" object and confirms open state.
    */
   private Release resolveOpenRelease() {
-    val release = releaseService.getNextRelease();
-    checkState(release.getState() == OPENED, "Release is expected to be '%s'", OPENED);
-    return release;
-  }
-
-  private void storeSubmissionReport(String projectKey, SubmissionReport report) {
-    // Persist the report to DB
-    log.info("Storing validation submission report for project '{}': {}...", projectKey, report);
-    val releaseName = resolveOpenRelease().getName();
-    releaseService.updateSubmissionReport(releaseName, projectKey, report);
-    log.info("Finished storing validation submission report for project '{}'", projectKey);
-  }
-
-  /**
-   * "Resolves" the submission of specified {@code queuedProject} to the supplied submission {@code state}.
-   * 
-   * @param queuedProject the project to resolve
-   * @param state the destination state of the resolution
-   * @param dataState the destination state of each data type
-   */
-  private void resolveSubmission(QueuedProject queuedProject, SubmissionState state, List<DataTypeState> dataState) {
-    val projectKey = queuedProject.getKey();
-    log.info("Resolving project '{}' to submission state '{}'", projectKey, state);
-    releaseService.resolve(projectKey, state, dataState);
-
-    if (!queuedProject.getEmails().isEmpty()) {
-      log.info("Sending notification email for project '{}'...", queuedProject);
-      notifyRecipients(queuedProject, state);
-    }
-
-    log.info("Resolved project '{}'", projectKey);
-  }
-
-  /**
-   * Notifies recipients by email that the validation has been "resolved".
-   * 
-   * @param queuedProject the project to resolve
-   * @param state the destination state of the resolution
-   */
-  private void notifyRecipients(QueuedProject queuedProject, SubmissionState state) {
-    val release = resolveOpenRelease();
-
-    mailService.sendValidationResult(release.getName(), queuedProject.getKey(), queuedProject.getEmails(), state);
+    return releaseService.getNextRelease();
   }
 
   private Dictionary getDictionary() {

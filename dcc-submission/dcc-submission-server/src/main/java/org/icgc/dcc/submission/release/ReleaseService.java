@@ -57,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -82,6 +83,7 @@ import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.submission.validation.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.web.InvalidNameException;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
@@ -514,7 +516,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   @Synchronized
-  public void queue(Release nextRelease, List<QueuedProject> queuedProjects) throws InvalidStateException,
+  public void queueSubmissions(Release nextRelease, List<QueuedProject> queuedProjects) throws InvalidStateException,
       DccModelOptimisticLockException {
     val nextReleaseName = nextRelease.getName();
     log.info("enqueuing {} for {}", queuedProjects, nextReleaseName);
@@ -542,7 +544,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void dequeueToValidating(final QueuedProject nextProject) {
+  public void dequeueSubmission(final QueuedProject nextProject) {
     val expectedState = SubmissionState.QUEUED;
     val nextProjectKey = nextProject.getKey();
 
@@ -596,7 +598,38 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void resolve(final String projectKey, final SubmissionState nextState, final List<DataTypeState> nextDataState) {
+  public void resolveSubmission(String projectKey, List<String> emails, List<SubmissionDataType> dataTypes,
+      ValidationOutcome outcome, SubmissionReport submissionReport) {
+    // Update the in-memory submission state
+    val release = getNextRelease();
+    val submission = getSubmission(release, projectKey);
+    val manager = new SubmissionManager(fs);
+    manager.resolve(submission, dataTypes, outcome, submissionReport, getNextDictionary());
+
+    // ======================= START COMBINE
+
+    log.info("Resolving project '{}' to submission state '{}'", projectKey, submission.getState());
+    resolveSubmission(projectKey, submission.getState(), submission.getDataState());
+
+    val nextSubmissionReport = (SubmissionReport) submission.getReport();
+
+    // Persist the report to DB
+    log.info("Storing validation submission report for project '{}': {}...", projectKey, nextSubmissionReport);
+    updateSubmissionReport(release.getName(), projectKey, nextSubmissionReport);
+    log.info("Finished storing validation submission report for project '{}'", projectKey);
+
+    // ======================= END COMBINE
+
+    if (!emails.isEmpty()) {
+      log.info("Sending notification emails for project '{}'...", projectKey);
+      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState());
+    }
+
+    log.info("Resolved project '{}'", projectKey);
+  }
+
+  private void resolveSubmission(final String projectKey, final SubmissionState nextState,
+      final List<DataTypeState> nextDataState) {
     // TODO: avoid code duplication
     checkArgument(
         /**/VALID == nextState ||
