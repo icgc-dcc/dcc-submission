@@ -86,17 +86,13 @@ public class HdfsFileSystemView implements FileSystemView {
     }
   }
 
-  private BaseDirectoryHdfsSshFile getSubmissionDirectory(String file, Path path, RootHdfsSshFile root)
-      throws FileNotFoundException {
-    BaseDirectoryHdfsSshFile submissionDirectory = getHdfsSshFile(root, path);
-    if (!submissionDirectory.doesExist()) {
-      throw new FileNotFoundException("Invalid file path: " + file);
-    }
+  private BaseDirectoryHdfsSshFile getSubmissionDirectory(String file, Path path, RootHdfsSshFile root) {
+    val submissionDirectory = getHdfsSshFile(root, path);
 
     return submissionDirectory;
   }
 
-  private SshFile getSubmissionFile(String file, Path path, RootHdfsSshFile root) throws FileNotFoundException {
+  private SshFile getSubmissionFile(String file, Path path, RootHdfsSshFile root) {
     val submissionDirectory = getSubmissionDirectory(file, path.getParent(), root);
     val submissionFileName = path.getName();
     val submissionFile = new FileHdfsSshFile(context, submissionDirectory, submissionFileName);
