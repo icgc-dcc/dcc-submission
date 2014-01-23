@@ -33,10 +33,14 @@ import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
+import org.icgc.dcc.submission.validation.primary.planner.BaseFileSchemaFlowPlanner;
 
 /**
  * A {@code DictionaryVisitor} that collects {@code PlanElement} during its visit. Elements are cleared upon each visit
  * of a new {@code FileSchema}.
+ * <p>
+ * The visit is bound to a particular submission file through the {@link BaseFileSchemaFlowPlanner} that triggers the
+ * actual {@link FileSchema} visit.
  * 
  * @param <T> the type of {@code PlanElement} collected by this visitor
  */
@@ -54,13 +58,15 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
   @Getter
   private FileSchema currentFileSchema;
 
+  @Getter
+  private Field currentField;
+
   /**
-   * TODO: explain trick...
+   * See {@link PlanningVisitor}.
    */
   @Getter
   private String currentFileName;
-  @Getter
-  private Field currentField;
+
   /**
    * Holds the collected elements and *cleared* for each {@link FileSchema} visit (hence transcience).
    */
@@ -72,19 +78,18 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
    */
   public abstract void applyPlan(Plan plan);
 
-  @Override
-  public void visit(FileSchema fileSchema) {
-    resetPlanningVisitor();
-    currentFileSchema = fileSchema;
+  /**
+   * Sets the current file name under consideration for the {@link FileSchema} being visited.
+   */
+  public void setFlowPlannerFileName(String fileName) {
+    currentFileName = fileName;
   }
 
-  /**
-   * TODO
-   * <p>
-   * Clear the collected elements. This allows re-using this instance for multiple plans
-   */
-  private void resetPlanningVisitor() {
+  @Override
+  public void visit(FileSchema fileSchema) {
+    // Clear the collected elements. This allows re-using this instance for multiple plans
     collectedPlanElements.clear();
+    currentFileSchema = fileSchema;
   }
 
   @Override
@@ -96,22 +101,15 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
     collectedPlanElements.add(planElement);
   }
 
-  protected List<T> getCollectedPlanElements() {
-    return collectedPlanElements;
-  }
-
   /**
-   * TODO
-   */
-  public void setFlowPlannerFileName(String fileName) {
-    currentFileName = fileName;
-  }
-
-  /**
-   * TODO
+   * Unsets the current file name to ensure it isn't mistakenly reused.
    */
   public void unsetFlowPlannerFileName() {
     currentFileName = null;
+  }
+
+  protected List<T> getCollectedPlanElements() {
+    return collectedPlanElements;
   }
 
 }

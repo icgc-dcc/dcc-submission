@@ -86,14 +86,15 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void fileSchemaAccept(PlanningVisitor<?> planningVisitor) {
+  public void acceptVisitor(PlanningVisitor<?> planningVisitor) {
 
-    // TODO
+    // Bind flow planner's file to the planning visitor
     planningVisitor.setFlowPlannerFileName(fileName);
 
+    // Trigger cascade visiting of file schema
     fileSchema.accept(planningVisitor);
 
-    // Out of safety, TODO
+    // Un-bind file (out of safety)
     planningVisitor.unsetFlowPlannerFileName();
   }
 

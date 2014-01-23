@@ -32,7 +32,7 @@ public class ExternalFlowPlanningVisitor extends PlanningVisitor<ExternalPlanEle
   @Override
   public void applyPlan(Plan plan) {
     for (val externalFlowPlanner : plan.getExternalFlows()) {
-      externalFlowPlanner.fileSchemaAccept(this);
+      externalFlowPlanner.acceptVisitor(this);
 
       for (val collectedExternalPlanElement : getCollectedPlanElements()) {
         externalFlowPlanner.applyExternalPlanElement(collectedExternalPlanElement);

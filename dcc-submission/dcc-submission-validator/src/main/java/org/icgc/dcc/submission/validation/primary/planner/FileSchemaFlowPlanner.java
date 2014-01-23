@@ -29,7 +29,7 @@ import cascading.flow.Flow;
  */
 public interface FileSchemaFlowPlanner {
 
-  void fileSchemaAccept(PlanningVisitor<?> planningVisitor);
+  void acceptVisitor(PlanningVisitor<?> planningVisitor);
 
   void applyReportingPlanElement(ReportingPlanElement element);
 
