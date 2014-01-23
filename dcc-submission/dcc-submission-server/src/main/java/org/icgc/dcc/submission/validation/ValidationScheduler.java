@@ -318,8 +318,6 @@ public class ValidationScheduler extends AbstractScheduledService {
   @Synchronized
   private void acceptValidation(QueuedProject project, Release release) {
     log.info("Validation for '{}' accepted", project);
-    mailService.sendValidationStarted(release.getName(), project.getKey(), project.getEmails());
-    releaseService.resetValidationFolder(project.getKey(), release);
     releaseService.dequeueSubmission(project);
   }
 
@@ -333,12 +331,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   @Synchronized
   private void completeValidation(QueuedProject project, ValidationOutcome outcome, SubmissionReport submissionReport) {
     log.info("Validation for '{}' completed with outcome '{}'", project, outcome);
-
-    val projectKey = project.getKey();
-    val emails = project.getEmails();
-    val dataTypes = project.getDataTypes();
-
-    releaseService.resolveSubmission(projectKey, emails, dataTypes, outcome, submissionReport);
+    releaseService.resolveSubmission(project, outcome, submissionReport);
   }
 
   /**

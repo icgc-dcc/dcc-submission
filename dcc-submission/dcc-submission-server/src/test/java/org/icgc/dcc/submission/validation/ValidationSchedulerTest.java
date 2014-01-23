@@ -182,9 +182,7 @@ public class ValidationSchedulerTest {
   }
 
   private void verifyOutcome(ValidationOutcome outcome) {
-    verify(releaseService).resolveSubmission(
-        queuedProject.getKey(), queuedProject.getEmails(), queuedProject.getDataTypes(),
-        outcome, context.getSubmissionReport());
+    verify(releaseService).resolveSubmission(queuedProject, outcome, context.getSubmissionReport());
   }
 
   private static Answer<Object> onSuccess(final Validation validation) {

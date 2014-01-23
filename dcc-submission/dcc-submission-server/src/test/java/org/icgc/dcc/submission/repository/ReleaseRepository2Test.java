@@ -27,7 +27,7 @@ import com.mongodb.MongoClientURI;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ReleaseRepositoryTest {
+public class ReleaseRepository2Test {
 
   @Rule
   public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
@@ -35,7 +35,7 @@ public class ReleaseRepositoryTest {
   @Mock
   public MailService mailService;
 
-  private ReleaseRepository releaseRepository;
+  private ReleaseRepository2 releaseRepository;
 
   private MorphiaQuery<Release> morphiaQuery;
 
@@ -61,7 +61,7 @@ public class ReleaseRepositoryTest {
 
     datastore.ensureIndexes();
 
-    releaseRepository = new ReleaseRepository(morphia, datastore, mailService);
+    releaseRepository = new ReleaseRepository2(morphia, datastore, mailService);
 
     morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }

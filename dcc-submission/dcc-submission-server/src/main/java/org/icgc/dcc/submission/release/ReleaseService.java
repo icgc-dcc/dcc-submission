@@ -28,17 +28,17 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.ArrayUtils.contains;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
+import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
-import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
+import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Synchronized;
 import lombok.val;
@@ -57,40 +56,34 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.core.AbstractService;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
-import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.DictionaryState;
-import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.LiteProject;
-import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
+import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.validation.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.web.InvalidNameException;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -99,28 +92,30 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.mysema.query.mongodb.MongodbQuery;
-import com.mysema.query.mongodb.morphia.MorphiaQuery;
-import com.mysema.query.types.Predicate;
 
 @Slf4j
-public class ReleaseService extends BaseMorphiaService<Release> {
+public class ReleaseService extends AbstractService {
 
-  private final DccFileSystem fs;
-
-  /**
-   * Temporary solution until DCC-1262 is addressed
-   */
+  private final SubmissionService submissionService;
+  private final DccFileSystem dccFileSystem;
   private final ReleaseRepository releaseRepository;
+  private final DictionaryRepository dictionaryRepository;
+  private final ProjectRepository projectRepository;
 
   @Inject
-  public ReleaseService(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull DccFileSystem fs,
-      MailService mailService) {
-    super(morphia, datastore, QRelease.release, mailService);
-    this.fs = fs;
-    this.releaseRepository = new ReleaseRepository();
-
-    registerModelClasses(Release.class);
+  public ReleaseService(
+      @NonNull SubmissionService submissionService,
+      @NonNull MailService mailService,
+      @NonNull DccFileSystem dccFileSystem,
+      @NonNull ReleaseRepository releaseRepository,
+      @NonNull DictionaryRepository dictionaryRepository,
+      @NonNull ProjectRepository projectRepository) {
+    super(mailService);
+    this.dccFileSystem = dccFileSystem;
+    this.submissionService = submissionService;
+    this.releaseRepository = releaseRepository;
+    this.dictionaryRepository = dictionaryRepository;
+    this.projectRepository = projectRepository;
   }
 
   @Synchronized
@@ -131,7 +126,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   @Synchronized
   public Release release(String nextReleaseName) throws InvalidStateException {
     // check for next release name
-    if (NameValidator.validateEntityName(nextReleaseName) == false) {
+    if (validateEntityName(nextReleaseName) == false) {
       throw new InvalidNameException(nextReleaseName);
     }
 
@@ -141,51 +136,52 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       String errorMessage;
 
       if (oldRelease == null) { // just in case (can't really happen)
-        errorMessage = "could not acquire lock on release";
+        errorMessage = "No current release";
         log.error(errorMessage);
-        throw new ReleaseException("ReleaseException");
+        throw new ReleaseException(errorMessage);
       }
       if (oldRelease.getState() != ReleaseState.OPENED) {
-        throw new InvalidStateException(ServerErrorCode.INVALID_STATE, "Release is not open");
+        errorMessage = "Release is not open";
+        log.error(errorMessage);
+        throw new InvalidStateException(ServerErrorCode.INVALID_STATE, errorMessage);
       }
-      if (isAtLeastOneSignedOff(oldRelease) == false) { // check for signed-off submission states (must have at least
-                                                        // one)
-        errorMessage = "no signed off project in " + oldRelease;
+      if (oldRelease.isSignOffAllowed() == false) {
+        errorMessage = "No signed off project in " + oldRelease;
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED, errorMessage);
       }
-      if (oldRelease.getQueue().isEmpty() == false) {
-        errorMessage = "some projects are still enqueue in " + oldRelease;
+      if (oldRelease.isQueued()) {
+        errorMessage = "Some projects are still enqueued in " + oldRelease;
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.QUEUE_NOT_EMPTY, errorMessage);
       }
 
       val dictionaryVersion = oldRelease.getDictionaryVersion();
       if (dictionaryVersion == null) {
-        errorMessage = "could not find a dictionary matching null";
+        errorMessage = "Could not find a dictionary matching null";
         log.error(errorMessage);
-        throw new InvalidStateException(ServerErrorCode.RELEASE_MISSING_DICTIONARY, errorMessage); // TODO: new kind of
-                                                                                                   // exception rather?
+        // TODO: new kind of exception rather?
+        throw new InvalidStateException(ServerErrorCode.RELEASE_MISSING_DICTIONARY, errorMessage);
       }
-      if (getReleaseByName(nextReleaseName) != null) {
-        errorMessage = "found a conflicting release for name " + nextReleaseName;
+      if (releaseRepository.findReleaseByName(nextReleaseName) != null) {
+        errorMessage = "Found a conflicting release for name " + nextReleaseName;
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.DUPLICATE_RELEASE_NAME, errorMessage);
       }
 
+      // Actually perform the release
       newRelease = doRelease(oldRelease, nextReleaseName, dictionaryVersion);
     } catch (RuntimeException e) {
-      throw new ReleaseException("Exception trying to release", e);
+      val errorMessage = "Unknown exception trying to release " + nextReleaseName;
+      log.error(errorMessage);
+      throw new ReleaseException(errorMessage, e);
     }
 
     return newRelease;
   }
 
-  private Release doRelease(
-      @NonNull Release oldRelease,
-      @NonNull String nextReleaseName,
+  private Release doRelease(@NonNull Release oldRelease, @NonNull String nextReleaseName,
       @NonNull String dictionaryVersion) {
-
     // Create new release entity
     val newRelease = createNextRelease(oldRelease, nextReleaseName, dictionaryVersion);
 
@@ -198,25 +194,25 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     oldRelease.complete();
 
     // Persist modified entity objects
-    log.info("Persisting changes");
-    releaseRepository.closeDictionary(dictionaryVersion);
+    log.info("Closing dictionary: '{}'", dictionaryVersion);
+    dictionaryRepository.closeDictionary(dictionaryVersion);
+
+    log.info("Updating completed release: '{}'", oldRelease.getName());
     releaseRepository.updateCompletedRelease(oldRelease);
+
+    log.info("Saving new release: '{}'", newRelease.getName());
     releaseRepository.saveNewRelease(newRelease);
 
     return newRelease;
   }
 
-  private Release createNextRelease(
-      @NonNull Release oldRelease,
-      @NonNull String name,
-      @NonNull String dictionaryVersion) {
+  private Release createNextRelease(@NonNull Release oldRelease, @NonNull String name, @NonNull String dictionaryVersion) {
     val nextRelease = new Release(name);
     nextRelease.setDictionaryVersion(dictionaryVersion);
     nextRelease.setState(ReleaseState.OPENED);
 
-    val manager = new SubmissionManager(fs);
     for (val submission : oldRelease.getSubmissions()) {
-      val newSubmission = manager.release(nextRelease, submission);
+      val newSubmission = submissionService.release(nextRelease, submission);
 
       nextRelease.addSubmission(newSubmission);
     }
@@ -225,32 +221,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private void setUpNewReleaseFileSystem(Release oldRelease, Release nextRelease) {
-    fs.getReleaseFilesystem(nextRelease)
+    dccFileSystem.getReleaseFilesystem(nextRelease)
         .setUpNewReleaseFileSystem(
             oldRelease.getName(), // Remove after DCC-1940
             nextRelease.getName(),
 
             // The release file system
-            fs.getReleaseFilesystem(oldRelease),
+            dccFileSystem.getReleaseFilesystem(oldRelease),
 
             // The signed off projects
             extractProjectKeys(filter(oldRelease.getSubmissions(), SIGNED_OFF_PROJECTS_PREDICATE)),
 
             // The remaining projects
             extractProjectKeys(filter(oldRelease.getSubmissions(), not(SIGNED_OFF_PROJECTS_PREDICATE))));
-  }
-
-  boolean isAtLeastOneSignedOff(Release release) {
-    for (val submission : release.getSubmissions()) {
-      if (submission.getState() == SubmissionState.SIGNED_OFF) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public Release getReleaseByName(String releaseName) {
-    return where(QRelease.release.name.eq(releaseName)).uniqueResult();
   }
 
   /**
@@ -261,7 +244,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public List<Release> getReleasesBySubject(Subject subject) {
     log.debug("getting releases for {}", subject.getPrincipal());
 
-    List<Release> releases = releaseRepository.listReleases();
+    List<Release> releases = releaseRepository.findReleases();
     log.debug("#releases: ", releases.size());
 
     // filter out all the submissions that the current user can not see
@@ -282,6 +265,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return releases;
   }
 
+  public Release getReleaseByName(String releaseName) {
+    return releaseRepository.findReleaseByName(releaseName);
+  }
+
   @Synchronized
   public void createInitialRelease(Release initRelease) {
     // check for init release name
@@ -294,18 +281,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     if (dictionaryVersion == null) {
       throw new ReleaseException("Dictionary version must not be null!");
-    } else if (releaseRepository.getDictionaryForVersion(dictionaryVersion) == null) {
+    } else if (dictionaryRepository.findDictionaryByVersion(dictionaryVersion) == null) {
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
 
     // Just use name and dictionaryVersion from incoming json
     val nextRelease = new Release(initRelease.getName());
     nextRelease.setDictionaryVersion(dictionaryVersion);
+    log.info("Saving new release: '{}'", nextRelease.getName());
     releaseRepository.saveNewRelease(nextRelease);
 
     // after initial release, create initial file system
     Set<String> projects = Sets.newHashSet();
-    fs.createInitialReleaseFilesystem(nextRelease, projects);
+    dccFileSystem.createInitialReleaseFilesystem(nextRelease, projects);
   }
 
   /**
@@ -314,10 +302,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   @Synchronized
   public long countOpenReleases() {
-    return query()
-        .where(
-            QRelease.release.state.eq(OPENED))
-        .count();
+    return releaseRepository.countOpenReleases();
   }
 
   /**
@@ -325,13 +310,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * based on the user's privileges.
    */
   public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Subject user) {
-    val release = where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    val release = releaseRepository.findReleaseByName(releaseName);
     Optional<ReleaseView> releaseView = Optional.absent();
     if (release != null) {
       // populate project name for submissions
       val projects = getProjects(release, user);
       val liteProjects = buildLiteProjects(projects);
       val submissionFilesMap = buildSubmissionFilesMap(releaseName, release);
+
       releaseView = Optional.of(new ReleaseView(release, liteProjects, submissionFilesMap));
     }
 
@@ -343,10 +329,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   @Synchronized
   public Release getNextRelease() throws IllegalReleaseStateException {
-    val nextRelease = where(
-        QRelease.release.state.eq(OPENED))
-        .singleResult();
-
+    val nextRelease = releaseRepository.findNextRelease();
     checkNotNull(nextRelease, "There is no next release in the database.");
 
     return nextRelease;
@@ -360,21 +343,20 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public Dictionary getNextDictionary() {
     val release = getNextRelease();
     val version = release.getDictionaryVersion();
-    return releaseRepository.getDictionaryFromVersion(version);
+    return dictionaryRepository.findDictionaryByVersion(version);
   }
 
   /**
    * Returns a non-null list of {@code Release} (possibly empty)
    */
   public List<Release> list() {
-    return releaseRepository.listReleases();
+    return releaseRepository.findReleases();
   }
 
   public Release getCompletedRelease(String releaseName) throws IllegalReleaseStateException {
-    val query = where(QRelease.release.state.eq(ReleaseState.COMPLETED).and(QRelease.release.name.eq(releaseName)));
-    val release = query.uniqueResult();
+    val release = releaseRepository.findCompletedRelease(releaseName);
     if (release == null) {
-      throw new IllegalArgumentException("release " + releaseName + " is not complete");
+      throw new IllegalArgumentException("Release " + releaseName + " is not complete");
     }
 
     return release;
@@ -387,7 +369,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public Submission getSubmission(String releaseName, String projectKey) {
-    val release = where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    val release = releaseRepository.findReleaseByName(releaseName);
     checkArgument(release != null);
 
     return getSubmission(release, projectKey);
@@ -395,7 +377,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
     val submission = getSubmission(releaseName, projectKey);
-    val liteProject = new LiteProject(checkNotNull(getProject(projectKey)));
+    val liteProject = new LiteProject(checkNotNull(projectRepository.findProject(projectKey)));
 
     val detailedSubmission = new DetailedSubmission(submission, liteProject);
     detailedSubmission.setSubmissionFiles(getSubmissionFiles(releaseName, projectKey));
@@ -405,27 +387,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public List<Release> getCompletedReleases() throws IllegalReleaseStateException {
     val completedReleases = new ArrayList<Release>();
-    for (val release : releaseRepository.listReleases(Optional.<Predicate> of(QRelease.release.state
-        .eq(ReleaseState.COMPLETED)))) {
+    for (val release : releaseRepository.findCompletedReleases()) {
       completedReleases.add(release);
     }
 
     return completedReleases;
   }
 
-  private Submission getSubmission(Release release, String projectKey) {
-    for (val submission : release.getSubmissions()) {
-      if (submission.getProjectKey().equals(projectKey)) {
-        return submission;
-      }
-    }
-
-    throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
-        release.getName()));
-  }
-
   public List<String> getSignedOff() {
-    return getSubmission(SubmissionState.SIGNED_OFF);
+    return getProjectKeysBySubmissionState(SubmissionState.SIGNED_OFF);
   }
 
   @Synchronized
@@ -441,18 +411,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     for (val projectKey : projectKeys) {
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
 
-      val manager = new SubmissionManager(fs);
-      manager.signOff(submission);
+      submissionService.signOff(submission);
     }
 
-    dbUpdateRelease(nextReleaseName, nextRelease);
+    updateRelease(nextReleaseName, nextRelease);
 
     // TODO: synchronization (DCC-685), may require cleaning up the FS abstraction (do we really need the project object
     // or is the projectKey sufficient?)
 
     // Remove validation files in the ".validation" folder (leave normalization files untouched)
-    val releaseFs = fs.getReleaseFilesystem(nextRelease);
-    val projects = getProjects(projectKeys);
+    val releaseFs = dccFileSystem.getReleaseFilesystem(nextRelease);
+    val projects = projectRepository.findProjects(projectKeys);
     for (val project : projects) {
       releaseFs
           .getSubmissionDirectory(project.getKey())
@@ -463,6 +432,65 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     mailService.sendSignoff(user, projectKeys, nextReleaseName);
 
     log.info("signed off {} for {}", projectKeys, nextReleaseName);
+  }
+
+  /**
+   * Updates a release name and/or dictionary version.
+   * <p>
+   * Does not allow to update submissions per se, {@code ProjectService.addProject()} must be used instead.
+   * <p>
+   * This MUST reset submission states.
+   * <p>
+   * This method is not included in NextRelease because of its dependence on methods from NextRelease (we may reconsider
+   * in the future) - see comments in DCC-245
+   */
+  @Synchronized
+  public Release update(String newReleaseName, String newDictionaryVersion) {
+    val release = getNextRelease();
+    String oldReleaseName = release.getName();
+    String oldDictionaryVersion = release.getDictionaryVersion();
+    checkState(release.getState() == ReleaseState.OPENED);
+
+    boolean sameName = oldReleaseName.equals(newReleaseName);
+    boolean sameDictionary = oldDictionaryVersion.equals(newDictionaryVersion);
+
+    if (!NameValidator.validateEntityName(newReleaseName)) {
+      throw new ReleaseException("Updated release name " + newReleaseName + " is not valid");
+    }
+
+    if (sameName == false && releaseRepository.findReleaseByName(newReleaseName) != null) {
+      throw new ReleaseException("New release name " + newReleaseName + " conflicts with an existing release");
+    }
+
+    if (newDictionaryVersion == null) {
+      throw new ReleaseException("Release must have associated dictionary before being updated");
+    }
+
+    if (sameDictionary == false && dictionaryRepository.findDictionaryByVersion(newDictionaryVersion) == null) {
+      throw new ReleaseException("Release must point to an existing dictionary, no match for " + newDictionaryVersion);
+    }
+
+    // Update release object and database entity (top-level entity only)
+    log.info("Updating release {} with {} and {}" + (sameDictionary ? " and emptying queue" : ""),
+        new Object[] { oldReleaseName, newReleaseName, newDictionaryVersion });
+    release.setName(newReleaseName);
+    release.setDictionaryVersion(newDictionaryVersion);
+    if (sameDictionary == false) {
+      release.emptyQueue();
+    }
+
+    val success = releaseRepository.updateRelease(newReleaseName, newDictionaryVersion, release, oldReleaseName);
+    if (success) { // Ensure update was successful
+      notifyUpdateError(oldReleaseName, on(",").join(newReleaseName, newDictionaryVersion, release.getQueue()));
+    }
+
+    // If a new dictionary was specified, reset submissions, TODO: use resetSubmission() instead (DCC-901)!
+    if (sameDictionary == false) {
+      // Reset all projects
+      resetSubmissions(newReleaseName, release.getProjectKeys());
+    }
+
+    return release;
   }
 
   @Synchronized
@@ -477,7 +505,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     updateSubmisions(projectKeys, newState);
     release.emptyQueue();
 
-    dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState); // FIXME: DCC-901
+    updateSubmissions(release.getName(), release.getQueue(), projectKeys, newState); // FIXME: DCC-901
     for (String projectKey : projectKeys) {
       // See spec at https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
       resetValidationFolder(projectKey, release);
@@ -508,7 +536,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
       log.info("Updating database '{}' release queue to '{}' and project '{}' submission state to '{}'",
           new Object[] { release.getName(), release.getQueue(), projectKey, newState });
-      dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
+      updateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
 
       log.info("Resetting file system '{}' project validation folder", projectKey);
       resetValidationFolder(projectKey, release);
@@ -528,11 +556,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       val projectKey = queuedProject.getKey();
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, NOT_VALIDATED, VALID, INVALID, ERROR);
 
-      val manager = new SubmissionManager(fs);
-      manager.queue(submission, queuedProject.getDataTypes());
+      submissionService.queue(submission, queuedProject.getDataTypes());
     }
 
-    dbUpdateRelease(nextReleaseName, nextRelease);
+    updateRelease(nextReleaseName, nextRelease);
     log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
   }
 
@@ -569,19 +596,22 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
         // Update release object
         val submission = getSubmissionByName(nextRelease, nextProjectKey); // can't be null
-        SubmissionState currentState = submission.getState();
-        SubmissionState nextState = SubmissionState.VALIDATING;
+        val currentState = submission.getState();
+        val nextState = SubmissionState.VALIDATING;
         if (expectedState != currentState) {
           throw new ReleaseException( // not recoverable
               "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState
                   + " instead), cannot set to " + nextState);
         }
 
-        val manager = new SubmissionManager(fs);
-        manager.validate(submission, nextProject.getDataTypes());
+        submissionService.validate(submission, nextProject.getDataTypes());
 
         // Update corresponding database entity
-        dbUpdateRelease(nextReleaseName, nextRelease);
+        updateRelease(nextReleaseName, nextRelease);
+
+        resetValidationFolder(nextProject.getKey(), nextRelease);
+
+        mailService.sendValidationStarted(nextReleaseName, nextProject.getKey(), nextProject.getEmails());
 
         log.info("Dequeued {} to validating state for {}", nextProjectKey, nextReleaseName);
         return Optional.absent();
@@ -598,27 +628,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void resolveSubmission(String projectKey, List<String> emails, List<SubmissionDataType> dataTypes,
-      ValidationOutcome outcome, SubmissionReport submissionReport) {
+  public void resolveSubmission(QueuedProject project, ValidationOutcome outcome, SubmissionReport submissionReport) {
+
     // Update the in-memory submission state
+    val projectKey = project.getKey();
+    val emails = project.getEmails();
+    val dataTypes = project.getDataTypes();
     val release = getNextRelease();
     val submission = getSubmission(release, projectKey);
-    val manager = new SubmissionManager(fs);
-    manager.resolve(submission, dataTypes, outcome, submissionReport, getNextDictionary());
 
-    // ======================= START COMBINE
+    submissionService.resolve(submission, dataTypes, outcome, submissionReport, getNextDictionary());
 
     log.info("Resolving project '{}' to submission state '{}'", projectKey, submission.getState());
-    resolveSubmission(projectKey, submission.getState(), submission.getDataState());
-
-    val nextSubmissionReport = (SubmissionReport) submission.getReport();
-
-    // Persist the report to DB
-    log.info("Storing validation submission report for project '{}': {}...", projectKey, nextSubmissionReport);
-    updateSubmissionReport(release.getName(), projectKey, nextSubmissionReport);
-    log.info("Finished storing validation submission report for project '{}'", projectKey);
-
-    // ======================= END COMBINE
+    updateSubmission(release.getName(), submission);
 
     if (!emails.isEmpty()) {
       log.info("Sending notification emails for project '{}'...", projectKey);
@@ -626,113 +648,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     log.info("Resolved project '{}'", projectKey);
-  }
-
-  private void resolveSubmission(final String projectKey, final SubmissionState nextState,
-      final List<DataTypeState> nextDataState) {
-    // TODO: avoid code duplication
-    checkArgument(
-        /**/VALID == nextState ||
-            INVALID == nextState ||
-            ERROR == nextState ||
-            NOT_VALIDATED == nextState /* Cancelled */, "Not expecting submission state %s",
-        nextState);
-
-    val expectedState = VALIDATING;
-
-    String description = format("resolve project '%s' with destination state '%s')", projectKey, nextState);
-    log.info("Attempting to {}", description);
-
-    withRetry(description, new Callable<Optional<?>>() {
-
-      @Override
-      public Optional<?> call() throws DccModelOptimisticLockException {
-        val nextRelease = getNextRelease();
-        String nextReleaseName = nextRelease.getName();
-
-        log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, nextState, nextReleaseName });
-
-        val submission = getSubmissionByName(nextRelease, projectKey);
-        val currentState = submission.getState();
-        if (expectedState != currentState) {
-          throw new ReleaseException("project " + projectKey + " is not " + expectedState + " (" + currentState
-              + " instead), cannot set to " + nextState);
-        }
-
-        // Update corresponding database entity
-        updateSubmissionState(nextReleaseName, projectKey, nextState, nextDataState);
-
-        log.info("Resolved {} for {}", projectKey, nextReleaseName);
-        return Optional.absent();
-      }
-
-    });
-  }
-
-  /**
-   * Updates a release name and/or dictionary version.
-   * <p>
-   * Does not allow to update submissions per se, {@code ProjectService.addProject()} must be used instead.
-   * <p>
-   * This MUST reset submission states.
-   * <p>
-   * This method is not included in NextRelease because of its dependence on methods from NextRelease (we may reconsider
-   * in the future) - see comments in DCC-245
-   */
-  @Synchronized
-  public Release update(String newReleaseName, String newDictionaryVersion) {
-    val release = getNextRelease();
-    String oldReleaseName = release.getName();
-    String oldDictionaryVersion = release.getDictionaryVersion();
-    checkState(release.getState() == ReleaseState.OPENED);
-
-    boolean sameName = oldReleaseName.equals(newReleaseName);
-    boolean sameDictionary = oldDictionaryVersion.equals(newDictionaryVersion);
-
-    if (!NameValidator.validateEntityName(newReleaseName)) {
-      throw new ReleaseException("Updated release name " + newReleaseName + " is not valid");
-    }
-
-    if (sameName == false && getReleaseByName(newReleaseName) != null) {
-      throw new ReleaseException("New release name " + newReleaseName + " conflicts with an existing release");
-    }
-
-    if (newDictionaryVersion == null) {
-      throw new ReleaseException("Release must have associated dictionary before being updated");
-    }
-
-    if (sameDictionary == false && releaseRepository.getDictionaryFromVersion(newDictionaryVersion) == null) {
-      throw new ReleaseException("Release must point to an existing dictionary, no match for " + newDictionaryVersion);
-    }
-
-    // Update release object and database entity (top-level entity only)
-    log.info("Updating release {} with {} and {}" + (sameDictionary ? " and emptying queue" : ""),
-        new Object[] { oldReleaseName, newReleaseName, newDictionaryVersion });
-    release.setName(newReleaseName);
-    release.setDictionaryVersion(newDictionaryVersion);
-    if (sameDictionary == false) {
-      release.emptyQueue();
-    }
-
-    val releaseUpdate = datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", oldReleaseName),
-        datastore().createUpdateOperations(Release.class)
-            .set("name", newReleaseName)
-            .set("dictionaryVersion", newDictionaryVersion)
-            .set("queue", release.getQueue()));
-
-    if (releaseUpdate.getUpdatedCount() != 1) { // Ensure update was successful
-      notifyUpdateError(oldReleaseName, on(",").join(newReleaseName, newDictionaryVersion, release.getQueue()));
-    }
-
-    // If a new dictionary was specified, reset submissions, TODO: use resetSubmission() instead (DCC-901)!
-    if (sameDictionary == false) {
-      // Reset all projects
-      resetSubmissions(newReleaseName, release.getProjectKeys());
-    }
-
-    return release;
   }
 
   @Synchronized
@@ -744,17 +659,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   @Synchronized
   public void resetSubmission(String releaseName, String projectKey, Optional<Path> path) {
-    val release = getReleaseByName(releaseName);
-    val dictionary = releaseRepository.getDictionaryForVersion(release.getDictionaryVersion());
+    val release = releaseRepository.findReleaseByName(releaseName);
+    val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
     val submission = release.getSubmissionByProjectKey(projectKey).get();
 
     // Update in-memory state
-    val manager = new SubmissionManager(fs);
-    manager.modify(release, submission, dictionary, path);
+    submissionService.modify(release, submission, dictionary, path);
 
     // Update persisted state
     updateSubmission(releaseName, submission);
-    updateSubmissionReport(releaseName, projectKey, (SubmissionReport) submission.getReport());
 
     // Update file system state
     resetValidationFolder(projectKey, release);
@@ -766,19 +679,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * TODO: only taken out of resetSubmission() until DCC-901 is done (to allow code that calls deprecated methods
    * instead of resetSubmission() to still be able to empty those directories)
    */
-  @Synchronized
-  public void resetValidationFolder(String projectKey, Release release) {
+  private void resetValidationFolder(String projectKey, Release release) {
     log.info("Resetting validation folder for '{}' in release '{}'", projectKey, release.getName());
-    fs.getReleaseFilesystem(release).resetValidationFolder(projectKey);
+    dccFileSystem.getReleaseFilesystem(release).resetValidationFolder(projectKey);
   }
 
-  /**
-   * TODO: should also take care of updating the queue, as the two should always go together
-   * <p>
-   * TODO: Isn't this a no-op?!?!
-   * <p>
-   * deprecation: see DCC-901
-   */
   @Deprecated
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
     val releaseName = getNextRelease().getName();
@@ -787,131 +692,61 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
-  /**
-   * Updates the queue then the submissions states accordingly
-   * <p>
-   * Always update queue and submission states together (else state may be inconsistent)
-   * <p>
-   * TODO: should probably revisit all this as it is not very clean
-   * <p>
-   * deprecation: see DCC-901
-   */
   @Deprecated
-  private void dbUpdateSubmissions(String currentReleaseName, List<QueuedProject> queue, List<String> projectKeys,
+  private void updateSubmissions(String releaseName, List<QueuedProject> queue, List<String> projectKeys,
       SubmissionState newState) {
-    checkArgument(currentReleaseName != null);
+    checkArgument(releaseName != null);
     checkArgument(queue != null);
 
-    datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", currentReleaseName),
-        datastore().createUpdateOperations(Release.class)
-            .set("queue", queue));
+    releaseRepository.updateReleaseQueue(releaseName, queue);
 
     for (val projectKey : projectKeys) {
-      updateSubmissionState(currentReleaseName, newState, projectKey);
+      releaseRepository.updateSubmissionState(releaseName, newState, projectKey);
     }
   }
 
-  private void updateSubmissionState(String currentReleaseName, SubmissionState newState,
-      String projectKey) {
-    datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", currentReleaseName)
-            .filter("submissions.projectKey = ", projectKey),
-        releaseRepository.allowDollarSignForMorphiaUpdatesBug(
-            datastore().createUpdateOperations(Release.class))
-            .set("submissions.$.state", newState));
-  }
-
-  private void updateSubmission(String currentReleaseName, SubmissionState newState,
-      List<DataTypeState> newDataState, String projectKey) {
-    datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", currentReleaseName)
-            .filter("submissions.projectKey = ", projectKey),
-        releaseRepository.allowDollarSignForMorphiaUpdatesBug(
-            datastore().createUpdateOperations(Release.class))
-            .set("submissions.$.state", newState)
-            .set("submissions.$.dataState", newDataState));
-  }
-
-  @Synchronized
-  public void updateSubmission(String currentReleaseName, Submission submission) {
-    updateSubmission(currentReleaseName, submission.getState(), submission.getDataState(), submission.getProjectKey());
-  }
-
-  @Synchronized
-  public void updateSubmissionReport(String releaseName, String projectKey, SubmissionReport report) {
-    val update = datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", releaseName)
-            .filter("submissions.projectKey = ", projectKey),
-        releaseRepository.allowDollarSignForMorphiaUpdatesBug(
-            datastore().createUpdateOperations(Release.class))
-            .set("submissions.$.report", report));
-
-    int updatedCount = update.getUpdatedCount();
-    if (updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
-      log.error("Setting submission report containing {} schema reports failed for project '{}'",
-          report == null ? null : report.getSchemaReports().size(), releaseName);
-    }
-  }
-
-  @Synchronized
-  public void updateSubmissionState(String releaseName, String projectKey, SubmissionState state,
-      List<DataTypeState> dataState) {
-    val update = datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", releaseName)
-            .filter("submissions.projectKey = ", projectKey),
-        releaseRepository.allowDollarSignForMorphiaUpdatesBug(
-            datastore().createUpdateOperations(Release.class))
-            .set("submissions.$.state", state)
-            .set("submissions.$.dataState", dataState));
-
-    int updatedCount = update.getUpdatedCount();
-    if (updatedCount != 1) {
-      log.error("Setting submission state to '{}' failed for project '{}'", state, projectKey);
-    }
+  private void updateSubmission(String releaseName, Submission submission) {
+    releaseRepository.updateSubmission(releaseName, submission);
   }
 
   private List<Project> getProjects(Release release, Subject user) {
-    List<String> projectKeys = new ArrayList<String>();
-    for (val submission : release.getSubmissions()) {
-      if (user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(submission.getProjectKey()))) {
-        projectKeys.add(submission.getProjectKey());
+    val projectKeys = Lists.<String> newArrayList();
+    for (val projectKey : release.getProjectKeys()) {
+      val privilege = projectViewPrivilege(projectKey);
+      val viewable = user.isPermitted(privilege);
+      if (viewable) {
+        projectKeys.add(projectKey);
       }
     }
 
-    return getProjects(projectKeys);
+    return projectRepository.findProjects(projectKeys);
   }
 
-  private List<Project> getProjects(List<String> projectKeys) {
-    val query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
-    return query.where(QProject.project.key.in(projectKeys)).list();
-  }
+  private Submission getSubmission(Release release, String projectKey) {
+    val optional = release.getSubmissionByProjectKey(projectKey);
+    if (optional.isPresent()) {
+      return optional.get();
+    }
 
-  private Project getProject(String projectKey) {
-    val query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
-    return query.where(QProject.project.key.eq(projectKey)).uniqueResult();
+    throw new ReleaseException(format("There is no project \"%s\" associated with release \"%s\"",
+        projectKey, release.getName()));
   }
 
   public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) {
-    val release = getReleaseByName(releaseName);
+    val release = releaseRepository.findReleaseByName(releaseName);
     if (release == null) {
       throw new ReleaseException("No such release");
     }
 
-    val dictionary = releaseRepository.getDictionaryFromVersion(release.getDictionaryVersion());
+    val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
     if (dictionary == null) {
       throw new ReleaseException("No Dictionary " + release.getDictionaryVersion());
     }
 
     val submissionFiles = new ArrayList<SubmissionFile>();
-    val buildProjectStringPath = new Path(fs.buildProjectStringPath(release.getName(), projectKey));
+    val buildProjectStringPath = new Path(dccFileSystem.buildProjectStringPath(release.getName(), projectKey));
 
-    for (val path : lsFile(fs.getFileSystem(), buildProjectStringPath)) {
+    for (val path : lsFile(dccFileSystem.getFileSystem(), buildProjectStringPath)) {
       submissionFiles.add(getSubmissionFile(dictionary, path));
     }
 
@@ -920,7 +755,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private SubmissionFile getSubmissionFile(Dictionary dictionary, Path path) {
     val fileName = path.getName();
-    val fileStatus = HadoopUtils.getFileStatus(fs.getFileSystem(), path);
+    val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), path);
     val lastUpdate = new Date(fileStatus.getModificationTime());
     val size = fileStatus.getLen();
 
@@ -946,6 +781,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       log.error(errorMessage);
       throw new InvalidStateException(ServerErrorCode.PROJECT_KEY_NOT_FOUND, errorMessage);
     }
+
     val currentState = submission.getState();
     val invalid = !contains(expectedStates, currentState);
     if (invalid) {
@@ -957,14 +793,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return submission;
   }
 
-  private List<String> getSubmission(final SubmissionState state) {
-    List<String> projectKeys = new ArrayList<String>();
-    List<Submission> submissions = getNextRelease().getSubmissions();
+  private List<String> getProjectKeysBySubmissionState(final SubmissionState state) {
+    val projectKeys = Lists.<String> newArrayList();
+    val submissions = getNextRelease().getSubmissions();
     for (val submission : submissions) {
       if (state.equals(submission.getState())) {
         projectKeys.add(submission.getProjectKey());
       }
     }
+
     return projectKeys;
   }
 
@@ -976,14 +813,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * @throws DccModelOptimisticLockException if optimistic lock fails
    * @throws ReleaseException if the update fails for other reasons (probably not recoverable)
    */
-  private void dbUpdateRelease(String originalReleaseName, Release updatedRelease)
+  private void updateRelease(String originalReleaseName, Release updatedRelease)
       throws DccModelOptimisticLockException {
     UpdateResults<Release> update = null;
     try {
-      update = datastore().updateFirst(
-          datastore().createQuery(Release.class)
-              .filter("name = ", originalReleaseName),
-          updatedRelease, false);
+      update = releaseRepository.updateRelease(originalReleaseName, updatedRelease);
     } catch (ConcurrentModificationException e) { // see method comments for why this could be thrown
       log.warn("a possibly recoverable concurrency issue arose when trying to update release {}", originalReleaseName);
       throw new DccModelOptimisticLockException(e);
@@ -1053,89 +887,5 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             return submission.getProjectKey();
           }
         });
-  }
-
-  /**
-   * See comment on {@link ReleaseService#releaseRepository}.
-   * <p>
-   * TODO: DCC-1262 - Merge with {@link org.icgc.dcc.submission.repository.ReleaseRepository}
-   */
-  @NoArgsConstructor(access = PRIVATE)
-  private final class ReleaseRepository {
-
-    /**
-     * Idempotent.
-     */
-    private void closeDictionary(final String oldDictionaryVersion) { // TODO: move to dictionary service?
-      log.info("Closing dictionary: '{}'", oldDictionaryVersion);
-      datastore().findAndModify(
-          datastore().createQuery(Dictionary.class)
-              .filter("version", oldDictionaryVersion),
-          datastore().createUpdateOperations(Dictionary.class)
-              .set("state", DictionaryState.CLOSED));
-    }
-
-    private void updateCompletedRelease(
-        @NonNull Release oldRelease) {
-      log.info("Updating completed release: '{}'", oldRelease.getName());
-      datastore().findAndModify(
-          datastore().createQuery(Release.class)
-              .filter("name", oldRelease.getName()),
-          datastore().createUpdateOperations(Release.class)
-              .set("state", oldRelease.getState())
-              .set("releaseDate", oldRelease.getReleaseDate())
-              .set("submissions", oldRelease.getSubmissions()));
-    }
-
-    /**
-     * Do *not* use to update an existing release (not intended that way).
-     */
-    private void saveNewRelease(
-        @NonNull Release newRelease) {
-      log.info("Saving new release: '{}'", newRelease.getName());
-      datastore().save(newRelease);
-    }
-
-    private List<Release> listReleases() {
-      return listReleases(Optional.<Predicate> absent());
-    }
-
-    /**
-     * Ignoring releases whose name is starting with a specific prefix (see https://jira.oicr.on.ca/browse/DCC-1409 for
-     * more details).
-     */
-    private List<Release> listReleases(Optional<Predicate> mysemaPredicate) {
-      MongodbQuery<Release> query = mysemaPredicate.isPresent() ?
-          where(mysemaPredicate.get()) :
-          query();
-      return query.list();
-    }
-
-    // TODO: figure out difference with method below
-    private Dictionary getDictionaryFromVersion(@NonNull String version) {
-      // Also found in DictionaryService - see comments in DCC-245
-      return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary).where(
-          QDictionary.dictionary.version.eq(version)).singleResult();
-    }
-
-    private Dictionary getDictionaryForVersion(String dictionaryVersion) {
-      return datastore().createQuery(Dictionary.class)
-          .filter("version", dictionaryVersion).get();
-    }
-
-    /**
-     * This is currently necessary in order to use the <i>field.$.nestedField</i> notation in updates. Otherwise one
-     * gets an error like <i>
-     * "The field '$' could not be found in 'org.icgc.dcc.submission.release.model.Release' while validating - submissions.$.state; if you wish to continue please disable validation."
-     * </i>
-     * <p>
-     * For more information, see
-     * http://groups.google.com/group/morphia/tree/browse_frm/month/2011-01/489d5b7501760724?rnum
-     * =31&_done=/group/morphia/browse_frm/month/2011-01?
-     */
-    private UpdateOperations<Release> allowDollarSignForMorphiaUpdatesBug(
-        UpdateOperations<Release> updateOperations) {
-      return updateOperations.disableValidation();
-    }
   }
 }

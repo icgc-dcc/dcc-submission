@@ -26,6 +26,7 @@ public class ReleaseModule extends AbstractDccModule {
   @Override
   protected void configure() {
     bind(ReleaseService.class).in(Singleton.class);
+    bind(SubmissionService.class).in(Singleton.class);
   }
 
 }

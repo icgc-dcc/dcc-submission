@@ -57,10 +57,11 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 @Slf4j
-@RequiredArgsConstructor
-public class SubmissionManager {
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
+public class SubmissionService {
 
   @NonNull
   private final DccFileSystem dccFileSystem;
@@ -81,6 +82,13 @@ public class SubmissionManager {
 
   public void resolve(Submission submission, List<SubmissionDataType> dataTypes, ValidationOutcome outcome,
       SubmissionReport submissionReport, Dictionary dictionary) {
+    val expectedState = VALIDATING;
+    val actualState = submission.getState();
+    if (actualState != expectedState) {
+      throw new ReleaseException("project " + submission.getProjectKey() + " is not " + expectedState + " ("
+          + actualState + " instead), cannot resolve");
+    }
+
     val previousDataState = submission.getDataState();
     val previousSubmissionReport = (SubmissionReport) submission.getReport();
 
@@ -103,6 +111,9 @@ public class SubmissionManager {
     } else {
       checkState(false, "Unexpected validation outcome '%s'", outcome);
     }
+
+    val validNextState = VALID == nextState || INVALID == nextState || ERROR == nextState || NOT_VALIDATED == nextState;
+    checkState(validNextState, "Not expecting submission state %s", nextState);
 
     submission.setState(nextState);
     submission.setDataState(nextDataState);

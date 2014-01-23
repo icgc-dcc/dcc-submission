@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.net.UnknownHostException;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import junit.framework.Assert;
+import lombok.val;
 
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
@@ -41,6 +43,9 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
+import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,19 +59,20 @@ import com.mongodb.MongoException;
 
 public class ReleaseServiceTest {
 
-  private Datastore datastore;
-
-  private Dictionary dictionary;
-
-  private DictionaryService dictionaryService;
-
+  /**
+   * Class under test.
+   */
   private ReleaseService releaseService;
 
+  /**
+   * Dependencies
+   */
+  private Datastore datastore;
+  private Dictionary dictionary;
+  private DictionaryService dictionaryService;
   private MailService mailService;
-
   private Release release;
-
-  private DccFileSystem fs;
+  private DccFileSystem dccFileSystem;
 
   private final static String testDbName = "dcc-test";
 
@@ -78,7 +84,7 @@ public class ReleaseServiceTest {
       Mongo mongo = new MongoClient("localhost");
       Morphia morphia = new Morphia();
       datastore = morphia.createDatastore(mongo, testDbName);
-      fs = mock(DccFileSystem.class);
+      dccFileSystem = mock(DccFileSystem.class);
 
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));
@@ -116,7 +122,13 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore, fs, mailService);
+      val submissionService = new SubmissionService(dccFileSystem);
+      val releaseRepository = spy(new ReleaseRepository(morphia, datastore, mailService));
+      val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore, mailService));
+      val projectRepository = spy(new ProjectRepository(morphia, datastore, mailService));
+      releaseService = new ReleaseService(submissionService, mailService, dccFileSystem,
+          releaseRepository, dictionaryRepository, projectRepository);
+
       dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
       dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
@@ -165,7 +177,7 @@ public class ReleaseServiceTest {
     projectKeys.add("p1");
     projectKeys.add("p2");
     projectKeys.add("p3");
-    verify(this.fs).createInitialReleaseFilesystem(release, projectKeys);
+    verify(this.dccFileSystem).createInitialReleaseFilesystem(release, projectKeys);
   }
 
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,
@@ -187,14 +199,14 @@ public class ReleaseServiceTest {
   // @Test
   public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
     Release nextReleaseRelease = releaseService.getNextRelease();
-    assertTrue(!releaseService.isAtLeastOneSignedOff(nextReleaseRelease));
+    assertTrue(!nextReleaseRelease.isSignOffAllowed());
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
     releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    assertTrue(releaseService.isAtLeastOneSignedOff(nextReleaseRelease));
+    assertTrue(nextReleaseRelease.isSignOffAllowed());
   }
 
   // @Test

@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.repository.ReleaseRepository;
+import org.icgc.dcc.submission.repository.ReleaseRepository2;
 
 import com.google.inject.Inject;
 
@@ -37,7 +37,7 @@ import com.google.inject.Inject;
 public class ReleaseService {
 
   @NonNull
-  private ReleaseRepository releaseRepository;
+  private ReleaseRepository2 releaseRepository;
 
   public Release find(String releaseName) {
     log.info("Request for Release '{}'", releaseName);

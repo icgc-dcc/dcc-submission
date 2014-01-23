@@ -27,7 +27,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,92 +43,101 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
+import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.common.collect.ImmutableList;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ReleaseServiceNextReleaseTest {
 
+  /**
+   * Class under test.
+   */
   private ReleaseService releaseService;
 
+  /**
+   * Dependencies.
+   */
+  @Mock
   private Release release;
-
+  @Mock
   private Dictionary dictionary;
 
-  private Datastore ds;
+  @Mock
+  private Datastore datastore;
+  @Mock
+  private Morphia morphia;
 
-  private Morphia mockMorphia;
-
+  @Mock
   private Query<Release> query;
-
-  private Query<Dictionary> queryDict;
-
+  @Mock
+  private Query<Dictionary> queryDictionary;
+  @Mock
   private UpdateOperations<Release> updates;
+  @Mock
+  private UpdateOperations<Dictionary> updatesDictionary;
 
-  private UpdateOperations<Dictionary> updatesDict;
-
-  private DccFileSystem fs;
-
-  private ReleaseFileSystem mockReleaseFileSystem;
-
-  private DictionaryService mockDictionaryService;
+  @Mock
+  private DccFileSystem dccFileSystem;
+  @Mock
+  private MailService mailService;
+  @Mock
+  private ReleaseFileSystem releaseFileSystem;
+  @Mock
+  private DictionaryService dictionaryService;
 
   private static final String FIRST_RELEASE_NAME = "release1";
   private static final String NEXT_RELEASE_NAME = "release2";
 
-  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    release = mock(Release.class);
-    updates = mock(UpdateOperations.class);
-    updatesDict = mock(UpdateOperations.class);
-    fs = mock(DccFileSystem.class);
-    mockReleaseFileSystem = mock(ReleaseFileSystem.class);
-    mockDictionaryService = mock(DictionaryService.class);
-
-    when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
+    when(dccFileSystem.getReleaseFilesystem(any(Release.class))).thenReturn(releaseFileSystem);
 
     when(release.getState()).thenReturn(ReleaseState.OPENED);
-    List<Submission> submissions = new ArrayList<Submission>();
-    Submission s = new Submission();
-    s.setState(SubmissionState.SIGNED_OFF);
-    submissions.add(s);
-    when(release.getSubmissions()).thenReturn(submissions);
+    when(release.getSubmissions()).thenReturn(createSubmission(SubmissionState.SIGNED_OFF));
     when(release.getName()).thenReturn(FIRST_RELEASE_NAME);
     when(release.getProjectKeys()).thenReturn(Arrays.asList("proj1"));
-    when(release.getSubmissions()).thenReturn(submissions);
+    when(release.getSubmissions()).thenReturn(createSubmission(SubmissionState.SIGNED_OFF));
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
 
-    ds = mock(Datastore.class);
-    mockMorphia = mock(Morphia.class);
-
-    when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
-    when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
-
     when(updates.set(anyString(), anyString())).thenReturn(updates);
-
-    query = mock(Query.class);
-    queryDict = mock(Query.class);
-    when(ds.createQuery(Release.class)).thenReturn(query);
-    when(ds.createQuery(Dictionary.class)).thenReturn(queryDict);
-
     when(query.filter(anyString(), any())).thenReturn(query);
-    when(queryDict.filter(anyString(), any())).thenReturn(queryDict);
+    when(queryDictionary.filter(anyString(), any())).thenReturn(queryDictionary);
+    when(datastore.createUpdateOperations(Release.class)).thenReturn(updates);
+    when(datastore.createUpdateOperations(Dictionary.class)).thenReturn(updatesDictionary);
+    when(datastore.createQuery(Release.class)).thenReturn(query);
+    when(datastore.createQuery(Dictionary.class)).thenReturn(queryDictionary);
 
-    val mockMailService = mock(MailService.class);
+    val submissionService = new SubmissionService(dccFileSystem);
+    val releaseRepository = spy(new ReleaseRepository(morphia, datastore, mailService));
+    val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore, mailService));
+    val projectRepository = spy(new ProjectRepository(morphia, datastore, mailService));
+    releaseService = new ReleaseService(submissionService, mailService, dccFileSystem,
+        releaseRepository, dictionaryRepository, projectRepository);
 
-    releaseService = spy(new ReleaseService(mockMorphia, ds, fs, mockMailService));
+    doReturn(null).when(releaseRepository).findReleaseByName(anyString());
+    doReturn(release).when(releaseRepository).findNextRelease();
 
-    doReturn(null).when(releaseService).getReleaseByName(anyString());
-    doReturn(release).when(releaseService).getNextRelease();
+    when(dictionaryService.getDictionaryByVersion("existing_dictionary")).thenReturn(dictionary);
+  }
 
-    Dictionary dictionary = mock(Dictionary.class);
-    when(mockDictionaryService.getDictionaryByVersion("existing_dictionary")).thenReturn(dictionary);
+  private List<Submission> createSubmission(SubmissionState state) {
+    Submission submission = new Submission();
+    submission.setState(state);
+
+    return ImmutableList.<Submission> of(submission);
   }
 
   @Test
@@ -138,7 +146,7 @@ public class ReleaseServiceNextReleaseTest {
 
     releaseService.release(NEXT_RELEASE_NAME);
 
-    verify(mockReleaseFileSystem)
+    verify(releaseFileSystem)
         .setUpNewReleaseFileSystem(
             anyString(), anyString(),
             any(ReleaseFileSystem.class),
@@ -161,8 +169,8 @@ public class ReleaseServiceNextReleaseTest {
 
     Release newRelease = releaseService.release(NEXT_RELEASE_NAME);
 
-    verify(ds).save(newRelease);
-    verify(ds).createUpdateOperations(Release.class);
+    verify(datastore).save(newRelease);
+    verify(datastore).createUpdateOperations(Release.class);
     verify(updates).set("state", ReleaseState.COMPLETED);
     verify(updates).set("releaseDate", release.getReleaseDate());
     verify(updates).set("submissions", release.getSubmissions());
@@ -227,6 +235,8 @@ public class ReleaseServiceNextReleaseTest {
     when(dictionary.getState()).thenReturn(DictionaryState.OPENED);
     when(dictionary.getVersion()).thenReturn("0.6c");
     when(release.getDictionaryVersion()).thenReturn("0.6c");
+    when(release.isSignOffAllowed()).thenReturn(true);
+    when(release.isQueued()).thenReturn(false);
 
     when(updates.set("state", ReleaseState.COMPLETED)).thenReturn(updates);
     when(updates.set("releaseDate", release.getReleaseDate())).thenReturn(updates);
