@@ -18,9 +18,17 @@
 package org.icgc.dcc.submission.release.model;
 
 public enum SubmissionState {
-  NOT_VALIDATED, QUEUED, INVALID, VALID, SIGNED_OFF, ERROR, VALIDATING;
+
+  NOT_VALIDATED,
+  QUEUED,
+  VALIDATING,
+  INVALID,
+  VALID,
+  SIGNED_OFF,
+  ERROR;
 
   public boolean isReadOnly() {
     return (this == SIGNED_OFF || this == QUEUED || this == VALIDATING);
   }
+
 }

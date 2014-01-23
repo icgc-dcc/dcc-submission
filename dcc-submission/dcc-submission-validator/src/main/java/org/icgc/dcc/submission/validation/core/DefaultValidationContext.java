@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.core;
 import static java.util.regex.Pattern.matches;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 
+import java.util.Collection;
 import java.util.List;
 
 import lombok.Delegate;
@@ -30,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.ClinicalType;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -40,7 +43,8 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * The "default" implementation of the {@link ValidationContext}.
@@ -64,6 +68,8 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   List<String> emails;
   @NonNull
+  List<SubmissionDataType> dataTypes;
+  @NonNull
   Release release;
   @NonNull
   Dictionary dictionary;
@@ -80,6 +86,17 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public List<String> getEmails() {
     return emails;
+  }
+
+  @Override
+  public Collection<SubmissionDataType> getDataTypes() {
+    val effectiveDataTypes = ImmutableSet.<SubmissionDataType> builder();
+
+    // Ensure clinical core is always validated
+    effectiveDataTypes.add(ClinicalType.CLINICAL_CORE_TYPE);
+    effectiveDataTypes.addAll(dataTypes);
+
+    return effectiveDataTypes.build();
   }
 
   @Override
@@ -130,21 +147,27 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public Optional<Path> getSsmPrimaryFile() {
+  public List<Path> getSsmPrimaryFiles() {
     val submissionDirectory = getSubmissionDirectory();
     val ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
     val ssmPrimaryFileNamePattern = ssmPrimaryFileSchema.getPattern();
 
+    val builder = ImmutableList.<Path> builder();
     for (val submissionFileName : submissionDirectory.listFile()) {
       val ssmPrimary = matches(ssmPrimaryFileNamePattern, submissionFileName);
       if (ssmPrimary) {
         Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(submissionFileName));
 
-        return Optional.of(ssmPrimaryFile);
+        builder.add(ssmPrimaryFile);
       }
     }
 
-    return Optional.<Path> absent();
+    return builder.build();
+  }
+
+  @Override
+  public FileSchema getSsmPrimaryFileSchema() {
+    return getSsmPrimaryFileSchema(getDictionary());
   }
 
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {

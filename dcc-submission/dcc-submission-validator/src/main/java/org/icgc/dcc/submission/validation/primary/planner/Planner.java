@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.primary.planner;
 
 import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
@@ -50,11 +52,12 @@ public class Planner {
   @NonNull
   private final Set<RestrictionType> restrictionTypes;
 
-  public Plan plan(@NonNull String projectKey, @NonNull PlatformStrategy platform, @NonNull Dictionary dictionary) {
+  public Plan plan(@NonNull String projectKey, @NonNull Collection<SubmissionDataType> dataTypes,
+      @NonNull PlatformStrategy platform, @NonNull Dictionary dictionary) {
     val plan = new Plan(projectKey, dictionary, platform);
 
     log.info("Including flow planners for '{}'", projectKey);
-    includeFlowPlanners(plan, projectKey, platform, dictionary);
+    includeFlowPlanners(plan, projectKey, dataTypes, platform, dictionary);
 
     log.info("Applying planning visitors for '{}'", projectKey);
     applyVisitors(plan, platform, projectKey);
@@ -65,10 +68,14 @@ public class Planner {
   /**
    * Include flow planners based on file presence.
    */
-  private void includeFlowPlanners(
-      Plan plan, String projectKey, PlatformStrategy platform, Dictionary dictionary) {
 
-    for (val fileSchema : dictionary.getFiles()) {
+  private void includeFlowPlanners(
+      Plan plan, String projectKey, Collection<SubmissionDataType> dataTypes,
+      PlatformStrategy platform, Dictionary dictionary) {
+
+    // Selective validation filtering
+    val fileSchemata = dictionary.getFileSchemata(dataTypes);
+    for (val fileSchema : fileSchemata) {
       val matchingFileNames = platform.listFileNames(fileSchema.getPattern());
       if (matchingFileNames.isEmpty()) {
         log.info("File schema '{}' has no matching datafile in submission directory for '{}'",

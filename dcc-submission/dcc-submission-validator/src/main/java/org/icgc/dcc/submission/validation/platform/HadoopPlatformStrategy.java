@@ -66,7 +66,6 @@ import cascading.tuple.hadoop.TupleSerializationProps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigValue;
 
 @Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
@@ -84,14 +83,14 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector() {
+  public FlowConnector getFlowConnector(Map<Object, Object> properties) {
     Map<Object, Object> flowProperties = newHashMap();
 
     // Custom serialization
     TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
-    for (Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
+    for (val configEntry : hadoopConfig.entrySet()) {
       flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
@@ -127,6 +126,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
           GZIP_CODEC_PROPERTY_VALUE);
     }
 
+    flowProperties.putAll(properties);
     return new HadoopFlowConnector(flowProperties);
   }
 

@@ -48,6 +48,8 @@ public final class HadoopConstants {
 
   public static final String MAPRED_MAP_TASKS_SPECULATIVE_EXECUTION =    "mapred.map.tasks.speculative.execution";
   public static final String MAPRED_REDUCE_TASKS_SPECULATIVE_EXECUTION = "mapred.reduce.tasks.speculative.execution";
+
+  public static final String MR_JOBTRACKER_ADDRESS_KEY = "mapred.job.tracker";
   
   /*
    * Property values.

@@ -21,7 +21,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_EXCEPTION;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.UNAVAILABLE;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseClosePrivilege;
@@ -56,11 +56,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.ReleaseException;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.validation.ValidationScheduler;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
@@ -80,20 +79,14 @@ public class NextReleaseResource {
   private static final Joiner JOINER = Joiner.on("/");
 
   @Inject
-  protected Config config;
+  private Config config;
   @Inject
-  protected ReleaseService releaseService;
+  private ReleaseService releaseService;
   @Inject
-  protected ValidationScheduler validationScheduler;
+  private ValidationScheduler validationScheduler;
 
   @GET
-  public Response getNextRelease(
-
-      @Context
-      SecurityContext securityContext
-
-      )
-  {
+  public Response getNextRelease(@Context SecurityContext securityContext) {
     log.debug("Getting nextRelease");
     if (hasReleaseViewPrivilege(securityContext) == false) {
       return unauthorizedResponse();
@@ -103,7 +96,7 @@ public class NextReleaseResource {
     String redirectionPath = JOINER.join(
         prefix,
         "releases",
-        fetchOpenRelease() // guaranteed not to be null
+        releaseService.getNextRelease() // guaranteed not to be null
             .getName());
 
     return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
@@ -117,32 +110,15 @@ public class NextReleaseResource {
    */
   @GET
   @Path("dictionary")
-  public Response getDictionary(
-
-      @Context
-      Request request
-
-      )
-  {
-    Dictionary dictionary = releaseService.getNextDictionary();
+  public Response getDictionary(@Context Request request) {
+    val dictionary = releaseService.getNextDictionary();
 
     ResponseTimestamper.evaluate(request, dictionary);
     return ResponseTimestamper.ok(dictionary).build();
   }
 
   @POST
-  public Response release(
-
-      Release nextRelease,
-
-      @Context
-      Request request,
-
-      @Context
-      SecurityContext securityContext
-
-      )
-  {
+  public Response release(Release nextRelease, @Context Request request, @Context SecurityContext securityContext) {
     log.info("Releasing nextRelease, new release will be: {}", nextRelease);
 
     // TODO: This is intentionally not validated, since we're only currently using the name. This seems sketchy to me
@@ -175,9 +151,8 @@ public class NextReleaseResource {
 
   @GET
   @Path("queue")
-  public Response getQueue() { // no authorization check needed (see DCC-808)
-    /* no authorization check necessary */
-
+  public Response getQueue() {
+    // No authorization check needed (see DCC-808)
     log.debug("Getting the queue for nextRelease");
     List<String> projectIds = releaseService.getQueuedProjectKeys();
     Object[] projectIdArray = projectIds.toArray();
@@ -187,19 +162,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(
-
-      @Valid
-      List<QueuedProject> queuedProjects,
-
-      @Context
-      Request request,
-
-      @Context
-      SecurityContext securityContext
-
-      )
-  {
+  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request request,
+      @Context SecurityContext securityContext) {
     log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
     List<String> projectKeys = newArrayList();
     for (val queuedProject : queuedProjects) {
@@ -215,12 +179,11 @@ public class NextReleaseResource {
     ResponseTimestamper.evaluate(request, nextRelease);
 
     try {
-      releaseService.queue(nextRelease, queuedProjects);
+      releaseService.queueSubmissions(nextRelease, queuedProjects);
     } catch (ReleaseException e) {
-      log.error("ProjectKeyNotFound", e);
+      log.error("Error trying to queue submission(s)", e);
 
-      // FIXME: This isn't correct
-      return badRequest(NO_SUCH_ENTITY, projectKeys);
+      return badRequest(INVALID_STATE, projectKeys);
     } catch (InvalidStateException e) {
       val code = e.getCode();
       val offendingState = e.getState();
@@ -233,8 +196,8 @@ public class NextReleaseResource {
       log.error(code.getFrontEndString(), e);
 
       return Response
-          .status(SERVICE_UNAVAILABLE) //
-          .header(Header.RetryAfter.toString(), 3) //
+          .status(SERVICE_UNAVAILABLE)
+          .header(Header.RetryAfter.toString(), 3)
           .entity(new ServerErrorResponseMessage(code)).build();
     }
 
@@ -243,13 +206,7 @@ public class NextReleaseResource {
 
   @DELETE
   @Path("queue")
-  public Response removeAllQueued(
-
-      @Context
-      SecurityContext securityContext
-
-      )
-  {
+  public Response removeAllQueued(@Context SecurityContext securityContext) {
     log.info("Emptying queue for nextRelease");
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
@@ -262,16 +219,7 @@ public class NextReleaseResource {
   @DELETE
   @Path("validation/{projectKey}")
   @SneakyThrows
-  public Response cancelValidation(
-
-      @PathParam("projectKey")
-      String projectKey,
-
-      @Context
-      SecurityContext securityContext
-
-      )
-  {
+  public Response cancelValidation(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     log.info("Cancelling validation for {}", projectKey);
     if (!hasSpecificProjectPrivilege(securityContext, projectKey)) {
       return unauthorizedResponse();
@@ -303,18 +251,7 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(
-
-      List<String> projectKeys,
-
-      @Context
-      Request request,
-
-      @Context
-      SecurityContext securityContext
-
-      )
-  {
+  public Response signOff(List<String> projectKeys, @Context Request request, @Context SecurityContext securityContext) {
     log.info("Signing off projects {}", projectKeys);
     if (hasSubmissionSignoffPrivilege(securityContext) == false) {
       return unauthorizedResponse();
@@ -337,8 +274,8 @@ public class NextReleaseResource {
     } catch (DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
-      return Response.status(Status.SERVICE_UNAVAILABLE) //
-          .header(Header.RetryAfter.toString(), 3) //
+      return Response.status(Status.SERVICE_UNAVAILABLE)
+          .header(Header.RetryAfter.toString(), 3)
           .entity(new ServerErrorResponseMessage(code)).build();
     }
 
@@ -350,19 +287,7 @@ public class NextReleaseResource {
    */
   @PUT
   @Path("update")
-  public Response update(
-
-      @Valid
-      Release release, // TODO: only requires String (+change UI)
-
-      @Context
-      Request request,
-
-      @Context
-      SecurityContext securityContext
-
-      )
-  {
+  public Response update(@Valid Release release, @Context Request request, @Context SecurityContext securityContext) {
     log.info("Updating nextRelease with: {}", release);
     if (hasReleaseModifyPrivilege(securityContext) == false) {
       return Responses.unauthorizedResponse();
@@ -387,10 +312,6 @@ public class NextReleaseResource {
     } else {
       return Response.status(BAD_REQUEST).build();
     }
-  }
-
-  private Release fetchOpenRelease() {
-    return releaseService.getNextRelease();
   }
 
 }

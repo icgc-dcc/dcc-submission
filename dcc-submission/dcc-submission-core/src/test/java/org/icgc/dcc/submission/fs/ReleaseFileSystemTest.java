@@ -39,6 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 public class ReleaseFileSystemTest {
@@ -105,7 +106,8 @@ public class ReleaseFileSystemTest {
 
     // Mock
     when(previousRelease.getName()).thenReturn(previousReleaseName);
-    when(previousRelease.getSubmission(anyString())).thenReturn(previousSubmission);
+    when(previousRelease.getSubmissionByProjectKey(anyString())).thenReturn(
+        Optional.<Submission> of(previousSubmission));
     when(previousReleaseFileSystem.getSubmissionDirectory(projectKey)).thenReturn(previousSubmissionDirectory);
     when(previousReleaseFileSystem.getSystemDirectory()).thenReturn(previousSystemPath);
     when(previousSubmissionDirectory.getValidationDirPath()).thenReturn(previousSubmissionValidationDirPath);
@@ -144,7 +146,8 @@ public class ReleaseFileSystemTest {
     nextSubmissionDir.mkdirs();
 
     when(nextRelease.getName()).thenReturn(nextReleaseName);
-    when(nextRelease.getSubmission(anyString())).thenReturn(mock(Submission.class));
+    when(nextRelease.getSubmissionByProjectKey(anyString())).thenReturn(
+        Optional.<Submission> of(mock(Submission.class)));
     when(dccFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionDonorFileName)).thenReturn(
         nextSubmissionDonorFile.getAbsolutePath());
     when(dccFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionSampleFileName)).thenReturn(

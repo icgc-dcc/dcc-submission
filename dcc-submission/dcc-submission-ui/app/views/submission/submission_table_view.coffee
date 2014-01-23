@@ -160,22 +160,34 @@ module.exports = class SubmissionTableView extends DataTableView
           bVisible: not utils.is_released(@model.get "state")
           mData: (source) ->
             switch source.state
+              when "INVALID"
+                ds = source.projectKey.replace(/<.*?>/g, '')
+                """
+                <a
+                  class="m-btn blue-stripe mini"
+                  id="validate-submission-popup-button"
+                  data-submission="#{ds}"
+                  data-toggle="modal"
+                  href='#validate-submission-popup'>
+                  Validate
+                </a>
+                """
               when "QUEUED", "VALIDATING"
                 ds = source.projectKey.replace(/<.*?>/g, '')
                 """
-                <button
+                <a
                   class="m-btn red-stripe mini"
                   id="cancel-submission-popup-button"
                   data-submission="#{ds}"
                   data-toggle="modal"
                   href="#cancel-submission-popup">
                   Cancel Validation
-                </button>
+                </a>
                 """
               when "VALID"
                 ds = source.projectKey.replace(/<.*?>/g, '')
                 """
-                <button
+                <a
                   class="m-btn green-stripe mini"
                   id="signoff-submission-popup-button"
                   data-submission="#{ds}"
@@ -183,15 +195,23 @@ module.exports = class SubmissionTableView extends DataTableView
                   href='#signoff-submission-popup'>
                   Sign Off
                 </a>
+                <a
+                  class="m-btn blue-stripe mini"
+                  id="validate-submission-popup-button"
+                  data-submission="#{ds}"
+                  data-toggle="modal"
+                  href='#validate-submission-popup'>
+                  Validate
+                </a>
                 """
               when "NOT_VALIDATED"
                 if source.submissionFiles.length
                   files = source.submissionFiles
-                  show = _.without((f.matchedSchemaName for f in files), null)
+                  show = _.without((f.schemaName for f in files), null)
                   if show.length
                     ds = source.projectKey.replace(/<.*?>/g, '')
                     """
-                    <button
+                    <a
                       class="m-btn blue-stripe mini"
                       id="validate-submission-popup-button"
                       data-submission="#{ds}"

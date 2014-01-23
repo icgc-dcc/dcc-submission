@@ -20,10 +20,12 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import lombok.val;
 
+import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -68,7 +70,7 @@ public class ProjectResourceTest extends ResourceTest {
 
   private Release release;
 
-  private Set<Release> releases;
+  private List<Release> releases;
 
   private Submission submissionOne;
 
@@ -88,11 +90,11 @@ public class ProjectResourceTest extends ResourceTest {
         when(dccFileSystem.createNewProjectDirectoryStructure(any(String.class), any(String.class))).thenReturn(PATH);
 
         release = new Release("REL1");
-        releases = Sets.newHashSet(release);
+        releases = Lists.newArrayList(release);
 
         releaseService = mock(ReleaseService.class);
-        when(releaseService.findOpen()).thenReturn(release);
-        when(releaseService.findAll()).thenReturn(releases);
+        when(releaseService.getNextRelease()).thenReturn(release);
+        when(releaseService.getReleases()).thenReturn(releases);
         when(releaseService.addSubmission(any(String.class), any(String.class))).thenReturn(release);
 
         projectOne = new Project("PRJ1", "Project One");
@@ -324,15 +326,17 @@ public class ProjectResourceTest extends ResourceTest {
   public void testGetProjectSubmissions() throws Exception {
     val reponse = target().path("projects/" + projectOne.getKey() + "/releases").request(MIME_TYPE).get();
 
-    verify(releaseService).findAll();
+    verify(releaseService).getReleases();
     verify(projectService).extractSubmissions(releases, projectOne.getKey());
 
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class))
         .isEqualTo(
             "[{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"releaseName\":\"REL1\",\"lastUpdated\":"
-                + submissionTwo.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null},"
+                + submissionTwo.getLastUpdated().getTime()
+                + ",\"state\":\"NOT_VALIDATED\",\"dataState\":null,\"report\":null},"
                 + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"releaseName\":\"REL1\",\"lastUpdated\":"
-                + submissionOne.getLastUpdated().getTime() + ",\"state\":\"NOT_VALIDATED\",\"report\":null}]");
+                + submissionOne.getLastUpdated().getTime()
+                + ",\"state\":\"NOT_VALIDATED\",\"dataState\":null,\"report\":null}]");
   }
 }

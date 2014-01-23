@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -30,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
@@ -56,27 +58,28 @@ public class ReleaseFileSystem {
     this(dccFilesystem, release, null);
   }
 
-  public SubmissionDirectory getSubmissionDirectory(
-      @NonNull
-      String projectKey) {
-
+  public SubmissionDirectory getSubmissionDirectory(@NonNull String projectKey) {
     if (hasPrivileges(projectKey) == false) {
       throw new DccFileSystemException("User " + userSubject.getPrincipal()
           + " does not have permission to access project " + projectKey);
     }
-    val submission = release.getSubmission(projectKey);
+
+    val optional = release.getSubmissionByProjectKey(projectKey);
+    if (!optional.isPresent()) {
+      throw new ReleaseException(format("There is no project '%s' associated with release '%s'", projectKey,
+          release.getName()));
+    }
+
+    val submission = optional.get();
     return new SubmissionDirectory(dccFileSystem, release, projectKey, submission);
   }
 
   public void setUpNewReleaseFileSystem(
       String oldReleaseName, // Remove after DCC-1940
       String newReleaseName,
-      @NonNull
-      ReleaseFileSystem previous,
-      @NonNull
-      Iterable<String> signedOffProjectKeys,
-      @NonNull
-      Iterable<String> otherProjectKeys) {
+      @NonNull ReleaseFileSystem previous,
+      @NonNull Iterable<String> signedOffProjectKeys,
+      @NonNull Iterable<String> otherProjectKeys) {
     log.info("Setting up new release file system for: '{}'", newReleaseName);
 
     checkState(signedOffProjectKeys.iterator().hasNext() || otherProjectKeys.iterator().hasNext(),
@@ -113,9 +116,7 @@ public class ReleaseFileSystem {
     }
   }
 
-  public void resetValidationFolder(
-      @NonNull
-      String projectKey) {
+  public void resetValidationFolder(@NonNull String projectKey) {
     val validationStringPath = dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);

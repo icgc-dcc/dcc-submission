@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -39,9 +40,6 @@ import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 
-/**
- * 
- */
 @Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
@@ -50,8 +48,8 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
+  public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides) {
+    return new LocalFlowConnector(propertyOverrides);
   }
 
   @Override

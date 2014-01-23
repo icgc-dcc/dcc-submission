@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 
 import lombok.NonNull;
+import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
@@ -103,8 +104,8 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean create() throws IOException {
     try {
       if (isWritable()) {
-        directory.notifyModified();
         fs.createNewFile(path);
+        directory.notifyModified(path);
 
         return true;
       }
@@ -118,14 +119,13 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean delete() {
     try {
       if (isRemovable()) {
-        directory.notifyModified();
-        boolean success = fs.delete(path, false);
-
+        val success = fs.delete(path, false);
         if (success == false) {
           throw new IOException("Unable to delete file " + path.toUri());
         }
 
         context.notifyFileRemoved(path);
+        directory.notifyModified(path);
 
         return success;
       }
@@ -148,14 +148,14 @@ public class FileHdfsSshFile extends HdfsSshFile {
         Path destinationPath =
             new Path(directory.getParentFile().path, destination.getAbsolutePath().substring(1));
 
-        directory.notifyModified();
-        boolean success = fs.rename(path, destinationPath);
-
-        if (success == false) {
+        val success = fs.rename(path, destinationPath);
+        if (!success) {
           throw new IOException("Unable to move file " + path.toUri() + " to " + destinationPath.toUri());
         }
 
+        directory.notifyModified(path);
         path = destinationPath;
+        directory.notifyModified(path);
 
         return success;
       }

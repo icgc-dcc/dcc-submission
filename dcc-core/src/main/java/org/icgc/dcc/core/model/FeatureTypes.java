@@ -52,7 +52,7 @@ public final class FeatureTypes {
   /**
    * Represents a type of observation data, see {@link ClinicalType} for the clinical counterpart.
    */
-  public enum FeatureType implements SubmissionDataType {
+  public enum FeatureType implements SubmissionDataType, DeletionType {
 
     /** From the ICGC Submission Manual */
     SSM_TYPE("ssm", "_ssm_count"),
@@ -108,6 +108,16 @@ public final class FeatureTypes {
       return isSsm();
     }
 
+    @Override
+    public boolean isAllDeletionType() {
+      return false;
+    }
+
+    @Override
+    public boolean isErroneousDeletionType() {
+      return false;
+    }
+
     /**
      * Returns the file types corresponding to the feature type.
      * <p>
@@ -146,10 +156,22 @@ public final class FeatureTypes {
     }
 
     /**
+     * TODO
+     */
+    public static boolean hasMatch(String typeName) {
+      for (val featureType : values()) {
+        if (featureType.name().equals(format(typeName))) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
      * Returns an enum matching the type like "ssm", "meth", ...
      */
     public static FeatureType from(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+      return valueOf(format(typeName));
     }
 
     /**
@@ -161,6 +183,12 @@ public final class FeatureTypes {
       return newLinkedHashSet(complement);
     }
 
+    /**
+     * TODO
+     */
+    private static String format(String typeName) {
+      return String.format("%s_%s", typeName.toUpperCase(), TYPE_SUFFIX);
+    }
   }
 
   /**

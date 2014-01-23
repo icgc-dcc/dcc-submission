@@ -23,12 +23,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.Set;
 
+import lombok.val;
+
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -40,12 +41,14 @@ import com.google.common.collect.Iterables;
  */
 public interface SubmissionDataType {
 
-  String TYPE_SUFFIX = "_TYPE";
+  String TYPE_SUFFIX = "TYPE";
 
   /**
    * Not really used anywhere (but here for consistency).
    */
   String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
+
+  String name();
 
   String getTypeName();
 
@@ -103,16 +106,36 @@ public interface SubmissionDataType {
     }
 
     /**
+     * Returns an enum matching the supplied name
+     */
+    public static SubmissionDataType valueOf(String name) {
+      SubmissionDataType type = null;
+      try {
+        return FeatureType.valueOf(name);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+      try {
+        return ClinicalType.valueOf(name);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+
+      return checkNotNull(type, "Could not find a match for name %s", name);
+    }
+
+    /**
      * Returns the values for all enums that implements the interface.
      */
     public static List<SubmissionDataType> values() {
-      Builder<SubmissionDataType> builder = new ImmutableList.Builder<SubmissionDataType>();
-      for (FeatureType type : FeatureType.values()) {
+      val builder = new ImmutableList.Builder<SubmissionDataType>();
+      for (val type : FeatureType.values()) {
         builder.add(type);
       }
-      for (ClinicalType type : ClinicalType.values()) {
+      for (val type : ClinicalType.values()) {
         builder.add(type);
       }
+
       return builder.build();
     }
 

@@ -191,4 +191,5 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       functionCall.getOutputCollector().add(new Tuple(state.getOffset()));
     }
   }
+
 }

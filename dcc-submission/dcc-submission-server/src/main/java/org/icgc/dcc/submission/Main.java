@@ -42,11 +42,9 @@ import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.DccRuntime;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
-import org.icgc.dcc.submission.dictionary.DictionaryModule;
 import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
-import org.icgc.dcc.submission.release.ReleaseModule;
 import org.icgc.dcc.submission.repository.RepositoryModule;
 import org.icgc.dcc.submission.service.ServiceModule;
 import org.icgc.dcc.submission.sftp.SftpModule;
@@ -169,14 +167,12 @@ public class Main {
         new WebModule(),
         new MorphiaModule(),
         new RepositoryModule(),
-        new ServiceModule(),
         new ShiroModule(),
         new FileSystemModule(),
         new SftpModule(),
 
         // Business modules
-        new DictionaryModule(),
-        new ReleaseModule(),
+        new ServiceModule(),
         new ValidationModule());
 
     injector.injectMembers(this);

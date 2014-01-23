@@ -20,11 +20,13 @@ package org.icgc.dcc.submission.repository;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
 
 import com.google.code.morphia.Datastore;
@@ -35,11 +37,24 @@ import com.google.inject.Inject;
 @EqualsAndHashCode(callSuper = false)
 public class DictionaryRepository extends BaseMorphiaService<Dictionary> {
 
-	@Inject
-	public DictionaryRepository(Morphia morphia, Datastore datastore,
-			MailService mailService) {
-		super(morphia, datastore, QDictionary.dictionary, mailService);
-		registerModelClasses(Dictionary.class, CodeList.class);
-	}
+  @Inject
+  public DictionaryRepository(Morphia morphia, Datastore datastore,
+      MailService mailService) {
+    super(morphia, datastore, QDictionary.dictionary, mailService);
+    registerModelClasses(Dictionary.class, CodeList.class);
+  }
+
+  public void closeDictionary(@NonNull String dictionaryVersion) {
+    datastore().findAndModify(
+        datastore().createQuery(Dictionary.class)
+            .filter("version", dictionaryVersion),
+        datastore().createUpdateOperations(Dictionary.class)
+            .set("state", DictionaryState.CLOSED));
+  }
+
+  public Dictionary findDictionaryByVersion(@NonNull String dictionaryVersion) {
+    return datastore().createQuery(Dictionary.class)
+        .filter("version", dictionaryVersion).get();
+  }
 
 }

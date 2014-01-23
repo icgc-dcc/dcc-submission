@@ -1,0 +1,10 @@
+donor_id	specimen_id	other_specimen
+dr-ssm-01	sp-ssm-01.01	dummy
+dr-ssm-02	sp-ssm-02.01	dummy
+dr-ssm-03	sp-ssm-03.01	dummy
+dr-ssm-04	sp-ssm-04.01	dummy
+dr-cnsm-01	sp-cnsm-01.01	dummy
+dr-cnsm-02	sp-cnsm-02.01	dummy
+dr-cnsm-03	sp-cnsm-03.01	dummy
+dr-cnsm-04	sp-cnsm-04.01	dummy
+dr-cnsm-04	mydanglingspecien	dummy

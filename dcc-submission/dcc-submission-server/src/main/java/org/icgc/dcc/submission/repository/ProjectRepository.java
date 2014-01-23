@@ -18,8 +18,10 @@
 
 package org.icgc.dcc.submission.repository;
 
+import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,15 +36,25 @@ import com.google.code.morphia.Morphia;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.mongodb.WriteConcern;
+import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 @Slf4j
 public class ProjectRepository extends BaseMorphiaService<Project> {
 
   @Inject
-  public ProjectRepository(Morphia morphia, Datastore datastore,
-      MailService mailService) {
+  public ProjectRepository(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull MailService mailService) {
     super(morphia, datastore, QProject.project, mailService);
     super.registerModelClasses(Project.class);
+  }
+
+  public List<Project> findProjects(@NonNull List<String> projectKeys) {
+    val query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
+    return query.where(QProject.project.key.in(projectKeys)).list();
+  }
+
+  public Project findProject(@NonNull String projectKey) {
+    val query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
+    return query.where(QProject.project.key.eq(projectKey)).uniqueResult();
   }
 
   /**

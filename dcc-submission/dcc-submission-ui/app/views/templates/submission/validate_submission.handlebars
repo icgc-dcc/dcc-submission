@@ -4,16 +4,28 @@
   </button>
   <h3>Validate Submission</h3>
 </div>
-<div class="modal-body">
-<div class="alert alert-error">Validation may take several hours to complete!</div>
-<div class="alert alert-info">
-There are currently <strong>{{queue}}</strong> submission(s) in the Validation Queue.<br>
-<br>
-Enter a comma(,) seperated list of the email addresses that should be notified when validation is finished:<br><br>
-<textarea autofocus="autofocus" style="width:100%" class="m-wrap" id="emails">{{email}}</textarea>
-</div>
+
+<div class="modal-body" style="height:100%; max-height:100%">
+    <table id="validate-file-types" class="table table-condensed">
+        <tfoot>
+           <tr>
+           <td colspan="2"> 
+               <button id="feature-all" type="button" class="m-btn mini blue-stripe"> Select All</button>
+               <button id="feature-clear" type="button" class="m-btn mini blue-stripe"> Clear</button>
+           </td>
+           </tr>
+        </tfoot>
+    </table>
+    <br>
+    <div class="alert alert-error">Validation may take several hours to complete!</div>
+    <div class="alert alert-info">
+    There are currently <strong>{{queue}}</strong> submission(s) in the Validation Queue.
+    <br>
+    Enter a comma(,) seperated list of the email addresses that should be notified when validation is finished:<br><br>
+    <textarea autofocus="autofocus" style="width:100%" class="m-wrap" id="emails">{{email}}</textarea>
+    </div>
 </div>
 <div class="modal-footer">
   <a href="#" class="m-btn grey-stripe" data-dismiss="modal">Close</a>
-  <button type="submit" id="validate-submission-button" href="#" class="m-btn green"><i class="icon-ok icon-white"></i> Validate Submission</button>
+  <button type="submit" id="validate-submission-button" href="#" class="m-btn green"> Validate Submission</button>
 </div>

@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -42,6 +43,8 @@ public interface PlatformStrategy {
   public static final Joiner FIELD_JOINER = Joiner.on(FIELD_SEPARATOR);
 
   FlowConnector getFlowConnector();
+
+  FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides);
 
   /**
    * TODO: Adapt submission code to use {@link #getSourceTap2(FileSchema)} since we can now assume the header is known

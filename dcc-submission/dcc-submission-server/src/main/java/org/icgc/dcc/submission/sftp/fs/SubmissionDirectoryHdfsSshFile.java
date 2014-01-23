@@ -23,10 +23,13 @@ import java.io.FileNotFoundException;
 
 import lombok.NonNull;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.ProjectServiceException;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.sftp.SftpContext;
+
+import com.google.common.base.Optional;
 
 public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
@@ -70,10 +73,10 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
   }
 
   @Override
-  protected void notifyModified() {
+  protected void notifyModified(Path path) {
     try {
       Submission submission = directory.getSubmission();
-      context.resetSubmission(submission);
+      context.notifySubmissionChange(submission, Optional.<Path> of(path));
     } catch (Exception e) {
       handleException(Boolean.class, e);
     }

@@ -34,11 +34,12 @@ import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.service.ReleaseService;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 /**
@@ -110,21 +111,21 @@ public class SftpContext {
     return new Path(releasePath);
   }
 
-  // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
-  public void resetSubmission(Submission submission) {
-    log.info("Resetting submission '{}'...", submission.getProjectKey());
-    releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey());
-  }
-
-  public void resetSubmissions() {
-    for (Submission submission : getNextRelease().getSubmissions()) {
-      // TODO: DCC-903 (only if open release uses it)
-      resetSubmission(submission);
-    }
-  }
-
   public boolean isSystemDirectory(Path path) {
     return getReleaseFileSystem().isSystemDirectory(path);
+  }
+
+  // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
+  public void notifySubmissionChange(@NonNull Submission submission, @NonNull Optional<Path> path) {
+    log.info("Resetting submission '{}'...", submission.getProjectKey());
+    releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey(), path);
+  }
+
+  public void notifySystemChange() {
+    for (Submission submission : getNextRelease().getSubmissions()) {
+      // TODO: DCC-903 (only if open release uses it)
+      notifySubmissionChange(submission, Optional.<Path> absent());
+    }
   }
 
   public void notifyFileTransferred(Path path) {

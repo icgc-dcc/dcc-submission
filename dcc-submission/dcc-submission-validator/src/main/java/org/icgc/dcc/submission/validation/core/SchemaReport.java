@@ -57,6 +57,10 @@ public class SchemaReport implements Serializable {
     return ImmutableList.copyOf(fieldReports);
   }
 
+  public boolean hasErrors() {
+    return !errors.isEmpty();
+  }
+
   public List<ErrorReport> getErrors() {
     return ImmutableList.copyOf(errors);
   }

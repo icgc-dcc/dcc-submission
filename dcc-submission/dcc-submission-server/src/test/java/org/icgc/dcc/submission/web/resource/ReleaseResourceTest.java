@@ -1,7 +1,7 @@
 package org.icgc.dcc.submission.web.resource;
 
-import static javax.ws.rs.core.Response.Status.OK;
 import static com.google.common.collect.Lists.newArrayList;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -15,9 +15,9 @@ import lombok.val;
 
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.AbstractDccModule;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -34,7 +34,6 @@ public class ReleaseResourceTest extends ResourceTest {
     release.setDictionaryVersion("0.6e");
     release.setName("ICGC13");
     release.setReleaseDate();
-    release.setTransitioning(true);
     release.addSubmission(new Submission("project1", "project one", release.getName()));
     release.addSubmission(new Submission("project2", "project two", release.getName()));
 

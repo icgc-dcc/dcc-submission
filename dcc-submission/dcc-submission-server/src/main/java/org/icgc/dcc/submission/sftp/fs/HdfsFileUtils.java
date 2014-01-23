@@ -63,7 +63,7 @@ public final class HdfsFileUtils {
    */
   @SneakyThrows
   public static <T> T handleException(Class<T> type, Exception e) {
-    log.warn("SFTP user triggered exception: {}", e.getMessage());
+    log.error("SFTP user triggered exception:", e);
     propagateIfInstanceOf(e, IOException.class);
     throw new IOException(e);
   }
@@ -78,7 +78,7 @@ public final class HdfsFileUtils {
    */
   @SneakyThrows
   public static <T> T handleException(TypeLiteral<T> type, Exception e) {
-    log.warn("SFTP user triggered exception: {}", e.getMessage());
+    log.error("SFTP user triggered exception:", e);
     propagateIfInstanceOf(e, IOException.class);
     throw new IOException(e);
   }

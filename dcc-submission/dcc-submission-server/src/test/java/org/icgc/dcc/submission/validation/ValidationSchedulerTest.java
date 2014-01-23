@@ -20,15 +20,16 @@ package org.icgc.dcc.submission.validation;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
-import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
+import static org.icgc.dcc.submission.validation.ValidationOutcome.CANCELLED;
+import static org.icgc.dcc.submission.validation.ValidationOutcome.FAILED;
+import static org.icgc.dcc.submission.validation.ValidationOutcome.SUCCEEDED;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -38,9 +39,12 @@ import lombok.val;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.ReleaseService;
+import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -56,6 +60,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.FutureCallback;
 
 @SuppressWarnings("unchecked")
@@ -65,7 +70,7 @@ public class ValidationSchedulerTest {
   /**
    * Test data.
    */
-  final QueuedProject queuedProject = new QueuedProject("project", "user@project.com");
+  final QueuedProject queuedProject = new QueuedProject("project", ImmutableList.<String> of("user@project.com"));
 
   /**
    * Primary collaborators.
@@ -93,6 +98,8 @@ public class ValidationSchedulerTest {
   @Mock
   Release release;
   @Mock
+  Submission submission;
+  @Mock
   Dictionary dictionary;
 
   /**
@@ -109,90 +116,73 @@ public class ValidationSchedulerTest {
     when(releaseService.getNextRelease()).thenReturn(release);
     when(releaseService.countOpenReleases()).thenReturn(1L);
     when(releaseService.getNextDictionary()).thenReturn(dictionary);
+    when(releaseService.getSubmission(anyString(), anyString())).thenReturn(submission);
+    when(releaseService.getSubmission(anyString())).thenReturn(submission);
+    when(submission.getDataState()).thenReturn(Collections.<DataTypeState> emptyList());
+    when(submission.getReport()).thenReturn(new SubmissionReport());
+    when(context.getSubmissionReport()).thenReturn(new SubmissionReport());
   }
 
   @Test
   @SneakyThrows
-  public void test_runOneIteration_success_valid() {
+  public void test_runOneIteration_succeeded() {
     // Setup: Add a no-op validator
     validators.add(validator);
 
     // Setup: Create returned future with context that has no errors
-    when(context.hasErrors()).thenReturn(false);
     val validation = createValidation(context, validator);
 
-    // Setup: When submitted we will return the "valid" future
-    doAnswer(onSuccess(validation)).when(executor).execute(
-        any(Validation.class),
-        any(Runnable.class),
-        any(FutureCallback.class));
+    // Setup: When submitted we will call the onSuccess callback
+    mockExecutorCallback(onSuccess(validation));
 
     // Exercise
     scheduler.runOneIteration();
 
-    // Verify: Ensure "valid"
-    verify(releaseService).resolve(queuedProject.getKey(), VALID);
+    // Verify: Ensure "succeeded"
+    verifyOutcome(SUCCEEDED);
   }
 
   @Test
   @SneakyThrows
-  public void test_runOneIteration_success_invalid() {
+  public void test_runOneIteration_cancelled() {
     // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Setup: Create returned future with context that has errors
-    when(context.hasErrors()).thenReturn(true);
-    val validation = createValidation(context, validator);
-
-    // Setup: When submitted we will return the "invalid" future
-    doAnswer(onSuccess(validation)).when(executor).execute(
-        any(Validation.class),
-        any(Runnable.class),
-        any(FutureCallback.class));
+    // Setup: When submitted we will call the onFailure callback with a cancellation exception
+    mockExecutorCallback(onFailure(new CancellationException()));
 
     // Exercise
     scheduler.runOneIteration();
 
-    // Verify: Ensure "invalid"
-    verify(releaseService).resolve(queuedProject.getKey(), INVALID);
+    // Verify: Ensure "cancelled"
+    verifyOutcome(CANCELLED);
   }
 
   @Test
   @SneakyThrows
-  public void test_runOneIteration_failure_cancel() {
+  public void test_runOneIteration_failed() {
     // Setup: Add a no-op validator
     validators.add(validator);
 
-    // Setup: When submitted we will return the "invalid" future
-    doAnswer(onFailure(new CancellationException())).when(executor).execute(
-        any(Validation.class),
-        any(Runnable.class),
-        any(FutureCallback.class));
+    // Setup: When submitted we will call the onFailure callback with a runtime exception
+    mockExecutorCallback(onFailure(new RuntimeException()));
 
     // Exercise
     scheduler.runOneIteration();
 
-    // Verify: Ensure reset
-    verify(releaseService).resolve(queuedProject.getKey(), NOT_VALIDATED);
+    // Verify: Ensure "failed"
+    verifyOutcome(FAILED);
   }
 
-  @Test
-  @SneakyThrows
-  public void test_runOneIteration_failure_error() {
-    // Setup: Add a no-op validator
-    validators.add(validator);
-
-    // Setup: When submitted we will return the "invalid" future
-    doAnswer(onFailure(new RuntimeException())).when(executor).execute(
+  private void mockExecutorCallback(Answer<Object> answer) {
+    doAnswer(answer).when(executor).execute(
         any(Validation.class),
         any(Runnable.class),
         any(FutureCallback.class));
+  }
 
-    // Exercise
-    scheduler.runOneIteration();
-
-    // Verify: Ensure "error"
-    verify(releaseService).resolve(queuedProject.getKey(), ERROR);
+  private void verifyOutcome(ValidationOutcome outcome) {
+    verify(releaseService).resolveSubmission(queuedProject, outcome, context.getSubmissionReport());
   }
 
   private static Answer<Object> onSuccess(final Validation validation) {

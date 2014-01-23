@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -26,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.fest.util.Files.contentOf;
 import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
@@ -46,6 +48,7 @@ import static org.icgc.dcc.submission.TestUtils.asRelease;
 import static org.icgc.dcc.submission.TestUtils.asReleaseView;
 import static org.icgc.dcc.submission.TestUtils.asString;
 import static org.icgc.dcc.submission.TestUtils.codeListsToString;
+import static org.icgc.dcc.submission.TestUtils.dataTypesToString;
 import static org.icgc.dcc.submission.TestUtils.delete;
 import static org.icgc.dcc.submission.TestUtils.dictionary;
 import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
@@ -55,6 +58,7 @@ import static org.icgc.dcc.submission.TestUtils.post;
 import static org.icgc.dcc.submission.TestUtils.put;
 import static org.icgc.dcc.submission.TestUtils.replaceDictionaryVersion;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
+import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -93,8 +97,10 @@ import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.sftp.Sftp;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -185,21 +191,22 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * @see http://stackoverflow.com/questions/1368163/is-there-a-standard-domain-for-testing-throwaway-email
    */
   private static final String PROJECT_TO_SIGN_OFF = "['" + PROJECT1_KEY + "']";
+  private static final String PROJECT_DATA_TYPES = dataTypesToString();
   private static final String PROJECTS_TO_ENQUEUE = "["
-      + "{key:'" + PROJECT1_KEY + "',emails:['project1@example.org']},"
-      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org']},"
-      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org']},"
-      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org']},"
-      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']},"
-      + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org']},"
-      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org']}]";
+      + "{key:'" + PROJECT1_KEY + "',emails:['project1@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}]";
 
   private static final String PROJECTS_TO_ENQUEUE2 = "["
-      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org']},"
-      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org']},"
-      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org']},"
-      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org']},"
-      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org']}]";
+      + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}]";
 
   /**
    * Submission file system.
@@ -215,6 +222,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private SimpleSmtpServer smtpServer;
   private MiniHadoop hadoop;
   private FileSystem fileSystem;
+
+  @Rule
+  public Sftp sftp = new Sftp("admin", "adminspasswd", false);
 
   @Before
   public void setUp() throws IOException {
@@ -285,7 +295,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       adminCreatesRelease();
       userSubmitsFiles();
       userValidates();
-      adminTriesToValidate();
       adminTweaksCodeListAndTerms();
       adminRevalidates();
       adminPerformsRelease();
@@ -334,9 +343,35 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void userSubmitsFiles() throws IOException {
     val source = new Path(FS_DIR);
     val destination = new Path(DCC_ROOT_DIR);
-    status("user", "'Submitting' files from '{}' to '{}'...", source, destination);
-    fileSystem.delete(destination, true);
-    fileSystem.copyFromLocalFile(source, destination);
+    status("user", "SFTP transferring files from '{}' to '{}'...", source, destination);
+
+    try {
+      sftp.connect();
+      for (val releaseDir : new File(FS_DIR).listFiles()) {
+        for (val projectDir : releaseDir.listFiles()) {
+          val releaseName = projectDir.getParentFile().getName();
+          for (val file : projectDir.listFiles()) {
+            val projectName = file.getParentFile().getName();
+
+            // Cannot submit system files via SFTP
+            val system = projectName.equals(SYSTEM_FILES_DIR_NAME);
+            if (system) {
+              val path = new Path(destination, releaseName + "/" + SYSTEM_FILES_DIR_NAME + "/" + file.getName());
+              status("user", "Installing system file from '{}' to '{}'...", file, path);
+              fileSystem.copyFromLocalFile(new Path(file.getAbsolutePath()), path);
+            } else {
+              val path = projectName + "/" + file.getName();
+              status("user", "SFTP transferring file from '{}' to '{}'...", file, path);
+              sftp.put(path, contentOf(file, UTF_8));
+            }
+          }
+        }
+      }
+    } finally {
+      sftp.disconnect();
+    }
+
+    // sftp.put(sourceFileName, destFileName, fileContent);
 
     val list = fileSystem.listFiles(destination, true);
     while (list.hasNext()) {
@@ -358,11 +393,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     // cancelValidation(PROJECT2_KEY,OK);
 
     checkValidations();
-  }
-
-  private void adminTriesToValidate() throws Exception {
-    // Test that only NOT_VALIDATED projects can be enqueued
-    enqueueProjects(PROJECTS_TO_ENQUEUE, BAD_REQUEST);
   }
 
   private void adminTweaksCodeListAndTerms() throws IOException, Exception {
@@ -427,14 +457,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     Dictionary dictionary =
         addScript(dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "note != 'script_error_here'",
+            "if (note == null) { return true; } else { return note != \"script_error_here\";}",
             "Note field cannot be 'script_error_here'");
 
     status("admin", "Adding Script restriction #2 to OPENED dictionary");
     dictionary =
         addScript(dictionary, SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "! (note.indexOf('_') > 0)",
+            "if (note == null) { return true; } else { return note.indexOf('_') == -1; }",
             "Note field cannot contain the underscore(_) character");
 
     status("admin", "Updating to new dictionary with script restrictions");

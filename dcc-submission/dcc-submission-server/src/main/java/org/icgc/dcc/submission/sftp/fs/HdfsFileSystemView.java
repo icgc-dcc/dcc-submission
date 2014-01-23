@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.FileSystemView;
@@ -85,25 +86,16 @@ public class HdfsFileSystemView implements FileSystemView {
     }
   }
 
-  private BaseDirectoryHdfsSshFile getSubmissionDirectory(String file, Path path, RootHdfsSshFile root)
-      throws FileNotFoundException {
-    BaseDirectoryHdfsSshFile submissionDirectory = getHdfsSshFile(root, path);
-    if (!submissionDirectory.doesExist()) {
-      throw new FileNotFoundException("Invalid file path: " + file);
-    }
+  private BaseDirectoryHdfsSshFile getSubmissionDirectory(String file, Path path, RootHdfsSshFile root) {
+    val submissionDirectory = getHdfsSshFile(root, path);
 
     return submissionDirectory;
   }
 
-  private SshFile getSubmissionFile(String file, Path path, RootHdfsSshFile root)
-      throws FileNotFoundException {
-    BaseDirectoryHdfsSshFile submissionDirectory = getSubmissionDirectory(file, path.getParent(), root);
-    String submissionFileName = path.getName();
-    FileHdfsSshFile submissionFile = new FileHdfsSshFile(context, submissionDirectory, submissionFileName);
-
-    if (!submissionFile.doesExist()) {
-      new FileNotFoundException("Invalid file path: " + file);
-    }
+  private SshFile getSubmissionFile(String file, Path path, RootHdfsSshFile root) {
+    val submissionDirectory = getSubmissionDirectory(file, path.getParent(), root);
+    val submissionFileName = path.getName();
+    val submissionFile = new FileHdfsSshFile(context, submissionDirectory, submissionFileName);
 
     return submissionFile;
   }

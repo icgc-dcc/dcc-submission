@@ -17,22 +17,24 @@
  */
 package org.icgc.dcc.submission.config;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import com.google.inject.AbstractModule;
 import com.typesafe.config.Config;
 
 /**
  * Makes {@code Config} injectable instead of accessible as a singleton.
  */
+@RequiredArgsConstructor
 public class ConfigModule extends AbstractModule {
 
+  @NonNull
   private final Config config;
-
-  public ConfigModule(Config config) {
-    this.config = config;
-  }
 
   @Override
   protected void configure() {
     bind(Config.class).toInstance(config);
   }
+
 }

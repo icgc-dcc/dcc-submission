@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.contains;
 import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newLinkedHashSet;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Iterables.tryFind;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
 
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ import lombok.val;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
@@ -51,10 +52,9 @@ import com.google.code.morphia.annotations.PrePersist;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.mongodb.BasicDBObject;
 
 /**
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
@@ -78,13 +78,13 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     this.files = new ArrayList<FileSchema>();
   }
 
-  public Dictionary(String version) {
+  public Dictionary(@NonNull String version) {
     this();
     this.version = version;
   }
 
   @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
+  public void accept(@NonNull DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
     for (FileSchema fileSchema : files) {
       fileSchema.accept(dictionaryVisitor);
@@ -118,15 +118,15 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     return files;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(@NonNull String version) {
     this.version = version;
   }
 
-  public void setState(DictionaryState state) {
+  public void setState(@NonNull DictionaryState state) {
     this.state = state;
   }
 
-  public void setFiles(List<FileSchema> files) {
+  public void setFiles(@NonNull List<FileSchema> files) {
     this.files = files;
   }
 
@@ -147,12 +147,13 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public Optional<FileSchema> getFileSchemaByName(@NonNull final String fileSchemaName) {
-    return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
+    return tryFind(this.files, new Predicate<FileSchema>() {
 
       @Override
       public boolean apply(FileSchema input) {
         return input.getName().equals(fileSchemaName);
       }
+
     });
   }
 
@@ -160,45 +161,56 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    * Optionally returns a {@link FileSchema} for which the file name provided would be matching the pattern.
    */
   @JsonIgnore
-  public Optional<FileSchema> getFileSchemaByFileName(String fileName) {
+  public Optional<FileSchema> getFileSchemaByFileName(@NonNull String fileName) {
     val optional = Optional.<FileSchema> absent();
-    for (FileSchema fileSchema : files) {
+    for (val fileSchema : files) {
       if (fileSchema.matches(fileName)) {
         return Optional.of(fileSchema);
       }
     }
+
     return optional;
   }
 
   /**
+   * Optionally returns a {@link SubmissionFileType} for which the file name provided would match the pattern.
+   */
+  @JsonIgnore
+  public Optional<SubmissionFileType> getFileType(@NonNull String fileName) {
+    val fileSchema = getFileSchemaByFileName(fileName);
+    return fileSchema.isPresent() ?
+        Optional.of(SubmissionFileType.from(
+            fileSchema.get().getName())) :
+        Optional.<SubmissionFileType> absent();
+  }
+
+  /**
    * Returns the list of {@code FileSchema} names
-   * 
-   * @return the list of {@code FileSchema} names
    */
   @JsonIgnore
   public List<String> getFileSchemaNames() {
-    return newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
+    return ImmutableList.<String> copyOf(transform(files, new Function<FileSchema, String>() {
 
       @Override
       public String apply(FileSchema input) {
         return input.getName();
       }
+
     }));
   }
 
   /**
    * Returns the list of {@code FileSchema} file patterns.
-   * 
-   * @return the list of {@code FileSchema} file patterns.
    */
   @JsonIgnore
   public List<String> getFilePatterns() {
-    return newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
+    return ImmutableList.<String> copyOf(transform(files, new Function<FileSchema, String>() {
 
       @Override
       public String apply(FileSchema input) {
         return input.getPattern();
       }
+
     }));
   }
 
@@ -206,23 +218,22 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    * Returns a non-null String matching the file pattern for the given {@link SubmissionFileType}.
    */
   @JsonIgnore
-  public String getFilePattern(SubmissionFileType type) {
-    String pattern = null;
+  public String getFilePattern(@NonNull SubmissionFileType type) {
     for (val fileSchema : files) {
       val match = type.getTypeName().equals(fileSchema.getName());
       if (match) {
-        pattern = fileSchema.getPattern();
-        break;
+        return fileSchema.getPattern();
       }
     }
-    return checkNotNull(pattern, "No file schema found for type '{}'", type);
+
+    throw new IllegalStateException("No file schema found for type '" + type + "'");
   }
 
   /**
    * Returns a list of {@link FileSchema}s for a given {@link FeatureType}.
    */
   @JsonIgnore
-  public List<FileSchema> getFileSchemata(final FeatureType featureType) {
+  public List<FileSchema> getFileSchemata(@NonNull final FeatureType featureType) {
     val filter = filter(files, new Predicate<FileSchema>() {
 
       @Override
@@ -232,40 +243,59 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       }
     });
 
-    return newArrayList(filter);
+    return ImmutableList.<FileSchema> copyOf(filter);
   }
 
-  public boolean hasFileSchema(String fileName) {
-    for (FileSchema fileSchema : this.files) {
+  /**
+   * Returns an iterable of {@link FileSchema}s for a given {@link SubmissionDataType}.
+   */
+  @JsonIgnore
+  public Iterable<FileSchema> getFileSchemata(@NonNull final Iterable<? extends SubmissionDataType> dataTypes) {
+    val set = ImmutableSet.<FileSchema> builder();
+    for (val fileSchema : files) {
+      val match = contains(dataTypes, fileSchema.getDataType());
+      if (match) {
+        set.add(fileSchema);
+      }
+    }
+
+    return set.build();
+  }
+
+  public boolean hasFileSchema(@NonNull String fileName) {
+    for (val fileSchema : files) {
       if (fileSchema.getName().equals(fileName)) {
         return true;
       }
     }
+
     return false;
   }
 
-  public void addFile(FileSchema file) {
-    this.files.add(file);
+  public void addFile(@NonNull FileSchema file) {
+    files.add(file);
   }
 
   @JsonIgnore
-  public Set<String> getCodeListNames() { // TODO: add corresponding unit test(s) - see DCC-905
-    Set<String> codeListNames = newLinkedHashSet();
-    for (FileSchema fileSchema : getFiles()) {
-      for (Field field : fileSchema.getFields()) {
-        for (Restriction restriction : field.getRestrictions()) {
+  public Set<String> getCodeListNames() {
+    // TODO: Add corresponding unit test(s) - see DCC-905
+    val set = ImmutableSet.<String> builder();
+    for (val fileSchema : getFiles()) {
+      for (val field : fileSchema.getFields()) {
+        for (val restriction : field.getRestrictions()) {
           if (restriction.getType() == RestrictionType.CODELIST) {
-            BasicDBObject config = restriction.getConfig();
+            val config = restriction.getConfig();
             String codeListName = config.getString(CodeListRestriction_FIELD);
-            codeListNames.add(codeListName);
+
+            set.add(codeListName);
           }
         }
       }
     }
-    return ImmutableSet.copyOf(codeListNames);
+    return set.build();
   }
 
-  public boolean usesCodeList(final String codeListName) {
+  public boolean usesCodeList(@NonNull final String codeListName) {
     return getCodeListNames().contains(codeListName);
   }
 
@@ -276,10 +306,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   public Map<SubmissionFileType, String> getPatterns() {
     val map = new ImmutableMap.Builder<SubmissionFileType, String>();
     for (val fileSchema : files) {
-      map.put(
-          SubmissionFileType.from(fileSchema.getName()),
-          fileSchema.getPattern());
+      map.put(SubmissionFileType.from(fileSchema.getName()), fileSchema.getPattern());
     }
+
     return map.build();
   }
+
 }

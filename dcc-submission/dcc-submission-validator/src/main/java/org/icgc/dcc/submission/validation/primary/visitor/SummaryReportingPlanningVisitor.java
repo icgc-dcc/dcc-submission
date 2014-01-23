@@ -104,7 +104,7 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
           break;
         default:
           throw new IllegalStateException(
-              format("Unknown summary type: '{}'", optionalSummaryType.get()));
+              format("Unknown summary type: '%s'", optionalSummaryType.get()));
         }
       } else {
         collectPlanElement(new SummaryPlanElement.CompletenessPlanElement(

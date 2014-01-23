@@ -67,8 +67,7 @@ public class ProjectResource {
   private DccFileSystem dccFileSystem;
 
   @GET
-  public Response getProjects(@Context
-  SecurityContext securityContext) {
+  public Response getProjects(@Context SecurityContext securityContext) {
     log.info("Request for all Projects");
 
     val user = getSubject(securityContext);
@@ -86,9 +85,7 @@ public class ProjectResource {
   }
 
   @POST
-  public Response addProject(@Context
-  SecurityContext securityContext, @Valid
-  Project project) {
+  public Response addProject(@Context SecurityContext securityContext, @Valid Project project) {
     log.info("Request to add Project '{}'", project);
 
     val user = getSubject(securityContext);
@@ -125,9 +122,7 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}")
-  public Response getProject(@PathParam("projectKey")
-  String projectKey, @Context
-  SecurityContext securityContext) {
+  public Response getProject(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     log.info("Request for Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
@@ -151,12 +146,9 @@ public class ProjectResource {
   @POST
   @Path("{projectKey}")
   public Response updateProject(
-      @PathParam("projectKey")
-      String projectKey,
-      @Valid
-      Project project,
-      @Context
-      SecurityContext securityContext) {
+      @PathParam("projectKey") String projectKey,
+      @Valid Project project,
+      @Context SecurityContext securityContext) {
     log.info("Request to update Project '{}' with '{}'", projectKey, project);
 
     val user = getSubject(securityContext);
@@ -179,10 +171,8 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}/releases")
   public Response getProjectSubmissions(
-      @PathParam("projectKey")
-      String projectKey,
-      @Context
-      SecurityContext securityContext) {
+      @PathParam("projectKey") String projectKey,
+      @Context SecurityContext securityContext) {
     log.info("Request for all Submissions from Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
@@ -192,7 +182,7 @@ public class ProjectResource {
       return Responses.notFound(projectKey);
     }
 
-    val releases = releaseService.findAll();
+    val releases = releaseService.getReleases();
     val submissions = projectService.extractSubmissions(releases, projectKey);
 
     return Response.ok(submissions).build();

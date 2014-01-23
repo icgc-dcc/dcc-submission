@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.core.morphia;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.core.morphia.BaseMorphiaService.MAX_ATTEMPTS;
+import static org.icgc.dcc.submission.core.AbstractService.MAX_ATTEMPTS;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;

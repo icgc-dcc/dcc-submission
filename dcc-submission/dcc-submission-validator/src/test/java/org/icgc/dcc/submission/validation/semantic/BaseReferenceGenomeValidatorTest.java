@@ -17,32 +17,46 @@
  */
 package org.icgc.dcc.submission.validation.semantic;
 
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.submission.validation.TestUtils.getFieldNames;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
+import java.util.List;
 
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.val;
+import lombok.experimental.Builder;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import com.google.common.base.Optional;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class BaseReferenceGenomeValidatorTest {
 
   /**
    * Test data.
    */
-  protected static final String TEST_DIR = "src/test/resources/fixtures/validation/rgv";
-  protected static final Path TEST_FILE = new Path(TEST_DIR, "ssm_p.txt");
+  protected static final String TEST_FILE_NAME = "ssm_p.txt";
 
   /**
    * Scratch space.
@@ -60,30 +74,117 @@ public class BaseReferenceGenomeValidatorTest {
     validator = new ReferenceGenomeValidator("/tmp/GRCh37.fasta");
   }
 
-  protected ValidationContext mockContext(Path testFile) throws IOException {
+  @SneakyThrows
+  protected ValidationContext mockContext() {
     // Setup: Use local file system
     val fileSystem = FileSystem.getLocal(new Configuration());
 
     // Setup: Establish input for the test
     val directory = new Path(tmp.newFolder().getAbsolutePath());
-    val path = new Path(directory, testFile.getName());
-    val ssmPrimaryFile = Optional.<Path> of(path);
+    val path = new Path(directory, "ssm_p.txt");
+    val ssmPrimaryFile = path;
+    val ssmPrimaryFileSchema = createSsmPrimaryFileSchema();
     val validationDir = new Path(directory, VALIDATION_DIRNAME).toUri().toString();
 
     // Setup: Mock
     val context = mock(ValidationContext.class);
     val submissionDirectory = mock(SubmissionDirectory.class);
-    when(context.getFileSystem()).thenReturn(fileSystem);
-    when(context.getSsmPrimaryFile()).thenReturn(ssmPrimaryFile);
     when(context.getProjectKey()).thenReturn("project.test");
+    when(context.getDataTypes()).thenReturn(SubmissionDataTypes.values());
+    when(context.getFileSystem()).thenReturn(fileSystem);
+    when(context.getSsmPrimaryFiles()).thenReturn(ImmutableList.<Path> of(ssmPrimaryFile));
+    when(context.getSsmPrimaryFileSchema()).thenReturn(ssmPrimaryFileSchema);
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
 
     // Setup: "Submit" file
-    fileSystem.createNewFile(directory);
-    fileSystem.copyFromLocalFile(testFile, path);
+    @Cleanup
+    val outputStream = fileSystem.create(path);
+    outputStream.writeBytes(createSsmPrimaryLines());
 
     return context;
+  }
+
+  private FileSchema createSsmPrimaryFileSchema() {
+    val fileSchema = mock(FileSchema.class);
+    when(fileSchema.getFieldNames()).thenReturn(getSsmPrimaryFieldNames());
+
+    return fileSchema;
+  }
+
+  private String createSsmPrimaryLines() {
+    return createSsmPrimaryLines(
+        record().mutationType("1").chromosomeCode("5").start("106706335").end("106706335").referenceAllele("C"),
+        record().mutationType("3").chromosomeCode("4").start("114381846").end("114381846").referenceAllele("C"),
+        record().mutationType("4").chromosomeCode("12").start("129638975").end("129638975").referenceAllele("G"),
+        record().mutationType("2").chromosomeCode("20").start("16016117").end("16016117").referenceAllele("A"),
+        record().mutationType("1").chromosomeCode("5").start("106706335").end("106706335").referenceAllele("A"),
+        record().mutationType("3").chromosomeCode("4").start("114381846").end("114381846").referenceAllele("T"),
+        record().mutationType("4").chromosomeCode("12").start("129638975").end("129638975").referenceAllele("T"),
+        record().mutationType("2").chromosomeCode("20").start("16016117").end("16016117").referenceAllele("-"));
+  }
+
+  private String createSsmPrimaryLines(SsmPrimaryRecord.SsmPrimaryRecordBuilder... records) {
+    val contents = new StringBuilder();
+
+    // Header
+    contents.append(Joiner.on('\t').join(getSsmPrimaryFieldNames())).append("\n");
+    for (val record : records) {
+      // Row
+      contents.append(createSsmPrimaryLine(record.build())).append("\n");
+    }
+
+    return contents.toString();
+  }
+
+  private String createSsmPrimaryLine(SsmPrimaryRecord record) {
+    val map = new ImmutableMap.Builder<String, String>();
+    for (val fieldName : getSsmPrimaryFieldNames()) {
+      if (fieldName.equals(SUBMISSION_OBSERVATION_CHROMOSOME)) {
+        map.put(fieldName, record.getChromosomeCode());
+        continue;
+      }
+      if (fieldName.equals(SUBMISSION_OBSERVATION_CHROMOSOME_START)) {
+        map.put(fieldName, record.getStart());
+        continue;
+      }
+      if (fieldName.equals(SUBMISSION_OBSERVATION_CHROMOSOME_END)) {
+        map.put(fieldName, record.getEnd());
+        continue;
+      }
+      if (fieldName.equals(SUBMISSION_OBSERVATION_MUTATION_TYPE)) {
+        map.put(fieldName, record.getMutationType());
+        continue;
+      }
+      if (fieldName.equals(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE)) {
+        map.put(fieldName, record.getReferenceAllele());
+        continue;
+      }
+
+      map.put(fieldName, "");
+    }
+
+    return Joiner.on('\t').join(map.build().values());
+  }
+
+  private List<String> getSsmPrimaryFieldNames() {
+    return getFieldNames(SSM_P_TYPE);
+  }
+
+  private SsmPrimaryRecord.SsmPrimaryRecordBuilder record() {
+    return SsmPrimaryRecord.builder();
+  }
+
+  @Builder
+  @Value
+  private static class SsmPrimaryRecord {
+
+    String mutationType;
+    String chromosomeCode;
+    String start;
+    String end;
+    String referenceAllele;
+
   }
 
 }
