@@ -25,6 +25,6 @@ public interface ExternalFlowPlanner extends FileSchemaFlowPlanner {
    * Applies an {@code ExternalPlanElement} to this {@code planner}
    * @param planElement
    */
-  public void apply(ExternalPlanElement planElement);
+  public void applyExternalPlanElement(ExternalPlanElement planElement);
 
 }

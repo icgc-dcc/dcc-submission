@@ -28,6 +28,7 @@ import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
@@ -198,14 +199,15 @@ public final class TestUtils {
     return MAPPER.writeValueAsString(SubmissionDataTypes.values());
   }
 
-  @SneakyThrows
   public static String dictionaryToString() {
-    return MAPPER.writeValueAsString(dictionary());
+    return dictionaryToString(dictionary());
   }
 
   @SneakyThrows
-  public static String dictionaryToString(Dictionary dict) {
-    return MAPPER.writeValueAsString(dict);
+  public static String dictionaryToString(Dictionary dictionary) {
+    val ssmP = dictionary.getFileSchema(SSM_P_TYPE);
+    ssmP.setPattern("ssm_p(\\..+)?\\.txt");
+    return MAPPER.writeValueAsString(dictionary);
   }
 
   @SneakyThrows

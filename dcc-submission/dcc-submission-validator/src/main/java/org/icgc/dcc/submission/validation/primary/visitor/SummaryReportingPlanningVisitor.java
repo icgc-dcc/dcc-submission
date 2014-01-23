@@ -47,11 +47,10 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
   @Override
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
-    for (val fileName : listMatchingFiles(fileSchema.getPattern())) {
-      collectElements(
-          fileName,
-          getFieldStatsData(fileSchema)); // TODO: create dedicated object for that?
-    }
+
+    collectPlanElements(
+        getCurrentFileName(),
+        getFieldStatsData(fileSchema)); // TODO: create dedicated object for that?
   }
 
   /**
@@ -79,7 +78,7 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
   /**
    * Collects element based on the {@code Field}'s {@code SummaryType}, so they can later be applied
    */
-  private void collectElements(String fileName,
+  private void collectPlanElements(String fileName,
       Map<Optional<SummaryType>, Map<String, FieldStatDigest>> fieldStatsData) {
 
     val flowType = getFlowType();
@@ -88,28 +87,28 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
       if (optionalSummaryType.isPresent()) {
         switch (optionalSummaryType.get()) {
         case AVERAGE:
-          collectReportingPlanElement(new SummaryPlanElement.AveragePlanElement(
+          collectPlanElement(new SummaryPlanElement.AveragePlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         case MIN_MAX:
-          collectReportingPlanElement(new SummaryPlanElement.MinMaxPlanElement(
+          collectPlanElement(new SummaryPlanElement.MinMaxPlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         case FREQUENCY:
-          collectReportingPlanElement(new FrequencyPlanElement(
+          collectPlanElement(new FrequencyPlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         case UNIQUE_COUNT:
-          collectReportingPlanElement(new UniqueCountPlanElement(
+          collectPlanElement(new UniqueCountPlanElement(
               flowType, fileName, fieldStatDigests));
           break;
         default:
-          throw new IllegalStateException(format("Unknown summary type: '%s'", optionalSummaryType.get()));
+          throw new IllegalStateException(
+              format("Unknown summary type: '%s'", optionalSummaryType.get()));
         }
       } else {
-        collectReportingPlanElement(new SummaryPlanElement.CompletenessPlanElement(
+        collectPlanElement(new SummaryPlanElement.CompletenessPlanElement(
             flowType, fileName, fieldStatDigests));
-        continue;
       }
     }
   }

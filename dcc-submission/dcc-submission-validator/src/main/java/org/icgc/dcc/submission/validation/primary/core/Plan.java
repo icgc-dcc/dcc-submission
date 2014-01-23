@@ -82,9 +82,9 @@ public class Plan {
     internalFlowPlanners.put(fileName, internalFlowPlanner);
   }
 
-  public void collect(ReportContext reportContext) {
+  public void collectSubmissionReport(ReportContext reportContext) {
     for (val planner : getFlowPlanners()) {
-      planner.collect(platform, reportContext);
+      planner.collectFileReport(platform, reportContext);
     }
   }
 
@@ -92,6 +92,9 @@ public class Plan {
     return dictionary;
   }
 
+  /**
+   * Not maintained anymore and due for deletion.
+   */
   public InternalFlowPlanner getInternalFlow(String schema) {
     return internalFlowPlanners.get(schema);
   }

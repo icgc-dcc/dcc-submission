@@ -17,23 +17,25 @@
  */
 package org.icgc.dcc.submission.validation.primary.visitor;
 
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
+import lombok.val;
+
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
-import org.icgc.dcc.submission.validation.primary.planner.InternalFlowPlanner;
 
 public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanElement> {
 
   public InternalFlowPlanningVisitor() {
-    super(FlowType.INTERNAL);
+    super(INTERNAL);
   }
 
   @Override
-  public void apply(Plan plan) {
-    for (InternalFlowPlanner flowPlanner : plan.getInternalFlows()) {
-      flowPlanner.fileSchemaAccept(this);
-      for (InternalPlanElement e : getElements()) {
-        flowPlanner.apply(e);
+  public void applyPlan(Plan plan) {
+    for (val internalFlowPlanner : plan.getInternalFlows()) {
+      internalFlowPlanner.acceptVisitor(this);
+
+      for (val collectedInternalPlanElement : getCollectedPlanElements()) {
+        internalFlowPlanner.applyInternalPlanElement(collectedInternalPlanElement);
       }
     }
   }

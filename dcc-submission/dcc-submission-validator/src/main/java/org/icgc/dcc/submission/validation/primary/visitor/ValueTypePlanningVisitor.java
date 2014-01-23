@@ -47,7 +47,7 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
   public void visit(Field field) {
     // No need to verify ValueType.TEXT since everything can be a String...
     if(field.getValueType() != ValueType.TEXT) {
-      collectReportingPlanElement(new ValueTypePlanElement(field.getName(), field.getValueType()));
+      collectPlanElement(new ValueTypePlanElement(field.getName(), field.getValueType()));
     }
   }
 

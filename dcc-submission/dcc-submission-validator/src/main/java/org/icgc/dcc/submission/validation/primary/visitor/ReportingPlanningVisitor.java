@@ -41,12 +41,12 @@ public abstract class ReportingPlanningVisitor extends PlanningVisitor<Reporting
   }
 
   @Override
-  public void apply(Plan plan) {
+  public void applyPlan(Plan plan) {
     for (val flowPlanner : plan.getFlows(getFlowType())) {
-      flowPlanner.fileSchemaAccept(this);
+      flowPlanner.acceptVisitor(this);
 
-      for (val e : getElements()) {
-        flowPlanner.apply(e);
+      for (val collectedReportingPlanElement : getCollectedPlanElements()) {
+        flowPlanner.applyReportingPlanElement(collectedReportingPlanElement);
       }
     }
   }

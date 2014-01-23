@@ -83,7 +83,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   @Override
-  public void apply(InternalPlanElement element) {
+  public void applyInternalPlanElement(InternalPlanElement element) {
     checkArgument(element != null);
     log.info("[{}] applying element [{}]", getFlowName(), element.describe());
     structurallyValidTail = element.extend(structurallyValidTail);

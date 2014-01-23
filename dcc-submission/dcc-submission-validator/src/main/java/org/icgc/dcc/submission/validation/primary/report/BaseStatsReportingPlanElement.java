@@ -170,7 +170,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
     public void collect(PlatformStrategy strategy, ReportContext context) {
       try {
         @Cleanup
-        val reportIntputStream = getReportInputStream(strategy);
+        val reportIntputStream = getReportInputStream(strategy, fileName);
         val fieldSummary = getFieldSummaries(reportIntputStream);
 
         while (fieldSummary.hasNext()) {
@@ -189,7 +189,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
     }
 
     @SneakyThrows
-    private InputStream getReportInputStream(PlatformStrategy strategy) {
+    private InputStream getReportInputStream(PlatformStrategy strategy, String fileName) {
       return strategy.readReportTap(fileName, getFlowType(), getElementName());
     }
 

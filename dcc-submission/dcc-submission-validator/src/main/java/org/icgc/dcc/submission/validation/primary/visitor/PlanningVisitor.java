@@ -21,6 +21,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -31,32 +33,63 @@ import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
+import org.icgc.dcc.submission.validation.primary.planner.BaseFileSchemaFlowPlanner;
 
 /**
  * A {@code DictionaryVisitor} that collects {@code PlanElement} during its visit. Elements are cleared upon each visit
  * of a new {@code FileSchema}.
+ * <p>
+ * The visit is bound to a particular submission file through the {@link BaseFileSchemaFlowPlanner} that triggers the
+ * actual {@link FileSchema} visit.
  * 
  * @param <T> the type of {@code PlanElement} collected by this visitor
  */
 @RequiredArgsConstructor
-@Getter
+@NotThreadSafe
 public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
+  @Getter
   @NonNull
   private final FlowType flowType;
-  private final List<T> elements = newArrayList();
 
   /**
    * Transient state.
    */
-  private FileSchema currentSchema;
+  @Getter
+  private FileSchema currentFileSchema;
+
+  @Getter
   private Field currentField;
+
+  /**
+   * See {@link PlanningVisitor}.
+   */
+  @Getter
+  private String currentFileName;
+
+  /**
+   * Holds the collected elements and *cleared* for each {@link FileSchema} visit (hence transcience).
+   */
+  private final List<T> collectedPlanElements = newArrayList();
+
+  /**
+   * Applies the collected {@code PlanElement} to the specified {@code Plan}
+   * @param plan
+   */
+  public abstract void applyPlan(Plan plan);
+
+  /**
+   * Sets the current file name under consideration for the {@link FileSchema} being visited.
+   */
+  public void setFlowPlannerFileName(String fileName) {
+    currentFileName = fileName;
+  }
 
   @Override
   public void visit(FileSchema fileSchema) {
     // Clear the collected elements. This allows re-using this instance for multiple plans
-    elements.clear();
-    currentSchema = fileSchema;
+    collectedPlanElements.clear();
+    currentFileSchema = fileSchema;
   }
 
   @Override
@@ -64,18 +97,19 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
     currentField = field;
   }
 
-  /**
-   * Applies the collected {@code PlanElement} to the specified {@code Plan}
-   * @param plan
-   */
-  public abstract void apply(Plan plan);
-
-  protected List<T> getElements() {
-    return elements;
+  protected void collectPlanElement(T planElement) {
+    collectedPlanElements.add(planElement);
   }
 
-  protected void collectReportingPlanElement(T element) {
-    elements.add(element);
+  /**
+   * Unsets the current file name to ensure it isn't mistakenly reused.
+   */
+  public void unsetFlowPlannerFileName() {
+    currentFileName = null;
+  }
+
+  protected List<T> getCollectedPlanElements() {
+    return collectedPlanElements;
   }
 
 }

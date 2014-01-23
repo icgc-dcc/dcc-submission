@@ -27,12 +27,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
+import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
@@ -86,22 +86,30 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void fileSchemaAccept(BaseDictionaryVisitor visitor) {
-    fileSchema.accept(visitor);
+  public void acceptVisitor(PlanningVisitor<?> planningVisitor) {
+
+    // Bind flow planner's file to the planning visitor
+    planningVisitor.setFlowPlannerFileName(fileName);
+
+    // Trigger cascade visiting of file schema
+    fileSchema.accept(planningVisitor);
+
+    // Un-bind file (out of safety)
+    planningVisitor.unsetFlowPlannerFileName();
   }
 
   @Override
-  public final void apply(ReportingPlanElement element) {
-    val elementName = element.getElementName();
+  public final void applyReportingPlanElement(ReportingPlanElement reportingPlanElement) {
+    val elementName = reportingPlanElement.getElementName();
     val reportTailPipe = getReportTailPipe(elementName);
-    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
+    log.info("[{}] applying element [{}]", getFlowName(), reportingPlanElement.describe());
 
     reportPipes.put(
         elementName,
-        element.report(reportTailPipe));
+        reportingPlanElement.report(reportTailPipe));
     collectors.put(
         elementName,
-        element.getCollector());
+        reportingPlanElement.getCollector());
   }
 
   protected Pipe getReportTailPipe(String basename) {
@@ -128,7 +136,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void collect(PlatformStrategy strategy, ReportContext context) {
+  public void collectFileReport(PlatformStrategy strategy, ReportContext context) {
     for (val reportCollector : collectors.values()) {
       reportCollector.collect(strategy, context);
     }

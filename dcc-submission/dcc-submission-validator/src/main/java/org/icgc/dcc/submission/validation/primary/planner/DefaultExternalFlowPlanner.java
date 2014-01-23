@@ -57,7 +57,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   }
 
   @Override
-  public void apply(ExternalPlanElement element) {
+  public void applyExternalPlanElement(ExternalPlanElement element) {
     checkState(false, "Should not be used");
     checkArgument(element != null);
 

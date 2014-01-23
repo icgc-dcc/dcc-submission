@@ -48,7 +48,7 @@ public class InternalRestrictionPlanningVisitor extends InternalFlowPlanningVisi
     for (RestrictionType type : restrictionTypes) {
       if (type.builds(restriction.getType().getId())) {
         PlanElement element = type.build(getCurrentField(), restriction);
-        collectReportingPlanElement((InternalPlanElement) element);
+        collectPlanElement((InternalPlanElement) element);
       }
     }
   }
