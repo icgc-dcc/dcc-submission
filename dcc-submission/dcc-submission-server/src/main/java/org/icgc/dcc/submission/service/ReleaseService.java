@@ -618,7 +618,7 @@ public class ReleaseService extends AbstractService {
         }
 
         // Update release object
-        val submission = getSubmissionByName(nextRelease, nextProjectKey); // can't be null
+        val submission = getSubmissionByProjectKey(nextRelease, nextProjectKey); // can't be null
         val currentState = submission.getState();
         val nextState = SubmissionState.VALIDATING;
         if (expectedState != currentState) {
@@ -798,13 +798,14 @@ public class ReleaseService extends AbstractService {
 
   private Submission fetchAndCheckSubmission(Release nextRelease, String projectKey, SubmissionState... expectedStates)
       throws InvalidStateException {
-    val submission = getSubmissionByName(nextRelease, projectKey);
-    if (submission == null) {
+    val optional = nextRelease.getSubmissionByProjectKey(projectKey);
+    if (!optional.isPresent()) {
       val errorMessage = "project " + projectKey + " cannot be found";
       log.error(errorMessage);
       throw new InvalidStateException(ServerErrorCode.PROJECT_KEY_NOT_FOUND, errorMessage);
     }
 
+    val submission = optional.get();
     val currentState = submission.getState();
     val invalid = !contains(expectedStates, currentState);
     if (invalid) {
@@ -857,14 +858,14 @@ public class ReleaseService extends AbstractService {
    * <p>
    * Throws a {@code ReleaseException} if not matching submission is found.
    */
-  private Submission getSubmissionByName(Release release, String projectKey) {
-    val submission = release.getSubmission(projectKey);
-    if (submission == null) {
+  private Submission getSubmissionByProjectKey(Release release, String projectKey) {
+    val optional = release.getSubmissionByProjectKey(projectKey);
+    if (!optional.isPresent()) {
       throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
           release.getName()));
     }
 
-    return submission;
+    return optional.get();
   }
 
   private List<LiteProject> buildLiteProjects(List<Project> projects) {

@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.release.model;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
-import static java.lang.String.format;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -46,7 +45,6 @@ import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.util.NameValidator;
-import org.icgc.dcc.submission.release.ReleaseException;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
@@ -112,15 +110,15 @@ public class Release extends BaseEntity implements HasName {
     this.setState(OPENED);
   }
 
-  public Optional<Submission> getSubmissionByProjectKey(String projectKey) {
-    for (val submission : getSubmissions()) {
-      val match = submission.getProjectKey().equals(projectKey);
-      if (match) {
-        return Optional.of(submission);
-      }
-    }
+  public Optional<Submission> getSubmissionByProjectKey(final @NonNull String projectKey) {
+    return tryFind(getSubmissions(), new Predicate<Submission>() {
 
-    return Optional.absent();
+      @Override
+      public boolean apply(Submission submission) {
+        return submission.getProjectKey().equals(projectKey);
+      }
+
+    });
   }
 
   /**
@@ -160,23 +158,6 @@ public class Release extends BaseEntity implements HasName {
     }
 
     return ImmutableList.copyOf(invalidProjectKeys);
-  }
-
-  public Submission getSubmission(@NonNull final String projectKey) {
-    val foundSubmission = tryFind(getSubmissions(), new Predicate<Submission>() {
-
-      @Override
-      public boolean apply(Submission submission) {
-        return submission.getProjectKey().equals(projectKey);
-      }
-
-    });
-
-    if (foundSubmission.isPresent()) {
-      return foundSubmission.get();
-    } else {
-      throw new ReleaseException(format("There is no project \"%s\" associated with release \"%s\"", projectKey, name));
-    }
   }
 
   public void addSubmission(Submission submission) {
