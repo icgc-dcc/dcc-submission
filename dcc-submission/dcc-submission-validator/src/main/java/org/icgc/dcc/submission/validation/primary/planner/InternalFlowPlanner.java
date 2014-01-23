@@ -37,6 +37,6 @@ public interface InternalFlowPlanner extends FileSchemaFlowPlanner {
    * Applies an {@code InternalPlanElement} to this {@code planner}
    * @param planElement
    */
-  public void apply(InternalPlanElement planElement);
+  public void applyInternalPlanElement(InternalPlanElement planElement);
 
 }

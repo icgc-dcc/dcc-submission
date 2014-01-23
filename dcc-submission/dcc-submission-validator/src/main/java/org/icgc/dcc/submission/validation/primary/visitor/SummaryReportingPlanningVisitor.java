@@ -48,7 +48,7 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
     for (val fileName : listMatchingFiles(fileSchema.getPattern())) {
-      collectElements(
+      collectPlanElements(
           fileName,
           getFieldStatsData(fileSchema)); // TODO: create dedicated object for that?
     }
@@ -79,7 +79,7 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
   /**
    * Collects element based on the {@code Field}'s {@code SummaryType}, so they can later be applied
    */
-  private void collectElements(String fileName,
+  private void collectPlanElements(String fileName,
       Map<Optional<SummaryType>, Map<String, FieldStatDigest>> fieldStatsData) {
 
     val flowType = getFlowType();
@@ -110,7 +110,6 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
       } else {
         collectPlanElement(new SummaryPlanElement.CompletenessPlanElement(
             flowType, fileName, fieldStatDigests));
-        continue;
       }
     }
   }

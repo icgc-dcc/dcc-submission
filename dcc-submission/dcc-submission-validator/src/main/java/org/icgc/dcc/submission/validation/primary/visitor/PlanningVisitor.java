@@ -21,6 +21,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,7 @@ import org.icgc.dcc.submission.validation.primary.core.PlanElement;
  */
 @RequiredArgsConstructor
 @Getter
+@NotThreadSafe
 public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
   @NonNull
@@ -56,7 +59,7 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
    * Applies the collected {@code PlanElement} to the specified {@code Plan}
    * @param plan
    */
-  public abstract void apply(Plan plan);
+  public abstract void applyPlan(Plan plan);
 
   @Override
   public void visit(FileSchema fileSchema) {

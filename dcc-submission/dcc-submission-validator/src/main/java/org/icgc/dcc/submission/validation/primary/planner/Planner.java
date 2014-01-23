@@ -38,6 +38,8 @@ import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.SummaryReportingPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 
+import cascading.pipe.Pipe;
+
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
@@ -52,7 +54,7 @@ public class Planner {
     val plan = new Plan(projectKey, dictionary, platform);
 
     log.info("Including flow planners for '{}'", projectKey);
-    includePlanners(plan, projectKey, platform, dictionary);
+    includeFlowPlanners(plan, projectKey, platform, dictionary);
 
     log.info("Applying planning visitors for '{}'", projectKey);
     applyVisitors(plan, platform, projectKey);
@@ -60,7 +62,10 @@ public class Planner {
     return plan;
   }
 
-  private static void includePlanners(
+  /**
+   * Include flow planners based on file presence.
+   */
+  private void includeFlowPlanners(
       Plan plan, String projectKey, PlatformStrategy platform, Dictionary dictionary) {
 
     for (val fileSchema : dictionary.getFiles()) {
@@ -82,11 +87,16 @@ public class Planner {
     }
   }
 
+  /**
+   * Apply visitors to the {@link Plan}. This means collecting {@link PlanElement} then applying those elements to
+   * {@link FileSchemaFlowPlanner}s (which means extending the flow planner's {@link Pipe} based on the element).
+   */
   private void applyVisitors(Plan plan, PlatformStrategy platform, String projectKey) {
     val visitors = createVisitors(platform, restrictionTypes);
+
     for (val visitor : visitors) {
       log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), projectKey);
-      visitor.apply(plan);
+      visitor.applyPlan(plan);
     }
   }
 

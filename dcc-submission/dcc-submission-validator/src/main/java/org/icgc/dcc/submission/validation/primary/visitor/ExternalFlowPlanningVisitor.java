@@ -17,23 +17,25 @@
  */
 package org.icgc.dcc.submission.validation.primary.visitor;
 
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.EXTERNAL;
+import lombok.val;
+
 import org.icgc.dcc.submission.validation.primary.core.ExternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
-import org.icgc.dcc.submission.validation.primary.planner.ExternalFlowPlanner;
 
 public class ExternalFlowPlanningVisitor extends PlanningVisitor<ExternalPlanElement> {
 
   public ExternalFlowPlanningVisitor() {
-    super(FlowType.EXTERNAL);
+    super(EXTERNAL);
   }
 
   @Override
-  public void apply(Plan plan) {
-    for (ExternalFlowPlanner flowPlanner : plan.getExternalFlows()) {
-      flowPlanner.fileSchemaAccept(this);
-      for (ExternalPlanElement e : getCollectedPlanElements()) {
-        flowPlanner.apply(e);
+  public void applyPlan(Plan plan) {
+    for (val externalFlowPlanner : plan.getExternalFlows()) {
+      externalFlowPlanner.fileSchemaAccept(this);
+
+      for (val collectedExternalPlanElement : getCollectedPlanElements()) {
+        externalFlowPlanner.applyExternalPlanElement(collectedExternalPlanElement);
       }
     }
   }

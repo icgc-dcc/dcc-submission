@@ -71,9 +71,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
   private Dictionary dictionary;
 
   @Override
-  public void apply(Plan plan) {
+  public void applyPlan(Plan plan) {
     dictionary = plan.getDictionary();
-    super.apply(plan);
+    super.applyPlan(plan);
   }
 
   @Override
