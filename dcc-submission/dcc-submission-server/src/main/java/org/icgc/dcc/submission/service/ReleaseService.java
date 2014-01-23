@@ -77,7 +77,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.validation.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.web.InvalidNameException;
@@ -87,7 +86,6 @@ import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -252,16 +250,17 @@ public class ReleaseService extends AbstractService {
 
     // filter out all the submissions that the current user can not see
     for (val release : releases) {
-      List<Submission> newSubmissions = Lists.newArrayList();
+      val builder = ImmutableList.<Submission> builder();
       for (val submission : release.getSubmissions()) {
-        String projectKey = submission.getProjectKey();
-        if (subject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey))) {
-          newSubmissions.add(submission);
+        val privilege = projectViewPrivilege(submission.getProjectKey());
+        val permitted = subject.isPermitted(privilege);
+        if (permitted) {
+          builder.add(submission);
         }
       }
 
       release.getSubmissions().clear(); // TODO: should we manipulate release this way? consider creating DTO?
-      release.getSubmissions().addAll(newSubmissions);
+      release.getSubmissions().addAll(builder.build());
     }
 
     log.debug("#releases visible: ", releases.size());
@@ -312,13 +311,13 @@ public class ReleaseService extends AbstractService {
    * Optionally returns a {@code ReleaseView} matching the given name, and for which {@code Submission}s are filtered
    * based on the user's privileges.
    */
-  public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Subject user) {
+  public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Subject subject) {
     val release = releaseRepository.findReleaseByName(releaseName);
     Optional<ReleaseView> releaseView = Optional.absent();
     if (release != null) {
       // populate project name for submissions
-      val projects = getProjects(release, user);
-      val liteProjects = buildLiteProjects(projects);
+      val projects = getProjects(release, subject);
+      val liteProjects = getLiteProjects(projects);
       val submissionFilesMap = getSubmissionFilesByProjectKey(releaseName, release);
 
       releaseView = Optional.of(new ReleaseView(release, liteProjects, submissionFilesMap));
@@ -349,13 +348,6 @@ public class ReleaseService extends AbstractService {
     return dictionaryRepository.findDictionaryByVersion(version);
   }
 
-  /**
-   * Returns a non-null list of {@code Release} (possibly empty)
-   */
-  public List<Release> list() {
-    return releaseRepository.findReleases();
-  }
-
   public Release getCompletedRelease(String releaseName) throws IllegalReleaseStateException {
     val release = releaseRepository.findCompletedRelease(releaseName);
     if (release == null) {
@@ -373,7 +365,7 @@ public class ReleaseService extends AbstractService {
   public Release addSubmission(String projectKey, String projectName) {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
 
-    val openRelease = releaseRepository.findOpen();
+    val openRelease = releaseRepository.findOpenRelease();
     val submission = new Submission(projectKey, projectName, openRelease.getName());
     log.info("Created Submission '{}'", submission);
 
@@ -867,7 +859,7 @@ public class ReleaseService extends AbstractService {
     return optional.get();
   }
 
-  private List<LiteProject> buildLiteProjects(List<Project> projects) {
+  private List<LiteProject> getLiteProjects(List<Project> projects) {
     val builder = ImmutableList.<LiteProject> builder();
     for (val project : projects) {
       val liteProject = new LiteProject(project);

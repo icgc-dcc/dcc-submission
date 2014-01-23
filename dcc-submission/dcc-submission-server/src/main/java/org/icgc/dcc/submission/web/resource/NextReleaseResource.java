@@ -299,7 +299,7 @@ public class NextReleaseResource {
       log.info("updating {}", name);
       ResponseTimestamper.evaluate(request, release);
 
-      if (releaseService.list().isEmpty()) {
+      if (releaseService.getReleases().isEmpty()) {
         return status(BAD_REQUEST).build();
       } else {
         String updatedName = release.getName();

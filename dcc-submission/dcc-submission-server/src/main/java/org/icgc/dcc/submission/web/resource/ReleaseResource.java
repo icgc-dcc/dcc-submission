@@ -89,7 +89,7 @@ public class ReleaseResource {
     if (release != null) {
       ResponseTimestamper.evaluate(request, release);
 
-      if (releaseService.list().isEmpty()) {
+      if (releaseService.getReleases().isEmpty()) {
         releaseService.createInitialRelease(release);
 
         return ResponseTimestamper

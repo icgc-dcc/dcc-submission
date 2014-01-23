@@ -74,7 +74,7 @@ public class ReleaseRepositoryTest {
   @Test
   public void testFind() {
     val expected = releaseOne;
-    val actual = releaseRepository.find(releaseOne.getName());
+    val actual = releaseRepository.findReleaseByName(releaseOne.getName());
     val morphiaResponse = morphiaQuery.where(QRelease.release.name.eq(releaseOne.getName())).singleResult();
 
     assertThat(actual).isEqualTo(expected);
@@ -84,7 +84,7 @@ public class ReleaseRepositoryTest {
   @Test
   public void testFindOpen() {
     val expected = releaseTwo;
-    val actual = releaseRepository.findOpen();
+    val actual = releaseRepository.findOpenRelease();
     val morphiaResponse =
         morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
 
@@ -119,7 +119,7 @@ public class ReleaseRepositoryTest {
   }
 
   @Test
-  public void testUpdate() throws Exception {
+  public void testUpdateRelease() throws Exception {
     val submission = new Submission("PRJ3", "Project Three", releaseOne.getName());
     val getOpenReleaseQuery =
         morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
@@ -136,7 +136,7 @@ public class ReleaseRepositoryTest {
     assertThat(release.getSubmissions()).contains(submission);
 
     // Save to DB
-    releaseRepository.update(release);
+    releaseRepository.updateRelease(release);
 
     // Confirm that Release in DB has Submission
     val actual = getOpenReleaseQuery.singleResult();

@@ -190,9 +190,9 @@ public class ReleaseServiceTest {
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,
   // QProject.project); TODO: find a solution
   public void test_list_isCorrectSize() {
-    assertEquals(1, releaseService.list().size());
+    assertEquals(1, releaseService.getReleases().size());
     addNewRelease("release2");
-    assertEquals(2, releaseService.list().size());
+    assertEquals(2, releaseService.getReleases().size());
   }
 
   // @Test
