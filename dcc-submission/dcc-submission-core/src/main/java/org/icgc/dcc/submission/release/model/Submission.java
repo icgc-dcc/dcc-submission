@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.Serializable;
@@ -25,11 +26,14 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
+
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 
 import com.google.code.morphia.annotations.Embedded;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 
 @Embedded
@@ -155,6 +159,17 @@ public class Submission implements Serializable {
         .add("state", this.state) //
         .add("report", this.report) // TODO: toString for SubmissionReport
         .toString();
+  }
+
+  public static Iterable<String> getProjectKeys(@NonNull Iterable<Submission> submissions) {
+    return transform(submissions, new Function<Submission, String>() {
+
+      @Override
+      public String apply(Submission submission) {
+        return submission.getProjectKey();
+      }
+
+    });
   }
 
 }

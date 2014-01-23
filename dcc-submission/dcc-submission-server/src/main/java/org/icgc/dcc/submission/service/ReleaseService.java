@@ -22,16 +22,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang.ArrayUtils.contains;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
+import static org.icgc.dcc.submission.release.model.Submission.getProjectKeys;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
@@ -86,11 +84,10 @@ import org.icgc.dcc.submission.web.InvalidNameException;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 
 import com.google.code.morphia.query.UpdateResults;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -231,10 +228,10 @@ public class ReleaseService extends AbstractService {
             dccFileSystem.getReleaseFilesystem(oldRelease),
 
             // The signed off projects
-            extractProjectKeys(filter(oldRelease.getSubmissions(), SIGNED_OFF_PROJECTS_PREDICATE)),
+            getProjectKeys(filter(oldRelease.getSubmissions(), SIGNED_OFF_PROJECTS_PREDICATE)),
 
             // The remaining projects
-            extractProjectKeys(filter(oldRelease.getSubmissions(), not(SIGNED_OFF_PROJECTS_PREDICATE))));
+            getProjectKeys(filter(oldRelease.getSubmissions(), not(SIGNED_OFF_PROJECTS_PREDICATE))));
   }
 
   public List<Release> getReleases() {
@@ -322,7 +319,7 @@ public class ReleaseService extends AbstractService {
       // populate project name for submissions
       val projects = getProjects(release, user);
       val liteProjects = buildLiteProjects(projects);
-      val submissionFilesMap = buildSubmissionFilesMap(releaseName, release);
+      val submissionFilesMap = getSubmissionFilesByProjectKey(releaseName, release);
 
       releaseView = Optional.of(new ReleaseView(release, liteProjects, submissionFilesMap));
     }
@@ -477,7 +474,7 @@ public class ReleaseService extends AbstractService {
     boolean sameName = oldReleaseName.equals(newReleaseName);
     boolean sameDictionary = oldDictionaryVersion.equals(newDictionaryVersion);
 
-    if (!NameValidator.validateEntityName(newReleaseName)) {
+    if (!validateEntityName(newReleaseName)) {
       throw new ReleaseException("Updated release name " + newReleaseName + " is not valid");
     }
 
@@ -577,7 +574,7 @@ public class ReleaseService extends AbstractService {
 
     for (val queuedProject : queuedProjects) {
       val projectKey = queuedProject.getKey();
-      Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, NOT_VALIDATED, VALID, INVALID, ERROR);
+      val submission = fetchAndCheckSubmission(nextRelease, projectKey, NOT_VALIDATED, VALID, INVALID, ERROR);
 
       submissionService.queue(submission, queuedProject.getDataTypes());
     }
@@ -711,7 +708,9 @@ public class ReleaseService extends AbstractService {
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
     val releaseName = getNextRelease().getName();
     for (val projectKey : projectKeys) {
-      getSubmission(releaseName, projectKey).setState(state);
+      val submission = getSubmission(releaseName, projectKey);
+
+      submission.setState(state);
     }
   }
 
@@ -733,16 +732,16 @@ public class ReleaseService extends AbstractService {
   }
 
   private List<Project> getProjects(Release release, Subject user) {
-    val projectKeys = Lists.<String> newArrayList();
+    val builder = ImmutableList.<String> builder();
     for (val projectKey : release.getProjectKeys()) {
       val privilege = projectViewPrivilege(projectKey);
       val viewable = user.isPermitted(privilege);
       if (viewable) {
-        projectKeys.add(projectKey);
+        builder.add(projectKey);
       }
     }
 
-    return projectRepository.findProjects(projectKeys);
+    return projectRepository.findProjects(builder.build());
   }
 
   private Submission getSubmission(Release release, String projectKey) {
@@ -818,15 +817,15 @@ public class ReleaseService extends AbstractService {
   }
 
   private List<String> getProjectKeysBySubmissionState(final SubmissionState state) {
-    val projectKeys = Lists.<String> newArrayList();
+    val builder = ImmutableList.<String> builder();
     val submissions = getNextRelease().getSubmissions();
     for (val submission : submissions) {
       if (state.equals(submission.getState())) {
-        projectKeys.add(submission.getProjectKey());
+        builder.add(submission.getProjectKey());
       }
     }
 
-    return projectKeys;
+    return builder.build();
   }
 
   /**
@@ -869,21 +868,25 @@ public class ReleaseService extends AbstractService {
   }
 
   private List<LiteProject> buildLiteProjects(List<Project> projects) {
-    List<LiteProject> liteProjects = newArrayList();
+    val builder = ImmutableList.<LiteProject> builder();
     for (val project : projects) {
-      liteProjects.add(new LiteProject(project));
+      val liteProject = new LiteProject(project);
+
+      builder.add(liteProject);
     }
 
-    return copyOf(liteProjects);
+    return builder.build();
   }
 
-  private Map<String, List<SubmissionFile>> buildSubmissionFilesMap(String releaseName, Release release) {
-    Map<String, List<SubmissionFile>> submissionFilesMap = Maps.newLinkedHashMap();
+  private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {
+    val builder = ImmutableMap.<String, List<SubmissionFile>> builder();
     for (val projectKey : release.getProjectKeys()) {
-      submissionFilesMap.put(projectKey, getSubmissionFiles(releaseName, projectKey));
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+      builder.put(projectKey, submissionFiles);
     }
 
-    return ImmutableMap.copyOf(submissionFilesMap);
+    return builder.build();
   }
 
   private void notifyUpdateError(String filter, String setValues) {
@@ -901,15 +904,4 @@ public class ReleaseService extends AbstractService {
     mailService.sendSupportProblem("Automatic email - Failure update", message);
   }
 
-  private Iterable<String> extractProjectKeys(Iterable<Submission> submissions) {
-    return transform(
-        submissions,
-        new Function<Submission, String>() {
-
-          @Override
-          public String apply(Submission submission) {
-            return submission.getProjectKey();
-          }
-        });
-  }
 }

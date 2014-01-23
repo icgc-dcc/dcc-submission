@@ -280,8 +280,6 @@ public class ReleaseResource {
     Optional<SchemaReport> optional = Optional.absent();
     Submission submission = releaseService.getSubmission(releaseName, projectKey);
     if (submission != null) {
-      // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-      // dcc-submission-server and dcc-submission-core.
       SubmissionReport report = (SubmissionReport) submission.getReport();
       if (report != null) {
         SchemaReport schemaReport = report.getSchemaReport(schema);
