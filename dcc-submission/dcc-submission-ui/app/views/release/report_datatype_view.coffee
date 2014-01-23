@@ -130,8 +130,8 @@ module.exports = class ReportDatatypeView extends View
       """
       <span>#{title}</span>
       """
-    else if state in ["ERROR", "VALIDATING", "QUEUED"] \
-        or globalState in ["ERROR", "VALIDATING", "QUEUED"]
+    else if state in ["ERROR", "VALIDATING", "QUEUED", "SIGNED_OFF"] \
+        or globalState in ["ERROR", "VALIDATING", "QUEUED", "SIGNED_OFF"]
       """
       <span>#{title} - </span>
       <span class="#{lc_state}">#{ui_state}</span>
