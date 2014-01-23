@@ -47,11 +47,10 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
   @Override
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
-    for (val fileName : listMatchingFiles(fileSchema.getPattern())) {
-      collectPlanElements(
-          fileName,
-          getFieldStatsData(fileSchema)); // TODO: create dedicated object for that?
-    }
+
+    collectPlanElements(
+        getCurrentFileName(),
+        getFieldStatsData(fileSchema)); // TODO: create dedicated object for that?
   }
 
   /**

@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
+import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 
 import cascading.flow.Flow;
 
@@ -29,7 +29,7 @@ import cascading.flow.Flow;
  */
 public interface FileSchemaFlowPlanner {
 
-  void fileSchemaAccept(BaseDictionaryVisitor visitor);
+  void fileSchemaAccept(PlanningVisitor<?> planningVisitor);
 
   void applyReportingPlanElement(ReportingPlanElement element);
 

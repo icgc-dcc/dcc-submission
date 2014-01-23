@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import lombok.val;
+
 import org.icgc.dcc.hadoop.cascading.Tuples2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -78,10 +80,14 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   @Override
   public void visit(Relation relation) {
-    FileSchema currentSchema = getCurrentSchema();
-    List<FileSchema> afferentStrictFileSchemata = currentSchema.getBidirectionalAfferentFileSchemata(dictionary);
-    if (currentSchema.getRole() != FileSchemaRole.SYSTEM) { // skip checking relations in file to be re-annotated
-      collectPlanElement(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+    val currentFileSchema = getCurrentFileSchema();
+    val afferentStrictFileSchemata = currentFileSchema.getBidirectionalAfferentFileSchemata(dictionary);
+
+    if (currentFileSchema.getRole() != FileSchemaRole.SYSTEM) { // skip checking relations in file to be re-annotated
+      collectPlanElement(new RelationPlanElement(
+          currentFileSchema,
+          relation,
+          afferentStrictFileSchemata));
     }
   }
 

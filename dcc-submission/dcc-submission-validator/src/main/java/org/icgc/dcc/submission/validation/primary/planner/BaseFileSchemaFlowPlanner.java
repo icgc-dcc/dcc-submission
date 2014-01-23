@@ -27,12 +27,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
+import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
@@ -86,8 +86,15 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void fileSchemaAccept(BaseDictionaryVisitor visitor) {
-    fileSchema.accept(visitor);
+  public void fileSchemaAccept(PlanningVisitor<?> planningVisitor) {
+
+    // TODO
+    planningVisitor.setFlowPlannerFileName(fileName);
+
+    fileSchema.accept(planningVisitor);
+
+    // Out of safety, TODO
+    planningVisitor.unsetFlowPlannerFileName();
   }
 
   @Override

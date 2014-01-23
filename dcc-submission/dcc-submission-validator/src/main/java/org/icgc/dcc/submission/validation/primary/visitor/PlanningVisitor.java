@@ -41,19 +41,30 @@ import org.icgc.dcc.submission.validation.primary.core.PlanElement;
  * @param <T> the type of {@code PlanElement} collected by this visitor
  */
 @RequiredArgsConstructor
-@Getter
 @NotThreadSafe
 public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
+  @Getter
   @NonNull
   private final FlowType flowType;
-  private final List<T> collectedPlanElements = newArrayList();
 
   /**
    * Transient state.
    */
-  private FileSchema currentSchema;
+  @Getter
+  private FileSchema currentFileSchema;
+
+  /**
+   * TODO: explain trick...
+   */
+  @Getter
+  private String currentFileName;
+  @Getter
   private Field currentField;
+  /**
+   * Holds the collected elements and *cleared* for each {@link FileSchema} visit (hence transcience).
+   */
+  private final List<T> collectedPlanElements = newArrayList();
 
   /**
    * Applies the collected {@code PlanElement} to the specified {@code Plan}
@@ -63,9 +74,17 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
 
   @Override
   public void visit(FileSchema fileSchema) {
-    // Clear the collected elements. This allows re-using this instance for multiple plans
+    resetPlanningVisitor();
+    currentFileSchema = fileSchema;
+  }
+
+  /**
+   * TODO
+   * <p>
+   * Clear the collected elements. This allows re-using this instance for multiple plans
+   */
+  private void resetPlanningVisitor() {
     collectedPlanElements.clear();
-    currentSchema = fileSchema;
   }
 
   @Override
@@ -79,6 +98,20 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
 
   protected List<T> getCollectedPlanElements() {
     return collectedPlanElements;
+  }
+
+  /**
+   * TODO
+   */
+  public void setFlowPlannerFileName(String fileName) {
+    currentFileName = fileName;
+  }
+
+  /**
+   * TODO
+   */
+  public void unsetFlowPlannerFileName() {
+    currentFileName = null;
   }
 
 }

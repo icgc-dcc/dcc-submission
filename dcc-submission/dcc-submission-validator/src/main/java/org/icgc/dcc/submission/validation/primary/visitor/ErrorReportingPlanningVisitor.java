@@ -55,12 +55,10 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
 
-    for (val fileName : listMatchingFiles(fileSchema.getPattern())) {
-      collectPlanElement(new ErrorsPlanElement(
-          fileSchema.getName(),
-          fileName,
-          getFlowType()));
-    }
+    collectPlanElement(new ErrorsPlanElement(
+        fileSchema.getName(),
+        getCurrentFileName(),
+        getFlowType()));
   }
 
   static class ErrorsPlanElement implements ReportingPlanElement {
