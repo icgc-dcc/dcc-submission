@@ -237,6 +237,11 @@ public class ReleaseService extends AbstractService {
             extractProjectKeys(filter(oldRelease.getSubmissions(), not(SIGNED_OFF_PROJECTS_PREDICATE))));
   }
 
+  public List<Release> getReleases() {
+    log.info("Request to find all Releases");
+    return releaseRepository.findReleases();
+  }
+
   /**
    * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
    * projects.
@@ -359,6 +364,23 @@ public class ReleaseService extends AbstractService {
     if (release == null) {
       throw new IllegalArgumentException("Release " + releaseName + " is not complete");
     }
+
+    return release;
+  }
+
+  /**
+   * Creates a new {@code Submission} and adds it to the current open {@code Release}
+   * 
+   * @return Current Open Release
+   */
+  public Release addSubmission(String projectKey, String projectName) {
+    log.info("Creating Submission for Project '{}' in current open Release", projectKey);
+
+    val openRelease = releaseRepository.findOpen();
+    val submission = new Submission(projectKey, projectName, openRelease.getName());
+    log.info("Created Submission '{}'", submission);
+
+    val release = releaseRepository.addSubmission(submission, openRelease.getName());
 
     return release;
   }

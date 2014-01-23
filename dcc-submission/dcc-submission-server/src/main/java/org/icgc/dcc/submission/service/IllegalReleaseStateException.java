@@ -17,23 +17,23 @@
  */
 package org.icgc.dcc.submission.service;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 
+@RequiredArgsConstructor
 public class IllegalReleaseStateException extends RuntimeException {
-  private static final long serialVersionUID = 3199743377772054709L;
 
+  @NonNull
   private final Release release;
-
+  @NonNull
   private final ReleaseState expectedState;
-
-  public IllegalReleaseStateException(Release release, ReleaseState expectedState) {
-    this.release = release;
-    this.expectedState = expectedState;
-  }
 
   @Override
   public String getMessage() {
-    return "Illegal Release State:" + this.release.getState() + ", Expected State:" + this.expectedState;
+    return "Illegal Release State: '" + release.getState() + "', Expected State: '" + expectedState + "'";
   }
+
 }

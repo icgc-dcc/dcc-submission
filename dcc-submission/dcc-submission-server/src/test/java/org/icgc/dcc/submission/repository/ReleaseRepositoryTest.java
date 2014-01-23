@@ -13,7 +13,6 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.test.mongodb.EmbeddedMongo;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,14 +61,10 @@ public class ReleaseRepositoryTest {
     morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }
 
-  @After
-  public void tearDown() throws Exception {
-  }
-
   @Test
-  public void testFindAll() {
+  public void testFindReleases() {
     val expected = newArrayList(releaseOne, releaseTwo);
-    val actual = releaseRepository.findAll();
+    val actual = releaseRepository.findReleases();
     val morphiaResponse = copyOf(morphiaQuery.list());
 
     assertThat(actual).isEqualTo(expected);

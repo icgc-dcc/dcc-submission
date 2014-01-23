@@ -32,7 +32,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.service.ProjectService;
-import org.icgc.dcc.submission.service.ReleaseService2;
+import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -60,7 +60,7 @@ public class ProjectResourceTest extends ResourceTest {
 
   private ProjectService projectService;
 
-  private ReleaseService2 releaseService;
+  private ReleaseService releaseService;
 
   private DccFileSystem dccFileSystem;
 
@@ -92,9 +92,9 @@ public class ProjectResourceTest extends ResourceTest {
         release = new Release("REL1");
         releases = Lists.newArrayList(release);
 
-        releaseService = mock(ReleaseService2.class);
-        when(releaseService.findOpen()).thenReturn(release);
-        when(releaseService.findAll()).thenReturn(releases);
+        releaseService = mock(ReleaseService.class);
+        when(releaseService.getNextRelease()).thenReturn(release);
+        when(releaseService.getReleases()).thenReturn(releases);
         when(releaseService.addSubmission(any(String.class), any(String.class))).thenReturn(release);
 
         projectOne = new Project("PRJ1", "Project One");
@@ -113,7 +113,7 @@ public class ProjectResourceTest extends ResourceTest {
         when(projectService.extractSubmissions(releases, projectOne.getKey())).thenReturn(submissions);
 
         bind(ProjectService.class).toInstance(projectService);
-        bind(ReleaseService2.class).toInstance(releaseService);
+        bind(ReleaseService.class).toInstance(releaseService);
         bind(DccFileSystem.class).toInstance(dccFileSystem);
       }
 
@@ -326,7 +326,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testGetProjectSubmissions() throws Exception {
     val reponse = target().path("projects/" + projectOne.getKey() + "/releases").request(MIME_TYPE).get();
 
-    verify(releaseService).findAll();
+    verify(releaseService).getReleases();
     verify(projectService).extractSubmissions(releases, projectOne.getKey());
 
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());

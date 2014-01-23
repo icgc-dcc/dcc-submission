@@ -55,15 +55,6 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   }
 
   /**
-   * Search for all {@code Release}s
-   * 
-   * @return All Releases
-   */
-  public List<Release> findAll() {
-    return copyOf(query().list());
-  }
-
-  /**
    * Search for {@code Release} by name
    * 
    * @return Release
