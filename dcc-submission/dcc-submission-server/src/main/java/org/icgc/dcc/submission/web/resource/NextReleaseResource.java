@@ -21,7 +21,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_EXCEPTION;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.UNAVAILABLE;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseClosePrivilege;
@@ -80,17 +80,16 @@ public class NextReleaseResource {
   private static final Joiner JOINER = Joiner.on("/");
 
   @Inject
-  protected Config config;
+  private Config config;
   @Inject
-  protected ReleaseService releaseService;
+  private ReleaseService releaseService;
   @Inject
-  protected ValidationScheduler validationScheduler;
+  private ValidationScheduler validationScheduler;
 
   @GET
   public Response getNextRelease(
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -119,8 +118,7 @@ public class NextReleaseResource {
   @Path("dictionary")
   public Response getDictionary(
 
-      @Context
-      Request request
+      @Context Request request
 
       )
   {
@@ -135,11 +133,9 @@ public class NextReleaseResource {
 
       Release nextRelease,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -189,14 +185,11 @@ public class NextReleaseResource {
   @Path("queue")
   public Response queue(
 
-      @Valid
-      List<QueuedProject> queuedProjects,
+      @Valid List<QueuedProject> queuedProjects,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -217,10 +210,9 @@ public class NextReleaseResource {
     try {
       releaseService.queueSubmissions(nextRelease, queuedProjects);
     } catch (ReleaseException e) {
-      log.error("ProjectKeyNotFound", e);
+      log.error("Error trying to queue submission(s)", e);
 
-      // FIXME: This isn't correct
-      return badRequest(NO_SUCH_ENTITY, projectKeys);
+      return badRequest(INVALID_STATE, projectKeys);
     } catch (InvalidStateException e) {
       val code = e.getCode();
       val offendingState = e.getState();
@@ -233,8 +225,8 @@ public class NextReleaseResource {
       log.error(code.getFrontEndString(), e);
 
       return Response
-          .status(SERVICE_UNAVAILABLE) //
-          .header(Header.RetryAfter.toString(), 3) //
+          .status(SERVICE_UNAVAILABLE)
+          .header(Header.RetryAfter.toString(), 3)
           .entity(new ServerErrorResponseMessage(code)).build();
     }
 
@@ -245,8 +237,7 @@ public class NextReleaseResource {
   @Path("queue")
   public Response removeAllQueued(
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -264,11 +255,9 @@ public class NextReleaseResource {
   @SneakyThrows
   public Response cancelValidation(
 
-      @PathParam("projectKey")
-      String projectKey,
+      @PathParam("projectKey") String projectKey,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -307,11 +296,9 @@ public class NextReleaseResource {
 
       List<String> projectKeys,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -337,8 +324,8 @@ public class NextReleaseResource {
     } catch (DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
-      return Response.status(Status.SERVICE_UNAVAILABLE) //
-          .header(Header.RetryAfter.toString(), 3) //
+      return Response.status(Status.SERVICE_UNAVAILABLE)
+          .header(Header.RetryAfter.toString(), 3)
           .entity(new ServerErrorResponseMessage(code)).build();
     }
 
@@ -352,14 +339,11 @@ public class NextReleaseResource {
   @Path("update")
   public Response update(
 
-      @Valid
-      Release release, // TODO: only requires String (+change UI)
+      @Valid Release release, // TODO: only requires String (+change UI)
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {

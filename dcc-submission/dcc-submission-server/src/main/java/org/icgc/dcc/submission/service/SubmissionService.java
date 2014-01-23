@@ -68,15 +68,27 @@ public class SubmissionService {
   private final DccFileSystem dccFileSystem;
 
   public void queue(Submission submission, List<SubmissionDataType> dataTypes) {
-    val nextState = QUEUED;
+    val actualState = submission.getState();
 
+    val invalidState = actualState == QUEUED || actualState == VALIDATING;
+    if (invalidState) {
+      throw new ReleaseException("Project " + submission.getProjectKey() + " is " + actualState + ", cannot queue");
+    }
+
+    val nextState = QUEUED;
     submission.setState(nextState);
     submission.setDataState(resolveDataState(submission, dataTypes, nextState));
   }
 
   public void validate(Submission submission, List<SubmissionDataType> dataTypes) {
-    val nextState = VALIDATING;
+    val expectedState = QUEUED;
+    val actualState = submission.getState();
+    if (actualState != expectedState) {
+      throw new ReleaseException("Project " + submission.getProjectKey() + " is not " + expectedState + " ("
+          + actualState + " instead), cannot validate");
+    }
 
+    val nextState = VALIDATING;
     submission.setState(nextState);
     submission.setDataState(resolveDataState(submission, dataTypes, nextState));
   }
@@ -86,7 +98,7 @@ public class SubmissionService {
     val expectedState = VALIDATING;
     val actualState = submission.getState();
     if (actualState != expectedState) {
-      throw new ReleaseException("project " + submission.getProjectKey() + " is not " + expectedState + " ("
+      throw new ReleaseException("Project " + submission.getProjectKey() + " is not " + expectedState + " ("
           + actualState + " instead), cannot resolve");
     }
 
