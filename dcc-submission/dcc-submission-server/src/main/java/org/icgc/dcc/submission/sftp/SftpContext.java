@@ -34,10 +34,10 @@ import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.service.ReleaseService;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;

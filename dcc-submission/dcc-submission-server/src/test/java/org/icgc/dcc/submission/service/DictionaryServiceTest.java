@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary;
+package org.icgc.dcc.submission.service;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -23,10 +23,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.submission.core.MailService;
+import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Term;
-import org.icgc.dcc.submission.release.ReleaseService;
+import org.icgc.dcc.submission.service.DictionaryService;
+import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

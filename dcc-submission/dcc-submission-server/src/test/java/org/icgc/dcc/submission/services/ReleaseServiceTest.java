@@ -5,10 +5,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import lombok.val;
 
+import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.repository.ReleaseRepository2;
-import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
+import org.icgc.dcc.submission.service.ReleaseService2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,22 +17,20 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.Sets;
-
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseServiceTest {
 
-  private ReleaseService releaseService;
+  private ReleaseService2 releaseService;
 
   @Mock
-  private ReleaseRepository2 releaseRepository;
+  private ReleaseRepository releaseRepository;
 
   private Release release;
 
   @Before
   public void setUp() throws Exception {
     release = new Release("R1");
-    releaseService = new ReleaseService(releaseRepository);
+    releaseService = new ReleaseService2(releaseRepository);
   }
 
   @After
@@ -51,7 +50,7 @@ public class ReleaseServiceTest {
 
   @Test
   public void testFindAll() throws Exception {
-    val expected = Sets.newHashSet(release);
+    val expected = Lists.newArrayList(release);
     when(releaseRepository.findAll()).thenReturn(expected);
 
     val actual = releaseService.findAll();

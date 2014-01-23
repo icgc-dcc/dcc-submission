@@ -15,9 +15,9 @@ import lombok.val;
 
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.AbstractDccModule;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;

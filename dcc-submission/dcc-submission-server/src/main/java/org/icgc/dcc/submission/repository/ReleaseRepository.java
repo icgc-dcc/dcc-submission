@@ -32,14 +32,17 @@ import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Key;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.inject.Inject;
+import com.mongodb.WriteConcern;
 
 public class ReleaseRepository extends BaseMorphiaService<Release> {
 
@@ -49,6 +52,64 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   public ReleaseRepository(Morphia morphia, Datastore datastore, MailService mailService) {
     super(morphia, datastore, QRelease.release, mailService);
     super.registerModelClasses(Release.class);
+  }
+
+  /**
+   * Search for all {@code Release}s
+   * 
+   * @return All Releases
+   */
+  public List<Release> findAll() {
+    return copyOf(query().list());
+  }
+
+  /**
+   * Search for {@code Release} by name
+   * 
+   * @return Release
+   */
+  public Release find(String releaseName) {
+    return where(_.name.eq(releaseName)).singleResult();
+  }
+
+  /**
+   * Query for {@code Release} with state {@code OPENED}
+   * 
+   * @return Current Open Release
+   */
+  public Release findOpen() {
+    return where(_.state.eq(ReleaseState.OPENED)).singleResult();
+  }
+
+  /**
+   * Adds {@code Submission} to the current open {@code Release} <br>
+   * <br>
+   * This method should be used instead of {@link #update(Release)} since it does not overwrite the Release object in
+   * the DB.
+   * 
+   * @return Current Open Release
+   */
+  public Release addSubmission(Submission submission, String releaseName) {
+    val q = datastore().createQuery(Release.class).field("name")
+        .equal(releaseName);
+    val ops = datastore().createUpdateOperations(Release.class).add(
+        "submissions", submission);
+    val modifiedRelease = this.datastore().findAndModify(q, ops);
+
+    return modifiedRelease;
+  }
+
+  /**
+   * Updates Release with new Release object. <br>
+   * <br>
+   * This will overwrite any changes that might have happened between initially getting the release and updating.
+   * 
+   * @return Response object from Mongo
+   */
+  public Key<Release> update(Release release) {
+    val response = datastore().save(release, WriteConcern.ACKNOWLEDGED);
+
+    return response;
   }
 
   public long countOpenReleases() {

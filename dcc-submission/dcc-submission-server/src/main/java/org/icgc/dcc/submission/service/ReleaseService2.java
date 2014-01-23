@@ -15,25 +15,65 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release;
+package org.icgc.dcc.submission.service;
+
+import java.util.List;
+
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseState;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
 
-public class IllegalReleaseStateException extends RuntimeException {
-  private static final long serialVersionUID = 3199743377772054709L;
+import com.google.inject.Inject;
 
-  private final Release release;
+@Slf4j
+@NoArgsConstructor
+@RequiredArgsConstructor(onConstructor = @_({ @Inject }))
+public class ReleaseService2 {
 
-  private final ReleaseState expectedState;
+  @NonNull
+  private ReleaseRepository releaseRepository;
 
-  public IllegalReleaseStateException(Release release, ReleaseState expectedState) {
-    this.release = release;
-    this.expectedState = expectedState;
+  public Release find(String releaseName) {
+    log.info("Request for Release '{}'", releaseName);
+    return releaseRepository.find(releaseName);
   }
 
-  @Override
-  public String getMessage() {
-    return "Illegal Release State:" + this.release.getState() + ", Expected State:" + this.expectedState;
+  public List<Release> findAll() {
+    log.info("Request to find all Releases");
+    return releaseRepository.findAll();
   }
+
+  /**
+   * Query for {@code Release} with state {@code OPENED}
+   * 
+   * @return Current Open Release
+   */
+  public Release findOpen() {
+    log.info("Request for current Open Release");
+    return releaseRepository.findOpen();
+  }
+
+  /**
+   * Creates a new {@code Submission} and adds it to the current open {@code Release}
+   * 
+   * @return Current Open Release
+   */
+  public Release addSubmission(String projectKey, String projectName) {
+    log.info("Creating Submission for Project '{}' in current open Release", projectKey);
+
+    val openRelease = releaseRepository.findOpen();
+    val submission = new Submission(projectKey, projectName, openRelease.getName());
+    log.info("Created Submission '{}'", submission);
+
+    val release = releaseRepository.addSubmission(submission, openRelease.getName());
+
+    return release;
+  }
+
 }

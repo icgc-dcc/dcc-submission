@@ -42,8 +42,7 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 public class ProjectRepository extends BaseMorphiaService<Project> {
 
   @Inject
-  public ProjectRepository(Morphia morphia, Datastore datastore,
-      MailService mailService) {
+  public ProjectRepository(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull MailService mailService) {
     super(morphia, datastore, QProject.project, mailService);
     super.registerModelClasses(Project.class);
   }

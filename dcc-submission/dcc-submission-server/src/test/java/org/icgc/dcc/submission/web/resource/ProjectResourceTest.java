@@ -20,17 +20,19 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import lombok.val;
 
+import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.service.ProjectService;
-import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.service.ReleaseService2;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -58,7 +60,7 @@ public class ProjectResourceTest extends ResourceTest {
 
   private ProjectService projectService;
 
-  private ReleaseService releaseService;
+  private ReleaseService2 releaseService;
 
   private DccFileSystem dccFileSystem;
 
@@ -68,7 +70,7 @@ public class ProjectResourceTest extends ResourceTest {
 
   private Release release;
 
-  private Set<Release> releases;
+  private List<Release> releases;
 
   private Submission submissionOne;
 
@@ -88,9 +90,9 @@ public class ProjectResourceTest extends ResourceTest {
         when(dccFileSystem.createNewProjectDirectoryStructure(any(String.class), any(String.class))).thenReturn(PATH);
 
         release = new Release("REL1");
-        releases = Sets.newHashSet(release);
+        releases = Lists.newArrayList(release);
 
-        releaseService = mock(ReleaseService.class);
+        releaseService = mock(ReleaseService2.class);
         when(releaseService.findOpen()).thenReturn(release);
         when(releaseService.findAll()).thenReturn(releases);
         when(releaseService.addSubmission(any(String.class), any(String.class))).thenReturn(release);
@@ -111,7 +113,7 @@ public class ProjectResourceTest extends ResourceTest {
         when(projectService.extractSubmissions(releases, projectOne.getKey())).thenReturn(submissions);
 
         bind(ProjectService.class).toInstance(projectService);
-        bind(ReleaseService.class).toInstance(releaseService);
+        bind(ReleaseService2.class).toInstance(releaseService);
         bind(DccFileSystem.class).toInstance(dccFileSystem);
       }
 

@@ -15,17 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary;
+package org.icgc.dcc.submission.service;
 
-import org.icgc.dcc.submission.core.AbstractDccModule;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseState;
 
-import com.google.inject.Singleton;
+public class IllegalReleaseStateException extends RuntimeException {
+  private static final long serialVersionUID = 3199743377772054709L;
 
-public class DictionaryModule extends AbstractDccModule {
+  private final Release release;
 
-  @Override
-  protected void configure() {
-    bind(DictionaryService.class).in(Singleton.class);
+  private final ReleaseState expectedState;
+
+  public IllegalReleaseStateException(Release release, ReleaseState expectedState) {
+    this.release = release;
+    this.expectedState = expectedState;
   }
 
+  @Override
+  public String getMessage() {
+    return "Illegal Release State:" + this.release.getState() + ", Expected State:" + this.expectedState;
+  }
 }

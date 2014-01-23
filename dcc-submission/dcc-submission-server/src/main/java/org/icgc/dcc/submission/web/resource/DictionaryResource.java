@@ -49,10 +49,10 @@ import javax.ws.rs.core.UriBuilder;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.DictionaryValidator;
 import org.icgc.dcc.submission.dictionary.DictionaryValidator.DictionaryConstraintViolations;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 

@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.service.ProjectService;
-import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.service.ReleaseService2;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 
@@ -61,7 +61,7 @@ public class ProjectResource {
   private ProjectService projectService;
 
   @Inject
-  private ReleaseService releaseService;
+  private ReleaseService2 releaseService;
 
   @Inject
   private DccFileSystem dccFileSystem;

@@ -34,7 +34,6 @@ import lombok.val;
 
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
-import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -46,6 +45,9 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
+import org.icgc.dcc.submission.service.DictionaryService;
+import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.service.SubmissionService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

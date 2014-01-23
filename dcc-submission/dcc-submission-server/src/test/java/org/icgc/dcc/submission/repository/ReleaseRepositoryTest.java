@@ -1,6 +1,8 @@
 package org.icgc.dcc.submission.repository;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.String.format;
+import static org.elasticsearch.common.collect.Lists.newArrayList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import lombok.val;
 
@@ -21,28 +23,22 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.mongodb.MongoClientURI;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ReleaseRepository2Test {
+public class ReleaseRepositoryTest {
 
   @Rule
   public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
 
+  private ReleaseRepository releaseRepository;
+
   @Mock
-  public MailService mailService;
-
-  private ReleaseRepository2 releaseRepository;
-
+  private MailService mailService;
   private MorphiaQuery<Release> morphiaQuery;
-
   private Datastore datastore;
-
   private Release releaseOne;
-
   private Release releaseTwo;
 
   @Before
@@ -61,7 +57,7 @@ public class ReleaseRepository2Test {
 
     datastore.ensureIndexes();
 
-    releaseRepository = new ReleaseRepository2(morphia, datastore, mailService);
+    releaseRepository = new ReleaseRepository(morphia, datastore, mailService);
 
     morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }
@@ -72,9 +68,9 @@ public class ReleaseRepository2Test {
 
   @Test
   public void testFindAll() {
-    val expected = Sets.newHashSet(releaseOne, releaseTwo);
+    val expected = newArrayList(releaseOne, releaseTwo);
     val actual = releaseRepository.findAll();
-    val morphiaResponse = ImmutableSet.copyOf(morphiaQuery.list());
+    val morphiaResponse = copyOf(morphiaQuery.list());
 
     assertThat(actual).isEqualTo(expected);
     assertThat(morphiaResponse).isEqualTo(expected);
