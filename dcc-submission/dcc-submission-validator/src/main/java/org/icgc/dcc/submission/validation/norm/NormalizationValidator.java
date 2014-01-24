@@ -87,7 +87,7 @@ public final class NormalizationValidator implements Validator {
   public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
 
   /**
-   * TODO
+   * Name of the uncompressed single output file.
    */
   public static final String OUTPUT_FILE_NAME = "ssm_p.txt";
 
