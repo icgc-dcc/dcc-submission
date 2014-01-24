@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.repository;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableList.copyOf;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
@@ -36,16 +35,13 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Key;
 import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.inject.Inject;
-import com.mongodb.WriteConcern;
 
 public class ReleaseRepository extends BaseMorphiaService<Release> {
 
-  private final QRelease _ = QRelease.release;
+  private static final QRelease _ = QRelease.release;
 
   @Inject
   public ReleaseRepository(Morphia morphia, Datastore datastore, MailService mailService) {
@@ -53,48 +49,16 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
     super.registerModelClasses(Release.class);
   }
 
-  /**
-   * Query for {@code Release} with state {@code OPENED}
-   * 
-   * @return Current Open Release
-   */
   public Release findOpenRelease() {
     return where(_.state.eq(OPENED)).singleResult();
   }
 
-  /**
-   * Adds {@code Submission} to the current open {@code Release} <br>
-   * <br>
-   * This method should be used instead of {@link #updateRelease(Release)} since it does not overwrite the Release object in
-   * the DB.
-   * 
-   * @return Current Open Release
-   */
-  public Release addSubmission(Submission submission, String releaseName) {
-    val q = datastore().createQuery(Release.class).field("name")
-        .equal(releaseName);
-    val ops = datastore().createUpdateOperations(Release.class).add(
-        "submissions", submission);
-    val modifiedRelease = this.datastore().findAndModify(q, ops);
-
-    return modifiedRelease;
-  }
-
-  /**
-   * Updates Release with new Release object. <br>
-   * <br>
-   * This will overwrite any changes that might have happened between initially getting the release and updating.
-   * 
-   * @return Response object from Mongo
-   */
-  public Key<Release> updateRelease(Release release) {
-    val response = datastore().save(release, WriteConcern.ACKNOWLEDGED);
-
-    return response;
-  }
-
   public long countOpenReleases() {
     return where(_.state.eq(OPENED)).count();
+  }
+
+  public List<Release> findReleases() {
+    return list(query().list());
   }
 
   public Release findNextRelease() {
@@ -110,68 +74,70 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   }
 
   public List<Release> findCompletedReleases() {
-    return copyOf(where(_.state.eq(COMPLETED)).list());
+    return list(where(_.state.eq(COMPLETED)).list());
   }
 
-  public List<Release> findReleases() {
-    return copyOf(query().list());
-  }
-
-  /**
-   * Do *not* use to update an existing release (not intended that way).
-   */
   public void saveNewRelease(@NonNull Release newRelease) {
-    datastore().save(newRelease);
+    save(newRelease);
   }
 
-  public boolean updateRelease(String newReleaseName, String newDictionaryVersion, Release release,
-      String oldReleaseName) {
-    val releaseUpdate = datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", oldReleaseName),
-        datastore().createUpdateOperations(Release.class)
-            .set("name", newReleaseName)
-            .set("dictionaryVersion", newDictionaryVersion)
-            .set("queue", release.getQueue()));
+  public boolean updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease,
+      @NonNull String updatedReleaseName, @NonNull String updatedDictionaryVersion) {
+    val releaseUpdate = update(
+        select()
+            .filter("name = ", releaseName),
+        updateOperations()
+            .set("name", updatedReleaseName)
+            .set("dictionaryVersion", updatedDictionaryVersion)
+            .set("queue", updatedRelease.getQueue()));
 
     val success = releaseUpdate.getUpdatedCount() != 1;
     return success;
   }
 
-  public UpdateResults<Release> updateRelease(String originalReleaseName, Release updatedRelease) {
-    val update = datastore().updateFirst(
-        datastore().createQuery(Release.class)
-            .filter("name = ", originalReleaseName),
+  public UpdateResults<Release> updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease) {
+    return updateFirst(
+        select()
+            .filter("name = ", releaseName),
         updatedRelease, false);
-
-    return update;
   }
 
-  public void updateCompletedRelease(@NonNull Release oldRelease) {
-    datastore().findAndModify(
-        datastore().createQuery(Release.class)
-            .filter("name", oldRelease.getName()),
-        datastore().createUpdateOperations(Release.class)
-            .set("state", oldRelease.getState())
-            .set("releaseDate", oldRelease.getReleaseDate())
-            .set("submissions", oldRelease.getSubmissions()));
+  public Release updateCompletedRelease(@NonNull Release completedRelease) {
+    return findAndModify(
+        select()
+            .filter("name", completedRelease.getName()),
+        updateOperations()
+            .set("state", completedRelease.getState())
+            .set("releaseDate", completedRelease.getReleaseDate())
+            .set("submissions", completedRelease.getSubmissions()));
   }
 
-  public void updateReleaseQueue(String currentReleaseName, List<QueuedProject> queue) {
-    datastore().update(
-        datastore().createQuery(Release.class)
-            .filter("name = ", currentReleaseName),
-        datastore().createUpdateOperations(Release.class)
+  public void updateReleaseQueue(@NonNull String releaseName, @NonNull List<QueuedProject> queue) {
+    val result = update(
+        select()
+            .filter("name = ", releaseName),
+        updateOperations()
             .set("queue", queue));
+
+    checkState(result.getUpdatedCount() == 1,
+        "Updated more than one release when updating release '%s' with queue '%s'",
+        releaseName, queue);
   }
 
-  public void updateSubmission(String releaseName, Submission submission) {
-    val query = datastore().createQuery(Release.class);
-    val result = datastore().update(
-        query
+  public Release addReleaseSubmission(@NonNull String releaseName, @NonNull Submission submission) {
+    return findAndModify(
+        select()
+            .field("name").equal(releaseName),
+        updateOperations()
+            .add("submissions", submission));
+  }
+
+  public void updateReleaseSubmission(@NonNull String releaseName, @NonNull Submission submission) {
+    val result = update(
+        select()
             .filter("name = ", releaseName)
             .filter("submissions.projectKey = ", submission.getProjectKey()),
-        updateOperations()
+        updateOperations$()
             .set("submissions.$", submission));
 
     checkState(result.getUpdatedCount() == 1,
@@ -179,28 +145,18 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
         releaseName, submission);
   }
 
-  public void updateSubmissionState(@NonNull String releaseName, @NonNull SubmissionState state,
-      @NonNull String projectKey) {
-    datastore().update(
-        datastore().createQuery(Release.class)
+  public void updateReleaseSubmissionState(@NonNull String releaseName, @NonNull String projectKey,
+      @NonNull SubmissionState state) {
+    val result = update(
+        select()
             .filter("name = ", releaseName)
             .filter("submissions.projectKey = ", projectKey),
-        updateOperations()
+        updateOperations$()
             .set("submissions.$.state", state));
-  }
 
-  /**
-   * This is currently necessary in order to use the <i>field.$.nestedField</i> notation in updates. Otherwise one gets
-   * an error like <i>
-   * "The field '$' could not be found in 'org.icgc.dcc.submission.release.model.Release' while validating - submissions.$.state; if you wish to continue please disable validation."
-   * </i>
-   * <p>
-   * For more information, see
-   * http://groups.google.com/group/morphia/tree/browse_frm/month/2011-01/489d5b7501760724?rnum
-   * =31&_done=/group/morphia/browse_frm/month/2011-01?
-   */
-  private UpdateOperations<Release> updateOperations() {
-    return datastore().createUpdateOperations(Release.class).disableValidation();
+    checkState(result.getUpdatedCount() == 1,
+        "Updated more than one release submission when updating release '%s' project '%s' state to '%s'",
+        releaseName, projectKey, state);
   }
 
 }

@@ -369,7 +369,7 @@ public class ReleaseService extends AbstractService {
     val submission = new Submission(projectKey, projectName, openRelease.getName());
     log.info("Created Submission '{}'", submission);
 
-    val release = releaseRepository.addSubmission(submission, openRelease.getName());
+    val release = releaseRepository.addReleaseSubmission(openRelease.getName(), submission);
 
     return release;
   }
@@ -491,7 +491,7 @@ public class ReleaseService extends AbstractService {
       release.emptyQueue();
     }
 
-    val success = releaseRepository.updateRelease(newReleaseName, newDictionaryVersion, release, oldReleaseName);
+    val success = releaseRepository.updateRelease(oldReleaseName, release, newReleaseName, newDictionaryVersion);
     if (success) { // Ensure update was successful
       notifyUpdateError(oldReleaseName, on(",").join(newReleaseName, newDictionaryVersion, release.getQueue()));
     }
@@ -715,12 +715,12 @@ public class ReleaseService extends AbstractService {
     releaseRepository.updateReleaseQueue(releaseName, queue);
 
     for (val projectKey : projectKeys) {
-      releaseRepository.updateSubmissionState(releaseName, newState, projectKey);
+      releaseRepository.updateReleaseSubmissionState(releaseName, projectKey, newState);
     }
   }
 
   private void updateSubmission(String releaseName, Submission submission) {
-    releaseRepository.updateSubmission(releaseName, submission);
+    releaseRepository.updateReleaseSubmission(releaseName, submission);
   }
 
   private List<Project> getProjects(Release release, Subject user) {

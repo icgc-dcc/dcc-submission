@@ -93,7 +93,7 @@ public class ReleaseRepositoryTest {
   }
 
   @Test
-  public void testAddSubmission() throws Exception {
+  public void testAddReleaseSubmission() throws Exception {
     val submission = new Submission("PRJ3", "Project Three", releaseOne.getName());
     val getOpenReleaseQuery =
         morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
@@ -107,7 +107,7 @@ public class ReleaseRepositoryTest {
     }
 
     // Add Submission
-    val modifiedRelease = releaseRepository.addSubmission(submission, openRelease.getName());
+    val modifiedRelease = releaseRepository.addReleaseSubmission(openRelease.getName(), submission);
 
     // Check that Release has Submission
     assertThat(modifiedRelease.getSubmissions()).contains(submission);
@@ -136,7 +136,7 @@ public class ReleaseRepositoryTest {
     assertThat(release.getSubmissions()).contains(submission);
 
     // Save to DB
-    releaseRepository.updateRelease(release);
+    releaseRepository.updateRelease(release.getName(), release);
 
     // Confirm that Release in DB has Submission
     val actual = getOpenReleaseQuery.singleResult();

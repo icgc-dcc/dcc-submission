@@ -73,6 +73,12 @@ public class ValidationSchedulerTest {
   final QueuedProject queuedProject = new QueuedProject("project", ImmutableList.<String> of("user@project.com"));
 
   /**
+   * Class under test.
+   */
+  @InjectMocks
+  ValidationScheduler scheduler;
+
+  /**
    * Primary collaborators.
    */
   @Mock
@@ -101,12 +107,6 @@ public class ValidationSchedulerTest {
   Submission submission;
   @Mock
   Dictionary dictionary;
-
-  /**
-   * Class under test.
-   */
-  @InjectMocks
-  ValidationScheduler scheduler;
 
   @Before
   public void setUp() {

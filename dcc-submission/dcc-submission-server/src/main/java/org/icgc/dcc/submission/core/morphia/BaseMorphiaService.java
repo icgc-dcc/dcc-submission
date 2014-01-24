@@ -18,7 +18,10 @@
 package org.icgc.dcc.submission.core.morphia;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.mongodb.WriteConcern.ACKNOWLEDGED;
 
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.icgc.dcc.submission.core.AbstractService;
@@ -26,8 +29,13 @@ import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Key;
 import com.google.code.morphia.Morphia;
+import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
+import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -52,22 +60,6 @@ public abstract class BaseMorphiaService<T> {
     this.mailService = checkNotNull(mailService);
   }
 
-  public Datastore datastore() {
-    return datastore;
-  }
-
-  public Morphia morphia() {
-    return morphia;
-  }
-
-  public MongodbQuery<T> query() {
-    return new MorphiaQuery<T>(morphia(), datastore(), entityPath);
-  }
-
-  public MongodbQuery<T> where(Predicate predicate) {
-    return query().where(predicate);
-  }
-
   protected void registerModelClasses(Class<?>... entities) {
     if (entities != null) {
       for (Class<?> e : entities) {
@@ -75,6 +67,64 @@ public abstract class BaseMorphiaService<T> {
         datastore.ensureIndexes(e);
       }
     }
+  }
+
+  protected Datastore datastore() {
+    return datastore;
+  }
+
+  protected Morphia morphia() {
+    return morphia;
+  }
+
+  protected MongodbQuery<T> query() {
+    return new MorphiaQuery<T>(morphia(), datastore(), entityPath);
+  }
+
+  protected MongodbQuery<T> where(Predicate predicate) {
+    return query().where(predicate);
+  }
+
+  protected Query<T> select() {
+    return datastore().createQuery(getEntityClass());
+  }
+
+  protected <R> UpdateResults<R> update(Query<R> query, UpdateOperations<R> ops) {
+    return datastore().update(query, ops);
+  }
+
+  protected <R> UpdateResults<R> updateFirst(Query<R> query, R entity, boolean createIfMissing) {
+    return datastore().updateFirst(query, entity, createIfMissing);
+  }
+
+  protected <R> R findAndModify(Query<R> query, UpdateOperations<R> ops) {
+    return datastore().findAndModify(query, ops);
+  }
+
+  protected <R> Key<R> save(R entity) {
+    return datastore().save(entity, ACKNOWLEDGED);
+  }
+
+  protected <R> List<R> list(List<R> entities) {
+    return ImmutableList.copyOf(entities);
+  }
+
+  protected UpdateOperations<T> updateOperations() {
+    return datastore().createUpdateOperations(getEntityClass());
+  }
+
+  /**
+   * This is currently necessary in order to use the <i>field.$.nestedField</i> notation in updates. Otherwise one gets
+   * an error like <i>
+   * "The field '$' could not be found in 'org.icgc.dcc.submission.release.model.Release' while validating - submissions.$.state; if you wish to continue please disable validation."
+   * </i>
+   * <p>
+   * For more information, see
+   * http://groups.google.com/group/morphia/tree/browse_frm/month/2011-01/489d5b7501760724?rnum
+   * =31&_done=/group/morphia/browse_frm/month/2011-01?
+   */
+  protected UpdateOperations<T> updateOperations$() {
+    return updateOperations().disableValidation();
   }
 
   /**
@@ -89,4 +139,9 @@ public abstract class BaseMorphiaService<T> {
     return AbstractService.withRetry(description, callback, mailService);
   }
 
+  @SuppressWarnings("unchecked")
+  private Class<T> getEntityClass() {
+    // Get reified generic super class
+    return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+  }
 }
