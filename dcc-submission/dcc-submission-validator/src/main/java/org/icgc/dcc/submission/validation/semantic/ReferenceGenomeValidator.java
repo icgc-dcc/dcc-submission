@@ -200,7 +200,7 @@ public class ReferenceGenomeValidator implements Validator {
           val mismatch = !isMatch(referenceAllele, referenceSequence);
           if (mismatch) {
             val type = REFERENCE_GENOME_MISMATCH_ERROR;
-            val value = formatValue(REFERENCE_INSERTION_VALUE, referenceAllele);
+            val value = formatValue(referenceSequence, referenceAllele);
             val columnName = SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
             val param = assemblyVersion;
 
