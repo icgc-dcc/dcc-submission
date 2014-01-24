@@ -17,12 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.key.error;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.RELATIONS;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.SIMPLE_SURJECTION_FKS;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getPrimaryKeyNames;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getReferencingFileType;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getSimpleSurjectionForeignKeyNames;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
@@ -37,7 +37,6 @@ import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.core.KVDictionary;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
@@ -115,29 +114,15 @@ public class KVSubmissionErrors {
   private Object[] getErrorParams(KVFileType fileType, KVErrorType errorType) {
     Object[] errorParams = null;
     if (errorType == PRIMARY_RELATION || errorType == SECONDARY_RELATION) {
-      val referencedFileType = RELATIONS.get(fileType);
-      val referencedFields = KVDictionary.PKS.get(referencedFileType);
+      val referencedFileType = getOptionalReferencedFileType(fileType).get();
+      val referencedFields = getPrimaryKeyNames(referencedFileType);
       errorParams = new Object[] { referencedFileType, referencedFields };
     } else if (errorType == SIMPLE_SURJECTION) {
       val referencingFileType = getReferencingFileType(fileType);
-      val referencingFields = SIMPLE_SURJECTION_FKS.get(referencingFileType);
+      val referencingFields = getSimpleSurjectionForeignKeyNames(referencingFileType);
       errorParams = new Object[] { referencingFileType, referencingFields };
     }
     return errorParams;
-  }
-
-  /**
-   * Should NOT be called in the context of complex surjection as it can only return one such type.
-   */
-  private KVFileType getReferencingFileType(KVFileType fileType) {
-    KVFileType referencingFileType = null;
-    for (val entry : RELATIONS.entrySet()) {
-      if (entry.getValue() == fileType) {
-        checkState(referencingFileType == null, "TODO");
-        return entry.getKey();
-      }
-    }
-    return checkNotNull(referencingFileType, "TODO");
   }
 
   private Map<String, Map<Long, List<KVRowError>>> getFileTypeErrors(

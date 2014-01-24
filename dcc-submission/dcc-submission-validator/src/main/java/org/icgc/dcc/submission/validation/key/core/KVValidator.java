@@ -21,7 +21,7 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.RELATIONS;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
 import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getFileDescription;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
@@ -116,16 +116,15 @@ public class KVValidator {
         of(new KVEncounteredForeignKeys()) :
         Optional.<KVEncounteredForeignKeys> absent();
 
-    // TODO
-    val optionalReferencedType = RELATIONS.containsKey(fileType) ?
-        Optional.of(RELATIONS.get(fileType)) : Optional.<KVFileType> absent();
+    // Obtain referenced file type (if applicable, for instance DONOR has none)
+    val optionalReferencedFileType = getOptionalReferencedFileType(fileType);
 
-    // TODO
-    val optionalReferencedPrimaryKeys = optionalReferencedType.isPresent() ?
-        of(fileTypeToPrimaryKeys.get(optionalReferencedType.get())) :
+    // Obtain corresponding PKs for the referenced file type (also if applicable)
+    val optionalReferencedPrimaryKeys = optionalReferencedFileType.isPresent() ?
+        of(fileTypeToPrimaryKeys.get(optionalReferencedFileType.get())) :
         Optional.<KVPrimaryKeys> absent();
 
-    log.info("Processing file type: '{}'; Referencing '{}'", fileType, optionalReferencedType);
+    log.info("Processing file type: '{}'; Referencing '{}'", fileType, optionalReferencedFileType);
 
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
     checkState(dataFilePaths.isPresent(),
@@ -136,12 +135,12 @@ public class KVValidator {
           dataFilePath,
           primaryKeys,
           optionalEncounteredForeignKeys,
-          optionalReferencedType,
+          optionalReferencedFileType,
           optionalReferencedPrimaryKeys);
     }
     fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
-    postProcessing(fileType, optionalReferencedType, optionalEncounteredForeignKeys);
+    postProcessing(fileType, optionalReferencedFileType, optionalEncounteredForeignKeys);
   }
 
   private void processFile(
