@@ -145,7 +145,7 @@ module.exports = class ReportDatatypeView extends View
          style="height:auto; margin-top:0"
          href="#validate-submission-popup"
          id="validate-submission-popup-button">
-      Validate
+      Validate #{title}
       </a>
       """
     
