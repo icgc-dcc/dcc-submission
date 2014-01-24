@@ -133,8 +133,6 @@ public class NormalizationValidatorTest {
         .thenReturn(RELEASE_NAME);
     when(mockFileSchema.getFieldNames())
         .thenReturn(NormalizationTestUtils.getFieldNames(FOCUS_TYPE));
-    when(mockFileSchema.getPattern())
-        .thenReturn(".*ssm_p.*"); // FIXME
     when(mockDictionary.getFileSchema(FOCUS_TYPE))
         .thenReturn(mockFileSchema);
 
@@ -200,8 +198,6 @@ public class NormalizationValidatorTest {
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(new LocalFlowConnector());
-    when(mockPlatformStrategy.getFilePath(Mockito.anyString()))
-        .thenReturn(new Path(inputFile));
     when(mockValidationContext.getSsmPrimaryFiles())
         .thenReturn(newArrayList(new Path(inputFile)));
 
