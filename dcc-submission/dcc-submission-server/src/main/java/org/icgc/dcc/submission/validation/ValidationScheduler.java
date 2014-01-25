@@ -35,12 +35,12 @@ import lombok.Synchronized;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;

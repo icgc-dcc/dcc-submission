@@ -55,8 +55,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.core.AbstractService;
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;

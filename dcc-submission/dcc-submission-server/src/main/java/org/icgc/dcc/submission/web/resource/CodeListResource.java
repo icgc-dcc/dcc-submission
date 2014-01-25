@@ -64,7 +64,7 @@ public class CodeListResource {
    */
   @GET
   public Response getCodeLists() {
-    List<CodeList> codeLists = dictionaryService.listCodeList();
+    List<CodeList> codeLists = dictionaryService.getCodeLists();
     if (codeLists == null) {
       codeLists = newArrayList();
     }

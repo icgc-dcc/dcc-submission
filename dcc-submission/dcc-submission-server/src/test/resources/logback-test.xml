@@ -27,7 +27,7 @@
     </encoder>
   </appender>
 
-  <logger name="org.icgc.dcc.submission.core.UserService" level="OFF" additivity="false"/>
+  <logger name="org.icgc.dcc.submission.service.UserService" level="OFF" additivity="false"/>
   <logger name="org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator" level="OFF" additivity="false"/>
   <logger name="org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationRequestFilter" level="OFF" additivity="false"/>
   <logger name="org.apache.sshd.server.session.ServerSession" level="OFF" additivity="false"/>

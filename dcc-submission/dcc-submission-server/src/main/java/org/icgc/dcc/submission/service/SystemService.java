@@ -15,58 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.icgc.dcc.submission.service;
 
-package org.icgc.dcc.submission.repository;
+import org.icgc.dcc.submission.core.model.Status;
+import org.icgc.dcc.submission.sftp.SftpServerService;
 
-import static org.icgc.dcc.submission.dictionary.model.DictionaryState.CLOSED;
-
-import java.util.List;
-
-import lombok.NonNull;
-
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.QDictionary;
-
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
-public class DictionaryRepository extends AbstractRepository<Dictionary, QDictionary> {
+public class SystemService {
+
+  private final SftpServerService sftpService;
 
   @Inject
-  public DictionaryRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, QDictionary.dictionary);
+  private SystemService(SftpServerService sftpService) {
+    super();
+    this.sftpService = sftpService;
   }
 
-  public long countDictionariesByVersion(String version) {
-    return count(_.version.eq(version));
+  public Status getStatus() {
+    return sftpService.getActiveSessions();
   }
 
-  public List<Dictionary> findDictionaries() {
-    return list();
+  public boolean isSftpEnabled() {
+    return sftpService.isEnabled();
   }
 
-  public Dictionary findDictionaryByVersion(@NonNull String version) {
-    return uniqueResult(_.version.eq(version));
+  public void disableSftp() {
+    sftpService.disable();
   }
 
-  public void saveDictionary(@NonNull Dictionary dictionary) {
-    save(dictionary);
-  }
-
-  public void updateDictionary(Dictionary dictionary) {
-    updateFirst(
-        select()
-            .filter("version", dictionary.getVersion()),
-        dictionary, false);
-  }
-
-  public void closeDictionary(@NonNull String version) {
-    findAndModify(
-        select()
-            .filter("version", version),
-        updateOperations()
-            .set("state", CLOSED));
+  public void enableSftp() {
+    sftpService.enable();
   }
 
 }

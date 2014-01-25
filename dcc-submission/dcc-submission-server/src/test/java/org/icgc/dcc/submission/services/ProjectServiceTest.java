@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import lombok.val;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -45,67 +46,67 @@ public class ProjectServiceTest {
 
   @Test
   public void testFindAll() throws Exception {
-    val expected = Sets.newHashSet(projectOne, projectTwo);
-    when(projectRepository.findAll()).thenReturn(expected);
+    val expected = Lists.newArrayList(projectOne, projectTwo);
+    when(projectRepository.findProjects()).thenReturn(expected);
 
-    val actual = projectService.findAll();
+    val actual = projectService.getProjects();
 
-    verify(projectRepository).findAll();
+    verify(projectRepository).findProjects();
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testFindAllForUser() throws Exception {
-    val expected = Sets.newHashSet(projectOne);
-    when(projectRepository.findAllForUser(any(String.class))).thenReturn(expected);
+    val expected = Lists.newArrayList(projectOne);
+    when(projectRepository.findProjectsByUser(any(String.class))).thenReturn(expected);
 
-    val actual = projectService.findAllForUser(any(String.class));
+    val actual = projectService.getProjectsByUser(any(String.class));
 
-    verify(projectRepository).findAllForUser(any(String.class));
+    verify(projectRepository).findProjectsByUser(any(String.class));
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testFind() throws Exception {
     val expected = projectOne;
-    when(projectRepository.find(projectOne.getKey())).thenReturn(expected);
+    when(projectRepository.findProject(projectOne.getKey())).thenReturn(expected);
 
-    val actual = projectService.find(projectOne.getKey());
+    val actual = projectService.getProject(projectOne.getKey());
 
-    verify(projectRepository).find(projectOne.getKey());
+    verify(projectRepository).findProject(projectOne.getKey());
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testFindForUser() throws Exception {
     val expected = projectOne;
-    when(projectRepository.findForUser(projectOne.getKey(), "username")).thenReturn(expected);
+    when(projectRepository.findProjectByUser(projectOne.getKey(), "username")).thenReturn(expected);
 
-    val actual = projectService.findForUser(projectOne.getKey(), "username");
+    val actual = projectService.getProjectByUser(projectOne.getKey(), "username");
 
-    verify(projectRepository).findForUser(projectOne.getKey(), "username");
+    verify(projectRepository).findProjectByUser(projectOne.getKey(), "username");
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testAddProject() throws Exception {
     val expected = new Key<Project>(Project.class, new ObjectId());
-    when(projectRepository.upsert(projectOne)).thenReturn(expected);
+    when(projectRepository.upsertProject(projectOne)).thenReturn(expected);
 
-    val response = projectService.add(projectOne);
+    val response = projectService.addProject(projectOne);
 
-    verify(projectRepository).upsert(projectOne);
+    verify(projectRepository).upsertProject(projectOne);
     assertThat(response).isEqualTo(expected);
   }
 
   @Test
   public void testUpdateProject() throws Exception {
     val expected = new Key<Project>(Project.class, new ObjectId());
-    when(projectRepository.upsert(projectOne)).thenReturn(expected);
+    when(projectRepository.upsertProject(projectOne)).thenReturn(expected);
 
-    val response = projectService.update(projectOne);
+    val response = projectService.updateProject(projectOne);
 
-    verify(projectRepository).upsert(projectOne);
+    verify(projectRepository).upsertProject(projectOne);
     assertThat(response).isEqualTo(expected);
   }
 
@@ -119,7 +120,7 @@ public class ProjectServiceTest {
     val expected = new Project("PK", "PN");
     expected.setAlias("PA");
 
-    val actual = projectService.clean(dirty);
+    val actual = projectService.cleanProject(dirty);
 
     assertThat(actual).isEqualTo(expected);
   }

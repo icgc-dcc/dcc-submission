@@ -17,115 +17,84 @@
  */
 package org.icgc.dcc.submission.service;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Term;
-import org.icgc.dcc.submission.service.DictionaryService;
-import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.repository.CodeListRepository;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.Query;
-import com.mysema.query.mongodb.MongodbQuery;
-import com.mysema.query.types.Predicate;
-
+@RunWith(MockitoJUnitRunner.class)
 public class DictionaryServiceTest {
 
-  private Morphia mockMorphia;
-
-  private Datastore mockDatastore;
-
-  private MongodbQuery<Dictionary> mockMongodbQuery;
-
-  private Query<Dictionary> mockQuery;
-
-  private Dictionary mockDictionary;
-
-  private CodeList mockCodeList;
-
-  private Term mockTerm;
-
+  @InjectMocks
   private DictionaryService dictionaryService;
 
+  @Mock
   private ReleaseService mockReleaseService;
-
-  private MailService mockMailService;
+  @Mock
+  private DictionaryRepository dictionaryRepository;
+  @Mock
+  private CodeListRepository codeListRepository;
+  @Mock
+  private Dictionary mockDictionary;
+  @Mock
+  private CodeList mockCodeList;
+  @Mock
+  private Term mockTerm;
 
   @Before
-  @SuppressWarnings("unchecked")
-  // TODO: how to mock parametized?
   public void setUp() {
-    mockMorphia = mock(Morphia.class);
-    mockDatastore = mock(Datastore.class);
-    mockMongodbQuery = mock(MongodbQuery.class);
-    mockDictionary = mock(Dictionary.class);
-    mockCodeList = mock(CodeList.class);
-    mockTerm = mock(Term.class);
-    mockQuery = mock(Query.class);
-    mockReleaseService = mock(ReleaseService.class);
-    mockMailService = mock(MailService.class);
-
     when(mockDictionary.getVersion()).thenReturn("abc");
     when(mockCodeList.getName()).thenReturn("def");
     when(mockTerm.getCode()).thenReturn("ghi");
-    when(mockDatastore.createQuery(Dictionary.class)).thenReturn(mockQuery);
-    when(mockQuery.filter(anyString(), anyString())).thenReturn(mockQuery);
-    when(mockQuery.countAll()).thenReturn(0L).thenReturn(0L);
-    when(mockMongodbQuery.where(any(Predicate.class))).thenReturn(mockMongodbQuery);
-    when(mockMongodbQuery.singleResult()).thenReturn(null).thenReturn(mockDictionary).thenReturn(mockDictionary);
 
-    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockReleaseService, mockMailService);
+    when(dictionaryRepository.countDictionariesByVersion(anyString())).thenReturn(0L);
+    when(dictionaryRepository.findDictionaryByVersion(anyString())).thenReturn(mockDictionary);
   }
 
   @Test(expected = DictionaryServiceException.class)
-  // TODO: is there a way to check message too?
   public void test_update_failOnUnexisting() {
-    dictionaryService.update(mockDictionary);
+    dictionaryService.updateDictionary(mockDictionary);
   }
 
   @Test(expected = DictionaryServiceException.class)
   public void test_clone_failOnSameVersion() {
-    dictionaryService.clone("v1", "v1");
+    dictionaryService.cloneDictionary("v1", "v1");
   }
 
-  // TODO: all further test would require to dig into mocking querydsl's MorphiaQuery constructor...
-  @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_clone_failOnUnexisting() {
-    dictionaryService.clone("v1", "v2");
+    dictionaryService.cloneDictionary("v1", "v2");
   }
 
-  @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_clone_failOnExisting() {
-    dictionaryService.clone("v1", "v2");
+    dictionaryService.cloneDictionary("v1", "v2");
   }
 
-  @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_add_failOnExisting() {
     dictionaryService.addDictionary(mockDictionary);
   }
 
-  @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_updateCodeList_failOnExisting() {
     dictionaryService.updateCodeList(mockCodeList);
   }
 
-  @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_addTerm_failOnExisting() {
     dictionaryService.addCodeListTerm(mockCodeList.getName(), mockTerm);
   }
+
 }

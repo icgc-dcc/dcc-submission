@@ -30,7 +30,7 @@
     </encoder>
   </appender>
 
-  <logger name="org.icgc.dcc.submission.core.UserService" level="info" additivity="false">
+  <logger name="org.icgc.dcc.submission.service.UserService" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
   <logger name="org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator" level="info" additivity="false">

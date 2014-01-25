@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
@@ -43,6 +42,7 @@ import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.dcc.submission.service.DictionaryService;
+import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.service.SubmissionService;
 import org.junit.Before;

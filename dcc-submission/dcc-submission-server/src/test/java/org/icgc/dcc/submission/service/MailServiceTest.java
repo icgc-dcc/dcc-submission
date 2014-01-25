@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core;
+package org.icgc.dcc.submission.service;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
@@ -23,18 +23,18 @@ import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterrup
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.core.MailService.MAIL_ENABLED;
-import static org.icgc.dcc.submission.core.MailService.MAIL_ERROR_BODY;
-import static org.icgc.dcc.submission.core.MailService.MAIL_FROM;
-import static org.icgc.dcc.submission.core.MailService.MAIL_INVALID_BODY;
-import static org.icgc.dcc.submission.core.MailService.MAIL_NOTIFICATION_RECIPIENT;
-import static org.icgc.dcc.submission.core.MailService.MAIL_SIGNOFF_BODY;
-import static org.icgc.dcc.submission.core.MailService.MAIL_SMTP_HOST;
-import static org.icgc.dcc.submission.core.MailService.MAIL_SUPPORT_RECIPIENT;
-import static org.icgc.dcc.submission.core.MailService.MAIL_VALIDATION_SUBJECT;
-import static org.icgc.dcc.submission.core.MailService.MAIL_VALID_BODY;
-import static org.icgc.dcc.submission.core.MailService.NOTIFICATION_SUBJECT_PREFEX;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
+import static org.icgc.dcc.submission.service.MailService.MAIL_ENABLED;
+import static org.icgc.dcc.submission.service.MailService.MAIL_ERROR_BODY;
+import static org.icgc.dcc.submission.service.MailService.MAIL_FROM;
+import static org.icgc.dcc.submission.service.MailService.MAIL_INVALID_BODY;
+import static org.icgc.dcc.submission.service.MailService.MAIL_NOTIFICATION_RECIPIENT;
+import static org.icgc.dcc.submission.service.MailService.MAIL_SIGNOFF_BODY;
+import static org.icgc.dcc.submission.service.MailService.MAIL_SMTP_HOST;
+import static org.icgc.dcc.submission.service.MailService.MAIL_SUPPORT_RECIPIENT;
+import static org.icgc.dcc.submission.service.MailService.MAIL_VALIDATION_SUBJECT;
+import static org.icgc.dcc.submission.service.MailService.MAIL_VALID_BODY;
+import static org.icgc.dcc.submission.service.MailService.NOTIFICATION_SUBJECT_PREFEX;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;

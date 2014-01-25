@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.service;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -33,7 +33,6 @@ import java.util.Set;
 import junit.framework.Assert;
 import lombok.val;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Project;
@@ -42,12 +41,16 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -56,6 +59,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ReleaseServiceTest {
 
   /**
@@ -69,21 +73,22 @@ public class ReleaseServiceTest {
   private Datastore datastore;
   private Dictionary dictionary;
   private DictionaryService dictionaryService;
-  private MailService mailService;
   private Release release;
+
+  @Mock
   private DccFileSystem dccFileSystem;
+  @Mock
+  private MailService mailService;
 
   private final static String testDbName = "dcc-test";
 
   @Before
   public void setUp() {
     try {
-
       // use local host as test MongoDB for now
       Mongo mongo = new MongoClient("localhost");
       Morphia morphia = new Morphia();
       datastore = morphia.createDatastore(mongo, testDbName);
-      dccFileSystem = mock(DccFileSystem.class);
 
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));
@@ -94,41 +99,37 @@ public class ReleaseServiceTest {
       dictionary = new Dictionary();
       dictionary.setVersion("foo");
 
-      mailService = mock(MailService.class);
-
-      release = new Release("release1");
-
-      Project project1 = new Project("Project One", "p1");
-      Project project2 = new Project("Project Two", "p2");
-      Project project3 = new Project("Project Three", "p3");
-
-      Submission validSubmission = new Submission();
+      val project1 = new Project("Project One", "p1");
+      val validSubmission = new Submission();
       validSubmission.setState(SubmissionState.VALID);
       validSubmission.setProjectKey(project1.getKey());
 
-      Submission notValidatedSubmission = new Submission();
+      val project2 = new Project("Project Two", "p2");
+      val notValidatedSubmission = new Submission();
       notValidatedSubmission.setState(SubmissionState.NOT_VALIDATED);
       notValidatedSubmission.setProjectKey(project2.getKey());
 
-      Submission queuedSubmission = new Submission();
+      val project3 = new Project("Project Three", "p3");
+      val queuedSubmission = new Submission();
       queuedSubmission.setState(SubmissionState.QUEUED);
       queuedSubmission.setProjectKey(project3.getKey());
 
+      release = new Release("release1");
       release.addSubmission(validSubmission);
       release.addSubmission(notValidatedSubmission);
       release.addSubmission(queuedSubmission);
-
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
       val submissionService = new SubmissionService(dccFileSystem);
-      val releaseRepository = spy(new ReleaseRepository(morphia, datastore, mailService));
-      val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore, mailService));
-      val projectRepository = spy(new ProjectRepository(morphia, datastore, mailService));
+      val releaseRepository = spy(new ReleaseRepository(morphia, datastore));
+      val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore));
+      val codeListRepository = spy(new CodeListRepository(morphia, datastore));
+      val projectRepository = spy(new ProjectRepository(morphia, datastore));
       releaseService = new ReleaseService(submissionService, mailService, dccFileSystem,
           releaseRepository, dictionaryRepository, projectRepository);
 
-      dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
+      dictionaryService = new DictionaryService(releaseService, dictionaryRepository, codeListRepository);
       dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
     } catch (UnknownHostException e) {
@@ -210,14 +211,15 @@ public class ReleaseServiceTest {
 
   // @Test
   public void test_update_valid() {
-    Release updatedRelease = releaseService.update("not_existing_release", "existing_dictionary");
-    Assert.assertNotNull(updatedRelease);
-    Assert.assertEquals("not_existing_release", updatedRelease.getName());
-    Assert.assertEquals("existing_dictionary", updatedRelease.getDictionaryVersion());
+    val updatedRelease = releaseService.update("not_existing_release", "existing_dictionary");
+
+    assertNotNull(updatedRelease);
+    assertEquals("not_existing_release", updatedRelease.getName());
+    assertEquals("existing_dictionary", updatedRelease.getDictionaryVersion());
   }
 
   private Release addNewRelease(String name) {
-    Release newRelease = new Release(name);
+    val newRelease = new Release(name);
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");

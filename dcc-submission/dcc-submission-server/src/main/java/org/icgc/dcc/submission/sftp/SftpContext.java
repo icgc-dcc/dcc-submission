@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 
 import java.util.List;
 
@@ -29,17 +29,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.service.MailService;
+import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 /**
@@ -75,9 +76,12 @@ public class SftpContext {
   }
 
   public List<String> getUserProjectKeys() {
-    List<String> projectKeys = newArrayList();
-    for (val project : projectService.getProjectsBySubject(getCurrentUser())) {
-      projectKeys.add(project.getKey());
+    val user = getCurrentUser();
+    val projectKeys = Lists.<String> newArrayList();
+    for (val project : projectService.getProjects()) {
+      if (user.isPermitted(projectViewPrivilege(project.getKey()))) {
+        projectKeys.add(project.getKey());
+      }
     }
 
     return projectKeys;

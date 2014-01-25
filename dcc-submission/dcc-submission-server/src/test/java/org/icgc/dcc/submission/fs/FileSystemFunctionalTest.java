@@ -24,36 +24,34 @@ import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import junit.framework.Assert;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
-import org.icgc.dcc.submission.core.morphia.MorphiaModule;
+import org.icgc.dcc.submission.core.PersistenceModule;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.submission.http.HttpModule;
-import org.icgc.dcc.submission.http.jersey.JerseyModule;
+import org.icgc.dcc.submission.repository.RepositoryModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
+@Slf4j
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class,//
-HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
-MorphiaModule.class, FileSystemModule.class, ShiroModule.class })
+@GuiceModules({
+    ConfigModule.class, CoreModule.class,
+    FileSystemModule.class,
+    PersistenceModule.class, RepositoryModule.class, ShiroModule.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
-
-  private static final Logger log = LoggerFactory.getLogger(FileSystemFunctionalTest.class);
 
   protected DccFileSystem dccFileSystem;
 

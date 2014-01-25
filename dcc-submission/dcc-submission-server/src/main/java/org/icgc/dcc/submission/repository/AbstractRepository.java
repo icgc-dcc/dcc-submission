@@ -15,18 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.morphia;
+package org.icgc.dcc.submission.repository;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.mongodb.WriteConcern.ACKNOWLEDGED;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
-import java.util.concurrent.Callable;
 
-import org.icgc.dcc.submission.core.AbstractService;
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
+import lombok.NonNull;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Key;
@@ -34,7 +29,6 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
@@ -42,31 +36,28 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
-public abstract class BaseMorphiaService<T> {
+public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
 
   /**
    * Dependencies.
    */
   private final Morphia morphia;
   private final Datastore datastore;
-  private final EntityPath<T> entityPath;
-  protected final MailService mailService;
+
+  /**
+   * Configuration.
+   */
+  private final EntityPath<E> entityPath;
+  protected final Q _;
 
   @Inject
-  public BaseMorphiaService(Morphia morphia, Datastore datastore, EntityPath<T> entityPath, MailService mailService) {
-    this.morphia = checkNotNull(morphia);
-    this.datastore = checkNotNull(datastore);
-    this.entityPath = checkNotNull(entityPath);
-    this.mailService = checkNotNull(mailService);
-  }
+  public AbstractRepository(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull Q entityPath) {
+    this.morphia = morphia;
+    this.datastore = datastore;
+    this.entityPath = entityPath;
+    this._ = entityPath;
 
-  protected void registerModelClasses(Class<?>... entities) {
-    if (entities != null) {
-      for (Class<?> e : entities) {
-        morphia.map(e);
-        datastore.ensureIndexes(e);
-      }
-    }
+    registerEntityType(entityPath.getType());
   }
 
   protected Datastore datastore() {
@@ -77,71 +68,91 @@ public abstract class BaseMorphiaService<T> {
     return morphia;
   }
 
-  protected MongodbQuery<T> query() {
-    return new MorphiaQuery<T>(morphia(), datastore(), entityPath);
+  protected MongodbQuery<E> query() {
+    return new MorphiaQuery<E>(morphia(), datastore(), entityPath);
   }
 
-  protected MongodbQuery<T> where(Predicate predicate) {
+  protected long count(@NonNull Predicate predicate) {
+    return where(predicate).count();
+  }
+
+  protected MongodbQuery<E> where(@NonNull Predicate predicate) {
     return query().where(predicate);
   }
 
-  protected Query<T> select() {
-    return datastore().createQuery(getEntityClass());
+  protected E uniqueResult(@NonNull Predicate predicate) {
+    return where(predicate).uniqueResult();
   }
 
-  protected <R> UpdateResults<R> update(Query<R> query, UpdateOperations<R> ops) {
+  protected E singleResult(@NonNull Predicate predicate) {
+    return where(predicate).singleResult();
+  }
+
+  protected Query<E> select() {
+    return datastore().createQuery(getEntityType());
+  }
+
+  protected <R> UpdateResults<R> update(@NonNull Query<R> query, @NonNull UpdateOperations<R> ops) {
     return datastore().update(query, ops);
   }
 
-  protected <R> UpdateResults<R> updateFirst(Query<R> query, R entity, boolean createIfMissing) {
+  protected <R> UpdateResults<R> updateFirst(@NonNull Query<R> query, @NonNull R entity, boolean createIfMissing) {
     return datastore().updateFirst(query, entity, createIfMissing);
   }
 
-  protected <R> R findAndModify(Query<R> query, UpdateOperations<R> ops) {
+  protected <R> R findAndModify(@NonNull Query<R> query, @NonNull UpdateOperations<R> ops) {
     return datastore().findAndModify(query, ops);
   }
 
-  protected <R> Key<R> save(R entity) {
+  protected <R> R findAndModify(@NonNull Query<R> query, @NonNull UpdateOperations<R> ops, boolean oldVersion,
+      boolean createIfMissing) {
+    return datastore().findAndModify(query, ops, oldVersion, createIfMissing);
+  }
+
+  protected <R> Key<R> save(@NonNull R entity) {
     return datastore().save(entity, ACKNOWLEDGED);
   }
 
-  protected <R> List<R> list(List<R> entities) {
-    return ImmutableList.copyOf(entities);
+  protected <R> Iterable<Key<R>> save(@NonNull Iterable<R> entities) {
+    return datastore().save(entities, ACKNOWLEDGED);
   }
 
-  protected UpdateOperations<T> updateOperations() {
-    return datastore().createUpdateOperations(getEntityClass());
+  protected List<E> list() {
+    return list(query());
+  }
+
+  protected List<E> list(@NonNull Predicate predicate) {
+    return list(where(predicate));
+  }
+
+  protected List<E> list(@NonNull MongodbQuery<E> query) {
+    return ImmutableList.copyOf(query.list());
+  }
+
+  protected UpdateOperations<E> updateOperations() {
+    return datastore().createUpdateOperations(getEntityType());
   }
 
   /**
    * This is currently necessary in order to use the <i>field.$.nestedField</i> notation in updates. Otherwise one gets
-   * an error like <i>
+   * an error like: <q>
    * "The field '$' could not be found in 'org.icgc.dcc.submission.release.model.Release' while validating - submissions.$.state; if you wish to continue please disable validation."
-   * </i>
-   * <p>
-   * For more information, see
-   * http://groups.google.com/group/morphia/tree/browse_frm/month/2011-01/489d5b7501760724?rnum
-   * =31&_done=/group/morphia/browse_frm/month/2011-01?
+   * </p>
+   * 
+   * @see https://groups.google.com/d/msg/morphia/ta-qd_XrgaE/hO7KTjPWNyEJ
    */
-  protected UpdateOperations<T> updateOperations$() {
+  protected UpdateOperations<E> updateOperations$() {
     return updateOperations().disableValidation();
   }
 
-  /**
-   * Calls the supplied {@code callback} a "reasonable" number times until a {@link DccModelOptimisticLockException} is
-   * not thrown. If a retry is exhausted, an "admin problem" email will be sent.
-   * 
-   * @param description - a description of what the {@code callback} does
-   * @param callback - the action to perform with retry
-   * @return the return value of the {@code callback}
-   */
-  protected <R> Optional<R> withRetry(String description, Callable<R> callback) {
-    return AbstractService.withRetry(description, callback, mailService);
+  @SuppressWarnings("unchecked")
+  private Class<E> getEntityType() {
+    return (Class<E>) entityPath.getType();
   }
 
-  @SuppressWarnings("unchecked")
-  private Class<T> getEntityClass() {
-    // Get reified generic super class
-    return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+  private void registerEntityType(Class<?> entityType) {
+    morphia.map(entityType);
+    datastore.ensureIndexes(entityType);
   }
+
 }

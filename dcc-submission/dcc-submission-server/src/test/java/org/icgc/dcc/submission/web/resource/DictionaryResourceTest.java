@@ -46,7 +46,7 @@ public class DictionaryResourceTest extends ResourceTest {
     mockDictionaryService = mock(DictionaryService.class);
     mockReleaseService = mock(ReleaseService.class);
 
-    when(mockDictionaryService.list()).thenReturn(ImmutableList.of(dictionary1, dictionary2));
+    when(mockDictionaryService.getDictionaries()).thenReturn(ImmutableList.of(dictionary1, dictionary2));
     when(mockReleaseService.getNextDictionary()).thenReturn(dictionary2);
 
     return super.configure();

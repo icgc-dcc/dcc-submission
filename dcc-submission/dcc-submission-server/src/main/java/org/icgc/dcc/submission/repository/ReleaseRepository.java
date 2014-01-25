@@ -26,8 +26,6 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -39,53 +37,52 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.inject.Inject;
 
-public class ReleaseRepository extends BaseMorphiaService<Release> {
-
-  private static final QRelease _ = QRelease.release;
+public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   @Inject
-  public ReleaseRepository(Morphia morphia, Datastore datastore, MailService mailService) {
-    super(morphia, datastore, QRelease.release, mailService);
-    super.registerModelClasses(Release.class);
+  public ReleaseRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, QRelease.release);
   }
 
   public Release findOpenRelease() {
-    return where(_.state.eq(OPENED)).singleResult();
+    return singleResult(_.state.eq(OPENED));
   }
 
   public long countOpenReleases() {
-    return where(_.state.eq(OPENED)).count();
+    return count(_.state.eq(OPENED));
   }
 
   public List<Release> findReleases() {
-    return list(query().list());
+    return list();
   }
 
   public Release findNextRelease() {
-    return where(_.state.eq(OPENED)).singleResult();
+    return singleResult(_.state.eq(OPENED));
   }
 
-  public Release findReleaseByName(String releaseName) {
-    return where(_.name.eq(releaseName)).uniqueResult();
+  public Release findReleaseByName(@NonNull String releaseName) {
+    return uniqueResult(_.name.eq(releaseName));
   }
 
-  public Release findCompletedRelease(String releaseName) {
-    return where(_.state.eq(COMPLETED).and(_.name.eq(releaseName))).uniqueResult();
+  public Release findCompletedRelease(@NonNull String releaseName) {
+    return uniqueResult(_.state.eq(COMPLETED).and(_.name.eq(releaseName)));
   }
 
   public List<Release> findCompletedReleases() {
-    return list(where(_.state.eq(COMPLETED)).list());
+    return list(_.state.eq(COMPLETED));
   }
 
   public void saveNewRelease(@NonNull Release newRelease) {
     save(newRelease);
+
+    // TODO: check
   }
 
   public boolean updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease,
       @NonNull String updatedReleaseName, @NonNull String updatedDictionaryVersion) {
     val releaseUpdate = update(
         select()
-            .filter("name = ", releaseName),
+            .filter("name", releaseName),
         updateOperations()
             .set("name", updatedReleaseName)
             .set("dictionaryVersion", updatedDictionaryVersion)
@@ -98,7 +95,7 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   public UpdateResults<Release> updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease) {
     return updateFirst(
         select()
-            .filter("name = ", releaseName),
+            .filter("name", releaseName),
         updatedRelease, false);
   }
 
@@ -115,7 +112,7 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   public void updateReleaseQueue(@NonNull String releaseName, @NonNull List<QueuedProject> queue) {
     val result = update(
         select()
-            .filter("name = ", releaseName),
+            .filter("name", releaseName),
         updateOperations()
             .set("queue", queue));
 
@@ -135,8 +132,8 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
   public void updateReleaseSubmission(@NonNull String releaseName, @NonNull Submission submission) {
     val result = update(
         select()
-            .filter("name = ", releaseName)
-            .filter("submissions.projectKey = ", submission.getProjectKey()),
+            .filter("name", releaseName)
+            .filter("submissions.projectKey", submission.getProjectKey()),
         updateOperations$()
             .set("submissions.$", submission));
 
@@ -149,8 +146,8 @@ public class ReleaseRepository extends BaseMorphiaService<Release> {
       @NonNull SubmissionState state) {
     val result = update(
         select()
-            .filter("name = ", releaseName)
-            .filter("submissions.projectKey = ", projectKey),
+            .filter("name", releaseName)
+            .filter("submissions.projectKey", projectKey),
         updateOperations$()
             .set("submissions.$.state", state));
 

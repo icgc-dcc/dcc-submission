@@ -15,37 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core;
 
-import org.icgc.dcc.submission.core.model.Status;
-import org.icgc.dcc.submission.sftp.SftpServerService;
+package org.icgc.dcc.submission.repository;
 
+import lombok.NonNull;
+
+import org.icgc.dcc.submission.core.model.QUser;
+import org.icgc.dcc.submission.core.model.User;
+
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
-public class SystemService {
-
-  private final SftpServerService sftpService;
+public class UserRepository extends AbstractRepository<User, QUser> {
 
   @Inject
-  private SystemService(SftpServerService sftpService) {
-    super();
-    this.sftpService = sftpService;
+  public UserRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, QUser.user);
   }
 
-  public Status getStatus() {
-    return sftpService.getActiveSessions();
+  public User findUserByUsername(@NonNull String username) {
+    return uniqueResult(_.username.eq(username));
   }
 
-  public boolean isSftpEnabled() {
-    return sftpService.isEnabled();
+  public User saveUser(User user) {
+    save(user);
+
+    return user;
   }
 
-  public void disableSftp() {
-    sftpService.disable();
+  public User updateUser(User user) {
+    return findAndModify(
+        select()
+            .filter("username", user.getUsername()),
+        updateOperations()
+            .set("failedAttempts", user.getFailedAttempts())
+        , false, false);
   }
-
-  public void enableSftp() {
-    sftpService.enable();
-  }
-
 }

@@ -6,7 +6,6 @@ import static org.elasticsearch.common.collect.Lists.newArrayList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import lombok.val;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.Release;
@@ -17,7 +16,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.code.morphia.Datastore;
@@ -33,8 +31,6 @@ public class ReleaseRepositoryTest {
 
   private ReleaseRepository releaseRepository;
 
-  @Mock
-  private MailService mailService;
   private MorphiaQuery<Release> morphiaQuery;
   private Datastore datastore;
   private Release releaseOne;
@@ -56,7 +52,7 @@ public class ReleaseRepositoryTest {
 
     datastore.ensureIndexes();
 
-    releaseRepository = new ReleaseRepository(morphia, datastore, mailService);
+    releaseRepository = new ReleaseRepository(morphia, datastore);
 
     morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }

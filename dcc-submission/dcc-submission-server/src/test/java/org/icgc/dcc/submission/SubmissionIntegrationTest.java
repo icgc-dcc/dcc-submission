@@ -90,7 +90,7 @@ import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.core.model.SubmissionFileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.core.morphia.MorphiaModule;
+import org.icgc.dcc.submission.core.PersistenceModule;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
@@ -111,7 +111,7 @@ import com.google.inject.Inject;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, MorphiaModule.class })
+@GuiceModules({ ConfigModule.class, PersistenceModule.class })
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**

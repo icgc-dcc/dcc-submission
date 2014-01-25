@@ -15,10 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.morphia;
+package org.icgc.dcc.submission.service;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.core.AbstractService.MAX_ATTEMPTS;
+import static org.icgc.dcc.submission.service.AbstractService.MAX_ATTEMPTS;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -27,12 +27,11 @@ import java.util.concurrent.Callable;
 
 import lombok.val;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.DccConcurrencyException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.internal.matchers.Contains;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -42,7 +41,13 @@ import com.google.code.morphia.Morphia;
 import com.mysema.query.types.EntityPath;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BaseMorphiaServiceTest {
+public class AbstractServiceTest {
+
+  /**
+   * Class under test.
+   */
+  @InjectMocks
+  AbstractService service;
 
   /**
    * Dependencies.
@@ -55,16 +60,6 @@ public class BaseMorphiaServiceTest {
   EntityPath<Void> entityPath;
   @Mock
   MailService mailService;
-
-  /**
-   * Class under test.
-   */
-  BaseMorphiaService<Void> service;
-
-  @Before
-  public void setUp() {
-    service = new BaseMorphiaService<Void>(morphia, datastore, entityPath, mailService) {};
-  }
 
   @Test
   public void test_withRetry_pass_first() {

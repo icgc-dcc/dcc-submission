@@ -10,6 +10,8 @@ public class RepositoryModule extends AbstractModule {
     bind(ProjectRepository.class).in(Singleton.class);
     bind(ReleaseRepository.class).in(Singleton.class);
     bind(DictionaryRepository.class).in(Singleton.class);
+    bind(CodeListRepository.class).in(Singleton.class);
+    bind(UserRepository.class).in(Singleton.class);
   }
 
 }

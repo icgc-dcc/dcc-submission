@@ -2,10 +2,8 @@ package org.icgc.dcc.submission.repository;
 
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import lombok.val;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.test.mongodb.EmbeddedMongo;
@@ -13,18 +11,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException.DuplicateKey;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ProjectRepositoryTest {
 
   @Rule
@@ -45,7 +41,6 @@ public class ProjectRepositoryTest {
 
   @Before
   public void setUp() throws Exception {
-    val mailService = mock(MailService.class);
     val morphia = new Morphia();
     val uri = new MongoClientURI(getMongoUri());
 
@@ -58,7 +53,7 @@ public class ProjectRepositoryTest {
 
     datastore.ensureIndexes();
 
-    projectRepository = new ProjectRepository(morphia, datastore, mailService);
+    projectRepository = new ProjectRepository(morphia, datastore);
 
     morphiaQuery = new MorphiaQuery<Project>(morphia, datastore, QProject.project);
   }
@@ -68,30 +63,30 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindAll() {
-    val expected = Sets.newHashSet(projectOne, projectTwo);
-    val actual = projectRepository.findAll();
-    val morphiaResponse = ImmutableSet.copyOf(morphiaQuery.list());
+  public void testFindProjectProjects() {
+    val expected = Lists.newArrayList(projectOne, projectTwo);
+    val actual = projectRepository.findProjects();
+    val morphiaResponse = ImmutableList.copyOf(morphiaQuery.list());
 
     assertThat(actual).isEqualTo(expected);
     assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
-  public void testFindAllForUser() {
-    val expected = Sets.newHashSet(projectOne);
-    val actual = projectRepository.findAllForUser(AUTH_ALLOWED_USER);
+  public void testFindProjectProjectsForUser() {
+    val expected = Lists.newArrayList(projectOne);
+    val actual = projectRepository.findProjectsByUser(AUTH_ALLOWED_USER);
     val morphiaResponse =
-        ImmutableSet.copyOf(morphiaQuery.where(QProject.project.users.contains(AUTH_ALLOWED_USER)).list());
+        ImmutableList.copyOf(morphiaQuery.where(QProject.project.users.contains(AUTH_ALLOWED_USER)).list());
 
     assertThat(actual).isEqualTo(expected);
     assertThat(morphiaResponse).isEqualTo(expected);
   }
 
   @Test
-  public void testFind() {
+  public void testFindProject() {
     val expected = projectOne;
-    val actual = projectRepository.find(projectOne.getKey());
+    val actual = projectRepository.findProject(projectOne.getKey());
     val morphiaResponse = morphiaQuery.where(QProject.project.key.eq(projectOne.getKey())).singleResult();
 
     assertThat(actual).isEqualTo(expected);
@@ -99,9 +94,9 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindForUserAllowed() {
+  public void testFindProjectForUserAllowed() {
     val expected = projectOne;
-    val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_ALLOWED_USER);
+    val actual = projectRepository.findProjectByUser(projectOne.getKey(), AUTH_ALLOWED_USER);
     val morphiaResponse =
         morphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
             .where(QProject.project.users.contains(AUTH_ALLOWED_USER)).singleResult();
@@ -111,8 +106,8 @@ public class ProjectRepositoryTest {
   }
 
   @Test
-  public void testFindForUserNotAllowed() {
-    val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_NOT_ALLOWED_USER);
+  public void testFindProjectForUserNotAllowed() {
+    val actual = projectRepository.findProjectByUser(projectOne.getKey(), AUTH_NOT_ALLOWED_USER);
     val morphiaResponse =
         morphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
             .where(QProject.project.users.contains(AUTH_NOT_ALLOWED_USER)).singleResult();
@@ -125,13 +120,13 @@ public class ProjectRepositoryTest {
   public void testInsertProject() throws Exception {
     val projectThree = new Project("PRJ3", "Project Three");
 
-    assertThat(projectRepository.find(projectThree.getKey())).isNull();
+    assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
 
-    val response = projectRepository.upsert(projectThree);
+    val response = projectRepository.upsertProject(projectThree);
 
     assertThat(response).isNotNull();
 
-    assertThat(projectRepository.find(projectThree.getKey())).isEqualTo(projectThree);
+    assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
     assertThat(morphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
         projectThree);
   }
@@ -140,29 +135,30 @@ public class ProjectRepositoryTest {
   public void testUpdateProject() throws Exception {
     val projectThree = new Project("PRJ3", "Project Three");
 
-    assertThat(projectRepository.find(projectThree.getKey())).isNull();
+    assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
 
-    val first = projectRepository.upsert(projectThree);
+    val first = projectRepository.upsertProject(projectThree);
     projectThree.setAlias("PRJ ALIAS");
-    val second = projectRepository.upsert(projectThree);
+    val second = projectRepository.upsertProject(projectThree);
 
     assertThat(first).isEqualTo(second);
 
-    assertThat(projectRepository.find(projectThree.getKey())).isEqualTo(projectThree);
+    assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
     assertThat(morphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
         projectThree);
   }
 
   @Test(expected = DuplicateKey.class)
   public void testInsertDuplicateProject() throws Exception {
-    assertThat(projectRepository.find("PRJ3")).isNull();
+    assertThat(projectRepository.findProject("PRJ3")).isNull();
 
     // Need to create two objects so it tries to add and not update
-    projectRepository.upsert(new Project("PRJ3", "Project Three"));
-    projectRepository.upsert(new Project("PRJ3", "Project Three"));
+    projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
+    projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
   }
 
   private String getMongoUri() {
     return format("mongodb://localhost:%s/dcc-submission-server.ProjectRepository", embeddedMongo.getPort());
   }
+
 }

@@ -15,18 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core;
+package org.icgc.dcc.submission.service;
 
-public class ProjectServiceException extends RuntimeException {
-  public ProjectServiceException(Exception e) {
-    super(e);
+import static com.google.common.base.Optional.fromNullable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.core.model.User;
+import org.icgc.dcc.submission.repository.UserRepository;
+
+import com.google.common.base.Optional;
+import com.google.inject.Inject;
+
+@Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
+public class UserService {
+
+  @NonNull
+  private final UserRepository userRepository;
+
+  public Optional<User> getUserByUsername(String username) {
+    return fromNullable(userRepository.findUserByUsername(username));
   }
 
-  public ProjectServiceException(String message) {
-    super(message);
+  /**
+   * Saves the information pertaining to user that is relevant to the locking of users after too many failed attempts.
+   * NOT intended for saving roles/permissions and emails at the moment.
+   */
+  public User saveUser(User user) {
+    log.info("Saving user {}", user);
+    return userRepository.saveUser(user);
   }
 
-  public ProjectServiceException(String message, Exception e) {
-    super(message, e);
+  public User reprimandUser(User user) {
+    user.incrementAttempts();
+    return userRepository.updateUser(user);
   }
+
+  public User resetUser(User user) {
+    user.resetAttempts();
+    return userRepository.updateUser(user);
+  }
+
 }
