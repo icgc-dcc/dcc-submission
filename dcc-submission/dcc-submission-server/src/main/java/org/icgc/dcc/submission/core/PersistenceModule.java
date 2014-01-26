@@ -3,10 +3,11 @@ package org.icgc.dcc.submission.core;
 import static org.icgc.dcc.core.model.Configurations.MONGO_URI_KEY;
 import lombok.extern.slf4j.Slf4j;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.google.code.morphia.logging.MorphiaLoggerFactory;
-import com.google.code.morphia.logging.slf4j.SLF4JLogrImplFactory;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.logging.MorphiaLoggerFactory;
+import org.mongodb.morphia.logging.slf4j.SLF4JLogrImplFactory;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;

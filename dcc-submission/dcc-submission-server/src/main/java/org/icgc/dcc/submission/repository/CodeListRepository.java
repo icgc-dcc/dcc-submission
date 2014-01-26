@@ -18,6 +18,8 @@
 
 package org.icgc.dcc.submission.repository;
 
+import static org.icgc.dcc.submission.dictionary.model.QCodeList.codeList;
+
 import java.util.List;
 
 import lombok.NonNull;
@@ -25,16 +27,16 @@ import lombok.NonNull;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.QCodeList;
 import org.icgc.dcc.submission.dictionary.model.Term;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
 public class CodeListRepository extends AbstractRepository<CodeList, QCodeList> {
 
   @Inject
   public CodeListRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, QCodeList.codeList);
+    super(morphia, datastore, codeList);
   }
 
   public List<CodeList> findCodeLists() {
@@ -45,23 +47,23 @@ public class CodeListRepository extends AbstractRepository<CodeList, QCodeList> 
     return uniqueResult(_.name.eq(codeListName));
   }
 
-  public void saveCodeLists(List<CodeList> codeLists) {
+  public void saveCodeLists(@NonNull List<CodeList> codeLists) {
     save(codeLists);
   }
 
-  public void updateCodeList(String codeListName, CodeList updatedCodeList) {
+  public void updateCodeList(@NonNull String codeListName, @NonNull CodeList updatedCodeList) {
     update(
-        select()
+        createQuery()
             .filter("name", codeListName),
-        updateOperations()
+        createUpdateOperations()
             .set("label", updatedCodeList.getLabel()));
   }
 
-  public void addCodeListTerm(String codeListName, Term newTerm) {
+  public void addCodeListTerm(@NonNull String codeListName, @NonNull Term newTerm) {
     update(
-        select()
+        createQuery()
             .filter("name", codeListName),
-        updateOperations()
+        createUpdateOperations()
             .add("terms", newTerm));
   }
 

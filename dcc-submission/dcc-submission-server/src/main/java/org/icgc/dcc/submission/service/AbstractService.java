@@ -18,12 +18,14 @@
 package org.icgc.dcc.submission.service;
 
 import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.Callable;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -46,9 +48,9 @@ public class AbstractService {
   /**
    * Dependencies.
    */
+  @NonNull
   protected final MailService mailService;
 
-  @SneakyThrows
   protected <R> Optional<R> withRetry(String description, Callable<R> callback) {
     return withRetry(description, callback, mailService);
   }
@@ -66,7 +68,7 @@ public class AbstractService {
     int attempts = 0;
     while (attempts < MAX_ATTEMPTS) {
       try {
-        return Optional.<R> fromNullable(callback.call());
+        return fromNullable(callback.call());
       } catch (DccModelOptimisticLockException e) {
         attempts++;
 

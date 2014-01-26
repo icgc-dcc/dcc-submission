@@ -18,17 +18,21 @@
 package org.icgc.dcc.submission.repository;
 
 import static com.mongodb.WriteConcern.ACKNOWLEDGED;
+import static lombok.AccessLevel.PROTECTED;
 
 import java.util.List;
 
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Key;
-import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.Query;
-import com.google.code.morphia.query.UpdateOperations;
-import com.google.code.morphia.query.UpdateResults;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Key;
+import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.query.Query;
+import org.mongodb.morphia.query.UpdateOperations;
+import org.mongodb.morphia.query.UpdateResults;
+
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
@@ -36,48 +40,43 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
+@Accessors(fluent = true)
 public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
 
   /**
    * Dependencies.
    */
+  @Getter(PROTECTED)
   private final Morphia morphia;
+  @Getter(PROTECTED)
   private final Datastore datastore;
 
   /**
-   * Configuration.
+   * Query DSL entity path.
+   * <p>
+   * Named {@code _} to be idiomatic in derived classes.
    */
-  private final EntityPath<E> entityPath;
   protected final Q _;
 
   @Inject
   public AbstractRepository(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull Q entityPath) {
     this.morphia = morphia;
     this.datastore = datastore;
-    this.entityPath = entityPath;
     this._ = entityPath;
 
     registerEntityType(entityPath.getType());
   }
 
-  protected Datastore datastore() {
-    return datastore;
-  }
-
-  protected Morphia morphia() {
-    return morphia;
-  }
-
   protected MongodbQuery<E> query() {
-    return new MorphiaQuery<E>(morphia(), datastore(), entityPath);
-  }
-
-  protected long count(@NonNull Predicate predicate) {
-    return where(predicate).count();
+    return new MorphiaQuery<E>(morphia(), datastore(), _);
   }
 
   protected MongodbQuery<E> where(@NonNull Predicate predicate) {
     return query().where(predicate);
+  }
+
+  protected long count(@NonNull Predicate predicate) {
+    return where(predicate).count();
   }
 
   protected E uniqueResult(@NonNull Predicate predicate) {
@@ -88,8 +87,36 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
     return where(predicate).singleResult();
   }
 
-  protected Query<E> select() {
+  protected List<E> list() {
+    return list(query());
+  }
+
+  protected List<E> list(@NonNull Predicate predicate) {
+    return list(where(predicate));
+  }
+
+  protected List<E> list(@NonNull MongodbQuery<E> query) {
+    return ImmutableList.copyOf(query.list());
+  }
+
+  protected Query<E> createQuery() {
     return datastore().createQuery(getEntityType());
+  }
+
+  protected UpdateOperations<E> createUpdateOperations() {
+    return datastore().createUpdateOperations(getEntityType());
+  }
+
+  /**
+   * This is currently necessary in order to use the {@code field.$.nestedField} notation in updates. Otherwise one gets
+   * an error like:<br>
+   * <blockquote> The field '$' could not be found in 'org.icgc.dcc.submission.release.model.Release' while validating -
+   * submissions.$.state; if you wish to continue please disable validation. </blockquote>
+   * 
+   * @see https://groups.google.com/d/msg/morphia/ta-qd_XrgaE/hO7KTjPWNyEJ
+   */
+  protected UpdateOperations<E> createUpdateOperations$() {
+    return createUpdateOperations().disableValidation();
   }
 
   protected <R> UpdateResults<R> update(@NonNull Query<R> query, @NonNull UpdateOperations<R> ops) {
@@ -117,42 +144,14 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
     return datastore().save(entities, ACKNOWLEDGED);
   }
 
-  protected List<E> list() {
-    return list(query());
-  }
-
-  protected List<E> list(@NonNull Predicate predicate) {
-    return list(where(predicate));
-  }
-
-  protected List<E> list(@NonNull MongodbQuery<E> query) {
-    return ImmutableList.copyOf(query.list());
-  }
-
-  protected UpdateOperations<E> updateOperations() {
-    return datastore().createUpdateOperations(getEntityType());
-  }
-
-  /**
-   * This is currently necessary in order to use the <i>field.$.nestedField</i> notation in updates. Otherwise one gets
-   * an error like: <q>
-   * "The field '$' could not be found in 'org.icgc.dcc.submission.release.model.Release' while validating - submissions.$.state; if you wish to continue please disable validation."
-   * </p>
-   * 
-   * @see https://groups.google.com/d/msg/morphia/ta-qd_XrgaE/hO7KTjPWNyEJ
-   */
-  protected UpdateOperations<E> updateOperations$() {
-    return updateOperations().disableValidation();
+  private void registerEntityType(Class<?> entityType) {
+    morphia().map(entityType);
+    datastore().ensureIndexes(entityType);
   }
 
   @SuppressWarnings("unchecked")
   private Class<E> getEntityType() {
-    return (Class<E>) entityPath.getType();
-  }
-
-  private void registerEntityType(Class<?> entityType) {
-    morphia.map(entityType);
-    datastore.ensureIndexes(entityType);
+    return (Class<E>) _.getType();
   }
 
 }

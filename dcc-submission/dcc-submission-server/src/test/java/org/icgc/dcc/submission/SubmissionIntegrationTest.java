@@ -103,9 +103,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mongodb.morphia.Datastore;
 
 import com.dumbster.smtp.SimpleSmtpServer;
-import com.google.code.morphia.Datastore;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 

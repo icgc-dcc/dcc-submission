@@ -51,9 +51,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.common.base.Throwables;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
@@ -204,14 +204,14 @@ public class ReleaseServiceTest {
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
-    releaseService.signOff(nextReleaseRelease, projectKeys, user);
+    releaseService.signOffRelease(nextReleaseRelease, projectKeys, user);
 
     assertTrue(nextReleaseRelease.isSignOffAllowed());
   }
 
   // @Test
   public void test_update_valid() {
-    val updatedRelease = releaseService.update("not_existing_release", "existing_dictionary");
+    val updatedRelease = releaseService.updateRelease("not_existing_release", "existing_dictionary");
 
     assertNotNull(updatedRelease);
     assertEquals("not_existing_release", updatedRelease.getName());
@@ -225,7 +225,7 @@ public class ReleaseServiceTest {
     projectKeys.add("p1");
     String user = "admin";
     try {
-      releaseService.signOff(newRelease, projectKeys, user);
+      releaseService.signOffRelease(newRelease, projectKeys, user);
     } catch (InvalidStateException e) {
       throw new RuntimeException(e);
     } catch (DccModelOptimisticLockException e) {
@@ -234,7 +234,7 @@ public class ReleaseServiceTest {
 
     Release nextRelease = null;
     try {
-      nextRelease = releaseService.release(newRelease.getName());
+      nextRelease = releaseService.performRelease(newRelease.getName());
     } catch (InvalidStateException e) {
       Throwables.propagate(e);
     }

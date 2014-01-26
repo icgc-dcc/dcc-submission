@@ -17,20 +17,19 @@
  */
 package org.icgc.dcc.submission.service;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.sftp.SftpServerService;
 
 import com.google.inject.Inject;
 
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class SystemService {
 
+  @NonNull
   private final SftpServerService sftpService;
-
-  @Inject
-  private SystemService(SftpServerService sftpService) {
-    super();
-    this.sftpService = sftpService;
-  }
 
   public Status getStatus() {
     return sftpService.getActiveSessions();

@@ -36,10 +36,6 @@ import org.mockito.Mock;
 import org.mockito.internal.matchers.Contains;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.mysema.query.types.EntityPath;
-
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractServiceTest {
 
@@ -52,12 +48,6 @@ public class AbstractServiceTest {
   /**
    * Dependencies.
    */
-  @Mock
-  Morphia morphia;
-  @Mock
-  Datastore datastore;
-  @Mock
-  EntityPath<Void> entityPath;
   @Mock
   MailService mailService;
 

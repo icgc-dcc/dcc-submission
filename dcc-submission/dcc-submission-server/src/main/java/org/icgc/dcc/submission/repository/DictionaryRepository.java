@@ -19,6 +19,7 @@
 package org.icgc.dcc.submission.repository;
 
 import static org.icgc.dcc.submission.dictionary.model.DictionaryState.CLOSED;
+import static org.icgc.dcc.submission.dictionary.model.QDictionary.dictionary;
 
 import java.util.List;
 
@@ -26,19 +27,19 @@ import lombok.NonNull;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
 public class DictionaryRepository extends AbstractRepository<Dictionary, QDictionary> {
 
   @Inject
   public DictionaryRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, QDictionary.dictionary);
+    super(morphia, datastore, dictionary);
   }
 
-  public long countDictionariesByVersion(String version) {
+  public long countDictionariesByVersion(@NonNull String version) {
     return count(_.version.eq(version));
   }
 
@@ -54,18 +55,18 @@ public class DictionaryRepository extends AbstractRepository<Dictionary, QDictio
     save(dictionary);
   }
 
-  public void updateDictionary(Dictionary dictionary) {
+  public void updateDictionary(@NonNull Dictionary dictionary) {
     updateFirst(
-        select()
+        createQuery()
             .filter("version", dictionary.getVersion()),
         dictionary, false);
   }
 
   public void closeDictionary(@NonNull String version) {
     findAndModify(
-        select()
+        createQuery()
             .filter("version", version),
-        updateOperations()
+        createUpdateOperations()
             .set("state", CLOSED));
   }
 

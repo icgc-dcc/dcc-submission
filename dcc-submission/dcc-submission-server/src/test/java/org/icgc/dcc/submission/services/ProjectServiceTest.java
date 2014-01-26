@@ -19,8 +19,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mongodb.morphia.Key;
 
-import com.google.code.morphia.Key;
 import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)

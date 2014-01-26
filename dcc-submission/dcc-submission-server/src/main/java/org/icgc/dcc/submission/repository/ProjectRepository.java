@@ -18,6 +18,8 @@
 
 package org.icgc.dcc.submission.repository;
 
+import static org.icgc.dcc.submission.core.model.QProject.project;
+
 import java.util.List;
 
 import lombok.NonNull;
@@ -25,17 +27,17 @@ import lombok.val;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Key;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Key;
-import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
 public class ProjectRepository extends AbstractRepository<Project, QProject> {
 
   @Inject
   public ProjectRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, QProject.project);
+    super(morphia, datastore, project);
   }
 
   public Project findProject(@NonNull String projectKey) {
@@ -60,12 +62,9 @@ public class ProjectRepository extends AbstractRepository<Project, QProject> {
 
   /**
    * Upsert will either insert or update the Project depending on whether it already exists in the database. Existence
-   * check is based on whether the Project already has an Id. <br>
-   * <br>
-   * If the Project is missing an Id and already exists, Mongo with throw
-   * {@link com.mongodb.MongoException.DuplicateKey}. <br>
-   * If the Project has an Id and already exists it will be updated. <br>
-   * Otherwise it will be added.
+   * check is based on whether the Project already has an Id. If the Project is missing an Id and already exists, Mongo
+   * with throw {@link com.mongodb.MongoException.DuplicateKey}. If the Project has an Id and already exists it will be
+   * updated. Otherwise it will be added.
    * 
    * @return Response object from Mongo
    */

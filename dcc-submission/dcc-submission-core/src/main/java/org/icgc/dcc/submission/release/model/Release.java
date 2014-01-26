@@ -45,8 +45,8 @@ import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.util.NameValidator;
+import org.mongodb.morphia.annotations.Entity;
 
-import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -198,12 +198,12 @@ public class Release extends BaseEntity implements HasName {
    * Returns the list of project keys that are queued (possibly empty)
    */
   public List<String> getQueuedProjectKeys() {
-    val projectKeys = Lists.<String> newArrayList();
+    val projectKeys = ImmutableList.<String> builder();
     for (val queuedProject : queue) {
       projectKeys.add(queuedProject.getKey());
     }
 
-    return projectKeys;
+    return projectKeys.build();
   }
 
   public void enqueue(QueuedProject queuedProject) {

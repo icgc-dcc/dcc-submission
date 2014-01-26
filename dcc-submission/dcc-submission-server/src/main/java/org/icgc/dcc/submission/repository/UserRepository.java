@@ -18,38 +18,40 @@
 
 package org.icgc.dcc.submission.repository;
 
+import static org.icgc.dcc.submission.core.model.QUser.user;
 import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.model.QUser;
 import org.icgc.dcc.submission.core.model.User;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
 public class UserRepository extends AbstractRepository<User, QUser> {
 
   @Inject
   public UserRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, QUser.user);
+    super(morphia, datastore, user);
   }
 
   public User findUserByUsername(@NonNull String username) {
     return uniqueResult(_.username.eq(username));
   }
 
-  public User saveUser(User user) {
+  public User saveUser(@NonNull User user) {
     save(user);
 
     return user;
   }
 
-  public User updateUser(User user) {
+  public User updateUser(@NonNull User user) {
     return findAndModify(
-        select()
+        createQuery()
             .filter("username", user.getUsername()),
-        updateOperations()
-            .set("failedAttempts", user.getFailedAttempts())
-        , false, false);
+        createUpdateOperations()
+            .set("failedAttempts", user.getFailedAttempts()),
+        false, false);
   }
+
 }

@@ -27,7 +27,8 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.google.code.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Embedded;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;

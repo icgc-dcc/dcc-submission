@@ -26,7 +26,7 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.val;
 
-import com.google.code.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Embedded;
 
 @Embedded
 @Data

@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.repository;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.release.model.QRelease.release;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
@@ -31,17 +32,17 @@ import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.query.UpdateResults;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.UpdateResults;
 import com.google.inject.Inject;
 
 public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   @Inject
   public ReleaseRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, QRelease.release);
+    super(morphia, datastore, release);
   }
 
   public Release findOpenRelease() {
@@ -74,16 +75,14 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   public void saveNewRelease(@NonNull Release newRelease) {
     save(newRelease);
-
-    // TODO: check
   }
 
   public boolean updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease,
       @NonNull String updatedReleaseName, @NonNull String updatedDictionaryVersion) {
     val releaseUpdate = update(
-        select()
+        createQuery()
             .filter("name", releaseName),
-        updateOperations()
+        createUpdateOperations()
             .set("name", updatedReleaseName)
             .set("dictionaryVersion", updatedDictionaryVersion)
             .set("queue", updatedRelease.getQueue()));
@@ -94,16 +93,17 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   public UpdateResults<Release> updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease) {
     return updateFirst(
-        select()
+        createQuery()
             .filter("name", releaseName),
-        updatedRelease, false);
+        updatedRelease,
+        false);
   }
 
   public Release updateCompletedRelease(@NonNull Release completedRelease) {
     return findAndModify(
-        select()
+        createQuery()
             .filter("name", completedRelease.getName()),
-        updateOperations()
+        createUpdateOperations()
             .set("state", completedRelease.getState())
             .set("releaseDate", completedRelease.getReleaseDate())
             .set("submissions", completedRelease.getSubmissions()));
@@ -111,9 +111,9 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   public void updateReleaseQueue(@NonNull String releaseName, @NonNull List<QueuedProject> queue) {
     val result = update(
-        select()
+        createQuery()
             .filter("name", releaseName),
-        updateOperations()
+        createUpdateOperations()
             .set("queue", queue));
 
     checkState(result.getUpdatedCount() == 1,
@@ -123,18 +123,18 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   public Release addReleaseSubmission(@NonNull String releaseName, @NonNull Submission submission) {
     return findAndModify(
-        select()
+        createQuery()
             .field("name").equal(releaseName),
-        updateOperations()
+        createUpdateOperations()
             .add("submissions", submission));
   }
 
   public void updateReleaseSubmission(@NonNull String releaseName, @NonNull Submission submission) {
     val result = update(
-        select()
+        createQuery()
             .filter("name", releaseName)
             .filter("submissions.projectKey", submission.getProjectKey()),
-        updateOperations$()
+        createUpdateOperations$()
             .set("submissions.$", submission));
 
     checkState(result.getUpdatedCount() == 1,
@@ -145,10 +145,10 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   public void updateReleaseSubmissionState(@NonNull String releaseName, @NonNull String projectKey,
       @NonNull SubmissionState state) {
     val result = update(
-        select()
+        createQuery()
             .filter("name", releaseName)
             .filter("submissions.projectKey", projectKey),
-        updateOperations$()
+        createUpdateOperations$()
             .set("submissions.$.state", state));
 
     checkState(result.getUpdatedCount() == 1,

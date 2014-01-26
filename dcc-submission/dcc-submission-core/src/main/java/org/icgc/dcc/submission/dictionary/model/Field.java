@@ -29,8 +29,8 @@ import lombok.val;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
+import org.mongodb.morphia.annotations.Embedded;
 
-import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;

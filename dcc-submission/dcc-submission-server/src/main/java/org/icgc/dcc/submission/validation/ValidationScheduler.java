@@ -97,7 +97,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     if (cancelled) {
       // TODO: Determine when this should / needs to be called
       log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
-      releaseService.deleteQueuedRequest(projectKey);
+      releaseService.removeQueuedSubmissions(projectKey);
     }
   }
 

@@ -11,23 +11,18 @@ import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.test.mongodb.EmbeddedMongo;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.mongodb.MongoClientURI;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ReleaseRepositoryTest {
-
-  @Rule
-  public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
+public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
   private ReleaseRepository releaseRepository;
 

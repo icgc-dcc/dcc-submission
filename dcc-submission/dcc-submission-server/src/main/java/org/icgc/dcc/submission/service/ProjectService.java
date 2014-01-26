@@ -12,8 +12,8 @@ import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.mongodb.morphia.Key;
 
-import com.google.code.morphia.Key;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 

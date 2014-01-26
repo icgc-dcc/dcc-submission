@@ -6,14 +6,12 @@ import lombok.val;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
-import org.icgc.dcc.test.mongodb.EmbeddedMongo;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -21,10 +19,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException.DuplicateKey;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
-public class ProjectRepositoryTest {
-
-  @Rule
-  public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
+public class ProjectRepositoryTest extends AbstractRepositoryTest {
 
   private final String AUTH_ALLOWED_USER = "richard";
   private final String AUTH_NOT_ALLOWED_USER = "ricardo";
