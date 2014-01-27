@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.service;
 
 import static com.google.common.base.Joiner.on;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
@@ -51,7 +50,6 @@ import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import lombok.NonNull;
@@ -86,7 +84,6 @@ import org.icgc.dcc.submission.validation.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.web.InvalidNameException;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
-import org.mongodb.morphia.query.UpdateResults;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -238,27 +235,29 @@ public class ReleaseService extends AbstractService {
   @Synchronized
   public void createInitialRelease(Release initRelease) {
     // check for init release name
-    if (!NameValidator.validateEntityName(initRelease.getName())) {
+    val releaseName = initRelease.getName();
+    if (!NameValidator.validateEntityName(releaseName)) {
       throw new InvalidNameException(initRelease.getName());
     }
 
     val dictionaryVersion = initRelease.getDictionaryVersion();
     log.info("Dictionary version used: '{}'", dictionaryVersion);
 
-    if (dictionaryVersion == null) {
-      throw new ReleaseException("Dictionary version must not be null!");
+    val missing = dictionaryVersion == null;
+    if (missing) {
+      throw new ReleaseException("Dictionary version must not be null for initial release '%s'", releaseName);
     } else if (dictionaryRepository.findDictionaryByVersion(dictionaryVersion) == null) {
-      throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
+      throw new ReleaseException("Specified dictionary version '%s' not found", dictionaryVersion);
     }
 
     // Just use name and dictionaryVersion from incoming json
-    val nextRelease = new Release(initRelease.getName());
+    val nextRelease = new Release(releaseName);
     nextRelease.setDictionaryVersion(dictionaryVersion);
-    log.info("Saving new release: '{}'", nextRelease.getName());
+    log.info("Saving new release: '{}'", releaseName);
     releaseRepository.saveNewRelease(nextRelease);
 
-    // after initial release, create initial file system
-    Set<String> projects = Sets.newHashSet();
+    // After initial release, create initial file system
+    val projects = Sets.<String> newHashSet();
     dccFileSystem.createInitialReleaseFilesystem(nextRelease, projects);
   }
 
@@ -373,16 +372,17 @@ public class ReleaseService extends AbstractService {
     val sameDictionary = oldDictionaryVersion.equals(newDictionaryVersion);
 
     if (!validateEntityName(newReleaseName)) {
-      throw new ReleaseException("Updated release name " + newReleaseName + " is not valid");
+      throw new ReleaseException("Updated release name '%s' is not valid", newReleaseName);
     }
     if (sameName == false && releaseRepository.findReleaseByName(newReleaseName) != null) {
-      throw new ReleaseException("New release name " + newReleaseName + " conflicts with an existing release");
+      throw new ReleaseException("New release name '%s' conflicts with an existing release", newReleaseName);
     }
     if (newDictionaryVersion == null) {
       throw new ReleaseException("Release must have associated dictionary before being updated");
     }
     if (sameDictionary == false && dictionaryRepository.findDictionaryByVersion(newDictionaryVersion) == null) {
-      throw new ReleaseException("Release must point to an existing dictionary, no match for " + newDictionaryVersion);
+      throw new ReleaseException("Release must point to an existing dictionary, no match for '%s'",
+          newDictionaryVersion);
     }
 
     // Update release object and database entity (top-level entity only)
@@ -438,7 +438,12 @@ public class ReleaseService extends AbstractService {
 
   public Submission getSubmission(String releaseName, String projectKey) {
     val release = releaseRepository.findReleaseByName(releaseName);
-    checkArgument(release != null);
+    val missing = release == null;
+    if (missing) {
+      throw new ReleaseException(
+          "No release with name '%s' found when attempting to get submission with project key '%s'",
+          releaseName, projectKey);
+    }
 
     return getSubmission(release, projectKey);
   }
@@ -457,12 +462,13 @@ public class ReleaseService extends AbstractService {
   public List<SubmissionFile> getSubmissionFiles(@NonNull String releaseName, @NonNull String projectKey) {
     val release = releaseRepository.findReleaseByName(releaseName);
     if (release == null) {
-      throw new ReleaseException("No such release");
+      throw new ReleaseException("No release with name '%s'", releaseName);
     }
 
     val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
     if (dictionary == null) {
-      throw new ReleaseException("No Dictionary " + release.getDictionaryVersion());
+      throw new ReleaseException("No dictionary with version '%s' found for release '%s'",
+          release.getDictionaryVersion(), release.getName());
     }
 
     val submissionFiles = new ArrayList<SubmissionFile>();
@@ -524,7 +530,7 @@ public class ReleaseService extends AbstractService {
         val dequeuedProject = nextRelease.dequeueProject();
         val dequeuedProjectKey = dequeuedProject.getKey();
         if (dequeuedProjectKey.equals(nextProjectKey) == false) { // not recoverable: TODO: create dedicated exception?
-          throw new ReleaseException("Mismatch: " + dequeuedProjectKey + " != " + nextProjectKey);
+          throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, nextProjectKey);
         }
 
         // Update release object
@@ -532,9 +538,8 @@ public class ReleaseService extends AbstractService {
         val currentState = submission.getState();
         val nextState = SubmissionState.VALIDATING;
         if (expectedState != currentState) {
-          throw new ReleaseException( // not recoverable
-              "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState
-                  + " instead), cannot set to " + nextState);
+          throw new ReleaseException("Project '%s' is not '%s' ('%s' instead), cannot set to '%s'",
+              nextProjectKey, expectedState, currentState, nextState);
         }
 
         submissionService.validate(submission, nextProject.getDataTypes());
@@ -650,7 +655,8 @@ public class ReleaseService extends AbstractService {
 
     if (!emails.isEmpty()) {
       log.info("Sending notification emails for project '{}'...", projectKey);
-      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState());
+      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState(),
+          submission.getDataState());
     }
 
     log.info("Resolved project '{}'", projectKey);
@@ -733,16 +739,11 @@ public class ReleaseService extends AbstractService {
    */
   private void updateReleaseSafely(@NonNull String originalReleaseName, @NonNull Release updatedRelease)
       throws DccModelOptimisticLockException {
-    UpdateResults<Release> update = null;
     try {
-      update = releaseRepository.updateRelease(originalReleaseName, updatedRelease);
+      releaseRepository.updateRelease(originalReleaseName, updatedRelease);
     } catch (ConcurrentModificationException e) { // see method comments for why this could be thrown
-      log.warn("a possibly recoverable concurrency issue arose when trying to update release {}", originalReleaseName);
+      log.warn("A possibly recoverable concurrency issue arose when trying to update release {}", originalReleaseName);
       throw new DccModelOptimisticLockException(e);
-    }
-    if (update == null || update.getHadError()) {
-      log.error("an unrecoverable error happenend when trying to update release {}", originalReleaseName);
-      throw new ReleaseException(String.format("failed to update release %s", originalReleaseName));
     }
   }
 
@@ -790,8 +791,7 @@ public class ReleaseService extends AbstractService {
       return optional.get();
     }
 
-    throw new ReleaseException(format("There is no project \"%s\" associated with release \"%s\"",
-        projectKey, release.getName()));
+    throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, release.getName());
   }
 
   private SubmissionFile getSubmissionFile(Dictionary dictionary, Path path) {
@@ -858,8 +858,8 @@ public class ReleaseService extends AbstractService {
   private Submission getSubmissionByProjectKey(@NonNull Release release, @NonNull String projectKey) {
     val optional = release.getSubmissionByProjectKey(projectKey);
     if (!optional.isPresent()) {
-      throw new ReleaseException(format("There is no project '%s' associated with release '%s'",
-          projectKey, release.getName()));
+      throw new ReleaseException("There is no project '%s' associated with release '%s'",
+          projectKey, release.getName());
     }
 
     return optional.get();

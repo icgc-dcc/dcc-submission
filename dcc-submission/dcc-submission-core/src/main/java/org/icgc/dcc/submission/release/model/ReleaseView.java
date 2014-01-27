@@ -87,13 +87,14 @@ public class ReleaseView {
   }
 
   public DetailedSubmission getDetailedSubmission(String projectKey) {
-    for (DetailedSubmission submission : submissions) {
-      if (submission.getProjectKey().equals(projectKey)) {
+    for (val submission : submissions) {
+      val match = submission.getProjectKey().equals(projectKey);
+      if (match) {
         return submission;
       }
     }
-    throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
-        this.name));
+
+    throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, name);
   }
 
   public String getName() {

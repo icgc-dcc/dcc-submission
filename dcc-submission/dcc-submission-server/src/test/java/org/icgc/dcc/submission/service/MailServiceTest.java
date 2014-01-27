@@ -23,12 +23,15 @@ import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterrup
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
+import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.service.MailService.MAIL_ENABLED;
 import static org.icgc.dcc.submission.service.MailService.MAIL_ERROR_BODY;
 import static org.icgc.dcc.submission.service.MailService.MAIL_FROM;
 import static org.icgc.dcc.submission.service.MailService.MAIL_INVALID_BODY;
 import static org.icgc.dcc.submission.service.MailService.MAIL_NOTIFICATION_RECIPIENT;
+import static org.icgc.dcc.submission.service.MailService.MAIL_NOT_VALIDATED_BODY;
 import static org.icgc.dcc.submission.service.MailService.MAIL_SIGNOFF_BODY;
 import static org.icgc.dcc.submission.service.MailService.MAIL_SMTP_HOST;
 import static org.icgc.dcc.submission.service.MailService.MAIL_SUPPORT_RECIPIENT;
@@ -52,6 +55,8 @@ import javax.mail.internet.MimeMessage;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.elasticsearch.common.collect.Lists;
+import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,8 +121,9 @@ public class MailServiceTest {
     val state = ERROR;
     val emails = newArrayList("email@domain.com");
     val addresses = newHashSet(address("email@domain.com"));
+    val dataTypeState = Lists.<DataTypeState> newArrayList(new DataTypeState(CLINICAL_CORE_TYPE, state));
 
-    mailService.sendValidationResult(releaseName, projectKey, emails, state);
+    mailService.sendValidationResult(releaseName, projectKey, emails, state, dataTypeState);
     sleepUninterruptibly(1, SECONDS);
 
     verifyStatic(times(2));
@@ -137,6 +143,39 @@ public class MailServiceTest {
     assertThat(supportMessage.getAllRecipients()).containsAll(addresses);
     assertThat(supportMessage.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
     assertThat(supportMessage.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
+  }
+
+  @Test
+  @SneakyThrows
+  public void test_sendValidated_with_NOT_VALIDATED_state() {
+    val releaseName = "releaseName";
+    val projectKey = "projectKey";
+    val state = NOT_VALIDATED;
+    val emails = newArrayList("email@domain.com");
+    val addresses = newHashSet(address("email@domain.com"));
+    val dataTypeState = Lists.<DataTypeState> newArrayList(new DataTypeState(CLINICAL_CORE_TYPE, state));
+
+    mailService.sendValidationResult(releaseName, projectKey, emails, state, dataTypeState);
+    sleepUninterruptibly(1, SECONDS);
+
+    verifyStatic(times(2));
+
+    val messages = getMessages();
+    assertThat(messages.size()).isEqualTo(2);
+
+    val m1 = messages.get(0);
+    val m2 = messages.get(1);
+    val notifyMessage = isNotification(m1) ? m1 : m2;
+    val supportMessage = isNotification(m1) ? m2 : m1;
+
+    assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
+
+    assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(supportMessage.getAllRecipients()).containsAll(addresses);
+    assertThat(supportMessage.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+    assertThat(supportMessage.getContent()).isEqualTo(
+        template(MAIL_NOT_VALIDATED_BODY, projectKey, state, projectKey, projectKey));
   }
 
   private static boolean isNotification(MimeMessage message) throws MessagingException {
@@ -169,7 +208,7 @@ public class MailServiceTest {
       when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn("%s:%s:%s");
     }
-    for (val name : new String[] { MAIL_VALID_BODY, MAIL_INVALID_BODY }) {
+    for (val name : new String[] { MAIL_NOT_VALIDATED_BODY, MAIL_INVALID_BODY, MAIL_VALID_BODY }) {
       when(config.hasPath(name)).thenReturn(true);
       when(config.getString(name)).thenReturn("%s:%s:%s:%s");
     }

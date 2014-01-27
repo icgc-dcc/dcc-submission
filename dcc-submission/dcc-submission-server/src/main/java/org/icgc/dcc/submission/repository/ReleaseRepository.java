@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.repository;
 
 import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.release.model.QRelease.release;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
@@ -34,7 +35,6 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.query.UpdateResults;
 
 import com.google.inject.Inject;
 
@@ -95,12 +95,16 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
     return success;
   }
 
-  public UpdateResults<Release> updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease) {
-    return updateFirst(
+  public void updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease) {
+    val result = updateFirst(
         createQuery()
             .filter("name", releaseName),
         updatedRelease,
         false);
+
+    if (result.getHadError()) {
+      throw new IllegalStateException(format("Error updating release '%s': %s", releaseName, result.getError()));
+    }
   }
 
   public Release updateCompletedRelease(@NonNull Release completedRelease) {

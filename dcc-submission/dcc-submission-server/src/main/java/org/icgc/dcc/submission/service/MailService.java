@@ -21,6 +21,7 @@ import static java.lang.String.format;
 import static javax.mail.Message.RecipientType.TO;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
 import java.io.UnsupportedEncodingException;
@@ -46,6 +47,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Feedback;
+import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -84,10 +86,11 @@ public class MailService {
   /**
    * Body property names.
    */
-  public static final String MAIL_SIGNOFF_BODY = "mail.signoff_body";
   public static final String MAIL_ERROR_BODY = "mail.error_body";
-  public static final String MAIL_VALID_BODY = "mail.valid_body";
+  public static final String MAIL_NOT_VALIDATED_BODY = "mail.not_validated_body";
   public static final String MAIL_INVALID_BODY = "mail.invalid_body";
+  public static final String MAIL_VALID_BODY = "mail.valid_body";
+  public static final String MAIL_SIGNOFF_BODY = "mail.signoff_body";
 
   /**
    * Prefix used in the subject of a notification email.
@@ -109,7 +112,7 @@ public class MailService {
   @NonNull
   private final Config config;
 
-  public void sendSupportFeedback(Feedback feedback) {
+  public void sendSupportFeedback(@NonNull Feedback feedback) {
     sendNotification(format("Feedback from %s - '%s'", feedback.getEmail(), feedback.getSubject()),
         feedback.getMessage());
 
@@ -120,7 +123,7 @@ public class MailService {
         feedback.getMessage());
   }
 
-  public void sendSupportProblem(String subject, String message) {
+  public void sendSupportProblem(@NonNull String subject, @NonNull String message) {
     sendNotification(format("Support issue - '%s'", subject));
 
     send(
@@ -130,46 +133,49 @@ public class MailService {
         message);
   }
 
-  public void sendFileTransferred(String user, String path) {
+  public void sendFileTransferred(@NonNull String user, @NonNull String path) {
     sendNotification(format("User '%s' finished transferring file '%s'",
         user, path));
   }
 
-  public void sendFileRemoved(String user, String path) {
+  public void sendFileRemoved(@NonNull String user, @NonNull String path) {
     sendNotification(format("User '%s' removed file '%s'",
         user, path));
   }
 
-  public void sendSignoff(String user, List<String> projectKeys, String nextReleaseName) {
+  public void sendSignoff(@NonNull String user, @NonNull List<String> projectKeys, @NonNull String nextReleaseName) {
     sendNotification(
         format("Signed off Projects: %s", projectKeys),
         template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
   }
 
-  public void sendValidationStarted(String releaseName, String projectKey, List<String> emails) {
+  public void sendValidationStarted(@NonNull String releaseName, @NonNull String projectKey,
+      @NonNull List<String> emails) {
     sendNotification(format("Validation started for release '%s' project '%s' (on behalf of '%s')",
         releaseName, projectKey, emails));
   }
 
-  public void sendValidationFinsished(String releaseName, String projectKey, List<String> emails, SubmissionState state) {
-    sendNotification(format("Validation finished for release '%s' project '%s' (on behalf of '%s') with state '%s'",
-        releaseName, projectKey, emails, state));
+  public void sendValidationFinsished(@NonNull String releaseName, @NonNull String projectKey,
+      @NonNull List<String> emails, @NonNull SubmissionState state, @NonNull List<DataTypeState> dataTypeState) {
+    sendNotification(format(
+        "Validation finished for release '%s' project '%s' (on behalf of '%s') with state '%s' and data type state '%s'",
+        releaseName, projectKey, emails, state, dataTypeState));
   }
 
-  public void sendValidationResult(final String releaseName, final String projectKey, final List<String> emails,
-      final SubmissionState state) {
+  public void sendValidationResult(@NonNull String releaseName, @NonNull String projectKey,
+      @NonNull List<String> emails, @NonNull SubmissionState state, @NonNull List<DataTypeState> dataTypeState) {
     if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
     }
 
-    sendValidationFinsished(releaseName, projectKey, emails, state);
+    sendValidationFinsished(releaseName, projectKey, emails, state, dataTypeState);
 
     try {
       val message = message();
       message.setFrom(address(get(MAIL_FROM)));
       message.addRecipients(TO, addresses(emails));
-      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state, dataTypeState));
       message.setText(getResult(projectKey, state));
 
       send(message);
@@ -181,10 +187,11 @@ public class MailService {
   private String getResult(final String projectKey, final SubmissionState state) {
     // @formatter:off
     return
-      state == ERROR   ? template(MAIL_ERROR_BODY,   projectKey, state)                         : 
-      state == VALID   ? template(MAIL_VALID_BODY,   projectKey, state, projectKey, projectKey) :
-      state == INVALID ? template(MAIL_INVALID_BODY, projectKey, state, projectKey, projectKey) : 
-                         format("Unexpected validation state '%s' prevented loading email text.", state);
+      state == ERROR         ? template(MAIL_ERROR_BODY,           projectKey, state)                         : 
+      state == NOT_VALIDATED ? template(MAIL_NOT_VALIDATED_BODY,   projectKey, state, projectKey, projectKey) :
+      state == VALID         ? template(MAIL_VALID_BODY,           projectKey, state, projectKey, projectKey) :
+      state == INVALID       ? template(MAIL_INVALID_BODY,         projectKey, state, projectKey, projectKey) : 
+                               format("Unexpected validation state '%s' prevented loading email text.", state);
     // @formatter:on
   }
 
