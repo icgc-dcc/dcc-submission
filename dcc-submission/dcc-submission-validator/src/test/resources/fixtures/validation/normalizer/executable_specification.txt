@@ -57,6 +57,9 @@ type	mt	ref	ctr	tmr	frm	to	mut	marking
 
 input	1	A	A/A	A/C	A	C
 result	1	A	A/A	A/C	A	C	A>C	OPEN
+
+input	1	A	A/A	C/C	A	C
+result	1	A	A/A	C/C	A	C	A>C	OPEN
 									
 input	1	A	A/G	A/C	G	C			
 result	1	A	A/G	A/C	G	C	G>C	CTRL
@@ -93,8 +96,7 @@ input	2	-	-/-	-/A	-	A
 result	2	-	-/-	-/A	-	A	->A	OPEN	
 									
 input	2	-	-/-	A/A	-	A		
-result	2	-	-/-	A/A	-	A	->A	CTRL	
-result	2	-			-	A	->A	MASK	
+result	2	-	-/-	A/A	-	A	->A	OPEN	
 									
 input	2	-	-/A	A/A	-	A		
 result	2	-	-/A	A/A	-	A	->A	CTRL	
