@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.sshd.server.SshFile;
+import org.apache.sshd.common.file.SshFile;
 
 import com.google.inject.TypeLiteral;
 
@@ -36,9 +36,7 @@ import com.google.inject.TypeLiteral;
 @NoArgsConstructor(access = PRIVATE)
 public final class HdfsFileUtils {
 
-  // @formatter:off
-  public static final TypeLiteral<List<SshFile>> SshFileList = new TypeLiteral<List<SshFile>>() {{}};
-  // @formatter:oon
+  public static final TypeLiteral<List<SshFile>> SshFileList = new TypeLiteral<List<SshFile>>() {};
 
   /**
    * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate

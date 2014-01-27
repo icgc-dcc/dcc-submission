@@ -28,8 +28,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.sshd.server.FileSystemView;
-import org.apache.sshd.server.SshFile;
+import org.apache.sshd.common.file.FileSystemView;
+import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 /**

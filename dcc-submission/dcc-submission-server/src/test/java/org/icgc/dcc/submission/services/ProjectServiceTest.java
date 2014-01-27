@@ -140,7 +140,7 @@ public class ProjectServiceTest {
 
     val expected = Sets.newHashSet(submissionOne, submissionTwo);
 
-    val actual = projectService.extractSubmissions(releases, projectOne.getKey());
+    val actual = projectService.getSubmissions(releases, projectOne.getKey());
 
     assertThat(actual).isEqualTo(expected);
   }

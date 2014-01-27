@@ -49,6 +49,10 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
     return singleResult(_.state.eq(OPENED));
   }
 
+  public long countReleases() {
+    return count();
+  }
+
   public long countOpenReleases() {
     return count(_.state.eq(OPENED));
   }

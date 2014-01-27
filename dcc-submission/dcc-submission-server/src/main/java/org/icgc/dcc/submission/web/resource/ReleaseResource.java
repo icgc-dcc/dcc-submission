@@ -27,8 +27,6 @@ import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.util.Responses.noSuchEntityResponse;
 import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
-import java.util.List;
-
 import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -42,15 +40,11 @@ import javax.ws.rs.core.SecurityContext;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.shiro.subject.Subject;
 import org.codehaus.jackson.map.annotate.JsonView;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.service.ReleaseService;
-import org.icgc.dcc.submission.validation.core.FieldReport;
 import org.icgc.dcc.submission.validation.core.SchemaReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
@@ -72,15 +66,9 @@ public class ReleaseResource {
   @VisibleForTesting
   @PUT
   public Response initialize(
-
       @Valid Release release,
-
       @Context Request request,
-
-      @Context SecurityContext securityContext
-
-      )
-  {
+      @Context SecurityContext securityContext) {
     log.info("Initializing releases with: {}", release);
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
@@ -89,7 +77,8 @@ public class ReleaseResource {
     if (release != null) {
       ResponseTimestamper.evaluate(request, release);
 
-      if (releaseService.getReleases().isEmpty()) {
+      val empty = releaseService.countOpenReleases() == 0;
+      if (empty) {
         releaseService.createInitialRelease(release);
 
         return ResponseTimestamper
@@ -111,16 +100,14 @@ public class ReleaseResource {
 
   @GET
   @JsonView(Digest.class)
-  public Response getReleases(
-      @Context SecurityContext securityContext)
-  {
-    log.debug("Getting (visible) releases");
+  public Response getReleases(@Context SecurityContext securityContext) {
+    log.debug("Getting visible releases");
     if (hasReleaseViewPrivilege(securityContext) == false) {
       return unauthorizedResponse();
     }
 
-    Subject subject = getSubject(securityContext);
-    List<Release> visibileReleases = releaseService.getReleasesBySubject(subject);
+    val subject = getSubject(securityContext);
+    val visibileReleases = releaseService.getReleasesBySubject(subject);
 
     return Response.ok(visibileReleases).build();
   }
@@ -129,11 +116,9 @@ public class ReleaseResource {
   @Path("{name}")
   public Response getReleaseByName(
       @PathParam("name") String name,
-
-      @Context SecurityContext securityContext)
-  {
+      @Context SecurityContext securityContext) {
     log.debug("Getting release using: {}", name);
-    Subject subject = getSubject(securityContext);
+    val subject = getSubject(securityContext);
     val releaseView = releaseService.getReleaseViewBySubject(name, subject);
 
     if (releaseView.isPresent() == false) {
@@ -147,11 +132,8 @@ public class ReleaseResource {
   @Path("{name}/submissions/{projectKey}")
   public Response getSubmission(
       @PathParam("name") String releaseName,
-
       @PathParam("projectKey") String projectKey,
-
-      @Context SecurityContext securityContext)
-  {
+      @Context SecurityContext securityContext) {
     log.debug("Getting detailed submission: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return Responses.unauthorizedResponse();
@@ -170,9 +152,7 @@ public class ReleaseResource {
   @Path("{name}/submissions/{projectKey}/report")
   public Response getSubmissionReport(
       @PathParam("name") String releaseName,
-
       @PathParam("projectKey") String projectKey,
-
       @Context SecurityContext securityContext)
   {
     log.debug("Getting submission report for: {}.{}", releaseName, projectKey);
@@ -181,14 +161,14 @@ public class ReleaseResource {
     }
 
     // TODO: use Optional...
-    Submission submission = releaseService.getSubmission(releaseName, projectKey);
+    val submission = releaseService.getSubmission(releaseName, projectKey);
     if (submission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
 
     // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
     // dcc-submission-server and dcc-submission-core.
-    SubmissionReport report = (SubmissionReport) submission.getReport();
+    val report = (SubmissionReport) submission.getReport();
     return Response.ok(report).build();
   }
 
@@ -196,13 +176,9 @@ public class ReleaseResource {
   @Path("{name}/submissions/{projectKey}/report/{schema}")
   public Response getSchemaReport(
       @PathParam("name") String releaseName,
-
       @PathParam("projectKey") String projectKey,
-
       @PathParam("schema") String schema,
-
-      @Context SecurityContext securityContext)
-  {
+      @Context SecurityContext securityContext) {
     log.debug("Getting schema report for: {}.{}.{}", new Object[] { releaseName, projectKey, schema });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return Responses.unauthorizedResponse();
@@ -220,32 +196,27 @@ public class ReleaseResource {
   @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
   public Response getFieldReport(
       @PathParam("name") String releaseName,
-
       @PathParam("projectKey") String projectKey,
-
       @PathParam("schema") String schema,
-
       @PathParam("field") String field,
-
-      @Context SecurityContext securityContext)
-  {
+      @Context SecurityContext securityContext) {
     log.debug("Getting field report for: {}.{}.{}.{}", new Object[] { releaseName, projectKey, schema, field });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
-    Optional<SchemaReport> optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
+    val optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
     if (optionalSchemaReport.isPresent() == false) {
       return noSuchEntityResponse(releaseName, projectKey, schema);
     }
 
-    SchemaReport schemaReport = optionalSchemaReport.get();
-    Optional<FieldReport> optionalFieldReport = schemaReport.getFieldReport(field);
+    val schemaReport = optionalSchemaReport.get();
+    val optionalFieldReport = schemaReport.getFieldReport(field);
     if (optionalFieldReport.isPresent() == false) {
       return noSuchEntityResponse(releaseName, projectKey, schema);
     }
 
-    FieldReport fieldReport = optionalFieldReport.get();
+    val fieldReport = optionalFieldReport.get();
     if (fieldReport == null) {
       return noSuchEntityResponse(releaseName, projectKey, schema);
     }
@@ -257,28 +228,25 @@ public class ReleaseResource {
   @Path("{name}/submissions/{projectKey}/files")
   public Response getSubmissionFileList(
       @PathParam("name") String releaseName,
-
       @PathParam("projectKey") String projectKey,
-
-      @Context SecurityContext securityContext)
-  {
+      @Context SecurityContext securityContext) {
     log.debug("Getting submission file list for release {} and project {}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
-    Submission submission = releaseService.getSubmission(releaseName, projectKey);
-    if (submission == null) { // TODO: use Optional...
+    val submission = releaseService.getSubmission(releaseName, projectKey);
+    if (submission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
 
-    List<SubmissionFile> submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
+    val submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
     return Response.ok(submissionFiles).build();
   }
 
   private Optional<SchemaReport> getSchemaReport(String releaseName, String projectKey, String schema) {
     Optional<SchemaReport> optional = Optional.absent();
-    Submission submission = releaseService.getSubmission(releaseName, projectKey);
+    val submission = releaseService.getSubmission(releaseName, projectKey);
     if (submission != null) {
       SubmissionReport report = (SubmissionReport) submission.getReport();
       if (report != null) {

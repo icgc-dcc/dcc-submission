@@ -119,6 +119,14 @@ public class ReleaseService extends AbstractService {
   }
 
   /**
+   * Returns the number of releases.
+   */
+  @Synchronized
+  public long countReleases() {
+    return releaseRepository.countReleases();
+  }
+
+  /**
    * Returns the number of releases that are in the {@link ReleaseState#OPENED} state. It is expected that there always
    * ever be one at a time.
    */

@@ -59,10 +59,8 @@ public class ProjectResource {
 
   @Inject
   private ProjectService projectService;
-
   @Inject
   private ReleaseService releaseService;
-
   @Inject
   private DccFileSystem dccFileSystem;
 
@@ -183,7 +181,7 @@ public class ProjectResource {
     }
 
     val releases = releaseService.getReleases();
-    val submissions = projectService.extractSubmissions(releases, projectKey);
+    val submissions = projectService.getSubmissions(releases, projectKey);
 
     return Response.ok(submissions).build();
   }
@@ -191,4 +189,5 @@ public class ProjectResource {
   private boolean hasAccess(SecurityContext securityContext, String projectKey) {
     return projectKey != null && hasSpecificProjectPrivilege(securityContext, projectKey);
   }
+
 }

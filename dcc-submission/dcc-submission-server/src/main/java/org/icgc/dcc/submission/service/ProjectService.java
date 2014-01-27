@@ -63,7 +63,7 @@ public class ProjectService {
     return clean;
   }
 
-  public Set<Submission> extractSubmissions(Iterable<Release> releases, String projectKey) {
+  public Set<Submission> getSubmissions(Iterable<Release> releases, String projectKey) {
     val submissions = Sets.<Submission> newHashSet();
 
     for (val release : releases) {

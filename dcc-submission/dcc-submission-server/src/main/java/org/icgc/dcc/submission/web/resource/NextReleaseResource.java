@@ -299,12 +299,13 @@ public class NextReleaseResource {
       log.info("updating {}", name);
       ResponseTimestamper.evaluate(request, release);
 
-      if (releaseService.getReleases().isEmpty()) {
+      val empty = releaseService.countReleases() == 0;
+      if (empty) {
         return status(BAD_REQUEST).build();
       } else {
-        String updatedName = release.getName();
-        String updatedDictionaryVersion = release.getDictionaryVersion();
-        Release updatedRelease = releaseService.updateRelease(updatedName, updatedDictionaryVersion);
+        val updatedName = release.getName();
+        val updatedDictionaryVersion = release.getDictionaryVersion();
+        val updatedRelease = releaseService.updateRelease(updatedName, updatedDictionaryVersion);
         log.info("updated {}", name);
 
         return ResponseTimestamper.ok(updatedRelease).build();

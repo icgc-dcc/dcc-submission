@@ -110,7 +110,7 @@ public class ProjectResourceTest extends ResourceTest {
         when(projectService.getProjectByUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
         when(projectService.getProjectsByUser(any(String.class))).thenReturn(Lists.newArrayList(projectOne));
         when(projectService.getProjects()).thenReturn(Lists.newArrayList(projectOne, projectTwo));
-        when(projectService.extractSubmissions(releases, projectOne.getKey())).thenReturn(submissions);
+        when(projectService.getSubmissions(releases, projectOne.getKey())).thenReturn(submissions);
 
         bind(ProjectService.class).toInstance(projectService);
         bind(ReleaseService.class).toInstance(releaseService);
@@ -327,7 +327,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse = target().path("projects/" + projectOne.getKey() + "/releases").request(MIME_TYPE).get();
 
     verify(releaseService).getReleases();
-    verify(projectService).extractSubmissions(releases, projectOne.getKey());
+    verify(projectService).getSubmissions(releases, projectOne.getKey());
 
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class))

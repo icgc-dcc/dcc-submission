@@ -27,6 +27,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.common.SshConstants;
@@ -75,13 +76,13 @@ class SftpBanner {
   public void send(String username, ServerSession session) {
     try {
       // General information
-      String releaseName = context.getNextReleaseName();
+      val releaseName = context.getNextReleaseName();
 
       // User specific information
-      List<String> projectKeys = context.getUserProjectKeys();
+      val projectKeys = context.getUserProjectKeys();
 
       // Create a customized message for the supplied user
-      String message = getMessage(releaseName, username, projectKeys);
+      val message = getMessage(releaseName, username, projectKeys);
 
       write(session, message);
     } catch (IOException e) {

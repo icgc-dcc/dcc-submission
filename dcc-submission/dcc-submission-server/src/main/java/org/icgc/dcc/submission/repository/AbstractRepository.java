@@ -75,6 +75,10 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
     return query().where(predicate);
   }
 
+  protected long count() {
+    return query().count();
+  }
+
   protected long count(@NonNull Predicate predicate) {
     return where(predicate).count();
   }
