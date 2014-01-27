@@ -35,6 +35,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
@@ -199,7 +200,8 @@ public class ReleaseService extends AbstractService {
   }
 
   public List<String> getSignedOffReleases() {
-    return getProjectKeysBySubmissionState(SubmissionState.SIGNED_OFF);
+    val submissions = getNextRelease().getSubmissions();
+    return getProjectKeysBySubmissionState(submissions, SIGNED_OFF);
   }
 
   public Release getCompletedRelease(String releaseName) throws IllegalReleaseStateException {
@@ -215,7 +217,7 @@ public class ReleaseService extends AbstractService {
    * Returns the {@code NextRelease} (guaranteed not to be null if returned).
    */
   @Synchronized
-  public Release getNextRelease() throws IllegalReleaseStateException {
+  public Release getNextRelease() {
     val nextRelease = releaseRepository.findNextRelease();
     checkNotNull(nextRelease, "There is no next release in the database.");
 
@@ -835,9 +837,9 @@ public class ReleaseService extends AbstractService {
     return submission;
   }
 
-  private List<String> getProjectKeysBySubmissionState(@NonNull final SubmissionState state) {
+  private static List<String> getProjectKeysBySubmissionState(@NonNull List<Submission> submissions,
+      @NonNull final SubmissionState state) {
     val builder = ImmutableList.<String> builder();
-    val submissions = getNextRelease().getSubmissions();
     for (val submission : submissions) {
       if (state.equals(submission.getState())) {
         builder.add(submission.getProjectKey());
@@ -863,7 +865,7 @@ public class ReleaseService extends AbstractService {
     return optional.get();
   }
 
-  private List<LiteProject> getLiteProjects(List<Project> projects) {
+  private static List<LiteProject> getLiteProjects(List<Project> projects) {
     val builder = ImmutableList.<LiteProject> builder();
     for (val project : projects) {
       val liteProject = new LiteProject(project);

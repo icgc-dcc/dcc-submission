@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.service;
 
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.dictionary.model.DictionaryState.OPENED;
@@ -56,16 +57,16 @@ public class DictionaryService {
   }
 
   public Dictionary getCurrentDictionary() {
-    Release openRelease = releases.getNextRelease();
-    return getCurrentDictionary(openRelease);
+    val release = releases.getNextRelease();
+    return getCurrentDictionary(release);
   }
 
-  public Dictionary getCurrentDictionary(Release openRelease) {
-    String currentDictionaryVersion = openRelease.getDictionaryVersion();
-    return getDictionaryByVersion(currentDictionaryVersion);
+  public Dictionary getCurrentDictionary(@NonNull Release openRelease) {
+    val version = openRelease.getDictionaryVersion();
+    return getDictionaryByVersion(version);
   }
 
-  public Dictionary getDictionaryByVersion(String version) {
+  public Dictionary getDictionaryByVersion(@NonNull String version) {
     return dictionaryRepository.findDictionaryByVersion(version);
   }
 
@@ -77,17 +78,18 @@ public class DictionaryService {
    * Contains critical blocks for admin concurrency (DCC-?).
    */
   public void updateDictionary(@NonNull Dictionary dictionary) {
-    // TODO: add check diciotnary is OPENED here (instead of within resource)
-    val count = dictionaryRepository.countDictionariesByVersion(dictionary.getVersion());
+    // TODO: Add check dictionary is OPENED here (instead of within resource)
+    val version = dictionary.getVersion();
+    val count = dictionaryRepository.countDictionariesByVersion(version);
     if (count != 1) {
-      throw new DictionaryServiceException("cannot update a non-existent dictionary: " + dictionary.getVersion());
+      throw new DictionaryServiceException("Cannot update a non-existent dictionary: " + dictionary.getVersion());
     }
 
     dictionaryRepository.updateDictionary(dictionary);
 
     // Reset submissions if applicable
     val release = releases.getNextRelease();
-    if (dictionary.getVersion().equals(release.getDictionaryVersion())) {
+    if (version.equals(release.getDictionaryVersion())) {
       releases.resetSubmissions(release.getName(), release.getProjectKeys());
     }
   }
@@ -165,7 +167,7 @@ public class DictionaryService {
   public Optional<CodeList> getCodeList(@NonNull String name) {
     log.debug("Retrieving code list: {}", name);
     val codeList = codeListRepository.findCodeListByName(name);
-    return Optional.fromNullable(codeList);
+    return fromNullable(codeList);
   }
 
   /**
@@ -191,23 +193,23 @@ public class DictionaryService {
   public void addCodeListTerm(@NonNull String codeListName, @NonNull Term term) {
     val optional = getCodeList(codeListName);
     if (optional.isPresent() == false) {
-      throw new DictionaryServiceException("cannot add term to non-existant codeList: " + codeListName);
+      throw new DictionaryServiceException("Cannot add term to non-existant codel list: " + codeListName);
     }
 
     val codeList = optional.get();
     if (codeList.containsTerm(term)) {
-      throw new DictionaryServiceException("cannot add an existing term: " + term.getCode());
+      throw new DictionaryServiceException("Cannot add an existing term: " + term.getCode());
     }
-    codeList.addTerm(term);
 
+    codeList.addTerm(term);
     codeListRepository.addCodeListTerm(codeListName, term);
 
     // Reset INVALID submissions if applicable
-    val openRelease = releases.getNextRelease();
-    val currentDictionary = getCurrentDictionary(openRelease);
+    val release = releases.getNextRelease();
+    val currentDictionary = getCurrentDictionary(release);
     if (currentDictionary.usesCodeList(codeListName)) {
       log.info("Resetting submission due to active dictionary code list term addition...");
-      releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
+      releases.resetSubmissions(release.getName(), release.getInvalidProjectKeys());
     } else {
       log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
