@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.isFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
@@ -39,7 +38,6 @@ import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -96,23 +94,6 @@ public class SubmissionDirectory {
     });
   }
 
-  /**
-   * If there is a matching file for the pattern, returns the one matching file or nothing. Errors out if there are more
-   * than one matching file.
-   */
-  public Optional<String> getFile(String filePattern) {
-    Iterable<String> files = listFiles(newArrayList(filePattern));
-    val iterator = files.iterator();
-    if (iterator.hasNext()) {
-      val optional = Optional.of(iterator.next());
-      checkState(!iterator.hasNext(), "There should only be one matching file for pattern '{}', instead got: '{}'",
-          filePattern, files);
-      return optional;
-    } else {
-      return Optional.<String> absent();
-    }
-  }
-
   public String addFile(String filename, InputStream data) {
     String filepath = this.dccFileSystem.buildFileStringPath(this.release.getName(), this.projectKey, filename);
     HadoopUtils.touch(this.dccFileSystem.getFileSystem(), filepath, data);
@@ -164,7 +145,8 @@ public class SubmissionDirectory {
   }
 
   /**
-   * Removes all files pertaining to validation (not including normalization), leaving nested directories untouched.
+   * Removes all files pertaining to validation (not including normalization),
+   * leaving nested directories untouched.
    */
   public void removeValidationFiles() {
     val fs = dccFileSystem.getFileSystem();

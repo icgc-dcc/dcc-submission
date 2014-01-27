@@ -63,7 +63,6 @@ import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
 @RunWith(PowerMockRunner.class)
@@ -134,12 +133,8 @@ public class NormalizationValidatorTest {
         .thenReturn(RELEASE_NAME);
     when(mockFileSchema.getFieldNames())
         .thenReturn(NormalizationTestUtils.getFieldNames(FOCUS_TYPE));
-    when(mockFileSchema.getPattern())
-        .thenReturn(".*ssm_p.*");
     when(mockDictionary.getFileSchema(FOCUS_TYPE))
         .thenReturn(mockFileSchema);
-    when(mockSubmissionDirectory.getFile(Mockito.anyString()))
-        .thenReturn(Optional.<String> of(FILE_NAME));
 
     when(mockValidationContext.getDictionary())
         .thenReturn(mockDictionary);
@@ -157,7 +152,6 @@ public class NormalizationValidatorTest {
 
   @SneakyThrows
   @Test
-  @Ignore
   public void test_normalization_basic() {
 
     mockUUID(true);
@@ -204,10 +198,8 @@ public class NormalizationValidatorTest {
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(new LocalFlowConnector());
-    when(mockPlatformStrategy.listFileNames(Mockito.anyString()))
-        .thenReturn(newArrayList(new File(inputFile).getName()));
-    when(mockPlatformStrategy.getFilePath(Mockito.anyString()))
-        .thenReturn(new Path(inputFile));
+    when(mockValidationContext.getSsmPrimaryFiles())
+        .thenReturn(newArrayList(new Path(inputFile)));
 
     new File(OUTPUT_FILE).delete();
     normalizationValidator = NormalizationValidator
@@ -252,7 +244,7 @@ public class NormalizationValidatorTest {
   private void mockInputTap(String inputFile) {
     val fileName = new File(inputFile).getName();
     when(mockPlatformStrategy.getSourceTap2(fileName))
-        .thenReturn(getInputTap(fileName));
+        .thenReturn(getInputTap(inputFile));
   }
 
   // TODO: Shouldn't have to do that

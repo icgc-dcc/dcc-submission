@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 
@@ -78,7 +79,7 @@ public interface PlatformStrategy {
   Path getFilePath(String fileName);
 
   /**
-   * TODO
+   * TODO: merge with {@link ValidationContext#getSsmPrimaryFiles()}?
    */
   List<String> listFileNames(String pattern);
 
