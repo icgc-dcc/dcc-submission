@@ -1,0 +1,476 @@
+<html>
+<head><title>Dictionary Viewer :: ICGC Submission</title>
+<link rel="stylesheet" href="/stylesheets/app.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+<script src="/javascripts/vendor.js"></script>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http:////cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+<style type="text/css">
+
+body {
+   margin: 1px;
+}
+
+.container {
+   position:fixed;
+   top:0px;
+   display:block;
+   opacity:0.95;
+   background-color:rgb(230, 230, 230);
+   padding:2px; 
+   width:100%;
+   overflow: visible;
+   height:35px;
+}
+
+.highlight {
+   background-color: #FF0
+}
+
+.data-type-list {
+   padding-left:1em;
+   padding-right:1em;
+   color: #666666;
+   font-weight: bold;
+}
+
+.data-type-list:hover {
+   color: #336699;
+}
+
+th {
+   font-size: 12px;
+}
+
+pre {
+   background-color: rgb(250, 245, 245);
+}
+
+
+</style>
+</head>
+<body style="margin-left:5px; margin-top:50px; margin-right:5px">
+<div class="container">
+   <div style="float:left; margin:3px">
+      <input id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input>
+      <span>current </span><select id="version_a" onChange="switchDictionary()"></select>
+      <span> compare to </span><select id="version_b" onChange="switchDictionary()"></select>
+   </div>
+   <div style="float:right; width:500px">
+      <button id="selectionLabel"><span>All File Types </span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+      <div  id="selectionWrapper" style="height:260px; width:370px; overflow:scroll; display:none" >
+         <svg id="selection" height="700px" width="350px" style="pointer-events:visibleFill"></svg>
+      </div>
+   </div>
+   <div style="clear:both"></div>
+</div>
+<div id="_dictionary"></div>
+</body>
+<script>
+
+// Colours
+var cRowNormal  = d3.rgb(220, 220, 220);
+var cRowNew     = d3.rgb(31, 120, 180);
+var cRowChanged = d3.rgb(178*0.7, 223*0.7, 138*0.7);
+var cBar = d3.rgb(220,220,220); 
+var cBarSelect    = d3.rgb(166, 206, 227);
+var cBarHighlight = d3.rgb(206, 206, 34);
+
+// Other constants
+var barHeight = 25;
+
+var sortOrder = [
+   "donor", "specimen", "sample", 
+   "biomarker", "surgery", "therapy", "family", "exposure", 
+   "ssm_m", "ssm_p", "ssm_s", 
+   "sgv_m", "sgv_p", 
+   "cnsm_m", "cnsm_p", "cnsm_s", 
+   "stsm_m", "stsm_p", "stsm_s", 
+   "exp_g", "exp_m", 
+   "pexp_m", "pexp_p", 
+   "mirna_m", "mirna_p", "mirna_s", 
+   "jcn_m", "jcn_p", 
+   "meth_m", "meth_p", "meth_s", 
+]; 
+
+var currentSelection = 'all';
+var dictionaryMap = {};
+var codelistMap = {};
+
+function getSelect(elem) {
+   var index = d3.select(elem).node().selectedIndex;
+   return d3.select(elem).node()[index].value;
+}
+
+function switchDictionary() {
+   var val = getSelect("#version_a");
+   showDictionary(val);
+}
+
+function selectDataType(label) {
+
+   var val = currentSelection;
+   d3.select("#selectionLabel").select("span").text(label+" ");
+   d3.select("#selectionWrapper").style("display", "none");
+
+   window.scrollTo(0, 0);
+
+   d3.selectAll(".selection_wrapper").style("display", "block");
+
+   if (val === "all") {
+      d3.selectAll(".selection_wrapper").style("display", "block");
+   } else {
+      d3.selectAll(".selection_wrapper").filter(function(section) {
+         if (section.name === val) return 0;
+         return 1;
+      }).style("display", "none");
+   }
+}
+
+function doFilter() {
+   var txt = d3.select("#filter").node().value;
+   var re = new RegExp(txt, "i");
+   var num;
+   var tmp = {};
+
+   window.scrollTo(0, 0);
+
+   d3.selectAll(".dictionary_table").selectAll("tr").style("display", "table-row");
+   if (!txt || txt === '') {
+      d3.selectAll(".dictionary_table").selectAll("tr").style("display", "table-row");
+   } else {
+      num = 0;
+      d3.selectAll(".dictionary_table").selectAll("tbody").selectAll("tr").filter(function(d) {
+
+         restrictionList = d.restrictions;
+         codelist = _.find(restrictionList, function(obj) { return obj.type == 'codelist'; });
+
+         if (d.name.match(re) || (codelist && codelist.config.name.match(re))) { 
+           num++;
+           var parentName = d3.select(d3.select(this).node().parentNode).datum().name;
+
+           if (! tmp[parentName]) {
+              tmp[parentName] = 1;
+           } else {
+              tmp[parentName] ++;
+           }
+           return 0;
+         }
+         return 1;
+      }).style("display", "none");
+
+      d3.selectAll(".filter_wrapper").each(function(d) {
+         d3.select(this).style("display", "block");
+         if (! tmp[d.name] || tmp[d.name] >= d.fields.length) {
+            d3.select(this).style("display", "none");
+         }
+      });
+   }
+
+
+   // Highlight corresponding entires in the table selector
+   d3.select("#selection")
+     .selectAll("g")
+     .each(function(d) {
+        var datatype = d3.select(this).attr("id").split("_")[1];
+        if (datatype in tmp) {
+           d3.select(this).select("rect").style("fill", function(d) {
+              d.cCurrent = cBarHighlight;
+              return d.cCurrent;
+           });
+        } else {
+           d3.select(this).select("rect").style("fill", function(d) {
+              d.cCurrent = cBar;
+              return d.cCurrent;
+           });
+        }
+     });
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Determines whether if there are significant changes
+////////////////////////////////////////////////////////////////////////////////
+function isDifferent(row1, row2) {
+   if (! _.isEqual(row1.restrictions, row2.restrictions)) return true;
+   return false;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Build a single table row
+////////////////////////////////////////////////////////////////////////////////
+function buildRow( row, idx ) {
+   var restrictionList = row.restrictions;
+   var codelist = _.find(restrictionList, function(obj) { return obj.type == 'codelist'; });
+   var regex    = _.find(restrictionList, function(obj) { return obj.type == 'regex'; });
+   var script   = _.find(restrictionList, function(obj) { return obj.type == 'script'; });
+   var required = _.find(restrictionList, function(obj) { return obj.type == 'required'; });
+
+   var tableName = d3.select(d3.select(this).node().parentNode).datum().name;
+   var comparedVer  = getSelect("#version_b");
+   var compareDict  = dictionaryMap[comparedVer];
+   var compareTable = _.find(compareDict.files, function(obj) { return obj.name === tableName; });
+   var compareRow = null;
+
+   if (compareTable)
+      compareRow = _.find(compareTable.fields, function(obj) { return obj.name === row.name; });
+
+   d3.select(this).append("td").style("background-color", function() {
+      if (!compareRow) return cRowNew;
+      if (isDifferent(row, compareRow)) return cRowChanged;
+      return null;
+   });
+
+   var minimap = d3.select("#selection").select("#vv_"+tableName).append("rect").attr("x", 2).attr("y", 2+idx).attr("height", 1).attr("width", 20);
+   if (!compareRow)  {
+      minimap.style("fill", cRowNew);
+   } else if (isDifferent(row, compareRow)) {
+      minimap.style("fill", cRowChanged);
+   } else {
+      minimap.style("fill", cRowNormal);
+   }
+   
+
+   d3.select(this).append("td").text(row.name);
+   var attrBox = d3.select(this).append("td");
+   if (row.controlled === true) {
+      attrBox.append("div").text("Controlled");  
+   }
+   if (required) {
+      attrBox.append("div").text("Required");  
+      if (required.config.acceptMissingCode == true) {
+         attrBox.append("div").text("NA-Code");  
+      } 
+   }
+
+   d3.select(this).append("td").text(row.valueType);
+   d3.select(this).append("td").style("max-width", "300px").text(row.label);
+
+   d3.select(this).append("td").each(function(d) {
+      d.expanded = false
+      var cell = d3.select(this);
+      if (codelist) {
+         d3.select(this).append("a")
+           .text( codelist.config.name + " ")
+           .on("click", function(d) {
+              d.expanded = !d.expanded;
+              if (d.expanded) {
+                 d3.select(this).select("i").classed("glyphicon-chevron-down", false)
+                 d3.select(this).select("i").classed("glyphicon-chevron-up", true)
+                 cell.select("ul").style("display", "block");
+              } else {
+                 d3.select(this).select("i").classed("glyphicon-chevron-down", true)
+                 d3.select(this).select("i").classed("glyphicon-chevron-up", false)
+                 cell.select("ul").style("display", "none");
+              }
+           })
+           .append("i")
+           .classed("glyphicon", true)
+           .classed("glyphicon-chevron-down", true)
+           .style("position", "inherit"); // Not sure why this works, otherwise it overlap with svg
+
+         var list = d3.select(this).append("ul").style("display", "none").classed("list-unstyled", true);
+         var c = codelistMap[ codelist.config.name ];
+         c.terms.forEach(function(term) {
+            list.append("li").classed("data-type-list", true).text(term.code + "  " + term.value);
+         });
+      } else {
+      }
+   });
+
+   d3.select(this).append("td").style("max-width", "250px").each(function() {
+      if (regex) {
+         d3.select(this).append("p").text(regex.config.pattern);
+         if (regex.config.examples)
+            d3.select(this).append("pre").style("width", "100%").style("font-size", "9px").append("code").text(regex.config.examples);
+      }
+   });
+
+   d3.select(this).append("td").style("max-width",  "250px").each(function() {
+      if (script) {
+         d3.select(this).append("p").text(script.config.description);
+
+
+         var beautifiedScript = hljs.highlight("java", js_beautify( script.config.script )).value;
+         d3.select(this).append("pre").style("width", "100%").style("font-size", "9px").append("code").html(beautifiedScript);
+         //d3.select(this).append("pre").style("width", "100%").style("font-size", "9px").append("code").text(script.config.script);
+      }
+   });
+}
+
+function createFilterRow(grp, name, label, height) {
+   grp.selectAll("rect")
+      .data([{ cCurrent: cBar }]) 
+      .enter()
+      .append("rect")
+      .attr("width", 350).attr("height", (height-1)).style("fill", cBar)
+      .on("mouseover", function(d) { d3.select(this).style("fill", cBarSelect); })
+      .on("mouseout", function(d) { 
+         d3.select(this).style("fill", d.cCurrent); 
+      })
+      .on("click", function(d) {
+         currentSelection = name;
+         selectDataType(label);
+         d3.event.stopPropagation();
+      });
+     
+   grp.append("text")
+      .attr("x", 30)
+      .attr("y", 15)
+      .attr("font-size", "11px")
+      .style("pointer-events", "none")
+      .text(label)
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Show a single full dictionary, basically:
+//
+// foreach datatype in dictionary:
+//    create table DOM
+//    create table selector (createFilterRow)
+//    foreach row in table:
+//       createRow (buildRow)  
+//   
+////////////////////////////////////////////////////////////////////////////////
+function showDictionary(version) {
+   data = dictionaryMap[version];
+   data.files  = _.sortBy(data.files, function(d) {
+     return sortOrder.indexOf(d.name);
+   });
+
+   // Clean
+   d3.select("#selection").selectAll("*").remove();
+   d3.select("#_dictionary").selectAll("*").remove();
+
+   //d3.select("#selection").call(d3.behavior.zoom().on("zoom", function(){
+   //}));
+
+
+   // Ensure basic interaction are in place
+   d3.select("body").on("click", function() {
+      d3.select("#selectionWrapper").style("display", "none");
+   });
+
+   d3.select("#selectionLabel")
+     .classed("data-type-list", true)
+     .on("click", function() {
+        if (d3.select("#selectionWrapper").style("display") === "none") {
+           d3.select("#selectionWrapper").style("display", "block");
+        } else {
+           d3.select("#selectionWrapper").style("display", "none");
+        }
+        d3.event.stopPropagation();
+     });
+
+
+
+   var currentY = 1;
+   var grp = d3.select("#selection").append("g").attr("id", "vv_all").attr("transform", "translate(" + 0 + "," + (currentY) + ")");
+   createFilterRow(grp, "all", "All Data Types", barHeight);
+   currentY += barHeight;
+
+
+   // Main building block
+   d3.select("#_dictionary")
+     .selectAll("div")
+     .data( data.files )
+     .enter()
+     .append("div")
+     .classed("selection_wrapper", true)
+     .append("div")
+     .classed("filter_wrapper", true)
+     .each(function(table, i) {
+        // Table Header
+        d3.select(this).append("br");
+        d3.select(this).append("em").text(table.label);
+
+        // Create the minimap things
+        var realH = Math.max(barHeight, 5+table.fields.length);
+        var grp = d3.select("#selection").append("g").attr("id", "vv_"+table.name).attr("transform", "translate(" + 0 + "," + (currentY) + ")");
+        createFilterRow(grp, table.name, table.label, realH);
+        currentY += realH;
+
+        // Table
+        var dtable = d3.select(this)
+          .append("table")
+          .classed("table", true)
+          .classed("table-bordered", true)
+          .classed("table-hover", true)
+          .classed("table-condensed", true)
+          .classed("dictionary_table", true);
+
+        var thead = dtable.append("thead").append("tr");
+        thead.append("th").style("width", "5px").text("");
+        thead.append("th").text("Field");
+        thead.append("th").text("Attribute");
+        thead.append("th").text("Type");
+        thead.append("th").text("Description");
+        thead.append("th").text("CodeList");
+        thead.append("th").text("RegExp");
+        thead.append("th").text("Script");
+
+        var tbody = dtable.append("tbody");
+        tbody.selectAll("tr")
+          .data(table.fields)
+          .enter()
+          .append("tr")
+          .style("font-size", "12px")
+          .each(buildRow); 
+     });
+}
+
+
+// Entry Point
+// 1) Get all dictionaries
+// 2) Sort dictionaries by timestamp
+// 3) Popuplate version dropdown and initialize dictionary tables
+d3.json("/ws/dictionaries", function(dictionaryList) {
+
+   var sortedDictionaryList = _.sortBy(dictionaryList, function(obj) {
+      return obj.lastUpdate;
+   });
+   sortedDictionaryList = sortedDictionaryList.reverse();
+
+   var versionList = _.pluck(sortedDictionaryList, "version");
+   var latest = sortedDictionaryList[0].version;
+
+   for (var i=0; i < sortedDictionaryList.length; i++)
+      dictionaryMap[ sortedDictionaryList[i].version ] = sortedDictionaryList[i];
+
+   d3.select("#version_a").selectAll("option")
+     .data(versionList)
+     .enter()
+     .append("option")
+     .attr("value", function(d) { return d; })
+     .text(function(d) { return d;});
+
+   d3.select("#version_b").selectAll("option")
+     .data(versionList)
+     .enter()
+     .append("option")
+     .attr("value", function(d) { return d; })
+     .text(function(d) { return d;});
+
+   d3.select("#filter").on("click", function() {
+      d3.event.stopPropagation();
+   });
+
+
+   // Grab the codelist
+   d3.json("/ws/codeLists", function(codeLists) {
+     codeLists.forEach(function(c) {
+        codelistMap[c.name] = c;
+     });
+     showDictionary(latest);
+   });
+
+
+});
+</script>
+</html>
