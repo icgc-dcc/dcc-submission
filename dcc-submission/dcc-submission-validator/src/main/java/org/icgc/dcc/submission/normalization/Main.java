@@ -28,8 +28,14 @@ import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 /**
- * Command-line utility to initiate key validation on a specified project stored locally or in HDFS. Will use Cascading
- * local or Hadoop depending on the {@code fsUrl} argument's scheme.
+ * Command-line utility to initiate normalization on a specified release project's submission stored locally or in HDFS.
+ * Will use Cascading local or Hadoop depending on the {@code fsUrl} argument's scheme.
+ * <p>
+ * Syntax:
+ * <p>
+ * <code>
+ * org.icgc.dcc.submission.normalization.Main [releaseName [projectKey [fsRoot [fsUrl [jobTracker]]]]]
+ * </code>
  */
 @Slf4j
 public class Main {
@@ -37,19 +43,22 @@ public class Main {
   public static void main(String... args) throws InterruptedException {
     log.info("Starting normalization...");
 
-    // Resolve configuration
+    // Resolve configuration @formatter:off 
     int i = 0;
     val releaseName = args.length >= ++i ? args[i - 1] : "release2";
-    val projectKey = args.length >= ++i ? args[i - 1] : "project.1";
-    val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
-    val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
-    val jobTracker = args.length >= ++i ? args[i - 1] : "localhost";
+    val projectKey  = args.length >= ++i ? args[i - 1] : "project.1";
+    val fsRoot      = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
+    val fsUrl       = args.length >= ++i ? args[i - 1] : "file:///";
+    val jobTracker  = args.length >= ++i ? args[i - 1] : "localhost";
 
     log.info("releaseName: {}", releaseName);
-    log.info("projectKey: {}", projectKey);
-    log.info("fsRoot: {}", fsRoot);
-    log.info("fsUrl: {}", fsUrl);
-    log.info("jobTracker: {}", jobTracker);
+    log.info("projectKey:  {}", projectKey);
+    log.info("fsRoot:      {}", fsRoot);
+    log.info("fsUrl:       {}", fsUrl);
+    log.info("jobTracker:  {}", jobTracker);
+    log.info("input:       {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + "{ssmP}");
+    log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation/normalization");
+    // @formatter:on
 
     val context = new NomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
 
@@ -60,10 +69,17 @@ public class Main {
   }
 
   private static void validate(NomalizationValidationContext context) throws InterruptedException {
-    val validator = NormalizationValidator.getDefaultInstance(
-        getDccFileSystem2(context), getNormalizationConfig());
+    val validator = getValidator(context);
 
     validator.validate(context);
+  }
+
+  private static NormalizationValidator getValidator(NomalizationValidationContext context) {
+    val validator = NormalizationValidator.getDefaultInstance(
+        getDccFileSystem2(context),
+        getNormalizationConfig());
+
+    return validator;
   }
 
   private static DccFileSystem2 getDccFileSystem2(NomalizationValidationContext context) {
