@@ -65,7 +65,7 @@ public class Main {
     // Validate
     validate(context);
 
-    log.info("Finshed normalization.");
+    log.info("Finished normalization.");
   }
 
   private static void validate(NomalizationValidationContext context) throws InterruptedException {
