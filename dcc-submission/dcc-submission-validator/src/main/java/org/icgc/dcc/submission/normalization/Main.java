@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.normalization;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
-import static org.apache.hadoop.hdfs.protocol.HdfsConstants.HDFS_URI_SCHEME;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,8 +73,7 @@ public class Main {
     log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation/normalization");
     // @formatter:on
 
-    val context = new NomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
-    return context;
+    return new NomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
   }
 
   private static NormalizationValidator getValidator(ValidationContext context) {
@@ -86,7 +84,7 @@ public class Main {
 
   private static DccFileSystem2 getDccFileSystem2(ValidationContext context) {
     val rootDir = context.getDccFileSystem().getRootStringPath();
-    val hdfs = context.getFileSystem().getScheme().equals(HDFS_URI_SCHEME);
+    val hdfs = context.getFileSystem().getScheme().equals("hdfs");
 
     return new DccFileSystem2(context.getFileSystem(), rootDir, hdfs);
   }
