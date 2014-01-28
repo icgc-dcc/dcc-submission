@@ -23,6 +23,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
@@ -34,7 +35,7 @@ import com.typesafe.config.Config;
  * Syntax:
  * <p>
  * <code>
- * org.icgc.dcc.submission.normalization.Main [releaseName [projectKey [fsRoot [fsUrl [jobTracker]]]]]
+ * java -jar dcc-submission-server.jar org.icgc.dcc.submission.normalization.Main [releaseName [projectKey [fsRoot [fsUrl [jobTracker]]]]]
  * </code>
  */
 @Slf4j
@@ -43,14 +44,27 @@ public class Main {
   public static void main(String... args) throws InterruptedException {
     log.info("Starting normalization...");
 
-    // Resolve configuration @formatter:off 
+    // Resolve configuration @formatter:off
     int i = 0;
     val releaseName = args.length >= ++i ? args[i - 1] : "release2";
     val projectKey  = args.length >= ++i ? args[i - 1] : "project.1";
     val fsRoot      = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
     val fsUrl       = args.length >= ++i ? args[i - 1] : "file:///";
     val jobTracker  = args.length >= ++i ? args[i - 1] : "localhost";
+    // @formatter:on
 
+    // Execute
+    val context = getValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
+    val validator = getValidator(context);
+    validator.validate(context);
+
+    log.info("Finished normalization.");
+  }
+
+  private static ValidationContext getValidationContext(String releaseName, String projectKey, String fsRoot,
+      String fsUrl,
+      String jobTracker) {
+    // @formatter:off
     log.info("releaseName: {}", releaseName);
     log.info("projectKey:  {}", projectKey);
     log.info("fsRoot:      {}", fsRoot);
@@ -61,28 +75,16 @@ public class Main {
     // @formatter:on
 
     val context = new NomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
-
-    // Validate
-    validate(context);
-
-    log.info("Finished normalization.");
+    return context;
   }
 
-  private static void validate(NomalizationValidationContext context) throws InterruptedException {
-    val validator = getValidator(context);
-
-    validator.validate(context);
-  }
-
-  private static NormalizationValidator getValidator(NomalizationValidationContext context) {
-    val validator = NormalizationValidator.getDefaultInstance(
+  private static NormalizationValidator getValidator(ValidationContext context) {
+    return NormalizationValidator.getDefaultInstance(
         getDccFileSystem2(context),
         getNormalizationConfig());
-
-    return validator;
   }
 
-  private static DccFileSystem2 getDccFileSystem2(NomalizationValidationContext context) {
+  private static DccFileSystem2 getDccFileSystem2(ValidationContext context) {
     val rootDir = context.getDccFileSystem().getRootStringPath();
     val hdfs = context.getFileSystem().getScheme().equals(HDFS_URI_SCHEME);
 
