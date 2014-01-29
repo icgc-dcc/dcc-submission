@@ -15,22 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.norm;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_S_TYPE;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
+import static org.apache.hadoop.fs.Path.SEPARATOR;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -39,22 +33,18 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
+import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
@@ -62,9 +52,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
-@Slf4j
 @RequiredArgsConstructor
-public class KeyValidationContext extends AbstractValidationContext {
+public class NomalizationValidationContext extends AbstractValidationContext {
 
   @NonNull
   private final String releaseName;
@@ -84,19 +73,16 @@ public class KeyValidationContext extends AbstractValidationContext {
     val factory = provider.get();
 
     // Reuse primary validation component
-    val dummy = new Path("/");
-    return factory.get(dummy, dummy, dummy);
+    val project = new Path(fsRoot, new Path(releaseName, projectKey));
+    val input = project;
+    val output = project;
+    val system = new Path(SEPARATOR); // Not used by normalizer
+    return factory.get(input, output, system);
   }
 
   @Override
   public String getProjectKey() {
     return projectKey;
-  }
-
-  @Override
-  public List<SubmissionDataType> getDataTypes() {
-    // Include all
-    return SubmissionDataTypes.values();
   }
 
   @Override
@@ -122,31 +108,7 @@ public class KeyValidationContext extends AbstractValidationContext {
     val reader = new ObjectMapper().reader(Dictionary.class);
     Dictionary dictionary = reader.readValue(zip);
 
-    // Add file schemata
-    dictionary.addFile(readFileSchema(SSM_S_TYPE));
-    dictionary.addFile(readFileSchema(METH_M_TYPE));
-    dictionary.addFile(readFileSchema(METH_P_TYPE));
-    dictionary.addFile(readFileSchema(METH_S_TYPE));
-
-    // TODO: Remove patching
-    patchDictionary(dictionary);
-
     return dictionary;
-  }
-
-  @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return new SubmissionDirectory(getDccFileSystem(), getRelease(), getProjectKey(), getSubmission());
-  }
-
-  @Override
-  public FileSchema getSsmPrimaryFileSchema() {
-    return getSsmPrimaryFileSchema(getDictionary());
-  }
-
-  @Override
-  public DccFileSystem getDccFileSystem() {
-    return new DccFileSystem(getConfig(), getFileSystem());
   }
 
   @Override
@@ -156,8 +118,23 @@ public class KeyValidationContext extends AbstractValidationContext {
   }
 
   @Override
+  public DccFileSystem getDccFileSystem() {
+    return new DccFileSystem(getConfig(), getFileSystem());
+  }
+
+  @Override
   public ReleaseFileSystem getReleaseFileSystem() {
     return new ReleaseFileSystem(getDccFileSystem(), getRelease());
+  }
+
+  @Override
+  public SubmissionDirectory getSubmissionDirectory() {
+    return new SubmissionDirectory(getDccFileSystem(), getRelease(), getProjectKey(), getSubmission());
+  }
+
+  @Override
+  public SubmissionReport getSubmissionReport() {
+    throw new UnsupportedOperationException();
   }
 
   private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {
@@ -186,37 +163,9 @@ public class KeyValidationContext extends AbstractValidationContext {
     return configuration;
   }
 
-  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
-    for (val fileSchema : dictionary.getFiles()) {
-      val fileType = SubmissionFileType.from(fileSchema.getName());
-      val ssmPrimary = fileType == SSM_P_TYPE;
-      if (ssmPrimary) {
-        return fileSchema;
-      }
-    }
-
-    throw new IllegalStateException("'ssm_p' file schema missing");
-  }
-
   private Submission getSubmission() {
     val projectName = getProjectKey();
     return new Submission(getProjectKey(), projectName, releaseName);
-  }
-
-  private static void patchDictionary(Dictionary dictionary) {
-    // Patch file name patterns to support multiple files per file type
-    for (val fileSchema : dictionary.getFiles()) {
-      patchFileSchema(fileSchema);
-    }
-  }
-
-  private static void patchFileSchema(FileSchema fileSchema) {
-    val regex = fileSchema.getPattern();
-    val patchedRegex = regex.replaceFirst("\\.", "\\.(?:[^.]+\\\\.)?");
-    fileSchema.setPattern(patchedRegex);
-
-    log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
-        new Object[] { fileSchema.getName(), regex, patchedRegex });
   }
 
 }
