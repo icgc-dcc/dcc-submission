@@ -65,7 +65,7 @@ public class SensitiveRowMarkingTest extends CascadingTestCase {
         new Tuple("A", "A/A", "A/T", "A", "T", Marking.OPEN.getTupleValue()), // Untouched
         new Tuple("A", "G/G", "G/T", "G", "T", Marking.CONTROLLED.getTupleValue()), // Marked
         new Tuple("T", "C/C", "G/G", "C", "G", Marking.CONTROLLED.getTupleValue()), // Marked
-        new Tuple("C", "C/C", "T/T", "C", "T", Marking.CONTROLLED.getTupleValue()) // Marked
+        new Tuple("C", "C/C", "T/T", "C", "T", Marking.OPEN.getTupleValue()) // Untouched
     };
 
     Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
