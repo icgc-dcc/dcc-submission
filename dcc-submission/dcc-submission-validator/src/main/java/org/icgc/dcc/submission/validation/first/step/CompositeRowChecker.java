@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Scanner;
 
 import lombok.Cleanup;
 import lombok.val;
@@ -39,6 +40,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   private static final Charset DEFAULT_CHARSET = UTF_8;
   protected RowChecker delegate;
+  private static final String LINE_SEPARATOR = "\n";
 
   public CompositeRowChecker(RowChecker delegate, boolean failFast) {
     super(delegate, failFast);
@@ -64,16 +66,17 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
     try {
       @Cleanup
-      BufferedReader reader =
-          new BufferedReader(
-              new InputStreamReader(
-                  Util.createInputStream(
-                      getDccFileSystem(),
-                      filePathname),
-                  DEFAULT_CHARSET));
+      Scanner reader = new Scanner(new BufferedReader(
+          new InputStreamReader(
+              Util.createInputStream(
+                  getDccFileSystem(),
+                  filePathname),
+              DEFAULT_CHARSET)));
+      reader.useDelimiter(LINE_SEPARATOR);
       String line;
       long lineNumber = 1;
-      while ((line = reader.readLine()) != null) {
+      while (reader.hasNext()) {
+        line = reader.next();
         checkRow(filename, fileSchema, line, lineNumber);
         ++lineNumber;
       }
