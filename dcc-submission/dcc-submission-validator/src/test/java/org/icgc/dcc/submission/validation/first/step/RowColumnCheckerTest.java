@@ -68,13 +68,12 @@ public class RowColumnCheckerTest {
 
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
 
-    FileSchema fileSchema = mock(FileSchema.class);
-    Optional<FileSchema> option = Optional.of(fileSchema);
+    Optional<FileSchema> option = Optional.of(testSchema);
     Field f1 = new Field();
     f1.setName("a");
     Field f2 = new Field();
     f2.setName("b");
-    when(fileSchema.getFields()).thenReturn(ImmutableList.of(f1, f2));
+    when(testSchema.getFields()).thenReturn(ImmutableList.of(f1, f2));
     when(dict.getFileSchemaByName(anyString())).thenReturn(option);
 
     when(validationContext.getDccFileSystem()).thenReturn(fs);
@@ -84,7 +83,7 @@ public class RowColumnCheckerTest {
 
   @Test
   public void validColumns() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\rf1\tf2\r".getBytes()));
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\nf1\tf2\n".getBytes()));
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
@@ -102,7 +101,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkRowColumnErrorReported(validationContext, 2);
+    TestUtils.checkRowColumnErrorReported(validationContext, 1);
   }
 
   @Test
@@ -113,7 +112,7 @@ public class RowColumnCheckerTest {
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
-    TestUtils.checkRowColumnErrorReported(validationContext, 2);
+    TestUtils.checkRowColumnErrorReported(validationContext, 1);
   }
 
   @Test
