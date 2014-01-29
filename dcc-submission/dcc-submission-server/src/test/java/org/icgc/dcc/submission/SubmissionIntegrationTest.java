@@ -573,7 +573,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding code list terms...");
     val codeListName = "GLOBAL.0.platform.v1/terms";
     val response = post(client, CODELISTS_ENDPOINT + "/" + codeListName,
-        "[{code:'81',value:'new value 1'},{code:'82',value:'new value 2'}]");
+        "[{code:'1000',value:'new value 1'},{code:'10001',value:'new value 2'}]");
     assertEquals(CREATED.getStatusCode(), response.getStatus());
 
     // Only the INVALID ones should have been reset (DCC-851)
