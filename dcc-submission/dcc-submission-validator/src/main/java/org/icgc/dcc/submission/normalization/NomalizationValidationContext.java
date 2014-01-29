@@ -63,7 +63,7 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor()
 public class NomalizationValidationContext implements ValidationContext {
 
-  private static final String DICTIONARY_VERSION = "0.7c";
+  private static final String DICTIONARY_VERSION = "0.7e";
 
   @NonNull
   private final String releaseName;
