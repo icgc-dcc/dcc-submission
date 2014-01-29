@@ -96,7 +96,7 @@ public class RowColumnCheckerTest {
 
   @Test
   public void invalidColumnsHeader() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\rf1\t\f2\r".getBytes()));
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\nf1\t\f2\n".getBytes()));
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
@@ -107,7 +107,7 @@ public class RowColumnCheckerTest {
 
   @Test
   public void invalidColumnsContent() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\rf2\r".getBytes()));
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\nf2\n".getBytes()));
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
@@ -118,7 +118,7 @@ public class RowColumnCheckerTest {
 
   @Test
   public void invalidColumnsHeaderAndContent() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\rf2\r".getBytes()));
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\nf2\n".getBytes()));
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
@@ -130,7 +130,7 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidIrregularColumns() throws Exception {
     DataInputStream fis =
-        new DataInputStream(new ByteArrayInputStream("a\tb\tc\rf1\tf2\tf3\tf3\tf4\r\f1\r".getBytes()));
+        new DataInputStream(new ByteArrayInputStream("a\tb\tc\nf1\tf2\tf3\tf3\tf4\n\f1\n".getBytes()));
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
@@ -141,7 +141,7 @@ public class RowColumnCheckerTest {
 
   @Test
   public void validEmptyColumns() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("\t\r\t\r".getBytes()));
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("\t\n\t\n".getBytes()));
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
