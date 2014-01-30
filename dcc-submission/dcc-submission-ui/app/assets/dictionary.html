@@ -3,12 +3,7 @@
 <link rel="stylesheet" href="/stylesheets/app.css">
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 <script src="/javascripts/vendor.js"></script>
-<!--<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>-->
-<!--<script src="http:////cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>-->
 <style type="text/css">
-
-body {
-}
 
 .container {
    position:fixed;
@@ -25,9 +20,6 @@ body {
    border-bottom-width: 1px;
 }
 
-.highlight {
-   background-color: #FF0
-}
 
 .data-type-list {
    padding-left:1em;
@@ -36,25 +28,24 @@ body {
    font-weight: bold;
 }
 
-.data-type-list:hover {
-   color: #336699;
-}
-
 .legend {
    border-left-style: solid;
-   border-left-width: 8px;
+   border-left-width: 18px;
    padding-left:2px;
-
 }
 
 .new {
    color: rgb(31, 120, 180);
 }
 
-
 .changed {
    color: rgb(124, 156, 97);
 }
+
+.tiny {
+   font-size: 9px;
+}
+
 
 // Override bootstrap default styles to make UI less blobby-looking
 th {
@@ -94,21 +85,23 @@ a {
    <ul class="list-unstyled">
       <li style="display:inline-block; margin-right:1em"><strong>Legend</strong></li>
       <li style="display:inline-block; margin-right:1em">
-         <span class="legend new">New <span>&nbsp;&nbsp;</span></span>
+         <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterNew"></span></span>
+         <span class="legend new">New</span>
       </li>
       <li style="display:inline-block; margin-right:1em">
+         <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterChanged"></span></span>
          <span class="legend changed">Changed</span>
       </li>
       <li style="display:inline-block; margin-right:5em">|</li>
       <li style="display:inline-block; margin-right:1em"><strong>Tools</strong></li>
       <li style="display:inline-block; margin-right:1em"><input style="margin-bottom:0" id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input></li>
-      <li style="display:inline-block; margin-right:1em">current <select id="version_a" onChange="switchDictionary()"></select></li>
-      <li style="display:inline-block; margin-right:1em">compare to <select id="version_b" onChange="switchDictionary()"></select></li>
+      <li style="display:inline-block; margin-right:1em">From <select id="version_b" onChange="switchDictionary()"></select></li>
+      <li style="display:inline-block; margin-right:1em">To <select id="version_a" onChange="switchDictionary()"></select></li>
       <li style="display:inline-block; margin-right:1em">
           Data Type 
           <button id="selectionLabel"><span>All File Types </span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
           <div  id="selectionWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
-             <svg id="selection" height="750px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+             <svg id="selection" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
           </div>
       </li>
    </ul>
@@ -128,6 +121,7 @@ a {
    <div style="clear:both"></div>
    -->
 </div>
+<div id="_missingTable" style="margin:0.5em"></div>
 <div id="_dictionary" style="margin:0.5em"></div>
 </body>
 <script>
@@ -426,6 +420,9 @@ function buildFilterRow(grp, name, label, height) {
 function showDictionary(version) {
    data = dictionaryMap[version];
 
+   entryNew = 0;
+   entryChanged = 0;
+
    // Re-order according to importance and data type
    data.files  = _.sortBy(data.files, function(d) {
      return sortOrder.indexOf(d.name);
@@ -462,6 +459,28 @@ function showDictionary(version) {
    currentY += barHeight;
 
 
+
+   // 2 ==> 1
+   var vTo = getSelect("#version_a");
+   var dTo = dictionaryMap[vTo];
+   var vFrom = getSelect("#version_b");
+   var dFrom = dictionaryMap[vFrom];
+   var deleteTableList = []
+   dFrom.files.forEach(function(f) {
+      if (!_.find(dTo.files, function(obj) { return obj.name === f.name; })) {
+         deleteTableList.push(f.name);
+      }
+   });
+
+   console.log( deleteTableList );
+   if (deleteTableList.length > 0) {
+      d3.select("#_missingTable").text("Removed in " + vTo + ": " + deleteTableList.join(", "));
+   } else {
+      d3.select("#_missingTable").text("");
+   }
+
+
+
    // Main building block
    d3.select("#_dictionary")
      .selectAll("div")
@@ -475,6 +494,29 @@ function showDictionary(version) {
         // Table Header
         d3.select(this).append("br");
         d3.select(this).append("em").text(table.label);
+        d3.select(this).append("br");
+
+        // Generate a deleted columns list, or show table wiped
+        var tableName = table.name;
+        var comparedVer  = getSelect("#version_b");
+        var compareDict  = dictionaryMap[comparedVer];
+        var compareTable = _.find(compareDict.files, function(obj) { return obj.name === tableName; });
+        var deleteFieldList = [];
+        if (compareTable) {
+           compareTable.fields.forEach(function(f) {
+              if ( ! _.find(table.fields, function(o) { return o.name == f.name; }) ) {
+                 deleteFieldList.push(f.name);
+              }
+           });
+        } 
+
+        if (deleteFieldList.length > 0) {
+           var ver = getSelect("#version_a");
+           d3.select(this).append("small").text("Fields removed in " + ver + ": " + deleteFieldList.join(", "));
+        }
+
+
+        //d3.select(this).
 
         // Create the minimap things
         var realH = Math.max(barHeight, 5+table.fields.length);
@@ -509,8 +551,18 @@ function showDictionary(version) {
           .append("tr")
           .style("font-size", "12px")
           .each(buildRow); 
-        
      });
+
+     d3.select("#counterNew").text(function() {
+        return entryNew > 0? entryNew : "";
+     });
+
+     d3.select("#counterChanged").text(function() {
+        return entryChanged > 0? entryChanged : "";
+     });
+
+     d3.select("#selection").attr("height", (currentY+5) + "px");
+
 
      console.log("Entry New ", entryNew);
      console.log("Entry Changed", entryChanged);
@@ -523,6 +575,7 @@ function showDictionary(version) {
 // 2) Sort dictionaries by timestamp
 // 3) Popuplate version dropdown and initialize dictionary tables
 ////////////////////////////////////////////////////////////////////////////////
+//d3.json("/ws/dictionaries", function(dictionaryList) {
 d3.json("/ws/dictionaries", function(dictionaryList) {
 
    var sortedDictionaryList = _.sortBy(dictionaryList, function(obj) {
