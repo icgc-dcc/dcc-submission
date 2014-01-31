@@ -35,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
@@ -46,12 +45,15 @@ import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator
 
 import com.google.common.base.Optional;
 
+/**
+ * Main processor for the key validation.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class KVProcessor {
 
   /**
-   * TODO: temporarily...
+   * Enables/disables checks at the tuple level (for performance); TODO: configurable
    */
   public static final boolean TUPLE_CHECKS_ENABLED = true;
 
@@ -62,7 +64,7 @@ public class KVProcessor {
   @NonNull
   private final KVReporter reporter;
 
-  private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap(); // TODO: wrapper?
+  private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap();
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
 
   public void processSubmission() {
@@ -94,9 +96,6 @@ public class KVProcessor {
     log.info("done.");
   }
 
-  /**
-   * TODO: create abstraction for file type
-   */
   public void processFileType(KVFileType fileType) {
     log.info("{}", banner("="));
 
@@ -119,51 +118,34 @@ public class KVProcessor {
     log.info("Processing file type: '{}'; Referencing '{}' (will be collecting FKs: '{}')",
         new Object[] { fileType, optionalReferencedFileType, optionalEncounteredForeignKeys.isPresent() });
 
+    // Process files matching the current file type
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
     checkState(dataFilePaths.isPresent(),
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
-      processFile(
-          getFileDescription(fileType, dataFilePath),
-          dataFilePath,
-          primaryKeys,
-          optionalEncounteredForeignKeys,
-          optionalReferencedFileType,
-          optionalReferencedPrimaryKeys);
+      val fileDescription = getFileDescription(fileType, dataFilePath);
+      log.info("{}", banner("-"));
+      log.info("Processing file: '{}'; Referencing '{}': '{}'",
+          new Object[] { dataFilePath, optionalReferencedFileType, fileDescription });
+
+      // TODO: subclass for referencing/non-referencing?
+      new KVFileProcessor(fileDescription)
+
+          // Process file
+          .processFile(
+              fileParser,
+              reporter,
+              primaryKeys,
+              optionalReferencedPrimaryKeys,
+              optionalEncounteredForeignKeys
+          );
     }
     fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
-    postProcessing(fileType, optionalReferencedFileType, optionalEncounteredForeignKeys);
+    checkSurjection(fileType, optionalReferencedFileType, optionalEncounteredForeignKeys);
   }
 
-  private void processFile(
-      KVFileDescription fileDescription,
-      Path filePath,
-      KVPrimaryKeys primaryKeys,
-      Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys,
-      Optional<KVFileType> optionalReferencedType,
-      Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys) {
-    log.info("{}", banner("-"));
-    log.info("Processing file: '{}'; Referencing '{}': '{}'",
-        new Object[] { filePath, optionalReferencedType, fileDescription });
-
-    // TODO: subclass for referencing/non-referencing?
-    new KVFileProcessor(fileDescription)
-
-        // Process file
-        .processFile(
-            fileParser,
-            reporter,
-            primaryKeys,
-            optionalReferencedPrimaryKeys,
-            optionalEncounteredForeignKeys
-        );
-  }
-
-  /**
-   * For surjection checks.
-   */
-  private void postProcessing(
+  private void checkSurjection(
       KVFileType fileType,
       Optional<KVFileType> optionalReferencedType,
       Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys) {
