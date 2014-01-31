@@ -5,16 +5,18 @@
 <script src="/javascripts/vendor.js"></script>
 <style type="text/css">
 
-.container {
+.toolbar {
    position:fixed;
-   top:0px;
    display:block;
-   opacity:0.95;
-   background-color:rgb(240, 240, 230);
+   top:0px;
+   height:35px;
    padding:5px; 
    width:100%;
    overflow: visible;
-   height:35px;
+
+   opacity:0.95;
+   background-color:rgb(240, 240, 230);
+
    border-bottom-color: rgb(200, 200, 200); 
    border-bottom-style: solid;
    border-bottom-width: 1px;
@@ -40,6 +42,10 @@
 
 .changed {
    color: rgb(124, 156, 97);
+}
+
+.removed {
+   color: rgb(243, 92, 22);
 }
 
 .tiny {
@@ -80,8 +86,8 @@ a {
 </style>
 </head>
 <body>
-<div class="container">
-
+<!-- toolbar -->
+<div class="toolbar">
    <ul class="list-unstyled">
       <li style="display:inline-block; margin-right:1em"><strong>Legend</strong></li>
       <li style="display:inline-block; margin-right:1em">
@@ -92,39 +98,38 @@ a {
          <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterChanged"></span></span>
          <span class="legend changed">Changed</span>
       </li>
-      <li style="display:inline-block; margin-right:5em">|</li>
+      <li style="display:inline-block; margin-right:8em">|</li>
       <li style="display:inline-block; margin-right:1em"><strong>Tools</strong></li>
       <li style="display:inline-block; margin-right:1em"><input style="margin-bottom:0" id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input></li>
       <li style="display:inline-block; margin-right:1em">From <select id="version_b" onChange="switchDictionary()"></select></li>
-      <li style="display:inline-block; margin-right:1em">To <select id="version_a" onChange="switchDictionary()"></select></li>
+      <li style="display:inline-block; margin-right:1em">To  <select id="version_a" onChange="switchDictionary()"></select></li>
       <li style="display:inline-block; margin-right:1em">
           Data Type 
-          <button id="selectionLabel"><span>All File Types </span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-          <div  id="selectionWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
-             <svg id="selection" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+          <button id="minimapLabel"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+          <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
+             <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
           </div>
       </li>
    </ul>
-
-   <!--
-   <span> 
-      <span>current </span><select id="version_a" onChange="switchDictionary()"></select>
-      <span> compare to </span><select id="version_b" onChange="switchDictionary()"></select>
-   </span>
-
-   <span style="width:20%; display:block">
-      <button id="selectionLabel"><span>All File Types </span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-      <div  id="selectionWrapper" style="height:400px; width:370px; overflow:scroll; display:none" >
-         <svg id="selection" height="750px" width="350px" style="pointer-events:visibleFill"></svg>
-      </div>
-   </span>
-   <div style="clear:both"></div>
-   -->
 </div>
-<div id="_missingTable" style="margin:0.5em"></div>
-<div id="_dictionary" style="margin:0.5em"></div>
+<!-- main body -->
+<div id="datatypeRemoved" class="removed" style="margin:0.5em"></div>
+<div id="datatypeTable" style="margin:0.5em"></div>
 </body>
 <script>
+
+////////////////////////////////////////////////////////////////////////////////
+// DCC Dictionary viewer
+// Browse and compare DCC dictionaries and codelists. 
+//
+// Note:
+// - The viewer does not support dictionary versions before 0.6c
+// - The viewer assumes that columns are in fixed order
+// - Comparing (A,B) is not the same as comparing (B,A) because of the change
+//   detection logic for new/removed.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 
 // Colours
 var cRowNormal  = d3.rgb(240, 240, 240);
@@ -158,6 +163,7 @@ var codelistMap = {};
 var entryNew = 0;
 var entryChanged = 0;
 
+
 function getSelect(elem) {
    var index = d3.select(elem).node().selectedIndex;
    return d3.select(elem).node()[index].value;
@@ -180,8 +186,8 @@ function switchDictionary() {
 function selectDataType(label) {
 
    var val = currentSelection;
-   d3.select("#selectionLabel").select("span").text(label+" ");
-   d3.select("#selectionWrapper").style("display", "none");
+   d3.select("#minimapLabel").select("span").text(label+" ");
+   d3.select("#minimapWrapper").style("display", "none");
 
    window.scrollTo(0, 0);
 
@@ -206,7 +212,7 @@ function doFilter() {
    var txt = d3.select("#filter").node().value;
    var re = new RegExp(txt, "i");
    var num;
-   var tmp = {};
+   var datatypeMap = {};
 
    window.scrollTo(0, 0);
 
@@ -225,10 +231,10 @@ function doFilter() {
            num++;
            var parentName = d3.select(d3.select(this).node().parentNode).datum().name;
 
-           if (! tmp[parentName]) {
-              tmp[parentName] = 1;
+           if (! datatypeMap[parentName]) {
+              datatypeMap[parentName] = 1;
            } else {
-              tmp[parentName] ++;
+              datatypeMap[parentName] ++;
            }
            return 0;
          }
@@ -237,19 +243,19 @@ function doFilter() {
 
       d3.selectAll(".filter_wrapper").each(function(d) {
          d3.select(this).style("display", "block");
-         if (! tmp[d.name] || tmp[d.name] >= d.fields.length) {
+         if (! datatypeMap[d.name] || datatypeMap[d.name] >= d.fields.length) {
             d3.select(this).style("display", "none");
          }
       });
    }
 
 
-   // Highlight corresponding entires in the table selector
-   d3.select("#selection")
+   // Highlight corresponding entires in the minimap
+   d3.select("#minimap")
      .selectAll("g")
      .each(function(d) {
         var datatype = d3.select(this).attr("id").split("_")[1];
-        if (datatype in tmp) {
+        if (datatype in datatypeMap) {
            d3.select(this).select("rect").style("fill", function(d) {
               d.cCurrent = cBarHighlight;
               return d.cCurrent;
@@ -261,8 +267,6 @@ function doFilter() {
            });
         }
      });
-
-   console.log("Done filtering ", txt);
 }
 
 
@@ -304,7 +308,7 @@ function buildRow( row, idx ) {
 
 
    // Updates the datatype minimap
-   var minimap = d3.select("#selection").select("#vv_"+tableName).append("rect").attr("x", 2).attr("y", 2+idx).attr("height", 1).attr("width", 20);
+   var minimap = d3.select("#minimap").select("#vv_"+tableName).append("rect").attr("x", 2).attr("y", 2+idx).attr("height", 1).attr("width", 20);
    if (!compareRow)  {
       minimap.style("fill", cRowNew);
       entryNew ++;
@@ -429,23 +433,22 @@ function showDictionary(version) {
    });
 
    // Clean up DOM
-   d3.select("#selection").selectAll("*").remove();
-   d3.select("#_dictionary").selectAll("*").remove();
+   d3.select("#minimap").selectAll("*").remove();
+   d3.select("#datatypeTable").selectAll("*").remove();
 
 
    // Ensure basic visiblity interactions are in place
    d3.select("body").on("click", function() {
-      d3.select("#selectionWrapper").style("display", "none");
+      d3.select("#minimapWrapper").style("display", "none");
    });
 
-
-   d3.select("#selectionLabel")
+   d3.select("#minimapLabel")
      .classed("data-type-list", true)
      .on("click", function() {
-        if (d3.select("#selectionWrapper").style("display") === "none") {
-           d3.select("#selectionWrapper").style("display", "block");
+        if (d3.select("#minimapWrapper").style("display") === "none") {
+           d3.select("#minimapWrapper").style("display", "block");
         } else {
-           d3.select("#selectionWrapper").style("display", "none");
+           d3.select("#minimapWrapper").style("display", "none");
         }
         d3.event.stopPropagation();
      });
@@ -454,13 +457,13 @@ function showDictionary(version) {
    // Hardwire "all data type" minimap option, note minimap height is dynamically
    // computed.
    var currentY = 1;
-   var grp = d3.select("#selection").append("g").attr("id", "vv_all").attr("transform", "translate(" + 0 + "," + (currentY) + ")");
+   var grp = d3.select("#minimap").append("g").attr("id", "vv_all").attr("transform", "translate(" + 0 + "," + (currentY) + ")");
    buildFilterRow(grp, "all", "All Data Types", barHeight);
    currentY += barHeight;
 
 
 
-   // 2 ==> 1
+   // Calculate data type removals
    var vTo = getSelect("#version_a");
    var dTo = dictionaryMap[vTo];
    var vFrom = getSelect("#version_b");
@@ -471,18 +474,15 @@ function showDictionary(version) {
          deleteTableList.push(f.name);
       }
    });
-
-   console.log( deleteTableList );
+   
    if (deleteTableList.length > 0) {
-      d3.select("#_missingTable").text("Removed in " + vTo + ": " + deleteTableList.join(", "));
+      d3.select("#datatypeRemoved").text("Data types removed in " + vTo + ": " + deleteTableList.join(", "));
    } else {
-      d3.select("#_missingTable").text("");
+      d3.select("#datatypeRemoved").text("");
    }
 
-
-
    // Main building block
-   d3.select("#_dictionary")
+   d3.select("#datatypeTable")
      .selectAll("div")
      .data( data.files )
      .enter()
@@ -491,7 +491,8 @@ function showDictionary(version) {
      .append("div")
      .classed("filter_wrapper", true)
      .each(function(table, i) {
-        // Table Header
+
+        // Section title
         d3.select(this).append("br");
         d3.select(this).append("em").text(table.label);
         d3.select(this).append("br");
@@ -509,22 +510,20 @@ function showDictionary(version) {
               }
            });
         } 
-
         if (deleteFieldList.length > 0) {
            var ver = getSelect("#version_a");
-           d3.select(this).append("small").text("Fields removed in " + ver + ": " + deleteFieldList.join(", "));
+           d3.select(this).append("small").classed("removed", true).text("Fields removed in " + ver + ": " + deleteFieldList.join(", "));
         }
 
 
-        //d3.select(this).
-
         // Create the minimap things
         var realH = Math.max(barHeight, 5+table.fields.length);
-        var grp = d3.select("#selection").append("g").attr("id", "vv_"+table.name).attr("transform", "translate(" + 0 + "," + (currentY) + ")");
+        var grp = d3.select("#minimap").append("g").attr("id", "vv_"+table.name).attr("transform", "translate(" + 0 + "," + (currentY) + ")");
         buildFilterRow(grp, table.name, table.label, realH);
         currentY += realH;
 
-        // Table
+
+        // Table - definition
         var dtable = d3.select(this)
           .append("table")
           .classed("table", true)
@@ -533,7 +532,7 @@ function showDictionary(version) {
           .classed("table-condensed", true)
           .classed("dictionary_table", true);
 
-        // Table columns
+        // Table - columns
         var thead = dtable.append("thead").append("tr");
         thead.append("th").style("width", "5px").text("");
         thead.append("th").text("Field");
@@ -544,6 +543,7 @@ function showDictionary(version) {
         thead.append("th").text("RegExp");
         thead.append("th").text("Script");
 
+        // Table - build
         var tbody = dtable.append("tbody");
         tbody.selectAll("tr")
           .data(table.fields)
@@ -553,35 +553,29 @@ function showDictionary(version) {
           .each(buildRow); 
      });
 
+     // Update toolbar counters
      d3.select("#counterNew").text(function() {
         return entryNew > 0? entryNew : "";
      });
-
      d3.select("#counterChanged").text(function() {
         return entryChanged > 0? entryChanged : "";
      });
 
-     d3.select("#selection").attr("height", (currentY+5) + "px");
-
-
-     console.log("Entry New ", entryNew);
-     console.log("Entry Changed", entryChanged);
+     // Auto adjust the svg height
+     d3.select("#minimap").attr("height", (currentY+5) + "px");
 }
 
 
+
 ////////////////////////////////////////////////////////////////////////////////
-// Entry Point
-// 1) Get all dictionaries
-// 2) Sort dictionaries by timestamp
-// 3) Popuplate version dropdown and initialize dictionary tables
+// Entry point
 ////////////////////////////////////////////////////////////////////////////////
-//d3.json("/ws/dictionaries", function(dictionaryList) {
 d3.json("/ws/dictionaries", function(dictionaryList) {
 
    var sortedDictionaryList = _.sortBy(dictionaryList, function(obj) {
       return obj.lastUpdate;
    });
-   sortedDictionaryList = sortedDictionaryList.reverse();
+   //sortedDictionaryList = sortedDictionaryList.reverse();
 
    var versionList = _.pluck(sortedDictionaryList, "version");
    var latest = sortedDictionaryList[0].version;
@@ -594,27 +588,27 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
    for (var i=0; i < sortedDictionaryList.length; i++)
       dictionaryMap[ sortedDictionaryList[i].version ] = sortedDictionaryList[i];
 
-   // Populate dictionary lists
-   d3.select("#version_a").selectAll("option")
-     .data(versionList)
-     .enter()
-     .append("option")
-     .attr("value", function(d) { return d; })
-     .text(function(d) { return d;});
-
-   d3.select("#version_b").selectAll("option")
-     .data(versionList)
-     .enter()
-     .append("option")
-     .attr("value", function(d) { return d; })
-     .text(function(d) { return d;});
-
-
    // Grab the codelist
    d3.json("/ws/codeLists", function(codeLists) {
      codeLists.forEach(function(c) {
         codelistMap[c.name] = c;
      });
+
+     // Done preparing data, now start rendering
+     d3.select("#version_a").selectAll("option")
+       .data(versionList)
+       .enter()
+       .append("option")
+       .attr("value", function(d) { return d; })
+       .text(function(d) { return d;});
+  
+     d3.select("#version_b").selectAll("option")
+       .data(versionList)
+       .enter()
+       .append("option")
+       .attr("value", function(d) { return d; })
+       .text(function(d) { return d;});
+     
      showDictionary(latest);
    });
 });
