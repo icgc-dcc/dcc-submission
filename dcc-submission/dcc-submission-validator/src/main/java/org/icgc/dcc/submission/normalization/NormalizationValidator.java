@@ -28,6 +28,9 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
+
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
@@ -39,6 +42,7 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.steps.Counting;
+import org.icgc.dcc.submission.normalization.steps.DonorIdAddition;
 import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
 import org.icgc.dcc.submission.normalization.steps.PreMarking;
@@ -105,7 +109,8 @@ public final class NormalizationValidator implements Validator {
   /**
    * Returns the default instance for the normalization.
    */
-  public static NormalizationValidator getDefaultInstance(DccFileSystem2 dccFileSystem2, Config config) {
+  public static NormalizationValidator getDefaultInstance(DccFileSystem2 dccFileSystem2, Config config,
+      Map<String, String> sampleToDonor) {
     return new NormalizationValidator(
         dccFileSystem2,
         config,
@@ -116,6 +121,8 @@ public final class NormalizationValidator implements Validator {
                 SUBMISSION_OBSERVATION_ANALYSIS_ID,
                 UNIQUE_START))
             .add(new Counting(TOTAL_START))
+
+            .add(new DonorIdAddition(sampleToDonor))
 
             // Must happen before rebuilding the mutation
             .add(new PreMarking()) // Must happen no matter what
@@ -133,6 +140,8 @@ public final class NormalizationValidator implements Validator {
 
             // Must happen after removing duplicates and allele masking
             .add(new PrimaryKeyGeneration())
+
+            .add(new FieldDiscarding("donor_id"))
 
             .add(new Counting(TOTAL_END))
 

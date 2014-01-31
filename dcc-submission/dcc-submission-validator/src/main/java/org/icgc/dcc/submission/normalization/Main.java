@@ -17,14 +17,26 @@
  */
 package org.icgc.dcc.submission.normalization;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.typesafe.config.ConfigFactory.parseMap;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 
 /**
@@ -77,9 +89,67 @@ public class Main {
   }
 
   private static NormalizationValidator getValidator(ValidationContext context) {
+    Map<String, String> sampleToDonor = getSampleToDonorMap(context);
     return NormalizationValidator.getDefaultInstance(
         getDccFileSystem2(context),
-        getNormalizationConfig());
+        getNormalizationConfig(),
+        sampleToDonor);
+  }
+
+  private static Map<String, String> getSampleToDonorMap(ValidationContext context) {
+    Map<String, String> sampleToDonor = null;
+    try {
+      val platform = context.getPlatformStrategy();
+      val dictionary = context.getDictionary();
+      val fileSystem = platform.getFileSystem();
+      Splitter splitter = Splitter.on('\t');
+
+      val specimenToDonor = Maps.<String, String> newTreeMap();
+      for (String row : getRows(platform, dictionary, fileSystem, SubmissionFileType.SPECIMEN_TYPE)) {
+        val fields = Lists.<String> newArrayList(splitter.split(row));
+        val donorId = fields.get(0);
+        val specimenId = fields.get(1);
+        checkState(!specimenToDonor.containsKey(specimenId));
+        specimenToDonor.put(specimenId, donorId);
+      }
+      log.info("{}", specimenToDonor);
+
+      val sampleToSpecimen = Maps.<String, String> newTreeMap();
+      for (String row : getRows(platform, dictionary, fileSystem, SubmissionFileType.SAMPLE_TYPE)) {
+        val fields = Lists.<String> newArrayList(splitter.split(row));
+        val specimenId = fields.get(1);
+        val sampleId = fields.get(0); // indices are "reversed" in sample (PK is second instead of first like for donor
+                                      // and specimen)
+        checkState(!specimenToDonor.containsKey(sampleId));
+        sampleToSpecimen.put(sampleId, specimenId);
+      }
+      log.info("{}", sampleToSpecimen);
+
+      sampleToDonor = Maps.<String, String> newTreeMap();
+      for (val entry : sampleToSpecimen.entrySet()) {
+        sampleToDonor.put(
+            entry.getKey(),
+            specimenToDonor.get(entry.getValue()));
+      }
+      log.info("{}", sampleToDonor);
+
+    } catch (FileNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return sampleToDonor;
+  }
+
+  private static List<String> getRows(final org.icgc.dcc.submission.validation.platform.PlatformStrategy platform,
+      final org.icgc.dcc.submission.dictionary.model.Dictionary dictionary,
+      final org.apache.hadoop.fs.FileSystem fileSystem, SubmissionFileType fileType) throws FileNotFoundException,
+      IOException {
+    return HadoopUtils.readSmallTextFile(
+        fileSystem,
+        platform.path(dictionary.getFileSchema(fileType)));
   }
 
   private static DccFileSystem2 getDccFileSystem2(ValidationContext context) {

@@ -60,6 +60,7 @@ import cascading.tap.local.FileTap;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 @RunWith(PowerMockRunner.class)
@@ -197,7 +198,13 @@ public class NormalizationValidatorTest {
 
     new File(OUTPUT_FILE).delete();
     normalizationValidator = NormalizationValidator
-        .getDefaultInstance(mockDccFileSystem2, mockConfig);
+        .getDefaultInstance(mockDccFileSystem2, mockConfig, new ImmutableMap.Builder<String, String>()
+            .put("00302", "dr1")
+            .put("00312", "dr1")
+            .put("00322", "dr2")
+            .put("00352", "dr2")
+            .put("00372", "dr3")
+            .build());
     normalizationValidator.validate(mockValidationContext);
 
     List<String> outputLines = readLines(new File(OUTPUT_FILE), UTF_8);
