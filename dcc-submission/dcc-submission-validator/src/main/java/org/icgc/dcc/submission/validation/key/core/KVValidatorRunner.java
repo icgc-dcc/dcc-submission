@@ -34,7 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.core.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.key.report.KVReport;
+import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import cascading.flow.hadoop.HadoopFlowStep;
 
@@ -74,7 +74,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
 
   private void validate() throws IOException {
     val fileSystem = getFileSystem();
-    val report = new KVReport(fileSystem, new Path(reportPath));
+    val report = new KVReporter(fileSystem, new Path(reportPath));
     try {
       val validator = new KVValidator(
           new KVFileParser(fileSystem, new FileLineListParser(), false),

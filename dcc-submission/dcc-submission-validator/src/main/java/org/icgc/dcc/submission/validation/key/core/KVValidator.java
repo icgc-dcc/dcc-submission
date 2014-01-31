@@ -41,7 +41,7 @@ import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.report.KVReport;
+import org.icgc.dcc.submission.validation.key.report.KVReporter;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
@@ -60,7 +60,7 @@ public class KVValidator {
   @NonNull
   private final KVFileSystem kvFileSystem;
   @NonNull
-  private final KVReport reporter;
+  private final KVReporter reporter;
 
   private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap(); // TODO: wrapper?
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();

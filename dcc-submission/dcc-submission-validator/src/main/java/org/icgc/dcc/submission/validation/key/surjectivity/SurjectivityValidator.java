@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.report.KVReport;
+import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 /**
  * Validates surjective relations.
@@ -39,7 +39,7 @@ public class SurjectivityValidator {
       KVFileType fileType,
       KVPrimaryKeys expectedKeys,
       KVEncounteredForeignKeys encounteredKeys,
-      KVReport reporter,
+      KVReporter reporter,
       KVFileType offendedFileType) {
     val valid = validateSurjectionErrors(
         expectedKeys,
@@ -52,7 +52,7 @@ public class SurjectivityValidator {
   private boolean validateSurjectionErrors(
       KVPrimaryKeys expectedKeys,
       KVEncounteredForeignKeys encounteredKeys,
-      KVReport reporter,
+      KVReporter reporter,
       KVFileType offendedFileType) {
     log.info("Validating potential surjectivity errors");
 

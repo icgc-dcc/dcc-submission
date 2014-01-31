@@ -37,7 +37,7 @@ import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.REFERENCE_FILE_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.TEST_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
-import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
+import static org.icgc.dcc.submission.validation.key.report.KVReporter.REPORT_FILE_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
