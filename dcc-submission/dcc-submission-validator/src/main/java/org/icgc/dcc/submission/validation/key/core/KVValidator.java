@@ -41,7 +41,6 @@ import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 import org.icgc.dcc.submission.validation.key.report.KVReport;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
@@ -57,15 +56,14 @@ public class KVValidator {
   public static final boolean TUPLE_CHECKS_ENABLED = true;
 
   @NonNull
-  private final KVFileParser kvFileParser;
+  private final KVFileParser fileParser;
   @NonNull
   private final KVFileSystem kvFileSystem;
   @NonNull
-  private final KVReport kvReport;
+  private final KVReport reporter;
 
   private final Map<KVFileType, KVPrimaryKeys> fileTypeToPrimaryKeys = newHashMap(); // TODO: wrapper?
   private final SurjectivityValidator surjectivityValidator = new SurjectivityValidator();
-  private final KVSubmissionErrors submissionErrors = new KVSubmissionErrors();
 
   public void processSubmission() {
     log.info("Loading data");
@@ -95,7 +93,7 @@ public class KVValidator {
     log.debug("{}", banner("="));
 
     // Report
-    boolean valid = submissionErrors.reportSubmissionErrors(kvReport);
+    boolean valid = false;// submissionErrors.reportSubmissionErrors(kvReport);
     log.info("{}", valid);
     log.info("done.");
   }
@@ -158,8 +156,8 @@ public class KVValidator {
 
         // Process file
         .processFile(
-            kvFileParser,
-            submissionErrors,
+            fileParser,
+            reporter,
             primaryKeys,
             optionalReferencedPrimaryKeys,
             optionalEncounteredForeignKeys
@@ -187,7 +185,7 @@ public class KVValidator {
               fileType,
               fileTypeToPrimaryKeys.get(referencedType),
               optionalEncounteredForeignKeys.get(),
-              submissionErrors,
+              reporter,
               referencedType);
     } else {
       log.info("No outgoing surjection relation for file type: '{}'", fileType);

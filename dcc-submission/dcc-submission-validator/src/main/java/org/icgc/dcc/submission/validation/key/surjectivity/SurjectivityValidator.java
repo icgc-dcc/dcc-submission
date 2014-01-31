@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
+import org.icgc.dcc.submission.validation.key.report.KVReport;
 
 /**
  * Validates surjective relations.
@@ -39,12 +39,12 @@ public class SurjectivityValidator {
       KVFileType fileType,
       KVPrimaryKeys expectedKeys,
       KVEncounteredForeignKeys encounteredKeys,
-      KVSubmissionErrors errors,
+      KVReport reporter,
       KVFileType offendedFileType) {
     val valid = validateSurjectionErrors(
         expectedKeys,
         encounteredKeys,
-        errors,
+        reporter,
         offendedFileType);
     log.info((valid ? "No" : "Some") + " surjection error found for file type '{}'", fileType);
   }
@@ -52,7 +52,7 @@ public class SurjectivityValidator {
   private boolean validateSurjectionErrors(
       KVPrimaryKeys expectedKeys,
       KVEncounteredForeignKeys encounteredKeys,
-      KVSubmissionErrors errors,
+      KVReport reporter,
       KVFileType offendedFileType) {
     log.info("Validating potential surjectivity errors");
 
@@ -63,7 +63,7 @@ public class SurjectivityValidator {
         val expected = expectedIterator.next();
         val validKey = encounteredKeys.encountered(expected);
         if (!validKey) {
-          errors.addSurjectionError(offendedFileType, fileName, expected);
+          reporter.reportSurjectionError(offendedFileType, fileName, expected);
           validFileType = false;
         }
       }

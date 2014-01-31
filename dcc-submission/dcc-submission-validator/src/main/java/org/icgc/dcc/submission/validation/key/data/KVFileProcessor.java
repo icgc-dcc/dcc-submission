@@ -61,10 +61,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.core.KVFileParser;
-import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
+import org.icgc.dcc.submission.validation.key.report.KVReport;
 
 import com.google.common.base.Optional;
 
+/**
+ * TODO: MUST split class on a per type basis
+ */
 @Slf4j
 @RequiredArgsConstructor(access = PUBLIC)
 public final class KVFileProcessor {
@@ -76,8 +79,8 @@ public final class KVFileProcessor {
 
   @SneakyThrows
   public void processFile(
-      KVFileParser kvFileParser,
-      final KVSubmissionErrors errors, // To collect all but surjection errors
+      final KVFileParser kvFileParser,
+      final KVReport reporter, // To report all but surjection errors at this point
       final KVPrimaryKeys primaryKeys,
       final Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, // N/A for DONOR for instance
       final Optional<KVEncounteredForeignKeys> optionalEncounteredKeys // N/A for SSM_P for instance
@@ -92,7 +95,7 @@ public final class KVFileProcessor {
         val tuple = getTuple(fileDescription.getFileType(), record);
         log.debug("tuple: '{}'", tuple);
 
-        processTuple(tuple, lineNumber, errors, primaryKeys, optionalReferencedPrimaryKeys, optionalEncounteredKeys);
+        processTuple(tuple, lineNumber, reporter, primaryKeys, optionalReferencedPrimaryKeys, optionalEncounteredKeys);
 
         if ((lineNumber % DEFAULT_LOG_THRESHOLD) == 0) {
           logProcessedLine(lineNumber, false);
@@ -108,7 +111,7 @@ public final class KVFileProcessor {
   private void processTuple(
       KVTuple tuple,
       long lineCount,
-      KVSubmissionErrors errors,
+      KVReport reporter,
       KVPrimaryKeys primaryKeys,
       Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys,
       Optional<KVEncounteredForeignKeys> optionalEncounteredKeys) {
@@ -122,7 +125,7 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // No foreign key check for DONOR
@@ -136,12 +139,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -155,12 +158,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -176,13 +179,13 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -190,7 +193,7 @@ public final class KVFileProcessor {
           && !hasMatchingReference(
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -203,7 +206,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
@@ -219,12 +222,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -232,7 +235,7 @@ public final class KVFileProcessor {
           && !hasMatchingReference(
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -244,13 +247,13 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -266,7 +269,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -282,12 +285,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -295,7 +298,7 @@ public final class KVFileProcessor {
           && !hasMatchingReference(
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -307,13 +310,13 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -329,7 +332,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -345,12 +348,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -358,7 +361,7 @@ public final class KVFileProcessor {
           && !hasMatchingReference(
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
@@ -372,7 +375,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -387,13 +390,13 @@ public final class KVFileProcessor {
 
       // Uniqueness check (unlike for other types, the PK is on the secondary file for MIRNA)
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -409,12 +412,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -422,7 +425,7 @@ public final class KVFileProcessor {
           && !hasMatchingReference(
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -434,13 +437,13 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -456,7 +459,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -473,13 +476,13 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -489,7 +492,7 @@ public final class KVFileProcessor {
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
 
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
@@ -503,7 +506,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -521,13 +524,13 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
 
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -535,7 +538,7 @@ public final class KVFileProcessor {
           && !hasMatchingReference(
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -548,7 +551,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -566,12 +569,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -579,7 +582,7 @@ public final class KVFileProcessor {
           && !hasMatchingReference(
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
 
       }
 
@@ -593,7 +596,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
 
       }
 
@@ -611,12 +614,12 @@ public final class KVFileProcessor {
 
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
-        errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
+        reporter.reportError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       // Secondary foreign key check
@@ -625,7 +628,7 @@ public final class KVFileProcessor {
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
 
-        errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
+        reporter.reportError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
       }
 
       primaryKeys.updatePks(fileName, tuple);
@@ -638,7 +641,7 @@ public final class KVFileProcessor {
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
-        errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
+        reporter.reportError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
