@@ -76,7 +76,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
     val fileSystem = getFileSystem();
     val report = new KVReporter(fileSystem, new Path(reportPath));
     try {
-      val validator = new KVValidator(
+      val validator = new KVProcessor(
           new KVFileParser(fileSystem, new FileLineListParser(), false),
           new KVFileSystem(fileSystem, dataTypes, dictionary, new Path(submissionPath)), report);
 

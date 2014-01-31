@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.core.KVProcessor.TUPLE_CHECKS_ENABLED;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.KEYS_NOT_APPLICABLE;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.from;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.BIOMARKER;

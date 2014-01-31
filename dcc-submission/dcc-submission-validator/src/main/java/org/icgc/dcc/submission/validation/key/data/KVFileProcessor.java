@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getTuple;
-import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.core.KVProcessor.TUPLE_CHECKS_ENABLED;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;

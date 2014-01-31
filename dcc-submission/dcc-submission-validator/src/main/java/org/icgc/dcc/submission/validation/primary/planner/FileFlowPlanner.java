@@ -25,9 +25,9 @@ import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 import cascading.flow.Flow;
 
 /**
- * Plans a {@code Flow} for a particular {@code FileSchema}.
+ * Plans a {@code Flow} for a particular file (associated with a {@code FileSchema}).
  */
-public interface FileSchemaFlowPlanner {
+public interface FileFlowPlanner {
 
   void acceptVisitor(PlanningVisitor<?> planningVisitor);
 

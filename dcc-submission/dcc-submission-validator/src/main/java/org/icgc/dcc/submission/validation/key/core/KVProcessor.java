@@ -48,7 +48,7 @@ import com.google.common.base.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
-public class KVValidator {
+public class KVProcessor {
 
   /**
    * TODO: temporarily...
@@ -91,10 +91,6 @@ public class KVValidator {
       log.debug("{}: {}", fileType, fileTypeToPrimaryKeys.get(fileType));
     }
     log.debug("{}", banner("="));
-
-    // Report
-    boolean valid = false;// submissionErrors.reportSubmissionErrors(kvReport);
-    log.info("{}", valid);
     log.info("done.");
   }
 
