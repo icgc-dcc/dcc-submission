@@ -23,7 +23,6 @@ import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.hasOutgoingSurjectiveRelation;
-import static org.icgc.dcc.submission.validation.key.core.KVFileDescription.getFileDescription;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
@@ -123,13 +122,12 @@ public class KVProcessor {
     checkState(dataFilePaths.isPresent(),
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
-      val fileDescription = getFileDescription(fileType, dataFilePath);
       log.info("{}", banner("-"));
-      log.info("Processing file: '{}'; Referencing '{}': '{}'",
-          new Object[] { dataFilePath, optionalReferencedFileType, fileDescription });
+      log.info("Processing '{}' file: '{}'; Referencing '{}': '{}'",
+          new Object[] { fileType, optionalReferencedFileType, dataFilePath });
 
       // TODO: subclass for referencing/non-referencing?
-      new KVFileProcessor(fileDescription)
+      new KVFileProcessor(fileType, dataFilePath)
 
           // Process file
           .processFile(

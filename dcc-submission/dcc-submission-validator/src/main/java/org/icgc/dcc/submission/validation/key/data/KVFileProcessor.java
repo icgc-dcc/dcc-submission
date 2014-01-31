@@ -49,15 +49,15 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM
 
 import java.util.List;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
-import org.icgc.dcc.submission.validation.key.core.KVFileDescription;
 import org.icgc.dcc.submission.validation.key.core.KVFileParser;
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import com.google.common.base.Optional;
@@ -71,8 +71,8 @@ public final class KVFileProcessor {
 
   private static final int DEFAULT_LOG_THRESHOLD = 1000000;
 
-  @Getter
-  private final KVFileDescription fileDescription;
+  private final KVFileType fileType;
+  private final Path filePath;
 
   @SneakyThrows
   public void processFile(
@@ -82,14 +82,13 @@ public final class KVFileProcessor {
       final Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, // N/A for DONOR for instance
       final Optional<KVEncounteredForeignKeys> optionalEncounteredKeys // N/A for SSM_P for instance
   ) {
-    log.info("{}", fileDescription);
+    log.info("{}", fileType, filePath);
 
-    checkState(!fileDescription.isPlaceholder(), "TODO");
-    kvFileParser.parse(fileDescription.getDataFilePath().get(), new FileRecordProcessor<List<String>>() {
+    kvFileParser.parse(filePath, new FileRecordProcessor<List<String>>() {
 
       @Override
       public void process(long lineNumber, List<String> record) {
-        val tuple = getTuple(fileDescription.getFileType(), record);
+        val tuple = getTuple(fileType, record);
         log.debug("tuple: '{}'", tuple);
 
         processTuple(tuple, lineNumber, reporter, primaryKeys, optionalReferencedPrimaryKeys, optionalEncounteredKeys);
@@ -113,8 +112,7 @@ public final class KVFileProcessor {
       Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys,
       Optional<KVEncounteredForeignKeys> optionalEncounteredKeys) {
 
-    val fileType = fileDescription.getFileType();
-    val fileName = fileDescription.getDataFileName();
+    val fileName = filePath.getName();
 
     // Clinical
     // DONOR
