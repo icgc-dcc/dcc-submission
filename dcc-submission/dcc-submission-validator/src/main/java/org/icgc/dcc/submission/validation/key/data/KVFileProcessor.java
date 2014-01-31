@@ -76,7 +76,7 @@ public final class KVFileProcessor {
 
   @SneakyThrows
   public void processFile(
-      final KVFileParser kvFileParser,
+      final KVFileParser fileParser,
       final KVReporter reporter, // To report all but surjection errors at this point
       final KVPrimaryKeys primaryKeys,
       final Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, // N/A for DONOR for instance
@@ -84,7 +84,7 @@ public final class KVFileProcessor {
   ) {
     log.info("{}", fileType, filePath);
 
-    kvFileParser.parse(filePath, new FileRecordProcessor<List<String>>() {
+    fileParser.parse(filePath, new FileRecordProcessor<List<String>>() {
 
       @Override
       public void process(long lineNumber, List<String> record) {
@@ -102,7 +102,7 @@ public final class KVFileProcessor {
   }
 
   /**
-   * Also validates; TODO: include lineCount in tuple?
+   * Also validates; TODO
    */
   private void processTuple(
       KVTuple tuple,
@@ -143,7 +143,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -162,7 +162,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -204,8 +204,8 @@ public final class KVFileProcessor {
         reporter.reportRelationError(fileType, fileName, lineCount, tuple.getFk());
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -253,7 +253,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -268,7 +268,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
       ; // No surjection between secondary and primary
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -316,7 +316,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -331,7 +331,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
       ; // No surjection between secondary and primary
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -375,7 +375,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -395,7 +395,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
       ; // No surjection between secondary and primary
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -443,7 +443,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -458,7 +458,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
       ; // No surjection between secondary and primary
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -505,8 +505,8 @@ public final class KVFileProcessor {
 
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -550,8 +550,8 @@ public final class KVFileProcessor {
 
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -595,8 +595,8 @@ public final class KVFileProcessor {
 
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -639,8 +639,8 @@ public final class KVFileProcessor {
         reporter.reportRelationError(fileType, fileName, lineCount, tuple.getFk());
       }
 
-      if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
+      if (TUPLE_CHECKS_ENABLED) ensurePK(tuple);
+      ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasSecondaryFk());
     }
@@ -650,8 +650,22 @@ public final class KVFileProcessor {
    * @param fk May be primary or secondary FK.
    */
   private boolean hasMatchingReference(Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, KVKey fk) {
-    if (TUPLE_CHECKS_ENABLED) checkState(optionalReferencedPrimaryKeys.isPresent(), "TODO");
+    if (TUPLE_CHECKS_ENABLED) {
+      checkState(
+          optionalReferencedPrimaryKeys.isPresent(),
+          "Referenced PKs are expected to be present for type '{}'", fileType);
+    }
     return optionalReferencedPrimaryKeys.get().containsPk(fk);
+  }
+
+  private void ensurePK(KVTuple tuple) {
+    checkState(!tuple.hasPk(),
+        "Row is expected to contain a PK for type '{}': '{}'", fileType, tuple);
+  }
+
+  private void ensurePresent(Optional<KVEncounteredForeignKeys> optionalEncounteredKeys) {
+    checkState(optionalEncounteredKeys.isPresent(),
+        "Encountered keys are expected to be present for type '{}'", fileType);
   }
 
   private void logProcessedLine(long lineCount, boolean finished) {
