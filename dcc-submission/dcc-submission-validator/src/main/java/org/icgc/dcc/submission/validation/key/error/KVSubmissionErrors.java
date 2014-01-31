@@ -22,13 +22,11 @@ import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorF
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getPrimaryKeyNames;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getReferencingFileType;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getSimpleSurjectionForeignKeyNames;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getSurjectionForeignKeyNames;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
-import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.COMPLEX_SURJECTION_ERROR_LINE_NUMBER;
-import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SIMPLE_SURJECTION_ERROR_LINE_NUMBER;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SURJECTION;
+import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
 
 import java.util.List;
 import java.util.Map;
@@ -70,12 +68,8 @@ public class KVSubmissionErrors {
         .add(rowError);
   }
 
-  public void addSimpleSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
-    addError(fileType, fileName, SIMPLE_SURJECTION_ERROR_LINE_NUMBER, SIMPLE_SURJECTION, keys);
-  }
-
-  public void addComplexSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
-    addError(fileType, fileName, COMPLEX_SURJECTION_ERROR_LINE_NUMBER, COMPLEX_SURJECTION, keys);
+  public void addSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
+    addError(fileType, fileName, SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys);
   }
 
   public boolean reportSubmissionErrors(KVReport report) {
@@ -117,9 +111,9 @@ public class KVSubmissionErrors {
       val referencedFileType = getOptionalReferencedFileType(fileType).get();
       val referencedFields = getPrimaryKeyNames(referencedFileType);
       errorParams = new Object[] { referencedFileType, referencedFields };
-    } else if (errorType == SIMPLE_SURJECTION) {
+    } else if (errorType == SURJECTION) {
       val referencingFileType = getReferencingFileType(fileType);
-      val referencingFields = getSimpleSurjectionForeignKeyNames(referencingFileType);
+      val referencingFields = getSurjectionForeignKeyNames(referencingFileType);
       errorParams = new Object[] { referencingFileType, referencingFields };
     }
     return errorParams;

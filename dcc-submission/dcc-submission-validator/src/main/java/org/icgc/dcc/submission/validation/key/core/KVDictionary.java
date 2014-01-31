@@ -68,6 +68,7 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -242,7 +243,7 @@ public final class KVDictionary {
 
           .build();
 
-  private static final Map<KVFileType, List<String>> SIMPLE_SURJECTION_FKS =
+  private static final Map<KVFileType, List<String>> SURJECTION_FKS =
       new ImmutableMap.Builder<KVFileType, List<String>>()
           .put(SPECIMEN, SPECIMEN_FK_NAMES)
           .put(SAMPLE, SAMPLE_FK_NAMES)
@@ -263,6 +264,28 @@ public final class KVDictionary {
           .put(METH_S, METH_S_FK_NAMES)
 
           .build();
+
+  private static final Predicate<KVFileType> SURJECTION_RELATION = new Predicate<KVFileType>() {
+
+    @Override
+    public boolean apply(KVFileType fileType) {
+      return fileType == SPECIMEN
+          || fileType == SAMPLE
+
+          || fileType == SSM_P
+          || fileType == CNSM_P
+          || fileType == STSM_P
+          || fileType == MIRNA_P
+          || fileType == METH_P
+          || fileType == EXP_G
+          || fileType == PEXP_P
+          || fileType == JCN_P;
+    }
+  };
+
+  public static boolean hasOutgoingSurjectiveRelation(KVFileType fileType) {
+    return SURJECTION_RELATION.apply(fileType);
+  }
 
   private static final Map<KVFileType, KVFileTypeErrorFields> ERROR_TYPE_DESCRIPTIONS =
       new ImmutableMap.Builder<KVFileType, KVFileTypeErrorFields>()
@@ -481,13 +504,10 @@ public final class KVDictionary {
     return PKS.get(fileType);
   }
 
-  public static List<String> getSimpleSurjectionForeignKeyNames(KVFileType fileType) {
-    return SIMPLE_SURJECTION_FKS.get(fileType);
+  public static List<String> getSurjectionForeignKeyNames(KVFileType fileType) {
+    return SURJECTION_FKS.get(fileType);
   }
 
-  /**
-   * Should NOT be called in the context of complex surjection as it can only return one such type.
-   */
   public static KVFileType getReferencingFileType(KVFileType fileType) {
     KVFileType referencingFileType = null;
     for (val entry : RELATIONS.entrySet()) {

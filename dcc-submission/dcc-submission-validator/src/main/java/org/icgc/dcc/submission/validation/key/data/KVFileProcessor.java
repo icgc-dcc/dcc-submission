@@ -183,7 +183,6 @@ public final class KVFileProcessor {
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
-
       }
 
       // Secondary foreign key check
@@ -192,14 +191,10 @@ public final class KVFileProcessor {
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
         errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
-
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      addEncounteredForeignKey(optionalEncounteredKeys, tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        addEncounteredForeignKey(optionalEncounteredKeys, tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // SSM_P
@@ -209,7 +204,6 @@ public final class KVFileProcessor {
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
-
       }
 
       if (TUPLE_CHECKS_ENABLED) checkState(!tuple.hasPk(), "TODO");
@@ -226,13 +220,11 @@ public final class KVFileProcessor {
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
         errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
-
       }
 
       // Foreign key check
       if (!hasMatchingReference(optionalReferencedPrimaryKeys, tuple.getFk())) {
         errors.addError(fileType, fileName, lineCount, PRIMARY_RELATION, tuple.getFk());
-
       }
 
       // Secondary foreign key check
@@ -241,16 +233,10 @@ public final class KVFileProcessor {
               optionalReferencedPrimaryKeys,
               tuple.getSecondaryFk())) {
         errors.addError(fileType, fileName, lineCount, SECONDARY_RELATION, tuple.getSecondaryFk());
-
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // CNSM_P
@@ -297,7 +283,6 @@ public final class KVFileProcessor {
       // Uniqueness check
       if (primaryKeys.containsPk(tuple.getPk())) {
         errors.addError(fileType, fileName, lineCount, UNIQUENESS, tuple.getPk());
-
       }
 
       // Foreign key check
@@ -314,12 +299,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // STSM_P
@@ -383,12 +363,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // MIRNA_P
@@ -451,12 +426,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // METH_P
@@ -524,12 +494,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // EXP_G
@@ -574,12 +539,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // PEXP_P
@@ -624,12 +584,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // JCN_P
@@ -674,12 +629,7 @@ public final class KVFileProcessor {
       }
 
       primaryKeys.updatePks(fileName, tuple);
-      checkState(optionalEncounteredKeys.isPresent(), "TODO");
-      optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getFk());
-      if (tuple.hasSecondaryFk()) { // matched_sample_id may be null or a missing code
-        checkState(optionalEncounteredKeys.isPresent(), "TODO");
-        optionalEncounteredKeys.get().addEncounteredForeignKey(tuple.getSecondaryFk());
-      }
+      // Not checking for surjection with meta files
     }
 
     // SGV_P
@@ -704,11 +654,6 @@ public final class KVFileProcessor {
   private boolean hasMatchingReference(Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, KVKey fk) {
     if (TUPLE_CHECKS_ENABLED) checkState(optionalReferencedPrimaryKeys.isPresent(), "TODO");
     return optionalReferencedPrimaryKeys.get().containsPk(fk);
-  }
-
-  private void addEncounteredForeignKey(Optional<KVEncounteredForeignKeys> optionalEncounteredKeys, KVKey fk) {
-    checkState(optionalEncounteredKeys.isPresent(), "TODO");
-    optionalEncounteredKeys.get().addEncounteredForeignKey(fk);
   }
 
   private void logProcessedLine(long lineCount, boolean finished) {
