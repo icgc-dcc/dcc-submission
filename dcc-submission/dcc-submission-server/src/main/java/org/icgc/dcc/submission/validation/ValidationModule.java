@@ -186,7 +186,8 @@ public class ValidationModule extends AbstractDccModule {
 
       @Override
       public NormalizationValidator get() {
-        return NormalizationValidator.getDefaultInstance(dccFileSystem2, getNormalizationConfig(), null);
+        return NormalizationValidator.getDefaultInstance(
+            dccFileSystem2, getNormalizationConfig(), null); // FIXME: actually hook this up to the submission system
       }
 
       private Config getNormalizationConfig() {

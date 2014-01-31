@@ -23,24 +23,24 @@ import cascading.pipe.assembly.Discard;
 import cascading.tuple.Fields;
 
 /**
- * Temporary hack
+ * TODO
  */
 public class FieldDiscarding implements NormalizationStep {
 
-  private final String fieldName;
+  private final Fields field;
 
   @Override
   public String shortName() {
-    return format("%s-%s", this.getClass().getSimpleName().toLowerCase(), fieldName);
+    return format("%s-discarding", field.toString().replace("'", ""));
   }
 
-  public FieldDiscarding(String fieldName) {
-    this.fieldName = fieldName;
+  public FieldDiscarding(Fields field) {
+    this.field = field;
   }
 
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Discard(pipe, new Fields(fieldName));
+    return new Discard(pipe, field);
   }
 
 }

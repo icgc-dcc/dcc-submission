@@ -109,8 +109,8 @@ public final class NormalizationValidator implements Validator {
   /**
    * Returns the default instance for the normalization.
    */
-  public static NormalizationValidator getDefaultInstance(DccFileSystem2 dccFileSystem2, Config config,
-      Map<String, String> sampleToDonor) {
+  public static NormalizationValidator getDefaultInstance(
+      DccFileSystem2 dccFileSystem2, Config config, Map<String, String> sampleToDonorMap) {
     return new NormalizationValidator(
         dccFileSystem2,
         config,
@@ -122,7 +122,7 @@ public final class NormalizationValidator implements Validator {
                 UNIQUE_START))
             .add(new Counting(TOTAL_START))
 
-            .add(new DonorIdAddition(sampleToDonor))
+            .add(new DonorIdAddition(sampleToDonorMap))
 
             // Must happen before rebuilding the mutation
             .add(new PreMarking()) // Must happen no matter what
@@ -141,7 +141,7 @@ public final class NormalizationValidator implements Validator {
             // Must happen after removing duplicates and allele masking
             .add(new PrimaryKeyGeneration())
 
-            .add(new FieldDiscarding("donor_id"))
+            .add(new FieldDiscarding(DonorIdAddition.DONOR_ID_FIELD))
 
             .add(new Counting(TOTAL_END))
 

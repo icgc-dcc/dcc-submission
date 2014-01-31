@@ -49,7 +49,7 @@ public final class DonorIdAddition implements NormalizationStep {
   public static final Fields SAMPLE_ID_FIELD = new Fields(SUBMISSION_ANALYZED_SAMPLE_ID);
   public static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
 
-  private final Map<String, String> sampleToDonor;
+  private final Map<String, String> sampleToDonorMap;
 
   @Override
   public String shortName() {
@@ -76,7 +76,7 @@ public final class DonorIdAddition implements NormalizationStep {
     public void operate(
         @SuppressWarnings("rawtypes") FlowProcess flowProcess,
         FunctionCall<Void> functionCall) {
-      val donorId = sampleToDonor.get(
+      val donorId = sampleToDonorMap.get(
           functionCall
               .getArguments()
               .getString(SAMPLE_ID_FIELD));
