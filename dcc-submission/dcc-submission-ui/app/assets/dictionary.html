@@ -10,14 +10,14 @@
    display:block;
    top:0px;
    height:35px;
-   padding:5px; 
+   padding:5px;
    width:100%;
    overflow: visible;
 
    opacity:0.95;
    background-color:rgb(240, 240, 230);
 
-   border-bottom-color: rgb(200, 200, 200); 
+   border-bottom-color: rgb(200, 200, 200);
    border-bottom-style: solid;
    border-bottom-width: 1px;
 }
@@ -73,9 +73,9 @@ a {
    cursor: pointer;
 }
 
-.table-bordered>thead>tr>th, 
-.table-bordered>thead>tr>td, 
-.table-bordered>tbody>tr>td 
+.table-bordered>thead>tr>th,
+.table-bordered>thead>tr>td,
+.table-bordered>tbody>tr>td
 {
    border-bottom-width: 0px;
    border-left-width: 0px;
@@ -104,7 +104,7 @@ a {
       <li style="display:inline-block; margin-right:1em">From <select id="version_b" onChange="switchDictionary()"></select></li>
       <li style="display:inline-block; margin-right:1em">To  <select id="version_a" onChange="switchDictionary()"></select></li>
       <li style="display:inline-block; margin-right:1em">
-          Data Type 
+          Data Type
           <button id="minimapLabel"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
           <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
              <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
@@ -120,13 +120,16 @@ a {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DCC Dictionary viewer
-// Browse and compare DCC dictionaries and codelists. 
+// Browse and compare DCC dictionaries and codelists.
 //
 // Note:
-// - The viewer does not support dictionary versions before 0.6c
-// - The viewer assumes that columns are in fixed order
-// - Comparing (A,B) is not the same as comparing (B,A) because of the change
-//   detection logic for new/removed.
+// - The viewer does not support dictionary versions before 0.6c, this also means
+//   the viewer assumes a fixed column order
+// - Comparing A=>B will not yield the same result as B=>A due to how new/remove
+//   items are calculated
+//
+// Dependencies:
+// - D3, Underscore, HighlightJS, JS-Beautify, Bootstrap
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -135,7 +138,7 @@ a {
 var cRowNormal  = d3.rgb(240, 240, 240);
 var cRowNew     = d3.rgb(31, 120, 180);
 var cRowChanged = d3.rgb(124, 156, 97);
-var cBar = d3.rgb(230,230,230); 
+var cBar = d3.rgb(230,230,230);
 var cBarSelect    = d3.rgb(166, 206, 227);
 var cBarHighlight = d3.rgb(242, 155, 4);
 
@@ -143,18 +146,18 @@ var cBarHighlight = d3.rgb(242, 155, 4);
 var barHeight = 25;
 
 var sortOrder = [
-   "donor", "specimen", "sample", 
-   "biomarker", "surgery", "therapy", "family", "exposure", 
-   "ssm_m", "ssm_p", "ssm_s", 
-   "sgv_m", "sgv_p", 
-   "cnsm_m", "cnsm_p", "cnsm_s", 
-   "stsm_m", "stsm_p", "stsm_s", 
-   "exp_g", "exp_m", 
-   "pexp_m", "pexp_p", 
-   "mirna_m", "mirna_p", "mirna_s", 
-   "jcn_m", "jcn_p", 
-   "meth_m", "meth_p", "meth_s", 
-]; 
+   "donor", "specimen", "sample",
+   "biomarker", "surgery", "therapy", "family", "exposure",
+   "ssm_m", "ssm_p", "ssm_s",
+   "sgv_m", "sgv_p",
+   "cnsm_m", "cnsm_p", "cnsm_s",
+   "stsm_m", "stsm_p", "stsm_s",
+   "exp_g", "exp_m",
+   "pexp_m", "pexp_p",
+   "mirna_m", "mirna_p", "mirna_s",
+   "jcn_m", "jcn_p",
+   "meth_m", "meth_p", "meth_s",
+];
 
 var currentSelection = 'all';
 var dictionaryMap = {};
@@ -205,13 +208,14 @@ function selectDataType(label) {
 
 
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Text search, filter out data type table rows and highlight minimap rows
 ////////////////////////////////////////////////////////////////////////////////
 function doFilter() {
    var txt = d3.select("#filter").node().value;
    var re = new RegExp(txt, "i");
-   var num;
    var datatypeMap = {};
 
    window.scrollTo(0, 0);
@@ -221,14 +225,9 @@ function doFilter() {
       d3.selectAll(".dictionary_table").selectAll("tr").style("display", "table-row");
       d3.selectAll(".filter_wrapper").style("display", "block");
    } else {
-      num = 0;
       d3.selectAll(".dictionary_table").selectAll("tbody").selectAll("tr").filter(function(d) {
 
-         restrictionList = d.restrictions;
-         codelist = _.find(restrictionList, function(obj) { return obj.type == 'codelist'; });
-
-         if (d.name.match(re) || (codelist && codelist.config.name.match(re))) { 
-           num++;
+         if (isMatch(d, re) === true) {
            var parentName = d3.select(d3.select(this).node().parentNode).datum().name;
 
            if (! datatypeMap[parentName]) {
@@ -243,7 +242,8 @@ function doFilter() {
 
       d3.selectAll(".filter_wrapper").each(function(d) {
          d3.select(this).style("display", "block");
-         if (! datatypeMap[d.name] || datatypeMap[d.name] >= d.fields.length) {
+         //if (! datatypeMap[d.name] || datatypeMap[d.name] > d.fields.length) {
+         if (! datatypeMap[d.name]) {
             d3.select(this).style("display", "none");
          }
       });
@@ -276,6 +276,19 @@ function doFilter() {
 ////////////////////////////////////////////////////////////////////////////////
 function isDifferent(row1, row2) {
    if (! _.isEqual(row1.restrictions, row2.restrictions)) return true;
+   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Determines whether if row matches
+////////////////////////////////////////////////////////////////////////////////
+function isMatch(row, regex) {
+   var restrictionList = row.restrictions;
+   var codelist = _.find(restrictionList, function(obj) { return obj.type == 'codelist'; });
+
+   if (row.name.match(regex) || (codelist && codelist.config.name.match(regex))) {
+      return true;
+   }
    return false;
 }
 
@@ -318,25 +331,25 @@ function buildRow( row, idx ) {
    } else {
       minimap.style("fill", cRowNormal);
    }
-   
+
 
    d3.select(this).append("td").text(row.name);
    var attrBox = d3.select(this).append("td");
    if (row.controlled === true) {
-      attrBox.append("div").text("Controlled");  
+      attrBox.append("div").text("Controlled");
    }
    if (required) {
-      attrBox.append("div").text("Required");  
+      attrBox.append("div").text("Required");
       if (required.config.acceptMissingCode == true) {
-         attrBox.append("div").text("NA-Code");  
-      } 
+         attrBox.append("div").text("NA-Code");
+      }
    }
 
    d3.select(this).append("td").text(row.valueType);
    d3.select(this).append("td").style("max-width", "300px").text(row.label);
 
    d3.select(this).append("td").each(function(d) {
-      d.expanded = false
+      d.expanded = false;
       var cell = d3.select(this);
       if (codelist) {
          d3.select(this).append("a")
@@ -344,12 +357,12 @@ function buildRow( row, idx ) {
            .on("click", function(d) {
               d.expanded = !d.expanded;
               if (d.expanded) {
-                 d3.select(this).select("i").classed("glyphicon-chevron-down", false)
-                 d3.select(this).select("i").classed("glyphicon-chevron-up", true)
+                 d3.select(this).select("i").classed("glyphicon-chevron-down", false);
+                 d3.select(this).select("i").classed("glyphicon-chevron-up", true);
                  cell.select("ul").style("display", "block");
               } else {
-                 d3.select(this).select("i").classed("glyphicon-chevron-down", true)
-                 d3.select(this).select("i").classed("glyphicon-chevron-up", false)
+                 d3.select(this).select("i").classed("glyphicon-chevron-down", true);
+                 d3.select(this).select("i").classed("glyphicon-chevron-up", false);
                  cell.select("ul").style("display", "none");
               }
            })
@@ -392,21 +405,19 @@ function buildRow( row, idx ) {
 ////////////////////////////////////////////////////////////////////////////////
 function buildFilterRow(grp, name, label, height) {
    grp.selectAll("rect")
-      .data([{ cCurrent: cBar }]) 
+      .data([{ cCurrent: cBar }])
       .enter()
       .append("rect")
       .attr("width", 350).attr("height", (height-1)).style("fill", cBar)
       .on("mouseover", function(d) { d3.select(this).style("fill", cBarSelect); })
-      .on("mouseout", function(d) { 
-         d3.select(this).style("fill", d.cCurrent); 
-      })
+      .on("mouseout", function(d) { d3.select(this).style("fill", d.cCurrent); })
       .on("click", function(d) {
          currentSelection = name;
          //selectDataType(label);
          selectDataType(name);
          d3.event.stopPropagation();
       });
-     
+
    grp.append("text")
       .attr("x", 30)
       .attr("y", 15)
@@ -468,13 +479,13 @@ function showDictionary(version) {
    var dTo = dictionaryMap[vTo];
    var vFrom = getSelect("#version_b");
    var dFrom = dictionaryMap[vFrom];
-   var deleteTableList = []
+   var deleteTableList = [];
    dFrom.files.forEach(function(f) {
       if (!_.find(dTo.files, function(obj) { return obj.name === f.name; })) {
          deleteTableList.push(f.name);
       }
    });
-   
+
    if (deleteTableList.length > 0) {
       d3.select("#datatypeRemoved").text("Data types removed in " + vTo + ": " + deleteTableList.join(", "));
    } else {
@@ -509,7 +520,7 @@ function showDictionary(version) {
                  deleteFieldList.push(f.name);
               }
            });
-        } 
+        }
         if (deleteFieldList.length > 0) {
            var ver = getSelect("#version_a");
            d3.select(this).append("small").classed("removed", true).text("Fields removed in " + ver + ": " + deleteFieldList.join(", "));
@@ -550,7 +561,7 @@ function showDictionary(version) {
           .enter()
           .append("tr")
           .style("font-size", "12px")
-          .each(buildRow); 
+          .each(buildRow);
      });
 
      // Update toolbar counters
@@ -601,14 +612,14 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
        .append("option")
        .attr("value", function(d) { return d; })
        .text(function(d) { return d;});
-  
+
      d3.select("#version_b").selectAll("option")
        .data(versionList)
        .enter()
        .append("option")
        .attr("value", function(d) { return d; })
        .text(function(d) { return d;});
-     
+
      showDictionary(latest);
    });
 });
