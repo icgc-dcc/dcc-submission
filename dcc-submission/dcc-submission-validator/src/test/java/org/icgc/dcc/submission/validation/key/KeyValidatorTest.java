@@ -28,8 +28,8 @@ import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.MET
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
-import static org.icgc.dcc.submission.core.util.Joiners.NEWLINE_JOINER;
-import static org.icgc.dcc.submission.core.util.Joiners.PATH_JOINER;
+import static org.icgc.dcc.submission.core.util.Joiners.NEWLINE;
+import static org.icgc.dcc.submission.core.util.Joiners.PATH;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
@@ -126,7 +126,7 @@ public class KeyValidatorTest {
     val submissionDirectory = mock(SubmissionDirectory.class);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
     when(submissionDirectory.getSubmissionDirPath()).thenReturn(
-        PATH_JOINER.join(rootDir.toUri().toString(), RELEASE_NAME, PROJECT_NAME));
+        PATH.join(rootDir.toUri().toString(), RELEASE_NAME, PROJECT_NAME));
 
     val platformStrategy = mock(PlatformStrategy.class);
     val flowConnectorProperties = newLinkedHashMap(new ImmutableMap.Builder<Object, Object>()
@@ -171,14 +171,14 @@ public class KeyValidatorTest {
   private String getActualErrorLines() {
     val actualErrorLines = readSmallTextFile(fileSystem, new Path(validationDir, REPORT_FILE_NAME));
     checkState(actualErrorLines.size() == 1, "Expected to be all one line at the moment (may change later)");
-    return NEWLINE_JOINER.join(Splitter.on("}{").split(actualErrorLines.get(0)));
+    return NEWLINE.join(Splitter.on("}{").split(actualErrorLines.get(0)));
   }
 
   @SneakyThrows
   private String getExpectedErrorLines() {
-    return NEWLINE_JOINER.join(
+    return NEWLINE.join(
         readLines(
-            new File(PATH_JOINER.join(TEST_DIR, REFERENCE_FILE_NAME)), UTF_8))
+            new File(PATH.join(TEST_DIR, REFERENCE_FILE_NAME)), UTF_8))
         .replace("}\n{", "\n"); // FIXME: not elegant (ideally tuple errors wouldn't all be on one line)
   }
 }

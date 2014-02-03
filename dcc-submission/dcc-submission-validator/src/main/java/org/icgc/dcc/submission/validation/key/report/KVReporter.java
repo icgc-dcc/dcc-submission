@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.key.report;
 
 import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.codehaus.jackson.map.SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS;
+import static org.icgc.dcc.submission.core.util.ObjectMappers.DEFAULT;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getPrimaryKeyNames;
@@ -29,7 +30,6 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SEC
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUENESS;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
-import static org.icgc.dcc.submission.validation.key.utils.KVConstants.MAPPER;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -55,7 +55,7 @@ import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 /**
- * TODO
+ * Reports key validation errors in the context of the submission system.
  */
 @Slf4j
 public class KVReporter implements Closeable {
@@ -187,7 +187,7 @@ public class KVReporter implements Closeable {
 
     @SneakyThrows
     public String toJsonSummaryString() {
-      return "\n" + MAPPER
+      return "\n" + DEFAULT
           .writerWithDefaultPrettyPrinter()
           .writeValueAsString(this);
     }

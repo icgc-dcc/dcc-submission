@@ -19,11 +19,13 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import lombok.Value;
 
+import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
+
 /**
  * Data relevant to the key validation for a given row.
  */
 @Value
-public class KVTuple {
+public class KVRow {
 
   /**
    * Applicable for most file except for the leafs (see dictionary DAG).
@@ -36,7 +38,7 @@ public class KVTuple {
   private final KVKey fk;
 
   /**
-   * Only applicable for some meta files
+   * Only applicable for some meta files. See {@link KeysType#SECONDARY_FK}.
    */
   private final KVKey secondaryFk;
 

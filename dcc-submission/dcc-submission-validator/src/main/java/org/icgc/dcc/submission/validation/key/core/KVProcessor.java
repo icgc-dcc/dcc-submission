@@ -52,9 +52,9 @@ import com.google.common.base.Optional;
 public class KVProcessor {
 
   /**
-   * Enables/disables checks at the tuple level (for performance); TODO: configurable
+   * Enables/disables checks at the row level (for performance); TODO: make this configurable.
    */
-  public static final boolean TUPLE_CHECKS_ENABLED = true;
+  public static final boolean ROW_CHECKS_ENABLED = true;
 
   @NonNull
   private final KVFileParser fileParser;
@@ -155,7 +155,7 @@ public class KVProcessor {
       checkState(optionalReferencedType.isPresent());
       val referencedType = optionalReferencedType.get();
 
-      checkState(optionalEncounteredForeignKeys.isPresent(), "TODO");
+      checkState(optionalEncounteredForeignKeys.isPresent());
       surjectivityValidator
           .validateSurjection(
               fileType,

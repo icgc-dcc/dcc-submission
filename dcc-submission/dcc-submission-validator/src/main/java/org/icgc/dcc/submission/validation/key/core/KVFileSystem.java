@@ -84,7 +84,7 @@ public final class KVFileSystem {
   }
 
   public boolean hasDataType(KVExperimentalDataType dataType) {
-    return getDataFilePaths(dataType.getTaleTellerFileType()).isPresent();
+    return getDataFilePaths(dataType.getDataTypePresenceFlagship()).isPresent();
   }
 
   private FileSchema getFileSchema(KVFileType fileType) {

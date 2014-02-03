@@ -131,8 +131,9 @@ public class KeyValidator implements Validator {
     while (errors.hasNext()) {
       val error = errors.next();
       val fileName = error.getFileName();
-      val fileType = context.getDictionary().getFileType(fileName); // TODO: store error type...?
-      checkState(fileType.isPresent(), "TODO: '{}'", fileName);
+      val fileType = context.getDictionary().getFileType(fileName);
+      checkState(fileType.isPresent(),
+          "Expecting a corresponding file type for file name '{}'", fileName);
       context.reportError(
           error.getFileName(),
           error.getLineNumber(),

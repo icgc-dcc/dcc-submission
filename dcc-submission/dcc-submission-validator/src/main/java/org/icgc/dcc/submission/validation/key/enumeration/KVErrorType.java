@@ -35,7 +35,7 @@ import org.icgc.dcc.submission.validation.core.ErrorType;
 public enum KVErrorType {
   UNIQUENESS(PK, UNIQUE_VALUE_ERROR),
   PRIMARY_RELATION(FK, RELATION_VALUE_ERROR),
-  SECONDARY_RELATION(SECONDARY_FK, RELATION_VALUE_ERROR), // TODO: we should distinguish
+  SECONDARY_RELATION(SECONDARY_FK, RELATION_VALUE_ERROR), // TODO: we should distinguish with primary
   SURJECTION(PK, RELATION_PARENT_VALUE_ERROR);
 
   /**

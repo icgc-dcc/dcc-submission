@@ -72,18 +72,4 @@ public enum KVFileType {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;
   }
 
-  /**
-   * TODO: get from dictionary
-   */
-  public boolean hasPk() {
-    return this != SSM_P
-        && this != CNSM_S
-        && this != STSM_S
-        && this != MIRNA_P // MIRNA_S is the one that does (atypical)
-        && this != METH_S
-        && this != EXP_G
-        && this != PEXP_P
-        && this != JCN_P
-        && this != SGV_P;
-  }
 }

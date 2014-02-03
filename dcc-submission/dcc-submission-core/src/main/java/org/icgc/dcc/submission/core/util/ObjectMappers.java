@@ -15,18 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.utils;
+package org.icgc.dcc.submission.core.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
-
 
 /**
- * 
+ * Common object mappers.
  */
-public class KVConstants {
+public class ObjectMappers {
 
-  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
-  public static final ObjectMapper MAPPER = new ObjectMapper();
+  public static final ObjectMapper DEFAULT = new ObjectMapper();
 
 }

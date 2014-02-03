@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static org.icgc.dcc.submission.core.util.Joiners.PATH_JOINER;
+import static org.icgc.dcc.submission.core.util.Joiners.PATH;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class KVTestUtils {
    * Test data.
    */
   public static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
-  public static final String FS_DIR = PATH_JOINER.join(TEST_DIR, "fs");
+  public static final String FS_DIR = PATH.join(TEST_DIR, "fs");
   public static final String REFERENCE_FILE_NAME = "reference.jsons";
 
   public static void copyDirectory(FileSystem fileSystem, File sourceDir, Path targetDir) throws IOException {

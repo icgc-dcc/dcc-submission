@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.validation.key.core.KVProcessor.TUPLE_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.core.KVProcessor.ROW_CHECKS_ENABLED;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.KEYS_NOT_APPLICABLE;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.from;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.BIOMARKER;
@@ -63,7 +63,7 @@ import lombok.val;
 
 import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
-import org.icgc.dcc.submission.validation.key.data.KVTuple;
+import org.icgc.dcc.submission.validation.key.data.KVRow;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
@@ -353,7 +353,7 @@ public final class KVDictionary {
   /**
    * TODO: encode in dictionary data structure rather
    */
-  public static KVTuple getTuple(KVFileType fileType, List<String> row) {
+  public static KVRow getRow(KVFileType fileType, List<String> row) {
     KVKey pk = null, fk1 = null, fk2 = null;
 
     // Clinical
@@ -486,8 +486,8 @@ public final class KVDictionary {
       fk2 = KEYS_NOT_APPLICABLE;
     }
 
-    if (TUPLE_CHECKS_ENABLED) checkState(pk != null || fk1 != null, "TODO: '%s'", row);
-    return new KVTuple(pk, fk1, fk2);
+    if (ROW_CHECKS_ENABLED) checkState(pk != null || fk1 != null, "TODO: '%s'", row);
+    return new KVRow(pk, fk1, fk2);
   }
 
   public static Optional<KVFileType> getOptionalReferencedFileType(KVFileType fileType) {
