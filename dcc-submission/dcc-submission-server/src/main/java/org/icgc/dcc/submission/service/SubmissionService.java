@@ -246,8 +246,8 @@ public class SubmissionService {
     } else {
       // Migrate
       newSubmission.setState(submission.getState());
-      newSubmission.setReport(submission.getReport());
       newSubmission.setDataState(submission.getDataState());
+      newSubmission.setReport(submission.getReport());
     }
 
     return newSubmission;
