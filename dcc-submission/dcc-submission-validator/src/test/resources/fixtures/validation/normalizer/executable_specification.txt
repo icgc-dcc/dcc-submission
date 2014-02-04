@@ -66,8 +66,8 @@ result	1	A	A/G	A/C	G	C	G>C	CTRL
 result	1	A			A	C	A>C	MASK
 
 input	1	A	G/G	A/G	G	A			
-result	1	A	G/G	A/G	G	A	G>A	CTRL	
-#skip		A			A	A	A>A	
+result	1	A	G/G	A/G	G	A	G>A	CTRL
+result	1	A			A	A	A>A	MASK	
 	
 input	1	A	G/G	C/G	G	C			
 result	1	A	G/G	C/G	G	C	G>C	CTRL	
@@ -81,7 +81,7 @@ result	1	A			A	T	A>T	MASK
 									
 input	1	A	A/G	A/A	G	A			
 result	1	A	A/G	A/A	G	A	G>A	CTRL	
-#skip		A			A	A	A>A	
+result	1	A			A	A	A>A	MASK	
 
 input	1	A	C/G	T/G	C	T			
 result	1	A	C/G	T/G	C	T	C>T	CTRL	
@@ -90,7 +90,7 @@ result	1	A			A	T	A>T	MASK
 
 input	1	A	C/G	A/G	C	A			
 result	1	A	C/G	A/G	C	A	C>A	CTRL	
-#skip	1	A			A	A	A>A	
+result	1	A			A	A	A>A	MASK		
 
 input	2	-	-/-	-/A	-	A		
 result	2	-	-/-	-/A	-	A	->A	OPEN	

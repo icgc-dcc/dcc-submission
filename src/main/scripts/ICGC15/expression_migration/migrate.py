@@ -33,7 +33,7 @@ RNASEQ="4"
 
 olddir="/nfs/dcc_secure/dcc/data/ICGC15/exp/migrated"
 newdir="/hdfs/dcc/icgc/dcc_root_dir/ICGC15"
-outputdir="/nfs/dcc_secure/dcc/data/ICGC15/exp/final2"
+outputdir="/nfs/dcc_secure/dcc/data/ICGC15/exp/final3"
 
 both = ["BLCA-US", "BRCA-US", "CLLE-ES", "COAD-US", "GBM-US", "HNSC-US", "KIRC-US", "KIRP-US", "LAML-US", "LGG-US", "LIHC-US", "LUAD-US", "LUSC-US", "OV-US", "READ-US", "UCEC-US"]
 
@@ -120,7 +120,7 @@ for p in both:
 			assert sequencing_strategy == "4", sequencing_strategy
 
 			key = get_key(fields)
-			assert p == "CLLE-ES" or key not in meta_old_valid_keys, "%s, %s" % (key, meta_old_valid_keys)
+			assert key not in meta_old_valid_keys, "%s, %s" % (key, meta_old_valid_keys)
 
 			meta_result_data.write(line + '\n')
 		first = False
@@ -135,7 +135,7 @@ for p in both:
 			fields = line.split('\t')
 
 			key = get_key(fields)
-			assert p == "CLLE-ES" or key not in meta_old_valid_keys, "%s, %s" % (key, meta_old_valid_keys)
+			assert key not in meta_old_valid_keys, "%s, %s" % (key, meta_old_valid_keys)
 
 			gene_result_data.write(line + '\n')
 		first = False
