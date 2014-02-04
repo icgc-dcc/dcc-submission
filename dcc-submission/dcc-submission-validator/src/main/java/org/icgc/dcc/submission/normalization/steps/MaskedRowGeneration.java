@@ -27,7 +27,6 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.CONTROL_GENOTYPE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD;
-import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.MUTATED_TO_ALLELE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD;
 import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
@@ -72,8 +71,7 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
   }
 
   /**
-   * Generates "masked" counterpart rows for "controlled" observations, unless the resulting row results in a trivial
-   * mutation (e.g. A>A).
+   * Generates "masked" counterpart rows for "controlled" observations.
    * <p>
    * This expects the {@link PreMarking#MARKING_FIELD} to be present already (as either {@link Marking#OPEN} or
    * {@link Marking#CONTROLLED}).
@@ -93,27 +91,19 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
 
       functionCall.getOutputCollector().add(entry.getTupleCopy());
 
-      // Create masked counterpart if sensitive and mask is non trivial (see
+      // Create masked counterpart if sensitive (see
       // https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component?focusedCommentId=53182773#comment-53182773)
       if (getMarkingState(entry) == CONTROLLED) {
         val referenceGenomeAllele = entry.getString(REFERENCE_GENOME_ALLELE_FIELD);
-        val mutatedToAllele = entry.getString(MUTATED_TO_ALLELE_FIELD);
 
-        if (
-        // !wouldBeSameMutation(referenceGenomeAllele, mutatedFromAllele)
-        // &&
-        !wouldBeTrivialMutation(referenceGenomeAllele, mutatedToAllele)) {
-          log.debug("Creating mask for '{}'", entry);
-          val mask = mask(TupleEntries.clone(entry), referenceGenomeAllele);
+        log.debug("Creating mask for '{}'", entry);
+        val mask = mask(TupleEntries.clone(entry), referenceGenomeAllele);
 
-          log.debug("Resulting mask for '{}': '{}'", entry, mask);
-          functionCall.getOutputCollector().add(mask);
+        log.debug("Resulting mask for '{}': '{}'", entry, mask);
+        functionCall.getOutputCollector().add(mask);
 
-          // Increment counter
-          flowProcess.increment(MASKED, COUNT_INCREMENT);
-        } else {
-          log.debug("Skipping trivial mask for '{}'", entry);
-        }
+        // Increment counter
+        flowProcess.increment(MASKED, COUNT_INCREMENT);
       }
     }
 
@@ -141,12 +131,6 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
       checkState(marking.isPresent(), "There should be a '%s' field at this stage, instead: '%s'", MARKING_FIELD, entry);
       return marking.get();
     }
-
-    /**
-     * We don't want to create a masked copy that would result in a mutation like 'A>A' (useless).
-     */
-    private boolean wouldBeTrivialMutation(String referenceGenomeAllele, String mutatedToAllele) {
-      return referenceGenomeAllele.equals(mutatedToAllele);
-    }
   }
+
 }
