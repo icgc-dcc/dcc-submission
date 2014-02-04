@@ -90,7 +90,7 @@ import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.core.model.SubmissionFileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.core.morphia.MorphiaModule;
+import org.icgc.dcc.submission.core.PersistenceModule;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
@@ -103,15 +103,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mongodb.morphia.Datastore;
 
 import com.dumbster.smtp.SimpleSmtpServer;
-import com.google.code.morphia.Datastore;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, MorphiaModule.class })
+@GuiceModules({ ConfigModule.class, PersistenceModule.class })
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
@@ -573,7 +573,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding code list terms...");
     val codeListName = "GLOBAL.0.platform.v1/terms";
     val response = post(client, CODELISTS_ENDPOINT + "/" + codeListName,
-        "[{code:'81',value:'new value 1'},{code:'82',value:'new value 2'}]");
+        "[{code:'1000',value:'new value 1'},{code:'10001',value:'new value 2'}]");
     assertEquals(CREATED.getStatusCode(), response.getStatus());
 
     // Only the INVALID ones should have been reset (DCC-851)

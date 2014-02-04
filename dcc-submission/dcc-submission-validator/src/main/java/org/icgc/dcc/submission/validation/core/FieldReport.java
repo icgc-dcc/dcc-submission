@@ -26,8 +26,8 @@ import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.primary.report.BaseStatsReportingPlanElement.FieldSummary;
+import org.mongodb.morphia.annotations.Embedded;
 
-import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 
 @Embedded

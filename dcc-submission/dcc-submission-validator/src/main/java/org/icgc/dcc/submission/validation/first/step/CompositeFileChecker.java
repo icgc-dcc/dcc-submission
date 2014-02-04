@@ -26,8 +26,8 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.Checker;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
@@ -48,18 +48,18 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public void check(String filename) {
-    delegate.check(filename);
+  public void check(String fileName) {
+    delegate.check(fileName);
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", this.getClass().getSimpleName());
-      performSelfCheck(filename);
+      performSelfCheck(fileName);
       log.info("End performing {} validation. Number of errors found: '{}'",
           getClass().getSimpleName(),
           checkErrorCount);
     }
   }
 
-  public abstract void performSelfCheck(String filename);
+  public abstract void performSelfCheck(String fileName);
 
   /**
    * Must always increment when reporting an error (TODO: address this).
@@ -108,9 +108,10 @@ public abstract class CompositeFileChecker implements FileChecker {
     return delegate.getValidationContext();
   }
 
-  protected FileSchema getFileSchema(String filename) {
-    val optional = getDictionary().getFileSchemaByFileName(filename);
-    checkState(optional.isPresent(), "At this stage, there should be a file schema matching '%s'", filename);
+  protected FileSchema getFileSchema(String fileName) {
+    val optional = getDictionary().getFileSchemaByFileName(fileName);
+    checkState(optional.isPresent(), "At this stage, there should be a file schema matching '%s'", fileName);
     return optional.get();
   }
+
 }

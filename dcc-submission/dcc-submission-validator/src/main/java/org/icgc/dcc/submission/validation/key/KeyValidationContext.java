@@ -30,7 +30,6 @@ import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -55,11 +54,7 @@ import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ErrorType;
-import org.icgc.dcc.submission.validation.core.FieldReport;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
@@ -68,10 +63,8 @@ import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 @Slf4j
-@RequiredArgsConstructor()
-public class KeyValidationContext implements ValidationContext {
-
-  private static final String DICTIONARY_VERSION = "0.7c";
+@RequiredArgsConstructor
+public class KeyValidationContext extends AbstractValidationContext {
 
   @NonNull
   private final String releaseName;
@@ -98,11 +91,6 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   public String getProjectKey() {
     return projectKey;
-  }
-
-  @Override
-  public List<String> getEmails() {
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -152,11 +140,6 @@ public class KeyValidationContext implements ValidationContext {
   }
 
   @Override
-  public List<Path> getSsmPrimaryFiles() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public FileSchema getSsmPrimaryFileSchema() {
     return getSsmPrimaryFileSchema(getDictionary());
   }
@@ -175,80 +158,6 @@ public class KeyValidationContext implements ValidationContext {
   @Override
   public ReleaseFileSystem getReleaseFileSystem() {
     return new ReleaseFileSystem(getDccFileSystem(), getRelease());
-  }
-
-  @Override
-  public SubmissionReport getSubmissionReport() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean hasErrors() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getErrorCount() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void reportSummary(String fileName, String name, String value) {
-    new UnsupportedOperationException();
-  }
-
-  @Override
-  public void reportField(String fileName, FieldReport fieldReport) {
-    new UnsupportedOperationException();
-  }
-
-  @Override
-  public void reportError(String fileName, TupleError tupleError) {
-    logError(fileName,
-        tupleError.getLine(),
-        tupleError.getColumnNames().toString(),
-        tupleError.getValue(),
-        tupleError.getType(),
-        tupleError.getParameters().values().toArray());
-  }
-
-  @Override
-  public void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
-      Object... params) {
-    logError(fileName, lineNumber, columnName, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params) {
-    logError(fileName, lineNumber, null, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, Object value, ErrorType type, Object... params) {
-    logError(fileName, -1, null, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, ErrorType type, Object... params) {
-    logError(fileName, -1, null, null, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, ErrorType type) {
-    logError(fileName, -1, null, null, type, (Object[]) null);
-  }
-
-  @Override
-  public void reportLineNumbers(Path path) {
-    new UnsupportedOperationException();
-  }
-
-  private static void logError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
-      Object... params) {
-    val message =
-        "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
-    val text = format(message, fileName, lineNumber, columnName, value, type, Arrays.toString(params));
-    log.error("{}", text);
   }
 
   private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {

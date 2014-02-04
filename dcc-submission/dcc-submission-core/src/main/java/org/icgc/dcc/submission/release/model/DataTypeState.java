@@ -25,8 +25,7 @@ import lombok.NoArgsConstructor;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
-
-import com.google.code.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Embedded;
 
 @Embedded
 @Data

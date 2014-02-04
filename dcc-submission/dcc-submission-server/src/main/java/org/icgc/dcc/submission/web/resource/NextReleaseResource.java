@@ -135,7 +135,7 @@ public class NextReleaseResource {
 
     Release newRelease = null;
     try {
-      newRelease = releaseService.release(nextRelease.getName());
+      newRelease = releaseService.performRelease(nextRelease.getName());
       log.info("Released {}", oldReleaseName);
     } catch (ReleaseException e) {
       ServerErrorCode code = RELEASE_EXCEPTION;
@@ -211,7 +211,7 @@ public class NextReleaseResource {
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
     }
-    releaseService.deleteQueuedRequests();
+    releaseService.removeQueuedSubmissions();
 
     return Response.ok().build();
   }
@@ -245,7 +245,7 @@ public class NextReleaseResource {
     /* no authorization check needed (see DCC-808) */
 
     log.debug("Getting signed off projects for nextRelease");
-    List<String> projectIds = releaseService.getSignedOff();
+    List<String> projectIds = releaseService.getSignedOffReleases();
     return Response.ok(projectIds.toArray()).build();
   }
 
@@ -262,7 +262,7 @@ public class NextReleaseResource {
 
     try {
       String username = Authorizations.getUsername(securityContext);
-      releaseService.signOff(nextRelease, projectKeys, username);
+      releaseService.signOffRelease(nextRelease, projectKeys, username);
     } catch (ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
       log.error(code.getFrontEndString(), e);
@@ -299,12 +299,13 @@ public class NextReleaseResource {
       log.info("updating {}", name);
       ResponseTimestamper.evaluate(request, release);
 
-      if (releaseService.getReleases().isEmpty()) {
+      val empty = releaseService.countReleases() == 0;
+      if (empty) {
         return status(BAD_REQUEST).build();
       } else {
-        String updatedName = release.getName();
-        String updatedDictionaryVersion = release.getDictionaryVersion();
-        Release updatedRelease = releaseService.update(updatedName, updatedDictionaryVersion);
+        val updatedName = release.getName();
+        val updatedDictionaryVersion = release.getDictionaryVersion();
+        val updatedRelease = releaseService.updateRelease(updatedName, updatedDictionaryVersion);
         log.info("updated {}", name);
 
         return ResponseTimestamper.ok(updatedRelease).build();

@@ -39,8 +39,8 @@ import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
+import org.mongodb.morphia.annotations.Embedded;
 
-import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -49,7 +49,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
- * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}
+ * Describes a file schema that contains {@code Field}s and that is part of a
+ * {@code Dictionary}
  */
 @Embedded
 @ToString(of = { "name" })
@@ -216,10 +217,11 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   /**
-   * Returns the list of field names that have a {@link RequiredRestriction} set on them (irrespective of whether it's a
-   * strict one or not).
+   * Returns the list of field names that have a {@link RequiredRestriction} set
+   * on them (irrespective of whether it's a strict one or not).
    * <p>
-   * TODO: DCC-1076 will render it unnecessary (everything would take place in {@link RequiredRestriction}).
+   * TODO: DCC-1076 will render it unnecessary (everything would take place in
+   * {@link RequiredRestriction}).
    */
   @JsonIgnore
   public List<String> getRequiredFieldNames() {
@@ -255,7 +257,8 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   /**
-   * Returns whether or not the provided file name matches the pattern for the current {@link FileSchema}.
+   * Returns whether or not the provided file name matches the pattern for the
+   * current {@link FileSchema}.
    */
   public boolean matches(@NonNull String fileName) {
     return compile(pattern) // TODO: lazy-load
@@ -263,8 +266,8 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   /**
-   * Returns a list of file schema having relations afferent to the current file schema and that have a 1..n left
-   * cardinality ("strict")
+   * Returns a list of file schema having relations afferent to the current file
+   * schema and that have a 1..n left cardinality ("strict")
    * 
    * TODO: move to dictionary? better name?
    */

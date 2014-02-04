@@ -24,7 +24,7 @@ import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -59,10 +59,8 @@ public class ProjectResource {
 
   @Inject
   private ProjectService projectService;
-
   @Inject
   private ReleaseService releaseService;
-
   @Inject
   private DccFileSystem dccFileSystem;
 
@@ -71,14 +69,14 @@ public class ProjectResource {
     log.info("Request for all Projects");
 
     val user = getSubject(securityContext);
-    Set<Project> projects;
+    List<Project> projects;
 
     if (isSuperUser(securityContext)) {
       log.info("'{}' is super user", user.getPrincipal());
-      projects = projectService.findAll();
+      projects = projectService.getProjects();
     } else {
       log.info("'{}' is not super user", user.getPrincipal());
-      projects = projectService.findAllForUser(user.getPrincipal().toString());
+      projects = projectService.getProjectsByUser(user.getPrincipal().toString());
     }
 
     return Response.ok(projects).build();
@@ -98,7 +96,7 @@ public class ProjectResource {
     Response response;
     try {
       // Save Project to DB
-      projectService.add(project);
+      projectService.addProject(project);
 
       // Update Release and save to DB
       val release = releaseService.addSubmission(project.getKey(), project.getName());
@@ -133,7 +131,7 @@ public class ProjectResource {
       return Responses.notFound(projectKey);
     }
 
-    project = projectService.find(projectKey);
+    project = projectService.getProject(projectKey);
 
     if (project == null) {
       log.info("Project '{}' not found", projectKey);
@@ -163,7 +161,7 @@ public class ProjectResource {
       return Response.status(PRECONDITION_FAILED).entity("Project Key Missmatch").build();
     }
 
-    val result = projectService.update(project);
+    val result = projectService.updateProject(project);
 
     return Response.ok(result).build();
   }
@@ -183,7 +181,7 @@ public class ProjectResource {
     }
 
     val releases = releaseService.getReleases();
-    val submissions = projectService.extractSubmissions(releases, projectKey);
+    val submissions = projectService.getSubmissions(releases, projectKey);
 
     return Response.ok(submissions).build();
   }
@@ -191,4 +189,5 @@ public class ProjectResource {
   private boolean hasAccess(SecurityContext securityContext, String projectKey) {
     return projectKey != null && hasSpecificProjectPrivilege(securityContext, projectKey);
   }
+
 }

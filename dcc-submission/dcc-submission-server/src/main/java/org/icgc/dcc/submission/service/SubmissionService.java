@@ -72,7 +72,8 @@ public class SubmissionService {
 
     val invalidState = actualState == QUEUED || actualState == VALIDATING;
     if (invalidState) {
-      throw new ReleaseException("Project " + submission.getProjectKey() + " is " + actualState + ", cannot queue");
+      throw new ReleaseException("Project '%s' is in state'%s'; cannot queue",
+          submission.getProjectKey(), actualState);
     }
 
     val nextState = QUEUED;
@@ -84,8 +85,8 @@ public class SubmissionService {
     val expectedState = QUEUED;
     val actualState = submission.getState();
     if (actualState != expectedState) {
-      throw new ReleaseException("Project " + submission.getProjectKey() + " is not " + expectedState + " ("
-          + actualState + " instead), cannot validate");
+      throw new ReleaseException("Project '%s' is not '%s' ('%s' instead); cannot validate",
+          submission.getProjectKey(), expectedState, actualState);
     }
 
     val nextState = VALIDATING;
@@ -98,8 +99,8 @@ public class SubmissionService {
     val expectedState = VALIDATING;
     val actualState = submission.getState();
     if (actualState != expectedState) {
-      throw new ReleaseException("Project " + submission.getProjectKey() + " is not " + expectedState + " ("
-          + actualState + " instead), cannot resolve");
+      throw new ReleaseException("Project '%s' is not '%s' ('%s' instead); cannot resolve",
+          submission.getProjectKey(), expectedState, actualState);
     }
 
     val previousDataState = submission.getDataState();

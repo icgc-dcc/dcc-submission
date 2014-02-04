@@ -30,7 +30,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.sshd.server.SshFile;
+import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
@@ -41,7 +41,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   protected final String directoryName;
 
   protected BaseDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
-    super(context, new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fs);
+    super(context, new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fileSystem);
     this.root = checkNotNull(root);
     this.directoryName = checkNotNull(directoryName);
   }
@@ -75,7 +75,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   public boolean create() throws IOException {
     try {
       if (isWritable()) {
-        fs.create(path);
+        fileSystem.create(path);
         return true;
       }
       return false;
@@ -92,7 +92,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   @Override
   public List<SshFile> listSshFiles() {
     try {
-      List<Path> paths = lsAll(fs, path);
+      List<Path> paths = lsAll(fileSystem, path);
       List<SshFile> sshFiles = newArrayList();
 
       for (Path path : paths) {
@@ -133,7 +133,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   @Override
   public boolean move(SshFile destination) {
     try {
-      return fs.rename(path, new Path(destination.getAbsolutePath()));
+      return fileSystem.rename(path, new Path(destination.getAbsolutePath()));
     } catch (Exception e) {
       return handleException(Boolean.class, e);
     }

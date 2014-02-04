@@ -6,35 +6,26 @@ import static org.elasticsearch.common.collect.Lists.newArrayList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import lombok.val;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.test.mongodb.EmbeddedMongo;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.mongodb.MongoClientURI;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ReleaseRepositoryTest {
-
-  @Rule
-  public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
+public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
   private ReleaseRepository releaseRepository;
 
-  @Mock
-  private MailService mailService;
   private MorphiaQuery<Release> morphiaQuery;
   private Datastore datastore;
   private Release releaseOne;
@@ -56,7 +47,7 @@ public class ReleaseRepositoryTest {
 
     datastore.ensureIndexes();
 
-    releaseRepository = new ReleaseRepository(morphia, datastore, mailService);
+    releaseRepository = new ReleaseRepository(morphia, datastore);
 
     morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }
@@ -93,7 +84,7 @@ public class ReleaseRepositoryTest {
   }
 
   @Test
-  public void testAddSubmission() throws Exception {
+  public void testAddReleaseSubmission() throws Exception {
     val submission = new Submission("PRJ3", "Project Three", releaseOne.getName());
     val getOpenReleaseQuery =
         morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
@@ -107,7 +98,7 @@ public class ReleaseRepositoryTest {
     }
 
     // Add Submission
-    val modifiedRelease = releaseRepository.addSubmission(submission, openRelease.getName());
+    val modifiedRelease = releaseRepository.addReleaseSubmission(openRelease.getName(), submission);
 
     // Check that Release has Submission
     assertThat(modifiedRelease.getSubmissions()).contains(submission);
@@ -136,7 +127,7 @@ public class ReleaseRepositoryTest {
     assertThat(release.getSubmissions()).contains(submission);
 
     // Save to DB
-    releaseRepository.updateRelease(release);
+    releaseRepository.updateRelease(release.getName(), release);
 
     // Confirm that Release in DB has Submission
     val actual = getOpenReleaseQuery.singleResult();

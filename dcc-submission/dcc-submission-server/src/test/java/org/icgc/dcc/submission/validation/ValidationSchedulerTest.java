@@ -36,13 +36,13 @@ import java.util.concurrent.CancellationException;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -73,6 +73,12 @@ public class ValidationSchedulerTest {
   final QueuedProject queuedProject = new QueuedProject("project", ImmutableList.<String> of("user@project.com"));
 
   /**
+   * Class under test.
+   */
+  @InjectMocks
+  ValidationScheduler scheduler;
+
+  /**
    * Primary collaborators.
    */
   @Mock
@@ -101,12 +107,6 @@ public class ValidationSchedulerTest {
   Submission submission;
   @Mock
   Dictionary dictionary;
-
-  /**
-   * Class under test.
-   */
-  @InjectMocks
-  ValidationScheduler scheduler;
 
   @Before
   public void setUp() {

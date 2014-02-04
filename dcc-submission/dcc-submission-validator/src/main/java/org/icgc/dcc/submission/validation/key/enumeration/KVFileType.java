@@ -22,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 
-import com.google.common.base.Predicate;
-
 @RequiredArgsConstructor
 public enum KVFileType {
   DONOR(SubmissionFileType.DONOR_TYPE),
@@ -48,15 +46,15 @@ public enum KVFileType {
   STSM_S(SubmissionFileType.STSM_S_TYPE),
 
   MIRNA_M(SubmissionFileType.MIRNA_M_TYPE),
-  MIRNA_P(SubmissionFileType.MIRNA_P_TYPE),
-  MIRNA_S(SubmissionFileType.MIRNA_S_TYPE),
+  MIRNA_P(SubmissionFileType.MIRNA_P_TYPE), // Does NOT have a PK (unusual)
+  MIRNA_S(SubmissionFileType.MIRNA_S_TYPE), // Does have a PK (unusual)
 
   METH_M(SubmissionFileType.METH_M_TYPE),
   METH_P(SubmissionFileType.METH_P_TYPE),
   METH_S(SubmissionFileType.METH_S_TYPE),
 
   EXP_M(SubmissionFileType.EXP_M_TYPE),
-  EXP_G(SubmissionFileType.EXP_G_TYPE), // Naming exception..
+  EXP_G(SubmissionFileType.EXP_G_TYPE), // Naming exception ('g' instead of 'p')
 
   PEXP_M(SubmissionFileType.PEXP_M_TYPE),
   PEXP_P(SubmissionFileType.PEXP_P_TYPE),
@@ -74,53 +72,4 @@ public enum KVFileType {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;
   }
 
-  // TODO: get from dictionary
-  public static final Predicate<KVFileType> SIMPLE_SURJECTION_RELATION = new Predicate<KVFileType>() {
-
-    @Override
-    public boolean apply(KVFileType fileType) {
-      return fileType == SPECIMEN
-          || fileType == SAMPLE
-
-          || fileType == SSM_P
-          || fileType == CNSM_P
-          || fileType == STSM_P
-          || fileType == MIRNA_P
-          || fileType == METH_P
-          || fileType == EXP_G
-          || fileType == PEXP_P
-          || fileType == JCN_P;
-    }
-  };
-
-  public boolean hasOutgoingComplexSurjectiveRelation() {
-    return this.name().toLowerCase().endsWith("_m"); // TODO: improve
-  }
-
-  /**
-   * Simple as opposd to TODO
-   */
-  public boolean hasOutgoingSimpleSurjectiveRelation() {
-    return SIMPLE_SURJECTION_RELATION.apply(this);
-  }
-
-  public boolean hasOutgoingSurjectiveRelation() {
-    return hasOutgoingSimpleSurjectiveRelation()
-        || hasOutgoingComplexSurjectiveRelation();
-  }
-
-  /**
-   * TODO: get from dictionary
-   */
-  public boolean hasPk() {
-    return this != SSM_P
-        && this != CNSM_S
-        && this != STSM_S
-        && this != MIRNA_P // MIRNA_S is the one that does (atypical)
-        && this != METH_S
-        && this != EXP_G
-        && this != PEXP_P
-        && this != JCN_P
-        && this != SGV_P;
-  }
 }

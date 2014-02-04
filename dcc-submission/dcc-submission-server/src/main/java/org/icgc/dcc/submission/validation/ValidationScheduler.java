@@ -35,12 +35,12 @@ import lombok.Synchronized;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
@@ -57,9 +57,10 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
 
 /**
- * Coordinator task that runs periodically to dispatch validations for execution. It pulls from the web request "queue"
- * as input and pushes to the validation "executor" as output. Also responsible for mediating validation cancellation
- * requests coming from the web layer.
+ * Coordinator task that runs periodically to dispatch validations for execution.
+ * <p>
+ * The scheduler pulls from the web request "queue" as input and pushes to the validation "executor" as output. Also
+ * responsible for mediating validation cancellation requests coming from the web layer.
  */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
@@ -97,7 +98,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     if (cancelled) {
       // TODO: Determine when this should / needs to be called
       log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
-      releaseService.deleteQueuedRequest(projectKey);
+      releaseService.removeQueuedSubmissions(projectKey);
     }
   }
 
@@ -167,7 +168,7 @@ public class ValidationScheduler extends AbstractScheduledService {
 
     try {
       // Try to find a queued validation
-      val release = resolveOpenRelease();
+      val release = getRelease();
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {
@@ -337,7 +338,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   /**
    * Utility method to give the current "next release" object and confirms open state.
    */
-  private Release resolveOpenRelease() {
+  private Release getRelease() {
     return releaseService.getNextRelease();
   }
 

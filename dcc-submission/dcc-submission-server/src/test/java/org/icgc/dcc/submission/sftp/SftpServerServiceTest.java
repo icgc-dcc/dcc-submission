@@ -47,9 +47,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.SshServer;
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.ProjectService;
-import org.icgc.dcc.submission.core.ProjectServiceException;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
@@ -59,6 +56,8 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.service.MailService;
+import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.After;
 import org.junit.Before;
@@ -75,8 +74,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.typesafe.config.Config;
 
-@RunWith(MockitoJUnitRunner.class)
 @Slf4j
+@RunWith(MockitoJUnitRunner.class)
 public class SftpServerServiceTest {
 
   /**
@@ -144,8 +143,8 @@ public class SftpServerServiceTest {
     when(release.getName()).thenReturn(RELEASE_NAME);
     when(releaseService.getNextRelease()).thenReturn(release);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
-    when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new ProjectServiceException(""));
-    when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(newArrayList(project));
+    when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new RuntimeException(""));
+    when(projectService.getProjects()).thenReturn(newArrayList(project));
 
     // Mock file system
     when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());

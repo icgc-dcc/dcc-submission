@@ -22,9 +22,12 @@ import static com.google.common.base.Joiner.on;
 import com.google.common.base.Joiner;
 
 /**
- * TODO
+ * Common joiners.
  */
 public class Joiners {
-  public static final Joiner PATH_JOINER = on('/');
-  public static final Joiner NEWLINE_JOINER = on('\n');
+
+  public static final Joiner PATH = on('/');
+  public static final Joiner TAB = on('\t');
+  public static final Joiner NEWLINE = on('\n');
+
 }

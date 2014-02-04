@@ -18,7 +18,8 @@
 package org.icgc.dcc.submission.validation.key.enumeration;
 
 /**
- * 
+ * The types of keys encountered in the submission files. A "secondary FK" is one that may actually be null, unlike a
+ * regular FK.
  */
 public enum KeysType {
   PK, FK, SECONDARY_FK;

@@ -17,53 +17,57 @@
  */
 package org.icgc.dcc.submission.service;
 
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
+import static org.icgc.dcc.submission.dictionary.model.DictionaryState.OPENED;
 
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.DictionaryState;
-import org.icgc.dcc.submission.dictionary.model.QCodeList;
-import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryCloneVisitor;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.repository.CodeListRepository;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.Query;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
-import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
-/**
- * Offers various CRUD operations pertaining to {@code Dictionary}
- */
 @Slf4j
-public class DictionaryService extends BaseMorphiaService<Dictionary> {
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
+public class DictionaryService {
 
+  @NonNull
   private final ReleaseService releases;
+  @NonNull
+  private final DictionaryRepository dictionaryRepository;
+  @NonNull
+  private final CodeListRepository codeListRepository;
 
-  @Inject
-  public DictionaryService(Morphia morphia, Datastore datastore, ReleaseService releases, MailService mailService) {
-    super(morphia, datastore, QDictionary.dictionary, mailService);
-    checkArgument(releases != null);
-    this.releases = releases;
-    registerModelClasses(Dictionary.class, CodeList.class);
+  public List<Dictionary> getDictionaries() {
+    return dictionaryRepository.findDictionaries();
   }
 
-  public List<Dictionary> list() {
-    return this.query().list();
+  public Dictionary getCurrentDictionary() {
+    val release = releases.getNextRelease();
+    return getCurrentDictionary(release);
   }
 
-  public Dictionary getDictionaryByVersion(String version) {
-    return this.where(QDictionary.dictionary.version.eq(version)).singleResult();
+  public Dictionary getCurrentDictionary(@NonNull Release openRelease) {
+    val version = openRelease.getDictionaryVersion();
+    return getDictionaryByVersion(version);
+  }
+
+  public Dictionary getDictionaryByVersion(@NonNull String version) {
+    return dictionaryRepository.findDictionaryByVersion(version);
   }
 
   /**
@@ -73,44 +77,43 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
    * <p>
    * Contains critical blocks for admin concurrency (DCC-?).
    */
-  public void update(Dictionary dictionary) {
-    // TODO: add check dicitonary is OPENED here (instead of within resource)
-
-    checkArgument(dictionary != null);
-    Query<Dictionary> updateQuery = this.buildDictionaryVersionQuery(dictionary);
-    if (updateQuery.countAll() != 1) {
-      throw new DictionaryServiceException("cannot update a non-existent dictionary: " + dictionary.getVersion());
+  public void updateDictionary(@NonNull Dictionary dictionary) {
+    // TODO: Add check dictionary is OPENED here (instead of within resource)
+    val version = dictionary.getVersion();
+    val count = dictionaryRepository.countDictionariesByVersion(version);
+    if (count != 1) {
+      throw new DictionaryServiceException("Cannot update a non-existent dictionary: " + dictionary.getVersion());
     }
-    datastore().updateFirst(updateQuery, dictionary, false);
+
+    dictionaryRepository.updateDictionary(dictionary);
 
     // Reset submissions if applicable
-    Release release = releases.getNextRelease();
-    if (dictionary.getVersion().equals(release.getDictionaryVersion())) {
+    val release = releases.getNextRelease();
+    if (version.equals(release.getDictionaryVersion())) {
       releases.resetSubmissions(release.getName(), release.getProjectKeys());
     }
   }
 
-  public Dictionary clone(String oldVersion, String newVersion) {
-    checkArgument(oldVersion != null);
-    checkArgument(newVersion != null);
+  public Dictionary cloneDictionary(@NonNull String oldVersion, @NonNull String newVersion) {
     if (oldVersion.equals(newVersion)) {
-      throw new DictionaryServiceException("cannot clone a dictionary using the same version: " + newVersion);
+      throw new DictionaryServiceException("Cannot clone a dictionary using the same version: " + newVersion);
     }
-    Dictionary oldDictionary = this.getDictionaryByVersion(oldVersion);
+
+    val oldDictionary = this.getDictionaryByVersion(oldVersion);
     if (oldDictionary == null) {
-      throw new DictionaryServiceException("cannot clone an non-existent dictionary: " + oldVersion);
+      throw new DictionaryServiceException("Cannot clone an non-existent dictionary: " + oldVersion);
     }
     if (getDictionaryByVersion(newVersion) != null) {
-      throw new DictionaryServiceException("cannot clone to an already existing dictionary: " + newVersion);
+      throw new DictionaryServiceException("Cannot clone to an already existing dictionary: " + newVersion);
     }
 
-    DictionaryCloneVisitor dictionaryCloneVisitor = new DictionaryCloneVisitor();
+    val dictionaryCloneVisitor = new DictionaryCloneVisitor();
     oldDictionary.accept(dictionaryCloneVisitor);
 
-    Dictionary newDictionary = dictionaryCloneVisitor.getDictionaryClone();
+    val newDictionary = dictionaryCloneVisitor.getDictionaryClone();
     newDictionary.setVersion(newVersion);
 
-    this.addDictionary(newDictionary);
+    addDictionary(newDictionary);
 
     return newDictionary;
   }
@@ -120,28 +123,26 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
    * <p>
    * Do not reset submission states since by design no OPENED release points to that new dictionary yet.
    */
-  public void addDictionary(Dictionary dictionary) {
-    checkArgument(dictionary != null);
-
-    String version = dictionary.getVersion();
+  public void addDictionary(@NonNull Dictionary dictionary) {
+    val version = dictionary.getVersion();
     if (version == null) {
       throw new DictionaryServiceException("New dictionary must specify a valid version");
     }
 
-    if (this.getDictionaryByVersion(version) != null) {
-      throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
+    if (getDictionaryByVersion(version) != null) {
+      throw new DictionaryServiceException("Cannot add an existing dictionary: " + version);
     }
 
-    if (DictionaryState.OPENED != dictionary.getState()) {
-      throw new DictionaryServiceException(String.format("New dictionary must be in OPENED state: %s instead",
+    if (OPENED != dictionary.getState()) {
+      throw new DictionaryServiceException(format("New dictionary must be in OPENED state: %s instead",
           dictionary.getState()));
     }
 
-    datastore().save(dictionary);
+    dictionaryRepository.saveDictionary(dictionary);
   }
 
-  public List<CodeList> listCodeList() {
-    return this.queryCodeList().list();
+  public List<CodeList> getCodeLists() {
+    return codeListRepository.findCodeLists();
   }
 
   /**
@@ -149,10 +150,10 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
    * <p>
    * Do not reset submission states since by design no dictionary points to those new codelists yet.
    */
-  public void addCodeList(List<CodeList> codeLists) {
-    log.info("Saving codelists {}", codeLists);
+  public void addCodeList(@NonNull List<CodeList> codeLists) {
+    log.info("Saving code lists: {}", codeLists);
 
-    for (CodeList codeList : codeLists) {
+    for (val codeList : codeLists) {
       checkArgument(codeList != null);
       String name = codeList.getName();
       if (getCodeList(name).isPresent()) {
@@ -160,32 +161,27 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
       }
     }
 
-    this.datastore().save(codeLists);
+    codeListRepository.saveCodeLists(codeLists);
   }
 
-  public Optional<CodeList> getCodeList(String name) {
-    checkArgument(name != null);
-    log.debug("retrieving codelist {}", name);
-    CodeList codeList = this.queryCodeList().where(QCodeList.codeList.name.eq(name)).singleResult();
-    return codeList == null ? Optional.<CodeList> absent() : Optional.<CodeList> of(codeList);
+  public Optional<CodeList> getCodeList(@NonNull String name) {
+    log.debug("Retrieving code list: {}", name);
+    val codeList = codeListRepository.findCodeListByName(name);
+    return fromNullable(codeList);
   }
 
   /**
    * This does not need to reset submission states as long as only inconsequential properties are updated.
    */
-  public void updateCodeList(CodeList newCodeList) {
-    checkArgument(newCodeList != null);
-    String name = newCodeList.getName();
+  public void updateCodeList(@NonNull CodeList newCodeList) {
+    val name = newCodeList.getName();
 
-    Optional<CodeList> optional = this.getCodeList(name);
+    val optional = getCodeList(name);
     if (optional.isPresent() == false) {
       throw new DictionaryServiceException("Cannot perform update to non-existant codeList: " + name);
     }
 
-    Datastore datastore = datastore();
-    datastore.update( //
-        datastore.createQuery(CodeList.class).filter("name" + " = ", name), //
-        datastore.createUpdateOperations(CodeList.class).set("label", newCodeList.getLabel()));
+    codeListRepository.updateCodeList(name, newCodeList);
   }
 
   /**
@@ -194,52 +190,30 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
    * Must reset INVALID submissions IF the nextRelease uses a dictionary that uses the corresponding codelist (as the
    * change may render them VALID). (TODO: point to spec).
    */
-  public void addCodeListTerm(String codeListName, Term term) {
-    checkArgument(codeListName != null);
-    checkArgument(term != null);
-
-    Optional<CodeList> optional = this.getCodeList(codeListName);
+  public void addCodeListTerm(@NonNull String codeListName, @NonNull Term term) {
+    val optional = getCodeList(codeListName);
     if (optional.isPresent() == false) {
-      throw new DictionaryServiceException("cannot add term to non-existant codeList: " + codeListName);
+      throw new DictionaryServiceException("Cannot add term to non-existant codel list: " + codeListName);
     }
-    CodeList codeList = optional.get();
-    if (codeList.containsTerm(term)) {
-      throw new DictionaryServiceException("cannot add an existing term: " + term.getCode());
-    }
-    codeList.addTerm(term);
 
-    Datastore datastore = datastore();
-    datastore.update( //
-        datastore.createQuery(CodeList.class).filter("name" + " = ", codeListName), //
-        datastore.createUpdateOperations(CodeList.class).add("terms", term));
+    val codeList = optional.get();
+    if (codeList.containsTerm(term)) {
+      throw new DictionaryServiceException("Cannot add an existing term: " + term.getCode());
+    }
+
+    codeList.addTerm(term);
+    codeListRepository.addCodeListTerm(codeListName, term);
 
     // Reset INVALID submissions if applicable
-    Release openRelease = releases.getNextRelease();
-    Dictionary currentDictionary = getCurrentDictionary(openRelease);
+    val release = releases.getNextRelease();
+    val currentDictionary = getCurrentDictionary(release);
     if (currentDictionary.usesCodeList(codeListName)) {
       log.info("Resetting submission due to active dictionary code list term addition...");
-      releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
+      releases.resetSubmissions(release.getName(), release.getInvalidProjectKeys());
     } else {
       log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
+
   }
 
-  public Dictionary getCurrentDictionary() {
-    Release openRelease = releases.getNextRelease();
-    return getCurrentDictionary(openRelease);
-  }
-
-  public Dictionary getCurrentDictionary(Release openRelease) {
-    String currentDictionaryVersion = openRelease.getDictionaryVersion();
-    return getDictionaryByVersion(currentDictionaryVersion);
-  }
-
-  private Query<Dictionary> buildDictionaryVersionQuery(Dictionary dictionary) {
-    return datastore().createQuery(Dictionary.class) //
-        .filter("version" + " = ", dictionary.getVersion());
-  }
-
-  private MorphiaQuery<CodeList> queryCodeList() {
-    return new MorphiaQuery<CodeList>(morphia(), datastore(), QCodeList.codeList);
-  }
 }

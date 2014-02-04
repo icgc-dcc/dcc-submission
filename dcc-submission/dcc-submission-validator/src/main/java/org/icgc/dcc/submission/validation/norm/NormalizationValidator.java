@@ -19,7 +19,9 @@ package org.icgc.dcc.submission.validation.norm;
 
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
@@ -30,12 +32,17 @@ import static org.icgc.dcc.submission.validation.norm.NormalizationReport.Normal
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_START;
+
+import java.util.List;
+import java.util.Map;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -55,11 +62,13 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.flow.Flow;
+import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 
-import com.google.common.base.Optional;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 /**
@@ -76,6 +85,11 @@ public final class NormalizationValidator implements Validator {
    * Type that is the focus of normalization (there could be more in the future).
    */
   public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
+
+  /**
+   * Name of the uncompressed single output file.
+   */
+  public static final String OUTPUT_FILE_NAME = "ssm_p.txt";
 
   private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
   private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
@@ -142,48 +156,43 @@ public final class NormalizationValidator implements Validator {
   }
 
   @Override
-  public void validate(ValidationContext validationContext) {
+  public void validate(ValidationContext context) {
     // Selective validation filtering
-    val requested = validationContext.getDataTypes().contains(SSM_TYPE);
+    val requested = context.getDataTypes().contains(SSM_TYPE);
     if (!requested) {
-      log.info("SSM validation not requested for '{}'. Skipping...", validationContext.getProjectKey());
+      log.info("SSM validation not requested for '{}'. Skipping...", context.getProjectKey());
 
       return;
     }
 
-    val optional = grabSubmissionFile(FOCUS_TYPE, validationContext);
-
     // Only perform normalization of there is a file to normalize
-    if (optional.isPresent()) {
-      String ssmPFile = optional.get();
-      log.info("Starting normalization for {} file: '{}'", FOCUS_TYPE, ssmPFile);
-      normalize(ssmPFile, validationContext);
-      log.info("Finished normalization for {} file: '{}'", FOCUS_TYPE, ssmPFile);
+    val ssmPFiles = getSsmPrimaryFiles(context);
+    if (!ssmPFiles.isEmpty()) {
+      log.info("Starting normalization for {} files: '{}'", FOCUS_TYPE, ssmPFiles);
+      normalize(ssmPFiles, context);
+      log.info("Finished normalization for {} files: '{}'", FOCUS_TYPE, ssmPFiles);
     } else {
-      log.info(
-          "Skipping normalization for {}, no matching file in submission: '{}'",
-          new Object[] { FOCUS_TYPE, validationContext.getSubmissionDirectory().listFile() });
+      log.info("Skipping normalization for {}, no matching file in submission", FOCUS_TYPE);
     }
   }
 
   /**
    * Handles the normalization.
    */
-  private void normalize(String fileName, ValidationContext context) {
-    String releaseName = context.getRelease().getName();
-    String projectKey = context.getProjectKey();
+  private void normalize(List<String> fileNames, ValidationContext context) {
 
     // Plan cascade
-    val pipes = planCascade(DefaultNormalizationContext.getContext(context.getDictionary()));
+    val pipes = planCascade(
+        fileNames,
+        DefaultNormalizationContext
+            .getContext(context.getDictionary()));
 
     // Connect cascade
-    val ssmPFileSchema = context.getDictionary().getFileSchema(FOCUS_TYPE);
     val connectedCascade = connectCascade(
         pipes,
         context.getPlatformStrategy(),
-        releaseName,
-        projectKey,
-        ssmPFileSchema.getPattern());
+        context.getRelease().getName(),
+        context.getProjectKey());
 
     // Checks validator wasn't interrupted
     checkInterrupted(getName());
@@ -195,14 +204,17 @@ public final class NormalizationValidator implements Validator {
     NormalizationReporter.performSanityChecks(connectedCascade);
 
     // Report results (error or stats)s
-    val checker = NormalizationReporter.createNormalizationOutcomeChecker(config, connectedCascade, fileName);
+    val checker = NormalizationReporter.createNormalizationOutcomeChecker(
+        config, connectedCascade, OUTPUT_FILE_NAME);
+
+    // Report errors or statistics
     if (checker.isLikelyErroneous()) {
       log.warn("The submission is erroneous from the normalization standpoint: '{}'", checker);
       NormalizationReporter.reportError(context, checker);
     } else {
       log.info("No errors were encountered during normalization");
       internalStatisticsReport(connectedCascade);
-      externalStatisticsReport(fileName, connectedCascade, context);
+      externalStatisticsReport(OUTPUT_FILE_NAME, connectedCascade, context);
     }
   }
 
@@ -210,10 +222,12 @@ public final class NormalizationValidator implements Validator {
    * Plans the normalization cascade. It will iterate over the {@link NormalizationStep}s and, if enabled, will have
    * them extend the main {@link Pipe}.
    */
-  private Pipes planCascade(NormalizationContext normalizationContext) {
-    Pipe startPipe = new Pipe(START_PIPE_NAME);
+  private Pipes planCascade(@NonNull List<String> fileNames, @NonNull NormalizationContext normalizationContext) {
+    checkArgument(!fileNames.isEmpty(),
+        "Expecting at least one matching file at this point");
 
-    Pipe pipe = startPipe;
+    val startPipes = getStartPipes(fileNames);
+    Pipe pipe = new Merge(startPipes.values().toArray(new Pipe[] {}));
     for (NormalizationStep step : steps) {
       if (NormalizationConfig.isEnabled(step, config)) {
         log.info("Adding step '{}'", step.shortName());
@@ -222,40 +236,46 @@ public final class NormalizationValidator implements Validator {
         log.info("Skipping disabled step '{}'", step.shortName());
       }
     }
-    Pipe endPipe = new Pipe(END_PIPE_NAME, pipe);
+    val endPipe = new Pipe(END_PIPE_NAME, pipe);
 
-    return new Pipes(startPipe, endPipe);
+    return new Pipes(startPipes, endPipe);
   }
 
   /**
    * Connects the cascade to the input and output.
    */
   private ConnectedCascade connectCascade(
-      Pipes pipes,
-      PlatformStrategy platform,
+      @NonNull Pipes pipes,
+      @NonNull PlatformStrategy platform,
       @NonNull String releaseName,
-      @NonNull String projectKey,
-      @NonNull String pattern) {
+      @NonNull String projectKey) {
 
-    val fileName = getFileName(platform, pattern);
-    log.info("Processing file '{}'", fileName);
+    // Define a flow
+    val flowDef = flowDef().setName(FLOW_NAME);
 
-    val flowDef =
-        flowDef()
-            .setName(FLOW_NAME)
-            .addSource(
-                pipes.getStartPipe(),
-                getInputTap(platform, fileName))
-            .addTailSink(
-                pipes.getEndPipe(),
-                getOutputTap(releaseName, projectKey));
+    // Connect start pipes
+    for (val entry : pipes.getStartPipes().entrySet()) {
+      val startPipe = entry.getValue();
+      val fileName = entry.getKey();
+      val sourceTap = getSourceTap(platform, fileName);
+      log.info("Connecting file '{}' ('{}')", fileName, sourceTap);
+      flowDef.addSource(startPipe, sourceTap);
+    }
 
+    // Connect end pipe
+    log.info("Connecting tail");
+    flowDef.addTailSink(
+        pipes.getEndPipe(),
+        getSinkTap(releaseName, projectKey));
+
+    // Connect flow
     Flow<?> flow = platform // TODO: not re-using the submission's platform strategy
         .getFlowConnector()
         .connect(flowDef);
     flow.writeDOT(format("/tmp/%s-%s.dot", projectKey, flow.getName())); // TODO: refactor /tmp
     flow.writeStepsDOT(format("/tmp/%s-%s-steps.dot", projectKey, flow.getName()));
 
+    // Connect cascade
     val cascade = new CascadeConnector()
         .connect(
         cascadeDef()
@@ -311,38 +331,49 @@ public final class NormalizationValidator implements Validator {
     }
   }
 
-  /**
-   * Returns the submission file matching the type provided if there is such a file.
-   */
-  private Optional<String> grabSubmissionFile(SubmissionFileType type, ValidationContext validationContext) {
-    return validationContext
-        .getSubmissionDirectory()
-        .getFile(
-            validationContext
-                .getDictionary()
-                .getFilePattern(type));
+  private List<String> getSsmPrimaryFiles(ValidationContext context) {
+    return newArrayList(transform(
+        context.getSsmPrimaryFiles(),
+        new Function<Path, String>() {
+
+          @Override
+          public String apply(Path path) {
+            return path.getName();
+          }
+        }));
   }
 
-  private String getFileName(PlatformStrategy platform, String pattern) {
-    val fileNames = platform.listFileNames(pattern);
-    checkState(fileNames.size() == 1,
-        "At this point there should only be one match, instead: '%s' for pattern '%s' ('%s')",
-        fileNames, pattern, platform.listFileNames());
-    return fileNames.get(0);
+  /**
+   * Returns a map of file name to start {@link Pipe}, which will later be used to connect the {@link Flow} as part of a
+   * {@link Cascade}.
+   */
+  private Map<String, Pipe> getStartPipes(List<String> fileNames) {
+    val startPipes = new ImmutableMap.Builder<String, Pipe>();
+    for (val fileName : fileNames) {
+      startPipes.put(
+          fileName,
+          new Pipe(
+              getStartPipeName(fileName)));
+    }
+    return startPipes.build();
+  }
+
+  private String getStartPipeName(String fileName) {
+    return format("%s-%s", START_PIPE_NAME, fileName);
   }
 
   /**
    * Returns the input tap for the cascade. Well-formedness validation has already ensured that we have a properly
    * formatted TSV file.
    */
-  private Tap<?, ?, ?> getInputTap(PlatformStrategy platform, String fileName) {
+  private Tap<?, ?, ?> getSourceTap(PlatformStrategy platform, String fileName) {
     return platform.getSourceTap2(fileName);
   }
 
   /**
    * Returns the output tap for the cascade.
    */
-  private Tap<?, ?, ?> getOutputTap(String releaseName, String projectKey) {
+  private Tap<?, ?, ?> getSinkTap(String releaseName, String projectKey) {
     return dccFileSystem2.getNormalizationDataOutputTap(releaseName, projectKey);
   }
 
@@ -352,7 +383,7 @@ public final class NormalizationValidator implements Validator {
   @Value
   private static final class Pipes {
 
-    private final Pipe startPipe;
+    private final Map<String, Pipe> startPipes;
     private final Pipe endPipe;
   }
 

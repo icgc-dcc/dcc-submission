@@ -33,9 +33,9 @@ import javax.ws.rs.core.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
 
 import org.codehaus.jackson.JsonNode;
-import org.icgc.dcc.submission.core.SystemService;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.http.jersey.PATCH;
+import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 

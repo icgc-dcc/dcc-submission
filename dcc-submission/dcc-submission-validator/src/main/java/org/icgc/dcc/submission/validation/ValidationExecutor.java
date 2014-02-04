@@ -25,12 +25,14 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -39,10 +41,14 @@ import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.util.NamingCallable;
 
 import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Manages the execution and cancellation of a fixed number of {@code Validation} "slots".
+ * <p>
+ * Similar to the standard JDK {@link ExecutorService} abstraction. Delegates to a fixed thread pool executor and
+ * provides asynchronous callbacks for execution outcomes.
  */
 @Slf4j
 public class ValidationExecutor {
@@ -79,7 +85,7 @@ public class ValidationExecutor {
   /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
    */
-  private final ConcurrentMap<String, Future<?>> futures = newConcurrentMap();
+  private final ConcurrentMap<String, Future<?>> validationFutures = newConcurrentMap();
 
   /**
    * The pool used to execute validation tasks.
@@ -133,23 +139,29 @@ public class ValidationExecutor {
    * <p>
    * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
    * 
-   * @param validation
-   * @param acceptedCallback callback that executes synchronously when a validation is accepted
-   * @param completedCallback callback that executes synchronously when a validation is completed
+   * @param validation the validation job to run. {@link Validation#execute()} is called asynchronously with respect to
+   * the caller upon successful submission.
+   * @param acceptedCallback a callback that executes asynchronously with respect to the caller when a validation is
+   * accepted. Guaranteed to run before the {@code validation}'s {@link Validation#execute()} call.
+   * @param completedCallback a callback that executes asynchronously with respect to the caller when a validation is
+   * completed. Guaranteed to run after the {@code validation}'s {@link Validation#execute()} call.
    * @throws RejectedExecutionException if there are no "slots" available
    */
-  public void execute(final Validation validation, final Runnable acceptedCallback,
-      final FutureCallback<Validation> completedCallback) {
+  public void execute(
+      final @NonNull Validation validation,
+      final @NonNull Runnable acceptedCallback,
+      final @NonNull FutureCallback<Validation> completedCallback) {
     val id = validation.getId();
 
     // Need to apply listening decorator here because we still need access to pool methods later
     log.info("execute: Submitting validation '{}' ... {}", id, getStats());
-    val future = listeningDecorator(pool).submit(new NamingCallable<Validation>(id, new Callable<Validation>() {
+    val validationFuture = submit(id, new Callable<Validation>() {
 
       @Override
       @SneakyThrows
       public Validation call() throws Exception {
         try {
+          // Execute the accept callback on the same thread as the validation
           log.info("call: Executing validation accepted callback '{}'... {}", id, getStats());
           acceptedCallback.run();
           log.info("call: Finished validation accepted callback '{}'. {}", id, getStats());
@@ -164,7 +176,9 @@ public class ValidationExecutor {
           throw t;
         } finally {
           log.info("call: Validation '{}' duration: {} ms", id, validation.getDuration());
-          futures.remove(id);
+
+          // Untrack the result since we are finished and cancellation can no longer occur
+          validationFutures.remove(id);
         }
 
         // Make available for {@link ListeningFuture#onSuccess()}
@@ -172,13 +186,13 @@ public class ValidationExecutor {
         return validation;
       }
 
-    }));
+    });
 
-    // Add success and failure callback
-    addCallback(future, completedCallback);
+    // Add success and failure callback to the completion event of the future's result
+    addCallback(validationFuture, completedCallback);
 
-    // Track it for cancellation
-    futures.put(id, future);
+    // Track it for future cancellation purposes
+    validationFutures.put(id, validationFuture);
   }
 
   /**
@@ -191,11 +205,11 @@ public class ValidationExecutor {
    */
   public boolean cancel(String id) {
     try {
-      val future = futures.get(id);
-      val available = future != null;
+      val validationFuture = validationFutures.get(id);
+      val available = validationFuture != null;
       if (available) {
         log.warn("cancel: Cancelling validation '{}'... {}", id, getStats());
-        val cancelled = future.cancel(true);
+        val cancelled = validationFuture.cancel(true);
         log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
             new Object[] { id, cancelled, getStats() });
 
@@ -204,7 +218,7 @@ public class ValidationExecutor {
 
     } finally {
       // No project left behind
-      futures.remove(id);
+      validationFutures.remove(id);
     }
 
     log.warn("cancel: No validation found '{}'... {}", id, getStats());
@@ -217,6 +231,30 @@ public class ValidationExecutor {
   public void shutdown() {
     log.info("Shutting down pool...");
     pool.shutdownNow();
+  }
+
+  /**
+   * Submits the supplied {@code validationCallable} job for execution by the underlying executor.
+   * 
+   * @param threadName the name of the thread that executes the callback
+   * @param validationCallable the validation job to execute
+   * @return
+   */
+  private ListenableFuture<Validation> submit(@NonNull String threadName,
+      @NonNull Callable<Validation> validationCallable) {
+    // Change the thread name of the executing callback to be named {@code name}. This makes logs easier to trace and
+    // analyze
+    val namedValidationCallable = new NamingCallable<Validation>(threadName, validationCallable);
+
+    // Wrap the underlying thread pool executor with Guava's listening decorator that exposes {@code FutureCallback}
+    // semantics not provided in the standard JDK versions. This needs to be applied here and not during initialization
+    // since we still need the static type of {@link #pool} to access other methods (e.g. see {@link #shutdown})
+    val listeningExecutor = listeningDecorator(pool);
+
+    // Delegate to the modified executor and capture the future (a.k.a "promise") result for which to attach callbacks
+    val validationFuture = listeningExecutor.submit(namedValidationCallable);
+
+    return validationFuture;
   }
 
   /**
@@ -266,7 +304,7 @@ public class ValidationExecutor {
   /**
    * Gets basic task statistics about the underlying pool.
    * 
-   * @return a formatted stats string
+   * @return a formatted statistics string
    */
   private String getStats() {
     return format("taskCount: %s, activeCount: %s, completedCount: %s",

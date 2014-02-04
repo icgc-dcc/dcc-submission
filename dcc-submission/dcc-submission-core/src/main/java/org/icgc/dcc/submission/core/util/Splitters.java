@@ -22,8 +22,12 @@ import static com.google.common.base.Splitter.on;
 import com.google.common.base.Splitter;
 
 /**
- * TODO
+ * Common splitters.
  */
 public class Splitters {
-  public static final Splitter PATH_JOINER = on('/');
+
+  public static final Splitter PATH = on('/');
+  public static final Splitter TAB = on('\t');
+  public static final Splitter NEWLINE = on('\n');
+
 }

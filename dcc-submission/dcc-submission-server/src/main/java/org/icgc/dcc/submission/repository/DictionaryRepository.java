@@ -18,43 +18,56 @@
 
 package org.icgc.dcc.submission.repository;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import static org.icgc.dcc.submission.dictionary.model.DictionaryState.CLOSED;
+import static org.icgc.dcc.submission.dictionary.model.QDictionary.dictionary;
+
+import java.util.List;
+
 import lombok.NonNull;
 
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
-import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 
-@Data
-@EqualsAndHashCode(callSuper = false)
-public class DictionaryRepository extends BaseMorphiaService<Dictionary> {
+public class DictionaryRepository extends AbstractRepository<Dictionary, QDictionary> {
 
   @Inject
-  public DictionaryRepository(Morphia morphia, Datastore datastore,
-      MailService mailService) {
-    super(morphia, datastore, QDictionary.dictionary, mailService);
-    registerModelClasses(Dictionary.class, CodeList.class);
+  public DictionaryRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, dictionary);
   }
 
-  public void closeDictionary(@NonNull String dictionaryVersion) {
-    datastore().findAndModify(
-        datastore().createQuery(Dictionary.class)
-            .filter("version", dictionaryVersion),
-        datastore().createUpdateOperations(Dictionary.class)
-            .set("state", DictionaryState.CLOSED));
+  public long countDictionariesByVersion(@NonNull String version) {
+    return count(_.version.eq(version));
   }
 
-  public Dictionary findDictionaryByVersion(@NonNull String dictionaryVersion) {
-    return datastore().createQuery(Dictionary.class)
-        .filter("version", dictionaryVersion).get();
+  public List<Dictionary> findDictionaries() {
+    return list();
+  }
+
+  public Dictionary findDictionaryByVersion(@NonNull String version) {
+    return uniqueResult(_.version.eq(version));
+  }
+
+  public void saveDictionary(@NonNull Dictionary dictionary) {
+    save(dictionary);
+  }
+
+  public void updateDictionary(@NonNull Dictionary dictionary) {
+    updateFirst(
+        createQuery()
+            .filter("version", dictionary.getVersion()),
+        dictionary, false);
+  }
+
+  public void closeDictionary(@NonNull String version) {
+    findAndModify(
+        createQuery()
+            .filter("version", version),
+        createUpdateOperations()
+            .set("state", CLOSED));
   }
 
 }

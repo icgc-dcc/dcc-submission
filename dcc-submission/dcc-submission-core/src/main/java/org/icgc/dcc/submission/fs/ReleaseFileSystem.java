@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static java.lang.String.format;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -66,8 +65,8 @@ public class ReleaseFileSystem {
 
     val optional = release.getSubmissionByProjectKey(projectKey);
     if (!optional.isPresent()) {
-      throw new ReleaseException(format("There is no project '%s' associated with release '%s'", projectKey,
-          release.getName()));
+      throw new ReleaseException("There is no project '%s' associated with release '%s'",
+          projectKey, release.getName());
     }
 
     val submission = optional.get();

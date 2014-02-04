@@ -29,7 +29,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.sshd.server.SshFile;
+import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 import com.google.common.base.Optional;
@@ -89,7 +89,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
   @Override
   public List<SshFile> listSshFiles() {
     try {
-      List<Path> paths = lsAll(fs, path);
+      List<Path> paths = lsAll(fileSystem, path);
       List<SshFile> sshFiles = newArrayList();
       val userProjectKeys = context.getUserProjectKeys();
       for (Path path : paths) {

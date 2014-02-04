@@ -23,8 +23,7 @@ import lombok.ToString;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
-
-import com.google.code.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Embedded;
 
 /**
  * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking

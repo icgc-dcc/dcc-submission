@@ -77,7 +77,7 @@ public class DictionaryResource {
   public Response getDictionaryService() {
     // No authorization check necessary
     log.debug("Getting dictionaryService");
-    List<Dictionary> dictionaries = dictionaryService.list();
+    List<Dictionary> dictionaries = dictionaryService.getDictionaries();
     if (dictionaries == null) {
       dictionaries = newArrayList();
     }
@@ -222,7 +222,7 @@ public class DictionaryResource {
           .build();
     }
 
-    dictionaryService.update(newDictionary);
+    dictionaryService.updateDictionary(newDictionary);
 
     if (violations.hasWarnings()) {
       val warnings = new StringBuilder("Created, but request entity had the following warnings:\n");
@@ -244,7 +244,7 @@ public class DictionaryResource {
 
   private DictionaryConstraintViolations validateDictionary(Dictionary dictionary) {
     if (validate) {
-      val validator = new DictionaryValidator(dictionary, dictionaryService.listCodeList());
+      val validator = new DictionaryValidator(dictionary, dictionaryService.getCodeLists());
       return validator.validate();
     } else {
       val empty = Collections.<DictionaryValidator.DictionaryConstraintViolation> emptySet();

@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.DccRuntime;
-import org.icgc.dcc.submission.core.morphia.MorphiaModule;
+import org.icgc.dcc.submission.core.PersistenceModule;
 import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
@@ -162,10 +162,10 @@ public class Main {
 
         // Infrastructure modules
         new CoreModule(),
+        new PersistenceModule(),
         new HttpModule(),
         new JerseyModule(),
         new WebModule(),
-        new MorphiaModule(),
         new RepositoryModule(),
         new ShiroModule(),
         new FileSystemModule(),

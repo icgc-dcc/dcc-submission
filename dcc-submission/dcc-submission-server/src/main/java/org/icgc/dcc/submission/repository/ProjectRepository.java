@@ -18,106 +18,59 @@
 
 package org.icgc.dcc.submission.repository;
 
+import static org.icgc.dcc.submission.core.model.QProject.project;
+
 import java.util.List;
-import java.util.Set;
 
 import lombok.NonNull;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
-import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Key;
+import org.mongodb.morphia.Morphia;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Key;
-import com.google.code.morphia.Morphia;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
-import com.mongodb.WriteConcern;
-import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
-@Slf4j
-public class ProjectRepository extends BaseMorphiaService<Project> {
+public class ProjectRepository extends AbstractRepository<Project, QProject> {
 
   @Inject
-  public ProjectRepository(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull MailService mailService) {
-    super(morphia, datastore, QProject.project, mailService);
-    super.registerModelClasses(Project.class);
-  }
-
-  public List<Project> findProjects(@NonNull List<String> projectKeys) {
-    val query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
-    return query.where(QProject.project.key.in(projectKeys)).list();
+  public ProjectRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, project);
   }
 
   public Project findProject(@NonNull String projectKey) {
-    val query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
-    return query.where(QProject.project.key.eq(projectKey)).uniqueResult();
+    return uniqueResult(_.key.eq(projectKey));
   }
 
-  /**
-   * Search for a Project by its key
-   * 
-   * @return Project or null if none found
-   */
-  public Project find(String projectKey) {
-    log.debug("Finding Project '{}'", projectKey);
-    return where(QProject.project.key.eq(projectKey)).singleResult();
+  public Project findProjectByUser(@NonNull String projectKey, @NonNull String username) {
+    return singleResult(_.key.eq(projectKey).and(_.users.contains(username)));
   }
 
-  /**
-   * Search for a Project by its key and whether it is accessible to the user
-   * 
-   * @return Project or null if none found
-   * @see #find(String)
-   */
-  public Project findForUser(String projectKey, String username) {
-    log.debug("Finding Project '{}' for User '{}'", projectKey, username);
-    return where(QProject.project.key.eq(projectKey)).where(
-        QProject.project.users.contains(username)).singleResult();
+  public List<Project> findProjects() {
+    return list();
   }
 
-  /**
-   * Search for all Projects
-   * 
-   * @return All Projects
-   * @see #findAllForUser(String)
-   */
-  public Set<Project> findAll() {
-    log.debug("Finding all Projects");
-    return ImmutableSet.copyOf(query().list());
+  public List<Project> findProjects(@NonNull List<String> projectKeys) {
+    return list(_.key.in(projectKeys));
   }
 
-  /**
-   * Search for all Projects accessible to the user
-   * 
-   * @return All Projects viewable by the user
-   * @see #findAll()
-   */
-  public Set<Project> findAllForUser(String username) {
-    log.debug("Finding all Projects for '{}'", username);
-    return ImmutableSet.copyOf(where(
-        QProject.project.users.contains(username)).list());
+  public List<Project> findProjectsByUser(@NonNull String username) {
+    return list(_.users.contains(username));
   }
 
   /**
    * Upsert will either insert or update the Project depending on whether it already exists in the database. Existence
-   * check is based on whether the Project already has an Id. <br>
-   * <br>
-   * If the Project is missing an Id and already exists, Mongo with throw
-   * {@link com.mongodb.MongoException.DuplicateKey}. <br>
-   * If the Project has an Id and already exists it will be updated. <br>
-   * Otherwise it will be added.
+   * check is based on whether the Project already has an Id. If the Project is missing an Id and already exists, Mongo
+   * with throw {@link com.mongodb.MongoException.DuplicateKey}. If the Project has an Id and already exists it will be
+   * updated. Otherwise it will be added.
    * 
    * @return Response object from Mongo
    */
-  public Key<Project> upsert(Project project) {
-    log.info("Upserting '{}'", project);
-    val response = datastore().save(project, WriteConcern.ACKNOWLEDGED);
+  public Key<Project> upsertProject(@NonNull Project project) {
+    val response = save(project);
 
-    log.info("Upsert Successful! '{}'", response);
     return response;
   }
 
