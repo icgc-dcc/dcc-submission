@@ -119,9 +119,8 @@ public abstract class HdfsSshFile implements SshFile {
 
   @Override
   public void setAttributes(Map<Attribute, Object> attributes) throws IOException {
-    if (!attributes.isEmpty()) {
-      throw new UnsupportedOperationException();
-    }
+    // Do not inherit the attributes sent from the SFTP client.
+    // See {@link NativeSshFileNio#setAttributes} for an example implementation.
   }
 
   @Override
