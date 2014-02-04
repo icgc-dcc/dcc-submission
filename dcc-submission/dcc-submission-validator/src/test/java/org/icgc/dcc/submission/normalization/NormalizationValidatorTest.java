@@ -166,10 +166,10 @@ public class NormalizationValidatorTest {
                 "11\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
                 "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
                 "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
-                "2\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
+                "3\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
                 "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
                 "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
-                "9\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
+                "10\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
             ));
   }
 
@@ -226,7 +226,8 @@ public class NormalizationValidatorTest {
           .thenReturn("v6")
           .thenReturn("v7")
           .thenReturn("v8")
-          .thenReturn("v9");
+          .thenReturn("v9")
+          .thenReturn("v10");
     }
 
     PowerMockito.when(UUID.randomUUID())
