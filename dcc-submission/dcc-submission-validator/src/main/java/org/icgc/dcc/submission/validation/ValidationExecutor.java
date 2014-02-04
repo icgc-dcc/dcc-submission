@@ -45,8 +45,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
- * Manages the execution and cancellation of a fixed number of {@code Validation} "slots". Similar to the standard JDK
- * {@link ExecutorService} abstraction.
+ * Manages the execution and cancellation of a fixed number of {@code Validation} "slots".
+ * <p>
+ * Similar to the standard JDK {@link ExecutorService} abstraction. Delegates to a fixed thread pool executor and
+ * provides asynchronous callbacks for execution outcomes.
  */
 @Slf4j
 public class ValidationExecutor {
@@ -203,11 +205,11 @@ public class ValidationExecutor {
    */
   public boolean cancel(String id) {
     try {
-      val future = validationFutures.get(id);
-      val available = future != null;
+      val validationFuture = validationFutures.get(id);
+      val available = validationFuture != null;
       if (available) {
         log.warn("cancel: Cancelling validation '{}'... {}", id, getStats());
-        val cancelled = future.cancel(true);
+        val cancelled = validationFuture.cancel(true);
         log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
             new Object[] { id, cancelled, getStats() });
 

@@ -57,9 +57,10 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
 
 /**
- * Coordinator task that runs periodically to dispatch validations for execution. It pulls from the web request "queue"
- * as input and pushes to the validation "executor" as output. Also responsible for mediating validation cancellation
- * requests coming from the web layer.
+ * Coordinator task that runs periodically to dispatch validations for execution.
+ * <p>
+ * The scheduler pulls from the web request "queue" as input and pushes to the validation "executor" as output. Also
+ * responsible for mediating validation cancellation requests coming from the web layer.
  */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
@@ -167,7 +168,7 @@ public class ValidationScheduler extends AbstractScheduledService {
 
     try {
       // Try to find a queued validation
-      val release = resolveOpenRelease();
+      val release = getRelease();
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {
@@ -337,7 +338,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   /**
    * Utility method to give the current "next release" object and confirms open state.
    */
-  private Release resolveOpenRelease() {
+  private Release getRelease() {
     return releaseService.getNextRelease();
   }
 
