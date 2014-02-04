@@ -55,7 +55,7 @@ public class VersionFilter implements ContainerResponseFilter {
   public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
       throws IOException {
 
-    // Add versions to reponse
+    // Add versions to response
     val headers = responseContext.getHeaders();
     headers.add(API_SERVER_VERSION_HEADER, VERSIONS.getVersion());
     headers.add(API_SERVER_COMMIT_ID_HEADER, VERSIONS.getCommit());
