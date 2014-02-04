@@ -15,26 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.planner;
+package org.icgc.dcc.submission.validation.key.data;
 
-import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
-import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
+import lombok.Value;
 
-import cascading.flow.Flow;
+import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
 
 /**
- * Plans a {@code Flow} for a particular {@code FileSchema}.
+ * Data relevant to the key validation for a given row.
  */
-public interface FileSchemaFlowPlanner {
+@Value
+public class KVRow {
 
-  void acceptVisitor(PlanningVisitor<?> planningVisitor);
+  /**
+   * Applicable for most file except for the leafs (see dictionary DAG).
+   */
+  private final KVKey pk;
 
-  void applyReportingPlanElement(ReportingPlanElement element);
+  /**
+   * Applicable for all files but 'donor'.
+   */
+  private final KVKey fk;
 
-  void collectFileReport(PlatformStrategy strategy, ReportContext context);
+  /**
+   * Only applicable for some meta files. See {@link KeysType#SECONDARY_FK}.
+   */
+  private final KVKey secondaryFk;
 
-  Flow<?> connect(PlatformStrategy cascadingStrategy);
+  public boolean hasPk() {
+    return pk != null;
+  }
+
+  public boolean hasFk() {
+    return fk != null;
+  }
+
+  public boolean hasSecondaryFk() {
+    return secondaryFk != null;
+  }
 
 }

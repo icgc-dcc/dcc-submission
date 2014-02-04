@@ -31,7 +31,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.planner.ExternalFlowPlanner;
-import org.icgc.dcc.submission.validation.primary.planner.FileSchemaFlowPlanner;
+import org.icgc.dcc.submission.validation.primary.planner.FileFlowPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.InternalFlowPlanner;
 
 import cascading.cascade.Cascade;
@@ -111,7 +111,7 @@ public class Plan {
     return unmodifiableIterable(externalFlowPlanners.values());
   }
 
-  public Iterable<? extends FileSchemaFlowPlanner> getFlows(FlowType type) {
+  public Iterable<? extends FileFlowPlanner> getFlows(FlowType type) {
     switch (type) {
     case INTERNAL:
       return unmodifiableIterable(internalFlowPlanners.values());
@@ -126,7 +126,7 @@ public class Plan {
     return cascade;
   }
 
-  private Iterable<FileSchemaFlowPlanner> getFlowPlanners() {
+  private Iterable<FileFlowPlanner> getFlowPlanners() {
     return concat(internalFlowPlanners.values(), externalFlowPlanners.values());
   }
 

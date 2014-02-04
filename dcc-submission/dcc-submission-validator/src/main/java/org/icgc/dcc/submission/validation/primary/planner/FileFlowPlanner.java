@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,18 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.utils;
+package org.icgc.dcc.submission.validation.primary.planner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
+import org.icgc.dcc.submission.validation.core.ReportContext;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
+import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 
+import cascading.flow.Flow;
 
 /**
- * 
+ * Plans a {@code Flow} for a particular file (associated with a {@code FileSchema}).
  */
-public class KVConstants {
+public interface FileFlowPlanner {
 
-  public static final Splitter TAB_SPLITTER = Splitter.on('\t');
-  public static final ObjectMapper MAPPER = new ObjectMapper();
+  void acceptVisitor(PlanningVisitor<?> planningVisitor);
+
+  void applyReportingPlanElement(ReportingPlanElement element);
+
+  void collectFileReport(PlatformStrategy strategy, ReportContext context);
+
+  Flow<?> connect(PlatformStrategy cascadingStrategy);
 
 }

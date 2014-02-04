@@ -39,7 +39,7 @@ import cascading.pipe.Pipe;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements ExternalFlowPlanner {
+class DefaultExternalFlowPlanner extends BaseFileFlowPlanner implements ExternalFlowPlanner {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 

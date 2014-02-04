@@ -96,7 +96,7 @@ public class Planner {
 
   /**
    * Apply visitors to the {@link Plan}. This means collecting {@link PlanElement} then applying those elements to
-   * {@link FileSchemaFlowPlanner}s (which means extending the flow planner's {@link Pipe} based on the element).
+   * {@link FileFlowPlanner}s (which means extending the flow planner's {@link Pipe} based on the element).
    */
   private void applyVisitors(Plan plan, PlatformStrategy platform, String projectKey) {
     val visitors = createVisitors(platform, restrictionTypes);

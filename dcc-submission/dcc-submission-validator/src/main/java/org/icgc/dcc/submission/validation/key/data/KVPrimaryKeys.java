@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
-import static org.icgc.dcc.submission.validation.key.core.KVValidator.TUPLE_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.core.KVProcessor.ROW_CHECKS_ENABLED;
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,19 +34,19 @@ import lombok.val;
 import com.google.common.collect.Sets;
 
 /**
- * TODO: also keep track of line number?
+ * Keeps track of primary keys for each file.
  */
 @RequiredArgsConstructor
 public final class KVPrimaryKeys {
 
   private final Map<String, Set<KVKey>> pks = newTreeMap();
 
-  public void updatePks(String fileName, KVTuple tuple) {
-    if (TUPLE_CHECKS_ENABLED) checkState(tuple.hasPk(), "TODO");
+  public void updatePks(String fileName, KVRow row) {
+    if (ROW_CHECKS_ENABLED) checkState(row.hasPk(), "Expected to have a PK: '{}' ('{}')", row, fileName);
     if (!pks.containsKey(fileName)) {
       pks.put(fileName, Sets.<KVKey> newTreeSet());
     }
-    pks.get(fileName).add(tuple.getPk());
+    pks.get(fileName).add(row.getPk());
   }
 
   public List<String> getFilePaths() {

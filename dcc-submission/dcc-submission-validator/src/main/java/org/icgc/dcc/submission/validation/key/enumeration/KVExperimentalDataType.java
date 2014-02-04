@@ -22,8 +22,8 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
@@ -63,7 +63,7 @@ public enum KVExperimentalDataType {
   SGV(SGV_M, of(SGV_M, SGV_P));
 
   @Getter
-  private final KVFileType taleTellerFileType;
+  private final KVFileType dataTypePresenceFlagship;
 
   /**
    * Order matters.

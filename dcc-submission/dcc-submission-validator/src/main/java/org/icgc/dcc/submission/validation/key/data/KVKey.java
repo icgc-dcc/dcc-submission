@@ -58,7 +58,7 @@ public class KVKey implements Comparable<KVKey> {
    */
   @Override
   public int compareTo(KVKey keys) {
-    // TODO: double-check for errors + guava way?
+    // TODO: efficient guava way?
     if (size == 1) {
       val compared0 = this.values[0].compareTo(keys.values[0]);
       if (compared0 != 0) {
