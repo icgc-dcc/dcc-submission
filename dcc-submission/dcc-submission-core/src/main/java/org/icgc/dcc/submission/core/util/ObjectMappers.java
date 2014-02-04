@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,41 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.submission.core.util;
 
-import lombok.Value;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Data relevant to the key validation for a given row.
+ * Common object mappers.
  */
-@Value
-public class KVTuple {
+public class ObjectMappers {
 
-  /**
-   * Applicable for most file except for the leafs (see dictionary DAG).
-   */
-  private final KVKey pk;
-
-  /**
-   * Applicable for all files but 'donor'.
-   */
-  private final KVKey fk;
-
-  /**
-   * Only applicable for some meta files
-   */
-  private final KVKey secondaryFk;
-
-  public boolean hasPk() {
-    return pk != null;
-  }
-
-  public boolean hasFk() {
-    return fk != null;
-  }
-
-  public boolean hasSecondaryFk() {
-    return secondaryFk != null;
-  }
+  public static final ObjectMapper DEFAULT = new ObjectMapper();
 
 }

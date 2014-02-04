@@ -23,7 +23,7 @@ import org.icgc.dcc.submission.validation.primary.core.Key;
 /**
  * Plans the internal flow for a particular {@code FileSchema}
  */
-public interface InternalFlowPlanner extends FileSchemaFlowPlanner {
+public interface InternalFlowPlanner extends FileFlowPlanner {
 
   /**
    * Ensures that this flow will produce the requested trimmed output.

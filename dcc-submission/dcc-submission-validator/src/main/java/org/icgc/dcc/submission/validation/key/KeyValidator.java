@@ -24,7 +24,7 @@ import static org.apache.hadoop.mapred.JobConf.MAPRED_MAP_TASK_JAVA_OPTS;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
-import static org.icgc.dcc.submission.validation.key.report.KVReport.REPORT_FILE_NAME;
+import static org.icgc.dcc.submission.validation.key.report.KVReporter.REPORT_FILE_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +45,7 @@ import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
-import org.icgc.dcc.submission.validation.key.error.KVReportError;
+import org.icgc.dcc.submission.validation.key.report.KVReporter.KVReportError;
 
 @NoArgsConstructor
 @Slf4j
@@ -131,8 +131,9 @@ public class KeyValidator implements Validator {
     while (errors.hasNext()) {
       val error = errors.next();
       val fileName = error.getFileName();
-      val fileType = context.getDictionary().getFileType(fileName); // TODO: store error type...?
-      checkState(fileType.isPresent(), "TODO: '{}'", fileName);
+      val fileType = context.getDictionary().getFileType(fileName);
+      checkState(fileType.isPresent(),
+          "Expecting a corresponding file type for file name '{}'", fileName);
       context.reportError(
           error.getFileName(),
           error.getLineNumber(),
@@ -156,7 +157,7 @@ public class KeyValidator implements Validator {
   }
 
   @SneakyThrows
-  private static MappingIterator<org.icgc.dcc.submission.validation.key.error.KVReportError> getErrors(
+  private static MappingIterator<KVReportError> getErrors(
       InputStream inputStream) {
     val reader = new ObjectMapper().reader().withType(KVReportError.class);
 

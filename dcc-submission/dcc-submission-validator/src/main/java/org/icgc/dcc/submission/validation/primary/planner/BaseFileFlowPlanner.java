@@ -41,7 +41,7 @@ import cascading.pipe.Pipe;
 import com.google.common.collect.Maps;
 
 @Slf4j
-public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner {
+public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
 
   private final FileSchema fileSchema;
 
@@ -53,7 +53,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   private final Map<String, ReportCollector> collectors = Maps.newHashMap();
 
-  protected BaseFileSchemaFlowPlanner(
+  protected BaseFileFlowPlanner(
       @NonNull FileSchema fileSchema,
       @NonNull String fileName,
       @NonNull FlowType flowType) {

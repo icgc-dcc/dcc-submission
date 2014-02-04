@@ -62,7 +62,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
 
 @Slf4j
-class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
+class DefaultInternalFlowPlanner extends BaseFileFlowPlanner implements InternalFlowPlanner {
 
   private final Pipe headPipe;
   private Pipe structurallyValidTail;

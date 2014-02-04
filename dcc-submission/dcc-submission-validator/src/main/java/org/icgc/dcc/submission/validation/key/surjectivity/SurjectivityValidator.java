@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.key.surjectivity;
 
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.COMPLEX_SURJECTION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SIMPLE_SURJECTION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
+import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 /**
  * Validates surjective relations.
@@ -36,55 +33,28 @@ import org.icgc.dcc.submission.validation.key.error.KVSubmissionErrors;
 @Slf4j
 public class SurjectivityValidator {
 
-  public static final long SIMPLE_SURJECTION_ERROR_LINE_NUMBER = -1;
-  public static final long COMPLEX_SURJECTION_ERROR_LINE_NUMBER = -2;
+  public static final long SURJECTION_ERROR_LINE_NUMBER = -1;
 
-  /**
-   * TODO: explain very special case.
-   * <p>
-   * From potentially more than one file (hence "complex").
-   */
-  private final KVEncounteredForeignKeys encounteredSampleForeignKeys = new KVEncounteredForeignKeys();
-
-  public void addEncounteredSampleKeys(KVEncounteredForeignKeys encounteredSampleForeignKeys) {
-    this.encounteredSampleForeignKeys.addEncounteredForeignKeys(encounteredSampleForeignKeys);
-  }
-
-  public void validateSimpleSurjection(
+  public void validateSurjection(
       KVFileType fileType,
       KVPrimaryKeys expectedKeys,
-      KVEncounteredForeignKeys encounteredKeys, // From one file only (unlike for complex check)
-      KVSubmissionErrors errors,
+      KVEncounteredForeignKeys encounteredKeys,
+      KVReporter reporter,
       KVFileType offendedFileType) {
     val valid = validateSurjectionErrors(
-        false,
         expectedKeys,
         encounteredKeys,
-        errors,
+        reporter,
         offendedFileType);
-    log.info((valid ? "No" : "Some") + " simple surjection error found for file type '{}'", fileType);
-  }
-
-  public void validateComplexSurjection(KVPrimaryKeys expectedSampleKeys, KVSubmissionErrors errors) {
-    if (encounteredSampleForeignKeys.noneEncountered()) {
-      log.warn("No sample encountered..."); // Could indicate an issue
-    }
-    val valid = validateSurjectionErrors(
-        true,
-        expectedSampleKeys,
-        encounteredSampleForeignKeys,
-        errors,
-        SAMPLE);
-    log.info((valid ? "No" : "Some") + " complex surjection errors detected");
+    log.info((valid ? "No" : "Some") + " surjection error found for file type '{}'", fileType);
   }
 
   private boolean validateSurjectionErrors(
-      boolean complex,
       KVPrimaryKeys expectedKeys,
       KVEncounteredForeignKeys encounteredKeys,
-      KVSubmissionErrors errors,
+      KVReporter reporter,
       KVFileType offendedFileType) {
-    log.info("Validating '{}' potential surjectivity errors", complex ? COMPLEX_SURJECTION : SIMPLE_SURJECTION);
+    log.info("Validating potential surjectivity errors");
 
     boolean validFileType = true;
     for (val fileName : expectedKeys.getFilePaths()) {
@@ -93,11 +63,7 @@ public class SurjectivityValidator {
         val expected = expectedIterator.next();
         val validKey = encounteredKeys.encountered(expected);
         if (!validKey) {
-          if (complex) {
-            errors.addComplexSurjectionError(offendedFileType, fileName, expected);
-          } else {
-            errors.addSimpleSurjectionError(offendedFileType, fileName, expected);
-          }
+          reporter.reportSurjectionError(offendedFileType, fileName, expected);
           validFileType = false;
         }
       }

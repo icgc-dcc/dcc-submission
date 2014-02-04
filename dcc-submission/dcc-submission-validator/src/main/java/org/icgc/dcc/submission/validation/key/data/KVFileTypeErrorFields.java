@@ -35,11 +35,14 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * 
+ * Keeps track of the field names affected by a given {@link KVErrorType} for a given {@link KVFileType}.
+ * <p>
+ * TODO: revamp completely, ugly design
  */
 @Slf4j
 public class KVFileTypeErrorFields {
 
+  private final KVFileType fileType;
   private final Map<KVErrorType, List<String>> errorFieldNames;
 
   // TODO: factory instead of constructor
@@ -48,16 +51,22 @@ public class KVFileTypeErrorFields {
       List<String> pkNames,
       List<String> fkNames,
       List<String> secondaryFkNames) {
-    checkState(pkNames != null || fkNames != null || secondaryFkNames != null, "TODO");
+    this.fileType = fileType;
+    checkState(
+        pkNames != null || fkNames != null || secondaryFkNames != null,
+        "There should be at least one set of names that isn't null");
     this.errorFieldNames = getFieldNamesPerErrorType(pkNames, fkNames, secondaryFkNames);
-    checkState(!errorFieldNames.isEmpty(), "TODO");
-    log.info("fieldNamesPerErrorType: '{}'", errorFieldNames);
+    checkState(!errorFieldNames.isEmpty());
+    log.info("fieldNamesPerErrorType: '{}' for '{}'", errorFieldNames, this.fileType);
   }
 
   public List<String> getErrorFieldNames(KVErrorType errorType) {
     return errorFieldNames.get(errorType);
   }
 
+  /**
+   * Returns a mapping of error type to their corresponding field names for the current {@link KVFileType}.
+   */
   private final Map<KVErrorType, List<String>> getFieldNamesPerErrorType(
       List<String> pkNames, List<String> fkNames, List<String> secondaryFkNames) {
     val builder = new ImmutableMap.Builder<KVErrorType, List<String>>();
