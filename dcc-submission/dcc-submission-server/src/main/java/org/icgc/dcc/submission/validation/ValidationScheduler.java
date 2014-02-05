@@ -27,7 +27,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +52,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
 
 /**
@@ -195,43 +193,53 @@ public class ValidationScheduler extends AbstractScheduledService {
     val validation = createValidation(release, project);
 
     // Submit validation asynchronously for execution
-    executor.execute(validation, new Runnable() {
+    executor.execute(validation, new ValidationListener() {
 
       /**
-       * Called if and when validation is accepted (asynchronously).
+       * Called if and when validation is started (asynchronously).
        */
       @Override
-      public void run() {
-        // If we made it here then the validation was accepted
-        log.info("onAccepted - Accepting next project in queue: '{}'", project);
-        acceptValidation(project, release);
-        log.info("onAccepted -  '{}'", project);
+      public void onStarted(Validation validation) {
+        log.info("onStarted - Started next project in queue: '{}'", project);
+        startValidation(project, release);
+        log.info("onStarted -  '{}'", project);
       }
-
-    }, new FutureCallback<Validation>() {
 
       /**
        * Called when validation has completed (may not be VALID)
        */
       @Override
-      public void onSuccess(Validation validation) {
-        log.info("onSuccess - Finished validation for '{}'", project.getKey());
+      public void onCompletion(Validation validation) {
+        log.info("onCompletion - Finished validation for '{}'", project.getKey());
 
         val submissionReport = validation.getContext().getSubmissionReport();
         val outcome = ValidationOutcome.SUCCEEDED;
         completeValidation(project, outcome, submissionReport);
-        log.info("onSuccess - Completed '{}'", project.getKey());
+        log.info("onCompletion - Completed '{}'", project.getKey());
+      }
+
+      /**
+       * Called when validation has been cancelled (will not be VALID)
+       */
+      @Override
+      public void onCancelled(Validation validation) {
+        log.info("onSuccess - Cancelled validation for '{}'", project.getKey());
+
+        val submissionReport = validation.getContext().getSubmissionReport();
+        val outcome = ValidationOutcome.CANCELLED;
+        completeValidation(project, outcome, submissionReport);
+        log.info("onCancelled - Completed '{}'.", project.getKey());
       }
 
       /**
        * Called when validation has completed (will not be VALID)
        */
       @Override
-      public void onFailure(Throwable t) {
+      public void onFailure(Validation validation, Throwable t) {
         log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
 
         val submissionReport = validation.getContext().getSubmissionReport();
-        val outcome = t instanceof CancellationException ? ValidationOutcome.CANCELLED : ValidationOutcome.FAILED;
+        val outcome = ValidationOutcome.FAILED;
         completeValidation(project, outcome, submissionReport);
         log.info("onFailure - Completed '{}'.", project.getKey());
       }
@@ -317,7 +325,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param project
    */
   @Synchronized
-  private void acceptValidation(QueuedProject project, Release release) {
+  private void startValidation(QueuedProject project, Release release) {
     log.info("Validation for '{}' accepted", project);
     releaseService.dequeueSubmission(project);
   }

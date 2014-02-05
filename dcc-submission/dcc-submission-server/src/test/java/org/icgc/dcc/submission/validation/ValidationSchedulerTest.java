@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -61,9 +60,7 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.FutureCallback;
 
-@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
 public class ValidationSchedulerTest {
 
@@ -133,7 +130,7 @@ public class ValidationSchedulerTest {
     val validation = createValidation(context, validator);
 
     // Setup: When submitted we will call the onSuccess callback
-    mockExecutorCallback(onSuccess(validation));
+    mockExecutorCallback(onCompletion(validation));
 
     // Exercise
     scheduler.runOneIteration();
@@ -148,8 +145,11 @@ public class ValidationSchedulerTest {
     // Setup: Add a no-op validator
     validators.add(validator);
 
+    // Setup: Create returned future with context that has no errors
+    val validation = createValidation(context, validator);
+
     // Setup: When submitted we will call the onFailure callback with a cancellation exception
-    mockExecutorCallback(onFailure(new CancellationException()));
+    mockExecutorCallback(onCancelled(validation));
 
     // Exercise
     scheduler.runOneIteration();
@@ -164,8 +164,11 @@ public class ValidationSchedulerTest {
     // Setup: Add a no-op validator
     validators.add(validator);
 
+    // Setup: Create returned future with context that has no errors
+    val validation = createValidation(context, validator);
+
     // Setup: When submitted we will call the onFailure callback with a runtime exception
-    mockExecutorCallback(onFailure(new RuntimeException()));
+    mockExecutorCallback(onFailure(validation, new RuntimeException()));
 
     // Exercise
     scheduler.runOneIteration();
@@ -177,21 +180,20 @@ public class ValidationSchedulerTest {
   private void mockExecutorCallback(Answer<Object> answer) {
     doAnswer(answer).when(executor).execute(
         any(Validation.class),
-        any(Runnable.class),
-        any(FutureCallback.class));
+        any(ValidationListener.class));
   }
 
   private void verifyOutcome(ValidationOutcome outcome) {
     verify(releaseService).resolveSubmission(queuedProject, outcome, context.getSubmissionReport());
   }
 
-  private static Answer<Object> onSuccess(final Validation validation) {
+  private static Answer<Object> onCompletion(final Validation validation) {
     return new Answer<Object>() {
 
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        val completedCallback = (FutureCallback<Validation>) invocation.getArguments()[2];
-        completedCallback.onSuccess(validation);
+        val listener = (ValidationListener) invocation.getArguments()[1];
+        listener.onCompletion(validation);
 
         return null;
       }
@@ -199,13 +201,27 @@ public class ValidationSchedulerTest {
     };
   }
 
-  private static Answer<Object> onFailure(final Throwable throwable) {
+  private static Answer<Object> onCancelled(final Validation validation) {
     return new Answer<Object>() {
 
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        val completedCallback = (FutureCallback<Validation>) invocation.getArguments()[2];
-        completedCallback.onFailure(throwable);
+        val listener = (ValidationListener) invocation.getArguments()[1];
+        listener.onCancelled(validation);
+
+        return null;
+      }
+
+    };
+  }
+
+  private static Answer<Object> onFailure(final Validation validation, final Throwable throwable) {
+    return new Answer<Object>() {
+
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        val listener = (ValidationListener) invocation.getArguments()[1];
+        listener.onFailure(validation, throwable);
 
         return null;
       }

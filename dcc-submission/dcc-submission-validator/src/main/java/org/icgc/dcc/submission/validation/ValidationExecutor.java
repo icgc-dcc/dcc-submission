@@ -18,12 +18,13 @@
 package org.icgc.dcc.submission.validation;
 
 import static com.google.common.collect.Maps.newConcurrentMap;
-import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.icgc.dcc.submission.validation.ValidationListener.NOOP_LISTENER;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -41,6 +42,7 @@ import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.util.NamingCallable;
 
 import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -52,35 +54,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 @Slf4j
 public class ValidationExecutor {
-
-  /**
-   * Default no-op callback that is called asynchronously upon acceptance.
-   */
-  private static final Runnable DEFAULT_ACCEPTED_CALLBACK = new Runnable() {
-
-    @Override
-    public void run() {
-      // No-op
-    }
-
-  };
-
-  /**
-   * Default no-op callback that is asynchronously called upon completion.
-   */
-  private static final FutureCallback<Validation> DEFAULT_COMPLETED_CALLBACK = new FutureCallback<Validation>() {
-
-    @Override
-    public void onSuccess(Validation result) {
-      // No-op
-    }
-
-    @Override
-    public void onFailure(Throwable t) {
-      // No-op
-    }
-
-  };
 
   /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
@@ -117,21 +90,8 @@ public class ValidationExecutor {
    * @param validation
    * @throws RejectedExecutionException if there are no "slots" available
    */
-  public void execute(final Validation validation) {
-    execute(validation, DEFAULT_ACCEPTED_CALLBACK, DEFAULT_COMPLETED_CALLBACK);
-  }
-
-  /**
-   * Execute a validation job asynchronously.
-   * <p>
-   * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
-   * 
-   * @param validation
-   * @param acceptedCallback callback that executes synchronously when a validation is accepted *
-   * @throws RejectedExecutionException if there are no "slots" available
-   */
-  public void execute(final Validation validation, final Runnable acceptedCallback) {
-    execute(validation, acceptedCallback, DEFAULT_COMPLETED_CALLBACK);
+  public void execute(@NonNull Validation validation) {
+    execute(validation, NOOP_LISTENER);
   }
 
   /**
@@ -147,10 +107,7 @@ public class ValidationExecutor {
    * completed. Guaranteed to run after the {@code validation}'s {@link Validation#execute()} call.
    * @throws RejectedExecutionException if there are no "slots" available
    */
-  public void execute(
-      final @NonNull Validation validation,
-      final @NonNull Runnable acceptedCallback,
-      final @NonNull FutureCallback<Validation> completedCallback) {
+  public void execute(final @NonNull Validation validation, final @NonNull ValidationListener listener) {
     val id = validation.getId();
 
     // Need to apply listening decorator here because we still need access to pool methods later
@@ -163,7 +120,7 @@ public class ValidationExecutor {
         try {
           // Execute the accept callback on the same thread as the validation
           log.info("call: Executing validation accepted callback '{}'... {}", id, getStats());
-          acceptedCallback.run();
+          listener.onStarted(validation);
           log.info("call: Finished validation accepted callback '{}'. {}", id, getStats());
 
           log.info("call: Executing validation '{}'... {}", id, getStats());
@@ -188,11 +145,41 @@ public class ValidationExecutor {
 
     });
 
-    // Add success and failure callback to the completion event of the future's result
-    addCallback(validationFuture, completedCallback);
+    // Register behavior to run upon completion
+    addOutcomeCallbacks(validation, listener, validationFuture);
 
     // Track it for future cancellation purposes
     validationFutures.put(id, validationFuture);
+  }
+
+  /**
+   * Add outcome callbacks to completion event of the future's result
+   * 
+   * @param validation the executing validation
+   * @param listener the listener to attach callbacks
+   * @param validationFuture the future validation result
+   */
+  private void addOutcomeCallbacks(
+      final Validation validation,
+      final ValidationListener listener,
+      final ListenableFuture<Validation> validationFuture) {
+    Futures.addCallback(validationFuture, new FutureCallback<Validation>() {
+
+      @Override
+      public void onSuccess(Validation result) {
+        listener.onCompletion(validation);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        if (t instanceof CancellationException) {
+          listener.onCancelled(validation);
+        } else {
+          listener.onFailure(validation, t);
+        }
+      }
+
+    });
   }
 
   /**
