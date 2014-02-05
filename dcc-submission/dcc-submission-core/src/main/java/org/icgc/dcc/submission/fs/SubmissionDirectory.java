@@ -145,8 +145,7 @@ public class SubmissionDirectory {
   }
 
   /**
-   * Removes all files pertaining to validation (not including normalization),
-   * leaving nested directories untouched.
+   * Removes all files pertaining to validation (not including normalization), leaving nested directories untouched.
    */
   public void removeValidationFiles() {
     val fs = dccFileSystem.getFileSystem();

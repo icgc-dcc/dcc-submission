@@ -105,6 +105,14 @@ public class SftpContext {
     return fs.getFileSystem();
   }
 
+  public boolean isSystemDirectory(Path path) {
+    return getReleaseFileSystem().isSystemDirectory(path);
+  }
+
+  public boolean isAdminUser() {
+    return getReleaseFileSystem().isAdminUser();
+  }
+
   // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
   public SubmissionDirectory getSubmissionDirectory(String projectKey) {
     return getReleaseFileSystem().getSubmissionDirectory(projectKey);
@@ -113,10 +121,6 @@ public class SftpContext {
   public Path getReleasePath() {
     String releasePath = fs.buildReleaseStringPath(getNextRelease().getName());
     return new Path(releasePath);
-  }
-
-  public boolean isSystemDirectory(Path path) {
-    return getReleaseFileSystem().isSystemDirectory(path);
   }
 
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*

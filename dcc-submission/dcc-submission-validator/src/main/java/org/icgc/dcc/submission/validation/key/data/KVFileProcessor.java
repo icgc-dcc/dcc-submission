@@ -18,9 +18,13 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
 import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getRow;
-import static org.icgc.dcc.submission.validation.key.core.KVProcessor.ROW_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.OPTIONAL_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION1;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION2;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
@@ -29,9 +33,14 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_SYSTEM;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_SEQ_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_SEQ_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
@@ -57,6 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVFileParser;
+import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
@@ -71,6 +81,8 @@ public final class KVFileProcessor {
 
   private static final int DEFAULT_LOG_THRESHOLD = 1000000;
 
+  private final ValidationHelper valid = new ValidationHelper();
+  private final SanityCheckHelper sanity = new SanityCheckHelper();
   private final KVFileType fileType;
   private final Path filePath;
 
@@ -79,7 +91,9 @@ public final class KVFileProcessor {
       final KVFileParser fileParser,
       final KVReporter reporter, // To report all but surjection errors at this point
       final KVPrimaryKeys primaryKeys,
-      final Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, // N/A for DONOR for instance
+      final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys1, // N/A for DONOR for instance
+      final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys2, // Applicable for METH_ARRAY_P but N/A
+                                                                                // for SSM_P for instance
       final Optional<KVEncounteredForeignKeys> optionalEncounteredKeys // N/A for SSM_P for instance
   ) {
     log.info("{}", fileType, filePath);
@@ -91,7 +105,9 @@ public final class KVFileProcessor {
         val row = getRow(fileType, record);
         log.debug("Row: '{}'", row);
 
-        processRow(row, lineNumber, reporter, primaryKeys, optionalReferencedPrimaryKeys, optionalEncounteredKeys);
+        processRow(row, lineNumber, reporter, primaryKeys,
+            optionallyReferencedPrimaryKeys1, optionallyReferencedPrimaryKeys2,
+            optionalEncounteredKeys);
 
         if ((lineNumber % DEFAULT_LOG_THRESHOLD) == 0) {
           logProcessedLine(lineNumber, false);
@@ -101,574 +117,647 @@ public final class KVFileProcessor {
     });
   }
 
+  private void logProcessedLine(long lineCount, boolean finished) {
+    log.info("'{}' lines processed" + (finished ? " (finished)" : ""), lineCount);
+  }
+
   /**
-   * Processes a row (performs some validation).
+   * Processes a row (performs all validation except surjection).
+   * <p>
+   * TODO: very ugly, split per file type (subclass or compose), also for systems and referencing/non-referencing
    */
   private void processRow(
       KVRow row,
       long lineCount,
       KVReporter reporter,
       KVPrimaryKeys primaryKeys,
-      Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys,
-      Optional<KVEncounteredForeignKeys> optionalEncounteredKeys) {
-
+      Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys1,
+      Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys2,
+      Optional<KVEncounteredForeignKeys> optionallyEncounteredKeys) {
     val fileName = filePath.getName();
 
-    // Clinical
-    // DONOR
-    if (fileType == DONOR) { // TODO: split per file type (subclass or compose)
+    // ===========================================================================
+    // CLINICAL:
 
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+    // DONOR:
+    if (fileType == DONOR) {
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      ; // No foreign key checks for DONOR
+
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK1(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      // No foreign key check for DONOR
-      primaryKeys.updatePks(fileName, row);
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasFk()); // Hence no surjection
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for DONOR
     }
 
-    // SPECIMEN
+    // ---------------------------------------------------------------------------
+    // SPECIMEN:
     else if (fileType == SPECIMEN) {
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // SAMPLE
+    // ---------------------------------------------------------------------------
+    // SAMPLE:
     else if (fileType == SAMPLE) {
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // SSM
+    // ===========================================================================
+    // SSM:
 
-    // SSM_M
+    // SSM_M:
     else if (fileType == SSM_M) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
-
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk() // May not have a secondary FK (optional)
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // SSM_P
+    // ---------------------------------------------------------------------------
+    // SSM_P:
     else if (fileType == SSM_P) {
       ; // No uniqueness check for SSM_P
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // CNSM
+    // ===========================================================================
+    // CNSM:
 
-    // CNSM_M
+    // CNSM_M:
     else if (fileType == CNSM_M) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // CNSM_P
+    // ---------------------------------------------------------------------------
+    // CNSM_P:
     else if (fileType == CNSM_P) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
-
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // CNSM_S
+    // ---------------------------------------------------------------------------
+    // CNSM_S:
     else if (fileType == CNSM_S) {
-      ; // No uniqueness check for CNSM
-
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      ; // No uniqueness check for CNSM_S
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ; // No surjection between secondary and primary
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      ; // No surjection check for secondary files
     }
 
-    // STSM
+    // ===========================================================================
+    // STSM:
 
-    // STSM_M
+    // STSM_M:
     else if (fileType == STSM_M) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // STSM_P
+    // ---------------------------------------------------------------------------
+    // STSM_P:
     else if (fileType == STSM_P) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
-
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // STSM_S
+    // ---------------------------------------------------------------------------
+    // STSM_S:
     else if (fileType == STSM_S) {
-      ; // No uniqueness check for STSM_s
+      ; // No uniqueness check for STSM_S
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ; // No surjection between secondary and primary
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      ; // No surjection check for secondary files
     }
 
-    // MIRNA
+    // ===========================================================================
+    // MIRNA:
 
-    // MIRNA_M
+    // MIRNA_M:
     else if (fileType == MIRNA_M) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // MIRNA_P
+    // ---------------------------------------------------------------------------
+    // MIRNA_P:
     else if (fileType == MIRNA_P) {
       ; // No uniqueness check for MIRNA_P (unlike for other types, the PK is on the secondary file for MIRNA)
-
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      primaryKeys.updatePks(fileName, row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      // Special case (not a PK per se)
+      primaryKeys.updateMirnaPKeys(fileType, fileName, row);
+
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // MIRNA_S
+    // ---------------------------------------------------------------------------
+    // MIRNA_S:
     else if (fileType == MIRNA_S) {
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter); // Exceptional
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Uniqueness check (unlike for other types, the PK is on the secondary file for MIRNA)
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
-
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
-      }
-
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ; // No surjection between secondary and primary
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      ; // No surjection check for secondary files
     }
 
-    // METH
+    // ===========================================================================
+    // OLD METH:
 
-    // METH_M
+    // METH_M:
     else if (fileType == METH_M) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // METH_P
+    // ---------------------------------------------------------------------------
+    // METH_P:
     else if (fileType == METH_P) {
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
-
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // METH_S
+    // ---------------------------------------------------------------------------
+    // METH_S:
     else if (fileType == METH_S) {
-      ; // No uniqueness check for METH_s
+      ; // No uniqueness check for METH_S
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ; // No surjection between secondary and primary
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      ; // No surjection check for secondary files
     }
 
-    // EXP
+    // ===========================================================================
+    // METH ARRAY:
 
-    // EXP_M
+    // METH_ARRAY_M:
+    else if (fileType == METH_ARRAY_M) {
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
+      }
+
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
+    }
+
+    // ---------------------------------------------------------------------------
+    // METH_ARRAY_SYSTEM:
+    else if (fileType == METH_ARRAY_SYSTEM) {
+      ; // We perform no validation on system files at the moment
+
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+    }
+
+    // ---------------------------------------------------------------------------
+    // METH_ARRAY_P:
+    else if (fileType == METH_ARRAY_P) {
+      ; // No uniqueness check for METH_ARRAY_P (at Vincent's request)
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      valid.validateForeignKey2(fileName, lineCount, optionallyReferencedPrimaryKeys2, row.getFk2(), reporter);
+
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoOptionalFK(row);
+      }
+
+      // Not checking for surjection
+    }
+
+    // ===========================================================================
+    // METH SEQ:
+
+    // METH_SEQ_M:
+    else if (fileType == METH_SEQ_M) {
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
+      }
+
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
+    }
+
+    // ---------------------------------------------------------------------------
+    // METH_SEQ_P:
+    else if (fileType == METH_SEQ_P) {
+      ; // No uniqueness check for METH_SEQ_P
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
+      }
+
+      // TODO: surjection checks?
+    }
+
+    // ===========================================================================
+    // EXP:
+
+    // EXP_M:
     else if (fileType == EXP_M) {
-      // TODO: later on, report on diff using: oldData.pksContains(row.getPk())
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
-
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // EXP_G
+    // ---------------------------------------------------------------------------
+    // EXP_G:
     else if (fileType == EXP_G) {
-      ; // No uniqueness check for EXP_P
+      ; // No uniqueness check for EXP_G
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // PEXP
+    // ===========================================================================
+    // PEXP:
 
-    // PEXP_M
+    // PEXP_M:
     else if (fileType == PEXP_M) {
-      // TODO: later on, report on diff using: oldData.pksContains(row.getPk())
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
-
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // PEXP_P
+    // ---------------------------------------------------------------------------
+    // PEXP_P:
     else if (fileType == PEXP_P) {
       ; // No uniqueness check for PEXP_P
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // JCN
+    // ===========================================================================
+    // JCN:
 
-    // JCN_M
+    // JCN_M:
     else if (fileType == JCN_M) {
-      // TODO: later on, report on diff using: oldData.pksContains(row.getPk())
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // JCN_P
+    // ---------------------------------------------------------------------------
+    // JCN_P:
     else if (fileType == JCN_P) {
       ; // No uniqueness check for JCN_P
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
-
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
     }
 
-    // SGV
+    // ===========================================================================
+    // SGV:
 
-    // SGV_M
+    // SGV_M:
     else if (fileType == SGV_M) {
-      // TODO: later on, report on diff using: oldData.pksContains(row.getPk())
-
-      // Uniqueness check
-      if (primaryKeys.containsPk(row.getPk())) {
-        reporter.reportUniquenessError(fileType, fileName, lineCount, row.getPk());
+      valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
+      if (row.hasOptionalFk()) {
+        valid.validateOptionalForeignKey(fileName, lineCount,
+            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
       }
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoFK2(row);
       }
 
-      // Secondary foreign key check
-      if (row.hasSecondaryFk()
-          && !hasMatchingReference(
-              optionalReferencedPrimaryKeys,
-              row.getSecondaryFk())) {
-
-        reporter.reportSecondaryRelationError(fileType, fileName, lineCount, row.getSecondaryFk());
-      }
-
-      primaryKeys.updatePks(fileName, row);
-      // Not checking for surjection with meta files
+      addEncounteredPrimaryKey(fileName, primaryKeys, row);
+      ; // No surjection check for meta files
     }
 
-    // SGV_P
+    // ---------------------------------------------------------------------------
+    // SGV_P:
     else if (fileType == SGV_P) {
       ; // No uniqueness check for SGV_P
+      valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
 
-      // Foreign key check
-      if (!hasMatchingReference(optionalReferencedPrimaryKeys, row.getFk())) {
-        reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
+      if (ROW_CHECKS_ENABLED) {
+        sanity.ensureNoPK(row);
+        sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
-      ensurePresent(optionalEncounteredKeys);
-      optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
-      if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
+      addEncounteredForeignKey(fileName, optionallyEncounteredKeys, row);
+    }
+  }
+
+  private void addEncounteredPrimaryKey(String fileName,
+      KVPrimaryKeys primaryKeys, KVRow row) {
+    if (ROW_CHECKS_ENABLED) sanity.ensurePK(fileName, row);
+    primaryKeys.updatePks(fileName, row);
+  }
+
+  private void addEncounteredForeignKey(String fileName,
+      Optional<KVEncounteredForeignKeys> optionallyEncounteredKeys, KVRow row) {
+    if (ROW_CHECKS_ENABLED) {
+      checkState(optionallyEncounteredKeys.isPresent(),
+          "Encountered keys are expected to be present for type '%s'", fileType);
+      sanity.ensureFK1(fileName, row);
+    }
+    optionallyEncounteredKeys.get()
+        .addEncounteredForeignKey(row.getFk1()); // Always uses FK1 at the moment.
+  }
+
+  /**
+   * Encapsulate some validation behavior.
+   */
+  private class ValidationHelper {
+
+    private void validateUniqueness(
+        String fileName, long lineCount,
+        KVPrimaryKeys primaryKeys, KVRow row, KVReporter reporter) {
+      if (ROW_CHECKS_ENABLED) sanity.ensurePK(fileName, row);
+      val pk = row.getPk();
+      if (primaryKeys.containsPk(pk)) {
+        reporter.reportUniquenessError(fileType, fileName, lineCount, pk);
+      }
+    }
+
+    private void validateForeignKey1(
+        String fileName, long lineCount,
+        Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys1, KVKey fk1, KVReporter reporter) {
+      validateForeignKey(
+          fileName, lineCount,
+          optionallyReferencedPrimaryKeys1, fk1,
+          reporter, RELATION1);
+    }
+
+    private void validateForeignKey2(
+        String fileName, long lineCount,
+        Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys2, KVKey fk2, KVReporter reporter) {
+      validateForeignKey(
+          fileName, lineCount,
+          optionallyReferencedPrimaryKeys2, fk2,
+          reporter, RELATION2);
+    }
+
+    private void validateOptionalForeignKey(
+        String fileName, long lineCount,
+
+        // Always uses the same as FK1 at the moment ("matched_sample_id" refers to the same sample ID as
+        // "analyzed_sample_id" but it's optional)
+        Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys1,
+
+        KVKey optionalFk, KVReporter reporter) {
+
+      validateForeignKey(
+          fileName, lineCount,
+          optionallyReferencedPrimaryKeys1, optionalFk,
+          reporter, OPTIONAL_RELATION);
+    }
+
+    /**
+     * Do not call directly outside of the inner class.
+     */
+    private void validateForeignKey(
+        String fileName, long lineCount,
+        Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys, KVKey fk,
+        KVReporter reporter, KVErrorType errorType) {
+      if (ROW_CHECKS_ENABLED) {
+        checkState(
+            optionallyReferencedPrimaryKeys.isPresent(),
+            "Referenced PKs are expected to be present for type '%s'", fileType);
+      }
+      val foreignKeyViolation = !optionallyReferencedPrimaryKeys.get().hasMatchingReference(fk);
+      if (foreignKeyViolation) {
+        switch (errorType) {
+        case RELATION1:
+          reporter.reportRelation1Error(fileType, fileName, lineCount, fk);
+          break;
+        case RELATION2:
+          reporter.reportRelation2Error(fileType, fileName, lineCount, fk);
+          break;
+        case OPTIONAL_RELATION:
+          reporter.reportOptionalRelationError(fileType, fileName, lineCount, fk);
+          break;
+        default:
+          throw new IllegalStateException(format("Invalid error type provided: '%s'", errorType));
+        }
+      }
     }
   }
 
   /**
-   * @param fk May be primary or secondary FK.
+   * Encapsulate some sanity checks behavior.
    */
-  private boolean hasMatchingReference(Optional<KVPrimaryKeys> optionalReferencedPrimaryKeys, KVKey fk) {
-    if (ROW_CHECKS_ENABLED) {
-      checkState(
-          optionalReferencedPrimaryKeys.isPresent(),
-          "Referenced PKs are expected to be present for type '{}'", fileType);
+  private class SanityCheckHelper {
+
+    private void ensurePK(String fileName, KVRow row) {
+      checkState(row.hasPk(),
+          "Expecting to have a PK: '%s' ('%s')", row, fileName);
     }
-    return optionalReferencedPrimaryKeys.get().containsPk(fk);
+
+    private void ensureFK1(String fileName, KVRow row) {
+      checkState(row.hasFk1(),
+          "Expecting to have an FK1: '%s' ('%s')", row, fileName);
+    }
+
+    private void ensureNoPK(KVRow row) {
+      checkState(!row.hasPk(),
+          "Row is not expected to contain a PK for type '%s': '%s'", fileType, row);
+    }
+
+    private void ensureNoFK1(KVRow row) {
+      checkState(!row.hasFk1(),
+          "Row is not expected to contain an FK1 for type '%s': '%s'", fileType, row);
+    }
+
+    private void ensureNoFK2(KVRow row) {
+      checkState(!row.hasFk2(),
+          "Row is not expected to contain an FK2 for type '%s': '%s'", fileType, row);
+    }
+
+    private void ensureNoOptionalFK(KVRow row) {
+      checkState(!row.hasOptionalFk(),
+          "Row is not expected to contain a seconary FK for type '%s': '%s'", fileType, row);
+    }
   }
 
-  private void ensurePK(KVRow row) {
-    checkState(!row.hasPk(),
-        "Row is expected to contain a PK for type '{}': '{}'", fileType, row);
-  }
-
-  private void ensurePresent(Optional<KVEncounteredForeignKeys> optionalEncounteredKeys) {
-    checkState(optionalEncounteredKeys.isPresent(),
-        "Encountered keys are expected to be present for type '{}'", fileType);
-  }
-
-  private void logProcessedLine(long lineCount, boolean finished) {
-    log.info("'{}' lines processed" + (finished ? " (finished)" : ""), lineCount);
-  }
 }

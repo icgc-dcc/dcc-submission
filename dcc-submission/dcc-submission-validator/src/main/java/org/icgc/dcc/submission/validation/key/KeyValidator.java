@@ -87,7 +87,11 @@ public class KeyValidator implements Validator {
         context.getFileSystem().getUri(),
         context.getDataTypes(),
         context.getDictionary(),
+
+        // TODO: homogenize this (one returns a String the other a Path)
         context.getSubmissionDirectory().getSubmissionDirPath(),
+        context.getReleaseFileSystem().getSystemDirPath().toUri().toString(),
+
         reportPath.toUri().toString());
   }
 

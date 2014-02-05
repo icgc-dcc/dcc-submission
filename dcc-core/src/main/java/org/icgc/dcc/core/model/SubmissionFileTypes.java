@@ -55,6 +55,8 @@ public final class SubmissionFileTypes {
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
   public enum SubmissionFileSubType {
+    SYSTEM_SUBTYPE,
+
     META_SUBTYPE,
     PRIMARY_SUBTYPE,
     SECONDARY_SUBTYPE,
@@ -74,6 +76,10 @@ public final class SubmissionFileTypes {
 
     public boolean isMetaSubType() {
       return this == META_SUBTYPE;
+    }
+
+    public boolean isSystemSubType() {
+      return this == SYSTEM_SUBTYPE;
     }
 
     /**
@@ -145,9 +151,17 @@ public final class SubmissionFileTypes {
     PEXP_M_TYPE(FeatureType.PEXP_TYPE, SubmissionFileSubType.META_SUBTYPE),
     PEXP_P_TYPE(FeatureType.PEXP_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
 
+    // Old meth
     METH_M_TYPE(FeatureType.METH_TYPE, SubmissionFileSubType.META_SUBTYPE),
     METH_P_TYPE(FeatureType.METH_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
     METH_S_TYPE(FeatureType.METH_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+
+    METH_ARRAY_M_TYPE(FeatureType.METH_ARRAY_TYPE, SubmissionFileSubType.META_SUBTYPE),
+    METH_ARRAY_SYSTEM_TYPE(FeatureType.METH_ARRAY_TYPE, SubmissionFileSubType.SYSTEM_SUBTYPE),
+    METH_ARRAY_P_TYPE(FeatureType.METH_ARRAY_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
+
+    METH_SEQ_M_TYPE(FeatureType.METH_SEQ_TYPE, SubmissionFileSubType.META_SUBTYPE),
+    METH_SEQ_P_TYPE(FeatureType.METH_SEQ_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
 
     MIRNA_M_TYPE(FeatureType.MIRNA_TYPE, SubmissionFileSubType.META_SUBTYPE),
     MIRNA_P_TYPE(FeatureType.MIRNA_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),

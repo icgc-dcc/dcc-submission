@@ -15,52 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.util;
+package org.icgc.dcc.core.model;
 
-import static com.google.common.io.Resources.getResource;
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_SYSTEM_TYPE;
 
-import java.net.URL;
-
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
+import java.util.Map;
 
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.submission.core.util.ObjectMappers;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.ImmutableMap;
 
-@NoArgsConstructor(access = PRIVATE)
-public class Dictionaries {
+/**
+ * TODO
+ */
+public class SystemFiles {
 
-  private static final ObjectReader FILE_SCHEMA_READER = ObjectMappers.DEFAULT.reader(FileSchema.class);
-  private static final ObjectReader DICTIONARY_SCHEMA_READER = ObjectMappers.DEFAULT.reader(Dictionary.class);
-  private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
+  public static Map<SubmissionFileType, String> PATTERNS =
+      new ImmutableMap.Builder<SubmissionFileTypes.SubmissionFileType, String>()
+          .put(METH_ARRAY_SYSTEM_TYPE, "meth_([a-zA-Z0-9]+)\\.tsv") // TODO: underscore/dash? \w?
+          .build();
 
-  @SneakyThrows
-  public static FileSchema readFileSchema(SubmissionFileType fileType) {
-    val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
-
-    return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDccResourcesDictionary() {
-    return readDictionary(getDccResource("Dictionary.json"));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDictionary(String dictionaryResourcePath) {
-    return readDictionary(getResource(dictionaryResourcePath));
-  }
-
-  @SneakyThrows
-  public static Dictionary readDictionary(URL dictionaryURL) {
-    return DICTIONARY_SCHEMA_READER.readValue(dictionaryURL);
-  }
 }

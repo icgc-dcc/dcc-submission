@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Optional.of;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
@@ -37,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.SystemFiles;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
@@ -56,7 +58,9 @@ public final class KVFileSystem {
   @NonNull
   private final Dictionary dictionary;
   @NonNull
-  private final Path submissionDir;
+  private final Path submissionDirPath;
+  @NonNull
+  private final Path systemDirPath;
 
   public InputStream open(Path path) throws IOException {
     return fileSystem.open(path);
@@ -69,10 +73,13 @@ public final class KVFileSystem {
       return Optional.<List<Path>> absent();
     }
 
-    val basePath = submissionDir;
-    val fileSchema = getFileSchema(fileType);
-    val fileRegex = fileSchema.getPattern();
-    val filePattern = compile(fileRegex);
+    val system = fileType.isSystem();
+    val filePattern = compile(
+        system ?
+            checkNotNull(SystemFiles.PATTERNS.get(fileType.getSubmissionFileType()),
+                "Expecting a matching pattern for '%s'", fileType.getSubmissionFileType()) :
+            getFileSchema(fileType).getPattern());
+    val basePath = system ? systemDirPath : submissionDirPath;
 
     log.info("Listing '{}' with filter '{}'", basePath, filePattern);
     val filePaths = lsFile(fileSystem, basePath, filePattern);
@@ -84,7 +91,7 @@ public final class KVFileSystem {
   }
 
   public boolean hasDataType(KVExperimentalDataType dataType) {
-    return getDataFilePaths(dataType.getDataTypePresenceFlagship()).isPresent();
+    return getDataFilePaths(dataType.getDataTypePresenceIndicator()).isPresent();
   }
 
   private FileSchema getFileSchema(KVFileType fileType) {

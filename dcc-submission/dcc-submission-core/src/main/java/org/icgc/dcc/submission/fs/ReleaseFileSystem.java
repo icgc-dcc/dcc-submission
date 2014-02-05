@@ -42,7 +42,7 @@ public class ReleaseFileSystem {
   /**
    * System files directory name.
    */
-  public static final String SYSTEM_FILES_DIR_NAME = "SystemFiles";
+  public static final String SYSTEM_FILES_DIR_NAME = ".system";
 
   /**
    * Dependencies.
@@ -105,7 +105,7 @@ public class ReleaseFileSystem {
       dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
     }
 
-    // Move "releaseName/projectKey/SystemFiles"
+    // Move "releaseName/projectKey/.system"
     moveSystemDir(previous, fileSystem, next);
   }
 
@@ -138,13 +138,16 @@ public class ReleaseFileSystem {
     return new Path(this.dccFileSystem.getRootStringPath(), this.release.getName());
   }
 
-  public Path getSystemDirectory() {
-    return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES_DIR_NAME);
+  public Path getSystemDirPath() {
+    return new Path(this.getReleaseDirectory(), SYSTEM_FILES_DIR_NAME);
   }
 
   public boolean isSystemDirectory(Path path) {
-    return this.getSystemDirectory().getName().equals(path.getName())
-        && this.userSubject.hasRole(Authorizations_ADMIN_ROLE);
+    return getSystemDirPath().getName().equals(path.getName());
+  }
+
+  public boolean isAdminUser() {
+    return userSubject.hasRole(Authorizations_ADMIN_ROLE);
   }
 
   private boolean isApplication() {
@@ -156,8 +159,8 @@ public class ReleaseFileSystem {
   }
 
   private static void moveSystemDir(ReleaseFileSystem previous, FileSystem fileSystem, ReleaseFileSystem next) {
-    val sourceSystemDir = previous.getSystemDirectory();
-    val targetSystemDir = next.getSystemDirectory();
+    val sourceSystemDir = previous.getSystemDirPath();
+    val targetSystemDir = next.getSystemDirPath();
 
     log.info("Creating '{}'", targetSystemDir);
     HadoopUtils.mkdirs(fileSystem, targetSystemDir.toString());

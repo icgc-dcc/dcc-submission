@@ -29,5 +29,6 @@ public class Joiners {
   public static final Joiner PATH = on('/');
   public static final Joiner TAB = on('\t');
   public static final Joiner NEWLINE = on('\n');
+  public static final Joiner INDENT = on("\n\t");
 
 }

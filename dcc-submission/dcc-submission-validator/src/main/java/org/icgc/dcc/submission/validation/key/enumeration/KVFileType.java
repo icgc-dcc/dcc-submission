@@ -24,6 +24,7 @@ import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 
 @RequiredArgsConstructor
 public enum KVFileType {
+
   DONOR(SubmissionFileType.DONOR_TYPE),
   SPECIMEN(SubmissionFileType.SPECIMEN_TYPE),
   SAMPLE(SubmissionFileType.SAMPLE_TYPE),
@@ -49,9 +50,17 @@ public enum KVFileType {
   MIRNA_P(SubmissionFileType.MIRNA_P_TYPE), // Does NOT have a PK (unusual)
   MIRNA_S(SubmissionFileType.MIRNA_S_TYPE), // Does have a PK (unusual)
 
+  // Old meth
   METH_M(SubmissionFileType.METH_M_TYPE),
   METH_P(SubmissionFileType.METH_P_TYPE),
   METH_S(SubmissionFileType.METH_S_TYPE),
+
+  METH_ARRAY_M(SubmissionFileType.METH_ARRAY_M_TYPE),
+  METH_ARRAY_P(SubmissionFileType.METH_ARRAY_P_TYPE),
+  METH_ARRAY_SYSTEM(SubmissionFileType.METH_ARRAY_SYSTEM_TYPE),
+
+  METH_SEQ_M(SubmissionFileType.METH_SEQ_M_TYPE),
+  METH_SEQ_P(SubmissionFileType.METH_SEQ_P_TYPE),
 
   EXP_M(SubmissionFileType.EXP_M_TYPE),
   EXP_G(SubmissionFileType.EXP_G_TYPE), // Naming exception ('g' instead of 'p')
@@ -67,6 +76,10 @@ public enum KVFileType {
 
   @Getter
   private final SubmissionFileType submissionFileType;
+
+  public boolean isSystem() {
+    return submissionFileType.getSubType().isSystemSubType();
+  }
 
   public boolean isReplaceAll() {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;

@@ -23,16 +23,22 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.io.Files.readLines;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.DONOR_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_M_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_SEQ_M_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_SEQ_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
 import static org.icgc.dcc.submission.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.submission.core.util.Joiners.PATH;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.REFERENCE_FILE_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.TEST_DIR;
@@ -46,13 +52,17 @@ import java.io.IOException;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.icgc.dcc.submission.core.util.Joiners;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -69,6 +79,7 @@ import cascading.flow.local.LocalFlowConnector;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
+@Slf4j
 @RunWith(MockitoJUnitRunner.class)
 public class KeyValidatorTest {
 
@@ -111,10 +122,14 @@ public class KeyValidatorTest {
     val rootDir = new Path(tmp.newFolder().getAbsolutePath());
     copyDirectory(
         fileSystem,
-        new File(FS_DIR),
+        new File(FS_DIR, PROJECT_NAME),
         new Path(new Path(rootDir, RELEASE_NAME), PROJECT_NAME));
+    copyDirectory(
+        fileSystem,
+        new File(FS_DIR, SYSTEM_FILES_DIR_NAME),
+        new Path(new Path(rootDir, RELEASE_NAME), SYSTEM_FILES_DIR_NAME));
+    log.info("ls:\n\n\t{}\n", Joiners.INDENT.join(lsRecursive(fileSystem, rootDir)));
 
-    // val path = new Path(directory, testFile.getName());
     validationDir = new Path(rootDir, VALIDATION_DIRNAME).toUri().toString();
 
     // Setup: Mock
@@ -122,6 +137,10 @@ public class KeyValidatorTest {
     when(release.getName()).thenReturn(RELEASE_NAME);
 
     val dictionary = getDictionary();
+
+    val releaseFileSystem = mock(ReleaseFileSystem.class);
+    when(releaseFileSystem.getSystemDirPath()).thenReturn(
+        new Path(PATH.join(rootDir.toUri().toString(), RELEASE_NAME, SYSTEM_FILES_DIR_NAME)));
 
     val submissionDirectory = mock(SubmissionDirectory.class);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
@@ -142,6 +161,7 @@ public class KeyValidatorTest {
     when(context.getFileSystem()).thenReturn(fileSystem);
     when(context.getRelease()).thenReturn(release);
     when(context.getProjectKey()).thenReturn("project1");
+    when(context.getReleaseFileSystem()).thenReturn(releaseFileSystem);
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(context.getPlatformStrategy()).thenReturn(platformStrategy);
     when(context.getDictionary()).thenReturn(dictionary);
@@ -160,6 +180,27 @@ public class KeyValidatorTest {
     dictionary.addFile(readFileSchema(METH_M_TYPE));
     dictionary.addFile(readFileSchema(METH_P_TYPE));
     dictionary.addFile(readFileSchema(METH_S_TYPE));
+
+    val methArrayM = new FileSchema();
+    methArrayM.setName(METH_ARRAY_M_TYPE.getTypeName());
+    methArrayM.setPattern("^meth_array_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
+    dictionary.addFile(methArrayM);
+
+    val methArrayP = new FileSchema();
+    methArrayP.setName(METH_ARRAY_P_TYPE.getTypeName());
+    methArrayP.setPattern("^meth_array_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
+    dictionary.addFile(methArrayP);
+
+    val methSeqM = new FileSchema();
+    methSeqM.setName(METH_SEQ_M_TYPE.getTypeName());
+    methSeqM.setPattern("^meth_seq_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
+    dictionary.addFile(methSeqM);
+
+    val methSeqP = new FileSchema();
+    methSeqP.setName(METH_SEQ_P_TYPE.getTypeName());
+    methSeqP.setPattern("^meth_seq_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
+    dictionary.addFile(methSeqP);
+
     return dictionary;
   }
 

@@ -48,14 +48,16 @@ public class KVFileTypeErrorFields {
   // TODO: factory instead of constructor
   public KVFileTypeErrorFields(
       @NonNull KVFileType fileType,
-      List<String> pkNames,
-      List<String> fkNames,
-      List<String> secondaryFkNames) {
+      List<String> pkFieldNames,
+      List<String> fk1FieldNames,
+      List<String> fk2FieldNames,
+      List<String> optionalFkFieldNames) {
     this.fileType = fileType;
     checkState(
-        pkNames != null || fkNames != null || secondaryFkNames != null,
+        pkFieldNames != null || fk1FieldNames != null || optionalFkFieldNames != null,
         "There should be at least one set of names that isn't null");
-    this.errorFieldNames = getFieldNamesPerErrorType(pkNames, fkNames, secondaryFkNames);
+    this.errorFieldNames = getFieldNamesPerErrorType(
+        pkFieldNames, fk1FieldNames, fk2FieldNames, optionalFkFieldNames);
     checkState(!errorFieldNames.isEmpty());
     log.info("fieldNamesPerErrorType: '{}' for '{}'", errorFieldNames, this.fileType);
   }
@@ -68,12 +70,15 @@ public class KVFileTypeErrorFields {
    * Returns a mapping of error type to their corresponding field names for the current {@link KVFileType}.
    */
   private final Map<KVErrorType, List<String>> getFieldNamesPerErrorType(
-      List<String> pkNames, List<String> fkNames, List<String> secondaryFkNames) {
+      List<String> pkFieldNames,
+      List<String> fk1FieldNames,
+      List<String> fk2FieldNames,
+      List<String> optionalFkFieldNames) {
     val builder = new ImmutableMap.Builder<KVErrorType, List<String>>();
     for (val errorType : KVErrorType.values()) {
       val keysType = errorType.getKeysType();
       val optionalNames = getOptionalNames(keysType,
-          pkNames, fkNames, secondaryFkNames);
+          pkFieldNames, fk1FieldNames, fk2FieldNames, optionalFkFieldNames);
       log.info("keysType, optionalIndices: {}, '({}, {})'", new Object[] { keysType, optionalNames });
       if (optionalNames.isPresent()) {
         builder.put(errorType, optionalNames.get());
@@ -82,18 +87,25 @@ public class KVFileTypeErrorFields {
     return builder.build();
   }
 
-  private final Optional<List<String>> getOptionalNames(KeysType keysType,
-      List<String> pkNames, List<String> fkNames, List<String> secondaryFkNames) {
+  private final Optional<List<String>> getOptionalNames(
+      KeysType keysType,
+      List<String> pkFieldNames,
+      List<String> fk1FieldNames,
+      List<String> fk2FieldNames,
+      List<String> optionalFkFieldNames) {
     List<String> names = null;
     switch (keysType) {
     case PK:
-      names = pkNames == null ? null : newArrayList(pkNames);
+      names = pkFieldNames == null ? null : newArrayList(pkFieldNames);
       break;
-    case FK:
-      names = fkNames == null ? null : newArrayList(fkNames);
+    case FK1:
+      names = fk1FieldNames == null ? null : newArrayList(fk1FieldNames);
       break;
-    case SECONDARY_FK:
-      names = secondaryFkNames == null ? null : newArrayList(secondaryFkNames);
+    case FK2:
+      names = fk2FieldNames == null ? null : newArrayList(fk2FieldNames);
+      break;
+    case OPTIONAL_FK:
+      names = optionalFkFieldNames == null ? null : newArrayList(optionalFkFieldNames);
       break;
     default:
       checkState(false, "%s", keysType);

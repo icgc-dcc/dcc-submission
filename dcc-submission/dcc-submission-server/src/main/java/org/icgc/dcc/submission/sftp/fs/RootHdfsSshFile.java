@@ -93,7 +93,10 @@ public class RootHdfsSshFile extends HdfsSshFile {
       List<SshFile> sshFiles = newArrayList();
       val userProjectKeys = context.getUserProjectKeys();
       for (Path path : paths) {
+
+        // Will exclude the .system folder
         val sshFile = listSshFile(path, userProjectKeys);
+
         if (sshFile.isPresent()) {
           sshFiles.add(sshFile.get());
         }
@@ -132,8 +135,12 @@ public class RootHdfsSshFile extends HdfsSshFile {
   private Optional<SshFile> listSshFile(Path path, List<String> userProjectKeys) {
     try {
       if (context.isSystemDirectory(path)) {
-        // System file directory and admin user, add to file list
-        return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName()));
+        if (context.isAdminUser()) {
+          // System file directory and admin user, add to file list
+          return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName()));
+        } else {
+          return Optional.<SshFile> absent();
+        }
       } else {
         // Represents a submission directory
         val projectKey = path.getName();
