@@ -427,14 +427,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     Dictionary dictionary =
         addScript(dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "note != 'script_error_here'",
+            "if (note == null) { return true; } else { return note != \"script_error_here\";}",
             "Note field cannot be 'script_error_here'");
 
     status("admin", "Adding Script restriction #2 to OPENED dictionary");
     dictionary =
         addScript(dictionary, SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
             "note",
-            "! (note.indexOf('_') > 0)",
+            "if (note == null) { return true; } else { return note.indexOf('_') == -1; }",
             "Note field cannot contain the underscore(_) character");
 
     status("admin", "Updating to new dictionary with script restrictions");
@@ -543,7 +543,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding code list terms...");
     val codeListName = "GLOBAL.0.platform.v1/terms";
     val response = post(client, CODELISTS_ENDPOINT + "/" + codeListName,
-        "[{code:'81',value:'new value 1'},{code:'82',value:'new value 2'}]");
+        "[{code:'1000',value:'new value 1'},{code:'10001',value:'new value 2'}]");
     assertEquals(CREATED.getStatusCode(), response.getStatus());
 
     // Only the INVALID ones should have been reset (DCC-851)

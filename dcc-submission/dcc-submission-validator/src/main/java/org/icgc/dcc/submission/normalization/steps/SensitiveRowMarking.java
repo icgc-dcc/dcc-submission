@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.normalization.steps;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CONTROL_GENOTYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
@@ -32,7 +32,7 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
 
-import java.util.List;
+import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -154,18 +154,19 @@ public final class SensitiveRowMarking implements NormalizationStep {
     }
 
     private boolean matchesAllControlAlleles(String referenceGenomeAllele, String controlGenotype) {
-      List<String> controlAlleles = newArrayList(ALLELES_SPLITTER.split(controlGenotype));
-      for (String controlAllele : controlAlleles) {
+      val controlAlleles = getUniqueAlleles(controlGenotype);
+      for (val controlAllele : controlAlleles) {
         if (!referenceGenomeAllele.equals(controlAllele)) {
           return false;
         }
       }
+
       return true;
     }
 
     private boolean matchesAllTumourAllelesButTo(String referenceGenomeAllele, String tumourGenotype,
         String mutatedToAllele) {
-      for (String tumourAllele : getTumourAllelesMinusToAllele(tumourGenotype, mutatedToAllele)) {
+      for (val tumourAllele : getTumourAllelesMinusToAllele(tumourGenotype, mutatedToAllele)) {
         if (!referenceGenomeAllele.equals(tumourAllele)) {
           return false;
         }
@@ -173,8 +174,8 @@ public final class SensitiveRowMarking implements NormalizationStep {
       return true;
     }
 
-    private List<String> getTumourAllelesMinusToAllele(String tumourGenotype, String mutatedToAllele) {
-      val alleles = newArrayList(ALLELES_SPLITTER.split(tumourGenotype));
+    private Set<String> getTumourAllelesMinusToAllele(String tumourGenotype, String mutatedToAllele) {
+      val alleles = getUniqueAlleles(tumourGenotype);
       val removed = alleles.remove(mutatedToAllele);
       checkState(
           removed,
@@ -182,5 +183,10 @@ public final class SensitiveRowMarking implements NormalizationStep {
           mutatedToAllele, MUTATED_TO_ALLELE_FIELD, tumourGenotype, TUMOUR_GENOTYPE_FIELD);
       return alleles;
     }
+
+    private static Set<String> getUniqueAlleles(String controlGenotype) {
+      return newLinkedHashSet(ALLELES_SPLITTER.split(controlGenotype));
+    }
+
   }
 }
