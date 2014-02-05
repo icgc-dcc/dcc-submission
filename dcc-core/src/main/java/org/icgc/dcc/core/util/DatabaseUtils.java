@@ -33,7 +33,7 @@ public final class DatabaseUtils {
    * Creates a release database name from a supplied release name.
    */
   public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
+    return format("%s-%s", "dcc-release", releaseName); // fs-convention, naming-convention; TODO: reconsider prefix?
   }
 
   /**
