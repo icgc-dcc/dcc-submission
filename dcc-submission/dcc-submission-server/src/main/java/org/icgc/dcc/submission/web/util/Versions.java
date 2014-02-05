@@ -22,6 +22,7 @@ import lombok.Value;
 public class Versions {
 
   String version;
+  String apiVersion;
   String commit;
 
 }
