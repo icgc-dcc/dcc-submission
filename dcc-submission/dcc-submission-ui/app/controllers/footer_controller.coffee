@@ -1,5 +1,5 @@
 """
-* Copyright 2012(c) The Ontario Institute for Cancer Research.
+* Copyright 2014(c) The Ontario Institute for Cancer Research.
 * All rights reserved.
 *
 * This program and the accompanying materials are made available under the
@@ -21,43 +21,12 @@
 """
 
 
+Controller = require 'controllers/base/controller'
+FooterView = require 'views/footer_view'
 Model = require 'models/base/model'
-SubmissionFiles = require 'models/submission_files'
-Report = require 'models/report'
 
-module.exports = class Submission extends Model
-  idAttribute: "projectKey"
-  defaults:
-    'report': new Report()
-
+module.exports = class FooterController extends Controller
   initialize: ->
-    #console.debug 'Submission#initialize', @, @attributes
     super
-
-    @urlPath = ->
-      "releases/#{@attributes.release}/submissions/#{@attributes.name}"
-
-  parse: (response) ->
-    #console.debug 'Submission#parse', @, response
-
-    data = {
-      'schemaReports': response.submissionFiles
-    }
-
-    if response.report
-      for file in data.schemaReports
-        for report in response.report.schemaReports
-          if report.name is file.name
-            _.extend(file, report)
-            break
-
-    response.validFileCount = 0
-    console.log response
-    response.submissionFiles.forEach (file)->
-      if file.fieldReports
-        response.validFileCount += 1
-
-    response.report = new Report _.extend(data,
-      {"release": @attributes?.release, "projectKey": response.projectKey})
-
-    response
+    @model = new Model({"releaseName":"", "commitId":""})
+    @view = new FooterView {@model}
