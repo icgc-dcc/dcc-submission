@@ -102,7 +102,6 @@ public class KeyValidatorTest {
     String actualErrorLines = getActualErrorLines();
     String expectedErrorLines = getExpectedErrorLines();
     assertThat(actualErrorLines).isEqualTo(expectedErrorLines);
-
   }
 
   private ValidationContext mockContext() throws IOException {

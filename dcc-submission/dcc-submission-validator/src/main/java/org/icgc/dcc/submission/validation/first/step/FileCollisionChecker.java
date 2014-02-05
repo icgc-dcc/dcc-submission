@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.collect.ImmutableList.copyOf;
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_FILES_ERROR;
 
 import java.util.List;
@@ -51,11 +52,13 @@ public class FileCollisionChecker extends CompositeFileChecker {
       log.info("More than 1 file matching the file pattern: {}", pattern);
 
       incrementCheckErrorCount();
+
       getValidationContext().reportError(
-          fileName,
-          TOO_MANY_FILES_ERROR,
-          fileSchema.getName(),
-          copyOf(fileNames));
+          error()
+              .fileName(fileName)
+              .type(TOO_MANY_FILES_ERROR)
+              .params(fileSchema.getName(), copyOf(fileNames))
+              .build());
     }
   }
 

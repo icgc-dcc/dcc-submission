@@ -36,7 +36,6 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 @Slf4j
@@ -131,52 +130,16 @@ public abstract class AbstractValidationContext implements ValidationContext {
   }
 
   @Override
-  public void reportError(String fileName, TupleError tupleError) {
-    logError(fileName,
-        tupleError.getLine(),
-        tupleError.getColumnNames().toString(),
-        tupleError.getValue(),
-        tupleError.getType(),
-        tupleError.getParameters().values().toArray());
-  }
-
-  @Override
-  public void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
-      Object... params) {
-    logError(fileName, lineNumber, columnName, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params) {
-    logError(fileName, lineNumber, null, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, Object value, ErrorType type, Object... params) {
-    logError(fileName, -1, null, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, ErrorType type, Object... params) {
-    logError(fileName, -1, null, null, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, ErrorType type) {
-    logError(fileName, -1, null, null, type, (Object[]) null);
+  public void reportError(Error error) {
+    val message =
+        "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
+    val text = format(message, error.getFileName(), error.getLineNumber(), error.getFieldNames().toString(), error.getValue(), error.getType(), Arrays.toString(error.getParams()));
+    log.error("{}", text);
   }
 
   @Override
   public void reportLineNumbers(Path path) {
     new UnsupportedOperationException();
-  }
-
-  private static void logError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
-      Object... params) {
-    val message =
-        "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
-    val text = format(message, fileName, lineNumber, columnName, value, type, Arrays.toString(params));
-    log.error("{}", text);
   }
 
 }

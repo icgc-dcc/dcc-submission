@@ -28,6 +28,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newMapFileParser;
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
@@ -189,7 +190,15 @@ public class ReferenceGenomeValidator implements Validator {
             val param = assemblyVersion;
 
             // Database
-            context.reportError(fileName, lineNumber, columnName, value, type, param);
+            context.reportError(
+                error()
+                    .fileName(fileName)
+                    .fieldNames(columnName)
+                    .type(type)
+                    .lineNumber(lineNumber)
+                    .value(value)
+                    .params(param)
+                    .build());
 
             // Report file
             val tupleState = new TupleState(lineNumber);
@@ -209,7 +218,15 @@ public class ReferenceGenomeValidator implements Validator {
             val param = assemblyVersion;
 
             // Database
-            context.reportError(fileName, lineNumber, columnName, value, type, param);
+            context.reportError(
+                error()
+                    .fileName(fileName)
+                    .fieldNames(columnName)
+                    .type(type)
+                    .lineNumber(lineNumber)
+                    .value(value)
+                    .params(param)
+                    .build());
 
             // Report file
             val tupleState = new TupleState(lineNumber);

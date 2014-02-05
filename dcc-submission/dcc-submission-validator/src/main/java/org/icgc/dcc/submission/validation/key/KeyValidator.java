@@ -42,10 +42,10 @@ import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
+import org.icgc.dcc.submission.validation.core.Error;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
-import org.icgc.dcc.submission.validation.key.report.KVReporter.KVReportError;
 
 @NoArgsConstructor
 @Slf4j
@@ -134,13 +134,8 @@ public class KeyValidator implements Validator {
       val fileType = context.getDictionary().getFileType(fileName);
       checkState(fileType.isPresent(),
           "Expecting a corresponding file type for file name '{}'", fileName);
-      context.reportError(
-          error.getFileName(),
-          error.getLineNumber(),
-          error.getFieldNames().toString(), // TODO: homogenize
-          error.getValue(),
-          error.getType(),
-          error.getParams());
+
+      context.reportError(error);
     }
   }
 
@@ -157,9 +152,9 @@ public class KeyValidator implements Validator {
   }
 
   @SneakyThrows
-  private static MappingIterator<KVReportError> getErrors(
+  private static MappingIterator<Error> getErrors(
       InputStream inputStream) {
-    val reader = new ObjectMapper().reader().withType(KVReportError.class);
+    val reader = new ObjectMapper().reader().withType(Error.class);
 
     return reader.readValues(inputStream);
   }

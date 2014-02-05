@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key.report;
 
 import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.codehaus.jackson.map.SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS;
-import static org.icgc.dcc.submission.core.util.ObjectMappers.DEFAULT;
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getPrimaryKeyNames;
@@ -34,22 +34,18 @@ import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityVa
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.val;
-import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectWriter;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.core.Error;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
@@ -108,20 +104,18 @@ public class KVReporter implements Closeable {
     log.debug("Reporting '{}' error at '({}, {}, {})': '{}'",
         new Object[] { errorType, fileType, fileName, lineNumber, keys });
 
-    persistError(KVReportError.builder()
-
+    persistError(error()
         .fileName(fileName)
         .fieldNames(getErrorFieldNames(fileType, errorType))
         .params(getErrorParams(fileType, errorType))
         .type(errorType.getErrorType())
         .lineNumber(lineNumber)
         .value(keys.getValues())
-
         .build());
   }
 
   @SneakyThrows
-  private void persistError(KVReportError error) {
+  private void persistError(Error error) {
     WRITER.writeValue(outputStream, error);
   }
 
@@ -145,52 +139,6 @@ public class KVReporter implements Closeable {
     // UNIQUENESS: uniqueness errors don't need params
 
     return errorParams;
-  }
-
-  @Value
-  @Builder
-  public static class KVReportError {
-
-    @JsonProperty
-    String fileName;
-    @JsonProperty
-    List<String> fieldNames;
-    @JsonProperty
-    long lineNumber;
-    @JsonProperty
-    Object value;
-    @JsonProperty
-    ErrorType type;
-    @JsonProperty
-    Object[] params;
-
-    private KVReportError(
-        @JsonProperty("fileName") String fileName,
-        @JsonProperty("fieldNames") List<String> fieldNames,
-        @JsonProperty("lineNumber") long lineNumber,
-        @JsonProperty("value") Object value,
-        @JsonProperty("type") ErrorType type,
-        @JsonProperty("params") Object[] params)
-    {
-      this.fileName = fileName;
-      this.fieldNames = fieldNames;
-      this.lineNumber = lineNumber;
-      this.value = value;
-      this.type = type;
-      this.params = params;
-    }
-
-    @Override
-    public String toString() {
-      return toJsonSummaryString();
-    }
-
-    @SneakyThrows
-    public String toJsonSummaryString() {
-      return "\n" + DEFAULT
-          .writerWithDefaultPrettyPrinter()
-          .writeValueAsString(this);
-    }
   }
 
 }

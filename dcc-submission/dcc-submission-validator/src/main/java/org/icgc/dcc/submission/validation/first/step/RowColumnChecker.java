@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 import lombok.extern.slf4j.Slf4j;
@@ -52,12 +53,15 @@ public class RowColumnChecker extends CompositeRowChecker {
           + actualNumColumns + " at line " + lineNumber);
 
       incrementCheckErrorCount();
+
       getValidationContext().reportError(
-          filename,
-          lineNumber,
-          actualNumColumns,
-          STRUCTURALLY_INVALID_ROW_ERROR,
-          expectedNumColumns);
+          error()
+              .fileName(filename)
+              .lineNumber(lineNumber)
+              .type(STRUCTURALLY_INVALID_ROW_ERROR)
+              .value(actualNumColumns)
+              .params(expectedNumColumns)
+              .build());
     }
   }
 

@@ -18,50 +18,40 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.core.Error;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 
 public class TestUtils {
 
   public static void checkErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(anyString(), anyLong(), any(ErrorType.class), any());
+    verify(validationContext, times(times)).reportError(any(Error.class));
   }
 
   public static void checkFileCollisionErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(anyString(), any(ErrorType.class), any(), any());
+    verify(validationContext, times(times)).reportError(any(Error.class));
   }
 
   public static void checkRowCharsetErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(anyString(), anyLong(), any(), any(ErrorType.class), any());
+    verify(validationContext, times(times)).reportError(any(Error.class));
   }
 
   public static void checkRowColumnErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(anyString(), anyLong(), any(), any(ErrorType.class), any());
+    verify(validationContext, times(times)).reportError(any(Error.class));
   }
 
   public static void checkFileHeaderErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(anyString(), any(ErrorType.class), any(), any());
+    verify(validationContext, times(times)).reportError(any(Error.class));
   }
 
   public static void checkReferentialErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(anyString(), any(ErrorType.class), any());
+    verify(validationContext, times(times)).reportError(any(Error.class));
   }
 
   public static void checkNoErrorsReported(ValidationContext validationContext) {
-    verify(validationContext, never()).reportError(anyString(), any(ErrorType.class));
-    verify(validationContext, never()).reportError(anyString(), any(TupleError.class));
-    verify(validationContext, never()).reportError(anyString(), any(ErrorType.class), any());
-    verify(validationContext, never()).reportError(anyString(), any(ErrorType.class), any(), any());
-    verify(validationContext, never()).reportError(anyString(), any(), any(ErrorType.class));
-    verify(validationContext, never()).reportError(anyString(), anyLong(), any(), any(ErrorType.class));
-    verify(validationContext, never()).reportError(anyString(), anyLong(), any(), any(ErrorType.class), any());
-    verify(validationContext, never()).reportError(anyString(), anyLong(), anyString(), any(), any(ErrorType.class));
+    verify(validationContext, never()).reportError(any(Error.class));
   }
 }

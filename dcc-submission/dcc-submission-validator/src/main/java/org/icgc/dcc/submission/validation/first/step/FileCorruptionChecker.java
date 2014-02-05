@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.COMPRESSION_CODEC_ERROR;
 
 import java.io.IOException;
@@ -66,19 +67,25 @@ public class FileCorruptionChecker extends CompositeFileChecker {
         // TODO: create new error type rather?
 
         incrementCheckErrorCount();
+
         getValidationContext().reportError(
-            filename,
-            COMPRESSION_CODEC_ERROR,
-            getFileSchema(filename).getName());
+            error()
+                .fileName(filename)
+                .type(COMPRESSION_CODEC_ERROR)
+                .params(getFileSchema(filename).getName())
+                .build());
       }
     } catch (IOException e) {
       log.info("Exception caught in reading file (corruption): {}", filename, e);
 
       incrementCheckErrorCount();
+
       getValidationContext().reportError(
-          filename,
-          COMPRESSION_CODEC_ERROR,
-          getFileSchema(filename).getName());
+          error()
+              .fileName(filename)
+              .type(COMPRESSION_CODEC_ERROR)
+              .params(getFileSchema(filename).getName())
+              .build());
     }
   }
 
@@ -99,10 +106,13 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       log.info("Exception caught in decoding bzip2 file '{}': '{}'", filename, e.getMessage());
 
       incrementCheckErrorCount();
-      context.reportError(
-          filename,
-          COMPRESSION_CODEC_ERROR,
-          getFileSchema(filename).getName());
+
+      getValidationContext().reportError(
+          error()
+              .fileName(filename)
+              .type(COMPRESSION_CODEC_ERROR)
+              .params(getFileSchema(filename).getName())
+              .build());
     }
   }
 
@@ -120,10 +130,13 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       log.info("Exception caught in decoding gzip file '{}': '{}'", filename, e.getMessage());
 
       incrementCheckErrorCount();
-      context.reportError(
-          filename,
-          COMPRESSION_CODEC_ERROR,
-          getFileSchema(filename).getName());
+
+      getValidationContext().reportError(
+          error()
+              .fileName(filename)
+              .type(COMPRESSION_CODEC_ERROR)
+              .params(getFileSchema(filename).getName())
+              .build());
     }
   }
 

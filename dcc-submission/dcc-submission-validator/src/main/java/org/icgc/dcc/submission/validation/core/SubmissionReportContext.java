@@ -70,35 +70,16 @@ public class SubmissionReportContext implements ReportContext {
   }
 
   @Override
-  public void reportError(String fileName, TupleError tupleError) {
-    addErrorTuple(fileName, tupleError);
-  }
+  public void reportError(Error error) {
+    val tupleError = createTupleError(
+        error.getType(),
+        error.getNumber(),
+        error.getFieldNames().toString(),
+        error.getValue(),
+        error.getLineNumber(),
+        error.getParams());
 
-  @Override
-  public void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
-      Object... params) {
-    val tupleError = createTupleError(type, 0, columnName, value, lineNumber, params);
-    reportError(fileName, tupleError);
-  }
-
-  @Override
-  public void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params) {
-    reportError(fileName, lineNumber, null, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, Object value, ErrorType type, Object... params) {
-    reportError(fileName, -1, null, value, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, ErrorType type, Object... params) {
-    reportError(fileName, -1, null, null, type, params);
-  }
-
-  @Override
-  public void reportError(String fileName, ErrorType type) {
-    reportError(fileName, -1, null, null, type, new Object[] {});
+    addErrorTuple(error.getFileName(), tupleError);
   }
 
   @Override
