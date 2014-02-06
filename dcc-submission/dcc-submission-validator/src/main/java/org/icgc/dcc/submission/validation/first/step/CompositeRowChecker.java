@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -85,6 +86,11 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
         line = reader.next();
         checkRow(filename, fileSchema, line, lineNumber);
         ++lineNumber;
+
+        if (lineNumber % 10000 == 0) {
+          // Check for cancellation
+          checkInterrupted(name);
+        }
       }
     } catch (IOException e) {
       throw new RuntimeException("Unable to check the file: " + filename, e);
@@ -136,4 +142,5 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   public DccFileSystem getDccFileSystem() {
     return delegate.getDccFileSystem();
   }
+
 }
