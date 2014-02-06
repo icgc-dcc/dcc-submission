@@ -118,24 +118,25 @@ public class ValidationExecutor {
   /**
    * Cancel a running validation.
    * <p>
-   * Will return {@code false} if the task has already completed, has already been cancelled, or could not be found
+   * Will return {@code false} if the job has already completed, has already been cancelled, or could not be found
    * 
-   * @param id the id of the task
-   * @return whether the task was successfully cancelled
+   * @see https://issues.apache.org/jira/browse/HDFS-1208
+   * @param jobId the id of the job
+   * @return whether the job was successfully cancelled (may still be running, see HDFS-1208)
    */
-  public boolean cancel(@NonNull String id) {
-    val validationFuture = getJobHandles().get(id);
-    val available = validationFuture != null;
+  public boolean cancel(@NonNull String jobId) {
+    val jobHandle = getJobHandles().get(jobId);
+    val available = jobHandle != null;
     if (available) {
-      log.warn("cancel: Cancelling validation '{}'... {}", id, formatStats());
-      val cancelled = validationFuture.cancel(true);
-      log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
-          new Object[] { id, cancelled, formatStats() });
+      log.warn("cancel: Cancelling validation job '{}'... {}", jobId, formatStats());
+      val cancelled = jobHandle.cancel(true);
+      log.warn("cancel: Finished cancelling validation job '{}'. cancelled = {} {}",
+          new Object[] { jobId, cancelled, formatStats() });
 
       return cancelled;
     }
 
-    log.warn("cancel: No validation found '{}'... {}", id, formatStats());
+    log.warn("cancel: No validation found '{}'... {}", jobId, formatStats());
     return false;
   }
 
@@ -166,7 +167,7 @@ public class ValidationExecutor {
   }
 
   /**
-   * Gets basic task statistics about the underlying pool.
+   * Gets basic job statistics about the underlying pool.
    * 
    * @return a formatted statistics string
    */
