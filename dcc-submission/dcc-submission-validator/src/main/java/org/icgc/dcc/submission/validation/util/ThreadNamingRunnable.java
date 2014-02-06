@@ -17,32 +17,30 @@
  */
 package org.icgc.dcc.submission.validation.util;
 
-import java.util.concurrent.Callable;
-
 import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
 
 /**
- * {@link Callable} that allows changing the name of the executing thread and will always restore the previous upon
+ * {@link Runnable} that allows changing the name of the executing thread and will always restore the previous upon
  * completion.
  */
 @Value
-public class NamingCallable<T> implements Callable<T> {
+public class ThreadNamingRunnable implements Runnable {
 
   @NonNull
   String name;
   @NonNull
-  Callable<T> delegate;
+  Runnable delegate;
 
   @Override
-  public T call() throws Exception {
+  public void run() {
     val originalName = getName();
     try {
       setName(name);
 
       // Delegate
-      return delegate.call();
+      delegate.run();
     } finally {
       // Always called
       setName(originalName);
