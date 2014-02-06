@@ -149,7 +149,6 @@ public final class KVDictionary {
   private static final List<Integer> METH_SEQ_M_FKS = newArrayList(1);
   private static final List<Integer> METH_SEQ_P_FKS = newArrayList(0, 1);
 
-  private static final List<String> KEY_NAMES_NOT_APPLICABLE = null;
   private static final List<String> CNSM_M_FK_NAMES = newArrayList("analyzed_sample_id");
   private static final List<String> CNSM_M_OPTIONAL_FK_NAMES = newArrayList("matched_sample_id");
   private static final List<String> CNSM_M_PK_NAMES = newArrayList("analysis_id", "analyzed_sample_id");
@@ -359,258 +358,193 @@ public final class KVDictionary {
           // CLINICAL
           .put(
               DONOR,
-              new KVFileTypeErrorFields(
-                  DONOR,
-                  DONOR_PK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(DONOR)
+                  .pkFieldNames(DONOR_PK_NAMES)
+                  .build())
           .put(
               SPECIMEN,
-              new KVFileTypeErrorFields(
-                  SPECIMEN,
-                  SPECIMEN_PK_NAMES,
-                  SPECIMEN_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(SPECIMEN)
+                  .pkFieldNames(SPECIMEN_PK_NAMES)
+                  .fk1FieldNames(SPECIMEN_FK_NAMES)
+                  .build())
           .put(
               SAMPLE,
-              new KVFileTypeErrorFields(
-                  SAMPLE,
-                  SAMPLE_PK_NAMES,
-                  SAMPLE_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(SAMPLE)
+                  .pkFieldNames(SAMPLE_PK_NAMES)
+                  .fk1FieldNames(SAMPLE_FK_NAMES)
+                  .build())
 
           // SSM
           .put(
               SSM_M,
-              new KVFileTypeErrorFields(
-                  SSM_M,
-                  SSM_M_PK_NAMES,
-                  SSM_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  SSM_M_OPTIONAL_FK_NAMES))
+              new KVFileTypeErrorFields.Builder(SSM_M)
+                  .pkFieldNames(SSM_M_PK_NAMES)
+                  .fk1FieldNames(SSM_M_FK_NAMES)
+                  .optionalFkFieldNames(SSM_M_OPTIONAL_FK_NAMES)
+                  .build())
           .put(
               SSM_P,
-              new KVFileTypeErrorFields(
-                  SSM_P,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  SSM_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(SSM_P)
+                  .fk1FieldNames(SSM_P_FK_NAMES)
+                  .build())
 
           // CNSM
           .put(
               CNSM_M,
-              new KVFileTypeErrorFields(
-                  CNSM_M,
-                  CNSM_M_PK_NAMES,
-                  CNSM_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  CNSM_M_OPTIONAL_FK_NAMES))
+              new KVFileTypeErrorFields.Builder(CNSM_M)
+                  .pkFieldNames(CNSM_M_PK_NAMES)
+                  .fk1FieldNames(CNSM_M_FK_NAMES)
+                  .optionalFkFieldNames(CNSM_M_OPTIONAL_FK_NAMES)
+                  .build())
           .put(
               CNSM_P,
-              new KVFileTypeErrorFields(
-                  CNSM_P,
-                  CNSM_P_PK_NAMES,
-                  CNSM_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(CNSM_P)
+                  .pkFieldNames(CNSM_P_PK_NAMES)
+                  .fk1FieldNames(CNSM_P_FK_NAMES)
+                  .build())
           .put(
               CNSM_S,
-              new KVFileTypeErrorFields(
-                  CNSM_S,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  CNSM_S_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(CNSM_S)
+                  .fk1FieldNames(CNSM_S_FK_NAMES)
+                  .build())
 
           // STSM
           .put(
               STSM_M,
-              new KVFileTypeErrorFields(
-                  STSM_M,
-                  STSM_M_PK_NAMES,
-                  STSM_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  STSM_M_OPTIONAL_FK_NAMES))
+              new KVFileTypeErrorFields.Builder(STSM_M)
+                  .pkFieldNames(STSM_M_PK_NAMES)
+                  .fk1FieldNames(STSM_M_FK_NAMES)
+                  .optionalFkFieldNames(STSM_M_OPTIONAL_FK_NAMES)
+                  .build())
           .put(
               STSM_P,
-              new KVFileTypeErrorFields(
-                  STSM_P,
-                  STSM_P_PK_NAMES,
-                  STSM_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(STSM_P)
+                  .pkFieldNames(STSM_P_PK_NAMES)
+                  .fk1FieldNames(STSM_P_FK_NAMES)
+                  .build())
           .put(
               STSM_S,
-              new KVFileTypeErrorFields(
-                  STSM_S,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  STSM_S_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(STSM_S)
+                  .fk1FieldNames(STSM_S_FK_NAMES)
+                  .build())
 
           // MIRNA
           .put(
               MIRNA_M,
-              new KVFileTypeErrorFields(
-                  MIRNA_M,
-                  MIRNA_M_PK_NAMES,
-                  MIRNA_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(MIRNA_M)
+                  .pkFieldNames(MIRNA_M_PK_NAMES)
+                  .fk1FieldNames(MIRNA_M_FK_NAMES)
+                  .build())
           .put(
               MIRNA_P,
-              new KVFileTypeErrorFields(
-                  MIRNA_P,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  MIRNA_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(MIRNA_P)
+                  .fk1FieldNames(MIRNA_P_FK_NAMES)
+                  .build())
           .put(
               MIRNA_S,
-              new KVFileTypeErrorFields(
-                  MIRNA_S,
-                  MIRNA_S_PK_NAMES,
-                  MIRNA_S_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(MIRNA_S)
+                  .pkFieldNames(MIRNA_S_PK_NAMES)
+                  .fk1FieldNames(MIRNA_S_FK_NAMES)
+                  .build())
 
           // OLD METH
           .put(
               METH_M,
-              new KVFileTypeErrorFields(
-                  METH_M,
-                  METH_M_PK_NAMES,
-                  METH_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  METH_M_OPTIONAL_FK_NAMES))
+              new KVFileTypeErrorFields.Builder(METH_M)
+                  .pkFieldNames(METH_M_PK_NAMES)
+                  .fk1FieldNames(METH_M_FK_NAMES)
+                  .optionalFkFieldNames(METH_M_OPTIONAL_FK_NAMES)
+                  .build())
           .put(
               METH_P,
-              new KVFileTypeErrorFields(
-                  METH_P,
-                  METH_P_PK_NAMES,
-                  METH_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(METH_P)
+                  .pkFieldNames(METH_P_PK_NAMES)
+                  .fk1FieldNames(METH_P_FK_NAMES)
+                  .build())
           .put(
               METH_S,
-              new KVFileTypeErrorFields(
-                  METH_S,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  METH_S_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(METH_S)
+                  .fk1FieldNames(METH_S_FK_NAMES)
+                  .build())
 
           // METH ARRAY
           .put(
               METH_ARRAY_M,
-              new KVFileTypeErrorFields(
-                  METH_ARRAY_M,
-                  METH_ARRAY_M_PK_NAMES,
-                  METH_ARRAY_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(METH_ARRAY_M)
+                  .pkFieldNames(METH_ARRAY_M_PK_NAMES)
+                  .fk1FieldNames(METH_ARRAY_M_FK_NAMES)
+                  .build())
           .put(
               METH_ARRAY_P,
-              new KVFileTypeErrorFields(
-                  METH_ARRAY_P,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  METH_ARRAY_P_FK1_NAMES,
-                  METH_ARRAY_P_FK2_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(METH_ARRAY_P)
+                  .fk1FieldNames(METH_ARRAY_P_FK1_NAMES)
+                  .fk2FieldNames(METH_ARRAY_P_FK2_NAMES)
+                  .build())
 
           // METH SEQ
           .put(
               METH_SEQ_M,
-              new KVFileTypeErrorFields(
-                  METH_SEQ_M,
-                  METH_SEQ_M_PK_NAMES,
-                  METH_SEQ_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(METH_SEQ_M)
+                  .pkFieldNames(METH_SEQ_M_PK_NAMES)
+                  .fk1FieldNames(METH_SEQ_M_FK_NAMES)
+                  .build())
           .put(
               METH_SEQ_P,
-              new KVFileTypeErrorFields(
-                  METH_SEQ_P,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  METH_SEQ_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(METH_SEQ_P)
+                  .fk1FieldNames(METH_SEQ_P_FK_NAMES)
+                  .build())
 
           // EXP
           .put(
               EXP_M,
-              new KVFileTypeErrorFields(
-                  EXP_M,
-                  EXP_M_PK_NAMES,
-                  EXP_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(EXP_M)
+                  .pkFieldNames(EXP_M_PK_NAMES)
+                  .fk1FieldNames(EXP_M_FK_NAMES)
+                  .build())
           .put(
               EXP_G,
-              new KVFileTypeErrorFields(
-                  EXP_G,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  EXP_G_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(EXP_G)
+                  .fk1FieldNames(EXP_G_FK_NAMES)
+                  .build())
 
           // PEXP
           .put(
               PEXP_M,
-              new KVFileTypeErrorFields(
-                  PEXP_M,
-                  PEXP_M_PK_NAMES,
-                  PEXP_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(PEXP_M)
+                  .pkFieldNames(PEXP_M_PK_NAMES)
+                  .fk1FieldNames(PEXP_M_FK_NAMES)
+                  .build())
           .put(
               PEXP_P,
-              new KVFileTypeErrorFields(
-                  PEXP_P,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  PEXP_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(PEXP_P)
+                  .fk1FieldNames(PEXP_P_FK_NAMES)
+                  .build())
 
           // JCN
           .put(
               JCN_M,
-              new KVFileTypeErrorFields(
-                  JCN_M,
-                  JCN_M_PK_NAMES,
-                  JCN_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(JCN_M)
+                  .pkFieldNames(JCN_M_PK_NAMES)
+                  .fk1FieldNames(JCN_M_FK_NAMES)
+                  .build())
           .put(
               JCN_P,
-              new KVFileTypeErrorFields(
-                  JCN_P,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  JCN_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(JCN_P)
+                  .fk1FieldNames(JCN_P_FK_NAMES)
+                  .build())
 
           // SGV
           .put(
               SGV_M,
-              new KVFileTypeErrorFields(
-                  SGV_M,
-                  SGV_M_PK_NAMES,
-                  SGV_M_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(SGV_M)
+                  .pkFieldNames(SGV_M_PK_NAMES)
+                  .fk1FieldNames(SGV_M_FK_NAMES)
+                  .build())
           .put(
               SGV_P,
-              new KVFileTypeErrorFields(
-                  SGV_P,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  SGV_P_FK_NAMES,
-                  KEY_NAMES_NOT_APPLICABLE,
-                  KEY_NAMES_NOT_APPLICABLE))
+              new KVFileTypeErrorFields.Builder(SGV_P)
+                  .fk1FieldNames(SGV_P_FK_NAMES)
+                  .build())
 
           .build();
 

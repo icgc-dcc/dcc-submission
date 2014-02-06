@@ -94,9 +94,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
       val userProjectKeys = context.getUserProjectKeys();
       for (Path path : paths) {
 
-        // Will exclude the .system folder
         val sshFile = listSshFile(path, userProjectKeys);
-
         if (sshFile.isPresent()) {
           sshFiles.add(sshFile.get());
         }

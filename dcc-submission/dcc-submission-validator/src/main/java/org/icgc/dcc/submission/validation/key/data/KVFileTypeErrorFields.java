@@ -45,8 +45,45 @@ public class KVFileTypeErrorFields {
   private final KVFileType fileType;
   private final Map<KVErrorType, List<String>> errorFieldNames;
 
-  // TODO: factory instead of constructor
-  public KVFileTypeErrorFields(
+  public static class Builder {
+
+    private final KVFileType fileType;
+    private List<String> pkFieldNames;
+    private List<String> fk1FieldNames;
+    private List<String> fk2FieldNames;
+    private List<String> optionalFkFieldNames;
+
+    public Builder(KVFileType fileType) {
+      this.fileType = fileType;
+    }
+
+    public Builder pkFieldNames(List<String> pkFieldNames) {
+      this.pkFieldNames = pkFieldNames;
+      return this;
+    }
+
+    public Builder fk1FieldNames(List<String> fk1FieldNames) {
+      this.fk1FieldNames = fk1FieldNames;
+      return this;
+    }
+
+    public Builder fk2FieldNames(List<String> fk2FieldNames) {
+      this.fk2FieldNames = fk2FieldNames;
+      return this;
+    }
+
+    public Builder optionalFkFieldNames(List<String> optionalFkFieldNames) {
+      this.optionalFkFieldNames = optionalFkFieldNames;
+      return this;
+    }
+
+    public KVFileTypeErrorFields build() {
+      return new KVFileTypeErrorFields(fileType, pkFieldNames, fk1FieldNames, fk2FieldNames, optionalFkFieldNames);
+    }
+
+  }
+
+  private KVFileTypeErrorFields(
       @NonNull KVFileType fileType,
       List<String> pkFieldNames,
       List<String> fk1FieldNames,
@@ -112,4 +149,5 @@ public class KVFileTypeErrorFields {
     }
     return names == null ? Optional.<List<String>> absent() : Optional.of(names);
   }
+
 }

@@ -323,13 +323,10 @@ public final class KVFileProcessor {
     else if (fileType == MIRNA_M) {
       valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
       valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
-      if (row.hasOptionalFk()) {
-        valid.validateOptionalForeignKey(fileName, lineCount,
-            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
-      }
 
       if (ROW_CHECKS_ENABLED) {
         sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
       addEncounteredPrimaryKey(fileName, primaryKeys, row);
@@ -494,13 +491,10 @@ public final class KVFileProcessor {
     else if (fileType == EXP_M) {
       valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
       valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
-      if (row.hasOptionalFk()) {
-        valid.validateOptionalForeignKey(fileName, lineCount,
-            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
-      }
 
       if (ROW_CHECKS_ENABLED) {
         sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
       addEncounteredPrimaryKey(fileName, primaryKeys, row);
@@ -529,13 +523,10 @@ public final class KVFileProcessor {
     else if (fileType == PEXP_M) {
       valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
       valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
-      if (row.hasOptionalFk()) {
-        valid.validateOptionalForeignKey(fileName, lineCount,
-            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
-      }
 
       if (ROW_CHECKS_ENABLED) {
         sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
       addEncounteredPrimaryKey(fileName, primaryKeys, row);
@@ -564,13 +555,10 @@ public final class KVFileProcessor {
     else if (fileType == JCN_M) {
       valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
       valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
-      if (row.hasOptionalFk()) {
-        valid.validateOptionalForeignKey(fileName, lineCount,
-            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
-      }
 
       if (ROW_CHECKS_ENABLED) {
         sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
       addEncounteredPrimaryKey(fileName, primaryKeys, row);
@@ -599,13 +587,10 @@ public final class KVFileProcessor {
     else if (fileType == SGV_M) {
       valid.validateUniqueness(fileName, lineCount, primaryKeys, row, reporter);
       valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
-      if (row.hasOptionalFk()) {
-        valid.validateOptionalForeignKey(fileName, lineCount,
-            optionallyReferencedPrimaryKeys1, row.getOptionalFk(), reporter);
-      }
 
       if (ROW_CHECKS_ENABLED) {
         sanity.ensureNoFK2(row);
+        sanity.ensureNoOptionalFK(row);
       }
 
       addEncounteredPrimaryKey(fileName, primaryKeys, row);

@@ -26,7 +26,7 @@ import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * TODO
+ * Temporary class to describe system file properties.
  */
 public class SystemFiles {
 
