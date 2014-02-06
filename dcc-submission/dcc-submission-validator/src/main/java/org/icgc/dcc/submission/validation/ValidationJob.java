@@ -17,10 +17,12 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.base.Throwables.getRootCause;
 import static java.lang.String.format;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -67,22 +69,28 @@ public class ValidationJob implements Runnable {
 
       log.info("job: Completing validation '{}'...", jobId);
       listener.onCompletion(validation);
-    } catch (InterruptedException e) {
-
-      //
-      // Event: Cancelled
-      //
-
-      log.info("job: Cancelling validation '{}'...", jobId);
-      listener.onCancelled(validation);
     } catch (Throwable t) {
+      // Extract the root cause since Cascading can wrap it in a FlowException.
+      val rootCause = getRootCause(t);
 
-      //
-      // Event: Failure
-      //
+      val cancelled = rootCause instanceof InterruptedException;
+      if (cancelled) {
 
-      log.error(format("job: Failing validation '%s'...", jobId), t);
-      listener.onFailure(validation, t);
+        //
+        // Event: Cancelled
+        //
+
+        log.info("job: Cancelling validation '{}'...", jobId);
+        listener.onCancelled(validation);
+      } else {
+
+        //
+        // Event: Failure
+        //
+
+        log.error(format("job: Failing validation '%s'...", jobId), t);
+        listener.onFailure(validation, t);
+      }
     }
 
     log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
