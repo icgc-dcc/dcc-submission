@@ -21,7 +21,6 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 
 import java.io.IOException;
@@ -39,6 +38,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SystemFiles;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
@@ -82,7 +82,7 @@ public final class KVFileSystem {
     val basePath = system ? systemDirPath : submissionDirPath;
 
     log.info("Listing '{}' with filter '{}'", basePath, filePattern);
-    val filePaths = lsFile(fileSystem, basePath, filePattern);
+    val filePaths = HadoopUtils.lsFile(fileSystem, basePath, filePattern);
     return filePaths.isEmpty() ? Optional.<List<Path>> absent() : of(filePaths);
   }
 
