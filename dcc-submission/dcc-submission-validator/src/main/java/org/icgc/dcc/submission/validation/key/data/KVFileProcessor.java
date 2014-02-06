@@ -374,7 +374,8 @@ public final class KVFileProcessor {
 
       }
 
-      primaryKeys.updatePks(fileName, row);
+      // FIXME: Anthony is working on the new data model that will address this issue
+      // primaryKeys.updatePks(fileName, row);
       ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
