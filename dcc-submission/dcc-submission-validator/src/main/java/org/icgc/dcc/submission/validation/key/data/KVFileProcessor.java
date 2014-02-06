@@ -204,7 +204,7 @@ public final class KVFileProcessor {
         reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
@@ -268,7 +268,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ; // No surjection between secondary and primary
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
     }
@@ -331,7 +331,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ; // No surjection between secondary and primary
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
     }
@@ -374,6 +374,8 @@ public final class KVFileProcessor {
 
       }
 
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
+
       // FIXME: Anthony is working on the new data model that will address this issue
       // primaryKeys.updatePks(fileName, row);
       ensurePresent(optionalEncounteredKeys);
@@ -396,7 +398,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      // if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ; // No surjection between secondary and primary
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
     }
@@ -459,7 +461,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ; // No surjection between secondary and primary
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
     }
@@ -506,7 +508,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
@@ -551,7 +553,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
@@ -596,7 +598,7 @@ public final class KVFileProcessor {
 
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
@@ -640,7 +642,7 @@ public final class KVFileProcessor {
         reporter.reportRelationError(fileType, fileName, lineCount, row.getFk());
       }
 
-      if (ROW_CHECKS_ENABLED) ensurePK(row);
+      if (ROW_CHECKS_ENABLED) ensureNoPK(row);
       ensurePresent(optionalEncounteredKeys);
       optionalEncounteredKeys.get().addEncounteredForeignKey(row.getFk());
       if (ROW_CHECKS_ENABLED) checkState(!row.hasSecondaryFk());
@@ -659,7 +661,7 @@ public final class KVFileProcessor {
     return optionalReferencedPrimaryKeys.get().containsPk(fk);
   }
 
-  private void ensurePK(KVRow row) {
+  private void ensureNoPK(KVRow row) {
     checkState(!row.hasPk(),
         "Row is expected to contain a PK for type '{}': '{}'", fileType, row);
   }

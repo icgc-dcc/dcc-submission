@@ -81,7 +81,7 @@ public class ValidationJob implements Runnable {
       // Event: Failure
       //
 
-      log.error(format("job: Failing validation '%s'... %s", jobId), t);
+      log.error(format("job: Failing validation '%s'...", jobId), t);
       listener.onFailure(validation, t);
     }
 
