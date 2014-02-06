@@ -279,6 +279,9 @@ public final class KVDictionary {
 
           .build();
 
+  /**
+   * Redundant with {@link #ERROR_TYPE_DESCRIPTIONS}?
+   */
   private static final Map<KVFileType, List<String>> PKS =
       new ImmutableMap.Builder<KVFileType, List<String>>()
           .put(DONOR, DONOR_PK_NAMES)
@@ -306,6 +309,9 @@ public final class KVDictionary {
 
           .build();
 
+  /**
+   * Redundant with {@link #ERROR_TYPE_DESCRIPTIONS}?
+   */
   private static final Map<KVFileType, List<String>> SURJECTION_FKS =
       new ImmutableMap.Builder<KVFileType, List<String>>()
           .put(SPECIMEN, SPECIMEN_FK_NAMES)

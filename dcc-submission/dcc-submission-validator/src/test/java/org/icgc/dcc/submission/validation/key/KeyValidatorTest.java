@@ -23,12 +23,8 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.io.Files.readLines;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.DONOR_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_M_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_SEQ_M_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_SEQ_P_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
@@ -61,7 +57,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.icgc.dcc.submission.core.util.Joiners;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -181,25 +177,7 @@ public class KeyValidatorTest {
     dictionary.addFile(readFileSchema(METH_P_TYPE));
     dictionary.addFile(readFileSchema(METH_S_TYPE));
 
-    val methArrayM = new FileSchema();
-    methArrayM.setName(METH_ARRAY_M_TYPE.getTypeName());
-    methArrayM.setPattern("^meth_array_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary.addFile(methArrayM);
-
-    val methArrayP = new FileSchema();
-    methArrayP.setName(METH_ARRAY_P_TYPE.getTypeName());
-    methArrayP.setPattern("^meth_array_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary.addFile(methArrayP);
-
-    val methSeqM = new FileSchema();
-    methSeqM.setName(METH_SEQ_M_TYPE.getTypeName());
-    methSeqM.setPattern("^meth_seq_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary.addFile(methSeqM);
-
-    val methSeqP = new FileSchema();
-    methSeqP.setName(METH_SEQ_P_TYPE.getTypeName());
-    methSeqP.setPattern("^meth_seq_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary.addFile(methSeqP);
+    Dictionaries.addNewModels(dictionary);
 
     return dictionary;
   }

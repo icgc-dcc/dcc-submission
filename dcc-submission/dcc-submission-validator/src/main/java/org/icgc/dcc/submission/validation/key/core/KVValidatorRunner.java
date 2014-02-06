@@ -80,8 +80,8 @@ public class KVValidatorRunner implements Runnable, Serializable {
     try {
       val validator = new KVSubmissionProcessor(
           new KVFileParser(fileSystem, new FileLineListParser(), false),
-          new KVFileSystem(fileSystem, dataTypes, dictionary, new Path(submissionPath), new Path(systemPath)),
-          report);
+          new KVFileSystem(fileSystem, dataTypes, dictionary,
+              new Path(submissionPath), new Path(systemPath)), report);
 
       log.info("Starting key validation...");
       validator.processSubmission();
