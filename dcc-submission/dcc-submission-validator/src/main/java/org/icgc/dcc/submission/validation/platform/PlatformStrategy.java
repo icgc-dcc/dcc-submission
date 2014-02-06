@@ -39,6 +39,7 @@ import com.google.common.base.Splitter;
 public interface PlatformStrategy {
 
   public static final String FIELD_SEPARATOR = "\t";
+  public static final char FIELD_SEPARATOR_CHAR = '\t';
   public static final String FILE_NAME_SEPARATOR = "--";
   public static final Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
   public static final Joiner FIELD_JOINER = Joiner.on(FIELD_SEPARATOR);

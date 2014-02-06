@@ -62,7 +62,7 @@ public class ValidationJob implements Runnable {
       validation.execute();
 
       //
-      // Event: Completed
+      // Event: Completion
       //
 
       log.info("job: Completing validation '{}'...", jobId);
@@ -85,7 +85,6 @@ public class ValidationJob implements Runnable {
       listener.onFailure(validation, t);
     }
 
-    // Make available for {@link ListeningFuture#onSuccess()}
     log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
   }
 

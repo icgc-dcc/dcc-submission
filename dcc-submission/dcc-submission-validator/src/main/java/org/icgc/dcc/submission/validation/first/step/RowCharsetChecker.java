@@ -58,7 +58,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
       long lineNumber) {
 
     if (containsInvalidCharacter(line)) {
-      log.debug("Invalid character found in the row: " + line);
+      log.debug("Invalid character found in the row: {}", line);
 
       incrementCheckErrorCount();
 

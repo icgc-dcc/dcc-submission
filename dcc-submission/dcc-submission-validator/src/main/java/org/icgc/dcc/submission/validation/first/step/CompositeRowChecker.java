@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.util.Scanner;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,9 +39,14 @@ import org.icgc.dcc.submission.validation.first.Util;
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
+  /**
+   * Constants.
+   */
   private static final Charset DEFAULT_CHARSET = UTF_8;
-  protected RowChecker delegate;
   private static final String LINE_SEPARATOR = "\n";
+
+  @NonNull
+  protected final RowChecker delegate;
 
   public CompositeRowChecker(RowChecker delegate, boolean failFast) {
     super(delegate, failFast);
@@ -59,7 +65,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public void performSelfCheck(String filename) {
-    log.info("Start performing {} validation...", this.getClass().getSimpleName());
+    log.info("Start performing {} validation...", name);
 
     String filePathname = getSubmissionDirectory().getDataFilePath(filename);
     val fileSchema = getFileSchema(filename);
@@ -86,7 +92,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
     log.info("End performing {} validation. Number of errors found: '{}'",
         new Object[] {
-            this.getClass().getSimpleName(),
+            name,
             checkErrorCount });
   }
 
@@ -94,12 +100,18 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
     delegate.checkRow(filename, fileSchema, row, lineNumber);
     if (delegate.canContinue()) {
-      log.debug(
-          "Start performing {} validation for row '{}'...",
-          row,
-          this.getClass().getSimpleName());
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "Start performing {} validation for row '{}'...",
+            row,
+            name);
+      }
+
       performSelfCheck(filename, fileSchema, row, lineNumber);
-      log.debug("End performing {} validation for row '{}'", row, this.getClass().getSimpleName());
+
+      if (log.isDebugEnabled()) {
+        log.debug("End performing {} validation for row '{}'", row, name);
+      }
     }
   }
 

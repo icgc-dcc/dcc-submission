@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.base.Preconditions.checkState;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,9 +32,11 @@ import org.icgc.dcc.submission.validation.first.Checker;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
-@RequiredArgsConstructor
 public abstract class CompositeFileChecker implements FileChecker {
 
+  @NonNull
+  protected final String name;
+  @NonNull
   protected final FileChecker delegate;
   protected final boolean failFast;
 
@@ -42,6 +44,15 @@ public abstract class CompositeFileChecker implements FileChecker {
    * Count for the errors of a given {@link Checker}.
    */
   protected long checkErrorCount = 0;
+
+  /**
+   * @param name
+   */
+  public CompositeFileChecker(FileChecker delegate, boolean failFast) {
+    this.delegate = delegate;
+    this.failFast = failFast;
+    this.name = this.getClass().getSimpleName();
+  }
 
   public CompositeFileChecker(FileChecker delegate) {
     this(delegate, false);
@@ -51,10 +62,10 @@ public abstract class CompositeFileChecker implements FileChecker {
   public void check(String fileName) {
     delegate.check(fileName);
     if (delegate.canContinue()) {
-      log.info("Start performing {} validation...", this.getClass().getSimpleName());
+      log.info("Start performing {} validation...", name);
       performSelfCheck(fileName);
       log.info("End performing {} validation. Number of errors found: '{}'",
-          getClass().getSimpleName(),
+          name,
           checkErrorCount);
     }
   }
