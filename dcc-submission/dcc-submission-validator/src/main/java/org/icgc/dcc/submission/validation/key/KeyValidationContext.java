@@ -35,9 +35,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import lombok.Cleanup;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,14 +65,14 @@ import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 @Slf4j
-@RequiredArgsConstructor
+@Value
+@EqualsAndHashCode(callSuper = true)
 public class KeyValidationContext extends AbstractValidationContext {
 
   @NonNull
   private final String releaseName;
   @NonNull
   private final String projectKey;
-
   @NonNull
   private final String fsRoot;
   @NonNull
@@ -78,35 +80,29 @@ public class KeyValidationContext extends AbstractValidationContext {
   @NonNull
   private final String jobTracker;
 
-  @Override
-  public PlatformStrategy getPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
-    val factory = provider.get();
+  @Getter(lazy = true)
+  private final Config config = createConfig();
+  @Getter(lazy = true)
+  private final List<SubmissionDataType> dataTypes = SubmissionDataTypes.values();
+  @Getter(lazy = true)
+  private final Dictionary dictionary = createDictionary();
+  @Getter(lazy = true)
+  private final FileSchema ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
+  @Getter(lazy = true)
+  private final Release release = new Release(releaseName);
+  @Getter(lazy = true)
+  private final SubmissionDirectory submissionDirectory = createSubmissionDirectory();
+  @Getter(lazy = true)
+  private final FileSystem fileSystem = createFileSystem();
+  @Getter(lazy = true)
+  private final DccFileSystem dccFileSystem = new DccFileSystem(getConfig(), getFileSystem());
+  @Getter(lazy = true)
+  private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getDccFileSystem(), getRelease());
+  @Getter(lazy = true)
+  private final PlatformStrategy platformStrategy = createPlatformStrategy();
 
-    // Reuse primary validation component
-    val dummy = new Path("/");
-    return factory.get(dummy, dummy, dummy);
-  }
-
-  @Override
-  public String getProjectKey() {
-    return projectKey;
-  }
-
-  @Override
-  public List<SubmissionDataType> getDataTypes() {
-    // Include all
-    return SubmissionDataTypes.values();
-  }
-
-  @Override
-  public Release getRelease() {
-    return new Release(releaseName);
-  }
-
-  @Override
   @SneakyThrows
-  public Dictionary getDictionary() {
+  private Dictionary createDictionary() {
     // Resolve
     val entryName = "org/icgc/dcc/resources/Dictionary.json";
     URL url = getDictionaryUrl(DICTIONARY_VERSION);
@@ -134,41 +130,16 @@ public class KeyValidationContext extends AbstractValidationContext {
     return dictionary;
   }
 
-  @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return new SubmissionDirectory(getDccFileSystem(), getRelease(), getProjectKey(), getSubmission());
-  }
-
-  @Override
-  public FileSchema getSsmPrimaryFileSchema() {
-    return getSsmPrimaryFileSchema(getDictionary());
-  }
-
-  @Override
-  public DccFileSystem getDccFileSystem() {
-    return new DccFileSystem(getConfig(), getFileSystem());
-  }
-
-  @Override
   @SneakyThrows
-  public FileSystem getFileSystem() {
-    return FileSystem.get(getConfiguration());
+  private FileSystem createFileSystem() {
+    val fsUrl = getConfig().getString(FS_URL);
+    val configuration = new Configuration();
+    configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
+
+    return FileSystem.get(configuration);
   }
 
-  @Override
-  public ReleaseFileSystem getReleaseFileSystem() {
-    return new ReleaseFileSystem(getDccFileSystem(), getRelease());
-  }
-
-  private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {
-    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
-    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
-    URL url = new URL(format(template, basePath, version, version));
-
-    return url;
-  }
-
-  private Config getConfig() {
+  private Config createConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
         "hadoop.mapred.job.tracker", jobTracker,
         "hadoop.fs.defaultFS", fsUrl,
@@ -178,29 +149,29 @@ public class KeyValidationContext extends AbstractValidationContext {
         ));
   }
 
-  private Configuration getConfiguration() {
-    val fsUrl = getConfig().getString(FS_URL);
-    val configuration = new Configuration();
-    configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
+  private PlatformStrategy createPlatformStrategy() {
+    val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
+    val factory = provider.get();
 
-    return configuration;
+    // Reuse primary validation component
+    val dummy = new Path("/");
+    return factory.get(dummy, dummy, dummy);
   }
 
-  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
-    for (val fileSchema : dictionary.getFiles()) {
-      val fileType = SubmissionFileType.from(fileSchema.getName());
-      val ssmPrimary = fileType == SSM_P_TYPE;
-      if (ssmPrimary) {
-        return fileSchema;
-      }
-    }
-
-    throw new IllegalStateException("'ssm_p' file schema missing");
+  private SubmissionDirectory createSubmissionDirectory() {
+    return new SubmissionDirectory(
+        getDccFileSystem(),
+        getRelease(),
+        getProjectKey(),
+        new Submission(projectKey, projectKey, releaseName));
   }
 
-  private Submission getSubmission() {
-    val projectName = getProjectKey();
-    return new Submission(getProjectKey(), projectName, releaseName);
+  private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {
+    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
+    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
+    URL url = new URL(format(template, basePath, version, version));
+
+    return url;
   }
 
   private static void patchDictionary(Dictionary dictionary) {
@@ -217,6 +188,18 @@ public class KeyValidationContext extends AbstractValidationContext {
 
     log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
         new Object[] { fileSchema.getName(), regex, patchedRegex });
+  }
+
+  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
+    for (val fileSchema : dictionary.getFiles()) {
+      val fileType = SubmissionFileType.from(fileSchema.getName());
+      val ssmPrimary = fileType == SSM_P_TYPE;
+      if (ssmPrimary) {
+        return fileSchema;
+      }
+    }
+
+    throw new IllegalStateException("'ssm_p' file schema missing");
   }
 
 }

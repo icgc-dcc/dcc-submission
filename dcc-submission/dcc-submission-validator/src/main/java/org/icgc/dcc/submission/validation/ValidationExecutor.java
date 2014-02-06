@@ -17,12 +17,12 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static com.google.common.collect.Maps.newConcurrentMap;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.ValidationListener.NOOP_LISTENER;
 
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
@@ -30,14 +30,18 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import javax.annotation.concurrent.ThreadSafe;
+
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.SneakyThrows;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.util.ThreadNamingRunnable;
 
+import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -47,33 +51,36 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * provides asynchronous callbacks for execution outcomes.
  */
 @Slf4j
+@ThreadSafe
+@RequiredArgsConstructor
 public class ValidationExecutor {
 
   /**
-   * Bookkeeping for cancelling, indexed by {@link Validation#getId()}.
+   * The maximum number of concurrently executing validation jobs.
+   * <p>
+   * The number of validation "slots".
    */
-  private final ConcurrentMap<String, Future<?>> validationFutures = newConcurrentMap();
+  private final int maxConcurrentValidations;
 
   /**
-   * The pool used to execute validation tasks.
+   * The delegate thread pool used to execute validation jobs.
    */
-  private final ThreadPoolExecutor pool;
+  @Getter(lazy = true, value = PRIVATE)
+  private final ThreadPoolExecutor jobPool = createExecutor(maxConcurrentValidations);
 
   /**
-   * Creates a validator with the supplied number of validation "slots".
-   * 
-   * @param maxConcurrentValidations The maximum number of concurrently executing validation tasks.
+   * Bookkeeping for canceling, indexed by {@link ValidationJob#getJobId()}.
+   * <p>
+   * Is thread-safe and uses weak references to automatically remove entries when finished.
    */
-  public ValidationExecutor(int maxConcurrentValidations) {
-    log.info("Initializing pool with a maximum of {} concurrent validations", maxConcurrentValidations);
-    this.pool = createExecutor(maxConcurrentValidations);
-  }
+  @Getter(lazy = true, value = PRIVATE)
+  private final Map<String, Future<?>> jobHandles = new MapMaker().weakValues().makeMap();
 
   /**
    * Returns the number of active validation "slots".
    */
   public int getActiveCount() {
-    return pool.getActiveCount();
+    return getJobPool().getActiveCount();
   }
 
   /**
@@ -97,71 +104,15 @@ public class ValidationExecutor {
    * the caller upon successful submission.
    * @param listener validation listener to callback on validation lifecycle events
    */
-  public void execute(final @NonNull Validation validation, final @NonNull ValidationListener listener) {
+  public void execute(@NonNull Validation validation, @NonNull ValidationListener listener) {
     val jobId = validation.getId();
 
-    // Need to apply listening decorator here because we still need access to pool methods later
-    log.info("execute: Submitting validation '{}' ... {}", jobId, getStats());
-    val validationFuture = submit(jobId, new Runnable() {
-
-      @Override
-      @SneakyThrows
-      public void run() {
-        try {
-
-          //
-          // Event: Started
-          //
-
-          // Execute the accept callback on the same thread as the validation
-          log.info("job: Starting validation '{}'... {}", jobId, getStats());
-          listener.onStarted(validation);
-
-          //
-          // Event: Executing (no callback)
-          //
-
-          log.info("job: Executing validation '{}'... {}", jobId, getStats());
-          validation.execute();
-
-          //
-          // Event: Completed
-          //
-
-          log.info("job: Completing validation '{}'. {}", jobId, getStats());
-          listener.onCompletion(validation);
-        } catch (InterruptedException e) {
-
-          //
-          // Event: Cancelled
-          //
-          log.info("job: Cancelling validation '{}'... {}", jobId, getStats());
-          listener.onCancelled(validation);
-        } catch (Throwable t) {
-
-          //
-          // Event: Failure
-          //
-
-          log.error(format("job: Failing validation '%s'... %s", jobId, getStats()), t);
-          listener.onFailure(validation, t);
-
-          // Propagate
-          throw t;
-        } finally {
-          // Untrack the result since we are finished and cancellation can no longer occur
-          log.info("jon: Untracking validation '{}'... {}", jobId, getStats());
-          validationFutures.remove(jobId);
-        }
-
-        // Make available for {@link ListeningFuture#onSuccess()}
-        log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
-      }
-
-    });
+    log.info("execute: Submitting validation job '{}' ... {}", jobId, formatStats());
+    val job = new ValidationJob(jobId, validation, listener);
+    val jobHandle = submit(jobId, job);
 
     // Track it for future cancellation purposes
-    validationFutures.put(jobId, validationFuture);
+    getJobHandles().put(jobId, jobHandle);
   }
 
   /**
@@ -172,25 +123,19 @@ public class ValidationExecutor {
    * @param id the id of the task
    * @return whether the task was successfully cancelled
    */
-  public boolean cancel(String id) {
-    try {
-      val validationFuture = validationFutures.get(id);
-      val available = validationFuture != null;
-      if (available) {
-        log.warn("cancel: Cancelling validation '{}'... {}", id, getStats());
-        val cancelled = validationFuture.cancel(true);
-        log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
-            new Object[] { id, cancelled, getStats() });
+  public boolean cancel(@NonNull String id) {
+    val validationFuture = getJobHandles().get(id);
+    val available = validationFuture != null;
+    if (available) {
+      log.warn("cancel: Cancelling validation '{}'... {}", id, formatStats());
+      val cancelled = validationFuture.cancel(true);
+      log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
+          new Object[] { id, cancelled, formatStats() });
 
-        return cancelled;
-      }
-
-    } finally {
-      // No project left behind
-      validationFutures.remove(id);
+      return cancelled;
     }
 
-    log.warn("cancel: No validation found '{}'... {}", id, getStats());
+    log.warn("cancel: No validation found '{}'... {}", id, formatStats());
     return false;
   }
 
@@ -199,34 +144,41 @@ public class ValidationExecutor {
    */
   public void shutdown() {
     log.info("Shutting down pool...");
-    pool.shutdownNow();
+    getJobPool().shutdownNow();
   }
 
   /**
-   * Submits the supplied {@code validationCallable} job for execution by the underlying executor.
+   * Submits the supplied {@code job} for execution by the underlying executor.
    * 
    * @param jobId the id of the job to submit
    * @param job the job to submit
    * @return the "promise" of the result
    */
   private Future<?> submit(@NonNull String jobId, @NonNull Runnable job) {
-    // Change the thread name of the executing callback to be named {@code name}. This makes logs easier to trace and
-    // analyze
+    // Change the thread name of the executing job to be named {@code name}.
+    // This makes logs easier to trace andanalyze
     val namedJob = new ThreadNamingRunnable(jobId, job);
 
     // Delegate to the pool executor and capture the future (a.k.a "promise") result
-    val validationFuture = pool.submit(namedJob);
+    val jobHandle = getJobPool().submit(namedJob);
 
-    return validationFuture;
+    return jobHandle;
   }
 
   /**
-   * Creates the internal pool with the appropriate application semantics.
+   * Gets basic task statistics about the underlying pool.
    * 
-   * @param maxConcurrentValidations
-   * @return
+   * @return a formatted statistics string
    */
-  private ThreadPoolExecutor createExecutor(int maxConcurrentValidations) {
+  private String formatStats() {
+    return format("Executing job(s): %s job", getJobPool().getActiveCount());
+  }
+
+  /**
+   * Creates the internal thread pool with the appropriate application semantics.
+   * @return the thread pool
+   */
+  private static ThreadPoolExecutor createExecutor(int maxConcurrentValidations) {
     // Bind all pool sizes to this value
     val poolSize = maxConcurrentValidations;
 
@@ -246,15 +198,14 @@ public class ValidationExecutor {
         queue,
 
         // Name the threads for logging and diagnostics
-        new ThreadFactoryBuilder().setNameFormat("validation-%s").build(),
+        new ThreadFactoryBuilder().setNameFormat("validation-slot-%s").build(),
 
         // Need this to get a customized exception when "slots" are full
         new RejectedExecutionHandler() {
 
           @Override
           public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            val message = format("Pool limit of %s concurrent validations reached. Validation rejected. %s",
-                poolSize, getStats());
+            val message = format("Pool limit of %s concurrent validations reached. Validation rejected.", poolSize);
             log.warn(message);
 
             // Raison d'être
@@ -262,16 +213,6 @@ public class ValidationExecutor {
           }
 
         });
-  }
-
-  /**
-   * Gets basic task statistics about the underlying pool.
-   * 
-   * @return a formatted statistics string
-   */
-  private String getStats() {
-    return format("taskCount: %s, activeCount: %s, completedCount: %s",
-        pool.getTaskCount(), pool.getActiveCount(), pool.getCompletedTaskCount());
   }
 
 }

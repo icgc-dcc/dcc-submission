@@ -17,71 +17,76 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static java.lang.String.format;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.validation.core.Validation;
 
 /**
- * Abstraction that handles {@link ValidationExecutor} events.
+ * An executing validation job.
+ * <p>
+ * Triggers {@link ValidationListener} events.
  */
-public interface ValidationListener {
+@RequiredArgsConstructor
+@Slf4j
+public class ValidationJob implements Runnable {
 
-  /**
-   * Called at the beginning of a job.
-   * <p>
-   * The job has been accepted for immediate execution if this has been called.
-   * 
-   * @param validation the validation that is about to execute
-   */
-  void onStarted(Validation validation);
+  @NonNull
+  private final String jobId;
+  @NonNull
+  private final Validation validation;
+  @NonNull
+  private final ValidationListener listener;
 
-  /**
-   * Called when a job is cancelled.
-   * 
-   * @param validation the validation that was successfully cancelled
-   */
-  void onCancelled(Validation validation);
+  @Override
+  @SneakyThrows
+  public void run() {
+    try {
 
-  /**
-   * Called when a job is completed.
-   * 
-   * @param validation the validation that successfully executed
-   */
-  void onCompletion(Validation validation);
+      //
+      // Event: Started
+      //
 
-  /**
-   * Called when a job fails.
-   * 
-   * @param validation the validation that failed and was unsuccessful
-   * @param cause the cause of the failure
-   */
-  void onFailure(Validation validation, Throwable cause);
+      // Execute the accept callback on the same thread as the validation
+      log.info("job: Starting validation '{}'...", jobId);
+      listener.onStarted(validation);
 
-  /**
-   * Default no-op listener that does nothing.
-   * <p>
-   * Useful for satisfying interfaces.
-   */
-  public static final ValidationListener NOOP_LISTENER = new ValidationListener() {
+      //
+      // Event: Executing (no callback)
+      //
 
-    @Override
-    public void onStarted(Validation validation) {
-      // No-op
+      log.info("job: Executing validation '{}'...", jobId);
+      validation.execute();
+
+      //
+      // Event: Completed
+      //
+
+      log.info("job: Completing validation '{}'...", jobId);
+      listener.onCompletion(validation);
+    } catch (InterruptedException e) {
+
+      //
+      // Event: Cancelled
+      //
+
+      log.info("job: Cancelling validation '{}'...", jobId);
+      listener.onCancelled(validation);
+    } catch (Throwable t) {
+
+      //
+      // Event: Failure
+      //
+
+      log.error(format("job: Failing validation '%s'... %s", jobId), t);
+      listener.onFailure(validation, t);
     }
 
-    @Override
-    public void onCompletion(Validation validation) {
-      // No-op
-    }
-
-    @Override
-    public void onCancelled(Validation validation) {
-      // No-op
-    }
-
-    @Override
-    public void onFailure(Validation validation, Throwable throwable) {
-      // No-op
-    }
-
-  };
+    // Make available for {@link ListeningFuture#onSuccess()}
+    log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
+  }
 
 }
