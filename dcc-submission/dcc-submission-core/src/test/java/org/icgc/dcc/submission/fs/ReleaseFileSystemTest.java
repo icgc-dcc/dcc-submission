@@ -140,7 +140,7 @@ public class ReleaseFileSystemTest {
     val nextSubmissionDonorErrorFile = new File(nextSubmissionValidationDir, "donor--errors.json");
     val nextSubmissionSampleErrorFile = new File(nextSubmissionValidationDir, "sample--errors.json");
 
-    val nextSystemDir = new File(nextReleaseDir, "SystemFiles");
+    val nextSystemDir = new File(nextReleaseDir, SYSTEM_FILES_DIR_NAME);
     val nextSystemFile = new File(nextSystemDir, "system.txt");
 
     // Create files and directories
