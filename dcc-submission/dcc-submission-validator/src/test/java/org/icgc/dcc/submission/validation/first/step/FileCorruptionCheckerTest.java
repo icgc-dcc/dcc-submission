@@ -3,7 +3,6 @@ package org.icgc.dcc.submission.validation.first.step;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -26,8 +25,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.core.Error;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.Util.CodecType;
@@ -228,16 +226,11 @@ public class FileCorruptionCheckerTest {
   }
 
   private void checkErrorReported() {
-    verify(validationContext, times(1)).reportError(anyString(), any(ErrorType.class), any());
+    verify(validationContext, times(1)).reportError(any(Error.class));
   }
 
   private void checkNoErrorsReported(ValidationContext validationContext) {
-    verify(validationContext, times(0)).reportError(anyString(), any(ErrorType.class));
-    verify(validationContext, times(0)).reportError(anyString(), any(TupleError.class));
-    verify(validationContext, times(0)).reportError(anyString(), any(ErrorType.class), any());
-    verify(validationContext, times(0)).reportError(anyString(), any(), any(ErrorType.class));
-    verify(validationContext, times(0)).reportError(anyString(), anyLong(), any(), any(ErrorType.class));
-    verify(validationContext, times(0)).reportError(anyString(), anyLong(), anyString(), any(), any(ErrorType.class));
+    verify(validationContext, times(0)).reportError(any(Error.class));
   }
 
 }

@@ -145,7 +145,7 @@ module.exports = class ReportDatatypeView extends View
          style="height:auto; margin-top:0"
          href="#validate-submission-popup"
          id="validate-submission-popup-button">
-      Validate
+      Validate #{title}
       </a>
       """
     
@@ -262,8 +262,7 @@ module.exports = class ReportDatatypeView extends View
         #"""
         """
         <'row-fluid' <'span3 #{datatype}_title'l> <'span9'f>r>
-        t
-        #<'row-fluid'<'span6'><'span6'p>>
+        t<'row-fluid'<'span6'i><'span6'p>>"
         """
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"

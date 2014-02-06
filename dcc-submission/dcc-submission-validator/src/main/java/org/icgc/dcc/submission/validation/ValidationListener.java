@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,49 +15,73 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.validation;
 
-import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.validation.core.Validation;
 
 /**
- * "Encapsulated Context Object" class that insulates and decouples the validation logic from report collection and
- * storage. Implementations should manage memory so that excessive reporting doesn't produce unstable memory pressure.
- * This is a "role partition" in the first link below.
- * 
- * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
- * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
+ * Abstraction that handles {@link ValidationExecutor} events.
  */
-public interface ReportContext {
+public interface ValidationListener {
 
   /**
-   * Indicates that at least one error was reported.
+   * Called at the beginning of a job.
+   * <p>
+   * The job has been accepted for immediate execution if this has been called.
+   * 
+   * @param validation the validation that is about to execute
    */
-  boolean hasErrors();
+  void onStarted(Validation validation);
 
   /**
-   * Returns the total number of errors encountered so far.
+   * Called when a job is cancelled.
+   * 
+   * @param validation the validation that was successfully cancelled
    */
-  int getErrorCount();
+  void onCancelled(Validation validation);
 
   /**
-   * Reports on summary statistics.
+   * Called when a job is completed.
+   * 
+   * @param validation the validation that successfully executed
    */
-  void reportSummary(String fileName, String name, String value);
+  void onCompletion(Validation validation);
 
   /**
-   * Reports on field statistics.
+   * Called when a job fails.
+   * 
+   * @param validation the validation that failed and was unsuccessful
+   * @param cause the cause of the failure
    */
-
-  void reportField(String fileName, FieldReport fieldReport);
-
-  /**
-   * Report a single validation error.
-   */
-  void reportError(Error error);
+  void onFailure(Validation validation, Throwable cause);
 
   /**
-   * Allows the context an opportunity to update line numbers referenced in report elements.
+   * Default no-op listener that does nothing.
+   * <p>
+   * Useful for satisfying interfaces.
    */
-  void reportLineNumbers(Path path);
+  public static final ValidationListener NOOP_LISTENER = new ValidationListener() {
+
+    @Override
+    public void onStarted(Validation validation) {
+      // No-op
+    }
+
+    @Override
+    public void onCompletion(Validation validation) {
+      // No-op
+    }
+
+    @Override
+    public void onCancelled(Validation validation) {
+      // No-op
+    }
+
+    @Override
+    public void onFailure(Validation validation, Throwable throwable) {
+      // No-op
+    }
+
+  };
 
 }

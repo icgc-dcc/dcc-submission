@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.norm;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
@@ -128,13 +129,15 @@ public class NormalizationReporter {
    * Reports normalization error.
    */
   public static void reportError(ValidationContext validationContext, NormalizationChecker checker) {
-    validationContext
-        .reportError(
-            checker.getFileName(),
-            TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR,
-            checker.getCount(),
-            checker.getTotal(),
-            checker.getThreshold());
+    validationContext.reportError(
+        error()
+            .fileName(checker.getFileName())
+            .type(TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR)
+            .params(
+                checker.getCount(),
+                checker.getTotal(),
+                checker.getThreshold())
+            .build());
   }
 
   /**

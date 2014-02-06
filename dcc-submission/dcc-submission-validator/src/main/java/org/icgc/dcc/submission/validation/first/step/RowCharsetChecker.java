@@ -21,6 +21,7 @@ import static com.google.common.base.CharMatcher.ASCII;
 import static com.google.common.base.CharMatcher.JAVA_ISO_CONTROL;
 import static com.google.common.base.CharMatcher.noneOf;
 import static com.google.common.base.Charsets.US_ASCII;
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.INVALID_CHARSET_ROW_ERROR;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
 import lombok.extern.slf4j.Slf4j;
@@ -57,15 +58,17 @@ public class RowCharsetChecker extends CompositeRowChecker {
       long lineNumber) {
 
     if (containsInvalidCharacter(line)) {
-      log.debug("Invalid character found in the row: " + line);
+      log.debug("Invalid character found in the row: {}", line);
 
       incrementCheckErrorCount();
+
       getValidationContext().reportError(
-          fileName,
-          lineNumber,
-          -1,
-          INVALID_CHARSET_ROW_ERROR,
-          US_ASCII.name()); // TODO: return actual list
+          error()
+              .fileName(fileName)
+              .lineNumber(lineNumber)
+              .type(INVALID_CHARSET_ROW_ERROR)
+              .params(US_ASCII.name()) // TODO: return actual list
+              .build());
     }
   }
 

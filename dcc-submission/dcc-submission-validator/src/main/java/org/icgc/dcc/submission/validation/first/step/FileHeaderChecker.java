@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.collect.ImmutableList.copyOf;
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.FILE_HEADER_ERROR;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
 
@@ -56,8 +57,13 @@ public class FileHeaderChecker extends CompositeFileChecker {
           expectedHeader, actualHeader);
 
       incrementCheckErrorCount();
-      getValidationContext().reportError(filename, FILE_HEADER_ERROR,
-          expectedHeader, actualHeader);
+
+      getValidationContext().reportError(
+          error()
+              .fileName(filename)
+              .type(FILE_HEADER_ERROR)
+              .params(expectedHeader, actualHeader)
+              .build());
     }
   }
 

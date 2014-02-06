@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.http.jersey;
 import static javax.ws.rs.BindingPriority.HEADER_DECORATOR;
 import static org.icgc.dcc.core.util.VersionUtils.getApiVersion;
 import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
+import static org.icgc.dcc.core.util.VersionUtils.getVersion;
 
 import java.io.IOException;
 
@@ -43,13 +44,14 @@ public class VersionFilter implements ContainerResponseFilter {
   /**
    * Header name constants.
    */
-  private static final String API_SERVER_VERSION_HEADER = "X-ICGC-Submission-Version";
-  private static final String API_SERVER_COMMIT_ID_HEADER = "X-ICGC-Submission-CommitId";
+  private static final String SERVER_COMMIT_ID_HEADER = "X-ICGC-Submission-CommitId";
+  private static final String SERVER_VERSION_HEADER = "X-ICGC-Submission-Version";
+  private static final String SERVER_API_VERSION_HEADER = "X-ICGC-Submission-Api-Version";
 
   /**
    * System version constants.
    */
-  private static final Versions VERSIONS = new Versions(getApiVersion(), getCommitId());
+  private static final Versions VERSIONS = new Versions(getVersion(), getApiVersion(), getCommitId());
 
   @Override
   public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
@@ -57,8 +59,9 @@ public class VersionFilter implements ContainerResponseFilter {
 
     // Add versions to response
     val headers = responseContext.getHeaders();
-    headers.add(API_SERVER_VERSION_HEADER, VERSIONS.getVersion());
-    headers.add(API_SERVER_COMMIT_ID_HEADER, VERSIONS.getCommit());
+    headers.add(SERVER_VERSION_HEADER, VERSIONS.getVersion());
+    headers.add(SERVER_API_VERSION_HEADER, VERSIONS.getApiVersion());
+    headers.add(SERVER_COMMIT_ID_HEADER, VERSIONS.getCommit());
   }
 
 }

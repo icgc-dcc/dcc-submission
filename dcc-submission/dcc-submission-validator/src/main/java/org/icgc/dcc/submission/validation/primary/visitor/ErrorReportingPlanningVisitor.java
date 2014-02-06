@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.primary.visitor;
 
 import static org.icgc.dcc.submission.validation.cascading.TupleStates.keepInvalidTuplesFilter;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD;
+import static org.icgc.dcc.submission.validation.core.Error.error;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -116,7 +117,16 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
             val tupleState = tupleStates.next();
             if (tupleState.isInvalid()) {
               for (val errorTuple : tupleState.getErrors()) {
-                context.reportError(fileName, errorTuple);
+                context.reportError(
+                    error()
+                        .fileName(fileName)
+                        .fieldNames(errorTuple.getColumnNames())
+                        .type(errorTuple.getType())
+                        .number(errorTuple.getNumber())
+                        .lineNumber(errorTuple.getLine())
+                        .value(errorTuple.getValue())
+                        .params(errorTuple.getParameters())
+                        .build());
               }
             }
           }

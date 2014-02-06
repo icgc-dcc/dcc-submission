@@ -17,8 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR_CHAR;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -42,31 +44,41 @@ public class RowColumnChecker extends CompositeRowChecker {
       String line,
       long lineNumber) {
 
-    int expectedNumColumns = getExpectedCount(fileSchema);
-    int actualNumColumns = getActualCount(line);
-    if (isCountMismatch(
-        expectedNumColumns,
-        actualNumColumns)) {
-
+    val expectedNumColumns = getExpectedColumnCount(fileSchema);
+    val actualNumColumns = getActualColumnCount(line);
+    if (isCountMismatch(expectedNumColumns, actualNumColumns)) {
       log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
           + actualNumColumns + " at line " + lineNumber);
 
       incrementCheckErrorCount();
+
       getValidationContext().reportError(
-          filename,
-          lineNumber,
-          actualNumColumns,
-          STRUCTURALLY_INVALID_ROW_ERROR,
-          expectedNumColumns);
+          error()
+              .fileName(filename)
+              .lineNumber(lineNumber)
+              .type(STRUCTURALLY_INVALID_ROW_ERROR)
+              .value(actualNumColumns)
+              .params(expectedNumColumns)
+              .build());
     }
   }
 
-  private int getExpectedCount(FileSchema fileSchema) {
+  private int getExpectedColumnCount(FileSchema fileSchema) {
     return fileSchema.getFields().size();
   }
 
-  private int getActualCount(String line) {
-    return line.split(FIELD_SEPARATOR, -1).length;
+  private int getActualColumnCount(String line) {
+    int separatorCount = 0;
+    for (int i = 0; i < line.length(); i++) {
+      if (line.charAt(i) == FIELD_SEPARATOR_CHAR) {
+        separatorCount++;
+      }
+    }
+
+    // One more field than separator count
+    val fieldCount = separatorCount + 1;
+
+    return fieldCount;
   }
 
   private boolean isCountMismatch(int expectedNumColumns, int actualNumColumns) {

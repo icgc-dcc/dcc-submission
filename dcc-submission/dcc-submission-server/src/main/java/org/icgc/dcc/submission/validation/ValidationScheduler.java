@@ -27,11 +27,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Synchronized;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,7 +51,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.google.common.util.concurrent.FutureCallback;
 import com.google.inject.Inject;
 
 /**
@@ -93,7 +90,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param projectKey the key of the project to cancel
    * @throws InvalidStateException
    */
-  public void cancelValidation(String projectKey) throws InvalidStateException {
+  public void cancelValidation(@NonNull String projectKey) throws InvalidStateException {
     val cancelled = executor.cancel(projectKey);
     if (cancelled) {
       // TODO: Determine when this should / needs to be called
@@ -190,50 +187,63 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @param project the project to validate
    * @throws ValidationRejectedException if the validation could not be executed
    */
-  private void tryValidation(final Release release, final QueuedProject project) {
+  private void tryValidation(@NonNull final Release release, @NonNull final QueuedProject project) {
     // Prepare validation
     val validation = createValidation(release, project);
 
     // Submit validation asynchronously for execution
-    executor.execute(validation, new Runnable() {
+    executor.execute(validation, new ValidationListener() {
 
       /**
-       * Called if and when validation is accepted (asynchronously).
+       * Called if and when validation is started (asynchronously).
        */
       @Override
-      public void run() {
-        // If we made it here then the validation was accepted
-        log.info("onAccepted - Accepting next project in queue: '{}'", project);
-        acceptValidation(project, release);
-        log.info("onAccepted -  '{}'", project);
+      public void onStarted(Validation validation) {
+        log.info("onStarted - Started next project in queue: '{}'", project);
+        releaseService.dequeueSubmission(project);
+        log.info("onStarted -  '{}'", project);
       }
-
-    }, new FutureCallback<Validation>() {
 
       /**
        * Called when validation has completed (may not be VALID)
        */
       @Override
-      public void onSuccess(Validation validation) {
-        log.info("onSuccess - Finished validation for '{}'", project.getKey());
-
+      public void onCompletion(Validation validation) {
+        log.info("onCompletion - Finished validation for '{}'", project.getKey());
         val submissionReport = validation.getContext().getSubmissionReport();
         val outcome = ValidationOutcome.SUCCEEDED;
-        completeValidation(project, outcome, submissionReport);
-        log.info("onSuccess - Completed '{}'", project.getKey());
+
+        log.info("onCompletion - Validation '{}' completed with outcome '{}'", project, outcome);
+        releaseService.resolveSubmission(project, outcome, submissionReport);
+        log.info("onCompletion - Completed '{}'", project.getKey());
+      }
+
+      /**
+       * Called when validation has been cancelled (will not be VALID)
+       */
+      @Override
+      public void onCancelled(Validation validation) {
+        log.warn("onCancelled - Cancelled validation for '{}'", project.getKey());
+        val submissionReport = validation.getContext().getSubmissionReport();
+        val outcome = ValidationOutcome.CANCELLED;
+
+        log.warn("onCancelled for '{}' completed with outcome '{}'", project, outcome);
+        releaseService.resolveSubmission(project, outcome, submissionReport);
+        log.warn("onCancelled - Completed '{}'.", project.getKey());
       }
 
       /**
        * Called when validation has completed (will not be VALID)
        */
       @Override
-      public void onFailure(Throwable t) {
+      public void onFailure(Validation validation, Throwable t) {
         log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
-
         val submissionReport = validation.getContext().getSubmissionReport();
-        val outcome = t instanceof CancellationException ? ValidationOutcome.CANCELLED : ValidationOutcome.FAILED;
-        completeValidation(project, outcome, submissionReport);
-        log.info("onFailure - Completed '{}'.", project.getKey());
+        val outcome = ValidationOutcome.FAILED;
+
+        log.error("onFailure - Validation for '{}' completed with outcome '{}'", project, outcome);
+        releaseService.resolveSubmission(project, outcome, submissionReport);
+        log.error("onFailure - Completed '{}'.", project.getKey());
       }
 
     });
@@ -306,33 +316,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       }
     }
 
-    val reportContext = new SubmissionReportContext(nextReport);
-
-    return reportContext;
-  }
-
-  /**
-   * Called after a successful submission to affect the queue state and notify end users that validation has begun.
-   * 
-   * @param project
-   */
-  @Synchronized
-  private void acceptValidation(QueuedProject project, Release release) {
-    log.info("Validation for '{}' accepted", project);
-    releaseService.dequeueSubmission(project);
-  }
-
-  /**
-   * Always called after validation has completed to record the submission report and update the submission's state.
-   * 
-   * @param project the project to complete
-   * @param outcome validation outcome
-   * @param submissionReport the report produced through the validation process
-   */
-  @Synchronized
-  private void completeValidation(QueuedProject project, ValidationOutcome outcome, SubmissionReport submissionReport) {
-    log.info("Validation for '{}' completed with outcome '{}'", project, outcome);
-    releaseService.resolveSubmission(project, outcome, submissionReport);
+    return new SubmissionReportContext(nextReport);
   }
 
   /**

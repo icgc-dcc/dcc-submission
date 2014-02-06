@@ -84,7 +84,7 @@ Handlebars.registerHelper 'submission_action', (state) ->
         id="validate-submission-popup-button"
         data-toggle="modal"
         href="#validate-submission-popup">
-        Validation Project
+        Validate
       </button>
       """
     when "NOT_VALIDATED", "INVALID"
@@ -94,7 +94,7 @@ Handlebars.registerHelper 'submission_action', (state) ->
         id="validate-submission-popup-button"
         data-toggle="modal"
         href="#validate-submission-popup">
-        Validate Project
+        Validate
       </button>
       """
     when "QUEUED", "VALIDATING"

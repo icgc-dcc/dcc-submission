@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static org.icgc.dcc.submission.validation.core.Error.error;
 import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_FILE_ERROR;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REVERSE_RELATION_FILE_ERROR;
 
@@ -64,7 +65,13 @@ public class ReferentialFileChecker extends CompositeFileChecker {
               fileName, otherFileSchema.get().getName());
 
           incrementCheckErrorCount();
-          getValidationContext().reportError(fileName, RELATION_FILE_ERROR, fileSchema.getName());
+
+          getValidationContext().reportError(
+              error()
+                  .fileName(fileName)
+                  .type(RELATION_FILE_ERROR)
+                  .params(fileSchema.getName())
+                  .build());
         }
       }
     }
@@ -84,7 +91,13 @@ public class ReferentialFileChecker extends CompositeFileChecker {
             fileName, otherFileSchema.getName());
 
         incrementCheckErrorCount();
-        getValidationContext().reportError(fileName, REVERSE_RELATION_FILE_ERROR, otherFileSchema.getName());
+
+        getValidationContext().reportError(
+            error()
+                .fileName(fileName)
+                .type(REVERSE_RELATION_FILE_ERROR)
+                .params(otherFileSchema.getName())
+                .build());
       }
     }
   }
