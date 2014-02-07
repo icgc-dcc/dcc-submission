@@ -495,7 +495,7 @@ public class ReleaseService extends AbstractService {
       val projectKey = queuedProject.getKey();
       val submission = fetchAndCheckSubmission(nextRelease, projectKey, NOT_VALIDATED, VALID, INVALID, ERROR);
 
-      submissionService.queue(submission, queuedProject.getDataTypes());
+      submissionService.queueRequest(submission, queuedProject.getDataTypes());
     }
 
     updateReleaseSafely(nextReleaseName, nextRelease);
@@ -542,7 +542,7 @@ public class ReleaseService extends AbstractService {
               nextProjectKey, expectedState, currentState, nextState);
         }
 
-        submissionService.validate(submission, nextProject.getDataTypes());
+        submissionService.startValidation(submission, nextProject.getDataTypes());
 
         // Update corresponding database entity
         updateReleaseSafely(nextReleaseName, nextRelease);
@@ -622,7 +622,7 @@ public class ReleaseService extends AbstractService {
     val submission = release.getSubmissionByProjectKey(projectKey).get();
 
     // Update in-memory state
-    submissionService.modify(release, submission, dictionary, path);
+    submissionService.modifySubmission(release, submission, dictionary, path);
 
     // Update persisted state
     updateSubmission(releaseName, submission);
@@ -648,7 +648,7 @@ public class ReleaseService extends AbstractService {
     val release = getNextRelease();
     val submission = getSubmission(release, projectKey);
 
-    submissionService.resolve(submission, dataTypes, outcome, submissionReport, getNextDictionary());
+    submissionService.finishValidation(submission, dataTypes, outcome, submissionReport, getNextDictionary());
 
     log.info("Resolving project '{}' to submission state '{}'", projectKey, submission.getState());
     updateSubmission(release.getName(), submission);
@@ -694,7 +694,7 @@ public class ReleaseService extends AbstractService {
     nextRelease.setState(ReleaseState.OPENED);
 
     for (val submission : oldRelease.getSubmissions()) {
-      val newSubmission = submissionService.release(nextRelease, submission);
+      val newSubmission = submissionService.performRelease(nextRelease, submission);
 
       nextRelease.addSubmission(newSubmission);
     }
