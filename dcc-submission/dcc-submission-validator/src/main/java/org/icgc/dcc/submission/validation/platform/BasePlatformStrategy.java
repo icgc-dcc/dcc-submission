@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
+
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -44,6 +46,7 @@ import com.google.common.collect.Sets;
 
 public abstract class BasePlatformStrategy implements PlatformStrategy {
 
+  @Getter
   protected final FileSystem fileSystem;
 
   private final Path input;

@@ -27,6 +27,7 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.DROPPED;
+import static org.icgc.dcc.submission.normalization.steps.DonorIdAddition.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.normalization.steps.PreMarking.MARKING_FIELD;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -102,7 +103,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
     pipe =
         new GroupBy(
             pipe,
-            groupByFields(context),
+            groupByFields(),
             secondarySortFields());
 
     // Filter out (with logging+counting) duplicate observations
@@ -119,9 +120,10 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    * Returns the {@link Fields} on which the GROUP BY should take place, and that will allow detecting duplicate
    * observations.
    */
-  private Fields groupByFields(NormalizationContext context) {
+  private Fields groupByFields() {
     return fields(BusinessKeys.MUTATION_PRIMARY_IDENTIFYING_PART)
-        .append(MARKING_FIELD);
+        .append(MARKING_FIELD)
+        .append(DONOR_ID_FIELD);
   }
 
   /**
