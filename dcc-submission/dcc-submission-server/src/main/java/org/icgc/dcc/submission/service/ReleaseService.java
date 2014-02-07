@@ -511,7 +511,7 @@ public class ReleaseService extends AbstractService {
    */
   @Synchronized
   public void dequeueSubmission(@NonNull final QueuedProject nextProject) {
-    val expectedState = SubmissionState.QUEUED;
+    val expectedState = QUEUED;
     val nextProjectKey = nextProject.getKey();
 
     val description = format("validate project '%s'", nextProjectKey);
@@ -536,7 +536,7 @@ public class ReleaseService extends AbstractService {
         // Update release object
         val submission = getSubmissionByProjectKey(nextRelease, nextProjectKey); // can't be null
         val currentState = submission.getState();
-        val nextState = SubmissionState.VALIDATING;
+        val nextState = VALIDATING;
         if (expectedState != currentState) {
           throw new ReleaseException("Project '%s' is not '%s' ('%s' instead), cannot set to '%s'",
               nextProjectKey, expectedState, currentState, nextState);

@@ -25,6 +25,9 @@ import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.submission.validation.ValidationOutcome.CANCELLED;
+import static org.icgc.dcc.submission.validation.ValidationOutcome.FAILED;
+import static org.icgc.dcc.submission.validation.ValidationOutcome.SUCCEEDED;
 
 import java.util.Set;
 
@@ -211,7 +214,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       public void onCompletion(Validation validation) {
         log.info("onCompletion - Finished validation for '{}'", project.getKey());
         val submissionReport = validation.getContext().getSubmissionReport();
-        val outcome = ValidationOutcome.SUCCEEDED;
+        val outcome = SUCCEEDED;
 
         log.info("onCompletion - Validation '{}' completed with outcome '{}'", project, outcome);
         releaseService.resolveSubmission(project, outcome, submissionReport);
@@ -225,9 +228,9 @@ public class ValidationScheduler extends AbstractScheduledService {
       public void onCancelled(Validation validation) {
         log.warn("onCancelled - Cancelled validation for '{}'", project.getKey());
         val submissionReport = validation.getContext().getSubmissionReport();
-        val outcome = ValidationOutcome.CANCELLED;
+        val outcome = CANCELLED;
 
-        log.warn("onCancelled for '{}' completed with outcome '{}'", project, outcome);
+        log.warn("onCancelled - Validation '{}' completed with outcome '{}'", project, outcome);
         releaseService.resolveSubmission(project, outcome, submissionReport);
         log.warn("onCancelled - Completed '{}'.", project.getKey());
       }
@@ -239,9 +242,9 @@ public class ValidationScheduler extends AbstractScheduledService {
       public void onFailure(Validation validation, Throwable t) {
         log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
         val submissionReport = validation.getContext().getSubmissionReport();
-        val outcome = ValidationOutcome.FAILED;
+        val outcome = FAILED;
 
-        log.error("onFailure - Validation for '{}' completed with outcome '{}'", project, outcome);
+        log.error("onFailure - Validation '{}' completed with outcome '{}'", project, outcome);
         releaseService.resolveSubmission(project, outcome, submissionReport);
         log.error("onFailure - Completed '{}'.", project.getKey());
       }
