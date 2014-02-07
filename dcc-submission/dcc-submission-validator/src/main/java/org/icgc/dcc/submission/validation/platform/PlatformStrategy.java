@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
@@ -84,4 +85,9 @@ public interface PlatformStrategy {
   public FileSchemaDirectory getFileSchemaDirectory();
 
   public FileSchemaDirectory getSystemDirectory();
+
+  /**
+   * TODO: remove after crisis (140131)!!!!
+   */
+  public FileSystem getFileSystem();
 }
