@@ -26,7 +26,16 @@ import lombok.NonNull;
 import org.mongodb.morphia.annotations.Embedded;
 
 /**
- * Represents a name-value summary metric.
+ * Represents a generic name-value summary metric.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "name": "MIN",
+ *    "value": "1"
+ *  }
+ * </pre>
  */
 @Data
 @Embedded

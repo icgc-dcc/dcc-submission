@@ -27,6 +27,20 @@ import lombok.Data;
 
 /**
  * Reports on cell values within a column. Keeps track of the line, value and total count.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "fieldNames": [ "f1" ],
+ *    "parameters" : {
+ *      ...
+ *    },
+ *    "count": "10,
+ *    "lineNumbers": [ 10, 20, 30 ],
+ *    "value": [ "v1", "v2", "v3" ]
+ *  }
+ * </pre>
  */
 @Data
 public class FieldErrorReport implements Serializable {

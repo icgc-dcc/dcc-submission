@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+/**
+ * The validation state of a file within a submission.
+ */
 public enum FileState {
 
   NOT_VALIDATED,

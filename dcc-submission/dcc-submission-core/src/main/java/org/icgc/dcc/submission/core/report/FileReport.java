@@ -31,16 +31,56 @@ import lombok.val;
 
 import org.mongodb.morphia.annotations.Embedded;
 
+/**
+ * Reports on a submission file.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "fileName": "ssm_p.txt",
+ *    "fileState": "NOT_VALIDATED",
+ *    "summaryReports": [ {
+ *      ...
+ *    } ],
+ *    "fieldReports": [ {
+ *      ...
+ *    } ]
+ *    "errorReports": [ {
+ *      ...
+ *    } ]
+ *  }
+ * </pre>
+ */
 @Data
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
 public class FileReport implements Comparable<FileReport> {
 
+  /**
+   * The name of the file the report describes.
+   */
   String fileName;
+
+  /**
+   * The state of the file.
+   */
   FileState fileState = FileState.NOT_VALIDATED;
+
+  /**
+   * Summary reports.
+   */
   List<SummaryReport> summaryReports = newLinkedList();
+
+  /**
+   * Field reports.
+   */
   List<FieldReport> fieldReports = newLinkedList();
+
+  /**
+   * Error Reports
+   */
   Set<ErrorReport> errorReports = newTreeSet();
 
   public FileReport(@NonNull String fileName) {

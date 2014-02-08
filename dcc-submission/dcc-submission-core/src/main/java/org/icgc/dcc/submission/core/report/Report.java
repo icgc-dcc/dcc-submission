@@ -34,6 +34,19 @@ import org.mongodb.morphia.annotations.Embedded;
 
 import com.google.common.base.Optional;
 
+/**
+ * Represents a validation report for a submission within a release.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "dataTypeReports": [ {
+ *      ...
+ *    } ]
+ *  }
+ * </pre>
+ */
 @Data
 @Embedded
 @NoArgsConstructor

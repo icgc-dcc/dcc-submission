@@ -46,7 +46,9 @@ import org.icgc.dcc.submission.dictionary.model.ValueType;
 
 import com.google.common.collect.ImmutableMap;
 
-// TODO: DCC-505 to fix the message (currently not used for anything)
+/**
+ * Represents a validation {@link Error} classification.
+ */
 @RequiredArgsConstructor
 public enum ErrorType {
 
@@ -406,4 +408,5 @@ public enum ErrorType {
   public enum ErrorLevel {
     FILE_LEVEL, ROW_LEVEL, CELL_LEVEL;
   }
+
 }

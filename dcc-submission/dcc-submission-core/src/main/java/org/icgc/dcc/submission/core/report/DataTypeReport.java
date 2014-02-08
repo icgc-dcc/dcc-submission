@@ -34,6 +34,21 @@ import org.mongodb.morphia.annotations.Embedded;
 
 import com.google.common.base.Optional;
 
+/**
+ * Represents a validation report for a data type within submission within a release.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "dataType": "DONOR",
+ *    "dataTypeState": "NOT_VALIDATED",
+ *    "fileTypeReports": [ {
+ *      ...
+ *    } ]
+ *  }
+ * </pre>
+ */
 @Data
 @Embedded
 @NoArgsConstructor
@@ -90,7 +105,7 @@ public class DataTypeReport implements Comparable<DataTypeReport> {
 
   @Override
   public int compareTo(@NonNull DataTypeReport other) {
-    return dataType.toString().compareTo(other.toString());
+    return dataType.getTypeName().compareTo(other.dataType.getTypeName());
   }
 
 }

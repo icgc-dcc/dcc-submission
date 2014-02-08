@@ -33,6 +33,21 @@ import org.mongodb.morphia.annotations.Embedded;
 
 import com.google.common.base.Optional;
 
+/**
+ * Reports on a {@link SubmissionFileType}.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "fileType": "DONOR",
+ *    "FileTypeState": "NOT_VALIDATED",
+ *    "fileReports": [ {
+ *      ...
+ *    } ]
+ *  }
+ * </pre>
+ */
 @Data
 @Embedded
 @NoArgsConstructor

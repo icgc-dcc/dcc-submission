@@ -35,21 +35,26 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.google.common.collect.ImmutableList;
 
+/**
+ * Represents a validation error.
+ */
 @Value
 public class Error {
+
+  @JsonProperty
+  ErrorType type;
+  @JsonProperty
+  int number;
 
   @JsonProperty
   String fileName;
   @JsonProperty
   List<String> fieldNames;
-  @JsonProperty
-  int number;
+
   @JsonProperty
   long lineNumber;
   @JsonProperty
   Object value;
-  @JsonProperty
-  ErrorType type;
   @JsonProperty
   Object[] params;
 

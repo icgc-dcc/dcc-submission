@@ -30,6 +30,28 @@ import lombok.val;
 
 import org.mongodb.morphia.annotations.Embedded;
 
+/**
+ * Reports on a file validation error.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "errorType": "STRUCTURALLY_INVALID_ROW_ERROR",
+ *    "number": "0",
+ *    "description": "This is a description",
+ *    "fieldErrorReports": [ {
+ *      "fieldNames": [ "f1" ],
+ *      "parameters" : {
+ *        ...
+ *      },
+ *      "count": "10,
+ *      "lineNumbers": [ 10, 20, 30 ],
+ *      "value": [ "v1", "v2", "v3" ]
+ *    } ]
+ *  }
+ * </pre>
+ */
 @Data
 @Embedded
 @NoArgsConstructor

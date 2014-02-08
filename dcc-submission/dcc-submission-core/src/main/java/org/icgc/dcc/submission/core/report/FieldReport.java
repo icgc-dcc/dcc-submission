@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import static com.google.common.collect.ComparisonChain.start;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,27 +29,54 @@ import org.mongodb.morphia.annotations.Embedded;
 
 import com.mongodb.BasicDBObject;
 
+/**
+ * Reports on a file field.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ *  {
+ *    "name": "f1",
+ *    "type": "minmax",
+ *    "label": "",
+ *    
+ *    "nulls": 0,            
+ *    "missing": 1,             
+ *    "populated": 1,           
+ *    "completeness": 0.5,    
+ *    
+ *    "summary": {
+ *      "MIN": 1,
+ *      "MAX": 10
+ *    }
+ * }
+ * </pre>
+ */
 @Data
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "name")
+@EqualsAndHashCode(of = { "name", "type" })
 public class FieldReport implements Comparable<FieldReport> {
 
   private String name;
+  private SummaryType type;
 
   private String label;
+
   private long nulls;
   private long missing;
   private long populated;
   private double completeness;
 
-  private SummaryType type;
   private BasicDBObject summary;
 
   @Override
   public int compareTo(@NonNull FieldReport other) {
-    return name.compareTo(other.name);
+    return start()
+        .compare(this.type, other.type)
+        .compare(this.name, other.name)
+        .result();
   }
 
 }

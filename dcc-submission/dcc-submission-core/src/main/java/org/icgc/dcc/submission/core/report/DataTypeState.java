@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+/**
+ * The validation state of a data type within a submission.
+ */
 public enum DataTypeState {
 
   NOT_VALIDATED,
