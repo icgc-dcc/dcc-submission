@@ -54,6 +54,11 @@ public class SummaryReport implements Comparable<SummaryReport> {
    */
   private String value;
 
+  public SummaryReport(@NonNull SummaryReport summaryReport) {
+    this.name = summaryReport.name;
+    this.value = summaryReport.value;
+  }
+
   @Override
   public int compareTo(@NonNull SummaryReport other) {
     return name.compareTo(other.name);

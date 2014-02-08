@@ -17,13 +17,16 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import lombok.Data;
+import lombok.NonNull;
 
 /**
  * Reports on cell values within a column. Keeps track of the line, value and total count.
@@ -50,21 +53,30 @@ public class FieldErrorReport implements Serializable {
    */
   private List<String> fieldNames;
   private Map<ErrorParameterKey, Object> parameters;
-  private long count;
 
   /**
    * Values
    */
+  private long count;
   private List<Long> lineNumbers = newLinkedList();
   private List<Object> values = newLinkedList();
 
-  public FieldErrorReport(Error error) {
+  public FieldErrorReport(@NonNull Error error) {
     this.setFieldNames(error.getFieldNames());
-    this.setCount(1L);
-
-    this.addLineNumber(error.getLineNumber());
-    this.addValue(error.getValue());
     this.setParameters(error.getType().build(error.getParams()));
+
+    this.setCount(1L);
+    this.addValue(error.getValue());
+    this.addLineNumber(error.getLineNumber());
+  }
+
+  public FieldErrorReport(@NonNull FieldErrorReport fieldErrorReport) {
+    this.fieldNames = fieldErrorReport.fieldNames;
+    this.parameters = newHashMap(fieldErrorReport.parameters);
+    this.count = fieldErrorReport.count;
+
+    this.lineNumbers = newArrayList(fieldErrorReport.lineNumbers);
+    this.values = newArrayList(fieldErrorReport.values);
   }
 
   public void incrementCount() {

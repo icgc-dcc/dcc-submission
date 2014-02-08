@@ -71,6 +71,20 @@ public class FieldReport implements Comparable<FieldReport> {
 
   private BasicDBObject summary;
 
+  public FieldReport(@NonNull FieldReport fieldReport) {
+    this.name = fieldReport.name;
+    this.type = fieldReport.type;
+
+    this.label = fieldReport.label;
+
+    this.nulls = fieldReport.nulls;
+    this.missing = fieldReport.missing;
+    this.populated = fieldReport.populated;
+    this.completeness = fieldReport.completeness;
+
+    this.summary = (BasicDBObject) fieldReport.summary.copy();
+  }
+
   @Override
   public int compareTo(@NonNull FieldReport other) {
     return start()

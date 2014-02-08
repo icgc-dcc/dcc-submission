@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.collect.Sets.newTreeSet;
+import static org.icgc.dcc.submission.core.report.FileTypeState.getDefaultState;
 
 import java.util.Set;
 
@@ -55,11 +56,28 @@ import com.google.common.base.Optional;
 public class FileTypeReport implements Comparable<FileTypeReport> {
 
   private SubmissionFileType fileType;
-  private FileTypeState fileTypeState = FileTypeState.NOT_VALIDATED;
+  private FileTypeState fileTypeState = getDefaultState();
   private Set<FileReport> fileReports = newTreeSet();
+
+  public FileTypeReport(@NonNull FileTypeReport fileTypeReport) {
+    this.fileType = fileTypeReport.fileType;
+    this.fileTypeState = fileTypeReport.fileTypeState;
+
+    for (val fileReport : fileTypeReport.fileReports) {
+      fileReports.add(new FileReport(fileReport));
+    }
+  }
 
   public FileTypeReport(@NonNull SubmissionFileType fileType) {
     this.fileType = fileType;
+  }
+
+  public void reset() {
+    fileTypeState = getDefaultState();
+
+    for (val fileReport : fileReports) {
+      fileReport.reset();
+    }
   }
 
   public Optional<FileReport> getFileReport(@NonNull String fileName) {

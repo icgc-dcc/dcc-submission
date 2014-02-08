@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newTreeSet;
+import static org.icgc.dcc.submission.core.report.FileState.getDefaultState;
 
 import java.util.List;
 import java.util.Set;
@@ -66,7 +67,7 @@ public class FileReport implements Comparable<FileReport> {
   /**
    * The state of the file.
    */
-  FileState fileState = FileState.NOT_VALIDATED;
+  FileState fileState = getDefaultState();
 
   /**
    * Summary reports.
@@ -83,8 +84,33 @@ public class FileReport implements Comparable<FileReport> {
    */
   Set<ErrorReport> errorReports = newTreeSet();
 
+  public FileReport(@NonNull FileReport fileReport) {
+    this.fileName = fileReport.fileName;
+    this.fileState = fileReport.fileState;
+
+    for (val summaryReport : fileReport.summaryReports) {
+      summaryReports.add(new SummaryReport(summaryReport));
+    }
+
+    for (val fieldReport : fileReport.fieldReports) {
+      fieldReports.add(new FieldReport(fieldReport));
+    }
+
+    for (val errorReport : fileReport.errorReports) {
+      errorReports.add(new ErrorReport(errorReport));
+    }
+  }
+
   public FileReport(@NonNull String fileName) {
     this.fileName = fileName;
+  }
+
+  public void reset() {
+    fileState = getDefaultState();
+
+    summaryReports.clear();
+    fieldReports.clear();
+    errorReports.clear();
   }
 
   public void addSummaryReport(@NonNull SummaryReport summaryReport) {

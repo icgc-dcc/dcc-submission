@@ -27,10 +27,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
-import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -48,16 +46,8 @@ public class ReportService {
   private final ReleaseService releaseService;
 
   public Report createInitialReport(@NonNull String projectKey) {
-    val report = new Report();
-    for (val submissionFile : getSubmissionFiles(projectKey)) {
-      val fileName = submissionFile.getName();
-      val fileType = SubmissionFileType.from(submissionFile.getDataType());
-      val fileReport = new FileReport(fileName);
-
-      report.addFileReport(fileType, fileReport);
-    }
-
-    return report;
+    val submissionFiles = getSubmissionFiles(projectKey);
+    return new Report(submissionFiles);
   }
 
   private List<SubmissionFile> getSubmissionFiles(@NonNull String projectKey) {

@@ -30,4 +30,8 @@ public enum DataTypeState {
   SIGNED_OFF,
   ERROR;
 
+  public static DataTypeState getDefaultState() {
+    return NOT_VALIDATED;
+  }
+
 }

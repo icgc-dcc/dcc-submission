@@ -60,13 +60,26 @@ public class ErrorReport implements Comparable<ErrorReport> {
 
   private ErrorType errorType;
   private int number;
+
   private String description;
+
   private final List<FieldErrorReport> fieldErrorReports = newLinkedList();
 
   /**
    * Temporary band-aid to fix the issue of bite offsets being converted twice (see DCC-1908).
    */
   private boolean converted = false;
+
+  public ErrorReport(@NonNull ErrorReport errorReport) {
+    this.errorType = errorReport.errorType;
+    this.number = errorReport.number;
+
+    this.description = errorReport.description;
+
+    for (val fieldErrorReport : errorReport.fieldErrorReports) {
+      fieldErrorReports.add(new FieldErrorReport(fieldErrorReport));
+    }
+  }
 
   public ErrorReport(ErrorType errorType, int number, String description) {
     this.errorType = errorType;

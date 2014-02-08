@@ -20,16 +20,20 @@ package org.icgc.dcc.submission.core.report;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.collect.Sets.newTreeSet;
 
+import java.util.Collection;
 import java.util.Set;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.google.common.base.Optional;
@@ -53,7 +57,39 @@ import com.google.common.base.Optional;
 @AllArgsConstructor
 public class Report {
 
+  @Getter(value = AccessLevel.PRIVATE)
   private Set<DataTypeReport> dataTypeReports = newTreeSet();
+
+  public Report(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    for (val submissionFile : submissionFiles) {
+      val fileName = submissionFile.getName();
+      val fileType = SubmissionFileType.from(submissionFile.getDataType());
+      val fileReport = new FileReport(fileName);
+
+      addFileReport(fileType, fileReport);
+    }
+  }
+
+  public Report(@NonNull Report report) {
+    for (val dataTypeReport : report.getDataTypeReports()) {
+      dataTypeReports.add(new DataTypeReport(dataTypeReport));
+    }
+  }
+
+  public void reset() {
+    for (val dataTypeReport : dataTypeReports) {
+      dataTypeReport.reset();
+    }
+  }
+
+  public void resetDataTypes(@NonNull Collection<SubmissionDataType> dataTypes) {
+    for (val dataTypeReport : dataTypeReports) {
+      val match = dataTypes.contains(dataTypeReport.getDataType());
+      if (match) {
+        dataTypeReport.reset();
+      }
+    }
+  }
 
   public Optional<DataTypeReport> getDataTypeReport(@NonNull SubmissionDataType dataType) {
     for (val dataTypeReport : dataTypeReports) {

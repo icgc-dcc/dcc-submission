@@ -30,4 +30,8 @@ public enum FileTypeState {
   SIGNED_OFF,
   ERROR;
 
+  public static FileTypeState getDefaultState() {
+    return NOT_VALIDATED;
+  }
+
 }
