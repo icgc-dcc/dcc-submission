@@ -15,52 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.core.report.visitor;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.report.Error;
-import org.icgc.dcc.submission.core.report.FieldReport;
-import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
 
-/**
- * Wraps and "adapts" a {@link Report}.
- */
-@Value
-@RequiredArgsConstructor
-public class DefaultReportContext {
+public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
 
-  /**
-   * State.
-   */
-  @NonNull
-  Report report;
+  protected final SubmissionFileType fileType;
 
-  public DefaultReportContext() {
-    this(new Report());
+  protected DataTypeReport dataTypeReport;
+  protected FileTypeReport fileTypeReport;
+  protected FileReport fileReport;
+
+  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull SubmissionFileType fileType) {
+    super(fileName);
+    this.fileType = fileType;
   }
 
-  public void reportSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    report.addSummary(fileName, name, value);
+  protected boolean isMatch(@NonNull FileTypeReport fileTypeReport) {
+    return fileTypeReport.getFileType() == fileType;
   }
 
-  public void reportField(@NonNull String fileName, @NonNull FieldReport fieldReport) {
-    report.addFieldReport(fileName, fieldReport);
-  }
-
-  public void reportError(@NonNull Error error) {
-    report.addError(error);
-  }
-
-  public boolean hasErrors() {
-    return report.hasErrors();
-  }
-
-  public void reportLineNumbers(@NonNull Path filePath) {
-    report.accept(new ConvertLineNumbersReportVisitor(filePath));
+  protected boolean isMatch(@NonNull DataTypeReport dataTypeReport) {
+    return dataTypeReport == fileType.getDataType();
   }
 
 }

@@ -15,52 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.core.report.visitor;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.report.Error;
-import org.icgc.dcc.submission.core.report.FieldReport;
-import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.report.ErrorReport;
 
-/**
- * Wraps and "adapts" a {@link Report}.
- */
-@Value
-@RequiredArgsConstructor
-public class DefaultReportContext {
+@NotThreadSafe
+public class ErrorCountReportVisitor extends AbstractReportVisitor {
 
-  /**
-   * State.
-   */
-  @NonNull
-  Report report;
+  @Getter
+  int errorCount = 0;
 
-  public DefaultReportContext() {
-    this(new Report());
+  @Override
+  public void visit(@NonNull ErrorReport errorReport) {
+    // Accumulate leaf level error counts
+    errorCount += getErrorReportCount(errorReport);
   }
 
-  public void reportSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    report.addSummary(fileName, name, value);
-  }
-
-  public void reportField(@NonNull String fileName, @NonNull FieldReport fieldReport) {
-    report.addFieldReport(fileName, fieldReport);
-  }
-
-  public void reportError(@NonNull Error error) {
-    report.addError(error);
-  }
-
-  public boolean hasErrors() {
-    return report.hasErrors();
-  }
-
-  public void reportLineNumbers(@NonNull Path filePath) {
-    report.accept(new ConvertLineNumbersReportVisitor(filePath));
+  private static int getErrorReportCount(ErrorReport errorReport) {
+    return errorReport.getFieldErrorReports().size();
   }
 
 }

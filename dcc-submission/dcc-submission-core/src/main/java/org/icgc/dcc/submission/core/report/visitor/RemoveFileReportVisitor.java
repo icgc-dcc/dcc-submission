@@ -15,52 +15,65 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.core.report.visitor;
+
+import javax.annotation.concurrent.NotThreadSafe;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.report.Error;
-import org.icgc.dcc.submission.core.report.FieldReport;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
 
-/**
- * Wraps and "adapts" a {@link Report}.
- */
-@Value
-@RequiredArgsConstructor
-public class DefaultReportContext {
+@NotThreadSafe
+public class RemoveFileReportVisitor extends AbstractFileReportVisitor {
 
-  /**
-   * State.
-   */
-  @NonNull
-  Report report;
-
-  public DefaultReportContext() {
-    this(new Report());
+  public RemoveFileReportVisitor(@NonNull String fileName, @NonNull SubmissionFileType fileType) {
+    super(fileName, fileType);
   }
 
-  public void reportSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    report.addSummary(fileName, name, value);
+  @Override
+  public void visit(@NonNull Report report) {
+    if (isRemovable(dataTypeReport)) {
+      report.removeDataTypeReport(dataTypeReport);
+    }
   }
 
-  public void reportField(@NonNull String fileName, @NonNull FieldReport fieldReport) {
-    report.addFieldReport(fileName, fieldReport);
+  @Override
+  public void visit(@NonNull DataTypeReport dataTypeReport) {
+    if (isMatch(dataTypeReport) && isRemovable(fileTypeReport)) {
+      this.dataTypeReport = dataTypeReport;
+      dataTypeReport.removeFileTypeReport(fileTypeReport);
+    }
   }
 
-  public void reportError(@NonNull Error error) {
-    report.addError(error);
+  @Override
+  public void visit(@NonNull FileTypeReport fileTypeReport) {
+    if (isMatch(fileTypeReport) && isRemovable(fileReport)) {
+      this.fileTypeReport = fileTypeReport;
+      fileTypeReport.removeFileReport(fileReport);
+    }
   }
 
-  public boolean hasErrors() {
-    return report.hasErrors();
+  @Override
+  public void visit(@NonNull FileReport fileReport) {
+    if (isMatch(fileReport)) {
+      this.fileReport = fileReport;
+    }
   }
 
-  public void reportLineNumbers(@NonNull Path filePath) {
-    report.accept(new ConvertLineNumbersReportVisitor(filePath));
+  private static boolean isRemovable(DataTypeReport dataTypeReport) {
+    return dataTypeReport != null && dataTypeReport.getFileTypeReports().isEmpty();
+  }
+
+  private static boolean isRemovable(FileTypeReport fileTypeReport) {
+    return fileTypeReport != null && fileTypeReport.getFileReports().isEmpty();
+  }
+
+  private static boolean isRemovable(FileReport fileReport) {
+    return fileReport != null;
   }
 
 }

@@ -74,7 +74,7 @@ public class ValidationServiceTest {
    * Class under test.
    */
   @InjectMocks
-  ValidationService scheduler;
+  ValidationService service;
 
   /**
    * Primary collaborators.
@@ -124,7 +124,7 @@ public class ValidationServiceTest {
 
   @Test
   @SneakyThrows
-  public void test_runOneIteration_succeeded() {
+  public void test_pollValidation_succeeded() {
     // Setup: Add a no-op validator
     validators.add(validator);
 
@@ -135,7 +135,7 @@ public class ValidationServiceTest {
     mockExecutorCallback(onCompletion(validation));
 
     // Exercise
-    scheduler.runOneIteration();
+    service.pollValidation();
 
     // Verify: Ensure "succeeded"
     verifyOutcome(SUCCEEDED);
@@ -143,7 +143,7 @@ public class ValidationServiceTest {
 
   @Test
   @SneakyThrows
-  public void test_runOneIteration_cancelled() {
+  public void test_pollValidation_cancelled() {
     // Setup: Add a no-op validator
     validators.add(validator);
 
@@ -154,7 +154,7 @@ public class ValidationServiceTest {
     mockExecutorCallback(onCancelled(validation));
 
     // Exercise
-    scheduler.runOneIteration();
+    service.pollValidation();
 
     // Verify: Ensure "cancelled"
     verifyOutcome(CANCELLED);
@@ -162,7 +162,7 @@ public class ValidationServiceTest {
 
   @Test
   @SneakyThrows
-  public void test_runOneIteration_failed() {
+  public void test_pollValidation_failed() {
     // Setup: Add a no-op validator
     validators.add(validator);
 
@@ -173,7 +173,7 @@ public class ValidationServiceTest {
     mockExecutorCallback(onFailure(validation, new RuntimeException()));
 
     // Exercise
-    scheduler.runOneIteration();
+    service.pollValidation();
 
     // Verify: Ensure "failed"
     verifyOutcome(FAILED);

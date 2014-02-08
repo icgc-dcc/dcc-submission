@@ -56,7 +56,7 @@ import org.mongodb.morphia.annotations.Embedded;
 @Embedded
 @NoArgsConstructor
 @EqualsAndHashCode(of = { "errorType", "number" })
-public class ErrorReport implements Comparable<ErrorReport> {
+public class ErrorReport implements ReportElement, Comparable<ErrorReport> {
 
   private ErrorType errorType;
   private int number;
@@ -70,6 +70,12 @@ public class ErrorReport implements Comparable<ErrorReport> {
    */
   private boolean converted = false;
 
+  public ErrorReport(@NonNull ErrorType errorType, int number, String description) {
+    this.errorType = errorType;
+    this.number = number;
+    this.description = description;
+  }
+
   public ErrorReport(@NonNull ErrorReport errorReport) {
     this.errorType = errorReport.errorType;
     this.number = errorReport.number;
@@ -81,13 +87,12 @@ public class ErrorReport implements Comparable<ErrorReport> {
     }
   }
 
-  public ErrorReport(ErrorType errorType, int number, String description) {
-    this.errorType = errorType;
-    this.number = number;
-    this.description = description;
+  @Override
+  public void accept(@NonNull ReportVisitor visitor) {
+    visitor.visit(this);
   }
 
-  public void addColumn(Error error) {
+  public void addColumn(@NonNull Error error) {
     val column = new FieldErrorReport(error);
 
     fieldErrorReports.add(column);

@@ -17,16 +17,14 @@
  */
 package org.icgc.dcc.submission.core.report;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
@@ -34,9 +32,16 @@ import lombok.val;
 import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.core.report.visitor.AddErrorReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.AddFieldReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.AddFileReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.AddSummaryReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.ErrorCountReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.RemoveFileReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.ResetReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.SetStateReportVisitor;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.annotations.Embedded;
-
-import com.google.common.base.Optional;
 
 /**
  * Represents a validation report for a submission within a release.
@@ -55,18 +60,16 @@ import com.google.common.base.Optional;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class Report {
+public class Report implements ReportElement {
 
-  @Getter(value = AccessLevel.PRIVATE)
   private Set<DataTypeReport> dataTypeReports = newTreeSet();
 
   public Report(@NonNull Iterable<SubmissionFile> submissionFiles) {
     for (val submissionFile : submissionFiles) {
       val fileName = submissionFile.getName();
       val fileType = SubmissionFileType.from(submissionFile.getDataType());
-      val fileReport = new FileReport(fileName);
 
-      addFileReport(fileType, fileReport);
+      addFile(fileType, fileName);
     }
   }
 
@@ -76,72 +79,65 @@ public class Report {
     }
   }
 
+  @Override
+  public void accept(@NonNull ReportVisitor visitor) {
+    for (val dataTypeReport : dataTypeReports) {
+      dataTypeReport.accept(visitor);
+    }
+
+    visitor.visit(this);
+  }
+
+  public void addDataTypeReport(@NonNull DataTypeReport dataTypeReport) {
+    dataTypeReports.add(dataTypeReport);
+  }
+
+  public void removeDataTypeReport(@NonNull DataTypeReport dataTypeReport) {
+    dataTypeReports.remove(dataTypeReport);
+  }
+
+  public void addSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
+    accept(new AddSummaryReportVisitor(fileName, name, value));
+  }
+
+  public void addFieldReport(@NonNull String fileName, @NonNull FieldReport fieldReport) {
+    accept(new AddFieldReportVisitor(fileName, fieldReport));
+  }
+
+  public void addError(@NonNull Error error) {
+    accept(new AddErrorReportVisitor(error));
+  }
+
+  public void addFile(@NonNull SubmissionFileType fileType, @NonNull String fileName) {
+    accept(new AddFileReportVisitor(fileName, fileType));
+  }
+
+  public void removeFile(@NonNull SubmissionFileType fileType, @NonNull String fileName) {
+    accept(new RemoveFileReportVisitor(fileName, fileType));
+  }
+
+  public int getErrorCount() {
+    val visitor = new ErrorCountReportVisitor();
+    accept(visitor);
+
+    return visitor.getErrorCount();
+  }
+
+  public boolean hasErrors() {
+    return getErrorCount() > 0;
+  }
+
   public void reset() {
-    for (val dataTypeReport : dataTypeReports) {
-      dataTypeReport.reset();
-    }
+    val all = Collections.<SubmissionDataType> emptySet();
+    reset(all);
   }
 
-  public void resetDataTypes(@NonNull Collection<SubmissionDataType> dataTypes) {
-    for (val dataTypeReport : dataTypeReports) {
-      val match = dataTypes.contains(dataTypeReport.getDataType());
-      if (match) {
-        dataTypeReport.reset();
-      }
-    }
+  public void reset(@NonNull Collection<SubmissionDataType> dataTypes) {
+    accept(new ResetReportVisitor(dataTypes));
   }
 
-  public Optional<DataTypeReport> getDataTypeReport(@NonNull SubmissionDataType dataType) {
-    for (val dataTypeReport : dataTypeReports) {
-      if (dataType == dataTypeReport.getDataType()) {
-        return Optional.of(dataTypeReport);
-      }
-    }
-
-    return absent();
-  }
-
-  public Optional<FileTypeReport> getFileTypeReport(@NonNull SubmissionFileType fileType) {
-    for (val dataTypeReport : dataTypeReports) {
-      val optional = dataTypeReport.getFileTypeReport(fileType);
-      if (optional.isPresent()) {
-        return optional;
-      }
-    }
-
-    return absent();
-  }
-
-  public Optional<FileReport> getFileReport(@NonNull String fileName) {
-    for (val dataTypeReport : dataTypeReports) {
-      val optional = dataTypeReport.getFileReport(fileName);
-      if (optional.isPresent()) {
-        return optional;
-      }
-    }
-
-    return absent();
-  }
-
-  public void addFileReport(@NonNull SubmissionFileType fileType, @NonNull FileReport fileReport) {
-    val dataType = fileType.getDataType();
-    val optional = getDataTypeReport(dataType);
-    val dataTypeReport = optional.isPresent() ? optional.get() : new DataTypeReport(dataType);
-
-    dataTypeReport.addFileReport(fileType, fileReport);
-  }
-
-  public void removeFileReport(@NonNull SubmissionFileType fileType, @NonNull FileReport fileReport) {
-    val dataType = fileType.getDataType();
-    val optional = getDataTypeReport(dataType);
-    if (optional.isPresent()) {
-      val dataTypeReport = optional.get();
-
-      dataTypeReport.removeFileReport(fileType, fileReport);
-      if (dataTypeReport.getFileTypeReports().isEmpty()) {
-        dataTypeReports.remove(dataTypeReport);
-      }
-    }
+  public void setState(@NonNull SubmissionState state, @NonNull Collection<SubmissionDataType> dataTypes) {
+    accept(new SetStateReportVisitor(state, dataTypes));
   }
 
 }

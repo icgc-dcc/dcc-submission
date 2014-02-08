@@ -15,52 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.core.report;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+public interface ReportVisitor {
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.report.Error;
-import org.icgc.dcc.submission.core.report.FieldReport;
-import org.icgc.dcc.submission.core.report.Report;
+  void visit(Report report);
 
-/**
- * Wraps and "adapts" a {@link Report}.
- */
-@Value
-@RequiredArgsConstructor
-public class DefaultReportContext {
+  void visit(DataTypeReport dataTypeReport);
 
-  /**
-   * State.
-   */
-  @NonNull
-  Report report;
+  void visit(FileTypeReport fileTypeReport);
 
-  public DefaultReportContext() {
-    this(new Report());
-  }
+  void visit(FileReport fileReport);
 
-  public void reportSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    report.addSummary(fileName, name, value);
-  }
-
-  public void reportField(@NonNull String fileName, @NonNull FieldReport fieldReport) {
-    report.addFieldReport(fileName, fieldReport);
-  }
-
-  public void reportError(@NonNull Error error) {
-    report.addError(error);
-  }
-
-  public boolean hasErrors() {
-    return report.hasErrors();
-  }
-
-  public void reportLineNumbers(@NonNull Path filePath) {
-    report.accept(new ConvertLineNumbersReportVisitor(filePath));
-  }
+  void visit(ErrorReport errorReport);
 
 }

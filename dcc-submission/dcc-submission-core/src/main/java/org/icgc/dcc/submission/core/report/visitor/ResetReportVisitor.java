@@ -15,83 +15,69 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.report;
+package org.icgc.dcc.submission.core.report.visitor;
 
-import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.core.report.FileTypeState.getDefaultState;
+import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Set;
+import java.util.Collection;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import javax.annotation.concurrent.NotThreadSafe;
+
 import lombok.NonNull;
-import lombok.val;
+import lombok.RequiredArgsConstructor;
 
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.mongodb.morphia.annotations.Embedded;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.DataTypeState;
+import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileState;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.submission.core.report.FileTypeState;
 
-/**
- * Reports on a {@link SubmissionFileType}.
- * <p>
- * Example:
- * 
- * <pre>
- *  {
- *    "fileType": "DONOR",
- *    "FileTypeState": "NOT_VALIDATED",
- *    "fileReports": [ {
- *      ...
- *    } ]
- *  }
- * </pre>
- */
-@Data
-@Embedded
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(of = "fileType")
-public class FileTypeReport implements ReportElement, Comparable<FileTypeReport> {
+@NotThreadSafe
+@RequiredArgsConstructor
+public class ResetReportVisitor extends AbstractReportVisitor {
 
-  private SubmissionFileType fileType;
+  @NonNull
+  private final Collection<SubmissionDataType> dataTypes;
 
-  private FileTypeState fileTypeState = getDefaultState();
-  private Set<FileReport> fileReports = newTreeSet();
-
-  public FileTypeReport(@NonNull SubmissionFileType fileType) {
-    this.fileType = fileType;
+  public ResetReportVisitor() {
+    this.dataTypes = newHashSet();
   }
 
-  public FileTypeReport(@NonNull FileTypeReport fileTypeReport) {
-    this.fileType = fileTypeReport.fileType;
-    this.fileTypeState = fileTypeReport.fileTypeState;
-
-    for (val fileReport : fileTypeReport.fileReports) {
-      fileReports.add(new FileReport(fileReport));
+  @Override
+  public void visit(@NonNull DataTypeReport dataTypeReport) {
+    if (isResettable(dataTypeReport.getDataType())) {
+      dataTypeReport.setDataTypeState(DataTypeState.getDefaultState());
     }
   }
 
   @Override
-  public void accept(@NonNull ReportVisitor visitor) {
-    for (val fileReport : fileReports) {
-      fileReport.accept(visitor);
+  public void visit(@NonNull FileTypeReport fileTypeReport) {
+    if (isResettable(fileTypeReport.getFileType())) {
+      fileTypeReport.setFileTypeState(FileTypeState.getDefaultState());
     }
-
-    visitor.visit(this);
-  }
-
-  public void addFileReport(@NonNull FileReport fileReport) {
-    fileReports.add(fileReport);
-  }
-
-  public void removeFileReport(@NonNull FileReport fileReport) {
-    fileReports.remove(fileReport);
   }
 
   @Override
-  public int compareTo(@NonNull FileTypeReport other) {
-    return fileType.compareTo(other.fileType);
+  public void visit(@NonNull FileReport fileReport) {
+    if (isResettable(fileReport.getFileType())) {
+      fileReport.setFileState(FileState.getDefaultState());
+
+      // Clear all leaf level reports
+      fileReport.getSummaryReports().clear();
+      fileReport.getFieldReports().clear();
+      fileReport.getErrorReports().clear();
+    }
+  }
+
+  private boolean isResettable(SubmissionDataType dataType) {
+    return dataTypes.isEmpty() || dataTypes.contains(dataType);
+  }
+
+  private boolean isResettable(SubmissionFileType fileType) {
+    return isResettable(fileType.getDataType());
   }
 
 }

@@ -15,52 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.core.report.visitor;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.report.Error;
-import org.icgc.dcc.submission.core.report.FieldReport;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.ErrorReport;
+import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.report.ReportVisitor;
 
-/**
- * Wraps and "adapts" a {@link Report}.
- */
-@Value
-@RequiredArgsConstructor
-public class DefaultReportContext {
+public abstract class AbstractReportVisitor implements ReportVisitor {
 
-  /**
-   * State.
-   */
-  @NonNull
-  Report report;
-
-  public DefaultReportContext() {
-    this(new Report());
+  @Override
+  public void visit(@NonNull Report report) {
+    // No-op
   }
 
-  public void reportSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    report.addSummary(fileName, name, value);
+  @Override
+  public void visit(@NonNull DataTypeReport dataTypeReport) {
+    // No-op
   }
 
-  public void reportField(@NonNull String fileName, @NonNull FieldReport fieldReport) {
-    report.addFieldReport(fileName, fieldReport);
+  @Override
+  public void visit(@NonNull FileTypeReport fileTypeReport) {
+    // No-op
   }
 
-  public void reportError(@NonNull Error error) {
-    report.addError(error);
+  @Override
+  public void visit(@NonNull FileReport fileReport) {
+    // No-op
   }
 
-  public boolean hasErrors() {
-    return report.hasErrors();
-  }
-
-  public void reportLineNumbers(@NonNull Path filePath) {
-    report.accept(new ConvertLineNumbersReportVisitor(filePath));
+  @Override
+  public void visit(@NonNull ErrorReport errorReport) {
+    // No-op
   }
 
 }

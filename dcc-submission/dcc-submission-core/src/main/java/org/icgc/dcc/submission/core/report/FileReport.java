@@ -26,10 +26,12 @@ import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.mongodb.morphia.annotations.Embedded;
 
 /**
@@ -57,12 +59,20 @@ import org.mongodb.morphia.annotations.Embedded;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileReport implements Comparable<FileReport> {
+@EqualsAndHashCode(of = "fileName")
+public class FileReport implements ReportElement, Comparable<FileReport> {
 
   /**
    * The name of the file the report describes.
    */
   String fileName;
+
+  /**
+   * The type of the file the report describes.
+   * <p>
+   * Not strictly needed, but simplifies implementation (e.g. visitors).
+   */
+  SubmissionFileType fileType;
 
   /**
    * The state of the file.
@@ -84,8 +94,14 @@ public class FileReport implements Comparable<FileReport> {
    */
   Set<ErrorReport> errorReports = newTreeSet();
 
+  public FileReport(@NonNull String fileName, @NonNull SubmissionFileType fileType) {
+    this.fileName = fileName;
+    this.fileType = fileType;
+  }
+
   public FileReport(@NonNull FileReport fileReport) {
     this.fileName = fileReport.fileName;
+    this.fileType = fileReport.fileType;
     this.fileState = fileReport.fileState;
 
     for (val summaryReport : fileReport.summaryReports) {
@@ -101,16 +117,9 @@ public class FileReport implements Comparable<FileReport> {
     }
   }
 
-  public FileReport(@NonNull String fileName) {
-    this.fileName = fileName;
-  }
-
-  public void reset() {
-    fileState = getDefaultState();
-
-    summaryReports.clear();
-    fieldReports.clear();
-    errorReports.clear();
+  @Override
+  public void accept(@NonNull ReportVisitor visitor) {
+    visitor.visit(this);
   }
 
   public void addSummaryReport(@NonNull SummaryReport summaryReport) {

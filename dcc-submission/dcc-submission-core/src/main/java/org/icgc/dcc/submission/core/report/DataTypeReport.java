@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.core.report;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.collect.Sets.newTreeSet;
 import static org.icgc.dcc.submission.core.report.DataTypeState.getDefaultState;
 
@@ -25,15 +24,13 @@ import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.mongodb.morphia.annotations.Embedded;
-
-import com.google.common.base.Optional;
 
 /**
  * Represents a validation report for a data type within submission within a release.
@@ -54,12 +51,18 @@ import com.google.common.base.Optional;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class DataTypeReport implements Comparable<DataTypeReport> {
+@EqualsAndHashCode(of = "dataType")
+public class DataTypeReport implements ReportElement, Comparable<DataTypeReport> {
 
   private SubmissionDataType dataType;
+
   private DataTypeState dataTypeState = getDefaultState();
 
   private Set<FileTypeReport> fileTypeReports = newTreeSet();
+
+  public DataTypeReport(@NonNull SubmissionDataType dataType) {
+    this.dataType = dataType;
+  }
 
   public DataTypeReport(@NonNull DataTypeReport dataTypeReport) {
     this.dataType = dataTypeReport.dataType;
@@ -70,56 +73,21 @@ public class DataTypeReport implements Comparable<DataTypeReport> {
     }
   }
 
-  public DataTypeReport(@NonNull SubmissionDataType dataType) {
-    this.dataType = dataType;
-  }
-
-  public void reset() {
-    dataTypeState = getDefaultState();
-
+  @Override
+  public void accept(@NonNull ReportVisitor visitor) {
     for (val fileTypeReport : fileTypeReports) {
-      fileTypeReport.reset();
-    }
-  }
-
-  public Optional<FileTypeReport> getFileTypeReport(@NonNull SubmissionFileType fileType) {
-    for (val fileTypeReport : fileTypeReports) {
-      if (fileType == fileTypeReport.getFileType()) {
-        return Optional.of(fileTypeReport);
-      }
+      fileTypeReport.accept(visitor);
     }
 
-    return absent();
+    visitor.visit(this);
   }
 
-  public Optional<FileReport> getFileReport(@NonNull String fileName) {
-    for (val fileTypeReport : fileTypeReports) {
-      val optional = fileTypeReport.getFileReport(fileName);
-      if (optional.isPresent()) {
-        return optional;
-      }
-    }
-
-    return absent();
+  public void addFileTypeReport(@NonNull FileTypeReport fileTypeReport) {
+    fileTypeReports.add(fileTypeReport);
   }
 
-  public void addFileReport(@NonNull SubmissionFileType fileType, @NonNull FileReport fileReport) {
-    val optional = getFileTypeReport(fileType);
-    val fileTypeReport = optional.isPresent() ? optional.get() : new FileTypeReport(fileType);
-
-    fileTypeReport.addFileReport(fileReport);
-  }
-
-  public void removeFileReport(@NonNull SubmissionFileType fileType, @NonNull FileReport fileReport) {
-    val optional = getFileTypeReport(fileType);
-    if (optional.isPresent()) {
-      val fileTypeReport = optional.get();
-
-      fileTypeReport.removeFileReport(fileReport);
-      if (fileTypeReport.getFileReports().isEmpty()) {
-        fileTypeReports.remove(fileTypeReport);
-      }
-    }
+  public void removeFileTypeReport(@NonNull FileTypeReport fileTypeReport) {
+    fileTypeReports.remove(fileTypeReport);
   }
 
   @Override
