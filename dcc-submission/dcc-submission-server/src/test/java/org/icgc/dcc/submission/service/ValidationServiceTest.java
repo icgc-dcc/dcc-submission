@@ -15,14 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.service;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.CANCELLED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.FAILED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.SUCCEEDED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.CANCELLED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.FAILED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.SUCCEEDED;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -41,11 +41,12 @@ import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.service.MailService;
-import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.validation.ValidationExecutor;
+import org.icgc.dcc.submission.validation.ValidationListener;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import org.junit.Before;
@@ -62,7 +63,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ValidationSchedulerTest {
+public class ValidationServiceTest {
 
   /**
    * Test data.
@@ -73,7 +74,7 @@ public class ValidationSchedulerTest {
    * Class under test.
    */
   @InjectMocks
-  ValidationScheduler scheduler;
+  ValidationService scheduler;
 
   /**
    * Primary collaborators.
@@ -108,16 +109,17 @@ public class ValidationSchedulerTest {
   @Before
   public void setUp() {
     // Establish an open release with a single queued project
-    when(release.getState()).thenReturn(OPENED);
+    when(submission.getDataState()).thenReturn(Collections.<DataTypeState> emptyList());
+    when(submission.getReport()).thenReturn(new SubmissionReport());
     when(release.nextInQueue()).thenReturn(Optional.fromNullable(queuedProject));
+    when(release.getState()).thenReturn(OPENED);
+    when(release.getSubmissionByProjectKey(anyString())).thenReturn(Optional.of(submission));
+
+    when(context.getSubmissionReport()).thenReturn(new SubmissionReport());
+
     when(releaseService.getNextRelease()).thenReturn(release);
     when(releaseService.countOpenReleases()).thenReturn(1L);
     when(releaseService.getNextDictionary()).thenReturn(dictionary);
-    when(releaseService.getSubmission(anyString(), anyString())).thenReturn(submission);
-    when(releaseService.getSubmission(anyString())).thenReturn(submission);
-    when(submission.getDataState()).thenReturn(Collections.<DataTypeState> emptyList());
-    when(submission.getReport()).thenReturn(new SubmissionReport());
-    when(context.getSubmissionReport()).thenReturn(new SubmissionReport());
   }
 
   @Test

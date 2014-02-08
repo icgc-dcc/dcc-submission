@@ -24,6 +24,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.mongodb.morphia.annotations.Embedded;
 
@@ -31,7 +32,7 @@ import org.mongodb.morphia.annotations.Embedded;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileReport {
+public class FileReport implements Comparable<FileReport> {
 
   String fileName;
   FileState fileState = FileState.NOT_VALIDATED;
@@ -39,5 +40,14 @@ public class FileReport {
   List<SummaryReport> summaryReports = newLinkedList();
   List<FieldReport> fieldReports = newLinkedList();
   List<ErrorReport> errorReports = newLinkedList();
+
+  public FileReport(@NonNull String fileName) {
+    this.fileName = fileName;
+  }
+
+  @Override
+  public int compareTo(@NonNull FileReport other) {
+    return fileName.compareTo(other.fileName);
+  }
 
 }

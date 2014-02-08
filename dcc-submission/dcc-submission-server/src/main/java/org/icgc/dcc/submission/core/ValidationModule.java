@@ -15,16 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.core;
 
 import static com.google.common.base.Preconditions.checkState;
 import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
-import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.service.DictionaryService;
+import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
@@ -79,9 +79,6 @@ public class ValidationModule extends AbstractDccModule {
    * Binds service level components.
    */
   private void bindService() {
-    // The outer most validation abstraction
-    bindService(ValidationScheduler.class);
-
     // Execution facility
     bind(ValidationExecutor.class).toProvider(new Provider<ValidationExecutor>() {
 

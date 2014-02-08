@@ -17,26 +17,80 @@
  */
 package org.icgc.dcc.submission.core.report;
 
-import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.base.Optional.absent;
+import static com.google.common.collect.Sets.newTreeSet;
 
-import java.util.List;
+import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.mongodb.morphia.annotations.Embedded;
+
+import com.google.common.base.Optional;
 
 @Data
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class DataTypeReport {
+public class DataTypeReport implements Comparable<DataTypeReport> {
 
   private SubmissionDataType dataType;
   private DataTypeState dataTypeState = DataTypeState.NOT_VALIDATED;
+  private Set<FileTypeReport> fileTypeReports = newTreeSet();
 
-  private List<FileTypeReport> fileTypeReports = newLinkedList();
+  public DataTypeReport(@NonNull SubmissionDataType dataType) {
+    this.dataType = dataType;
+  }
+
+  public Optional<FileTypeReport> getFileTypeReport(@NonNull SubmissionFileType fileType) {
+    for (val fileTypeReport : fileTypeReports) {
+      if (fileType == fileTypeReport.getFileType()) {
+        return Optional.of(fileTypeReport);
+      }
+    }
+
+    return absent();
+  }
+
+  public Optional<FileReport> getFileReport(@NonNull String fileName) {
+    for (val fileTypeReport : fileTypeReports) {
+      val optional = fileTypeReport.getFileReport(fileName);
+      if (optional.isPresent()) {
+        return optional;
+      }
+    }
+
+    return absent();
+  }
+
+  public void addFileReport(@NonNull SubmissionFileType fileType, @NonNull FileReport fileReport) {
+    val optional = getFileTypeReport(fileType);
+    val fileTypeReport = optional.isPresent() ? optional.get() : new FileTypeReport(fileType);
+
+    fileTypeReport.addFileReport(fileReport);
+  }
+
+  public void removeFileReport(@NonNull SubmissionFileType fileType, @NonNull FileReport fileReport) {
+    val optional = getFileTypeReport(fileType);
+    if (optional.isPresent()) {
+      val fileTypeReport = optional.get();
+
+      fileTypeReport.removeFileReport(fileReport);
+      if (fileTypeReport.getFileReports().isEmpty()) {
+        fileTypeReports.remove(fileTypeReport);
+      }
+    }
+  }
+
+  @Override
+  public int compareTo(@NonNull DataTypeReport other) {
+    return dataType.toString().compareTo(other.toString());
+  }
 
 }

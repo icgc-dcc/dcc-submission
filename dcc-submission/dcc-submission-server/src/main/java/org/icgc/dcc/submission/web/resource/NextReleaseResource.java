@@ -60,7 +60,7 @@ import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.service.ReleaseService;
-import org.icgc.dcc.submission.validation.ValidationScheduler;
+import org.icgc.dcc.submission.service.ValidationService;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
@@ -83,7 +83,7 @@ public class NextReleaseResource {
   @Inject
   private ReleaseService releaseService;
   @Inject
-  private ValidationScheduler validationScheduler;
+  private ValidationService validationScheduler;
 
   @GET
   public Response getNextRelease(@Context SecurityContext securityContext) {

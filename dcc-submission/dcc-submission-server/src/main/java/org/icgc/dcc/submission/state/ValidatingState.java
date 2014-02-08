@@ -18,15 +18,15 @@
 package org.icgc.dcc.submission.state;
 
 import static lombok.AccessLevel.PACKAGE;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.CANCELLED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.FAILED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.SUCCEEDED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.CANCELLED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.FAILED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.SUCCEEDED;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
+import org.icgc.dcc.submission.validation.core.ValidationOutcome;
 
 @NoArgsConstructor(access = PACKAGE)
 public class ValidatingState extends AbstractState {

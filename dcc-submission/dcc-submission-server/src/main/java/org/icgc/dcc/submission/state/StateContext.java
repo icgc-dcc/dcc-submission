@@ -21,8 +21,8 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.validation.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
+import org.icgc.dcc.submission.validation.core.ValidationOutcome;
 
 import com.google.common.base.Optional;
 

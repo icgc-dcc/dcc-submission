@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.service;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkState;
@@ -25,10 +25,11 @@ import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.CANCELLED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.FAILED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.SUCCEEDED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.CANCELLED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.FAILED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.SUCCEEDED;
 
+import java.util.List;
 import java.util.Set;
 
 import lombok.NonNull;
@@ -36,13 +37,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.service.MailService;
-import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.validation.ValidationExecutor;
+import org.icgc.dcc.submission.validation.ValidationListener;
+import org.icgc.dcc.submission.validation.ValidationRejectedException;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReportContext;
@@ -64,7 +67,7 @@ import com.google.inject.Inject;
  */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
-public class ValidationScheduler extends AbstractScheduledService {
+public class ValidationService extends AbstractScheduledService {
 
   /**
    * Period at which the service polls for an open release and for an enqueued project if there is one.
@@ -86,6 +89,24 @@ public class ValidationScheduler extends AbstractScheduledService {
   private final PlatformStrategyFactory platformStrategyFactory;
   @NonNull
   private final Set<Validator> validators;
+
+  /**
+   * Main {@code Validation} dispatch processing.
+   * 
+   * @throws Exception
+   */
+  public void pollValidation() throws Exception {
+    try {
+      pollOpenRelease();
+      pollQueue();
+    } catch (Exception e) {
+      log.error("Exception polling:", e);
+      mailService.sendSupportProblem(e.getMessage(), getStackTraceAsString(e));
+
+      // This will terminate the AbstractScheduledService thread but that is the safest thing to do here
+      throw e;
+    }
+  }
 
   /**
    * Cancels a validation that was previously started in {@link #tryValidation(Release, QueuedProject)}.
@@ -117,16 +138,7 @@ public class ValidationScheduler extends AbstractScheduledService {
    */
   @Override
   protected void runOneIteration() throws Exception {
-    try {
-      pollOpenRelease();
-      pollQueue();
-    } catch (Exception e) {
-      log.error("Exception polling:", e);
-      mailService.sendSupportProblem(e.getMessage(), getStackTraceAsString(e));
-
-      // This will terminate the AbstractScheduledService thread but that is the safest thing to do here
-      throw e;
-    }
+    pollValidation();
   }
 
   /**
@@ -168,7 +180,7 @@ public class ValidationScheduler extends AbstractScheduledService {
 
     try {
       // Try to find a queued validation
-      val release = getRelease();
+      val release = releaseService.getNextRelease();
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {
@@ -275,8 +287,8 @@ public class ValidationScheduler extends AbstractScheduledService {
    * @return
    */
   private ValidationContext createValidationContext(Release release, QueuedProject project) {
-    val reportContext = createReportContext(release, project);
-    val dictionary = getDictionary();
+    val dictionary = releaseService.getNextDictionary();
+    val reportContext = createReportContext(release, dictionary, project);
 
     val context = new DefaultValidationContext(
         reportContext,
@@ -294,18 +306,25 @@ public class ValidationScheduler extends AbstractScheduledService {
    * Internal {@code ReportContext} factory method.
    * 
    * @param release the current release
+   * @param dictionary the current dictionary
    * @param project the project to create the report context for
    * @return
    */
-  private SubmissionReportContext createReportContext(Release release, QueuedProject project) {
+  private static SubmissionReportContext createReportContext(Release release, Dictionary dictionary,
+      QueuedProject project) {
     // Shorthands
-    val dictionary = getDictionary();
-    val submission = releaseService.getSubmission(release.getName(), project.getKey());
+    val submission = release.getSubmissionByProjectKey(project.getKey()).get();
     val dataTypes = project.getDataTypes();
-
     val report = submission.getReport() == null ? new SubmissionReport() : (SubmissionReport) submission.getReport();
-    val nextReport = new SubmissionReport();
 
+    val nextReport = createReport(dictionary, dataTypes, report);
+
+    return new SubmissionReportContext(nextReport);
+  }
+
+  private static SubmissionReport createReport(Dictionary dictionary, List<SubmissionDataType> dataTypes,
+      SubmissionReport report) {
+    val nextReport = new SubmissionReport();
     // Remove any previously saved reports related to the requested data types
     for (val schemaReport : report.getSchemaReports()) {
       val fileName = schemaReport.getName();
@@ -319,18 +338,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       }
     }
 
-    return new SubmissionReportContext(nextReport);
-  }
-
-  /**
-   * Utility method to give the current "next release" object and confirms open state.
-   */
-  private Release getRelease() {
-    return releaseService.getNextRelease();
-  }
-
-  private Dictionary getDictionary() {
-    return releaseService.getNextDictionary();
+    return nextReport;
   }
 
 }

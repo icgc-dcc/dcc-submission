@@ -17,26 +17,60 @@
  */
 package org.icgc.dcc.submission.core.report;
 
-import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.base.Optional.absent;
+import static com.google.common.collect.Sets.newTreeSet;
 
-import java.util.List;
+import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.mongodb.morphia.annotations.Embedded;
+
+import com.google.common.base.Optional;
 
 @Data
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileTypeReport {
+public class FileTypeReport implements Comparable<FileTypeReport> {
 
   private SubmissionFileType fileType;
   private FileTypeState fileTypeState = FileTypeState.NOT_VALIDATED;
+  private Set<FileReport> fileReports = newTreeSet();
 
-  private List<FileReport> fileReports = newLinkedList();
+  public FileTypeReport(@NonNull SubmissionFileType fileType) {
+    this.fileType = fileType;
+  }
+
+  public Optional<FileReport> getFileReport(@NonNull String fileName) {
+    for (val fileReport : fileReports) {
+      if (fileReport.getFileName().equals(fileName)) {
+        return Optional.of(fileReport);
+      }
+    }
+
+    return absent();
+  }
+
+  public void addFileReport(@NonNull FileReport fileReport) {
+    fileReports.add(fileReport);
+  }
+
+  public void removeFileReport(@NonNull FileReport fileReport) {
+    val optional = getFileReport(fileReport.getFileName());
+    if (optional.isPresent()) {
+      fileReports.remove(optional.get());
+    }
+  }
+
+  @Override
+  public int compareTo(@NonNull FileTypeReport other) {
+    return fileType.compareTo(other.fileType);
+  }
 
 }

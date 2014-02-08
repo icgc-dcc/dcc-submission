@@ -27,9 +27,9 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.CANCELLED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.FAILED;
-import static org.icgc.dcc.submission.validation.ValidationOutcome.SUCCEEDED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.CANCELLED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.FAILED;
+import static org.icgc.dcc.submission.validation.core.ValidationOutcome.SUCCEEDED;
 
 import java.util.Date;
 import java.util.List;
@@ -51,9 +51,9 @@ import org.icgc.dcc.submission.release.model.DataTypeState;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-import org.icgc.dcc.submission.validation.ValidationOutcome;
 import org.icgc.dcc.submission.validation.core.SchemaReport;
 import org.icgc.dcc.submission.validation.core.SubmissionReport;
+import org.icgc.dcc.submission.validation.core.ValidationOutcome;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
