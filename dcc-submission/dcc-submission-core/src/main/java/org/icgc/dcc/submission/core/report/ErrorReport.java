@@ -17,13 +17,15 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import static com.google.common.collect.ComparisonChain.start;
 import static com.google.common.collect.Lists.newLinkedList;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 
 import org.mongodb.morphia.annotations.Embedded;
@@ -31,18 +33,41 @@ import org.mongodb.morphia.annotations.Embedded;
 @Data
 @Embedded
 @NoArgsConstructor
-@AllArgsConstructor
-public class ErrorReport {
+@EqualsAndHashCode(of = { "errorType", "number" })
+public class ErrorReport implements Comparable<ErrorReport> {
 
   private ErrorType errorType;
   private int number;
   private String description;
-  private final List<FieldErrorReport> fields = newLinkedList();
+  private final List<FieldErrorReport> fieldErrorReports = newLinkedList();
+
+  /**
+   * Temporary band-aid to fix the issue of bite offsets being converted twice (see DCC-1908).
+   */
+  private boolean converted = false;
+
+  public ErrorReport(ErrorType errorType, int number, String description) {
+    this.errorType = errorType;
+    this.number = number;
+    this.description = description;
+  }
 
   public void addColumn(Error error) {
     val column = new FieldErrorReport(error);
 
-    fields.add(column);
+    fieldErrorReports.add(column);
+  }
+
+  public boolean isReported(@NonNull Error error) {
+    return errorType == error.getType() && number == error.getNumber();
+  }
+
+  @Override
+  public int compareTo(@NonNull ErrorReport other) {
+    return start()
+        .compare(this.errorType, other.errorType)
+        .compare(this.number, other.number)
+        .result();
   }
 
 }

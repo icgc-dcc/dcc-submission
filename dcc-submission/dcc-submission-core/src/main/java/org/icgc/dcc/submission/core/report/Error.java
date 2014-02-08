@@ -30,6 +30,7 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.experimental.Accessors;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.google.common.collect.ImmutableList;
@@ -72,6 +73,11 @@ public class Error {
     this.value = value;
     this.type = type;
     this.params = params;
+  }
+
+  @JsonIgnore
+  public String getMessage() {
+    return type.format(type.build(params));
   }
 
   @Override

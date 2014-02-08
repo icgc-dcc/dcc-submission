@@ -18,13 +18,16 @@
 package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
 
 import org.mongodb.morphia.annotations.Embedded;
 
@@ -36,13 +39,39 @@ public class FileReport implements Comparable<FileReport> {
 
   String fileName;
   FileState fileState = FileState.NOT_VALIDATED;
-
   List<SummaryReport> summaryReports = newLinkedList();
   List<FieldReport> fieldReports = newLinkedList();
-  List<ErrorReport> errorReports = newLinkedList();
+  Set<ErrorReport> errorReports = newTreeSet();
 
   public FileReport(@NonNull String fileName) {
     this.fileName = fileName;
+  }
+
+  public void addSummaryReport(@NonNull SummaryReport summaryReport) {
+    summaryReports.add(summaryReport);
+  }
+
+  public void addFieldReport(@NonNull FieldReport fieldReport) {
+    fieldReports.add(fieldReport);
+  }
+
+  public void addErrorReport(@NonNull ErrorReport errorReport) {
+    errorReports.add(errorReport);
+  }
+
+  public void addError(@NonNull Error error) {
+    for (val errorReport : errorReports) {
+      if (errorReport.isReported(error)) {
+        errorReport.addColumn(error);
+
+        return;
+      }
+    }
+
+    val errorReport = new ErrorReport(error.getType(), error.getNumber(), error.getMessage());
+    errorReport.addColumn(error);
+
+    errorReports.add(errorReport);
   }
 
   @Override

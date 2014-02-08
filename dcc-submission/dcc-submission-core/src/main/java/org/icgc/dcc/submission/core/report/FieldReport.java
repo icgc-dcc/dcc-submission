@@ -19,7 +19,9 @@ package org.icgc.dcc.submission.core.report;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.mongodb.morphia.annotations.Embedded;
@@ -30,11 +32,12 @@ import com.mongodb.BasicDBObject;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class FieldReport {
+@EqualsAndHashCode(of = "name")
+public class FieldReport implements Comparable<FieldReport> {
 
   private String name;
-  private String label;
 
+  private String label;
   private long nulls;
   private long missing;
   private long populated;
@@ -42,5 +45,10 @@ public class FieldReport {
 
   private SummaryType type;
   private BasicDBObject summary;
+
+  @Override
+  public int compareTo(@NonNull FieldReport other) {
+    return name.compareTo(other.name);
+  }
 
 }

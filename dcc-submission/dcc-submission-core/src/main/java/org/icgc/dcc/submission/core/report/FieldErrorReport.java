@@ -18,40 +18,37 @@
 package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.collect.Lists.newLinkedList;
-import static lombok.AccessLevel.PACKAGE;
-import static lombok.AccessLevel.PRIVATE;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * Reports on cell values within a column. Keeps track of the line, value and total count.
  */
-@NoArgsConstructor
-@Getter
-@Setter(PRIVATE)
-@ToString
+@Data
 public class FieldErrorReport implements Serializable {
 
-  private List<String> columnNames;
+  /**
+   * Description
+   */
+  private List<String> fieldNames;
+  private Map<ErrorParameterKey, Object> parameters;
   private long count;
 
-  @Setter(PACKAGE)
-  private List<Long> lines = newLinkedList();
+  /**
+   * Values
+   */
+  private List<Long> lineNumbers = newLinkedList();
   private List<Object> values = newLinkedList();
-  private Map<ErrorParameterKey, Object> parameters;
 
   public FieldErrorReport(Error error) {
-    this.setColumnNames(error.getFieldNames());
+    this.setFieldNames(error.getFieldNames());
     this.setCount(1L);
 
-    this.addLine(error.getLineNumber());
+    this.addLineNumber(error.getLineNumber());
     this.addValue(error.getValue());
     this.setParameters(error.getType().build(error.getParams()));
   }
@@ -60,8 +57,8 @@ public class FieldErrorReport implements Serializable {
     count++;
   }
 
-  public void addLine(Long line) {
-    lines.add(line);
+  public void addLineNumber(Long lineNumber) {
+    lineNumbers.add(lineNumber);
   }
 
   public void addValue(Object value) {

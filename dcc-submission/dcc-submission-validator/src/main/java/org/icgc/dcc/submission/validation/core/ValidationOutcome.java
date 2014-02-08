@@ -17,10 +17,24 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+/**
+ * Represents the outcome of a {@link Validation#execute} invocation.
+ */
 public enum ValidationOutcome {
 
+  /**
+   * Validation succeeded. Does not imply validity.
+   */
   SUCCEEDED,
+
+  /**
+   * Validation failed due to an unexpected exception.
+   */
   FAILED,
+
+  /**
+   * Validation was cancelled
+   */
   CANCELLED;
 
 }

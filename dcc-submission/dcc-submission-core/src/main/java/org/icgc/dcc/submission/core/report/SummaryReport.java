@@ -19,7 +19,9 @@ package org.icgc.dcc.submission.core.report;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.mongodb.morphia.annotations.Embedded;
 
@@ -30,7 +32,8 @@ import org.mongodb.morphia.annotations.Embedded;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
-public class SummaryReport {
+@EqualsAndHashCode(of = "name")
+public class SummaryReport implements Comparable<SummaryReport> {
 
   /**
    * The short name of the summary metric.
@@ -41,5 +44,10 @@ public class SummaryReport {
    * The value of the metric
    */
   private String value;
+
+  @Override
+  public int compareTo(@NonNull SummaryReport other) {
+    return name.compareTo(other.name);
+  }
 
 }
