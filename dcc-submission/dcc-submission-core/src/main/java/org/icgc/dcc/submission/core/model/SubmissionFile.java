@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.core.model;
 
 import java.util.Date;
 
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -35,7 +35,7 @@ import org.mongodb.morphia.annotations.Converters;
 /**
  * For serializing file data through the REST interface
  */
-@Getter
+@Value
 @Converters(FileTypeConverter.class)
 public class SubmissionFile {
 
