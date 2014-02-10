@@ -23,6 +23,7 @@ import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
@@ -34,12 +35,14 @@ public class QueuedState extends AbstractState {
   }
 
   @Override
-  public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+  public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
+      @NonNull Report nextReport) {
     context.setState(SubmissionState.VALIDATING);
+    context.setReport(nextReport);
 
-    val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
+    nextReport.updateFiles(context.getSubmissionFiles());
+    nextReport.reset(dataTypes);
+    nextReport.setState(SubmissionState.VALIDATING, dataTypes);
   }
 
   @Override

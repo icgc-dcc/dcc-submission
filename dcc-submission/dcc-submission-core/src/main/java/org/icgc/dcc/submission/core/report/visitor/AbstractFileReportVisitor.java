@@ -42,7 +42,7 @@ public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVi
   }
 
   protected boolean isMatch(@NonNull DataTypeReport dataTypeReport) {
-    return dataTypeReport == fileType.getDataType();
+    return dataTypeReport.getDataType() == fileType.getDataType();
   }
 
 }

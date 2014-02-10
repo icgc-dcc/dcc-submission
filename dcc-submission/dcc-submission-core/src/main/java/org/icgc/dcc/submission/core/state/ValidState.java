@@ -20,7 +20,9 @@ package org.icgc.dcc.submission.core.state;
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
 
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
@@ -29,6 +31,16 @@ public class ValidState extends AbstractState {
   @Override
   public boolean isReadOnly() {
     return false;
+  }
+
+  @Override
+  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.QUEUED);
+
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
+    report.setState(SubmissionState.QUEUED, dataTypes);
   }
 
   @Override

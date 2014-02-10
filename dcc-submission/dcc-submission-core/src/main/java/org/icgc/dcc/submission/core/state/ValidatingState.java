@@ -49,14 +49,17 @@ public class ValidatingState extends AbstractState {
 
   @Override
   public void finishValidation(@NonNull StateContext context, @NonNull Outcome outcome, @NonNull Report newReport) {
-    val report = context.getReport();
+    val oldReport = context.getReport();
 
     if (outcome == SUCCEEDED) {
-      context.setState(report.isValid() ? SubmissionState.VALID : SubmissionState.NOT_VALIDATED);
+      newReport.refreshState();
       context.setReport(newReport);
 
-      newReport.refreshState();
+      context.setState(newReport.isValid() ? SubmissionState.VALID : SubmissionState.NOT_VALIDATED);
     } else if (outcome == FAILED) {
+      // TODO: add dataTypes to method
+      // oldReport.setState(SubmissionState.ERROR);
+
       context.setState(SubmissionState.ERROR);
     } else if (outcome == CANCELLED) {
       // TODO: Should this branch be removed gue to cancelValidation?

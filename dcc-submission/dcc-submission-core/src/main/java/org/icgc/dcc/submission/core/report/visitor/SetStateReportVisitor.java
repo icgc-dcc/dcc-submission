@@ -27,7 +27,7 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
-import org.icgc.dcc.submission.core.state.State;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.collect.Iterables;
 
@@ -35,7 +35,7 @@ import com.google.common.collect.Iterables;
 public class SetStateReportVisitor extends AbstractReportVisitor {
 
   @NonNull
-  private final State state;
+  private final SubmissionState state;
   @NonNull
   private final Iterable<DataType> dataTypes;
 
@@ -45,13 +45,13 @@ public class SetStateReportVisitor extends AbstractReportVisitor {
       return;
     }
 
-    if (state == State.QUEUED) {
+    if (state == SubmissionState.QUEUED) {
       dataTypeReport.setDataTypeState(DataTypeState.QUEUED);
-    } else if (state == State.VALIDATING) {
+    } else if (state == SubmissionState.VALIDATING) {
       dataTypeReport.setDataTypeState(DataTypeState.VALIDATING);
-    } else if (state == State.ERROR) {
+    } else if (state == SubmissionState.ERROR) {
       dataTypeReport.setDataTypeState(DataTypeState.ERROR);
-    } else if (state == State.SIGNED_OFF) {
+    } else if (state == SubmissionState.SIGNED_OFF) {
       dataTypeReport.setDataTypeState(DataTypeState.SIGNED_OFF);
     }
   }
@@ -62,13 +62,13 @@ public class SetStateReportVisitor extends AbstractReportVisitor {
       return;
     }
 
-    if (state == State.QUEUED) {
+    if (state == SubmissionState.QUEUED) {
       fileTypeReport.setFileTypeState(FileTypeState.QUEUED);
-    } else if (state == State.VALIDATING) {
+    } else if (state == SubmissionState.VALIDATING) {
       fileTypeReport.setFileTypeState(FileTypeState.VALIDATING);
-    } else if (state == State.ERROR) {
+    } else if (state == SubmissionState.ERROR) {
       fileTypeReport.setFileTypeState(FileTypeState.ERROR);
-    } else if (state == State.SIGNED_OFF) {
+    } else if (state == SubmissionState.SIGNED_OFF) {
       fileTypeReport.setFileTypeState(FileTypeState.SIGNED_OFF);
     }
   }
@@ -79,13 +79,13 @@ public class SetStateReportVisitor extends AbstractReportVisitor {
       return;
     }
 
-    if (state == State.QUEUED) {
+    if (state == SubmissionState.QUEUED) {
       fileReport.setFileState(FileState.QUEUED);
-    } else if (state == State.VALIDATING) {
+    } else if (state == SubmissionState.VALIDATING) {
       fileReport.setFileState(FileState.VALIDATING);
-    } else if (state == State.ERROR) {
+    } else if (state == SubmissionState.ERROR) {
       fileReport.setFileState(FileState.ERROR);
-    } else if (state == State.SIGNED_OFF) {
+    } else if (state == SubmissionState.SIGNED_OFF) {
       fileReport.setFileState(FileState.SIGNED_OFF);
     }
   }

@@ -37,7 +37,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.InvalidStateException;
-import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -307,7 +306,7 @@ public class ValidationService extends AbstractScheduledService {
    */
   private static ReportContext createReportContext(Release release, QueuedProject project) {
     val submission = release.getSubmission(project.getKey()).get();
-    val report = submission.getReport() == null ? new Report() : submission.getReport();
+    val report = submission.getReport();
 
     return new DefaultReportContext(report);
   }

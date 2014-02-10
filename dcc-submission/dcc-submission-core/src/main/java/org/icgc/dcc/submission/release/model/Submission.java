@@ -64,7 +64,7 @@ public class Submission implements Serializable {
 
   protected Date lastUpdated;
 
-  protected SubmissionState state;
+  protected SubmissionState state = SubmissionState.NOT_VALIDATED;
 
   @Valid
   protected Report report = new Report();
@@ -128,8 +128,9 @@ public class Submission implements Serializable {
     state.queueRequest(createContext(submissionFiles), dataTypes);
   }
 
-  public void startValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
-    state.startValidation(createContext(submissionFiles), dataTypes);
+  public void startValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes,
+      @NonNull Report nextReport) {
+    state.startValidation(createContext(submissionFiles), dataTypes, nextReport);
   }
 
   public void cancelValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
@@ -137,8 +138,8 @@ public class Submission implements Serializable {
   }
 
   public void finishValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Outcome outcome,
-      @NonNull Report newReport) {
-    state.finishValidation(createContext(submissionFiles), outcome, newReport);
+      @NonNull Report nextReport) {
+    state.finishValidation(createContext(submissionFiles), outcome, nextReport);
   }
 
   public void signOff(@NonNull Iterable<SubmissionFile> submissionFiles) {

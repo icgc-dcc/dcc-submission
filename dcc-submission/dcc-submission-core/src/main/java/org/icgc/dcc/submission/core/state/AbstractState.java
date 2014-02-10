@@ -55,7 +55,8 @@ public abstract class AbstractState implements State {
   }
 
   @Override
-  public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+  public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
+      @NonNull Report nextReport) {
     throw new InvalidStateException(this, "startValidation");
   }
 

@@ -58,9 +58,9 @@ public interface StateContext {
 
   void queueRequest(Iterable<DataType> dataTypes);
 
-  void startValidation(Iterable<DataType> dataTypes);
+  void startValidation(Iterable<DataType> dataTypes, Report nextReport);
 
-  void finishValidation(Outcome outcome, Report newReport);
+  void finishValidation(Outcome outcome, Report nextReport);
 
   void signOff();
 
