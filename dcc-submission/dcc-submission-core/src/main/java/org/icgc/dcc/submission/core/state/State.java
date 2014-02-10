@@ -42,7 +42,7 @@ public interface State {
 
   void cancelValidation(StateContext context, Iterable<DataType> dataTypes);
 
-  void finishValidation(StateContext context, Outcome outcome, Report nextReport);
+  void finishValidation(StateContext context, Iterable<DataType> dataTypes, Outcome outcome, Report nextReport);
 
   void signOff(StateContext context);
 

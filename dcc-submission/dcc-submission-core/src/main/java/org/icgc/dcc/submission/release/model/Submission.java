@@ -148,9 +148,9 @@ public class Submission implements Serializable {
     state.cancelValidation(createContext(submissionFiles), dataTypes);
   }
 
-  public void finishValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Outcome outcome,
-      @NonNull Report nextReport) {
-    state.finishValidation(createContext(submissionFiles), outcome, nextReport);
+  public void finishValidation(@NonNull Iterable<SubmissionFile> submissionFiles,
+      @NonNull Iterable<DataType> dataTypes, @NonNull Outcome outcome, @NonNull Report nextReport) {
+    state.finishValidation(createContext(submissionFiles), dataTypes, outcome, nextReport);
   }
 
   public void signOff(@NonNull Iterable<SubmissionFile> submissionFiles) {

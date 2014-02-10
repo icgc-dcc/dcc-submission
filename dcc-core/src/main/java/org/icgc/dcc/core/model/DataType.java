@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -36,8 +37,8 @@ import com.google.common.collect.Iterables;
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
  * <p>
- * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor",
- * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
+ * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor", "specimen",
+ * "ssm_m", "meth_m", ... They have the clinical ones in common.
  */
 public interface DataType {
 
@@ -102,7 +103,9 @@ public interface DataType {
         // Do nothing
       }
 
-      return checkNotNull(type, "Could not find a match for type %s", typeName);
+      checkArgument(type != null, "Could not find a match for type %s", typeName);
+
+      return null;
     }
 
     /**

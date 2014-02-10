@@ -48,7 +48,8 @@ public class ValidatingState extends AbstractState {
   }
 
   @Override
-  public void finishValidation(@NonNull StateContext context, @NonNull Outcome outcome, @NonNull Report newReport) {
+  public void finishValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
+      @NonNull Outcome outcome, @NonNull Report newReport) {
     val oldReport = context.getReport();
 
     if (outcome == SUCCEEDED) {
@@ -57,8 +58,7 @@ public class ValidatingState extends AbstractState {
 
       context.setState(newReport.isValid() ? SubmissionState.VALID : SubmissionState.NOT_VALIDATED);
     } else if (outcome == FAILED) {
-      // TODO: add dataTypes to method
-      // oldReport.setState(SubmissionState.ERROR);
+      oldReport.setState(SubmissionState.ERROR, dataTypes);
 
       context.setState(SubmissionState.ERROR);
     } else if (outcome == CANCELLED) {

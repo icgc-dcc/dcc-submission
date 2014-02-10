@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.services;
+package org.icgc.dcc.submission.service;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;

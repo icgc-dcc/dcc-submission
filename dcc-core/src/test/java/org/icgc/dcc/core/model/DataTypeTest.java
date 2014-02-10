@@ -19,12 +19,12 @@ package org.icgc.dcc.core.model;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.DataType.DataTypes.from;
 import static org.icgc.dcc.core.model.DataType.DataTypes.hasControlSampleId;
 import static org.icgc.dcc.core.model.DataType.DataTypes.isAggregatedType;
 import static org.icgc.dcc.core.model.DataType.DataTypes.isMandatoryType;
 import static org.icgc.dcc.core.model.DataType.DataTypes.values;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 
 import java.util.HashSet;
 
@@ -34,7 +34,7 @@ import org.junit.Test;
 public class DataTypeTest {
 
   @Test
-  public void test_SubmissionDataTypes_valid() {
+  public void test_DataTypes_valid() {
     assertThat(from("ssm")).isEqualTo(SSM_TYPE);
     assertThat(from("donor")).isEqualTo(CLINICAL_CORE_TYPE);
 
@@ -54,8 +54,8 @@ public class DataTypeTest {
     assertThat(hasControlSampleId(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void test_SubmissionDataTypes_invalid() {
+  @Test(expected = IllegalArgumentException.class)
+  public void test_DataTypes_invalid() {
     from("dummy");
   }
 
