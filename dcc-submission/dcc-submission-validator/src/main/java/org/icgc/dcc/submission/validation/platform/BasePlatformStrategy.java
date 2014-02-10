@@ -18,6 +18,12 @@
 package org.icgc.dcc.submission.validation.platform;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +42,6 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
@@ -59,7 +63,6 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   private static final Splitter ROW_SPLITTER = Splitter.on('\t');
 
-  @Getter
   protected final FileSystem fileSystem;
 
   private final Path input;
@@ -159,7 +162,8 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
    * DCC-1876).
    */
   @Override
-  public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
+  @SneakyThrows
+  public Path path(final FileSchema fileSchema) {
 
     RemoteIterator<LocatedFileStatus> files;
     if (fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
@@ -207,26 +211,37 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   @Override
   public Map<String, String> getSampleToDonorMap(Dictionary dictionary) {
 
+    val sampleFileSchema = dictionary.getFileSchema(SAMPLE_TYPE);
+    val specimenFileSchema = dictionary.getFileSchema(SPECIMEN_TYPE);
+
+    val sampleSampleIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_ANALYZED_SAMPLE_ID);
+    val sampleSpecimenIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID);
+
+    val specimenSpecimenIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID);
+    val specimenDonorIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_DONOR_ID);
+
+    val samplePath = path(sampleFileSchema);
+    val specimenPath = path(specimenFileSchema);
+
     val sampleToSpecimen = Maps.<String, String> newTreeMap();
-    for (String row : getRows(dictionary, SubmissionFileType.SAMPLE_TYPE)) {
+    for (String row : readSmallTextFile(fileSystem, samplePath)) { // Clinical files are small
       val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
-      val specimenId = fields.get(1);
-      val sampleId = fields.get(0); // indices are "reversed" in sample (PK is second instead of first like for donor
-                                    // and specimen)
+      val sampleId = fields.get(sampleSampleIdOrdinal);
+      val specimenId = fields.get(sampleSpecimenIdOrdinal);
       checkState(!sampleToSpecimen.containsKey(sampleId));
       sampleToSpecimen.put(sampleId, specimenId);
     }
-    log.info("sample to specimen mapping: {}", sampleToSpecimen);
+    log.info("Sample to specimen mapping: {}", sampleToSpecimen);
 
     val specimenToDonor = Maps.<String, String> newTreeMap();
-    for (String row : getRows(dictionary, SubmissionFileType.SPECIMEN_TYPE)) {
+    for (String row : readSmallTextFile(fileSystem, specimenPath)) { // Clinical files are small
       val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
-      val donorId = fields.get(0);
-      val specimenId = fields.get(1);
+      val specimenId = fields.get(specimenSpecimenIdOrdinal);
+      val donorId = fields.get(specimenDonorIdOrdinal);
       checkState(!specimenToDonor.containsKey(specimenId));
       specimenToDonor.put(specimenId, donorId);
     }
-    log.info("specimen to donor mapping: {}", specimenToDonor);
+    log.info("Specimen to donor mapping: {}", specimenToDonor);
 
     val sampleToDonor = Maps.<String, String> newTreeMap();
     for (val entry : sampleToSpecimen.entrySet()) {
@@ -234,15 +249,9 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
           entry.getKey(),
           specimenToDonor.get(entry.getValue()));
     }
-    log.info("sample to donor mapping: {}", sampleToDonor);
+    log.info("Sample to donor mapping: {}", sampleToDonor);
 
     return sampleToDonor;
-  }
-
-  @SneakyThrows
-  private List<String> getRows(Dictionary dictionary, SubmissionFileType fileType) {
-    val fileSchema = dictionary.getFileSchema(fileType);
-    return HadoopUtils.readSmallTextFile(fileSystem, path(fileSchema));
   }
 
 }

@@ -27,6 +27,7 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
+import static org.icgc.dcc.submission.normalization.steps.DonorIdAddition.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -137,7 +138,7 @@ public final class NormalizationValidator implements Validator {
             // Must happen after removing duplicates and allele masking
             .add(new PrimaryKeyGeneration())
 
-            .add(new FieldDiscarding(DonorIdAddition.DONOR_ID_FIELD))
+            .add(new FieldDiscarding(DONOR_ID_FIELD))
 
             .add(new Counting(TOTAL_END))
 

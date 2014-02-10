@@ -23,7 +23,7 @@ import cascading.pipe.assembly.Discard;
 import cascading.tuple.Fields;
 
 /**
- * TODO
+ * Discards specified field.
  */
 public class FieldDiscarding implements NormalizationStep {
 

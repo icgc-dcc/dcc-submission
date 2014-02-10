@@ -224,8 +224,7 @@ public class FileSchema implements DictionaryElement, Serializable {
    * Returns whether or not the provided file name matches the pattern for the current {@link FileSchema}.
    */
   public boolean matches(
-      @NonNull
-      String fileName) {
+      @NonNull String fileName) {
     return compile(pattern) // TODO: lazy-load
         .matcher(fileName)
         .matches();
@@ -248,4 +247,13 @@ public class FileSchema implements DictionaryElement, Serializable {
     }
     return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
   }
+
+  /**
+   * Returns
+   */
+  @JsonIgnore
+  public int getFieldOrdinal(String fieldName) {
+    return 0;
+  }
+
 }
