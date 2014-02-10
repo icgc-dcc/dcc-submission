@@ -15,18 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
-import static lombok.AccessLevel.PACKAGE;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-@NoArgsConstructor(access = PACKAGE)
-public class QueuedState extends AbstractState {
+@RequiredArgsConstructor
+public class InvalidStateException extends RuntimeException {
+
+  @NonNull
+  private final State state;
+  @NonNull
+  private final String action;
 
   @Override
-  public void startValidation(@NonNull StateContext context) {
-    context.setState(VALIDATING);
+  public String getMessage() {
+    return "While in state '" + state + "' it is invalid to '" + action + "'.";
   }
 
 }

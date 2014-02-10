@@ -44,7 +44,6 @@ import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ReleaseService;
-import org.icgc.dcc.submission.service.SubmissionService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -81,8 +80,6 @@ public class ReleaseServiceNextReleaseTest {
 
   @Mock
   DictionaryService dictionaryService;
-  @Mock
-  SubmissionService submissionService;
 
   @Mock
   ReleaseRepository releaseRepository;

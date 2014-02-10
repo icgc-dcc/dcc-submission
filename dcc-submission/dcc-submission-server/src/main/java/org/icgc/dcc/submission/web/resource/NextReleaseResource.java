@@ -206,12 +206,23 @@ public class NextReleaseResource {
 
   @DELETE
   @Path("queue")
+  @SneakyThrows
   public Response removeAllQueued(@Context SecurityContext securityContext) {
-    log.info("Emptying queue for nextRelease");
+    log.info("Removing all queued projects");
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
     }
-    releaseService.removeQueuedSubmissions();
+
+    try {
+      releaseService.removeQueuedSubmissions();
+    } catch (InvalidStateException e) {
+      ServerErrorCode code = e.getCode();
+      log.error(code.getFrontEndString(), e);
+      return badRequest(code, e.getMessage());
+    } catch (Throwable t) {
+      log.error("Error removing all queued projects:", t);
+      throw t;
+    }
 
     return Response.ok().build();
   }

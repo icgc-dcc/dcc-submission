@@ -15,18 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
+
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
-public class ErrorState extends AbstractState {
+public class QueuedState extends AbstractState {
 
   @Override
-  public void queueRequest(@NonNull StateContext context) {
-    context.setState(QUEUED);
+  public boolean isReadOnly() {
+    return true;
+  }
+
+  @Override
+  public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.VALIDATING);
+
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
+  }
+
+  @Override
+  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.NOT_VALIDATED);
+
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
   }
 
 }

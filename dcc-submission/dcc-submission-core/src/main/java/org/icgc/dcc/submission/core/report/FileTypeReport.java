@@ -29,11 +29,15 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
+import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
 import org.mongodb.morphia.annotations.Embedded;
 
 /**
- * Reports on a {@link SubmissionFileType}.
+ * Reports on a {@link FileType}.
  * <p>
  * Example:
  * 
@@ -54,12 +58,14 @@ import org.mongodb.morphia.annotations.Embedded;
 @EqualsAndHashCode(of = "fileType")
 public class FileTypeReport implements ReportElement, Comparable<FileTypeReport> {
 
-  private SubmissionFileType fileType;
+  @JsonSerialize(using = FileTypeSerializer.class)
+  @JsonDeserialize(using = FileTypeDeserializer.class)
+  private FileType fileType;
 
   private FileTypeState fileTypeState = getDefaultState();
   private Set<FileReport> fileReports = newTreeSet();
 
-  public FileTypeReport(@NonNull SubmissionFileType fileType) {
+  public FileTypeReport(@NonNull FileType fileType) {
     this.fileType = fileType;
   }
 
@@ -74,10 +80,12 @@ public class FileTypeReport implements ReportElement, Comparable<FileTypeReport>
 
   @Override
   public void accept(@NonNull ReportVisitor visitor) {
+    // Children first
     for (val fileReport : fileReports) {
       fileReport.accept(visitor);
     }
 
+    // Self last
     visitor.visit(this);
   }
 

@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
@@ -52,7 +52,7 @@ public final class KVFileSystem {
   @NonNull
   private final FileSystem fileSystem;
   @NonNull
-  private final Collection<SubmissionDataType> dataTypes;
+  private final Collection<DataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
   @NonNull

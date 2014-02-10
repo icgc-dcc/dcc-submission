@@ -15,18 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
-import static lombok.AccessLevel.PACKAGE;
+import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-@NoArgsConstructor(access = PACKAGE)
-public class ValidState extends AbstractState {
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
-  @Override
-  public void signOff(@NonNull StateContext context) {
-    context.setState(SIGNED_OFF);
+@NoArgsConstructor(access = PRIVATE)
+public final class States {
+
+  public static State convert(@NonNull SubmissionState submissionState) {
+    if (submissionState == SubmissionState.NOT_VALIDATED) {
+      return State.NOT_VALIDATED;
+    } else if (submissionState == SubmissionState.QUEUED) {
+      return State.QUEUED;
+    } else if (submissionState == SubmissionState.VALIDATING) {
+      return State.VALIDATING;
+    } else if (submissionState == SubmissionState.ERROR) {
+      return State.ERROR;
+    } else if (submissionState == SubmissionState.VALID) {
+      return State.VALID;
+    } else if (submissionState == SubmissionState.SIGNED_OFF) {
+      return State.SIGNED_OFF;
+    }
+
+    throw new IllegalArgumentException("Cannot covert " + submissionState + " to " + State.class);
+  }
+
+  public static SubmissionState convert(@NonNull State state) {
+    if (state == State.NOT_VALIDATED) {
+      return SubmissionState.NOT_VALIDATED;
+    } else if (state == State.QUEUED) {
+      return SubmissionState.QUEUED;
+    } else if (state == State.VALIDATING) {
+      return SubmissionState.VALIDATING;
+    } else if (state == State.ERROR) {
+      return SubmissionState.ERROR;
+    } else if (state == State.VALID) {
+      return SubmissionState.VALID;
+    } else if (state == State.SIGNED_OFF) {
+      return SubmissionState.SIGNED_OFF;
+    }
+
+    throw new IllegalArgumentException("Cannot covert " + state + " to " + SubmissionState.class);
   }
 
 }

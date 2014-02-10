@@ -23,7 +23,6 @@ import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterrup
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.service.MailService.MAIL_ENABLED;
@@ -55,8 +54,7 @@ import javax.mail.internet.MimeMessage;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.elasticsearch.common.collect.Lists;
-import org.icgc.dcc.submission.release.model.DataTypeState;
+import org.icgc.dcc.submission.core.report.Report;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -121,9 +119,9 @@ public class MailServiceTest {
     val state = ERROR;
     val emails = newArrayList("email@domain.com");
     val addresses = newHashSet(address("email@domain.com"));
-    val dataTypeState = Lists.<DataTypeState> newArrayList(new DataTypeState(CLINICAL_CORE_TYPE, state));
+    val report = new Report();
 
-    mailService.sendValidationResult(releaseName, projectKey, emails, state, dataTypeState);
+    mailService.sendValidationResult(releaseName, projectKey, emails, state, report);
     sleepUninterruptibly(1, SECONDS);
 
     verifyStatic(times(2));
@@ -153,9 +151,9 @@ public class MailServiceTest {
     val state = NOT_VALIDATED;
     val emails = newArrayList("email@domain.com");
     val addresses = newHashSet(address("email@domain.com"));
-    val dataTypeState = Lists.<DataTypeState> newArrayList(new DataTypeState(CLINICAL_CORE_TYPE, state));
+    val report = new Report();
 
-    mailService.sendValidationResult(releaseName, projectKey, emails, state, dataTypeState);
+    mailService.sendValidationResult(releaseName, projectKey, emails, state, report);
     sleepUninterruptibly(1, SECONDS);
 
     verifyStatic(times(2));

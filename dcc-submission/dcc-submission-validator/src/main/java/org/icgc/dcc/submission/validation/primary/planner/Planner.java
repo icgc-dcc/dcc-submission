@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
@@ -52,7 +52,7 @@ public class Planner {
   @NonNull
   private final Set<RestrictionType> restrictionTypes;
 
-  public Plan plan(@NonNull String projectKey, @NonNull Collection<SubmissionDataType> dataTypes,
+  public Plan plan(@NonNull String projectKey, @NonNull Collection<DataType> dataTypes,
       @NonNull PlatformStrategy platform, @NonNull Dictionary dictionary) {
     val plan = new Plan(projectKey, dictionary, platform);
 
@@ -70,7 +70,7 @@ public class Planner {
    */
 
   private void includeFlowPlanners(
-      Plan plan, String projectKey, Collection<SubmissionDataType> dataTypes,
+      Plan plan, String projectKey, Collection<DataType> dataTypes,
       PlatformStrategy platform, Dictionary dictionary) {
 
     // Selective validation filtering

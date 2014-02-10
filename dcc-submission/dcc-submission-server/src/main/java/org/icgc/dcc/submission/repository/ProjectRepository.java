@@ -18,6 +18,7 @@
 
 package org.icgc.dcc.submission.repository;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static org.icgc.dcc.submission.core.model.QProject.project;
 
 import java.util.List;
@@ -52,8 +53,8 @@ public class ProjectRepository extends AbstractRepository<Project, QProject> {
     return list();
   }
 
-  public List<Project> findProjects(@NonNull List<String> projectKeys) {
-    return list(_.key.in(projectKeys));
+  public List<Project> findProjects(@NonNull Iterable<String> projectKeys) {
+    return list(_.key.in(copyOf(projectKeys)));
   }
 
   public List<Project> findProjectsByUser(@NonNull String username) {

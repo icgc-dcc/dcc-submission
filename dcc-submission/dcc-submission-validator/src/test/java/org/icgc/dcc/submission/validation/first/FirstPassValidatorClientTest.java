@@ -34,7 +34,7 @@ import lombok.val;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -189,7 +189,7 @@ public class FirstPassValidatorClientTest {
     TestUtils.checkNoErrorsReported(validationContext);
   }
 
-  private static Iterable<SubmissionDataType> anyDataTypeIterable() {
+  private static Iterable<DataType> anyDataTypeIterable() {
     return any();
   }
 

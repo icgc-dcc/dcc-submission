@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.validation.norm;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.validation.core.Error.error;
-import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MASKED;

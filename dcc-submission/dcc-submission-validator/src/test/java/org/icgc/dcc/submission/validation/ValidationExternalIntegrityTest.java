@@ -32,7 +32,7 @@ import lombok.val;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -171,7 +171,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    val dataTypes = SubmissionDataTypes.values();
+    val dataTypes = DataTypes.values();
     val platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);

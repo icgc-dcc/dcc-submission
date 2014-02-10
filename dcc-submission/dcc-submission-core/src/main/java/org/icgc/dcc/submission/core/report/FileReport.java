@@ -31,7 +31,11 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
+import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
 import org.mongodb.morphia.annotations.Embedded;
 
 /**
@@ -72,7 +76,9 @@ public class FileReport implements ReportElement, Comparable<FileReport> {
    * <p>
    * Not strictly needed, but simplifies implementation (e.g. visitors).
    */
-  SubmissionFileType fileType;
+  @JsonSerialize(using = FileTypeSerializer.class)
+  @JsonDeserialize(using = FileTypeDeserializer.class)
+  FileType fileType;
 
   /**
    * The state of the file.
@@ -94,7 +100,7 @@ public class FileReport implements ReportElement, Comparable<FileReport> {
    */
   Set<ErrorReport> errorReports = newTreeSet();
 
-  public FileReport(@NonNull String fileName, @NonNull SubmissionFileType fileType) {
+  public FileReport(@NonNull String fileName, @NonNull FileType fileType) {
     this.fileName = fileName;
     this.fileType = fileType;
   }
@@ -119,6 +125,12 @@ public class FileReport implements ReportElement, Comparable<FileReport> {
 
   @Override
   public void accept(@NonNull ReportVisitor visitor) {
+    // Children first
+    for (val errorReport : errorReports) {
+      visitor.visit(errorReport);
+    }
+
+    // Self last
     visitor.visit(this);
   }
 

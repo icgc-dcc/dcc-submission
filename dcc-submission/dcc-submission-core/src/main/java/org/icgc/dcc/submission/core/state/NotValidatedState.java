@@ -15,37 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
-import org.icgc.dcc.submission.validation.core.ValidationOutcome;
+import static lombok.AccessLevel.PACKAGE;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
-import com.google.common.base.Optional;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
-public interface State {
+@NoArgsConstructor(access = PACKAGE)
+public class NotValidatedState extends AbstractState {
 
-  String getName();
+  @Override
+  public boolean isReadOnly() {
+    return false;
+  }
 
-  void modifySubmission(StateContext context, Optional<Path> path);
+  @Override
+  public void initializeSubmission(@NonNull StateContext context) {
+    context.setState(SubmissionState.NOT_VALIDATED);
 
-  void queueRequest(StateContext context);
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+  }
 
-  void startValidation(StateContext context);
+  @Override
+  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.QUEUED);
 
-  void finishValidation(StateContext context, ValidationOutcome outcome, SubmissionReport submissionReport);
-
-  void signOff(StateContext context);
-
-  Submission performRelease(StateContext context, Release nextRelease);
-
-  static final State NOT_VALIDATED = new NotValidatedState();
-  static final State QUEUED = new QueuedState();
-  static final State VALIDATING = new ValidatingState();
-  static final State ERROR = new ErrorState();
-  static final State VALID = new ValidState();
-  static final State SIGNED_OFF = new SignedOffState();
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
+    report.setState(SubmissionState.QUEUED, dataTypes);
+  }
 
 }

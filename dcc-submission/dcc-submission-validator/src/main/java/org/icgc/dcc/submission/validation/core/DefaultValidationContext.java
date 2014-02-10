@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.util.regex.Pattern.matches;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,8 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.ClinicalType;
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -58,7 +58,7 @@ public class DefaultValidationContext implements ValidationContext {
    */
   @Delegate
   @NonNull
-  SubmissionReportContext reportContext;
+  ReportContext reportContext;
 
   /**
    * Supports the non-inherited {@link ValidationContext} contract.
@@ -68,7 +68,7 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   List<String> emails;
   @NonNull
-  List<SubmissionDataType> dataTypes;
+  List<DataType> dataTypes;
   @NonNull
   Release release;
   @NonNull
@@ -89,8 +89,8 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public Collection<SubmissionDataType> getDataTypes() {
-    val effectiveDataTypes = ImmutableSet.<SubmissionDataType> builder();
+  public Collection<DataType> getDataTypes() {
+    val effectiveDataTypes = ImmutableSet.<DataType> builder();
 
     // Ensure clinical core is always validated
     effectiveDataTypes.add(ClinicalType.CLINICAL_CORE_TYPE);
@@ -172,7 +172,7 @@ public class DefaultValidationContext implements ValidationContext {
 
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
     for (val fileSchema : dictionary.getFiles()) {
-      val fileType = SubmissionFileType.from(fileSchema.getName());
+      val fileType = FileType.from(fileSchema.getName());
       val ssmPrimary = fileType == SSM_P_TYPE;
       if (ssmPrimary) {
         return fileSchema;

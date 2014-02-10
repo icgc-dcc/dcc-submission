@@ -17,17 +17,17 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.collect.Iterables.contains;
+import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Sets.newHashSet;
-
-import java.util.Collection;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.DataTypeState;
 import org.icgc.dcc.submission.core.report.FileReport;
@@ -40,7 +40,7 @@ import org.icgc.dcc.submission.core.report.FileTypeState;
 public class ResetReportVisitor extends AbstractReportVisitor {
 
   @NonNull
-  private final Collection<SubmissionDataType> dataTypes;
+  private final Iterable<DataType> dataTypes;
 
   public ResetReportVisitor() {
     this.dataTypes = newHashSet();
@@ -72,11 +72,11 @@ public class ResetReportVisitor extends AbstractReportVisitor {
     }
   }
 
-  private boolean isResettable(SubmissionDataType dataType) {
-    return dataTypes.isEmpty() || dataTypes.contains(dataType);
+  private boolean isResettable(DataType dataType) {
+    return isEmpty(dataTypes) || contains(dataTypes, dataType);
   }
 
-  private boolean isResettable(SubmissionFileType fileType) {
+  private boolean isResettable(FileType fileType) {
     return isResettable(fileType.getDataType());
   }
 

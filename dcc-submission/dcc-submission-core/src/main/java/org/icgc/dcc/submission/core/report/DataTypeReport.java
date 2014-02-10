@@ -29,7 +29,11 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.util.Serdes.DataTypeDeserializer;
+import org.icgc.dcc.submission.core.util.Serdes.DataTypeSerializer;
 import org.mongodb.morphia.annotations.Embedded;
 
 /**
@@ -54,13 +58,15 @@ import org.mongodb.morphia.annotations.Embedded;
 @EqualsAndHashCode(of = "dataType")
 public class DataTypeReport implements ReportElement, Comparable<DataTypeReport> {
 
-  private SubmissionDataType dataType;
+  @JsonSerialize(using = DataTypeSerializer.class)
+  @JsonDeserialize(using = DataTypeDeserializer.class)
+  private DataType dataType;
 
   private DataTypeState dataTypeState = getDefaultState();
 
   private Set<FileTypeReport> fileTypeReports = newTreeSet();
 
-  public DataTypeReport(@NonNull SubmissionDataType dataType) {
+  public DataTypeReport(@NonNull DataType dataType) {
     this.dataType = dataType;
   }
 
@@ -75,10 +81,12 @@ public class DataTypeReport implements ReportElement, Comparable<DataTypeReport>
 
   @Override
   public void accept(@NonNull ReportVisitor visitor) {
+    // Children first
     for (val fileTypeReport : fileTypeReports) {
       fileTypeReport.accept(visitor);
     }
 
+    // Self last
     visitor.visit(this);
   }
 

@@ -106,7 +106,7 @@ public class ReleaseFileSystemTest {
 
     // Mock
     when(previousRelease.getName()).thenReturn(previousReleaseName);
-    when(previousRelease.getSubmissionByProjectKey(anyString())).thenReturn(
+    when(previousRelease.getSubmission(anyString())).thenReturn(
         Optional.<Submission> of(previousSubmission));
     when(previousReleaseFileSystem.getSubmissionDirectory(projectKey)).thenReturn(previousSubmissionDirectory);
     when(previousReleaseFileSystem.getSystemDirectory()).thenReturn(previousSystemPath);
@@ -146,7 +146,7 @@ public class ReleaseFileSystemTest {
     nextSubmissionDir.mkdirs();
 
     when(nextRelease.getName()).thenReturn(nextReleaseName);
-    when(nextRelease.getSubmissionByProjectKey(anyString())).thenReturn(
+    when(nextRelease.getSubmission(anyString())).thenReturn(
         Optional.<Submission> of(mock(Submission.class)));
     when(dccFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionDonorFileName)).thenReturn(
         nextSubmissionDonorFile.getAbsolutePath());

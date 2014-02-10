@@ -17,16 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.key.enumeration;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.core.ErrorType.UNIQUE_VALUE_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_PARENT_VALUE_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_VALUE_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.UNIQUE_VALUE_ERROR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.FK;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.PK;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.SECONDARY_FK;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.core.report.ErrorType;
 
 /**
  * 

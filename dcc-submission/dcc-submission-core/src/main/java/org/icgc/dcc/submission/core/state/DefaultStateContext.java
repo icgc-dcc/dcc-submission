@@ -15,100 +15,115 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
+import static lombok.AccessLevel.NONE;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
-import org.icgc.dcc.submission.validation.core.ValidationOutcome;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.base.Optional;
 
 @Slf4j
-@RequiredArgsConstructor
+@Value
 public class DefaultStateContext implements StateContext {
 
   @NonNull
-  @Getter
+  @Getter(NONE)
   private final Submission submission;
   @NonNull
-  @Getter
-  private final Release release;
-  @NonNull
-  @Getter
-  private final Dictionary dictionary;
+  private final Iterable<SubmissionFile> submissionFiles;
 
-  @NonNull
-  private State state;
-
-  @Override
-  public void setState(State nextState) {
-    executeTransition(nextState);
-    this.state = nextState;
+  public State getState() {
+    return submission.getState();
   }
 
   @Override
-  public void modifySubmission(@NonNull Optional<Path> path) {
+  public String getProjectKey() {
+    return submission.getProjectKey();
+  }
+
+  @Override
+  public String getProjectName() {
+    return submission.getProjectName();
+  }
+
+  @Override
+  public Report getReport() {
+    return submission.getReport();
+  }
+
+  @Override
+  public void setState(@NonNull SubmissionState nextState) {
+    submission.setState(nextState);
+  }
+
+  @Override
+  public void setReport(@NonNull Report nextReport) {
+    submission.setReport(nextReport);
+  }
+
+  @Override
+  public void modifySubmission(@NonNull Optional<Path> filePath) {
     beginTransition("modifySubmission");
-    state.modifySubmission(this, path);
+    getState().modifySubmission(this, filePath);
     finishTransition("modifySubmission");
   }
 
   @Override
-  public void queueRequest() {
+  public void queueRequest(@NonNull Iterable<DataType> dataTypes) {
     beginTransition("queueRequest");
-    state.queueRequest(this);
+    getState().queueRequest(this, dataTypes);
     finishTransition("queueRequest");
   }
 
   @Override
-  public void startValidation() {
+  public void startValidation(@NonNull Iterable<DataType> dataTypes) {
     beginTransition("startValidation");
-    state.startValidation(this);
+    getState().startValidation(this, dataTypes);
     finishTransition("startValidation");
   }
 
   @Override
-  public void finishValidation(@NonNull ValidationOutcome outcome, @NonNull SubmissionReport submissionReport) {
+  public void finishValidation(@NonNull Outcome outcome, @NonNull Report newReport) {
     beginTransition("finishValidation");
-    state.finishValidation(this, outcome, submissionReport);
+    getState().finishValidation(this, outcome, newReport);
     finishTransition("finishValidation");
   }
 
   @Override
   public void signOff() {
     beginTransition("signOff");
-    state.signOff(this);
+    getState().signOff(this);
     finishTransition("signOff");
   }
 
   @Override
   public Submission performRelease(@NonNull Release nextRelease) {
     beginTransition("performRelease");
-    val result = state.performRelease(this, nextRelease);
+    val result = getState().performRelease(this, nextRelease);
     finishTransition("performRelease");
 
     return result;
   }
 
   private void beginTransition(@NonNull String action) {
-    log.info("Action '{}' requested while in state '{}'", action, state);
-  }
-
-  private void executeTransition(@NonNull State nextState) {
-    log.info("Changed state from '{}' to '{}'", state, nextState);
+    log.info("Action '{}' requested while in state '{}'", action, getState());
   }
 
   private void finishTransition(@NonNull String action) {
-    log.info("Finished action '{}' while in state '{}'", action, state);
+    log.info("Finished action '{}' while in state '{}'", action, getState());
   }
 
 }

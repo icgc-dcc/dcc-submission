@@ -23,20 +23,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
 import static java.lang.String.format;
-import static java.util.Collections.singletonList;
-import static org.apache.commons.lang.ArrayUtils.contains;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.Submission.getProjectKeys;
-import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
-import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
-import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
-import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.DUPLICATE_RELEASE_NAME;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
@@ -45,8 +37,6 @@ import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_MISSING_
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -60,11 +50,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -80,10 +71,7 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
-import org.icgc.dcc.submission.validation.core.ValidationOutcome;
 import org.icgc.dcc.submission.web.InvalidNameException;
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -94,7 +82,6 @@ import com.google.inject.Inject;
 @Slf4j
 public class ReleaseService extends AbstractService {
 
-  private final SubmissionService submissionService;
   private final DccFileSystem dccFileSystem;
   private final ReleaseRepository releaseRepository;
   private final DictionaryRepository dictionaryRepository;
@@ -102,7 +89,6 @@ public class ReleaseService extends AbstractService {
 
   @Inject
   public ReleaseService(
-      @NonNull SubmissionService submissionService,
       @NonNull MailService mailService,
       @NonNull DccFileSystem dccFileSystem,
       @NonNull ReleaseRepository releaseRepository,
@@ -110,7 +96,6 @@ public class ReleaseService extends AbstractService {
       @NonNull ProjectRepository projectRepository) {
     super(mailService);
     this.dccFileSystem = dccFileSystem;
-    this.submissionService = submissionService;
     this.releaseRepository = releaseRepository;
     this.dictionaryRepository = dictionaryRepository;
     this.projectRepository = projectRepository;
@@ -316,39 +301,37 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void signOffRelease(Release nextRelease, List<String> projectKeys, String user)
-      throws InvalidStateException, DccModelOptimisticLockException {
+  public void signOffRelease(Release release, Iterable<String> projectKeys, String user) throws InvalidStateException,
+      DccModelOptimisticLockException {
 
-    String nextReleaseName = nextRelease.getName();
-    log.info("signing off {} for {}", projectKeys, nextReleaseName);
+    String releaseName = release.getName();
+    log.info("signing off {} for {}", projectKeys, releaseName);
 
-    // update release object
-    val expectedState = VALID;
-    nextRelease.removeFromQueue(projectKeys);
+    release.removeFromQueue(projectKeys);
     for (val projectKey : projectKeys) {
-      Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
+      val submission = release.getSubmission(projectKey).get();
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
 
-      submissionService.signOff(submission);
+      //
+      // Transition
+      //
+
+      submission.signOff(submissionFiles);
     }
 
-    updateReleaseSafely(nextReleaseName, nextRelease);
-
-    // TODO: synchronization (DCC-685), may require cleaning up the FS abstraction (do we really need the project object
-    // or is the projectKey sufficient?)
+    releaseRepository.updateRelease(releaseName, release);
 
     // Remove validation files in the ".validation" folder (leave normalization files untouched)
-    val releaseFs = dccFileSystem.getReleaseFilesystem(nextRelease);
+    val releaseFs = dccFileSystem.getReleaseFilesystem(release);
     val projects = projectRepository.findProjects(projectKeys);
     for (val project : projects) {
-      releaseFs
-          .getSubmissionDirectory(project.getKey())
-          .removeValidationFiles();
+      releaseFs.getSubmissionDirectory(project.getKey()).removeValidationFiles();
     }
 
     // after sign off, send a email to DCC support
-    mailService.sendSignoff(user, projectKeys, nextReleaseName);
+    mailService.sendSignoff(user, projectKeys, releaseName);
 
-    log.info("signed off {} for {}", projectKeys, nextReleaseName);
+    log.info("signed off {} for {}", projectKeys, releaseName);
   }
 
   /**
@@ -418,16 +401,21 @@ public class ReleaseService extends AbstractService {
    * 
    * @return Current Open Release
    */
-  public Release addSubmission(String projectKey, String projectName) {
+  public void addSubmission(String projectKey, String projectName) {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
+    val release = releaseRepository.findOpenRelease();
+    val submissionPath = dccFileSystem.createNewProjectDirectoryStructure(release.getName(), projectKey);
+    val submission = new Submission(projectKey, projectName, release.getName());
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
 
-    val openRelease = releaseRepository.findOpenRelease();
-    val submission = new Submission(projectKey, projectName, openRelease.getName());
-    log.info("Created Submission '{}'", submission);
+    //
+    // Transition
+    //
 
-    val release = releaseRepository.addReleaseSubmission(openRelease.getName(), submission);
+    submission.initializeSubmission(submissionFiles);
+    releaseRepository.addReleaseSubmission(release.getName(), submission);
 
-    return release;
+    log.info("Created Submission '{}' with directory '{}'", submission, submissionPath);
   }
 
   public Submission getSubmission(String projectKey) {
@@ -450,10 +438,12 @@ public class ReleaseService extends AbstractService {
 
   public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
     val submission = getSubmission(releaseName, projectKey);
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
     val liteProject = new LiteProject(checkNotNull(projectRepository.findProject(projectKey)));
 
     val detailedSubmission = new DetailedSubmission(submission, liteProject);
-    detailedSubmission.setSubmissionFiles(getSubmissionFiles(releaseName, projectKey));
+    detailedSubmission.setSubmissionFiles(submissionFiles);
 
     return detailedSubmission;
   }
@@ -482,24 +472,28 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void queueSubmissions(@NonNull Release nextRelease, @NonNull List<QueuedProject> queuedProjects)
-      throws InvalidStateException,
-      DccModelOptimisticLockException {
-    val nextReleaseName = nextRelease.getName();
-    log.info("enqueuing {} for {}", queuedProjects, nextReleaseName);
+  public void queueSubmissions(@NonNull Release release, @NonNull List<QueuedProject> queuedProjects)
+      throws InvalidStateException, DccModelOptimisticLockException {
+    val releaseName = release.getName();
+    log.info("enqueuing {} for {}", queuedProjects, releaseName);
 
     // Update release object
-    nextRelease.enqueue(queuedProjects);
+    release.enqueue(queuedProjects);
 
     for (val queuedProject : queuedProjects) {
       val projectKey = queuedProject.getKey();
-      val submission = fetchAndCheckSubmission(nextRelease, projectKey, NOT_VALIDATED, VALID, INVALID, ERROR);
+      val submission = release.getSubmission(projectKey).get();
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
 
-      submissionService.queueRequest(submission, queuedProject.getDataTypes());
+      //
+      // Transition
+      //
+
+      submission.queueRequest(submissionFiles, queuedProject.getDataTypes());
     }
 
-    updateReleaseSafely(nextReleaseName, nextRelease);
-    log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
+    releaseRepository.updateRelease(releaseName, release);
+    log.info("enqueued {} for {}", queuedProjects, releaseName);
   }
 
   /**
@@ -508,50 +502,45 @@ public class ReleaseService extends AbstractService {
    * This method is robust enough to handle rare cases like when:<br>
    * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
+   * @param report
+   * @param dataTypes
    */
   @Synchronized
-  public void dequeueSubmission(@NonNull final QueuedProject nextProject) {
-    val expectedState = QUEUED;
-    val nextProjectKey = nextProject.getKey();
+  public void dequeueSubmission(@NonNull final QueuedProject queuedProject, @NonNull final Report report) {
+    val projectKey = queuedProject.getKey();
 
-    val description = format("validate project '%s'", nextProjectKey);
+    val description = format("validate project '%s'", projectKey);
     log.info("Attempting to {}", description);
 
     withRetry(description, new Callable<Optional<?>>() {
 
       @Override
       public Optional<?> call() throws DccModelOptimisticLockException {
-        val nextRelease = getNextRelease();
-        val nextReleaseName = nextRelease.getName();
+        val release = getNextRelease();
+        val releaseName = release.getName();
 
-        log.info("Dequeuing {} to validating for {}", nextProjectKey, nextReleaseName);
+        log.info("Dequeuing {} to validating for {}", projectKey, releaseName);
 
-        // Actually dequeue the project
-        val dequeuedProject = nextRelease.dequeueProject();
+        val dequeuedProject = release.dequeueProject();
         val dequeuedProjectKey = dequeuedProject.getKey();
-        if (dequeuedProjectKey.equals(nextProjectKey) == false) { // not recoverable: TODO: create dedicated exception?
-          throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, nextProjectKey);
+        if (dequeuedProjectKey.equals(projectKey) == false) { // not recoverable: TODO: create dedicated exception?
+          throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, projectKey);
         }
 
-        // Update release object
-        val submission = getSubmissionByProjectKey(nextRelease, nextProjectKey); // can't be null
-        val currentState = submission.getState();
-        val nextState = VALIDATING;
-        if (expectedState != currentState) {
-          throw new ReleaseException("Project '%s' is not '%s' ('%s' instead), cannot set to '%s'",
-              nextProjectKey, expectedState, currentState, nextState);
-        }
+        val submission = release.getSubmission(projectKey).get();
+        val submissionFiles = getSubmissionFiles(releaseName, queuedProject.getKey());
 
-        submissionService.startValidation(submission, nextProject.getDataTypes());
+        //
+        // Transition
+        //
 
-        // Update corresponding database entity
-        updateReleaseSafely(nextReleaseName, nextRelease);
+        submission.startValidation(submissionFiles, queuedProject.getDataTypes());
+        releaseRepository.updateRelease(releaseName, release);
+        resetValidationFolder(queuedProject.getKey(), release);
 
-        resetValidationFolder(nextProject.getKey(), nextRelease);
+        mailService.sendValidationStarted(releaseName, queuedProject.getKey(), queuedProject.getEmails());
 
-        mailService.sendValidationStarted(nextReleaseName, nextProject.getKey(), nextProject.getEmails());
-
-        log.info("Dequeued {} to validating state for {}", nextProjectKey, nextReleaseName);
+        log.info("Dequeued {} to validating state for {}", projectKey, releaseName);
         return Optional.absent();
       }
 
@@ -559,53 +548,32 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void removeQueuedSubmissions() {
-    log.info("Emptying queue");
-
-    val newState = NOT_VALIDATED;
+  public void removeQueuedSubmissions(@NonNull String... targets) throws InvalidStateException {
     val release = getNextRelease();
-    val projectKeys = release.getQueuedProjectKeys(); // TODO: what if nextrelease changes in the meantime?
+    val releaseName = release.getName();
+    val projectKeys = targets.length > 0 ? release.getQueuedProjectKeys() : ImmutableList.<String> copyOf(targets);
 
-    // FIXME: DCC-901
-    updateSubmisions(projectKeys, newState);
-    release.emptyQueue();
+    log.info("Deleting queued request for project(s) '{}'", projectKeys);
+    for (val queuedProject : release.getQueue()) {
+      val projectKey = queuedProject.getKey();
+      val dataTypes = queuedProject.getDataTypes();
 
-    updateSubmissions(release.getName(), release.getQueue(), projectKeys, newState); // FIXME: DCC-901
-    for (val projectKey : projectKeys) {
-      // See spec at https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
-      resetValidationFolder(projectKey, release);
-    }
-  }
+      val remove = projectKeys.contains(projectKey);
+      if (remove) {
+        val submission = release.getSubmission(projectKey).get();
+        val submissionFiles = getSubmissionFiles(releaseName, projectKey);
 
-  @Synchronized
-  public void removeQueuedSubmissions(@NonNull String projectKey) throws InvalidStateException {
-    log.info("Deleting queued request for project '{}'", projectKey);
+        //
+        // Transition
+        //
 
-    val release = getNextRelease();
-    val projectKeys = singletonList(projectKey);
-    val state = getSubmission(release, projectKey).getState();
-    val queued = state == QUEUED;
-    val validating = state == VALIDATING;
-    val active = validating || queued;
-    log.info("Submission state for '{}' when delete queue request called is '{}'", projectKey, state);
-
-    if (queued) {
-      log.info("Removing project form queue: {}", projectKey);
-      release.removeFromQueue(projectKey);
+        submission.cancelValidation(submissionFiles, dataTypes);
+        release.removeFromQueue(projectKey);
+        resetValidationFolder(projectKey, release);
+      }
     }
 
-    if (active) {
-      val newState = NOT_VALIDATED;
-      log.info("Updating in-memory '{}' project submission state to '{}'", projectKey, newState);
-      updateSubmisions(projectKeys, newState);
-
-      log.info("Updating database '{}' release queue to '{}' and project '{}' submission state to '{}'",
-          new Object[] { release.getName(), release.getQueue(), projectKey, newState });
-      updateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
-
-      log.info("Resetting file system '{}' project validation folder", projectKey);
-      resetValidationFolder(projectKey, release);
-    }
+    releaseRepository.updateRelease(releaseName, release);
   }
 
   @Synchronized
@@ -616,18 +584,17 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void resetSubmission(@NonNull String releaseName, @NonNull String projectKey, @NonNull Optional<Path> path) {
+  public void resetSubmission(@NonNull String releaseName, @NonNull String projectKey, @NonNull Optional<Path> filePath) {
     val release = releaseRepository.findReleaseByName(releaseName);
-    val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
-    val submission = release.getSubmissionByProjectKey(projectKey).get();
+    val submission = release.getSubmission(projectKey).get();
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
 
-    // Update in-memory state
-    submissionService.modifySubmission(release, submission, dictionary, path);
+    //
+    // Transition
+    //
 
-    // Update persisted state
-    updateSubmission(releaseName, submission);
-
-    // Update file system state
+    submission.modifySubmission(submissionFiles, filePath);
+    releaseRepository.updateReleaseSubmission(releaseName, submission);
     resetValidationFolder(projectKey, release);
   }
 
@@ -639,24 +606,24 @@ public class ReleaseService extends AbstractService {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void resolveSubmission(@NonNull QueuedProject project, @NonNull ValidationOutcome outcome,
-      @NonNull SubmissionReport submissionReport) {
+  public void resolveSubmission(@NonNull QueuedProject project, @NonNull Outcome outcome, @NonNull Report report) {
     // Update the in-memory submission state
     val projectKey = project.getKey();
     val emails = project.getEmails();
-    val dataTypes = project.getDataTypes();
     val release = getNextRelease();
     val submission = getSubmission(release, projectKey);
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
 
-    submissionService.finishValidation(submission, dataTypes, outcome, submissionReport, getNextDictionary());
+    //
+    // Transition
+    //
 
-    log.info("Resolving project '{}' to submission state '{}'", projectKey, submission.getState());
-    updateSubmission(release.getName(), submission);
+    submission.finishValidation(submissionFiles, outcome, report);
+    releaseRepository.updateReleaseSubmission(release.getName(), submission);
 
     if (!emails.isEmpty()) {
       log.info("Sending notification emails for project '{}'...", projectKey);
-      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState(),
-          submission.getDataState());
+      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState(), report);
     }
 
     log.info("Resolved project '{}'", projectKey);
@@ -664,8 +631,21 @@ public class ReleaseService extends AbstractService {
 
   private Release performRelease(@NonNull Release oldRelease, @NonNull String nextReleaseName,
       @NonNull String dictionaryVersion) {
+
     // Create new release entity
-    val newRelease = createNextRelease(oldRelease, nextReleaseName, dictionaryVersion);
+    val newRelease = new Release(nextReleaseName, dictionaryVersion);
+
+    for (val submission : oldRelease.getSubmissions()) {
+      val submissionFiles = getSubmissionFiles(oldRelease.getName(), submission.getProjectKey());
+
+      //
+      // Transition
+      //
+
+      val newSubmission = submission.performRelease(submissionFiles, newRelease);
+
+      newRelease.addSubmission(newSubmission);
+    }
 
     // Set up new release file system counterpart
     setUpNewReleaseFileSystem(oldRelease, newRelease);
@@ -686,20 +666,6 @@ public class ReleaseService extends AbstractService {
     releaseRepository.saveNewRelease(newRelease);
 
     return newRelease;
-  }
-
-  private Release createNextRelease(@NonNull Release oldRelease, @NonNull String name, @NonNull String dictionaryVersion) {
-    val nextRelease = new Release(name);
-    nextRelease.setDictionaryVersion(dictionaryVersion);
-    nextRelease.setState(ReleaseState.OPENED);
-
-    for (val submission : oldRelease.getSubmissions()) {
-      val newSubmission = submissionService.performRelease(nextRelease, submission);
-
-      nextRelease.addSubmission(newSubmission);
-    }
-
-    return nextRelease;
   }
 
   private void setUpNewReleaseFileSystem(@NonNull Release oldRelease, @NonNull Release nextRelease) {
@@ -729,49 +695,6 @@ public class ReleaseService extends AbstractService {
     dccFileSystem.getReleaseFilesystem(release).resetValidationFolder(projectKey);
   }
 
-  /**
-   * Updates the release with the given name, there must be a matching release.<br>
-   * 
-   * Concurrency is handled with <code>{@link BaseEntity#internalVersion}</code> (optimistic lock).
-   * 
-   * @throws DccModelOptimisticLockException if optimistic lock fails
-   * @throws ReleaseException if the update fails for other reasons (probably not recoverable)
-   */
-  private void updateReleaseSafely(@NonNull String originalReleaseName, @NonNull Release updatedRelease)
-      throws DccModelOptimisticLockException {
-    try {
-      releaseRepository.updateRelease(originalReleaseName, updatedRelease);
-    } catch (ConcurrentModificationException e) { // see method comments for why this could be thrown
-      log.warn("A possibly recoverable concurrency issue arose when trying to update release {}", originalReleaseName);
-      throw new DccModelOptimisticLockException(e);
-    }
-  }
-
-  @Deprecated
-  private void updateSubmisions(@NonNull List<String> projectKeys, @NonNull SubmissionState state) {
-    val releaseName = getNextRelease().getName();
-    for (val projectKey : projectKeys) {
-      val submission = getSubmission(releaseName, projectKey);
-
-      submission.setState(state);
-    }
-  }
-
-  @Deprecated
-  private void updateSubmissions(@NonNull String releaseName, @NonNull List<QueuedProject> queue,
-      @NonNull List<String> projectKeys,
-      @NonNull SubmissionState newState) {
-    releaseRepository.updateReleaseQueue(releaseName, queue);
-
-    for (val projectKey : projectKeys) {
-      releaseRepository.updateReleaseSubmissionState(releaseName, projectKey, newState);
-    }
-  }
-
-  private void updateSubmission(@NonNull String releaseName, @NonNull Submission submission) {
-    releaseRepository.updateReleaseSubmission(releaseName, submission);
-  }
-
   private List<Project> getProjects(Release release, Subject user) {
     val builder = ImmutableList.<String> builder();
     for (val projectKey : release.getProjectKeys()) {
@@ -786,7 +709,7 @@ public class ReleaseService extends AbstractService {
   }
 
   private Submission getSubmission(Release release, String projectKey) {
-    val optional = release.getSubmissionByProjectKey(projectKey);
+    val optional = release.getSubmission(projectKey);
     if (optional.isPresent()) {
       return optional.get();
     }
@@ -794,86 +717,15 @@ public class ReleaseService extends AbstractService {
     throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, release.getName());
   }
 
-  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path path) {
-    val fileName = path.getName();
-    val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), path);
-    val lastUpdate = new Date(fileStatus.getModificationTime());
-    val size = fileStatus.getLen();
-
+  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) {
+    val fileName = filePath.getName();
+    val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
+    val fileLastUpdate = new Date(fileStatus.getModificationTime());
+    val fileSize = fileStatus.getLen();
     val fileSchema = dictionary.getFileSchemaByFileName(fileName);
-    String schemaName = null;
-    String dataType = null;
-    if (fileSchema.isPresent()) {
-      schemaName = fileSchema.get().getName();
-      dataType = fileSchema.get().getDataType().name();
-    } else {
-      schemaName = null;
-      dataType = null;
-    }
+    val fileType = fileSchema.isPresent() ? fileSchema.get().getFileType() : null;
 
-    return new SubmissionFile(fileName, lastUpdate, size, schemaName, dataType);
-  }
-
-  private Submission fetchAndCheckSubmission(@NonNull Release nextRelease, @NonNull String projectKey,
-      SubmissionState... expectedStates)
-      throws InvalidStateException {
-    val optional = nextRelease.getSubmissionByProjectKey(projectKey);
-    if (!optional.isPresent()) {
-      val errorMessage = "project " + projectKey + " cannot be found";
-      log.error(errorMessage);
-      throw new InvalidStateException(ServerErrorCode.PROJECT_KEY_NOT_FOUND, errorMessage);
-    }
-
-    val submission = optional.get();
-    val currentState = submission.getState();
-    val invalid = !contains(expectedStates, currentState);
-    if (invalid) {
-      val errorMessage = format("project %s is not in expected states %s (%s instead",
-          projectKey, Arrays.toString(expectedStates), currentState);
-      log.error(errorMessage);
-      throw new InvalidStateException(ServerErrorCode.INVALID_STATE, errorMessage, currentState);
-    }
-
-    return submission;
-  }
-
-  private static List<String> getProjectKeysBySubmissionState(@NonNull List<Submission> submissions,
-      @NonNull final SubmissionState state) {
-    val builder = ImmutableList.<String> builder();
-    for (val submission : submissions) {
-      if (state.equals(submission.getState())) {
-        builder.add(submission.getProjectKey());
-      }
-    }
-
-    return builder.build();
-  }
-
-  /**
-   * Attempts to retrieve a submission for the given project key provided from the release object provided (no database
-   * call).
-   * <p>
-   * Throws a {@code ReleaseException} if not matching submission is found.
-   */
-  private Submission getSubmissionByProjectKey(@NonNull Release release, @NonNull String projectKey) {
-    val optional = release.getSubmissionByProjectKey(projectKey);
-    if (!optional.isPresent()) {
-      throw new ReleaseException("There is no project '%s' associated with release '%s'",
-          projectKey, release.getName());
-    }
-
-    return optional.get();
-  }
-
-  private static List<LiteProject> getLiteProjects(List<Project> projects) {
-    val builder = ImmutableList.<LiteProject> builder();
-    for (val project : projects) {
-      val liteProject = new LiteProject(project);
-
-      builder.add(liteProject);
-    }
-
-    return builder.build();
+    return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
   }
 
   private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {
@@ -885,6 +737,29 @@ public class ReleaseService extends AbstractService {
     }
 
     return builder.build();
+  }
+
+  private static List<String> getProjectKeysBySubmissionState(@NonNull List<Submission> submissions,
+      @NonNull final SubmissionState state) {
+    val projectKeys = ImmutableList.<String> builder();
+    for (val submission : submissions) {
+      if (state.equals(submission.getState())) {
+        projectKeys.add(submission.getProjectKey());
+      }
+    }
+
+    return projectKeys.build();
+  }
+
+  private static List<LiteProject> getLiteProjects(List<Project> projects) {
+    val liteProjects = ImmutableList.<LiteProject> builder();
+    for (val project : projects) {
+      val liteProject = new LiteProject(project);
+
+      liteProjects.add(liteProject);
+    }
+
+    return liteProjects.build();
   }
 
   private void notifyUpdateError(String filter, String setValues) {

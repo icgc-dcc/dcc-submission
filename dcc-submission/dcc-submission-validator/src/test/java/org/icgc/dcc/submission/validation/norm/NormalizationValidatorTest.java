@@ -36,7 +36,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -145,7 +145,7 @@ public class NormalizationValidatorTest {
     when(mockValidationContext.getProjectKey())
         .thenReturn(PROJECT_NAME);
     when(mockValidationContext.getDataTypes())
-        .thenReturn(SubmissionDataTypes.values());
+        .thenReturn(DataTypes.values());
     when(mockValidationContext.getPlatformStrategy())
         .thenReturn(mockPlatformStrategy);
   }

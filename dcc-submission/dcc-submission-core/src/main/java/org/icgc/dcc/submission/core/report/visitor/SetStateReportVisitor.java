@@ -17,27 +17,27 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import java.util.Collection;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.DataTypeState;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
-import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.core.state.State;
+
+import com.google.common.collect.Iterables;
 
 @RequiredArgsConstructor
 public class SetStateReportVisitor extends AbstractReportVisitor {
 
   @NonNull
-  private final SubmissionState state;
+  private final State state;
   @NonNull
-  private final Collection<SubmissionDataType> dataTypes;
+  private final Iterable<DataType> dataTypes;
 
   @Override
   public void visit(DataTypeReport dataTypeReport) {
@@ -45,13 +45,13 @@ public class SetStateReportVisitor extends AbstractReportVisitor {
       return;
     }
 
-    if (state == SubmissionState.QUEUED) {
+    if (state == State.QUEUED) {
       dataTypeReport.setDataTypeState(DataTypeState.QUEUED);
-    } else if (state == SubmissionState.VALIDATING) {
+    } else if (state == State.VALIDATING) {
       dataTypeReport.setDataTypeState(DataTypeState.VALIDATING);
-    } else if (state == SubmissionState.ERROR) {
+    } else if (state == State.ERROR) {
       dataTypeReport.setDataTypeState(DataTypeState.ERROR);
-    } else if (state == SubmissionState.SIGNED_OFF) {
+    } else if (state == State.SIGNED_OFF) {
       dataTypeReport.setDataTypeState(DataTypeState.SIGNED_OFF);
     }
   }
@@ -62,13 +62,13 @@ public class SetStateReportVisitor extends AbstractReportVisitor {
       return;
     }
 
-    if (state == SubmissionState.QUEUED) {
+    if (state == State.QUEUED) {
       fileTypeReport.setFileTypeState(FileTypeState.QUEUED);
-    } else if (state == SubmissionState.VALIDATING) {
+    } else if (state == State.VALIDATING) {
       fileTypeReport.setFileTypeState(FileTypeState.VALIDATING);
-    } else if (state == SubmissionState.ERROR) {
+    } else if (state == State.ERROR) {
       fileTypeReport.setFileTypeState(FileTypeState.ERROR);
-    } else if (state == SubmissionState.SIGNED_OFF) {
+    } else if (state == State.SIGNED_OFF) {
       fileTypeReport.setFileTypeState(FileTypeState.SIGNED_OFF);
     }
   }
@@ -79,27 +79,31 @@ public class SetStateReportVisitor extends AbstractReportVisitor {
       return;
     }
 
-    if (state == SubmissionState.QUEUED) {
+    if (state == State.QUEUED) {
       fileReport.setFileState(FileState.QUEUED);
-    } else if (state == SubmissionState.VALIDATING) {
+    } else if (state == State.VALIDATING) {
       fileReport.setFileState(FileState.VALIDATING);
-    } else if (state == SubmissionState.ERROR) {
+    } else if (state == State.ERROR) {
       fileReport.setFileState(FileState.ERROR);
-    } else if (state == SubmissionState.SIGNED_OFF) {
+    } else if (state == State.SIGNED_OFF) {
       fileReport.setFileState(FileState.SIGNED_OFF);
     }
   }
 
   private boolean isMatch(DataTypeReport dataTypeReport) {
-    return dataTypes.contains(dataTypeReport.getDataType());
+    return isMatch(dataTypeReport.getDataType());
   }
 
   private boolean isMatch(@NonNull FileTypeReport fileTypeReport) {
-    return dataTypes.contains(fileTypeReport.getFileType().getDataType());
+    return isMatch(fileTypeReport.getFileType().getDataType());
   }
 
   private boolean isMatch(@NonNull FileReport fileReport) {
-    return dataTypes.contains(fileReport.getFileType().getDataType());
+    return isMatch(fileReport.getFileType().getDataType());
+  }
+
+  private boolean isMatch(@NonNull DataType dataType) {
+    return Iterables.contains(dataTypes, dataType);
   }
 
 }

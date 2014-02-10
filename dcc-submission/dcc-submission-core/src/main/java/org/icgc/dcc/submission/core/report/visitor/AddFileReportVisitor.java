@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.core.report.visitor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
@@ -28,7 +28,7 @@ import org.icgc.dcc.submission.core.report.Report;
 
 public class AddFileReportVisitor extends AbstractFileReportVisitor {
 
-  public AddFileReportVisitor(@NonNull String fileName, @NonNull SubmissionFileType fileType) {
+  public AddFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
     super(fileName, fileType);
   }
 

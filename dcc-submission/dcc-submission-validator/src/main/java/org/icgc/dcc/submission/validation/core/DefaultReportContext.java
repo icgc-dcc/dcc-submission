@@ -31,7 +31,7 @@ import org.icgc.dcc.submission.core.report.Report;
  */
 @Value
 @RequiredArgsConstructor
-public class DefaultReportContext {
+public class DefaultReportContext implements ReportContext {
 
   /**
    * State.
@@ -43,22 +43,32 @@ public class DefaultReportContext {
     this(new Report());
   }
 
+  @Override
   public void reportSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
     report.addSummary(fileName, name, value);
   }
 
+  @Override
   public void reportField(@NonNull String fileName, @NonNull FieldReport fieldReport) {
     report.addFieldReport(fileName, fieldReport);
   }
 
+  @Override
   public void reportError(@NonNull Error error) {
     report.addError(error);
   }
 
+  @Override
   public boolean hasErrors() {
     return report.hasErrors();
   }
 
+  @Override
+  public int getErrorCount() {
+    return report.getErrorCount();
+  }
+
+  @Override
   public void reportLineNumbers(@NonNull Path filePath) {
     report.accept(new ConvertLineNumbersReportVisitor(filePath));
   }

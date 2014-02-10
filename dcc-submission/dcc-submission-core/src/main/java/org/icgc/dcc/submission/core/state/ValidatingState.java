@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,60 +15,53 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.core.state;
 
-import static com.google.common.collect.Lists.newLinkedList;
 import static lombok.AccessLevel.PACKAGE;
-import static lombok.AccessLevel.PRIVATE;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
-import lombok.Getter;
+import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
+import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
+import static org.icgc.dcc.submission.core.model.Outcome.SUCCEEDED;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.NonNull;
+import lombok.val;
 
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
-/**
- * Reports on cell values within a column. Keeps track of the line, value and total count.
- */
-@NoArgsConstructor
-@Getter
-@Setter(PRIVATE)
-@ToString
-public class ColumnErrorReport implements Serializable {
+@NoArgsConstructor(access = PACKAGE)
+public class ValidatingState extends AbstractState {
 
-  private List<String> columnNames;
-  private long count;
-
-  @Setter(PACKAGE)
-  private List<Long> lines = newLinkedList();
-  private List<Object> values = newLinkedList();
-  private Map<ErrorParameterKey, Object> parameters;
-
-  public ColumnErrorReport(TupleError error) {
-    this.setColumnNames(error.getColumnNames());
-    this.setCount(1L);
-
-    this.addLine(error.getLine());
-    this.addValue(error.getValue());
-    this.setParameters(error.getParameters());
+  @Override
+  public boolean isReadOnly() {
+    return true;
   }
 
-  public void incrementCount() {
-    count++;
+  @Override
+  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.NOT_VALIDATED);
+
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
   }
 
-  public void addLine(Long line) {
-    lines.add(line);
-  }
+  @Override
+  public void finishValidation(@NonNull StateContext context, @NonNull Outcome outcome, @NonNull Report newReport) {
+    val report = context.getReport();
 
-  public void addValue(Object value) {
-    values.add(value);
+    if (outcome == SUCCEEDED) {
+      context.setState(report.isValid() ? SubmissionState.VALID : SubmissionState.NOT_VALIDATED);
+      context.setReport(newReport);
+
+      newReport.refreshState();
+    } else if (outcome == FAILED) {
+      context.setState(SubmissionState.ERROR);
+    } else if (outcome == CANCELLED) {
+      // TODO: Should this branch be removed gue to cancelValidation?
+      context.setState(SubmissionState.NOT_VALIDATED);
+    }
   }
 
 }

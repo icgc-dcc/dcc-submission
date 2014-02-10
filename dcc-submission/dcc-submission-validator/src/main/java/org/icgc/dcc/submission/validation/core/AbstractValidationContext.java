@@ -29,7 +29,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.report.Error;
+import org.icgc.dcc.submission.core.report.FieldReport;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -55,7 +58,7 @@ public abstract class AbstractValidationContext implements ValidationContext {
   }
 
   @Override
-  public Collection<SubmissionDataType> getDataTypes() {
+  public Collection<DataType> getDataTypes() {
     throw new UnsupportedOperationException();
   }
 
@@ -105,7 +108,7 @@ public abstract class AbstractValidationContext implements ValidationContext {
   }
 
   @Override
-  public SubmissionReport getSubmissionReport() {
+  public Report getReport() {
     throw new UnsupportedOperationException();
   }
 
@@ -133,7 +136,9 @@ public abstract class AbstractValidationContext implements ValidationContext {
   public void reportError(Error error) {
     val message =
         "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
-    val text = format(message, error.getFileName(), error.getLineNumber(), error.getFieldNames().toString(), error.getValue(), error.getType(), Arrays.toString(error.getParams()));
+    val text =
+        format(message, error.getFileName(), error.getLineNumber(), error.getFieldNames().toString(), error.getValue(),
+            error.getType(), Arrays.toString(error.getParams()));
     log.error("{}", text);
   }
 

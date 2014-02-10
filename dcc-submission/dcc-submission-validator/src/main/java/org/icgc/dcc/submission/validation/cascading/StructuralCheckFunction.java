@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.core.report.ErrorType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

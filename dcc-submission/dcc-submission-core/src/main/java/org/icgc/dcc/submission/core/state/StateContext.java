@@ -15,18 +15,55 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
-import static lombok.AccessLevel.PACKAGE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
-@NoArgsConstructor(access = PACKAGE)
-public class NotValidatedState extends AbstractState {
+import com.google.common.base.Optional;
 
-  @Override
-  public void queueRequest(@NonNull StateContext context) {
-    context.setState(QUEUED);
-  }
+public interface StateContext {
+
+  /**
+   * Read
+   */
+
+  String getProjectName();
+
+  String getProjectKey();
+
+  Iterable<SubmissionFile> getSubmissionFiles();
+
+  Report getReport();
+
+  /**
+   * Write
+   */
+
+  void setState(SubmissionState state);
+
+  void setReport(Report newReport);
+
+  /**
+   * Actions
+   */
+
+  void modifySubmission(Optional<Path> filePath);
+
+  void queueRequest(Iterable<DataType> dataTypes);
+
+  void startValidation(Iterable<DataType> dataTypes);
+
+  void finishValidation(Outcome outcome, Report newReport);
+
+  void signOff();
+
+  Submission performRelease(Release nextRelease);
 
 }

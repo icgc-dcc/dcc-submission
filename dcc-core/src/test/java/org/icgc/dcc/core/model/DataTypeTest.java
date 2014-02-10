@@ -20,18 +20,18 @@ package org.icgc.dcc.core.model;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.from;
-import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.hasControlSampleId;
-import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.isAggregatedType;
-import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.isMandatoryType;
-import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.values;
+import static org.icgc.dcc.core.model.DataType.DataTypes.from;
+import static org.icgc.dcc.core.model.DataType.DataTypes.hasControlSampleId;
+import static org.icgc.dcc.core.model.DataType.DataTypes.isAggregatedType;
+import static org.icgc.dcc.core.model.DataType.DataTypes.isMandatoryType;
+import static org.icgc.dcc.core.model.DataType.DataTypes.values;
 
 import java.util.HashSet;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.junit.Test;
 
-public class SubmissionDataTypeTest {
+public class DataTypeTest {
 
   @Test
   public void test_SubmissionDataTypes_valid() {
@@ -40,7 +40,7 @@ public class SubmissionDataTypeTest {
 
     assertThat(values().size()).isEqualTo(13); // 11 feature types + 1 clinical type + 1 optional clinical type
     assertThat(values().size()).isEqualTo( // Check no duplicates
-        new HashSet<SubmissionDataType>(values()).size());
+        new HashSet<DataType>(values()).size());
 
     assertThat(isMandatoryType(ClinicalType.CLINICAL_CORE_TYPE)).isTrue();
     assertThat(isMandatoryType(FeatureType.SSM_TYPE)).isFalse();

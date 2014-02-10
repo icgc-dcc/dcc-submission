@@ -20,11 +20,11 @@ package org.icgc.dcc.submission.validation.key;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_S_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
@@ -46,9 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -83,7 +83,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final Config config = createConfig();
   @Getter(lazy = true)
-  private final List<SubmissionDataType> dataTypes = SubmissionDataTypes.values();
+  private final List<DataType> dataTypes = DataTypes.values();
   @Getter(lazy = true)
   private final Dictionary dictionary = createDictionary();
   @Getter(lazy = true)
@@ -192,7 +192,7 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
     for (val fileSchema : dictionary.getFiles()) {
-      val fileType = SubmissionFileType.from(fileSchema.getName());
+      val fileType = FileType.from(fileSchema.getName());
       val ssmPrimary = fileType == SSM_P_TYPE;
       if (ssmPrimary) {
         return fileSchema;

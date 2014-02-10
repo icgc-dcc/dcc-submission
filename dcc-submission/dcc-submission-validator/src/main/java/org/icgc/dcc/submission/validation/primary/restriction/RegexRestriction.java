@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.primary.restriction;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REGEX_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.REGEX_ERROR;
 import static org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.ParameterType.TEXT;
 
 import java.util.regex.Pattern;

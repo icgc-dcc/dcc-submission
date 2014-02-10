@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.collect.ImmutableList.copyOf;
-import static org.icgc.dcc.submission.validation.core.Error.error;
-import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_FILES_ERROR;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_FILES_ERROR;
 
 import java.util.List;
 import java.util.regex.Pattern;

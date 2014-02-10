@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static org.icgc.dcc.submission.validation.core.Error.error;
-import static org.icgc.dcc.submission.validation.core.ErrorType.COMPRESSION_CODEC_ERROR;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.COMPRESSION_CODEC_ERROR;
 
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;

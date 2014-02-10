@@ -15,38 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release.model;
+package org.icgc.dcc.submission.core.report.visitor;
 
-import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
-import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.NONE;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
-import org.mongodb.morphia.annotations.Embedded;
+import lombok.NonNull;
 
-@Embedded
-@Data
-@NoArgsConstructor
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
-public class DataTypeState {
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.FileReport;
 
-  private String dataType;
-  private SubmissionState state;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
-  public DataTypeState(SubmissionDataType dataType, SubmissionState state) {
-    this.dataType = dataType.name();
-    this.state = state;
+public class GetFilesReportVisitor extends AbstractReportVisitor {
+
+  private final Builder<String, FileType> files = ImmutableMap.<String, FileType> builder();
+
+  @Override
+  public void visit(@NonNull FileReport fileReport) {
+    files.put(fileReport.getFileName(), fileReport.getFileType());
   }
 
-  public SubmissionDataType getDataType() {
-    return SubmissionDataTypes.valueOf(dataType);
-  }
-
-  public void setDataType(SubmissionDataType dataType) {
-    this.dataType = dataType.name();
+  public Map<String, FileType> getFiles() {
+    return files.build();
   }
 
 }

@@ -19,20 +19,20 @@ package org.icgc.dcc.submission.core.report.visitor;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 
 public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
 
-  protected final SubmissionFileType fileType;
+  protected final FileType fileType;
 
   protected DataTypeReport dataTypeReport;
   protected FileTypeReport fileTypeReport;
   protected FileReport fileReport;
 
-  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull SubmissionFileType fileType) {
+  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
     super(fileName);
     this.fileType = fileType;
   }

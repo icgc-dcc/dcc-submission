@@ -15,10 +15,44 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
-import static lombok.AccessLevel.PACKAGE;
-import lombok.NoArgsConstructor;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 
-@NoArgsConstructor(access = PACKAGE)
-public class SignedOffState extends AbstractState {}
+import com.google.common.base.Optional;
+
+public interface State {
+
+  String getName();
+
+  boolean isReadOnly();
+
+  void initializeSubmission(StateContext context);
+
+  void modifySubmission(StateContext context, Optional<Path> path);
+
+  void queueRequest(StateContext context, Iterable<DataType> dataTypes);
+
+  void startValidation(StateContext context, Iterable<DataType> dataTypes);
+
+  void cancelValidation(StateContext context, Iterable<DataType> dataTypes);
+
+  void finishValidation(StateContext context, Outcome outcome, Report newReport);
+
+  void signOff(StateContext context);
+
+  Submission performRelease(StateContext context, Release nextRelease);
+
+  static final State NOT_VALIDATED = new NotValidatedState();
+  static final State QUEUED = new QueuedState();
+  static final State VALIDATING = new ValidatingState();
+  static final State ERROR = new ErrorState();
+  static final State VALID = new ValidState();
+  static final State SIGNED_OFF = new SignedOffState();
+
+}

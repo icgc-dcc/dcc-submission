@@ -26,7 +26,7 @@ import java.util.Set;
 import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -36,10 +36,10 @@ import com.google.common.collect.Iterables;
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
  * <p>
- * Careful not to confuse this with {@link SubmissionFileType} which represents the ICGC file types, such as "donor",
+ * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor",
  * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
  */
-public interface SubmissionDataType {
+public interface DataType {
 
   String TYPE_SUFFIX = "TYPE";
 
@@ -60,21 +60,21 @@ public interface SubmissionDataType {
 
   FeatureType asFeatureType();
 
-  public static class SubmissionDataTypes {
+  public static class DataTypes {
 
     /**
      * These types are always provided for a submission to be {@link SubmissionState#VALID}.
      */
-    private static Set<SubmissionDataType> MANDATORY_TYPES =
-        new ImmutableSet.Builder<SubmissionDataType>()
+    private static Set<DataType> MANDATORY_TYPES =
+        new ImmutableSet.Builder<DataType>()
             .add(ClinicalType.CLINICAL_CORE_TYPE)
             .build();
 
     /**
      * Features types that are small enough to be loaded in mongodb (as exposed to exported to hdfs only).
      */
-    private static final Set<SubmissionDataType> MONGO_LOADED_FEATURE_TYPES =
-        new ImmutableSet.Builder<SubmissionDataType>()
+    private static final Set<DataType> MONGO_LOADED_FEATURE_TYPES =
+        new ImmutableSet.Builder<DataType>()
             .add(ClinicalType.CLINICAL_CORE_TYPE)
             .addAll( // All aggregated feature types are mongo sinkable
                 Iterables.filter(newArrayList(FeatureType.values()), new Predicate<FeatureType>() {
@@ -89,8 +89,8 @@ public interface SubmissionDataType {
     /**
      * Returns an enum matching the type like "donor", "ssm", "meth", ...
      */
-    public static SubmissionDataType from(String typeName) {
-      SubmissionDataType type = null;
+    public static DataType from(String typeName) {
+      DataType type = null;
       try {
         return FeatureType.from(typeName);
       } catch (IllegalArgumentException e) {
@@ -108,8 +108,8 @@ public interface SubmissionDataType {
     /**
      * Returns an enum matching the supplied name
      */
-    public static SubmissionDataType valueOf(String name) {
-      SubmissionDataType type = null;
+    public static DataType valueOf(String name) {
+      DataType type = null;
       try {
         return FeatureType.valueOf(name);
       } catch (IllegalArgumentException e) {
@@ -127,8 +127,8 @@ public interface SubmissionDataType {
     /**
      * Returns the values for all enums that implements the interface.
      */
-    public static List<SubmissionDataType> values() {
-      val builder = new ImmutableList.Builder<SubmissionDataType>();
+    public static List<DataType> values() {
+      val builder = new ImmutableList.Builder<DataType>();
       for (val type : FeatureType.values()) {
         builder.add(type);
       }
@@ -142,21 +142,21 @@ public interface SubmissionDataType {
     /**
      * Checks whether a particular schema is small enough to be stored in mongodb.
      */
-    public static boolean isMongoSinkable(SubmissionDataType type) {
+    public static boolean isMongoSinkable(DataType type) {
       return MONGO_LOADED_FEATURE_TYPES.contains(type);
     }
 
     /**
      * Determines whether the type provided is one that must always be included in submissions or not.
      */
-    public static boolean isMandatoryType(SubmissionDataType dataType) {
+    public static boolean isMandatoryType(DataType dataType) {
       return MANDATORY_TYPES.contains(dataType);
     }
 
     /**
      * Determines whether the type provided is one that has a control counterpart or not.
      */
-    public static boolean hasControlSampleId(SubmissionDataType dataType) {
+    public static boolean hasControlSampleId(DataType dataType) {
       return dataType.isFeatureType() &&
           FeatureTypes.hasControlSampleId(dataType.asFeatureType());
     }
@@ -164,7 +164,7 @@ public interface SubmissionDataType {
     /**
      * Determines whether the type provided is one that is experimental and aggregated, or not.
      */
-    public static boolean isAggregatedType(SubmissionDataType dataType) {
+    public static boolean isAggregatedType(DataType dataType) {
       return dataType.isFeatureType() &&
           FeatureTypes.isAggregatedType(dataType.asFeatureType());
     }

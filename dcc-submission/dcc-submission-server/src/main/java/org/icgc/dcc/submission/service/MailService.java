@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.service;
 import static java.lang.String.format;
 import static javax.mail.Message.RecipientType.TO;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
@@ -47,8 +46,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Feedback;
-import org.icgc.dcc.submission.release.model.DataTypeState;
-import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.state.State;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
@@ -143,7 +142,7 @@ public class MailService {
         user, path));
   }
 
-  public void sendSignoff(@NonNull String user, @NonNull List<String> projectKeys, @NonNull String nextReleaseName) {
+  public void sendSignoff(@NonNull String user, @NonNull Iterable<String> projectKeys, @NonNull String nextReleaseName) {
     sendNotification(
         format("Signed off Projects: %s", projectKeys),
         template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
@@ -156,26 +155,26 @@ public class MailService {
   }
 
   public void sendValidationFinsished(@NonNull String releaseName, @NonNull String projectKey,
-      @NonNull List<String> emails, @NonNull SubmissionState state, @NonNull List<DataTypeState> dataTypeState) {
+      @NonNull List<String> emails, @NonNull State state, @NonNull Report report) {
     sendNotification(format(
         "Validation finished for release '%s' project '%s' (on behalf of '%s') with state '%s' and data type state '%s'",
-        releaseName, projectKey, emails, state, dataTypeState));
+        releaseName, projectKey, emails, state, report));
   }
 
   public void sendValidationResult(@NonNull String releaseName, @NonNull String projectKey,
-      @NonNull List<String> emails, @NonNull SubmissionState state, @NonNull List<DataTypeState> dataTypeState) {
+      @NonNull List<String> emails, @NonNull State state, @NonNull Report report) {
     if (!isEnabled()) {
       log.info("Mail not enabled. Skipping...");
       return;
     }
 
-    sendValidationFinsished(releaseName, projectKey, emails, state, dataTypeState);
+    sendValidationFinsished(releaseName, projectKey, emails, state, report);
 
     try {
       val message = message();
       message.setFrom(address(get(MAIL_FROM)));
       message.addRecipients(TO, addresses(emails));
-      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state, dataTypeState));
+      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state, report));
       message.setText(getResult(projectKey, state));
 
       send(message);
@@ -184,13 +183,12 @@ public class MailService {
     }
   }
 
-  private String getResult(final String projectKey, final SubmissionState state) {
+  private String getResult(final String projectKey, final State state) {
     // @formatter:off
     return
       state == ERROR         ? template(MAIL_ERROR_BODY,           projectKey, state)                         : 
       state == NOT_VALIDATED ? template(MAIL_NOT_VALIDATED_BODY,   projectKey, state, projectKey, projectKey) :
       state == VALID         ? template(MAIL_VALID_BODY,           projectKey, state, projectKey, projectKey) :
-      state == INVALID       ? template(MAIL_INVALID_BODY,         projectKey, state, projectKey, projectKey) : 
                                format("Unexpected validation state '%s' prevented loading email text.", state);
     // @formatter:on
   }

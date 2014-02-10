@@ -92,7 +92,7 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
     // Check that Release in DB does not have Submission
     val openRelease = getOpenReleaseQuery.singleResult();
     try {
-      openRelease.getSubmissionByProjectKey(submission.getProjectKey());
+      openRelease.getSubmission(submission.getProjectKey());
     } catch (Exception e) {
       assertThat(e).isInstanceOf(ReleaseException.class);
     }
@@ -117,8 +117,8 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
     // Check that Release in DB does not have Submission
     val release = getOpenReleaseQuery.singleResult();
-    release.getSubmissionByProjectKey(submission.getProjectKey());
-    assertThat(!release.getSubmissionByProjectKey(submission.getProjectKey()).isPresent());
+    release.getSubmission(submission.getProjectKey());
+    assertThat(!release.getSubmission(submission.getProjectKey()).isPresent());
 
     // Add Submission
     release.addSubmission(submission);

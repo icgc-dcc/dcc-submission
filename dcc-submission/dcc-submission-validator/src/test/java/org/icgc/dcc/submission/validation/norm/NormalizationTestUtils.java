@@ -28,7 +28,7 @@ import lombok.SneakyThrows;
 
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 /**
@@ -53,7 +53,7 @@ final class NormalizationTestUtils {
     return getResource("org/icgc/dcc/resources/" + resourceName);
   }
 
-  public static List<String> getFieldNames(SubmissionFileType type) {
+  public static List<String> getFieldNames(FileType type) {
     return dictionary()
         .getFileSchema(type)
         .getFieldNames();

@@ -18,10 +18,10 @@
 package org.icgc.dcc.submission.release.model;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +53,7 @@ public class ReleaseView {
   @NotBlank
   protected String dictionaryVersion;
 
-  protected Map<SubmissionState, Integer> summary = new EnumMap<SubmissionState, Integer>(SubmissionState.class);
+  protected Map<SubmissionState, Integer> summary = newHashMap();
 
   public ReleaseView() {
 
@@ -69,7 +69,7 @@ public class ReleaseView {
     this.dictionaryVersion = release.dictionaryVersion;
     for (LiteProject liteProject : liteProjects) {
       String projectKey = liteProject.getKey();
-      val optional = release.getSubmissionByProjectKey(projectKey);
+      val optional = release.getSubmission(projectKey);
       checkState(optional.isPresent(), "Could not find project '%s' in release '%s'", projectKey, name);
 
       val submission = optional.get();

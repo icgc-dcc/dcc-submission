@@ -15,53 +15,69 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.util;
+package org.icgc.dcc.submission.core.util;
 
-import static com.google.common.io.Resources.getResource;
-import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
-import java.net.URL;
+import java.io.IOException;
 
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.val;
 
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.DeserializationContext;
+import org.codehaus.jackson.map.JsonDeserializer;
+import org.codehaus.jackson.map.JsonSerializer;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 
 @NoArgsConstructor(access = PRIVATE)
-public class Dictionaries {
+public final class Serdes {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final ObjectReader FILE_SCHEMA_READER = MAPPER.reader(FileSchema.class);
-  private static final ObjectReader DICTIONARY_SCHEMA_READER = MAPPER.reader(Dictionary.class);
-  private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
+  public static class FileTypeSerializer extends JsonSerializer<FileType> {
 
-  @SneakyThrows
-  public static FileSchema readFileSchema(FileType fileType) {
-    val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
-
-    return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
+    @Override
+    public void serialize(FileType value, JsonGenerator generator, SerializerProvider provider)
+        throws IOException, JsonProcessingException {
+      generator.writeObject(value.name());
+    }
   }
 
-  @SneakyThrows
-  public static Dictionary readDccResourcesDictionary() {
-    return readDictionary(getDccResource("Dictionary.json"));
+  public static class FileTypeDeserializer extends JsonDeserializer<FileType> {
+
+    @Override
+    public FileType deserialize(JsonParser parser, DeserializationContext context) throws IOException,
+        JsonProcessingException {
+      val value = parser.getText();
+
+      return FileType.valueOf(value);
+    }
+
   }
 
-  @SneakyThrows
-  public static Dictionary readDictionary(String dictionaryResourcePath) {
-    return readDictionary(getResource(dictionaryResourcePath));
+  public static class DataTypeSerializer extends JsonSerializer<DataType> {
+
+    @Override
+    public void serialize(DataType value, JsonGenerator generator, SerializerProvider provider)
+        throws IOException, JsonProcessingException {
+      generator.writeObject(value.name());
+    }
   }
 
-  @SneakyThrows
-  public static Dictionary readDictionary(URL dictionaryURL) {
-    return DICTIONARY_SCHEMA_READER.readValue(dictionaryURL);
+  public static class DataTypeDeserializer extends JsonDeserializer<DataType> {
+
+    @Override
+    public DataType deserialize(JsonParser parser, DeserializationContext context) throws IOException,
+        JsonProcessingException {
+      val value = parser.getText();
+
+      return DataTypes.valueOf(value);
+    }
+
   }
+
 }

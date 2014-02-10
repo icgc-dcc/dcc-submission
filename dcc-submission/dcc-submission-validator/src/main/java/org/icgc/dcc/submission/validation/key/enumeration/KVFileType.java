@@ -20,53 +20,53 @@ package org.icgc.dcc.submission.validation.key.enumeration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 @RequiredArgsConstructor
 public enum KVFileType {
-  DONOR(SubmissionFileType.DONOR_TYPE),
-  SPECIMEN(SubmissionFileType.SPECIMEN_TYPE),
-  SAMPLE(SubmissionFileType.SAMPLE_TYPE),
+  DONOR(FileType.DONOR_TYPE),
+  SPECIMEN(FileType.SPECIMEN_TYPE),
+  SAMPLE(FileType.SAMPLE_TYPE),
 
-  BIOMARKER(SubmissionFileType.BIOMARKER_TYPE),
-  EXPOSURE(SubmissionFileType.EXPOSURE_TYPE),
-  FAMILY(SubmissionFileType.FAMILY_TYPE),
-  SURGERY(SubmissionFileType.SURGERY_TYPE),
-  THERAPY(SubmissionFileType.THERAPY_TYPE),
+  BIOMARKER(FileType.BIOMARKER_TYPE),
+  EXPOSURE(FileType.EXPOSURE_TYPE),
+  FAMILY(FileType.FAMILY_TYPE),
+  SURGERY(FileType.SURGERY_TYPE),
+  THERAPY(FileType.THERAPY_TYPE),
 
-  SSM_M(SubmissionFileType.SSM_M_TYPE),
-  SSM_P(SubmissionFileType.SSM_P_TYPE),
+  SSM_M(FileType.SSM_M_TYPE),
+  SSM_P(FileType.SSM_P_TYPE),
 
-  CNSM_M(SubmissionFileType.CNSM_M_TYPE),
-  CNSM_P(SubmissionFileType.CNSM_P_TYPE),
-  CNSM_S(SubmissionFileType.CNSM_S_TYPE),
+  CNSM_M(FileType.CNSM_M_TYPE),
+  CNSM_P(FileType.CNSM_P_TYPE),
+  CNSM_S(FileType.CNSM_S_TYPE),
 
-  STSM_M(SubmissionFileType.STSM_M_TYPE),
-  STSM_P(SubmissionFileType.STSM_P_TYPE),
-  STSM_S(SubmissionFileType.STSM_S_TYPE),
+  STSM_M(FileType.STSM_M_TYPE),
+  STSM_P(FileType.STSM_P_TYPE),
+  STSM_S(FileType.STSM_S_TYPE),
 
-  MIRNA_M(SubmissionFileType.MIRNA_M_TYPE),
-  MIRNA_P(SubmissionFileType.MIRNA_P_TYPE), // Does NOT have a PK (unusual)
-  MIRNA_S(SubmissionFileType.MIRNA_S_TYPE), // Does have a PK (unusual)
+  MIRNA_M(FileType.MIRNA_M_TYPE),
+  MIRNA_P(FileType.MIRNA_P_TYPE), // Does NOT have a PK (unusual)
+  MIRNA_S(FileType.MIRNA_S_TYPE), // Does have a PK (unusual)
 
-  METH_M(SubmissionFileType.METH_M_TYPE),
-  METH_P(SubmissionFileType.METH_P_TYPE),
-  METH_S(SubmissionFileType.METH_S_TYPE),
+  METH_M(FileType.METH_M_TYPE),
+  METH_P(FileType.METH_P_TYPE),
+  METH_S(FileType.METH_S_TYPE),
 
-  EXP_M(SubmissionFileType.EXP_M_TYPE),
-  EXP_G(SubmissionFileType.EXP_G_TYPE), // Naming exception ('g' instead of 'p')
+  EXP_M(FileType.EXP_M_TYPE),
+  EXP_G(FileType.EXP_G_TYPE), // Naming exception ('g' instead of 'p')
 
-  PEXP_M(SubmissionFileType.PEXP_M_TYPE),
-  PEXP_P(SubmissionFileType.PEXP_P_TYPE),
+  PEXP_M(FileType.PEXP_M_TYPE),
+  PEXP_P(FileType.PEXP_P_TYPE),
 
-  JCN_M(SubmissionFileType.JCN_M_TYPE),
-  JCN_P(SubmissionFileType.JCN_P_TYPE),
+  JCN_M(FileType.JCN_M_TYPE),
+  JCN_P(FileType.JCN_P_TYPE),
 
-  SGV_M(SubmissionFileType.SGV_M_TYPE),
-  SGV_P(SubmissionFileType.SGV_P_TYPE);
+  SGV_M(FileType.SGV_M_TYPE),
+  SGV_P(FileType.SGV_P_TYPE);
 
   @Getter
-  private final SubmissionFileType submissionFileType;
+  private final FileType submissionFileType;
 
   public boolean isReplaceAll() {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;

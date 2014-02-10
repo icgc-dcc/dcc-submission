@@ -42,7 +42,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
@@ -61,8 +60,6 @@ public class ProjectResource {
   private ProjectService projectService;
   @Inject
   private ReleaseService releaseService;
-  @Inject
-  private DccFileSystem dccFileSystem;
 
   @GET
   public Response getProjects(@Context SecurityContext securityContext) {
@@ -99,16 +96,10 @@ public class ProjectResource {
       projectService.addProject(project);
 
       // Update Release and save to DB
-      val release = releaseService.addSubmission(project.getKey(), project.getName());
-
-      // Add directory for submission
-      // TODO: move this to service
-      String projectDirectoryPath =
-          dccFileSystem.createNewProjectDirectoryStructure(release.getName(), project.getKey());
+      releaseService.addSubmission(project.getKey(), project.getName());
 
       response =
           Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
-      log.info("Project '{}' added ({})!", project.getKey(), projectDirectoryPath);
     } catch (DuplicateKey e) {
       response = Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
           .build();

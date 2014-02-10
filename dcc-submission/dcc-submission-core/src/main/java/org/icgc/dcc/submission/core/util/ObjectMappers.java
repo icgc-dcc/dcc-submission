@@ -17,12 +17,16 @@
  */
 package org.icgc.dcc.submission.core.util;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Common object mappers.
  */
-public class ObjectMappers {
+@NoArgsConstructor(access = PRIVATE)
+public final class ObjectMappers {
 
   public static final ObjectMapper DEFAULT = new ObjectMapper();
 

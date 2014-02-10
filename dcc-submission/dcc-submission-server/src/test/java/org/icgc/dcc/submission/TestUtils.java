@@ -25,10 +25,10 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_M_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_S_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_S_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
@@ -53,8 +53,8 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -164,7 +164,7 @@ public final class TestUtils {
     return dictionary;
   }
 
-  public static List<String> getFieldNames(SubmissionFileType type) {
+  public static List<String> getFieldNames(FileType type) {
     return dictionary().getFileSchema(type).getFieldNames();
   }
 
@@ -195,7 +195,7 @@ public final class TestUtils {
 
   @SneakyThrows
   public static String dataTypesToString() {
-    return MAPPER.writeValueAsString(SubmissionDataTypes.values());
+    return MAPPER.writeValueAsString(DataTypes.values());
   }
 
   public static String dictionaryToString() {

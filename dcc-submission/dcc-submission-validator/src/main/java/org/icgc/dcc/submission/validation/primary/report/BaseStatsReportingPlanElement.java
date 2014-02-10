@@ -33,9 +33,9 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
-import org.icgc.dcc.submission.validation.core.FieldReport;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.PlanExecutionException;
@@ -50,6 +50,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
+import com.mongodb.BasicDBObject;
 
 public abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
@@ -174,7 +175,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
         val fieldSummary = getFieldSummaries(reportIntputStream);
 
         while (fieldSummary.hasNext()) {
-          val fieldReport = FieldReport.convert(fieldSummary.next());
+          val fieldReport = convert(fieldSummary.next());
           val fieldName = fieldReport.getName();
 
           val fieldStatDigest = fieldStatDigests.get(fieldName);
@@ -201,5 +202,39 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
           .readValues(reportIntputStream);
     }
 
+  }
+
+  public static FieldReport convert(FieldSummary fieldSummary) {
+    val fieldReport = new FieldReport();
+    fieldReport.setName(fieldSummary.field);
+    fieldReport.setNulls(fieldSummary.nulls);
+    fieldReport.setMissing(fieldSummary.missing);
+    fieldReport.setPopulated(fieldSummary.populated);
+    fieldReport.setCompleteness(calculateCompleteness(fieldSummary));
+    fieldReport.setSummary(createSummary(fieldSummary));
+
+    return fieldReport;
+  }
+
+  private static double calculateCompleteness(FieldSummary fieldSummary) {
+    val available = fieldSummary.populated;
+    val total = fieldSummary.nulls + fieldSummary.missing + available;
+    val percentage = 100.0 * available / total;
+
+    return percentage;
+  }
+
+  private static BasicDBObject createSummary(FieldSummary fieldSummary) {
+    val summary = new BasicDBObject();
+    for (val key : fieldSummary.summary.keySet()) {
+      summary.append(escape(key), fieldSummary.summary.get(key));
+    }
+
+    return summary;
+  }
+
+  private static String escape(String value) {
+    // NOTE: periods and dollar signs must be replaced for MongoDB compatibility
+    return value.replace(".", "&#46;").replace("$", "&#36;");
   }
 }

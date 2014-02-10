@@ -17,14 +17,34 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Set;
+
 import lombok.NonNull;
 
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.DataTypeState;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileState;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.submission.core.report.FileTypeState;
 
 public class AddErrorReportVisitor extends AbstractFileNameReportVisitor {
 
+  /**
+   * Input
+   */
   private final Error error;
+
+  /**
+   * Accumulation
+   */
+  private final Set<DataType> dataTypes = newHashSet();
+  private final Set<FileType> fileTypes = newHashSet();
 
   @SuppressWarnings("unused")
   public AddErrorReportVisitor(@NonNull Error error) {
@@ -32,11 +52,50 @@ public class AddErrorReportVisitor extends AbstractFileNameReportVisitor {
     this.error = error;
   }
 
+  //
+  // Data Type
+  //
+
+  @Override
+  public void visit(DataTypeReport dataTypeReport) {
+    if (isMatch(dataTypeReport)) {
+      dataTypeReport.setDataTypeState(DataTypeState.INVALID);
+    }
+  }
+
+  //
+  // File Type
+  //
+
+  @Override
+  public void visit(FileTypeReport fileTypeReport) {
+    if (isMatch(fileTypeReport)) {
+      fileTypeReport.setFileTypeState(FileTypeState.INVALID);
+    }
+  }
+
+  //
+  // File
+  //
+
   @Override
   public void visit(@NonNull FileReport fileReport) {
     if (isMatch(fileReport)) {
+      fileReport.setFileState(FileState.INVALID);
       fileReport.addError(error);
+
+      // For ancestors
+      fileTypes.add(fileReport.getFileType());
+      dataTypes.add(fileReport.getFileType().getDataType());
     }
+  }
+
+  private boolean isMatch(DataTypeReport dataTypeReport) {
+    return dataTypes.contains(dataTypeReport.getDataType());
+  }
+
+  private boolean isMatch(FileTypeReport fileTypeReport) {
+    return fileTypes.contains(fileTypeReport.getFileType());
   }
 
 }

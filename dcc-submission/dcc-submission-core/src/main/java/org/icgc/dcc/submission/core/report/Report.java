@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Maps.difference;
 import static com.google.common.collect.Sets.newTreeSet;
+import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
+import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.NONE;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
@@ -29,19 +32,28 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.visitor.AddErrorReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFieldReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFileReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddSummaryReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ErrorCountReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.GetFilesReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.IsValidReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.RefreshStateReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RemoveFileReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ResetReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.SetStateReportVisitor;
-import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.core.state.State;
+import org.icgc.dcc.submission.core.util.TypeConverters.DataTypeConverter;
+import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
+import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Represents a validation report for a submission within a release.
@@ -60,17 +72,18 @@ import org.mongodb.morphia.annotations.Embedded;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
+@Converters({ FileTypeConverter.class, DataTypeConverter.class })
 public class Report implements ReportElement {
 
   private Set<DataTypeReport> dataTypeReports = newTreeSet();
 
   public Report(@NonNull Iterable<SubmissionFile> submissionFiles) {
-    for (val submissionFile : submissionFiles) {
-      val fileName = submissionFile.getName();
-      val fileType = SubmissionFileType.from(submissionFile.getDataType());
+    this(transformFiles(submissionFiles));
+  }
 
-      addFile(fileType, fileName);
-    }
+  public Report(@NonNull Map<String, FileType> files) {
+    updateFiles(files);
   }
 
   public Report(@NonNull Report report) {
@@ -81,10 +94,12 @@ public class Report implements ReportElement {
 
   @Override
   public void accept(@NonNull ReportVisitor visitor) {
+    // Children first
     for (val dataTypeReport : dataTypeReports) {
       dataTypeReport.accept(visitor);
     }
 
+    // Self last
     visitor.visit(this);
   }
 
@@ -97,47 +112,99 @@ public class Report implements ReportElement {
   }
 
   public void addSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    accept(new AddSummaryReportVisitor(fileName, name, value));
+    executeVisitor(new AddSummaryReportVisitor(fileName, name, value));
   }
 
   public void addFieldReport(@NonNull String fileName, @NonNull FieldReport fieldReport) {
-    accept(new AddFieldReportVisitor(fileName, fieldReport));
+    executeVisitor(new AddFieldReportVisitor(fileName, fieldReport));
   }
 
   public void addError(@NonNull Error error) {
-    accept(new AddErrorReportVisitor(error));
+    executeVisitor(new AddErrorReportVisitor(error));
   }
 
-  public void addFile(@NonNull SubmissionFileType fileType, @NonNull String fileName) {
-    accept(new AddFileReportVisitor(fileName, fileType));
+  public Map<String, FileType> getFiles() {
+    return executeVisitor(new GetFilesReportVisitor()).getFiles();
   }
 
-  public void removeFile(@NonNull SubmissionFileType fileType, @NonNull String fileName) {
-    accept(new RemoveFileReportVisitor(fileName, fileType));
+  public void updateFiles(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    updateFiles(transformFiles(submissionFiles));
+  }
+
+  public void updateFiles(@NonNull Map<String, FileType> newFiles) {
+    val files = getFiles();
+
+    val difference = difference(files, newFiles);
+    val added = difference.entriesOnlyOnRight();
+    val removed = difference.entriesOnlyOnLeft();
+
+    for (val entry : added.entrySet()) {
+      addFile(entry.getValue(), entry.getKey());
+    }
+
+    for (val entry : removed.entrySet()) {
+      removeFile(entry.getValue(), entry.getKey());
+    }
+  }
+
+  public void addFile(@NonNull FileType fileType, @NonNull String fileName) {
+    executeVisitor(new AddFileReportVisitor(fileName, fileType));
+  }
+
+  public void removeFile(@NonNull FileType fileType, @NonNull String fileName) {
+    executeVisitor(new RemoveFileReportVisitor(fileName, fileType));
   }
 
   public int getErrorCount() {
-    val visitor = new ErrorCountReportVisitor();
-    accept(visitor);
-
-    return visitor.getErrorCount();
+    return executeVisitor(new ErrorCountReportVisitor()).getErrorCount();
   }
 
   public boolean hasErrors() {
     return getErrorCount() > 0;
   }
 
-  public void reset() {
-    val all = Collections.<SubmissionDataType> emptySet();
-    reset(all);
+  public boolean isValid() {
+    return executeVisitor(new IsValidReportVisitor()).isValid();
   }
 
-  public void reset(@NonNull Collection<SubmissionDataType> dataTypes) {
-    accept(new ResetReportVisitor(dataTypes));
+  public void reset(DataType... dataTypes) {
+    reset(copyOf(dataTypes));
   }
 
-  public void setState(@NonNull SubmissionState state, @NonNull Collection<SubmissionDataType> dataTypes) {
-    accept(new SetStateReportVisitor(state, dataTypes));
+  public void reset(@NonNull Iterable<DataType> dataTypes) {
+    executeVisitor(new ResetReportVisitor(dataTypes));
+  }
+
+  public void setState(@NonNull State state, @NonNull Iterable<DataType> dataTypes) {
+    executeVisitor(new SetStateReportVisitor(state, dataTypes));
+  }
+
+  public void refreshState() {
+    executeVisitor(new RefreshStateReportVisitor());
+  }
+
+  private static Map<String, FileType> transformFiles(Iterable<SubmissionFile> submissionFiles) {
+    val files = ImmutableMap.<String, FileType> builder();
+    for (val submissionFile : submissionFiles) {
+      val managed = submissionFile.getFileType() != null;
+      if (managed) {
+        files.put(submissionFile.getName(), submissionFile.getFileType());
+      }
+    }
+
+    return files.build();
+  }
+
+  /**
+   * Allows chaining for client ease of use.
+   * 
+   * @param visitor the visitor to execute
+   * @return
+   */
+  private <T extends ReportVisitor> T executeVisitor(T visitor) {
+    accept(visitor);
+
+    return visitor;
   }
 
 }

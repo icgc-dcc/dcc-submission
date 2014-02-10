@@ -15,49 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
-import org.icgc.dcc.submission.validation.core.ValidationOutcome;
+import static lombok.AccessLevel.PACKAGE;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
-import com.google.common.base.Optional;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
-public interface StateContext {
+@NoArgsConstructor(access = PACKAGE)
+public class ErrorState extends AbstractState {
 
-  /**
-   * Read
-   */
+  @Override
+  public boolean isReadOnly() {
+    // Allow user to make file modifications to "un-error" the submission
+    return false;
+  }
 
-  Submission getSubmission();
+  @Override
+  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.QUEUED);
 
-  Release getRelease();
-
-  Dictionary getDictionary();
-
-  /**
-   * Write
-   */
-
-  void setState(State state);
-
-  /**
-   * Actions
-   */
-
-  void modifySubmission(Optional<Path> path);
-
-  void queueRequest();
-
-  void startValidation();
-
-  void finishValidation(ValidationOutcome outcome, SubmissionReport submissionReport);
-
-  void signOff();
-
-  Submission performRelease(Release nextRelease);
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
+    report.setState(SubmissionState.QUEUED, dataTypes);
+  }
 
 }

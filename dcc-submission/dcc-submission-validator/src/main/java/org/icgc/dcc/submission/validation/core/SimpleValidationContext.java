@@ -37,6 +37,7 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -131,7 +132,7 @@ public class SimpleValidationContext extends AbstractValidationContext {
   }
 
   @Override
-  public SubmissionReport getSubmissionReport() {
+  public Report getReport() {
     throw new UnsupportedOperationException();
   }
 

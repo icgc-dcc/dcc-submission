@@ -121,12 +121,11 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      val submissionService = new SubmissionService(dccFileSystem);
       val releaseRepository = spy(new ReleaseRepository(morphia, datastore));
       val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore));
       val codeListRepository = spy(new CodeListRepository(morphia, datastore));
       val projectRepository = spy(new ProjectRepository(morphia, datastore));
-      releaseService = new ReleaseService(submissionService, mailService, dccFileSystem,
+      releaseService = new ReleaseService(mailService, dccFileSystem,
           releaseRepository, dictionaryRepository, projectRepository);
 
       dictionaryService = new DictionaryService(releaseService, dictionaryRepository, codeListRepository);

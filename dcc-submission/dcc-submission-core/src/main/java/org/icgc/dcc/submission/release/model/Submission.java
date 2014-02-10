@@ -18,25 +18,36 @@
 package org.icgc.dcc.submission.release.model;
 
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.state.DefaultStateContext;
+import org.icgc.dcc.submission.core.state.StateContext;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 
 @Embedded
+@ToString
+@EqualsAndHashCode(of = "projectKey")
+@Slf4j
 public class Submission implements Serializable {
 
   @NotBlank
@@ -55,19 +66,13 @@ public class Submission implements Serializable {
 
   protected SubmissionState state;
 
-  protected List<DataTypeState> dataState;
-
-  // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-  // dcc-submission-server and dcc-submission-core.
   @Valid
-  protected Object report;
+  protected Report report = new Report();
 
   public Submission() {
-    this.dataState = newArrayList();
   }
 
   public Submission(String projectKey, String projectName, String releaseName) {
-    super();
     this.projectKey = projectKey;
     this.projectName = projectName;
     this.releaseName = releaseName;
@@ -79,39 +84,23 @@ public class Submission implements Serializable {
     return lastUpdated;
   }
 
-  public Object getReport() {
-    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-    // dcc-submission-server and dcc-submission-core.
+  public Report getReport() {
     return report;
   }
 
-  public void setReport(Object report) {
-    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-    // dcc-submission-server and dcc-submission-core.
+  public void setReport(Report report) {
     this.lastUpdated = new Date();
     this.report = report;
-  }
-
-  public void resetReport() {
-    setReport(null);
   }
 
   public SubmissionState getState() {
     return state;
   }
 
-  public void setState(SubmissionState state) {
+  public void setState(SubmissionState nextState) {
+    log.info("Changed state from '{}' to '{}'", getState(), nextState);
     this.lastUpdated = new Date();
-    this.state = state;
-  }
-
-  public List<DataTypeState> getDataState() {
-    return dataState;
-  }
-
-  public void setDataState(List<DataTypeState> dataState) {
-    this.lastUpdated = new Date();
-    this.dataState = dataState;
+    this.state = nextState;
   }
 
   public String getProjectName() {
@@ -127,38 +116,41 @@ public class Submission implements Serializable {
     this.projectKey = projectKey;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((projectKey == null) ? 0 : projectKey.hashCode());
-    return result;
+  public void initializeSubmission(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    state.initializeSubmission(createContext(submissionFiles));
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (obj == this) {
-      return true;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final Submission other = (Submission) obj;
-    return Objects.equal(this.projectKey, other.projectKey);
+  public void modifySubmission(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Optional<Path> filePath) {
+    state.modifySubmission(createContext(submissionFiles), filePath);
   }
 
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(Submission.class) //
-        .add("projectKey", this.projectKey) //
-        .add("projectName", this.projectName) //
-        .add("lastUpdated", this.lastUpdated) //
-        .add("state", this.state) //
-        .add("report", this.report) // TODO: toString for SubmissionReport
-        .toString();
+  public void queueRequest(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
+    state.queueRequest(createContext(submissionFiles), dataTypes);
+  }
+
+  public void startValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
+    state.startValidation(createContext(submissionFiles), dataTypes);
+  }
+
+  public void cancelValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
+    state.cancelValidation(createContext(submissionFiles), dataTypes);
+  }
+
+  public void finishValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Outcome outcome,
+      @NonNull Report newReport) {
+    state.finishValidation(createContext(submissionFiles), outcome, newReport);
+  }
+
+  public void signOff(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    state.signOff(createContext(submissionFiles));
+  }
+
+  public Submission performRelease(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Release nextRelease) {
+    return state.performRelease(createContext(submissionFiles), nextRelease);
+  }
+
+  private StateContext createContext(Iterable<SubmissionFile> submissionFiles) {
+    return new DefaultStateContext(this, submissionFiles);
   }
 
   public static Iterable<String> getProjectKeys(@NonNull Iterable<Submission> submissions) {

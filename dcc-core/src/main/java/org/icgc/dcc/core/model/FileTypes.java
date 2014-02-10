@@ -30,7 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -41,7 +41,7 @@ import com.google.common.collect.Iterables;
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class SubmissionFileTypes {
+public final class FileTypes {
 
   /**
    * Used as placeholder in the loader for imported fields.
@@ -54,7 +54,7 @@ public final class SubmissionFileTypes {
    * According to https://wiki.oicr.on.ca/display/DCCINT/Submission+File+Format, this would have to be called "FileType"
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
-  public enum SubmissionFileSubType {
+  public enum FileSubType {
     META_SUBTYPE,
     PRIMARY_SUBTYPE,
     SECONDARY_SUBTYPE,
@@ -79,8 +79,8 @@ public final class SubmissionFileTypes {
     /**
      * These sub-types are always provided for a submission to be {@link SubmissionState#VALID}.
      */
-    public static final Set<SubmissionFileSubType> MANDATORY_SUBTYPES =
-        new ImmutableSet.Builder<SubmissionFileSubType>()
+    public static final Set<FileSubType> MANDATORY_SUBTYPES =
+        new ImmutableSet.Builder<FileSubType>()
             .add(DONOR_SUBTYPE)
             .add(SPECIMEN_SUBTYPE)
             .add(SAMPLE_SUBTYPE)
@@ -89,7 +89,7 @@ public final class SubmissionFileTypes {
     /**
      * See {@link #usedAsAbbrevatiation()}.
      */
-    private static final List<SubmissionFileSubType> TYPES_USED_AS_ABBREVIATION =
+    private static final List<FileSubType> TYPES_USED_AS_ABBREVIATION =
         newArrayList(META_SUBTYPE, PRIMARY_SUBTYPE, SECONDARY_SUBTYPE, GENE_SUBTYPE);
 
     public String getAbbreviation() {
@@ -117,87 +117,87 @@ public final class SubmissionFileTypes {
     }
   }
 
-  public enum SubmissionFileType {
+  public enum FileType {
 
-    SSM_M_TYPE(FeatureType.SSM_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    SSM_P_TYPE(FeatureType.SSM_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
-    SSM_S_TYPE(FeatureType.SSM_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+    SSM_M_TYPE(FeatureType.SSM_TYPE, FileSubType.META_SUBTYPE),
+    SSM_P_TYPE(FeatureType.SSM_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    SSM_S_TYPE(FeatureType.SSM_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
-    CNSM_M_TYPE(FeatureType.CNSM_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    CNSM_P_TYPE(FeatureType.CNSM_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
-    CNSM_S_TYPE(FeatureType.CNSM_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+    CNSM_M_TYPE(FeatureType.CNSM_TYPE, FileSubType.META_SUBTYPE),
+    CNSM_P_TYPE(FeatureType.CNSM_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    CNSM_S_TYPE(FeatureType.CNSM_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
-    STSM_M_TYPE(FeatureType.STSM_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    STSM_P_TYPE(FeatureType.STSM_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
-    STSM_S_TYPE(FeatureType.STSM_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+    STSM_M_TYPE(FeatureType.STSM_TYPE, FileSubType.META_SUBTYPE),
+    STSM_P_TYPE(FeatureType.STSM_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    STSM_S_TYPE(FeatureType.STSM_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
-    SGV_M_TYPE(FeatureType.SGV_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    SGV_P_TYPE(FeatureType.SGV_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
+    SGV_M_TYPE(FeatureType.SGV_TYPE, FileSubType.META_SUBTYPE),
+    SGV_P_TYPE(FeatureType.SGV_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
-    CNGV_M_TYPE(FeatureType.CNGV_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    CNGV_P_TYPE(FeatureType.CNGV_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
-    CNGV_S_TYPE(FeatureType.CNGV_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+    CNGV_M_TYPE(FeatureType.CNGV_TYPE, FileSubType.META_SUBTYPE),
+    CNGV_P_TYPE(FeatureType.CNGV_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    CNGV_S_TYPE(FeatureType.CNGV_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
-    STGV_M_TYPE(FeatureType.STGV_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    STGV_P_TYPE(FeatureType.STGV_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
-    STGV_S_TYPE(FeatureType.STGV_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+    STGV_M_TYPE(FeatureType.STGV_TYPE, FileSubType.META_SUBTYPE),
+    STGV_P_TYPE(FeatureType.STGV_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    STGV_S_TYPE(FeatureType.STGV_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
-    PEXP_M_TYPE(FeatureType.PEXP_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    PEXP_P_TYPE(FeatureType.PEXP_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
+    PEXP_M_TYPE(FeatureType.PEXP_TYPE, FileSubType.META_SUBTYPE),
+    PEXP_P_TYPE(FeatureType.PEXP_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
-    METH_M_TYPE(FeatureType.METH_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    METH_P_TYPE(FeatureType.METH_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
-    METH_S_TYPE(FeatureType.METH_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+    METH_M_TYPE(FeatureType.METH_TYPE, FileSubType.META_SUBTYPE),
+    METH_P_TYPE(FeatureType.METH_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    METH_S_TYPE(FeatureType.METH_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
-    MIRNA_M_TYPE(FeatureType.MIRNA_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    MIRNA_P_TYPE(FeatureType.MIRNA_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
-    MIRNA_S_TYPE(FeatureType.MIRNA_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
+    MIRNA_M_TYPE(FeatureType.MIRNA_TYPE, FileSubType.META_SUBTYPE),
+    MIRNA_P_TYPE(FeatureType.MIRNA_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    MIRNA_S_TYPE(FeatureType.MIRNA_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
-    JCN_M_TYPE(FeatureType.JCN_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    JCN_P_TYPE(FeatureType.JCN_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
+    JCN_M_TYPE(FeatureType.JCN_TYPE, FileSubType.META_SUBTYPE),
+    JCN_P_TYPE(FeatureType.JCN_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
-    EXP_M_TYPE(FeatureType.EXP_TYPE, SubmissionFileSubType.META_SUBTYPE),
-    EXP_G_TYPE(FeatureType.EXP_TYPE, SubmissionFileSubType.GENE_SUBTYPE),
+    EXP_M_TYPE(FeatureType.EXP_TYPE, FileSubType.META_SUBTYPE),
+    EXP_G_TYPE(FeatureType.EXP_TYPE, FileSubType.GENE_SUBTYPE),
 
-    DONOR_TYPE(ClinicalType.CLINICAL_CORE_TYPE, SubmissionFileSubType.DONOR_SUBTYPE),
-    SPECIMEN_TYPE(ClinicalType.CLINICAL_CORE_TYPE, SubmissionFileSubType.SPECIMEN_SUBTYPE),
-    SAMPLE_TYPE(ClinicalType.CLINICAL_CORE_TYPE, SubmissionFileSubType.SAMPLE_SUBTYPE),
+    DONOR_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.DONOR_SUBTYPE),
+    SPECIMEN_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.SPECIMEN_SUBTYPE),
+    SAMPLE_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.SAMPLE_SUBTYPE),
 
-    BIOMARKER_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.BIOMARKER_SUBTYPE),
-    FAMILY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.FAMILY_SUBTYPE),
-    EXPOSURE_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.EXPOSURE_SUBTYPE),
-    SURGERY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.SURGERY_SUBTYPE),
-    THERAPY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.THERAPY_SUBTYPE);
+    BIOMARKER_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.BIOMARKER_SUBTYPE),
+    FAMILY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.FAMILY_SUBTYPE),
+    EXPOSURE_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.EXPOSURE_SUBTYPE),
+    SURGERY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.SURGERY_SUBTYPE),
+    THERAPY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.THERAPY_SUBTYPE);
 
     private static String TYPE_SUFFIX = "_TYPE";
 
     private static final Joiner JOINER = Joiner.on("_");
 
-    public static final Set<SubmissionFileType> MANDATORY_TYPES = newLinkedHashSet(
+    public static final Set<FileType> MANDATORY_TYPES = newLinkedHashSet(
         Iterables.filter(
-            newLinkedHashSet(newArrayList(SubmissionFileType.values())),
-            new Predicate<SubmissionFileType>() {
+            newLinkedHashSet(newArrayList(FileType.values())),
+            new Predicate<FileType>() {
 
               @Override
-              public boolean apply(SubmissionFileType input) {
-                return SubmissionDataTypes.isMandatoryType(input.dataType);
+              public boolean apply(FileType input) {
+                return DataTypes.isMandatoryType(input.dataType);
               }
             }));
 
-    private SubmissionFileType(SubmissionDataType type) {
+    private FileType(DataType type) {
       this(type, null);
     }
 
-    private SubmissionFileType(SubmissionDataType type, SubmissionFileSubType subType) {
+    private FileType(DataType type, FileSubType subType) {
       this.dataType = checkNotNull(type);
       this.subType = subType;
     }
 
     @Getter
-    private final SubmissionDataType dataType;
+    private final DataType dataType;
 
     @Getter
-    private final SubmissionFileSubType subType;
+    private final FileSubType subType;
 
     public String getTypeName() {
       return subType.usedAsAbbrevatiation() ?
@@ -210,7 +210,7 @@ public final class SubmissionFileTypes {
      * <p>
      * TODO: phase out as Strings are replaced with enums.
      */
-    public static SubmissionFileType from(String typeName) {
+    public static FileType from(String typeName) {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 

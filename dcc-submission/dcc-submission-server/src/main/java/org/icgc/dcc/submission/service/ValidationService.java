@@ -24,12 +24,11 @@ import static com.google.common.util.concurrent.AbstractScheduledService.Schedul
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
+import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
+import static org.icgc.dcc.submission.core.model.Outcome.SUCCEEDED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.validation.core.ValidationOutcome.CANCELLED;
-import static org.icgc.dcc.submission.validation.core.ValidationOutcome.FAILED;
-import static org.icgc.dcc.submission.validation.core.ValidationOutcome.SUCCEEDED;
 
-import java.util.List;
 import java.util.Set;
 
 import lombok.NonNull;
@@ -37,18 +36,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.ValidationListener;
 import org.icgc.dcc.submission.validation.ValidationRejectedException;
+import org.icgc.dcc.submission.validation.core.DefaultReportContext;
 import org.icgc.dcc.submission.validation.core.DefaultValidationContext;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
-import org.icgc.dcc.submission.validation.core.SubmissionReportContext;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -116,7 +114,7 @@ public class ValidationService extends AbstractScheduledService {
    */
   public void cancelValidation(@NonNull String projectKey) throws InvalidStateException {
     val cancelled = executor.cancel(projectKey);
-    if (cancelled) {
+    if (!cancelled) {
       // TODO: Determine when this should / needs to be called
       log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
       releaseService.removeQueuedSubmissions(projectKey);
@@ -204,60 +202,60 @@ public class ValidationService extends AbstractScheduledService {
    */
   private void tryValidation(@NonNull final Release release, @NonNull final QueuedProject project) {
     // Prepare validation
-    val validation = createValidation(release, project);
+    val context = createValidationContext(release, project);
+    val validation = createValidation(context);
 
     // Submit validation asynchronously for execution
     executor.execute(validation, new ValidationListener() {
 
       /**
-       * Called if and when validation is started (asynchronously).
+       * Called if and when validation is started and running.
        */
       @Override
       public void onStarted(Validation validation) {
-        log.info("onStarted - Started next project in queue: '{}'", project);
-        releaseService.dequeueSubmission(project);
-        log.info("onStarted -  '{}'", project);
+        val report = context.getReport();
+
+        log.info("onStarted - Validation started for '{}'", project);
+        releaseService.dequeueSubmission(project, report);
+        log.info("onStarted - Started '{}'", project);
       }
 
       /**
-       * Called when validation has completed (may not be VALID)
+       * Called when validation has completed without exception.
        */
       @Override
       public void onCompletion(Validation validation) {
-        log.info("onCompletion - Finished validation for '{}'", project.getKey());
-        val submissionReport = validation.getContext().getSubmissionReport();
+        val report = context.getReport();
         val outcome = SUCCEEDED;
 
         log.info("onCompletion - Validation '{}' completed with outcome '{}'", project, outcome);
-        releaseService.resolveSubmission(project, outcome, submissionReport);
+        releaseService.resolveSubmission(project, outcome, report);
         log.info("onCompletion - Completed '{}'", project.getKey());
       }
 
       /**
-       * Called when validation has been cancelled (will not be VALID)
+       * Called when validation has been cancelled by the submitter.
        */
       @Override
       public void onCancelled(Validation validation) {
-        log.warn("onCancelled - Cancelled validation for '{}'", project.getKey());
-        val submissionReport = validation.getContext().getSubmissionReport();
+        val report = context.getReport();
         val outcome = CANCELLED;
 
         log.warn("onCancelled - Validation '{}' completed with outcome '{}'", project, outcome);
-        releaseService.resolveSubmission(project, outcome, submissionReport);
+        releaseService.resolveSubmission(project, outcome, report);
         log.warn("onCancelled - Completed '{}'.", project.getKey());
       }
 
       /**
-       * Called when validation has completed (will not be VALID)
+       * Called when validation has failed due to exception.
        */
       @Override
       public void onFailure(Validation validation, Throwable t) {
-        log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
-        val submissionReport = validation.getContext().getSubmissionReport();
+        val report = context.getReport();
         val outcome = FAILED;
 
-        log.error("onFailure - Validation '{}' completed with outcome '{}'", project, outcome);
-        releaseService.resolveSubmission(project, outcome, submissionReport);
+        log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
+        releaseService.resolveSubmission(project, outcome, report);
         log.error("onFailure - Completed '{}'.", project.getKey());
       }
 
@@ -267,12 +265,10 @@ public class ValidationService extends AbstractScheduledService {
   /**
    * Internal {@code Validation} factory method.
    * 
-   * @param release the current release
-   * @param project the project to create a validation for
+   * @param context the current validation context
    * @return
    */
-  private Validation createValidation(Release release, QueuedProject project) {
-    val context = createValidationContext(release, project);
+  private Validation createValidation(ValidationContext context) {
     val validators = ImmutableList.<Validator> copyOf(this.validators);
     val validation = new Validation(context, validators);
 
@@ -288,7 +284,7 @@ public class ValidationService extends AbstractScheduledService {
    */
   private ValidationContext createValidationContext(Release release, QueuedProject project) {
     val dictionary = releaseService.getNextDictionary();
-    val reportContext = createReportContext(release, dictionary, project);
+    val reportContext = createReportContext(release, project);
 
     val context = new DefaultValidationContext(
         reportContext,
@@ -306,39 +302,14 @@ public class ValidationService extends AbstractScheduledService {
    * Internal {@code ReportContext} factory method.
    * 
    * @param release the current release
-   * @param dictionary the current dictionary
    * @param project the project to create the report context for
    * @return
    */
-  private static SubmissionReportContext createReportContext(Release release, Dictionary dictionary,
-      QueuedProject project) {
-    // Shorthands
-    val submission = release.getSubmissionByProjectKey(project.getKey()).get();
-    val dataTypes = project.getDataTypes();
-    val report = submission.getReport() == null ? new SubmissionReport() : (SubmissionReport) submission.getReport();
+  private static ReportContext createReportContext(Release release, QueuedProject project) {
+    val submission = release.getSubmission(project.getKey()).get();
+    val report = submission.getReport() == null ? new Report() : submission.getReport();
 
-    val nextReport = createReport(dictionary, dataTypes, report);
-
-    return new SubmissionReportContext(nextReport);
-  }
-
-  private static SubmissionReport createReport(Dictionary dictionary, List<SubmissionDataType> dataTypes,
-      SubmissionReport report) {
-    val nextReport = new SubmissionReport();
-    // Remove any previously saved reports related to the requested data types
-    for (val schemaReport : report.getSchemaReports()) {
-      val fileName = schemaReport.getName();
-      val schema = dictionary.getFileSchemaByFileName(fileName).get();
-      val dataType = schema.getDataType();
-
-      // Maintain any reports not requested
-      val maintain = !dataTypes.contains(dataType);
-      if (maintain) {
-        nextReport.addSchemaReport(schemaReport);
-      }
-    }
-
-    return nextReport;
+    return new DefaultReportContext(report);
   }
 
 }

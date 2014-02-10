@@ -15,22 +15,38 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.report.visitor;
+
+import static com.google.common.collect.Sets.newHashSet;
+import static org.icgc.dcc.submission.core.report.FileState.VALID;
+
+import java.util.Set;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-public class InvalidStateException extends RuntimeException {
+import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileState;
+
+public class IsValidReportVisitor extends AbstractReportVisitor {
 
   @NonNull
-  private final State state;
-  @NonNull
-  private final String action;
+  private final Set<FileState> fileStates = newHashSet();
 
   @Override
-  public String getMessage() {
-    return "While in state '" + state + "' it is invalid to '" + action + "'.";
+  public void visit(@NonNull FileReport fileReport) {
+    fileStates.add(fileReport.getFileState());
+  }
+
+  public boolean isValid() {
+    return hasOneFileState() && hasFileState(VALID);
+  }
+
+  private boolean hasOneFileState() {
+    return fileStates.size() == 1;
+  }
+
+  private boolean hasFileState(@NonNull FileState fileState) {
+    return fileStates.contains(fileState);
   }
 
 }

@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.collect.ImmutableList.copyOf;
-import static org.icgc.dcc.submission.validation.core.Error.error;
-import static org.icgc.dcc.submission.validation.core.ErrorType.FILE_HEADER_ERROR;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.FILE_HEADER_ERROR;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
 
 import java.io.BufferedReader;

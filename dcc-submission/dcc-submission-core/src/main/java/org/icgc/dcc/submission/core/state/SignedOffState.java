@@ -15,37 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.state;
+package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
-import static org.icgc.dcc.submission.validation.core.ValidationOutcome.CANCELLED;
-import static org.icgc.dcc.submission.validation.core.ValidationOutcome.FAILED;
-import static org.icgc.dcc.submission.validation.core.ValidationOutcome.SUCCEEDED;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
-import org.icgc.dcc.submission.validation.core.ValidationOutcome;
 
 @NoArgsConstructor(access = PACKAGE)
-public class ValidatingState extends AbstractState {
+public class SignedOffState extends AbstractState {
 
   @Override
-  public void finishValidation(@NonNull StateContext context, @NonNull ValidationOutcome outcome,
-      @NonNull SubmissionReport submissionReport) {
-    if (outcome == SUCCEEDED) {
-      val valid = true;
-      if (valid) {
-        context.setState(VALID);
-      } else {
-        context.setState(NOT_VALIDATED);
-      }
-    } else if (outcome == FAILED) {
-      context.setState(ERROR);
-    } else if (outcome == CANCELLED) {
-      context.setState(NOT_VALIDATED);
-    }
+  public boolean isReadOnly() {
+    return true;
   }
 
 }

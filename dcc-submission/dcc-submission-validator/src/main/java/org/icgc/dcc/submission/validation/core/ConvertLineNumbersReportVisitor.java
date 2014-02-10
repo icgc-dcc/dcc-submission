@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+import static com.google.common.base.Optional.fromNullable;
+
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,7 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.visitor.AbstractReportVisitor;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -57,13 +60,17 @@ public class ConvertLineNumbersReportVisitor extends AbstractReportVisitor {
 
   private void convert(ErrorReport errorReport) {
     // Convert byte offsets to line numbers
-    val mapping = translate(errorReport);
+    val mapping = createMapping(errorReport);
 
-    // Update the report using the mapping
-    update(errorReport, mapping);
+    // Is mapping needed?
+    val needed = mapping.isPresent();
+    if (needed) {
+      // Update the report using the mapping
+      updateErrorReport(errorReport, mapping.get());
+    }
   }
 
-  private Map<Long, Long> translate(ErrorReport errorReport) {
+  private Optional<Map<Long, Long>> createMapping(ErrorReport errorReport) {
     val offsets = ImmutableSet.<Long> builder();
 
     val fieldErrorReports = errorReport.getFieldErrorReports();
@@ -71,22 +78,25 @@ public class ConvertLineNumbersReportVisitor extends AbstractReportVisitor {
       offsets.addAll(fieldErrorReport.getLineNumbers());
     }
 
-    return ByteOffsetToLineNumber.convert(filePath, offsets.build());
+    val mapping = ByteOffsetToLineNumber.convert(filePath, offsets.build());
+    return fromNullable(mapping);
   }
 
-  private void update(ErrorReport errorReport, Map<Long, Long> mapping) {
+  private void updateErrorReport(ErrorReport errorReport, Map<Long, Long> mapping) {
     for (val fieldErrorReport : errorReport.getFieldErrorReports()) {
-      fieldErrorReport.setLineNumbers(map(mapping, fieldErrorReport));
+      fieldErrorReport.setLineNumbers(mapFieldErrorReport(fieldErrorReport, mapping));
     }
   }
 
-  private List<Long> map(Map<Long, Long> mapping, FieldErrorReport fieldErrorReport) {
-    val newLineNumbers = Lists.<Long> newLinkedList();
+  private List<Long> mapFieldErrorReport(FieldErrorReport fieldErrorReport, Map<Long, Long> mapping) {
+    val lineNumbers = Lists.<Long> newLinkedList();
     for (val byteOffset : fieldErrorReport.getLineNumbers()) {
-      newLineNumbers.add(mapping.get(byteOffset));
+      val lineNumber = mapping.get(byteOffset);
+
+      lineNumbers.add(lineNumber);
     }
 
-    return newLineNumbers;
+    return lineNumbers;
   }
 
 }
