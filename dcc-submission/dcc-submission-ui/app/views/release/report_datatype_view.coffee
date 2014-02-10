@@ -39,8 +39,6 @@ module.exports = class ReportDatatypeView extends View
     # For determining table visibility if files were added/removed
     @currentDatatypes = []
 
-    # Lookup table for status
-    @dataStateMap = {}
 
     @files = []
 
@@ -50,32 +48,22 @@ module.exports = class ReportDatatypeView extends View
 
   update: ->
     #console.log "ReportDatatypeView -> update"
+    console.log "update", @model
+
+    
+    # Start contstructing
     @report = @model.get "report"
-
-    # Update new lookup table
-    @dataStateMap = {}
-    dataState = @model.get("dataState")
-    dataState.forEach (ds)=>
-      @dataStateMap[ds.dataType] = ds.state
+    @reportDataType = @report.dataTypeReports
+    console.log "2 reportdatatype", @reportDataType
 
 
-    # Extract unique datatypes for current update
+    # Extract the datatypes for logical sort
     datatypes = []
-
-    # Make sure core table is always visible
     datatypes.push("CLINICAL_CORE_TYPE")
+    @reportDataType.forEach (d) ->
+      if datatypes.indexOf(d.dataType) == -1
+        datatypes.push(d.dataType)
 
-   
-    # Normalize the datatype against the files submitted
-    @schemaReports = @report.get "schemaReports"
-    @schemaReports.each (report)->
-      datatype = report.get "dataType"
-      if datatypes.indexOf( datatype ) == -1
-        if datatype == null
-          datatype = "MISCELLANEOUS"
-        datatypes.push datatype
-
-    # Create data type tables if they do not exist
     datatypes = _.sortBy datatypes, (datatype)->
       switch datatype
         when "CLINICAL_CORE_TYPE"
@@ -86,6 +74,9 @@ module.exports = class ReportDatatypeView extends View
           return 999
         else
           return 10
+
+    console.log "3 sorted", datatypes
+
 
     datatypes.forEach (datatype)=>
       container = null
@@ -152,7 +143,6 @@ module.exports = class ReportDatatypeView extends View
 
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
-    #console.log @model.get("dataState")
 
     globalState = @model.get("state")
 

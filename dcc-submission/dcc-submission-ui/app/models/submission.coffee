@@ -44,20 +44,33 @@ module.exports = class Submission extends Model
       'schemaReports': response.submissionFiles
     }
 
+
+    console.log "report....", response
+    # Inject report into submission file list
+    # Not really needed, but too much dependencies right now to remove completely
     if response.report
       for file in data.schemaReports
-        for report in response.report.schemaReports
-          if report.name is file.name
-            _.extend(file, report)
-            break
+        for dataTypeReport in response.report.dataTypeReports
+          for fileTypeReport in dataTypeReport.fileTypeReports
+            for fileReport in fileTypeReport.fileReports
+              if fileReport.fileName == file.name
+                _.extend(file, fileReport)
+                console.log "mapping #{file.name}"
+                break
+
+    #if response.report
+    #  for file in data.schemaReports
+    #    for report in response.report.schemaReports
+    #      if report.name is file.name
+    #        _.extend(file, report)
+    #        break
 
     response.validFileCount = 0
-    console.log response
     response.submissionFiles.forEach (file)->
       if file.fieldReports
         response.validFileCount += 1
 
-    response.report = new Report _.extend(data,
+    response.fileReports = new Report _.extend(data,
       {"release": @attributes?.release, "projectKey": response.projectKey})
 
     response
