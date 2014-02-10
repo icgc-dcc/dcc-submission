@@ -41,6 +41,7 @@ import org.icgc.dcc.submission.core.report.visitor.AddFieldReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFileReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddSummaryReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ErrorCountReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.GetFileReportReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.GetFilesReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.IsValidReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RefreshStateReportVisitor;
@@ -53,6 +54,7 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -153,6 +155,10 @@ public class Report implements ReportElement {
 
   public void removeFile(@NonNull FileType fileType, @NonNull String fileName) {
     executeVisitor(new RemoveFileReportVisitor(fileName, fileType));
+  }
+
+  public Optional<FileReport> getFileReport(@NonNull String fileName) {
+    return executeVisitor(new GetFileReportReportVisitor(fileName)).getFileReport();
   }
 
   public int getErrorCount() {
