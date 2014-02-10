@@ -18,15 +18,19 @@
 package org.icgc.dcc.submission.release.model;
 
 import static com.google.common.collect.Iterables.transform;
+import static org.icgc.dcc.submission.release.model.SubmissionState.getDefaultState;
 
 import java.io.Serializable;
 import java.util.Date;
 
 import javax.validation.Valid;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
@@ -44,10 +48,12 @@ import org.mongodb.morphia.annotations.Embedded;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
-@Embedded
-@ToString
-@EqualsAndHashCode(of = "projectKey")
 @Slf4j
+@Data
+@Embedded
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "projectKey")
 public class Submission implements Serializable {
 
   @NotBlank
@@ -64,19 +70,21 @@ public class Submission implements Serializable {
 
   protected Date lastUpdated;
 
-  protected SubmissionState state = SubmissionState.NOT_VALIDATED;
+  protected SubmissionState state = getDefaultState();
 
   @Valid
   protected Report report = new Report();
 
-  public Submission() {
+  public Submission(@NonNull String projectKey, @NonNull String projectName, @NonNull String releaseName) {
+    this(projectKey, projectName, releaseName, getDefaultState());
   }
 
-  public Submission(String projectKey, String projectName, String releaseName) {
+  public Submission(@NonNull String projectKey, @NonNull String projectName, @NonNull String releaseName,
+      @NonNull SubmissionState state) {
     this.projectKey = projectKey;
     this.projectName = projectName;
     this.releaseName = releaseName;
-    this.state = SubmissionState.NOT_VALIDATED;
+    this.state = state;
     this.lastUpdated = new Date();
   }
 
@@ -98,9 +106,12 @@ public class Submission implements Serializable {
   }
 
   public void setState(SubmissionState nextState) {
-    log.info("Changed state from '{}' to '{}'", getState(), nextState);
-    this.lastUpdated = new Date();
-    this.state = nextState;
+    val change = state != nextState;
+    if (change) {
+      log.info("'{}' changed state from '{}' to '{}'", new Object[] { projectKey, getState(), nextState });
+      this.lastUpdated = new Date();
+      this.state = nextState;
+    }
   }
 
   public String getProjectName() {
