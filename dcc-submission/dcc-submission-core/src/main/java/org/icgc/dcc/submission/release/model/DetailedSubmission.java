@@ -51,7 +51,6 @@ public class DetailedSubmission extends Submission {
     this.projectAlias = liteProject.getAlias();
 
     this.state = submission.state;
-    this.dataState = submission.dataState;
     this.report = submission.report;
     this.lastUpdated = submission.lastUpdated;
     this.submissionFiles = new ArrayList<SubmissionFile>();

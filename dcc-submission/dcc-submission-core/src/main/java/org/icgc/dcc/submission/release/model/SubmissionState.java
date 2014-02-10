@@ -17,18 +17,29 @@
  */
 package org.icgc.dcc.submission.release.model;
 
-public enum SubmissionState {
+import static lombok.AccessLevel.PRIVATE;
+import lombok.Delegate;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-  NOT_VALIDATED,
-  QUEUED,
-  VALIDATING,
-  INVALID,
-  VALID,
-  SIGNED_OFF,
-  ERROR;
+import org.icgc.dcc.submission.core.state.State;
 
-  public boolean isReadOnly() {
-    return (this == SIGNED_OFF || this == QUEUED || this == VALIDATING);
+@RequiredArgsConstructor(access = PRIVATE)
+public enum SubmissionState implements State {
+
+  NOT_VALIDATED(State.NOT_VALIDATED),
+  QUEUED(State.QUEUED),
+  VALIDATING(State.VALIDATING),
+  VALID(State.VALID),
+  SIGNED_OFF(State.SIGNED_OFF),
+  ERROR(State.ERROR);
+
+  @NonNull
+  @Delegate
+  private final State state;
+
+  public static SubmissionState getDefaultState() {
+    return NOT_VALIDATED;
   }
 
 }

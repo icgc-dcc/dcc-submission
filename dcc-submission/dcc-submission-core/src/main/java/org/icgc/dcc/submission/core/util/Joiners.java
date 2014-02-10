@@ -18,13 +18,16 @@
 package org.icgc.dcc.submission.core.util;
 
 import static com.google.common.base.Joiner.on;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 import com.google.common.base.Joiner;
 
 /**
  * Common joiners.
  */
-public class Joiners {
+@NoArgsConstructor(access = PRIVATE)
+public final class Joiners {
 
   public static final Joiner PATH = on('/');
   public static final Joiner TAB = on('\t');

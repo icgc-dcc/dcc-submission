@@ -20,10 +20,10 @@ package org.icgc.dcc.submission.dictionary.util;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_M_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_P_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_SEQ_M_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_SEQ_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_P_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
 import java.net.URL;
@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.ObjectMappers;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -47,7 +47,7 @@ public class Dictionaries {
   private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
 
   @SneakyThrows
-  public static FileSchema readFileSchema(SubmissionFileType fileType) {
+  public static FileSchema readFileSchema(FileType fileType) {
     val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
 
     return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));

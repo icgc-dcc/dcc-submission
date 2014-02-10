@@ -28,9 +28,9 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newMapFileParser;
-import static org.icgc.dcc.submission.validation.core.Error.error;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.File;

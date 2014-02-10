@@ -45,14 +45,11 @@ import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.service.ReleaseService;
-import org.icgc.dcc.submission.validation.core.SchemaReport;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 @Slf4j
@@ -150,7 +147,7 @@ public class ReleaseResource {
 
   @GET
   @Path("{name}/submissions/{projectKey}/report")
-  public Response getSubmissionReport(
+  public Response getReport(
       @PathParam("name") String releaseName,
       @PathParam("projectKey") String projectKey,
       @Context SecurityContext securityContext)
@@ -168,60 +165,8 @@ public class ReleaseResource {
 
     // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
     // dcc-submission-server and dcc-submission-core.
-    val report = (SubmissionReport) submission.getReport();
+    val report = submission.getReport();
     return Response.ok(report).build();
-  }
-
-  @GET
-  @Path("{name}/submissions/{projectKey}/report/{schema}")
-  public Response getSchemaReport(
-      @PathParam("name") String releaseName,
-      @PathParam("projectKey") String projectKey,
-      @PathParam("schema") String schema,
-      @Context SecurityContext securityContext) {
-    log.debug("Getting schema report for: {}.{}.{}", new Object[] { releaseName, projectKey, schema });
-    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
-    val schemaReport = getSchemaReport(releaseName, projectKey, schema);
-    if (schemaReport.isPresent() == false) {
-      return noSuchEntityResponse(releaseName, projectKey, schema);
-    }
-
-    return Response.ok(schemaReport.get()).build();
-  }
-
-  @GET
-  @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
-  public Response getFieldReport(
-      @PathParam("name") String releaseName,
-      @PathParam("projectKey") String projectKey,
-      @PathParam("schema") String schema,
-      @PathParam("field") String field,
-      @Context SecurityContext securityContext) {
-    log.debug("Getting field report for: {}.{}.{}.{}", new Object[] { releaseName, projectKey, schema, field });
-    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
-    val optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
-    if (optionalSchemaReport.isPresent() == false) {
-      return noSuchEntityResponse(releaseName, projectKey, schema);
-    }
-
-    val schemaReport = optionalSchemaReport.get();
-    val optionalFieldReport = schemaReport.getFieldReport(field);
-    if (optionalFieldReport.isPresent() == false) {
-      return noSuchEntityResponse(releaseName, projectKey, schema);
-    }
-
-    val fieldReport = optionalFieldReport.get();
-    if (fieldReport == null) {
-      return noSuchEntityResponse(releaseName, projectKey, schema);
-    }
-
-    return Response.ok(fieldReport).build();
   }
 
   @GET
@@ -242,20 +187,6 @@ public class ReleaseResource {
 
     val submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
     return Response.ok(submissionFiles).build();
-  }
-
-  private Optional<SchemaReport> getSchemaReport(String releaseName, String projectKey, String schema) {
-    Optional<SchemaReport> optional = Optional.absent();
-    val submission = releaseService.getSubmission(releaseName, projectKey);
-    if (submission != null) {
-      SubmissionReport report = (SubmissionReport) submission.getReport();
-      if (report != null) {
-        SchemaReport schemaReport = report.getSchemaReport(schema);
-        optional = Optional.of(schemaReport);
-      }
-    }
-
-    return optional;
   }
 
 }

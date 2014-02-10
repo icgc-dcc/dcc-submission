@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import lombok.NonNull;
 import lombok.Value;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 /**
  * There's already a "SubmissionFile" class (for the UI)...
@@ -33,7 +33,7 @@ public class SubmissionDirectoryFile {
   @NonNull
   String fileName;
   @NonNull
-  SubmissionFileType type;
+  FileType type;
   @NonNull
   Pattern pattern;
 

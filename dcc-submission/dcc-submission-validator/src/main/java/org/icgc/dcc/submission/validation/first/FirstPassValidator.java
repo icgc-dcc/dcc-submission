@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
-import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
+import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.FILE_LEVEL;
+import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.ROW_LEVEL;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import javax.validation.constraints.NotNull;

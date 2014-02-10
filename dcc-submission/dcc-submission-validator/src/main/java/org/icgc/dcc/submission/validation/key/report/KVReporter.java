@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key.report;
 
 import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.codehaus.jackson.map.SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS;
-import static org.icgc.dcc.submission.validation.core.Error.error;
+import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType1;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType2;
@@ -47,7 +47,7 @@ import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectWriter;
-import org.icgc.dcc.submission.validation.core.Error;
+import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;

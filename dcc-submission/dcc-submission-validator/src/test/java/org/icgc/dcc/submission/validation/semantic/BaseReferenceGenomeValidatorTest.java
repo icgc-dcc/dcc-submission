@@ -22,7 +22,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.validation.TestUtils.getFieldNames;
 import static org.mockito.Mockito.mock;
@@ -39,7 +39,7 @@ import lombok.experimental.Builder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -90,7 +90,7 @@ public class BaseReferenceGenomeValidatorTest {
     val context = mock(ValidationContext.class);
     val submissionDirectory = mock(SubmissionDirectory.class);
     when(context.getProjectKey()).thenReturn("project.test");
-    when(context.getDataTypes()).thenReturn(SubmissionDataTypes.values());
+    when(context.getDataTypes()).thenReturn(DataTypes.values());
     when(context.getFileSystem()).thenReturn(fileSystem);
     when(context.getSsmPrimaryFiles()).thenReturn(ImmutableList.<Path> of(ssmPrimaryFile));
     when(context.getSsmPrimaryFileSchema()).thenReturn(ssmPrimaryFileSchema);

@@ -19,36 +19,53 @@ package org.icgc.dcc.submission.core.model;
 
 import java.util.Date;
 
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
+import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
+import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
+import org.mongodb.morphia.annotations.Converters;
 
 /**
  * For serializing file data through the REST interface
  */
-@Getter
+@Value
+@Converters(FileTypeConverter.class)
 public class SubmissionFile {
 
   private final String name;
   private final Date lastUpdate;
   private final long size;
-  private final String schemaName;
-  private final String dataType;
+  private final FileType fileType;
 
   @JsonCreator
   public SubmissionFile(
-      @NonNull @JsonProperty("name") String name,
-      @NonNull @JsonProperty("lastUpdate") Date lastUpdate,
-      @JsonProperty("size") long size,
-      @JsonProperty("schema") String schemaName,
-      @JsonProperty("dataType") String dataType) {
+      @NonNull//
+      @JsonProperty("name")//
+      String name,
+
+      @NonNull//
+      @JsonProperty("lastUpdate")//
+      Date lastUpdate,
+
+      @JsonProperty("size")//
+      long size,
+
+      @JsonProperty("fileType")//
+      @JsonSerialize(using = FileTypeSerializer.class)//
+      @JsonDeserialize(using = FileTypeDeserializer.class)//
+      FileType fileType)
+  {
     this.name = name;
     this.lastUpdate = lastUpdate;
     this.size = size;
-    this.schemaName = schemaName;
-    this.dataType = dataType;
+    this.fileType = fileType;
   }
 
 }

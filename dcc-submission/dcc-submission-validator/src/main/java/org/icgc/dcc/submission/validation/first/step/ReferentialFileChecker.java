@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static org.icgc.dcc.submission.validation.core.Error.error;
-import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_FILE_ERROR;
-import static org.icgc.dcc.submission.validation.core.ErrorType.REVERSE_RELATION_FILE_ERROR;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_FILE_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.REVERSE_RELATION_FILE_ERROR;
 
 import java.util.List;
 import java.util.regex.Pattern;

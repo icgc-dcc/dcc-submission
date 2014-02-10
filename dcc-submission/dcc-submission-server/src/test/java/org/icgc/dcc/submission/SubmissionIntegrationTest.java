@@ -61,7 +61,6 @@ import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
@@ -88,7 +87,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonNode;
-import org.icgc.dcc.core.model.SubmissionFileTypes;
+import org.icgc.dcc.core.model.FileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.PersistenceModule;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -199,7 +198,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
       + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
       + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
-      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}]";
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}"
+      + "]";
 
   private static final String PROJECTS_TO_ENQUEUE2 = "["
       + "{key:'" + PROJECT2_KEY + "',emails:['project2@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
@@ -213,6 +213,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    */
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
   private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
+
+  /**
+   * TODO: Ensure this is correct.
+   */
+  private static final SubmissionState INVALID = NOT_VALIDATED;
 
   /**
    * Test utilities.
@@ -455,14 +460,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Adding Script restriction #1 to OPENED dictionary");
     Dictionary dictionary =
-        addScript(dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
+        addScript(dictionary(), FileTypes.FileType.SSM_M_TYPE.getTypeName(),
             "note",
             "if (note == null) { return true; } else { return note != \"script_error_here\";}",
             "Note field cannot be 'script_error_here'");
 
     status("admin", "Adding Script restriction #2 to OPENED dictionary");
     dictionary =
-        addScript(dictionary, SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
+        addScript(dictionary, FileTypes.FileType.SSM_M_TYPE.getTypeName(),
             "note",
             "if (note == null) { return true; } else { return note.indexOf('_') == -1; }",
             "Note field cannot contain the underscore(_) character");

@@ -18,13 +18,14 @@
 package org.icgc.dcc.submission.core.util;
 
 import static com.google.common.io.Resources.getResource;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.net.URL;
 
-/**
- * TODO
- */
-public class DccResources {
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = PRIVATE)
+public final class DccResources {
 
   public static URL getDccResource(String resourceName) {
     return getResource("org/icgc/dcc/resources/" + resourceName);

@@ -37,6 +37,7 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -44,7 +45,6 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
-import org.icgc.dcc.submission.validation.core.SubmissionReport;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
@@ -133,7 +133,7 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   }
 
   @Override
-  public SubmissionReport getSubmissionReport() {
+  public Report getReport() {
     throw new UnsupportedOperationException();
   }
 

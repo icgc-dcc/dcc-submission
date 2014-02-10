@@ -98,7 +98,7 @@ public class FileSystemTest {
 
     when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
 
-    when(this.mockRelease.getSubmissionByProjectKey(this.mockProject.getKey())).thenReturn(
+    when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(
         Optional.<Submission> of(mockSubmission));
     List<String> projectKeys = Arrays.asList(this.mockProject.getKey()); // must be separated from thenReturn call
     // (mockito bug:

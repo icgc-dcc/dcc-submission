@@ -36,7 +36,6 @@ import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -107,7 +106,7 @@ public class SubmissionDirectory {
   }
 
   public boolean isReadOnly() {
-    SubmissionState state = this.submission.getState();
+    val state = this.submission.getState();
 
     return (state.isReadOnly() || this.release.getState() == ReleaseState.COMPLETED);
   }

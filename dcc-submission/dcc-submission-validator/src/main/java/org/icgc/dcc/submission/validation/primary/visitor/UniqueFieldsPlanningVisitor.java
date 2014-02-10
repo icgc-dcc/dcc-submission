@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 
 import cascading.flow.FlowProcess;

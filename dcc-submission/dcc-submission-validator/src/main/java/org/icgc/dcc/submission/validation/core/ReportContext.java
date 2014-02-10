@@ -18,6 +18,9 @@
 package org.icgc.dcc.submission.validation.core;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.core.report.Error;
+import org.icgc.dcc.submission.core.report.FieldReport;
+import org.icgc.dcc.submission.core.report.Report;
 
 /**
  * "Encapsulated Context Object" class that insulates and decouples the validation logic from report collection and
@@ -59,5 +62,10 @@ public interface ReportContext {
    * Allows the context an opportunity to update line numbers referenced in report elements.
    */
   void reportLineNumbers(Path path);
+
+  /**
+   * Gets the submission report of the associated project under validation.
+   */
+  Report getReport();
 
 }

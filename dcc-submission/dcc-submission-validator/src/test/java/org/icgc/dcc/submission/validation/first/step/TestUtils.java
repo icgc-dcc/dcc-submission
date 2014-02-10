@@ -22,7 +22,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.icgc.dcc.submission.validation.core.Error;
+import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 
 public class TestUtils {

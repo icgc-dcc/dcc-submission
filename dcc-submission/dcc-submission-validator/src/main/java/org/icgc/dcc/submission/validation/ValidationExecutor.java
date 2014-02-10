@@ -43,6 +43,7 @@ import org.icgc.dcc.submission.validation.util.ThreadNamingRunnable;
 
 import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Inject;
 
 /**
  * Manages the execution and cancellation of a fixed number of {@code Validation} "slots".
@@ -52,7 +53,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 @Slf4j
 @ThreadSafe
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ValidationExecutor {
 
   /**

@@ -31,7 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -197,7 +197,7 @@ public class FirstPassValidatorTest {
   }
 
   @SuppressWarnings("unchecked")
-  private static Iterable<SubmissionDataType> anyDataTypeIterable() {
+  private static Iterable<DataType> anyDataTypeIterable() {
     return any(Iterable.class);
   }
 

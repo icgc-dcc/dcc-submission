@@ -28,7 +28,6 @@ import lombok.val;
 import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.service.ProjectService;
@@ -62,8 +61,6 @@ public class ProjectResourceTest extends ResourceTest {
 
   private ReleaseService releaseService;
 
-  private DccFileSystem dccFileSystem;
-
   private Project projectOne;
 
   private Project projectTwo;
@@ -78,24 +75,18 @@ public class ProjectResourceTest extends ResourceTest {
 
   private Set<Submission> submissions;
 
-  private final String PATH = "path/to/release/project";
-
   @Override
   protected Collection<? extends Module> configureModules() {
     return ImmutableList.of(new AbstractDccModule() {
 
       @Override
       protected void configure() {
-        dccFileSystem = mock(DccFileSystem.class);
-        when(dccFileSystem.createNewProjectDirectoryStructure(any(String.class), any(String.class))).thenReturn(PATH);
-
         release = new Release("REL1");
         releases = Lists.newArrayList(release);
 
         releaseService = mock(ReleaseService.class);
         when(releaseService.getNextRelease()).thenReturn(release);
         when(releaseService.getReleases()).thenReturn(releases);
-        when(releaseService.addSubmission(any(String.class), any(String.class))).thenReturn(release);
 
         projectOne = new Project("PRJ1", "Project One");
         projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
@@ -114,7 +105,6 @@ public class ProjectResourceTest extends ResourceTest {
 
         bind(ProjectService.class).toInstance(projectService);
         bind(ReleaseService.class).toInstance(releaseService);
-        bind(DccFileSystem.class).toInstance(dccFileSystem);
       }
 
     });
@@ -242,8 +232,6 @@ public class ProjectResourceTest extends ResourceTest {
 
     verify(projectService).addProject(any(Project.class));
     verify(releaseService).addSubmission("PRJ1", "Project One");
-    verify(dccFileSystem).createNewProjectDirectoryStructure("REL1", "PRJ1");
-    assertThat(dccFileSystem.createNewProjectDirectoryStructure("REL1", "PRJ1")).isEqualTo(PATH);
 
     assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
     assertThat(reponse.getLocation().toString()).isEqualTo("projects/PRJ1");
@@ -334,9 +322,9 @@ public class ProjectResourceTest extends ResourceTest {
         .isEqualTo(
             "[{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"releaseName\":\"REL1\",\"lastUpdated\":"
                 + submissionTwo.getLastUpdated().getTime()
-                + ",\"state\":\"NOT_VALIDATED\",\"dataState\":null,\"report\":null},"
+                + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}},"
                 + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"releaseName\":\"REL1\",\"lastUpdated\":"
                 + submissionOne.getLastUpdated().getTime()
-                + ",\"state\":\"NOT_VALIDATED\",\"dataState\":null,\"report\":null}]");
+                + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}}]");
   }
 }

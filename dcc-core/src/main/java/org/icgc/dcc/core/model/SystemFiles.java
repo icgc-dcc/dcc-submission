@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.core.model;
 
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.METH_ARRAY_SYSTEM_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_SYSTEM_TYPE;
 
 import java.util.Map;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SystemFiles {
 
-  public static Map<SubmissionFileType, String> PATTERNS =
-      new ImmutableMap.Builder<SubmissionFileTypes.SubmissionFileType, String>()
+  public static Map<FileType, String> PATTERNS =
+      new ImmutableMap.Builder<FileTypes.FileType, String>()
           .put(METH_ARRAY_SYSTEM_TYPE, "meth_([a-zA-Z0-9]+)\\.tsv") // TODO: underscore/dash? \w?
           .build();
 

@@ -30,7 +30,7 @@ import lombok.SneakyThrows;
 
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
@@ -60,7 +60,7 @@ public final class TestUtils {
     return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
   }
 
-  public static List<String> getFieldNames(SubmissionFileType type) {
+  public static List<String> getFieldNames(FileType type) {
     return newArrayList(dictionary().getFileSchema(type).getFieldNames());
   }
 

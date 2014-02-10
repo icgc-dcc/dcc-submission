@@ -63,7 +63,7 @@ public class ReleaseFileSystem {
           + " does not have permission to access project " + projectKey);
     }
 
-    val optional = release.getSubmissionByProjectKey(projectKey);
+    val optional = release.getSubmission(projectKey);
     if (!optional.isPresent()) {
       throw new ReleaseException("There is no project '%s' associated with release '%s'",
           projectKey, release.getName());

@@ -26,7 +26,7 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_END;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
@@ -43,7 +43,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -84,7 +84,7 @@ public final class NormalizationValidator implements Validator {
   /**
    * Type that is the focus of normalization (there could be more in the future).
    */
-  public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
+  public static final FileType FOCUS_TYPE = SSM_P_TYPE;
 
   /**
    * Name of the uncompressed single output file.

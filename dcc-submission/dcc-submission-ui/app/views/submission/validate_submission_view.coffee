@@ -40,31 +40,28 @@ module.exports = class ValidateSubmissionView extends View
   id: 'validate-submission-popup'
 
   selectNone: ->
-    @featureTable.fnClearTable()
-    for f, idx in @features
-      f.selected = false unless f.name == "CLINICAL_CORE_TYPE"
-      @featureTable.fnAddData @features[idx]
-      #@featureTable.fnUpdate(@features[idx], idx)
+    @dataTypeTable.fnClearTable()
+    for f, idx in @dataTypes
+      f.selected = false unless f.dataType == "CLINICAL_CORE_TYPE"
+      @dataTypeTable.fnAddData @dataTypes[idx]
 
   
   selectAll: ->
-    @featureTable.fnClearTable()
-    for f, idx in @features
+    @dataTypeTable.fnClearTable()
+    for f, idx in @dataTypes
       f.selected = true
-      @featureTable.fnAddData @features[idx]
-      #@featureTable.fnUpdate(@features[idx], idx)
+      @dataTypeTable.fnAddData @dataTypes[idx]
 
   toggleFeature: (e) ->
     feature = $(e.currentTarget).data('feature-type')
-    idx = _.pluck(@features, 'name').indexOf(feature)
-    @features[idx].selected = not @features[idx].selected
+    idx = _.pluck(@dataTypes, 'dataType').indexOf(feature)
+    @dataTypes[idx].selected = not @dataTypes[idx].selected
 
     # For some reason update seem to adjust td width,
     # just clear and rebuild as there are only a handful of datatypes
-    @featureTable.fnClearTable()
-    for f, idx in @features
-      @featureTable.fnAddData @features[idx]
-    #@featureTable.fnUpdate(@features[idx], idx)
+    @dataTypeTable.fnClearTable()
+    for f, idx in @dataTypes
+      @dataTypeTable.fnAddData @dataTypes[idx]
 
 
   initialize: ->
@@ -73,26 +70,22 @@ module.exports = class ValidateSubmissionView extends View
     @model = new Model @options.submission.getAttributes()
     @model.set({email: mediator.user.get("email")}, {silent: true})
 
-    @features = []
-    @featureTable = null
+    @dataTypeTable = null
 
-    @dataState = {}
-    for d in @model.get("dataState")
-      @dataState[d.dataType] = d.state
-    #console.log @dataState
-  
-    submissionFiles = @model.get "submissionFiles"
-    for f in  submissionFiles
-      name = f.dataType
-      state = @dataState[name]
-      idx = _.pluck(@features, 'name').indexOf(name)
+    @report = @model.get "report"
 
-      if name != null and idx == -1
-        @features.push {'name':name, 'selected':true}
+    # Only need shallow copy
+    @dataTypes = _.clone( @report.dataTypeReports )
+    console.log @dataTypes
+
+    # Default to all selected
+    @dataTypes.forEach (d)->
+      d.selected = true
+
 
     # Make clinical related files go first
-    @features = _.sortBy @features, (feature)->
-      switch feature.name
+    @dataTypes = _.sortBy @dataTypes, (dataType)->
+      switch dataType.dataType
         when "CLINICAL_CORE_TYPE"
           return 0
         when "CLINICAL_OPTIONAL_TYPE"
@@ -102,8 +95,8 @@ module.exports = class ValidateSubmissionView extends View
 
     # Pre-filter if datatype is provided
     if datatype
-      @features.forEach (f)->
-        f.selected = false unless (f.name == "CLINICAL_CORE_TYPE" or f.name == datatype)
+      @dataTypes.forEach (f)->
+        f.selected = false unless (f.dataType == "CLINICAL_CORE_TYPE" or f.dataType == datatype)
 
     release = new NextRelease()
     release.fetch
@@ -126,13 +119,13 @@ module.exports = class ValidateSubmissionView extends View
       {
          sTitle: "Data Types To Valdiate"
          mData: (source) ->
-           displayName = utils.translateDataType(source.name)
-           if source.name != "CLINICAL_CORE_TYPE"
+           displayName = utils.translateDataType(source.dataType)
+           if source.dataType != "CLINICAL_CORE_TYPE"
              if source.selected == false
                """
                <span id="toggle-feature"
                   style="cursor:pointer"
-                  data-feature-type="#{source.name}">
+                  data-feature-type="#{source.dataType}">
                   <i class="icon icon-check-empty"></i> #{displayName}
                </span>
                """
@@ -140,13 +133,13 @@ module.exports = class ValidateSubmissionView extends View
                """
                <span id="toggle-feature"
                   style="cursor:pointer"
-                  data-feature-type="#{source.name}">
+                  data-feature-type="#{source.dataType}">
                   <i class="icon icon-check"></i> #{displayName}
                </span>
                """
            else
              """
-             <span data-feature-type="#{source.name}">
+             <span data-feature-type="#{source.dataType}">
                <i class="icon icon-check"></i> #{displayName}
              </span>
              """
@@ -154,7 +147,7 @@ module.exports = class ValidateSubmissionView extends View
       {
         sTitle: "State"
         mData: (source) =>
-          state = @dataState[source.name]
+          state = source.dataTypeState
           if state
             ui_state = state.replace("_", " ")
             switch state
@@ -169,7 +162,7 @@ module.exports = class ValidateSubmissionView extends View
       }
     ]
 
-    @featureTable = $("#validate-file-types").dataTable
+    @dataTypeTable = $("#validate-file-types").dataTable
       bDestroy: true
       bPaginate: false
       bFilter: false
@@ -178,12 +171,13 @@ module.exports = class ValidateSubmissionView extends View
       sAjaxSource: ""
       sAjaxDataProp: ""
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        if aData.name == "CLINICAL_CORE_TYPE"
+        if aData.dataType == "CLINICAL_CORE_TYPE"
           $(nRow).css {'color': '#999', 'font-style': 'italic'}
       aoColumns: aoColumns
       fnServerData: (sSource, aoData, fnCallback) =>
-        fnCallback @features
+        fnCallback @dataTypes
 
+     
   validateSubmission: (e) ->
     #console.debug "ValidateSubmissionView#completeRelease", @model
     emails = @.$("#emails")
@@ -205,15 +199,14 @@ module.exports = class ValidateSubmissionView extends View
 
     nextRelease = new NextRelease()
 
-    # Grab the selected feature types
-    featureToValidate = _.filter @features, (f) -> f.selected == true
-    featureParams = _.pluck featureToValidate, 'name'
+    # Grab the selected datatypes
+    dataTypesToValidate = _.filter @dataTypes, (f) -> f.selected == true
+    dataTypeParams = _.pluck dataTypesToValidate, 'dataType'
 
     nextRelease.queue [{
       key: @options.submission.get("projectKey")
       emails: @.$('#emails').val().split(',')
-      dataTypes: featureParams
-      #featureTypes: featureParams
+      dataTypes: dataTypeParams
     }],
     success: =>
       @$el.modal 'hide'

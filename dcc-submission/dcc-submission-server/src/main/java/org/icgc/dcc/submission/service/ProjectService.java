@@ -67,7 +67,7 @@ public class ProjectService {
     val submissions = Sets.<Submission> newHashSet();
 
     for (val release : releases) {
-      val optional = release.getSubmissionByProjectKey(projectKey);
+      val optional = release.getSubmission(projectKey);
       if (optional.isPresent()) {
         val submission = optional.get();
         submissions.add(submission);

@@ -22,7 +22,7 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 
 import java.util.Date;
@@ -100,17 +100,21 @@ public class Release extends BaseEntity implements HasName {
   protected List<QueuedProject> queue = Lists.newArrayList();
 
   public Release() {
-    super();
     this.setState(OPENED);
   }
 
-  public Release(String name) {
-    super();
+  public Release(@NonNull String name) {
     this.setName(name);
     this.setState(OPENED);
   }
 
-  public Optional<Submission> getSubmissionByProjectKey(final @NonNull String projectKey) {
+  public Release(@NonNull String name, @NonNull String dictionaryVersion) {
+    this.setName(name);
+    this.setDictionaryVersion(dictionaryVersion);
+    this.setState(OPENED);
+  }
+
+  public Optional<Submission> getSubmission(final @NonNull String projectKey) {
     return tryFind(getSubmissions(), new Predicate<Submission>() {
 
       @Override
@@ -149,10 +153,10 @@ public class Release extends BaseEntity implements HasName {
   }
 
   @JsonIgnore
-  public List<String> getInvalidProjectKeys() {
+  public List<String> getNotValidatedProjectKeys() {
     val invalidProjectKeys = Lists.<String> newArrayList();
     for (val submission : getSubmissions()) {
-      if (submission.getState() == INVALID) {
+      if (submission.getState() == NOT_VALIDATED) {
         invalidProjectKeys.add(submission.getProjectKey());
       }
     }
@@ -237,7 +241,7 @@ public class Release extends BaseEntity implements HasName {
     return count;
   }
 
-  public int removeFromQueue(final List<String> projectKeys) {
+  public int removeFromQueue(final Iterable<String> projectKeys) {
     int count = 0;
     for (val projectKey : projectKeys) {
       count += removeFromQueue(projectKey);

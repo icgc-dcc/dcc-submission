@@ -33,7 +33,7 @@ import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
@@ -71,7 +71,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   /**
-   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}; Temporary: see DCC-1876
+   * TODO: phase out in favour of {@link #getSourceTap(FileType)}; Temporary: see DCC-1876
    */
   @Override
   public Tap<?, ?, ?> getSourceTap2(String fileName) {

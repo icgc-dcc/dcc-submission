@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.key.enumeration;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.core.ErrorType.UNIQUE_VALUE_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_PARENT_VALUE_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_VALUE_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.UNIQUE_VALUE_ERROR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.FK1;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.FK2;
 import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.OPTIONAL_FK;
@@ -27,7 +27,7 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.PK;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.core.report.ErrorType;
 
 /**
  * Type of key validator errors.

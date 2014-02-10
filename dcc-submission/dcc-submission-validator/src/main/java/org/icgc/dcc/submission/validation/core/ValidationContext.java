@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -54,7 +54,7 @@ public interface ValidationContext extends ReportContext {
   /**
    * Gets the list of data types to validate.
    */
-  Collection<SubmissionDataType> getDataTypes();
+  Collection<DataType> getDataTypes();
 
   /**
    * Gets the current release.
@@ -100,10 +100,5 @@ public interface ValidationContext extends ReportContext {
    * Gets the cascading platform strategy for cascading-based {@link Validator}s.
    */
   PlatformStrategy getPlatformStrategy();
-
-  /**
-   * Gets the submission report of the associated project under validation.
-   */
-  SubmissionReport getSubmissionReport();
 
 }

@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.primary.visitor;
 
+import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.validation.cascading.TupleStates.keepInvalidTuplesFilter;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD;
-import static org.icgc.dcc.submission.validation.core.Error.error;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;

@@ -35,8 +35,8 @@ import lombok.val;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 import org.mongodb.morphia.annotations.Embedded;
@@ -57,7 +57,7 @@ import com.google.common.collect.Lists;
 public class FileSchema implements DictionaryElement, Serializable {
 
   /**
-   * TODO: use {@link SubmissionFileType} instead of String.
+   * TODO: use {@link FileType} instead of String.
    */
   @NotBlank
   private String name;
@@ -235,12 +235,12 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   @JsonIgnore
-  public SubmissionFileType getFileType() {
-    return SubmissionFileType.from(name);
+  public FileType getFileType() {
+    return FileType.from(name);
   }
 
   @JsonIgnore
-  public SubmissionDataType getDataType() {
+  public DataType getDataType() {
     return getFileType().getDataType();
   }
 

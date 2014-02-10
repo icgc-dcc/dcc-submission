@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionDataType;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
@@ -53,7 +53,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
   @NonNull
   private final URI fsUri;
   @NonNull
-  private final Collection<SubmissionDataType> dataTypes;
+  private final Collection<DataType> dataTypes;
   @NonNull
   private final Dictionary dictionary;
   @NonNull

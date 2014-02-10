@@ -24,11 +24,11 @@ import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.PersistenceModule;
+import org.icgc.dcc.submission.core.ValidationModule;
 import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
-import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.web.WebModule;
 
 import com.google.common.collect.ImmutableList;

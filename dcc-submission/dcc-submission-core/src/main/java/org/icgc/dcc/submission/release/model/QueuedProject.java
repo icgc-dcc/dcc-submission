@@ -31,8 +31,8 @@ import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.icgc.dcc.core.model.SubmissionDataType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.google.common.collect.ImmutableList;
@@ -65,10 +65,10 @@ public class QueuedProject {
     return ImmutableList.copyOf(emails);
   }
 
-  public List<SubmissionDataType> getDataTypes() {
-    val builder = ImmutableList.<SubmissionDataType> builder();
+  public List<DataType> getDataTypes() {
+    val builder = ImmutableList.<DataType> builder();
     for (val name : dataTypes) {
-      builder.add(SubmissionDataTypes.valueOf(name));
+      builder.add(DataTypes.valueOf(name));
     }
 
     return builder.build();

@@ -39,10 +39,12 @@ module.exports = class ReportDatatypeView extends View
     # For determining table visibility if files were added/removed
     @currentDatatypes = []
 
-    # Lookup table for status
-    @dataStateMap = {}
 
     @files = []
+    @datatypeCache = {}
+    @fileMap = {}
+
+    
 
     super
 
@@ -50,32 +52,28 @@ module.exports = class ReportDatatypeView extends View
 
   update: ->
     #console.log "ReportDatatypeView -> update"
+    console.log "update", @model
+
+    # Update file meta data
+    submissionFiles = @model.get "submissionFiles"
+    @fileMap = {}
+    submissionFiles.forEach (f)=>
+      @fileMap[f.name] = f
+    
+    
+    # Start contstructing
     @report = @model.get "report"
-
-    # Update new lookup table
-    @dataStateMap = {}
-    dataState = @model.get("dataState")
-    dataState.forEach (ds)=>
-      @dataStateMap[ds.dataType] = ds.state
+    @reportDataType = @report.dataTypeReports
+    console.log "2 reportdatatype", @reportDataType
 
 
-    # Extract unique datatypes for current update
+    # Extract the datatypes for logical sort
     datatypes = []
-
-    # Make sure core table is always visible
     datatypes.push("CLINICAL_CORE_TYPE")
+    @reportDataType.forEach (d) ->
+      if datatypes.indexOf(d.dataType) == -1
+        datatypes.push(d.dataType)
 
-   
-    # Normalize the datatype against the files submitted
-    @schemaReports = @report.get "schemaReports"
-    @schemaReports.each (report)->
-      datatype = report.get "dataType"
-      if datatypes.indexOf( datatype ) == -1
-        if datatype == null
-          datatype = "MISCELLANEOUS"
-        datatypes.push datatype
-
-    # Create data type tables if they do not exist
     datatypes = _.sortBy datatypes, (datatype)->
       switch datatype
         when "CLINICAL_CORE_TYPE"
@@ -86,6 +84,9 @@ module.exports = class ReportDatatypeView extends View
           return 999
         else
           return 10
+
+    console.log "3 sorted", datatypes
+
 
     datatypes.forEach (datatype)=>
       container = null
@@ -121,40 +122,77 @@ module.exports = class ReportDatatypeView extends View
     @updateDataTable()
 
 
-  getTitleBar: (datatype, state, globalState)->
-    title = utils.translateDataType(datatype)
+  getAction: (dataType)->
+    state = dataType.dataTypeState
+    title = utils.translateDataType(dataType.dataType)
     lc_state = state.toLowerCase()
     ui_state = state.replace("_", " ")
 
     if state == ""
+      ""
+    else if state in ["VALIDATED", "INVALID", "NOT_VALIDATED"]
       """
-      <span>#{title}</span>
-      """
-    else if state in ["ERROR", "VALIDATING", "QUEUED", "SIGNED_OFF"] \
-        or globalState in ["ERROR", "VALIDATING", "QUEUED", "SIGNED_OFF"]
-      """
-      <span>#{title} - </span>
-      <span class="#{lc_state}">#{ui_state}</span>
-      """
-    else
-      """
-      <span>#{title} - </span>
-      <span class="#{lc_state}">#{ui_state}</span>
       <a data-toggle="modal"
-         class="m-btn mini green pull-right"
+         class="m-btn mini green"
          style="height:auto; margin-top:0"
          href="#validate-submission-popup"
          id="validate-submission-popup-button">
       Validate #{title}
       </a>
       """
-    
+
+  getTitleBar: (dataType)->
+    title = utils.translateDataType(dataType.dataType)
+    lc_state = dataType.dataTypeState.toLowerCase()
+    ui_state = dataType.dataTypeState.replace("_", " ")
+
+    """
+    <span>#{title} - </span>
+    <span class="#{lc_state}">#{ui_state}</span>
+    """
 
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
     #console.log @model.get("dataState")
+    console.log "updateDataTable"
 
     globalState = @model.get("state")
+
+    #@currentDatatypes.forEach (datatype) =>
+    #  console.log "4 ", @model.get "submissionFiles"
+    #  @files = _.filter @model.get "submissionFiles", (f)->
+    #    return f.type == datatype
+    #  console.log "4 ", datatype, @files
+
+    @datatypes = @report.dataTypeReports
+    @datatypes.forEach (dataType) =>
+      files = []
+      console.log "4", dataType
+      dt = @$el.find("#"+dataType.dataType).dataTable()
+      fileTypeReports = dataType.fileTypeReports
+      fileTypeReports.forEach (fileType) =>
+        console.log "5", fileType
+        fileReports = fileType.fileReports
+        fileReports.forEach (file) =>
+          # TODO: use map
+          # files.push( {name:'test', lastUpdate:'12345', size:'999'})
+          files.push file
+          console.log "6", file
+      console.log "4", files
+      dt.fnClearTable()
+      dt.fnAddData files
+
+      target = "." + dataType.dataType + "_title"
+      $(target).children().remove()
+      $(target).append( @getTitleBar(dataType) )
+
+
+      target = "." + dataType.dataType + "_action"
+      $(target).children().remove()
+      $(target).data("datatype", dataType.dataType)
+      $(target).append( @getAction(dataType) )
+      
+    return
 
     @currentDatatypes.forEach (datatype)=>
       @files = _.filter @report.get("schemaReports").toJSON(), (d)->
@@ -168,13 +206,28 @@ module.exports = class ReportDatatypeView extends View
       if not state
         state = ""
 
-      dt.fnClearTable()
-      dt.fnAddData @files
+
+      # Check if the data has changed or not
+      tempCache = {}
+      @files.forEach (f)=>
+        tempCache[f.name] = f.lastUpdate
+      
+      if not _.isEqual tempCache, @datatypeCache[datatype]
+        console.log datatype + " has changed..."
+        dt.fnClearTable()
+        dt.fnAddData @files
+
+      @datatypeCache[datatype] = _.clone(tempCache)
+
 
       target = "." + datatype + "_title"
       $(target).children().remove()
-      $(target).data("datatype", datatype)
       $(target).append( @getTitleBar(datatype, state, globalState) )
+
+      target = "." + datatype + "_action"
+      $(target).children().remove()
+      $(target).data("datatype", datatype)
+      $(target).append( @getAction(datatype, state, globalState) )
 
 
   createDataTable: (datatype)->
@@ -182,7 +235,7 @@ module.exports = class ReportDatatypeView extends View
     aoColumns = [
         {
           sTitle: "File"
-          mData: "name"
+          mData: "fileName"
         }
         {
           sTitle: "Last Updated"
@@ -192,34 +245,25 @@ module.exports = class ReportDatatypeView extends View
         {
           sTitle: "Size"
           bUseRendered: false
-          mData: (source, type) ->
+          mData: (source, type) =>
             if type is "display"
-              return utils.fileSize source.size
-            source.size
+              return utils.fileSize @fileMap[source.fileName].size
+            @fileMap[source.fileName].size
         }
         {
           sTitle: "Status"
           bVisible: true
           mData: (source, type) =>
-            state = @dataStateMap[source.dataType]
-            if source.schemaName
-              if state
-                state = state.replace("_", " ")
-              else
-                state = "NOT VALIDATED"
-            else
-              state = "SKIPPED"
+            #state = @dataStateMap[source.dataType]
+            state = source.fileState.replace("_", " ")
 
-
-            #state = if source.schemaName
-            #  if source.errors.length
-            #    "INVALID"
-            #  else if source.fieldReports.length or source.summaryReports.length
-            #    "VALID"
+            #if source.schemaName
+            #  if state
+            #    state = state.replace("_", " ")
             #  else
-            #    "NOT VALIDATED"
+            #    state = "NOT VALIDATED"
             #else
-            #  "SKIPPED"
+            #  state = "SKIPPED"
 
             if type == "display"
               return switch state
@@ -239,15 +283,14 @@ module.exports = class ReportDatatypeView extends View
           bSortable: false
           bVisible: true
           mData: (source) =>
-            # Allow viewing reports if status is idle
-            fileState = @dataStateMap[source.dataType]
+            fileState = source.fileState
             if fileState in ["QUEUED", "VALIDATING"]
               ""
-            else if source.errors.length or source.fieldReports.length \
+            else if source.errorReports.length or source.fieldReports.length \
                 or source.summaryReports.length
               "<a href='/releases/#{@model.get('release')}" +
               "/submissions/#{@model.get('projectKey')}" +
-              "/report/#{source.name}'>view</span>"
+              "/report/#{source.fileName}'>view</span>"
             else
               ""
         }
@@ -255,19 +298,16 @@ module.exports = class ReportDatatypeView extends View
 
     @$el.find("##{datatype}").dataTable
       sDom:
-        #""" with footer
-        #<'row-fluid' <'span6 #{datatype}_title'l> <'span6'f>r>
-        #t
-        #<'row-fluid'<'span6'i><'span6'p>>
-        #"""
         """
-        <'row-fluid' <'span3 #{datatype}_title'l> <'span9'f>r>
+        <'row-fluid' <'span3 #{datatype}_title'l><'span3 #{datatype}_action'> <'span6'f>r>
         t<'row-fluid'<'span6'i><'span6'p>>"
         """
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission."
-      bPaginate: false
+      iDisplayLength: 10
+      sPaginationType: "full_numbers"
+      bPaginate: true
       aaSorting: [[ 1, "asc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
