@@ -89,16 +89,16 @@ public class DefaultStateContext implements StateContext {
   }
 
   @Override
-  public void startValidation(@NonNull Iterable<DataType> dataTypes) {
+  public void startValidation(@NonNull Iterable<DataType> dataTypes, @NonNull Report nextReport) {
     beginTransition("startValidation");
-    getState().startValidation(this, dataTypes);
+    getState().startValidation(this, dataTypes, nextReport);
     finishTransition("startValidation");
   }
 
   @Override
-  public void finishValidation(@NonNull Outcome outcome, @NonNull Report newReport) {
+  public void finishValidation(@NonNull Outcome outcome, @NonNull Report nextReport) {
     beginTransition("finishValidation");
-    getState().finishValidation(this, outcome, newReport);
+    getState().finishValidation(this, outcome, nextReport);
     finishTransition("finishValidation");
   }
 

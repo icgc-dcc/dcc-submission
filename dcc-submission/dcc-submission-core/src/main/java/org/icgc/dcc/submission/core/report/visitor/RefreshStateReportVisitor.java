@@ -68,13 +68,13 @@ public class RefreshStateReportVisitor extends AbstractReportVisitor {
 
   @Override
   public void visit(FileReport fileReport) {
-    if (isFileStateIn(fileReport, FileState.VALID, FileState.NOT_VALIDATED) && hasErrors(fileReport)) {
+    if (isFileStateIn(fileReport, FileState.VALIDATING) && hasErrors(fileReport)) {
       fileReport.setFileState(FileState.INVALID);
 
       markInvalid(fileReport);
     }
 
-    if (isFileStateIn(fileReport, FileState.INVALID, FileState.NOT_VALIDATED) && hasErrors(fileReport)) {
+    if (isFileStateIn(fileReport, FileState.VALIDATING) && hasNoErrors(fileReport)) {
       fileReport.setFileState(FileState.VALID);
 
       markValid(fileReport);

@@ -502,11 +502,11 @@ public class ReleaseService extends AbstractService {
    * This method is robust enough to handle rare cases like when:<br>
    * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
-   * @param report
+   * @param nextReport
    * @param dataTypes
    */
   @Synchronized
-  public void dequeueSubmission(@NonNull final QueuedProject queuedProject, @NonNull final Report report) {
+  public void dequeueSubmission(@NonNull final QueuedProject queuedProject, @NonNull final Report nextReport) {
     val projectKey = queuedProject.getKey();
 
     val description = format("validate project '%s'", projectKey);
@@ -534,7 +534,7 @@ public class ReleaseService extends AbstractService {
         // Transition
         //
 
-        submission.startValidation(submissionFiles, queuedProject.getDataTypes());
+        submission.startValidation(submissionFiles, queuedProject.getDataTypes(), nextReport);
         releaseRepository.updateRelease(releaseName, release);
         resetValidationFolder(queuedProject.getKey(), release);
 

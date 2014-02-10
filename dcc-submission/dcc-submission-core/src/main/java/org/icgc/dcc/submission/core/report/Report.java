@@ -47,9 +47,9 @@ import org.icgc.dcc.submission.core.report.visitor.RefreshStateReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RemoveFileReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ResetReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.SetStateReportVisitor;
-import org.icgc.dcc.submission.core.state.State;
 import org.icgc.dcc.submission.core.util.TypeConverters.DataTypeConverter;
 import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
 
@@ -175,7 +175,7 @@ public class Report implements ReportElement {
     executeVisitor(new ResetReportVisitor(dataTypes));
   }
 
-  public void setState(@NonNull State state, @NonNull Iterable<DataType> dataTypes) {
+  public void setState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
     executeVisitor(new SetStateReportVisitor(state, dataTypes));
   }
 

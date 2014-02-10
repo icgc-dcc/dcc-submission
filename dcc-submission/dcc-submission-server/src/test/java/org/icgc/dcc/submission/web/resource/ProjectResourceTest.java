@@ -75,8 +75,6 @@ public class ProjectResourceTest extends ResourceTest {
 
   private Set<Submission> submissions;
 
-  private final String PATH = "path/to/release/project";
-
   @Override
   protected Collection<? extends Module> configureModules() {
     return ImmutableList.of(new AbstractDccModule() {

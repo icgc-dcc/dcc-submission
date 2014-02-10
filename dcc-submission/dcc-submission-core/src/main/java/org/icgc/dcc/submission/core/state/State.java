@@ -38,11 +38,11 @@ public interface State {
 
   void queueRequest(StateContext context, Iterable<DataType> dataTypes);
 
-  void startValidation(StateContext context, Iterable<DataType> dataTypes);
+  void startValidation(StateContext context, Iterable<DataType> dataTypes, Report nextReport);
 
   void cancelValidation(StateContext context, Iterable<DataType> dataTypes);
 
-  void finishValidation(StateContext context, Outcome outcome, Report newReport);
+  void finishValidation(StateContext context, Outcome outcome, Report nextReport);
 
   void signOff(StateContext context);
 
