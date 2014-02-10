@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
+import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
 
@@ -29,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.core.util.Joiners;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +44,7 @@ public class KeyValidatorIntegrationTest {
    * Test data.
    */
   static final String RELEASE_NAME = "myrelease";
-  static final String PROJECT_KEY = "project1";
+  static final String PROJECT_KEY = "myproject";
 
   /**
    * Scratch space.
@@ -69,8 +72,13 @@ public class KeyValidatorIntegrationTest {
 
     copyDirectory(
         fileSystem,
-        new File(FS_DIR),
+        new File(FS_DIR, PROJECT_KEY),
         new Path(new Path(rootDir, RELEASE_NAME), PROJECT_KEY));
+    copyDirectory(
+        fileSystem,
+        new File(FS_DIR, SYSTEM_FILES_DIR_NAME),
+        new Path(new Path(rootDir, RELEASE_NAME), SYSTEM_FILES_DIR_NAME));
+    log.info("ls:\n\n\t{}\n", Joiners.INDENT.join(lsRecursive(fileSystem, rootDir)));
   }
 
   @Test
