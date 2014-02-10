@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import lombok.val;
+
 /**
  * The validation state of a data type within a submission.
  */
@@ -32,6 +34,16 @@ public enum DataTypeState {
 
   public static DataTypeState getDefaultState() {
     return NOT_VALIDATED;
+  }
+
+  public boolean in(DataTypeState... states) {
+    for (val state : states) {
+      if (this == state) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }
