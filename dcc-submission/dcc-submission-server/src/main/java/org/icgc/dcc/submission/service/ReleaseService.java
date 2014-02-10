@@ -619,7 +619,7 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.finishValidation(submissionFiles, outcome, report);
+    submission.finishValidation(submissionFiles, project.getDataTypes(), outcome, report);
     releaseRepository.updateReleaseSubmission(release.getName(), submission);
 
     if (!emails.isEmpty()) {

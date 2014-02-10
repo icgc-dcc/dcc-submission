@@ -60,7 +60,7 @@ public interface StateContext {
 
   void startValidation(Iterable<DataType> dataTypes, Report nextReport);
 
-  void finishValidation(Outcome outcome, Report nextReport);
+  void finishValidation(Iterable<DataType> dataTypes, Outcome outcome, Report nextReport);
 
   void signOff();
 
