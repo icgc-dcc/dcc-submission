@@ -38,4 +38,8 @@ public enum SubmissionState implements State {
   @Delegate
   private final State state;
 
+  public static SubmissionState getDefaultState() {
+    return NOT_VALIDATED;
+  }
+
 }

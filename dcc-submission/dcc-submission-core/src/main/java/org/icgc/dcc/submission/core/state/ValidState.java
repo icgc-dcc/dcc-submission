@@ -23,6 +23,8 @@ import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
@@ -46,6 +48,15 @@ public class ValidState extends AbstractState {
   @Override
   public void signOff(@NonNull StateContext context) {
     context.setState(SubmissionState.SIGNED_OFF);
+  }
+
+  @Override
+  public Submission performRelease(StateContext context, Release nextRelease) {
+    val nextSubmission =
+        new Submission(context.getProjectKey(), context.getProjectName(), nextRelease.getName(), SubmissionState.VALID);
+    nextSubmission.setReport(context.getReport());
+
+    return nextSubmission;
   }
 
 }

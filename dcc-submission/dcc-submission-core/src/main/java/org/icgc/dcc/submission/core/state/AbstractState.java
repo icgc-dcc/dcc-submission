@@ -77,8 +77,9 @@ public abstract class AbstractState implements State {
 
   @Override
   public Submission performRelease(StateContext context, Release nextRelease) {
-    val nextSubmission = new Submission(context.getProjectKey(), context.getProjectName(), nextRelease.getName());
-    nextSubmission.setState(SubmissionState.NOT_VALIDATED);
+    val nextSubmission =
+        new Submission(context.getProjectKey(), context.getProjectName(), nextRelease.getName(),
+            SubmissionState.NOT_VALIDATED);
     nextSubmission.setReport(new Report(context.getSubmissionFiles()));
 
     return nextSubmission;

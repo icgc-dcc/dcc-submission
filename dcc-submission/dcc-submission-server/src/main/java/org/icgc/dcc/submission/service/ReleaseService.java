@@ -28,6 +28,7 @@ import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.Submission.getProjectKeys;
+import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.DUPLICATE_RELEASE_NAME;
@@ -405,7 +406,7 @@ public class ReleaseService extends AbstractService {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
     val release = releaseRepository.findOpenRelease();
     val submissionPath = dccFileSystem.createNewProjectDirectoryStructure(release.getName(), projectKey);
-    val submission = new Submission(projectKey, projectName, release.getName());
+    val submission = new Submission(projectKey, projectName, release.getName(), NOT_VALIDATED);
     val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
 
     //
