@@ -15,8 +15,9 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.services;
+package org.icgc.dcc.submission.service;
 
+import static org.elasticsearch.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -25,12 +26,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.release.ReleaseException;
@@ -41,9 +44,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
-import org.icgc.dcc.submission.service.DictionaryService;
-import org.icgc.dcc.submission.service.MailService;
-import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -52,7 +52,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseServiceNextReleaseTest {
@@ -90,29 +90,31 @@ public class ReleaseServiceNextReleaseTest {
 
   static final String FIRST_RELEASE_NAME = "release1";
   static final String NEXT_RELEASE_NAME = "release2";
+  static final String PROJECT_NAME = "project1";
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
+    when(dccFileSystem.getFileSystem()).thenReturn(FileSystem.getLocal(new Configuration()));
     when(dccFileSystem.getReleaseFilesystem(any(Release.class))).thenReturn(releaseFileSystem);
+    when(dccFileSystem.buildProjectStringPath(anyString(), anyString())).thenReturn("/");
 
     when(release.getName()).thenReturn(FIRST_RELEASE_NAME);
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
-    when(release.getProjectKeys()).thenReturn(Arrays.asList("proj1"));
-    when(release.getSubmissions()).thenReturn(createSubmission(SubmissionState.SIGNED_OFF));
-    when(release.getSubmissions()).thenReturn(createSubmission(SubmissionState.SIGNED_OFF));
+    when(release.getProjectKeys()).thenReturn(
+        newArrayList(PROJECT_NAME));
+    when(release.getSubmissions()).thenReturn(
+        newArrayList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SubmissionState.SIGNED_OFF)));
+    when(release.getSubmissions()).thenReturn(
+        newArrayList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SubmissionState.SIGNED_OFF)));
 
-    when(releaseRepository.findReleaseByName(anyString())).thenReturn(null);
     when(releaseRepository.findNextRelease()).thenReturn(release);
+    when(releaseRepository.findReleaseByName(FIRST_RELEASE_NAME)).thenReturn(release);
+    when(releaseRepository.findReleaseByName(NEXT_RELEASE_NAME)).thenReturn(null);
+
+    when(dictionaryRepository.findDictionaryByVersion("0.6c")).thenReturn(dictionary);
 
     when(dictionaryService.getDictionaryByVersion("existing_dictionary")).thenReturn(dictionary);
-  }
-
-  private List<Submission> createSubmission(SubmissionState state) {
-    Submission submission = new Submission();
-    submission.setState(state);
-
-    return ImmutableList.<Submission> of(submission);
   }
 
   @Test
@@ -201,9 +203,9 @@ public class ReleaseServiceNextReleaseTest {
   }
 
   private void releaseSetUp() {
-    dictionary = mock(Dictionary.class);
     when(dictionary.getState()).thenReturn(DictionaryState.OPENED);
     when(dictionary.getVersion()).thenReturn("0.6c");
+    when(dictionary.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> absent());
     when(release.getDictionaryVersion()).thenReturn("0.6c");
     when(release.isSignOffAllowed()).thenReturn(true);
     when(release.isQueued()).thenReturn(false);
