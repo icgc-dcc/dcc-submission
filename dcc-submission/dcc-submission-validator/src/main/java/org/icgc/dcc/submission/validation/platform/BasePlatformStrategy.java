@@ -17,13 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
@@ -31,6 +37,8 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -41,10 +49,15 @@ import org.icgc.dcc.submission.validation.primary.core.Key;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+@Slf4j
 public abstract class BasePlatformStrategy implements PlatformStrategy {
+
+  private static final Splitter ROW_SPLITTER = Splitter.on('\t');
 
   @Getter
   protected final FileSystem fileSystem;
@@ -190,4 +203,46 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     }
     return dupHeaders;
   }
+
+  @Override
+  public Map<String, String> getSampleToDonorMap(Dictionary dictionary) {
+
+    val sampleToSpecimen = Maps.<String, String> newTreeMap();
+    for (String row : getRows(dictionary, SubmissionFileType.SAMPLE_TYPE)) {
+      val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
+      val specimenId = fields.get(1);
+      val sampleId = fields.get(0); // indices are "reversed" in sample (PK is second instead of first like for donor
+                                    // and specimen)
+      checkState(!sampleToSpecimen.containsKey(sampleId));
+      sampleToSpecimen.put(sampleId, specimenId);
+    }
+    log.info("sample to specimen mapping: {}", sampleToSpecimen);
+
+    val specimenToDonor = Maps.<String, String> newTreeMap();
+    for (String row : getRows(dictionary, SubmissionFileType.SPECIMEN_TYPE)) {
+      val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
+      val donorId = fields.get(0);
+      val specimenId = fields.get(1);
+      checkState(!specimenToDonor.containsKey(specimenId));
+      specimenToDonor.put(specimenId, donorId);
+    }
+    log.info("specimen to donor mapping: {}", specimenToDonor);
+
+    val sampleToDonor = Maps.<String, String> newTreeMap();
+    for (val entry : sampleToSpecimen.entrySet()) {
+      sampleToDonor.put(
+          entry.getKey(),
+          specimenToDonor.get(entry.getValue()));
+    }
+    log.info("sample to donor mapping: {}", sampleToDonor);
+
+    return sampleToDonor;
+  }
+
+  @SneakyThrows
+  private List<String> getRows(Dictionary dictionary, SubmissionFileType fileType) {
+    val fileSchema = dictionary.getFileSchema(fileType);
+    return HadoopUtils.readSmallTextFile(fileSystem, path(fileSchema));
+  }
+
 }

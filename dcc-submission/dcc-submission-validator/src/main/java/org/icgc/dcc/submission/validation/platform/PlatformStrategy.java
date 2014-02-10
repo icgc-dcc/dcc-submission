@@ -20,9 +20,10 @@ package org.icgc.dcc.submission.validation.platform;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.primary.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -87,7 +88,8 @@ public interface PlatformStrategy {
   public FileSchemaDirectory getSystemDirectory();
 
   /**
-   * TODO: remove after crisis (140131)!!!!
+   * Returns a map of sample IDs to their corresponding donor IDs, a mapping commonly needed.
    */
-  public FileSystem getFileSystem();
+  public Map<String, String> getSampleToDonorMap(Dictionary dictionary);
+
 }

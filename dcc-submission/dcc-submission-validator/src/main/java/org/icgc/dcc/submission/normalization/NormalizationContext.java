@@ -17,11 +17,16 @@
  */
 package org.icgc.dcc.submission.normalization;
 
+import static com.google.common.collect.ImmutableList.copyOf;
+
+import java.util.Map;
+
 import lombok.Value;
+import lombok.val;
 import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.normalization.steps.ConfidentialFieldsRemoval;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -36,6 +41,11 @@ public interface NormalizationContext {
    */
   ImmutableMap<String, ImmutableList<String>> getControlledFields();
 
+  /**
+   * See {@link PlatformStrategy#getSampleToDonorMap(Dictionary)}
+   */
+  Map<String, String> getSampleToDonorMap();
+
   @Value
   @Builder
   static final class DefaultNormalizationContext implements NormalizationContext {
@@ -46,13 +56,31 @@ public interface NormalizationContext {
     private final ImmutableMap<String, ImmutableList<String>> controlledFields;
 
     /**
+     * See {@link #getSampleToDonorMap()}.
+     */
+    private final Map<String, String> sampleToDonorMap;
+
+    /**
      * Creates the default {@link NormalizationContext}.
      */
-    static NormalizationContext getNormalizationContext(Dictionary dictionary) {
+    static NormalizationContext getNormalizationContext(PlatformStrategy platform, Dictionary dictionary) {
       return DefaultNormalizationContext
           .builder()
-          .controlledFields(ConfidentialFieldsRemoval.getControlledFields(dictionary))
+          .controlledFields(getControlledFields(dictionary))
+          .sampleToDonorMap(platform.getSampleToDonorMap(dictionary))
           .build();
     }
+
+    private static ImmutableMap<String, ImmutableList<String>> getControlledFields(Dictionary dictionary) {
+      val controlledFields = new ImmutableMap.Builder<String, ImmutableList<String>>();
+      for (val fileSchema : dictionary.getFiles()) {
+        controlledFields.put(
+            fileSchema.getName(),
+            copyOf(fileSchema.getControlledFieldNames()));
+      }
+      return controlledFields.build();
+    }
+
   }
+
 }

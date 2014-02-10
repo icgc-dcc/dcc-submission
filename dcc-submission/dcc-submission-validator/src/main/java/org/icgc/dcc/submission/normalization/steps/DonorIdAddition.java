@@ -23,6 +23,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -33,6 +34,7 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
+import cascading.operation.OperationCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
@@ -41,15 +43,13 @@ import cascading.tuple.Tuple;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * TODO
+ * Adds the corresponding donor ID for sample IDs.
  */
 @RequiredArgsConstructor
 public final class DonorIdAddition implements NormalizationStep {
 
   public static final Fields SAMPLE_ID_FIELD = new Fields(SUBMISSION_ANALYZED_SAMPLE_ID);
   public static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
-
-  private final Map<String, String> sampleToDonorMap;
 
   @Override
   public String shortName() {
@@ -58,18 +58,28 @@ public final class DonorIdAddition implements NormalizationStep {
 
   @Override
   public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Each(pipe, new DonorIdAdder(), ALL);
+    return new Each(pipe, new DonorIdAdder(context.getSampleToDonorMap()), ALL);
   }
 
   /**
-   * 
+   * See {@link DonorIdAddition}.
    */
   @VisibleForTesting
   final class DonorIdAdder extends BaseOperation<Void> implements Function<Void> {
 
+    @NonNull
+    private final Map<String, String> sampleToDonorMap;
+
     @VisibleForTesting
-    DonorIdAdder() {
+    DonorIdAdder(Map<String, String> sampleToDonorMap) {
       super(DONOR_ID_FIELD);
+      this.sampleToDonorMap = sampleToDonorMap;
+    }
+
+    @Override
+    public void prepare(@SuppressWarnings("rawtypes") FlowProcess flowProcess, OperationCall<Void> operationCall) {
+      super.prepare(flowProcess, operationCall);
+
     }
 
     @Override
