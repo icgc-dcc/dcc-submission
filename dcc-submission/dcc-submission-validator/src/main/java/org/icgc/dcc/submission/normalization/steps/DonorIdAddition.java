@@ -34,7 +34,6 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
-import cascading.operation.OperationCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
@@ -74,12 +73,6 @@ public final class DonorIdAddition implements NormalizationStep {
     DonorIdAdder(Map<String, String> sampleToDonorMap) {
       super(DONOR_ID_FIELD);
       this.sampleToDonorMap = sampleToDonorMap;
-    }
-
-    @Override
-    public void prepare(@SuppressWarnings("rawtypes") FlowProcess flowProcess, OperationCall<Void> operationCall) {
-      super.prepare(flowProcess, operationCall);
-
     }
 
     @Override

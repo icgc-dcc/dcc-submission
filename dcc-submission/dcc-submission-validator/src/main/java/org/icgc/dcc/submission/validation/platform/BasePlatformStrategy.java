@@ -216,12 +216,16 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     val samplePath = path(sampleFileSchema);
     val sampleSampleIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_ANALYZED_SAMPLE_ID).get();
     val sampleSpecimenIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
+    boolean first = true;
     for (String row : readSmallTextFile(fileSystem, samplePath)) { // Clinical files are small
-      val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
-      val sampleId = fields.get(sampleSampleIdOrdinal);
-      val specimenId = fields.get(sampleSpecimenIdOrdinal);
-      checkState(!sampleToSpecimen.containsKey(sampleId));
-      sampleToSpecimen.put(sampleId, specimenId);
+      if (!first) {
+        val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
+        val sampleId = fields.get(sampleSampleIdOrdinal);
+        val specimenId = fields.get(sampleSpecimenIdOrdinal);
+        checkState(!sampleToSpecimen.containsKey(sampleId));
+        sampleToSpecimen.put(sampleId, specimenId);
+      }
+      first = false;
     }
     log.info("Sample to specimen mapping: {}", sampleToSpecimen);
 
@@ -230,12 +234,16 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     val specimenPath = path(specimenFileSchema);
     val specimenSpecimenIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
     val specimenDonorIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_DONOR_ID).get();
+    first = true;
     for (String row : readSmallTextFile(fileSystem, specimenPath)) { // Clinical files are small
-      val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
-      val specimenId = fields.get(specimenSpecimenIdOrdinal);
-      val donorId = fields.get(specimenDonorIdOrdinal);
-      checkState(!specimenToDonor.containsKey(specimenId));
-      specimenToDonor.put(specimenId, donorId);
+      if (!first) {
+        val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
+        val specimenId = fields.get(specimenSpecimenIdOrdinal);
+        val donorId = fields.get(specimenDonorIdOrdinal);
+        checkState(!specimenToDonor.containsKey(specimenId));
+        specimenToDonor.put(specimenId, donorId);
+      }
+      first = false;
     }
     log.info("Specimen to donor mapping: {}", specimenToDonor);
 
