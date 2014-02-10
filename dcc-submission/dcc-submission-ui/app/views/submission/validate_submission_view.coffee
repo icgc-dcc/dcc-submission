@@ -156,7 +156,7 @@ module.exports = class ValidateSubmissionView extends View
               when "VALID"
                 return "<span class='valid'>"+ui_state+"</span>"
               else
-                return "<span>Not Validated</span>"
+                return "<span>#{state}</span>"
           else
             return "<span>Not Validated</span>"
       }
