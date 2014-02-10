@@ -41,6 +41,7 @@ module.exports = class ReportDatatypeView extends View
 
 
     @files = []
+    @datatypeCache = {}
 
     super
 
@@ -112,6 +113,24 @@ module.exports = class ReportDatatypeView extends View
     @updateDataTable()
 
 
+  getAction: (datatype, state, globalState)->
+    title = utils.translateDataType(datatype)
+    lc_state = state.toLowerCase()
+    ui_state = state.replace("_", " ")
+
+    if state == ""
+      ""
+    else if state in ["VALIDATED", "INVALID", "NOT_VALIDATED"]
+      """
+      <a data-toggle="modal"
+         class="m-btn mini green"
+         style="height:auto; margin-top:0"
+         href="#validate-submission-popup"
+         id="validate-submission-popup-button">
+      Validate #{title}
+      </a>
+      """
+
   getTitleBar: (datatype, state, globalState)->
     title = utils.translateDataType(datatype)
     lc_state = state.toLowerCase()
@@ -121,30 +140,26 @@ module.exports = class ReportDatatypeView extends View
       """
       <span>#{title}</span>
       """
-    else if state in ["ERROR", "VALIDATING", "QUEUED", "SIGNED_OFF"] \
-        or globalState in ["ERROR", "VALIDATING", "QUEUED", "SIGNED_OFF"]
-      """
-      <span>#{title} - </span>
-      <span class="#{lc_state}">#{ui_state}</span>
-      """
     else
       """
       <span>#{title} - </span>
       <span class="#{lc_state}">#{ui_state}</span>
-      <a data-toggle="modal"
-         class="m-btn mini green pull-right"
-         style="height:auto; margin-top:0"
-         href="#validate-submission-popup"
-         id="validate-submission-popup-button">
-      Validate #{title}
-      </a>
       """
-    
 
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
+    #console.log @model.get("dataState")
+    console.log "updateDataTable"
 
     globalState = @model.get("state")
+
+    @currentDatatypes.forEach (datatype) =>
+      console.log "4 ", @model.get "submissionFiles"
+      @files = _.filter @model.get "submissionFiles", (f)->
+        return f.type == datatype
+      console.log "4 ", datatype, @files
+      
+    return
 
     @currentDatatypes.forEach (datatype)=>
       @files = _.filter @report.get("schemaReports").toJSON(), (d)->
@@ -158,13 +173,28 @@ module.exports = class ReportDatatypeView extends View
       if not state
         state = ""
 
-      dt.fnClearTable()
-      dt.fnAddData @files
+
+      # Check if the data has changed or not
+      tempCache = {}
+      @files.forEach (f)=>
+        tempCache[f.name] = f.lastUpdate
+      
+      if not _.isEqual tempCache, @datatypeCache[datatype]
+        console.log datatype + " has changed..."
+        dt.fnClearTable()
+        dt.fnAddData @files
+
+      @datatypeCache[datatype] = _.clone(tempCache)
+
 
       target = "." + datatype + "_title"
       $(target).children().remove()
-      $(target).data("datatype", datatype)
       $(target).append( @getTitleBar(datatype, state, globalState) )
+
+      target = "." + datatype + "_action"
+      $(target).children().remove()
+      $(target).data("datatype", datatype)
+      $(target).append( @getAction(datatype, state, globalState) )
 
 
   createDataTable: (datatype)->
@@ -201,16 +231,6 @@ module.exports = class ReportDatatypeView extends View
               state = "SKIPPED"
 
 
-            #state = if source.schemaName
-            #  if source.errors.length
-            #    "INVALID"
-            #  else if source.fieldReports.length or source.summaryReports.length
-            #    "VALID"
-            #  else
-            #    "NOT VALIDATED"
-            #else
-            #  "SKIPPED"
-
             if type == "display"
               return switch state
                 when "INVALID"
@@ -245,19 +265,16 @@ module.exports = class ReportDatatypeView extends View
 
     @$el.find("##{datatype}").dataTable
       sDom:
-        #""" with footer
-        #<'row-fluid' <'span6 #{datatype}_title'l> <'span6'f>r>
-        #t
-        #<'row-fluid'<'span6'i><'span6'p>>
-        #"""
         """
-        <'row-fluid' <'span3 #{datatype}_title'l> <'span9'f>r>
+        <'row-fluid' <'span3 #{datatype}_title'l><'span3 #{datatype}_action'> <'span6'f>r>
         t<'row-fluid'<'span6'i><'span6'p>>"
         """
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission."
-      bPaginate: false
+      iDisplayLength: 2
+      sPaginationType: "full_numbers"
+      bPaginate: true
       aaSorting: [[ 1, "asc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
