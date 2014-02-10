@@ -45,3 +45,29 @@ table.table thead .sorting_desc_disabled { background: url('../images/sort_desc_
 table.dataTable th:active {
   outline: none;
 }
+
+
+div.dataTables_paginate {
+  float: right;
+  margin: 0;
+  cursor: pointer;
+}
+
+div.dataTables_paginate .last, 
+div.dataTables_paginate .first, 
+div.dataTables_paginate .next, 
+div.dataTables_paginate .previous {
+  display:none;
+}
+
+div.dataTables_paginate .paginate_active {
+  //text-decoration: underline;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  margin-left: 0.5em;
+}
+
+div.dataTables_paginate .paginate_button {
+  margin-left: 0.5em;
+}
+
