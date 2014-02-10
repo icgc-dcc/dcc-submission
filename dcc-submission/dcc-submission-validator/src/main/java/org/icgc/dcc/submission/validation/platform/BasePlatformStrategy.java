@@ -211,19 +211,11 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   @Override
   public Map<String, String> getSampleToDonorMap(Dictionary dictionary) {
 
-    val sampleFileSchema = dictionary.getFileSchema(SAMPLE_TYPE);
-    val specimenFileSchema = dictionary.getFileSchema(SPECIMEN_TYPE);
-
-    val sampleSampleIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_ANALYZED_SAMPLE_ID);
-    val sampleSpecimenIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID);
-
-    val specimenSpecimenIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID);
-    val specimenDonorIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_DONOR_ID);
-
-    val samplePath = path(sampleFileSchema);
-    val specimenPath = path(specimenFileSchema);
-
     val sampleToSpecimen = Maps.<String, String> newTreeMap();
+    val sampleFileSchema = dictionary.getFileSchema(SAMPLE_TYPE);
+    val samplePath = path(sampleFileSchema);
+    val sampleSampleIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_ANALYZED_SAMPLE_ID).get();
+    val sampleSpecimenIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
     for (String row : readSmallTextFile(fileSystem, samplePath)) { // Clinical files are small
       val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
       val sampleId = fields.get(sampleSampleIdOrdinal);
@@ -234,6 +226,10 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     log.info("Sample to specimen mapping: {}", sampleToSpecimen);
 
     val specimenToDonor = Maps.<String, String> newTreeMap();
+    val specimenFileSchema = dictionary.getFileSchema(SPECIMEN_TYPE);
+    val specimenPath = path(specimenFileSchema);
+    val specimenSpecimenIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
+    val specimenDonorIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_DONOR_ID).get();
     for (String row : readSmallTextFile(fileSystem, specimenPath)) { // Clinical files are small
       val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
       val specimenId = fields.get(specimenSpecimenIdOrdinal);
