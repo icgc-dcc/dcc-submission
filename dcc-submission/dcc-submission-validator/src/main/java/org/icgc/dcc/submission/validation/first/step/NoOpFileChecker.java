@@ -48,7 +48,7 @@ public class NoOpFileChecker implements FileChecker {
   public NoOpFileChecker(ValidationContext validationContext, boolean failFast) {
     this.dictionary = validationContext.getDictionary();
     this.reportContext = validationContext;
-    this.fs = new FPVFileSystem(validationContext.getDccFileSystem(), validationContext.getSubmissionDirectory());
+    this.fs = new FPVFileSystem(validationContext.getSubmissionDirectory());
     this.failFast = false;
   }
 

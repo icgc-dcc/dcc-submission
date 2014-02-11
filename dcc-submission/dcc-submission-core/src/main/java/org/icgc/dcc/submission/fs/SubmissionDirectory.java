@@ -23,16 +23,20 @@ import static org.icgc.dcc.hadoop.fs.HadoopUtils.isFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.rm;
 
+import java.io.DataInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
@@ -166,6 +170,17 @@ public class SubmissionDirectory {
 
   public List<SubmissionDirectoryFile> getSubmissionFiles() {
     return null;
+  }
+
+  @SneakyThrows
+  public DataInputStream open(@NonNull String fileName) {
+    return dccFileSystem.getFileSystem()
+        .open(new Path(getDataFilePath(fileName)));
+  }
+
+  public CompressionCodec getCompressionCodec(String fileName) {
+    return new CompressionCodecFactory(dccFileSystem.getFileSystemConfiguration())
+        .getCodec(new Path(getDataFilePath(fileName)));
   }
 
   @Override

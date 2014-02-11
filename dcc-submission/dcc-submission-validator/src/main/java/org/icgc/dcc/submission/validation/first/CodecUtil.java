@@ -31,7 +31,11 @@ import org.apache.tika.Tika;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
+/**
+ * TODO: move this to {@link FPVFileSystem} (some to {@link SubmissionDirectory} even).
+ */
 @NoArgsConstructor(access = PRIVATE)
 public final class CodecUtil {
 
@@ -70,9 +74,9 @@ public final class CodecUtil {
     return CodecType.PLAIN_TEXT;
   }
 
-  public static InputStream createInputStream(FPVFileSystem fs, String filename) throws IOException {
-    val codec = fs.getCodec(filename);
-    val in = fs.getDataInputStream(filename);
+  public static InputStream createInputStream(FPVFileSystem fs, String fileName) throws IOException {
+    val codec = fs.getCompressionCodec(fileName);
+    val in = fs.getDataInputStream(fileName);
     return codec == null ?
         in : // This is assumed to be PLAIN_TEXT
         codec.createInputStream(in);

@@ -26,20 +26,17 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 /**
- * Class representing interactions with the file system in the context of FPV.
+ * Class representing interactions with the file system in the context of FPV (as a temporary measure to isolate such
+ * operations from the FPV at first).
  */
 @RequiredArgsConstructor
 public class FPVFileSystem {
 
-  private final DccFileSystem dccFileSystem;
   private final SubmissionDirectory submissionDirectory;
 
   public Iterable<String> listRelevantFiles(Dictionary dictionary) {
@@ -51,14 +48,12 @@ public class FPVFileSystem {
   }
 
   @SneakyThrows
-  public DataInputStream getDataInputStream(String filename) {
-    return dccFileSystem.open(submissionDirectory.getDataFilePath(filename));
+  public DataInputStream getDataInputStream(String fileName) {
+    return submissionDirectory.open(fileName);
   }
 
-  public CompressionCodec getCodec(String filename) {
-    return new CompressionCodecFactory(dccFileSystem.getFileSystem().getConf())
-        .getCodec(new Path(
-            submissionDirectory.getDataFilePath(filename)));
+  public CompressionCodec getCompressionCodec(String fileName) {
+    return submissionDirectory.getCompressionCodec(fileName);
   }
 
 }

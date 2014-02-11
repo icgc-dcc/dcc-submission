@@ -26,14 +26,13 @@ import static org.icgc.dcc.hadoop.fs.HadoopUtils.rmr;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.Set;
 
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -233,6 +232,10 @@ public class DccFileSystem {
     }
   }
 
+  protected Configuration getFileSystemConfiguration() {
+    return fileSystem.getConf();
+  }
+
   private String concatPath(String... parts) {
     return Joiner.on(Path.SEPARATOR_CHAR).join(parts);
   }
@@ -248,15 +251,6 @@ public class DccFileSystem {
       mkdirs(this.fileSystem, this.rootStringPath);
       log.info("created " + this.rootStringPath);
     }
-  }
-
-  /**
-   * @param filePath
-   * @throws IOException
-   */
-  public DataInputStream open(String filePathname) throws IOException {
-    checkArgument(filePathname != null);
-    return fileSystem.open(new Path(filePathname));
   }
 
 }
