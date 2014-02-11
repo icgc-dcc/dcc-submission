@@ -31,20 +31,29 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
+import org.icgc.dcc.submission.core.report.ReportElement;
 
+/**
+ * Refreshes stale {@link ReportElement} states based on non-state attributes and transitive relationships.
+ */
 @RequiredArgsConstructor
-public class RefreshStateReportVisitor extends AbstractReportVisitor {
+public class RefreshStateVisitor extends AbstractReportVisitor {
 
   /**
-   * Accumulation
+   * Accumulation: journals the <em>valid<em> file and data types as visiting proceeds.
    */
   private final Set<DataType> validDataTypes = newHashSet();
   private final Set<FileType> validFileTypes = newHashSet();
+
+  /**
+   * Accumulation: journals the <em>invalid</em> file and data types as visiting proceeds.
+   */
   private final Set<DataType> invalidDataTypes = newHashSet();
   private final Set<FileType> invalidFileTypes = newHashSet();
 
   @Override
   public void visit(DataTypeReport dataTypeReport) {
+    // Use the file type results
     if (refreshInvalid(dataTypeReport)) {
       dataTypeReport.setDataTypeState(DataTypeState.INVALID);
     } else if (refreshValid(dataTypeReport)) {
@@ -54,6 +63,7 @@ public class RefreshStateReportVisitor extends AbstractReportVisitor {
 
   @Override
   public void visit(FileTypeReport fileTypeReport) {
+    // Use the file type results
     if (refreshInvalid(fileTypeReport)) {
       fileTypeReport.setFileTypeState(FileTypeState.INVALID);
     } else if (refreshValid(fileTypeReport)) {
@@ -64,15 +74,35 @@ public class RefreshStateReportVisitor extends AbstractReportVisitor {
   @Override
   public void visit(FileReport fileReport) {
     if (refreshInvalid(fileReport)) {
+      // Errors:
       fileReport.setFileState(FileState.INVALID);
 
+      // Track
       recordInvalid(fileReport);
     } else if (refreshValid(fileReport)) {
+      // Clean:
       fileReport.setFileState(FileState.VALID);
 
+      // Track
       recordValid(fileReport);
+    } else if (fileReport.getFileState().in(FileState.VALID)) {
+      // Pass-through:
+      // - Was previously validated
+
+      // Track
+      recordValid(fileReport);
+    } else if (fileReport.getFileState().in(FileState.INVALID)) {
+      // Pass-through:
+      // - Was previously validated
+
+      // Track
+      recordInvalid(fileReport);
     }
   }
+
+  //
+  // Refresh - valid helpers
+  //
 
   private boolean refreshValid(DataTypeReport dataTypeReport) {
     return dataTypeReport.getDataTypeState().in(DataTypeState.INVALID, DataTypeState.VALIDATING)
@@ -89,6 +119,10 @@ public class RefreshStateReportVisitor extends AbstractReportVisitor {
         && isValid(fileReport);
   }
 
+  //
+  // Refresh - invalid helpers
+  //
+
   private boolean refreshInvalid(DataTypeReport dataTypeReport) {
     return dataTypeReport.getDataTypeState().in(DataTypeState.VALID, DataTypeState.VALIDATING)
         && isInvalid(dataTypeReport.getDataType());
@@ -104,6 +138,10 @@ public class RefreshStateReportVisitor extends AbstractReportVisitor {
         && isInvalid(fileReport);
   }
 
+  //
+  // isValid helpers
+  //
+
   private boolean isValid(DataType dataType) {
     return validDataTypes.contains(dataType) && !invalidDataTypes.contains(dataType);
   }
@@ -116,6 +154,10 @@ public class RefreshStateReportVisitor extends AbstractReportVisitor {
     return fileReport.getErrorReports().isEmpty();
   }
 
+  //
+  // isInvalid helpers
+  //
+
   private boolean isInvalid(DataType dataType) {
     return invalidDataTypes.contains(dataType);
   }
@@ -127,6 +169,10 @@ public class RefreshStateReportVisitor extends AbstractReportVisitor {
   private boolean isInvalid(FileReport fileReport) {
     return !isValid(fileReport);
   }
+
+  //
+  // Journaling
+  //
 
   private void recordValid(FileReport fileReport) {
     validFileTypes.add(fileReport.getFileType());

@@ -17,26 +17,36 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static org.icgc.dcc.submission.core.report.FileState.VALID;
+
+import java.util.Set;
+
 import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.SummaryReport;
+import org.icgc.dcc.submission.core.report.FileState;
 
-public class AddSummaryReportVisitor extends AbstractFileNameReportVisitor {
+public class IsValidVisitor extends AbstractReportVisitor {
 
   @NonNull
-  private final SummaryReport summaryReport;
-
-  public AddSummaryReportVisitor(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    super(fileName);
-    this.summaryReport = new SummaryReport(name, value);
-  }
+  private final Set<FileState> fileStates = newHashSet();
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
-      fileReport.addSummaryReport(summaryReport);
-    }
+    fileStates.add(fileReport.getFileState());
+  }
+
+  public boolean isValid() {
+    return hasOneFileState() && hasFileState(VALID);
+  }
+
+  private boolean hasOneFileState() {
+    return fileStates.size() == 1;
+  }
+
+  private boolean hasFileState(@NonNull FileState fileState) {
+    return fileStates.contains(fileState);
   }
 
 }

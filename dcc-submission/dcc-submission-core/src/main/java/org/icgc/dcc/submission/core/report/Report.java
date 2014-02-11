@@ -36,18 +36,18 @@ import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
-import org.icgc.dcc.submission.core.report.visitor.AddErrorReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.AddFieldReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.AddFileReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.AddSummaryReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.ErrorCountReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.GetFileReportReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.GetFilesReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.IsValidReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.RefreshStateReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.RemoveFileReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.ResetReportVisitor;
-import org.icgc.dcc.submission.core.report.visitor.SetStateReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.AddErrorVisitor;
+import org.icgc.dcc.submission.core.report.visitor.AddFieldVisitor;
+import org.icgc.dcc.submission.core.report.visitor.AddFileVisitor;
+import org.icgc.dcc.submission.core.report.visitor.AddSummaryVisitor;
+import org.icgc.dcc.submission.core.report.visitor.ErrorCountVisitor;
+import org.icgc.dcc.submission.core.report.visitor.GetFileReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.GetFilesVisitor;
+import org.icgc.dcc.submission.core.report.visitor.IsValidVisitor;
+import org.icgc.dcc.submission.core.report.visitor.RefreshStateVisitor;
+import org.icgc.dcc.submission.core.report.visitor.RemoveFileVisitor;
+import org.icgc.dcc.submission.core.report.visitor.ResetVisitor;
+import org.icgc.dcc.submission.core.report.visitor.SetStateVisitor;
 import org.icgc.dcc.submission.core.util.TypeConverters.DataTypeConverter;
 import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -114,19 +114,19 @@ public class Report implements ReportElement {
   }
 
   public void addSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
-    executeVisitor(new AddSummaryReportVisitor(fileName, name, value));
+    executeVisitor(new AddSummaryVisitor(fileName, name, value));
   }
 
   public void addFieldReport(@NonNull String fileName, @NonNull FieldReport fieldReport) {
-    executeVisitor(new AddFieldReportVisitor(fileName, fieldReport));
+    executeVisitor(new AddFieldVisitor(fileName, fieldReport));
   }
 
   public void addError(@NonNull Error error) {
-    executeVisitor(new AddErrorReportVisitor(error));
+    executeVisitor(new AddErrorVisitor(error));
   }
 
   public Map<String, FileType> getFiles() {
-    return executeVisitor(new GetFilesReportVisitor()).getFiles();
+    return executeVisitor(new GetFilesVisitor()).getFiles();
   }
 
   public void updateFiles(@NonNull Iterable<SubmissionFile> submissionFiles) {
@@ -150,19 +150,19 @@ public class Report implements ReportElement {
   }
 
   public void addFile(@NonNull FileType fileType, @NonNull String fileName) {
-    executeVisitor(new AddFileReportVisitor(fileName, fileType));
+    executeVisitor(new AddFileVisitor(fileName, fileType));
   }
 
   public void removeFile(@NonNull FileType fileType, @NonNull String fileName) {
-    executeVisitor(new RemoveFileReportVisitor(fileName, fileType));
+    executeVisitor(new RemoveFileVisitor(fileName, fileType));
   }
 
   public Optional<FileReport> getFileReport(@NonNull String fileName) {
-    return executeVisitor(new GetFileReportReportVisitor(fileName)).getFileReport();
+    return executeVisitor(new GetFileReportVisitor(fileName)).getFileReport();
   }
 
   public int getErrorCount() {
-    return executeVisitor(new ErrorCountReportVisitor()).getErrorCount();
+    return executeVisitor(new ErrorCountVisitor()).getErrorCount();
   }
 
   public boolean hasErrors() {
@@ -170,7 +170,7 @@ public class Report implements ReportElement {
   }
 
   public boolean isValid() {
-    return executeVisitor(new IsValidReportVisitor()).isValid();
+    return executeVisitor(new IsValidVisitor()).isValid();
   }
 
   public void reset(DataType... dataTypes) {
@@ -178,15 +178,15 @@ public class Report implements ReportElement {
   }
 
   public void reset(@NonNull Iterable<DataType> dataTypes) {
-    executeVisitor(new ResetReportVisitor(dataTypes));
+    executeVisitor(new ResetVisitor(dataTypes));
   }
 
   public void setState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
-    executeVisitor(new SetStateReportVisitor(state, dataTypes));
+    executeVisitor(new SetStateVisitor(state, dataTypes));
   }
 
   public void refreshState() {
-    executeVisitor(new RefreshStateReportVisitor());
+    executeVisitor(new RefreshStateVisitor());
   }
 
   private static Map<String, FileType> transformFiles(Iterable<SubmissionFile> submissionFiles) {

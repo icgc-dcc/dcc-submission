@@ -17,36 +17,63 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import static com.google.common.collect.Sets.newHashSet;
-import static org.icgc.dcc.submission.core.report.FileState.VALID;
-
-import java.util.Set;
+import javax.annotation.concurrent.NotThreadSafe;
 
 import lombok.NonNull;
 
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileState;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.submission.core.report.Report;
 
-public class IsValidReportVisitor extends AbstractReportVisitor {
+@NotThreadSafe
+public class RemoveFileVisitor extends AbstractFileReportVisitor {
 
-  @NonNull
-  private final Set<FileState> fileStates = newHashSet();
+  public RemoveFileVisitor(@NonNull String fileName, @NonNull FileType fileType) {
+    super(fileName, fileType);
+  }
+
+  @Override
+  public void visit(@NonNull Report report) {
+    if (isRemovable(dataTypeReport)) {
+      report.removeDataTypeReport(dataTypeReport);
+    }
+  }
+
+  @Override
+  public void visit(@NonNull DataTypeReport dataTypeReport) {
+    if (isMatch(dataTypeReport) && isRemovable(fileTypeReport)) {
+      this.dataTypeReport = dataTypeReport;
+      dataTypeReport.removeFileTypeReport(fileTypeReport);
+    }
+  }
+
+  @Override
+  public void visit(@NonNull FileTypeReport fileTypeReport) {
+    if (isMatch(fileTypeReport) && isRemovable(fileReport)) {
+      this.fileTypeReport = fileTypeReport;
+      fileTypeReport.removeFileReport(fileReport);
+    }
+  }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    fileStates.add(fileReport.getFileState());
+    if (isMatch(fileReport)) {
+      this.fileReport = fileReport;
+    }
   }
 
-  public boolean isValid() {
-    return hasOneFileState() && hasFileState(VALID);
+  private static boolean isRemovable(DataTypeReport dataTypeReport) {
+    return dataTypeReport != null && dataTypeReport.getFileTypeReports().isEmpty();
   }
 
-  private boolean hasOneFileState() {
-    return fileStates.size() == 1;
+  private static boolean isRemovable(FileTypeReport fileTypeReport) {
+    return fileTypeReport != null && fileTypeReport.getFileReports().isEmpty();
   }
 
-  private boolean hasFileState(@NonNull FileState fileState) {
-    return fileStates.contains(fileState);
+  private static boolean isRemovable(FileReport fileReport) {
+    return fileReport != null;
   }
 
 }

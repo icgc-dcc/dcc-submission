@@ -17,27 +17,79 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import java.util.Map;
-
 import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.submission.core.report.Report;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+public class AddFileVisitor extends AbstractFileReportVisitor {
 
-public class GetFilesReportVisitor extends AbstractReportVisitor {
+  public AddFileVisitor(@NonNull String fileName, @NonNull FileType fileType) {
+    super(fileName, fileType);
+  }
 
-  private final Builder<String, FileType> files = ImmutableMap.<String, FileType> builder();
+  @Override
+  public void visit(@NonNull Report report) {
+    if (isAddable(dataTypeReport)) {
+      report.addDataTypeReport(createDataTypeReport());
+    }
+  }
+
+  @Override
+  public void visit(@NonNull DataTypeReport dataTypeReport) {
+    if (isMatch(dataTypeReport) && isAddable(fileTypeReport)) {
+      this.dataTypeReport = dataTypeReport;
+      this.dataTypeReport.addFileTypeReport(createFileTypeReport());
+    }
+  }
+
+  @Override
+  public void visit(@NonNull FileTypeReport fileTypeReport) {
+    if (isMatch(fileTypeReport) && isAddable(fileReport)) {
+      this.fileTypeReport = fileTypeReport;
+      this.fileTypeReport.addFileReport(createFileReport());
+    }
+  }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    files.put(fileReport.getFileName(), fileReport.getFileType());
+    if (isMatch(fileReport)) {
+      this.fileReport = fileReport;
+    }
   }
 
-  public Map<String, FileType> getFiles() {
-    return files.build();
+  private static boolean isAddable(DataTypeReport dataTypeReport) {
+    return dataTypeReport == null;
+  }
+
+  private static boolean isAddable(FileTypeReport fileTypeReport) {
+    return fileTypeReport == null;
+  }
+
+  private static boolean isAddable(FileReport fileReport) {
+    return fileReport == null;
+  }
+
+  private DataTypeReport createDataTypeReport() {
+    val dataTypeReport = new DataTypeReport(fileType.getDataType());
+    dataTypeReport.addFileTypeReport(createFileTypeReport());
+
+    return dataTypeReport;
+  }
+
+  private FileTypeReport createFileTypeReport() {
+    val fileTypeReport = new FileTypeReport(fileType);
+    fileTypeReport.addFileReport(createFileReport());
+
+    return fileTypeReport;
+  }
+
+  private FileReport createFileReport() {
+    return new FileReport(fileName, fileType);
   }
 
 }

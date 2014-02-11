@@ -17,85 +17,27 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import static com.google.common.collect.Sets.newHashSet;
-
-import java.util.Set;
+import java.util.Map;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.DataTypeReport;
-import org.icgc.dcc.submission.core.report.DataTypeState;
-import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileState;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
-import org.icgc.dcc.submission.core.report.FileTypeState;
 
-public class AddErrorReportVisitor extends AbstractFileNameReportVisitor {
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
-  /**
-   * Input
-   */
-  private final Error error;
+public class GetFilesVisitor extends AbstractReportVisitor {
 
-  /**
-   * Accumulation
-   */
-  private final Set<DataType> dataTypes = newHashSet();
-  private final Set<FileType> fileTypes = newHashSet();
-
-  @SuppressWarnings("unused")
-  public AddErrorReportVisitor(@NonNull Error error) {
-    super(error.getFileName());
-    this.error = error;
-  }
-
-  //
-  // Data Type
-  //
-
-  @Override
-  public void visit(DataTypeReport dataTypeReport) {
-    if (isMatch(dataTypeReport)) {
-      dataTypeReport.setDataTypeState(DataTypeState.INVALID);
-    }
-  }
-
-  //
-  // File Type
-  //
-
-  @Override
-  public void visit(FileTypeReport fileTypeReport) {
-    if (isMatch(fileTypeReport)) {
-      fileTypeReport.setFileTypeState(FileTypeState.INVALID);
-    }
-  }
-
-  //
-  // File
-  //
+  private final Builder<String, FileType> files = ImmutableMap.<String, FileType> builder();
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
-      fileReport.setFileState(FileState.INVALID);
-      fileReport.addError(error);
-
-      // For ancestors
-      fileTypes.add(fileReport.getFileType());
-      dataTypes.add(fileReport.getFileType().getDataType());
-    }
+    files.put(fileReport.getFileName(), fileReport.getFileType());
   }
 
-  private boolean isMatch(DataTypeReport dataTypeReport) {
-    return dataTypes.contains(dataTypeReport.getDataType());
-  }
-
-  private boolean isMatch(FileTypeReport fileTypeReport) {
-    return fileTypes.contains(fileTypeReport.getFileType());
+  public Map<String, FileType> getFiles() {
+    return files.build();
   }
 
 }

@@ -32,7 +32,7 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import com.google.common.collect.Iterables;
 
 @RequiredArgsConstructor
-public class SetStateReportVisitor extends AbstractReportVisitor {
+public class SetStateVisitor extends AbstractReportVisitor {
 
   @NonNull
   private final SubmissionState state;

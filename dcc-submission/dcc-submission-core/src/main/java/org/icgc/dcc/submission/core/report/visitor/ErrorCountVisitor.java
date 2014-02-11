@@ -17,67 +17,27 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import static com.google.common.collect.Iterables.contains;
-import static com.google.common.collect.Iterables.isEmpty;
-import static com.google.common.collect.Sets.newHashSet;
-
 import javax.annotation.concurrent.NotThreadSafe;
 
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.DataTypeReport;
-import org.icgc.dcc.submission.core.report.DataTypeState;
-import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileState;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
-import org.icgc.dcc.submission.core.report.FileTypeState;
+import org.icgc.dcc.submission.core.report.ErrorReport;
 
 @NotThreadSafe
-@RequiredArgsConstructor
-public class ResetReportVisitor extends AbstractReportVisitor {
+public class ErrorCountVisitor extends AbstractReportVisitor {
 
-  @NonNull
-  private final Iterable<DataType> dataTypes;
-
-  public ResetReportVisitor() {
-    this.dataTypes = newHashSet();
-  }
+  @Getter
+  int errorCount = 0;
 
   @Override
-  public void visit(@NonNull DataTypeReport dataTypeReport) {
-    if (isResettable(dataTypeReport.getDataType())) {
-      dataTypeReport.setDataTypeState(DataTypeState.getDefaultState());
-    }
+  public void visit(@NonNull ErrorReport errorReport) {
+    // Accumulate leaf level error counts
+    errorCount += getErrorReportCount(errorReport);
   }
 
-  @Override
-  public void visit(@NonNull FileTypeReport fileTypeReport) {
-    if (isResettable(fileTypeReport.getFileType())) {
-      fileTypeReport.setFileTypeState(FileTypeState.getDefaultState());
-    }
-  }
-
-  @Override
-  public void visit(@NonNull FileReport fileReport) {
-    if (isResettable(fileReport.getFileType())) {
-      fileReport.setFileState(FileState.getDefaultState());
-
-      // Clear all leaf level reports
-      fileReport.getSummaryReports().clear();
-      fileReport.getFieldReports().clear();
-      fileReport.getErrorReports().clear();
-    }
-  }
-
-  private boolean isResettable(DataType dataType) {
-    return isEmpty(dataTypes) || contains(dataTypes, dataType);
-  }
-
-  private boolean isResettable(FileType fileType) {
-    return isResettable(fileType.getDataType());
+  private static int getErrorReportCount(ErrorReport errorReport) {
+    return errorReport.getFieldErrorReports().size();
   }
 
 }

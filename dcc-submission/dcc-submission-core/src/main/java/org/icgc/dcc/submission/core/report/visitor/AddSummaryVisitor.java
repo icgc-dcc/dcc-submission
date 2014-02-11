@@ -19,22 +19,23 @@ package org.icgc.dcc.submission.core.report.visitor;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.SummaryReport;
 
-public class AddFieldReportVisitor extends AbstractFileNameReportVisitor {
+public class AddSummaryVisitor extends AbstractFileNameReportVisitor {
 
-  private final FieldReport fieldReport;
+  @NonNull
+  private final SummaryReport summaryReport;
 
-  public AddFieldReportVisitor(@NonNull String fileName, @NonNull FieldReport fieldReport) {
+  public AddSummaryVisitor(@NonNull String fileName, @NonNull String name, @NonNull String value) {
     super(fileName);
-    this.fieldReport = fieldReport;
+    this.summaryReport = new SummaryReport(name, value);
   }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
     if (isMatch(fileReport)) {
-      fileReport.addFieldReport(fieldReport);
+      fileReport.addSummaryReport(summaryReport);
     }
   }
 
