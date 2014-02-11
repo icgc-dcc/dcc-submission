@@ -25,6 +25,17 @@ import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.submission.core.state.State;
 import org.icgc.dcc.submission.core.state.States;
 
+/**
+ * Canonical set of allowed behavioral states for a submission.
+ * <p>
+ * Uses a delegate to allow for source partitioning the implementation so that:
+ * <ul>
+ * <li>source partitioning the implementation</li>
+ * <li>allowing for hierarchical states</li>
+ * </ul>
+ * 
+ * @see http://www.javacodegeeks.com/2011/02/state-pattern-domain-driven-design.html
+ */
 @RequiredArgsConstructor(access = PRIVATE)
 public enum SubmissionState implements State {
 
@@ -35,9 +46,12 @@ public enum SubmissionState implements State {
   SIGNED_OFF(States.SIGNED_OFF),
   ERROR(States.ERROR);
 
+  /**
+   * Delegate
+   */
   @NonNull
   @Delegate
-  private final State state;
+  private final State delegate;
 
   public static SubmissionState getDefaultState() {
     return NOT_VALIDATED;

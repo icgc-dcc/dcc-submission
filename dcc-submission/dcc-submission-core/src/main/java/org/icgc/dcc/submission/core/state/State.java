@@ -44,6 +44,10 @@ public interface State {
    */
   boolean isReadOnly();
 
+  /**
+   * Operations
+   */
+
   void initializeSubmission(StateContext context);
 
   void modifySubmission(StateContext context, Optional<Path> path);
