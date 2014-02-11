@@ -121,7 +121,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public boolean isValid() {
-    return !getValidationContext().hasErrors();
+    return !getReportContext().hasErrors();
   }
 
   @Override
@@ -133,11 +133,6 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   public boolean isFailFast() {
     return failFast;
   }
-
-  // @Override
-  // public DccFileSystem getDccFileSystem() {
-  // return delegate.getDccFileSystem();
-  // }
 
   @Override
   public FPVFileSystem getFs() {

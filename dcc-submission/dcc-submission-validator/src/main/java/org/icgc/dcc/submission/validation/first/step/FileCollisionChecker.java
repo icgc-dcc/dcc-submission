@@ -51,7 +51,7 @@ public class FileCollisionChecker extends CompositeFileChecker {
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(fileName)
               .type(TOO_MANY_FILES_ERROR)

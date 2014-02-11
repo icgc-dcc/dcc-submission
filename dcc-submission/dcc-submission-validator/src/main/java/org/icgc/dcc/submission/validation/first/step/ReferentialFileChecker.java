@@ -61,7 +61,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
 
         incrementCheckErrorCount();
 
-        getValidationContext().reportError(
+        getReportContext().reportError(
             error()
                 .fileName(fileName)
                 .type(RELATION_FILE_ERROR)
@@ -86,7 +86,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
 
         incrementCheckErrorCount();
 
-        getValidationContext().reportError(
+        getReportContext().reportError(
             error()
                 .fileName(fileName)
                 .type(REVERSE_RELATION_FILE_ERROR)

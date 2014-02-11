@@ -58,7 +58,7 @@ public class FileHeaderChecker extends CompositeFileChecker {
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(filename)
               .type(FILE_HEADER_ERROR)

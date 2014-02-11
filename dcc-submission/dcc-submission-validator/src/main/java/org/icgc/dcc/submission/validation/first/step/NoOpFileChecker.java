@@ -22,6 +22,7 @@ import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FileChecker;
@@ -33,7 +34,7 @@ public class NoOpFileChecker implements FileChecker {
   private final Dictionary dictionary;
   @Getter
   @NonNull
-  private final ValidationContext validationContext;
+  private final ReportContext reportContext;
   @Getter
   @NonNull
   private final FPVFileSystem fs;
@@ -46,7 +47,7 @@ public class NoOpFileChecker implements FileChecker {
 
   public NoOpFileChecker(ValidationContext validationContext, boolean failFast) {
     this.dictionary = validationContext.getDictionary();
-    this.validationContext = validationContext;
+    this.reportContext = validationContext;
     this.fs = new FPVFileSystem(validationContext.getDccFileSystem(), validationContext.getSubmissionDirectory());
     this.failFast = false;
   }

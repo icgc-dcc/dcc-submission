@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.first.Checker;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FileChecker;
@@ -82,7 +82,7 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean isValid() {
-    return (delegate.isValid() && !getValidationContext().hasErrors());
+    return (delegate.isValid() && !getReportContext().hasErrors());
   }
 
   @Override
@@ -100,24 +100,14 @@ public abstract class CompositeFileChecker implements FileChecker {
     return delegate.getDictionary();
   }
 
-  // @Override
-  // public SubmissionDirectory getSubmissionDirectory() {
-  // return delegate.getSubmissionDirectory();
-  // }
-  //
-  // @Override
-  // public DccFileSystem getDccFileSystem() {
-  // return delegate.getDccFileSystem();
-  // }
-
   @Override
   public FPVFileSystem getFs() {
     return delegate.getFs();
   }
 
   @Override
-  public ValidationContext getValidationContext() {
-    return delegate.getValidationContext();
+  public ReportContext getReportContext() {
+    return delegate.getReportContext();
   }
 
   protected FileSchema getFileSchema(String fileName) {

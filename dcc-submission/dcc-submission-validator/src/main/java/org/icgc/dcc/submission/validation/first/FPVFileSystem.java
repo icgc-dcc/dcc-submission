@@ -25,16 +25,13 @@ import java.util.regex.Pattern;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-
-import com.google.common.collect.Lists;
 
 /**
  * 
@@ -45,16 +42,8 @@ public class FPVFileSystem {
   private final DccFileSystem dccFileSystem;
   private final SubmissionDirectory submissionDirectory;
 
-  public Iterable<String> listRelevantFiles(ValidationContext context) {
-    // Selective validation filtering
-    val fileSchemata = context.getDictionary().getFileSchemata(context.getDataTypes());
-
-    val patterns = Lists.<String> newArrayList();
-    for (val fileSchema : fileSchemata) {
-      patterns.add(fileSchema.getPattern());
-    }
-
-    return context.getSubmissionDirectory().listFiles(patterns);
+  public Iterable<String> listRelevantFiles(Dictionary dictionary) {
+    return submissionDirectory.listFiles(dictionary.getFilePatterns());
   }
 
   public List<String> getMatchingFileNames(String pattern) {

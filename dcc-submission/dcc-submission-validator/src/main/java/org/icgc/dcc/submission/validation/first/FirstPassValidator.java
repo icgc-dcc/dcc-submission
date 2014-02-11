@@ -63,7 +63,7 @@ public class FirstPassValidator implements Validator {
         RowCheckers.getDefaultRowChecker(validationContext) :
         this.rowChecker;
 
-    for (val fileName : fileChecker.getFs().listRelevantFiles(validationContext)) {
+    for (val fileName : fileChecker.getFs().listRelevantFiles(validationContext.getDictionary())) {
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, fileName);
 
       fileChecker.check(fileName);

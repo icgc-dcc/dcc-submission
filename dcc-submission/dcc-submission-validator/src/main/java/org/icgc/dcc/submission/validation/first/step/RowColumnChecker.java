@@ -52,7 +52,7 @@ public class RowColumnChecker extends CompositeRowChecker {
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(filename)
               .lineNumber(lineNumber)

@@ -27,7 +27,6 @@ import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.CodecUtil;
 import org.icgc.dcc.submission.validation.first.CodecUtil.CodecType;
 import org.icgc.dcc.submission.validation.first.FileChecker;
@@ -53,10 +52,10 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       if (contentType == filenameType) {
         switch (contentType) {
         case GZIP:
-          checkGZip(filename, getValidationContext());
+          checkGZip(filename);
           break;
         case BZIP2:
-          checkBZip2(filename, getValidationContext());
+          checkBZip2(filename);
           break;
         case PLAIN_TEXT:
           // Do nothing
@@ -68,7 +67,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
         incrementCheckErrorCount();
 
-        getValidationContext().reportError(
+        getReportContext().reportError(
             error()
                 .fileName(filename)
                 .type(COMPRESSION_CODEC_ERROR)
@@ -80,7 +79,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(filename)
               .type(COMPRESSION_CODEC_ERROR)
@@ -92,7 +91,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   /**
    * TODO: merge with gzip one with a flag for the input stream based on the type.
    */
-  private void checkBZip2(String filename, ValidationContext context) {
+  private void checkBZip2(String filename) {
     try {
       // check the bzip2 header
       @Cleanup
@@ -107,7 +106,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(filename)
               .type(COMPRESSION_CODEC_ERROR)
@@ -116,7 +115,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     }
   }
 
-  private void checkGZip(String filename, ValidationContext context) {
+  private void checkGZip(String filename) {
     try {
       // check the gzip header
       @Cleanup
@@ -131,7 +130,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(filename)
               .type(COMPRESSION_CODEC_ERROR)
