@@ -27,8 +27,8 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.Util;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
+import org.icgc.dcc.submission.validation.first.CodecUtil;
+import org.icgc.dcc.submission.validation.first.CodecUtil.CodecType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -208,21 +208,21 @@ public class FileCorruptionCheckerTest {
   public void testTextInputDetection() throws Exception {
     DataInputStream textInputStream = getTestInputStream(CodecType.PLAIN_TEXT);
     when(fs.open(anyString())).thenReturn(textInputStream);
-    assertEquals(CodecType.PLAIN_TEXT, Util.determineCodecFromContent(fs, submissionDir, anyString()));
+    assertEquals(CodecType.PLAIN_TEXT, CodecUtil.determineCodecFromContent(fs, submissionDir, anyString()));
   }
 
   @Test
   public void testGZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.GZIP);
     when(fs.open(anyString())).thenReturn(inputStream);
-    assertEquals(CodecType.GZIP, Util.determineCodecFromContent(fs, submissionDir, anyString()));
+    assertEquals(CodecType.GZIP, CodecUtil.determineCodecFromContent(fs, submissionDir, anyString()));
   }
 
   @Test
   public void testBZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.BZIP2);
     when(fs.open(anyString())).thenReturn(inputStream);
-    assertEquals(CodecType.BZIP2, Util.determineCodecFromContent(fs, submissionDir, anyString()));
+    assertEquals(CodecType.BZIP2, CodecUtil.determineCodecFromContent(fs, submissionDir, anyString()));
   }
 
   private void checkErrorReported() {

@@ -64,7 +64,7 @@ public class RowColumnChecker extends CompositeRowChecker {
   }
 
   private int getExpectedColumnCount(FileSchema fileSchema) {
-    return fileSchema.getFields().size();
+    return fileSchema.getFields().size(); // TODO: fix inefficiency
   }
 
   private int getActualColumnCount(String line) {

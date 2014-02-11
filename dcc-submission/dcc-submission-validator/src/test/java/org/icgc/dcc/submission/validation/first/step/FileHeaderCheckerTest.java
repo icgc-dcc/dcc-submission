@@ -31,7 +31,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.FileChecker;
-import org.icgc.dcc.submission.validation.first.Util;
+import org.icgc.dcc.submission.validation.first.CodecUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +44,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(Util.class)
+@PrepareForTest(CodecUtil.class)
 public class FileHeaderCheckerTest {
 
 	private SubmissionDirectory submissionDir;
@@ -79,8 +79,8 @@ public class FileHeaderCheckerTest {
 	public void simpleValidation() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"a\tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -93,8 +93,8 @@ public class FileHeaderCheckerTest {
 	public void notValidMissingHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"a\tr".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -107,8 +107,8 @@ public class FileHeaderCheckerTest {
 	public void notValidOutOfOrderHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"b\ta\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -121,8 +121,8 @@ public class FileHeaderCheckerTest {
 	public void notValidDuplicateHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"b\tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -135,8 +135,8 @@ public class FileHeaderCheckerTest {
 	public void notValidExtraHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"a\tb\tc\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -150,8 +150,8 @@ public class FileHeaderCheckerTest {
 	public void notValidWhiteSpacesInHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				" a \tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -165,8 +165,8 @@ public class FileHeaderCheckerTest {
 	public void notValidCapitalHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"A\tB\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -180,8 +180,8 @@ public class FileHeaderCheckerTest {
 	public void notValidMispellHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"ab\tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -195,8 +195,8 @@ public class FileHeaderCheckerTest {
 	public void validLineFeedNewLineHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"a\tb\r\nf1\t\f2\r\n".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -209,8 +209,8 @@ public class FileHeaderCheckerTest {
 	public void notValidNoContentHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				new byte[0]));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
@@ -223,8 +223,8 @@ public class FileHeaderCheckerTest {
 	public void validNewLineHeader() throws Exception {
 		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
 				"a\tb\nf1\t\f2\n".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
+		PowerMockito.mockStatic(CodecUtil.class);
+		when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString()))
 				.thenReturn(fis);
 
 		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(

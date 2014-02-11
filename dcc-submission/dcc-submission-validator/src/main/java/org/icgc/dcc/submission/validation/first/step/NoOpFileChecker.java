@@ -20,27 +20,23 @@ package org.icgc.dcc.submission.validation.first.step;
 import lombok.Getter;
 import lombok.NonNull;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 public class NoOpFileChecker implements FileChecker {
 
   @Getter
   @NonNull
-  private final DccFileSystem dccFileSystem;
-  @Getter
-  @NonNull
   private final Dictionary dictionary;
   @Getter
   @NonNull
-  private final SubmissionDirectory submissionDirectory;
+  private final ValidationContext validationContext;
   @Getter
   @NonNull
-  private final ValidationContext validationContext;
+  private final FPVFileSystem fs;
   @Getter
   private final boolean failFast;
 
@@ -49,10 +45,9 @@ public class NoOpFileChecker implements FileChecker {
   }
 
   public NoOpFileChecker(ValidationContext validationContext, boolean failFast) {
-    this.dccFileSystem = validationContext.getDccFileSystem();
     this.dictionary = validationContext.getDictionary();
-    this.submissionDirectory = validationContext.getSubmissionDirectory();
     this.validationContext = validationContext;
+    this.fs = new FPVFileSystem(validationContext.getDccFileSystem(), validationContext.getSubmissionDirectory());
     this.failFast = false;
   }
 

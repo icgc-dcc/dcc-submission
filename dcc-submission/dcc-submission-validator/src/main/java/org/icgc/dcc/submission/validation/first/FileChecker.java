@@ -21,8 +21,6 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.step.FileCollisionChecker;
 import org.icgc.dcc.submission.validation.first.step.FileCorruptionChecker;
@@ -34,11 +32,13 @@ public interface FileChecker extends Checker {
 
   void check(String filename);
 
-  SubmissionDirectory getSubmissionDirectory();
+  FPVFileSystem getFs();
+
+  // SubmissionDirectory getSubmissionDirectory();
 
   Dictionary getDictionary();
 
-  DccFileSystem getDccFileSystem();
+  // DccFileSystem getDccFileSystem();
 
   ValidationContext getValidationContext();
 

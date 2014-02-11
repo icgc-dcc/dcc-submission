@@ -22,13 +22,12 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.Checker;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
@@ -45,9 +44,6 @@ public abstract class CompositeFileChecker implements FileChecker {
    */
   protected long checkErrorCount = 0;
 
-  /**
-   * @param name
-   */
   public CompositeFileChecker(FileChecker delegate, boolean failFast) {
     this.delegate = delegate;
     this.failFast = failFast;
@@ -104,14 +100,19 @@ public abstract class CompositeFileChecker implements FileChecker {
     return delegate.getDictionary();
   }
 
-  @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return delegate.getSubmissionDirectory();
-  }
+  // @Override
+  // public SubmissionDirectory getSubmissionDirectory() {
+  // return delegate.getSubmissionDirectory();
+  // }
+  //
+  // @Override
+  // public DccFileSystem getDccFileSystem() {
+  // return delegate.getDccFileSystem();
+  // }
 
   @Override
-  public DccFileSystem getDccFileSystem() {
-    return delegate.getDccFileSystem();
+  public FPVFileSystem getFs() {
+    return delegate.getFs();
   }
 
   @Override

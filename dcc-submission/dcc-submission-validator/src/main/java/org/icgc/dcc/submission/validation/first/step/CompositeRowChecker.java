@@ -31,11 +31,11 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.first.CodecUtil;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.RowChecker;
-import org.icgc.dcc.submission.validation.first.Util;
 
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
@@ -67,17 +67,13 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   @Override
   public void performSelfCheck(String filename) {
     log.info("Start performing {} validation...", name);
-
-    String filePathname = getSubmissionDirectory().getDataFilePath(filename);
     val fileSchema = getFileSchema(filename);
 
     try {
       @Cleanup
       Scanner reader = new Scanner(new BufferedReader(
           new InputStreamReader(
-              Util.createInputStream(
-                  getDccFileSystem(),
-                  filePathname),
+              CodecUtil.createInputStream(getFs(), filename),
               DEFAULT_CHARSET)));
       reader.useDelimiter(LINE_SEPARATOR);
       String line;
@@ -138,9 +134,14 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     return failFast;
   }
 
+  // @Override
+  // public DccFileSystem getDccFileSystem() {
+  // return delegate.getDccFileSystem();
+  // }
+
   @Override
-  public DccFileSystem getDccFileSystem() {
-    return delegate.getDccFileSystem();
+  public FPVFileSystem getFs() {
+    return delegate.getFs();
   }
 
 }

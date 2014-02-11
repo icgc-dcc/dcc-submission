@@ -43,7 +43,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.FsConfig;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
+import org.icgc.dcc.submission.validation.first.CodecUtil.CodecType;
 import org.icgc.dcc.submission.validation.first.step.FileCorruptionCheckerTest;
 import org.icgc.dcc.submission.validation.first.step.TestUtils;
 import org.junit.Before;

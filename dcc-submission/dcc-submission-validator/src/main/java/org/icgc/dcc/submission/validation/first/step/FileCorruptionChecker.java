@@ -28,9 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.CodecUtil;
+import org.icgc.dcc.submission.validation.first.CodecUtil.CodecType;
 import org.icgc.dcc.submission.validation.first.FileChecker;
-import org.icgc.dcc.submission.validation.first.Util;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
 
 @Slf4j
 public class FileCorruptionChecker extends CompositeFileChecker {
@@ -48,8 +48,8 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   @Override
   public void performSelfCheck(String filename) {
     try {
-      CodecType contentType = Util.determineCodecFromContent(getDccFileSystem(), getSubmissionDirectory(), filename);
-      CodecType filenameType = Util.determineCodecFromFilename(filename);
+      CodecType contentType = CodecUtil.determineCodecFromContent(getFs(), filename);
+      CodecType filenameType = CodecUtil.determineCodecFromFilename(filename);
       if (contentType == filenameType) {
         switch (contentType) {
         case GZIP:
@@ -96,8 +96,8 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     try {
       // check the bzip2 header
       @Cleanup
-      BZip2CompressorInputStream in =
-          new BZip2CompressorInputStream(getDccFileSystem().open(getSubmissionDirectory().getDataFilePath(filename)));
+      BZip2CompressorInputStream in = new BZip2CompressorInputStream(getFs().getDataInputStream(filename));
+
       // see if it can be read through
       byte[] buf = new byte[BUFFER_SIZE];
       while (in.read(buf) > 0) {
@@ -120,8 +120,8 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     try {
       // check the gzip header
       @Cleanup
-      GZIPInputStream in =
-          new GZIPInputStream(getDccFileSystem().open(getSubmissionDirectory().getDataFilePath(filename)));
+      GZIPInputStream in = new GZIPInputStream(getFs().getDataInputStream(filename));
+
       // see if it can be read through
       byte[] buf = new byte[BUFFER_SIZE];
       while (in.read(buf) > 0) {
@@ -139,5 +139,4 @@ public class FileCorruptionChecker extends CompositeFileChecker {
               .build());
     }
   }
-
 }

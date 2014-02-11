@@ -25,20 +25,15 @@ import java.io.InputStream;
 
 import lombok.Cleanup;
 import lombok.NoArgsConstructor;
+import lombok.val;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.tika.Tika;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 @NoArgsConstructor(access = PRIVATE)
-public final class Util {
+public final class CodecUtil {
 
   public enum CodecType {
     GZIP, BZIP2, PLAIN_TEXT;
@@ -57,11 +52,9 @@ public final class Util {
     return CodecType.PLAIN_TEXT;
   }
 
-  public static CodecType determineCodecFromContent(DccFileSystem fs, SubmissionDirectory submissionDirectory,
-      String filename)
-      throws IOException {
+  public static CodecType determineCodecFromContent(FPVFileSystem fs, String filename) throws IOException {
     @Cleanup
-    BufferedInputStream bis = new BufferedInputStream(fs.open(submissionDirectory.getDataFilePath(filename)));
+    BufferedInputStream bis = new BufferedInputStream(fs.getDataInputStream(filename));
     AutoDetectParser parser = new AutoDetectParser();
     Detector detector = parser.getDetector();
     Metadata md = new Metadata();
@@ -77,18 +70,12 @@ public final class Util {
     return CodecType.PLAIN_TEXT;
   }
 
-  public static InputStream createInputStream(DccFileSystem dccFileSystem, String filePathname) throws IOException {
-    Configuration conf = dccFileSystem.getFileSystem().getConf();
-    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
-    Path filePath = new Path(filePathname);
-
-    CompressionCodec codec = factory.getCodec(filePath);
-    if (codec == null) {
-      // This is assumed to be PLAIN_TEXT
-      return dccFileSystem.open(filePathname);
-    } else {
-      return codec.createInputStream(dccFileSystem.open(filePathname));
-    }
+  public static InputStream createInputStream(FPVFileSystem fs, String filename) throws IOException {
+    val codec = fs.getCodec(filename);
+    val in = fs.getDataInputStream(filename);
+    return codec == null ?
+        in : // This is assumed to be PLAIN_TEXT
+        codec.createInputStream(in);
   }
 
 }

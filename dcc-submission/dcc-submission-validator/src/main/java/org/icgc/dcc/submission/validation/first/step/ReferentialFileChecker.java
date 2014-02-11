@@ -17,19 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_FILE_ERROR;
 import static org.icgc.dcc.submission.core.report.ErrorType.REVERSE_RELATION_FILE_ERROR;
-
-import java.util.List;
-import java.util.regex.Pattern;
-
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.first.FileChecker;
-
-import com.google.common.collect.ImmutableList;
 
 @Slf4j
 public class ReferentialFileChecker extends CompositeFileChecker {
@@ -57,22 +52,21 @@ public class ReferentialFileChecker extends CompositeFileChecker {
     val fileSchema = getFileSchema(fileName);
     for (val relation : fileSchema.getRelations()) {
       val otherFileSchema = getDictionary().getFileSchemaByName(relation.getOther());
-      if (otherFileSchema.isPresent()) {
-        val pattern = otherFileSchema.get().getPattern();
-        val fileNames = getfileNames(pattern);
-        if (fileNames.isEmpty()) {
-          log.info("Fail referenced check for '{}': missing referencing file with schema '{}'",
-              fileName, otherFileSchema.get().getName());
+      checkState(otherFileSchema.isPresent(), "Invalid file schema: '%s'", relation.getOther());
+      val pattern = otherFileSchema.get().getPattern();
+      val fileNames = getFs().getMatchingFileNames(pattern);
+      if (fileNames.isEmpty()) {
+        log.info("Fail referenced check for '{}': missing referencing file with schema '{}'",
+            fileName, otherFileSchema.get().getName());
 
-          incrementCheckErrorCount();
+        incrementCheckErrorCount();
 
-          getValidationContext().reportError(
-              error()
-                  .fileName(fileName)
-                  .type(RELATION_FILE_ERROR)
-                  .params(fileSchema.getName())
-                  .build());
-        }
+        getValidationContext().reportError(
+            error()
+                .fileName(fileName)
+                .type(RELATION_FILE_ERROR)
+                .params(fileSchema.getName())
+                .build());
       }
     }
   }
@@ -85,7 +79,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   private void referencingCheck(String fileName) {
     val fileSchema = getFileSchema(fileName);
     for (val otherFileSchema : fileSchema.getBidirectionalAfferentFileSchemata(getDictionary())) {
-      val fileNames = getfileNames(otherFileSchema.getPattern());
+      val fileNames = getFs().getMatchingFileNames(otherFileSchema.getPattern());
       if (fileNames.isEmpty()) {
         log.info("Fail referencing check for '{}': missing referencing file with schema '{}'",
             fileName, otherFileSchema.getName());
@@ -100,12 +94,6 @@ public class ReferentialFileChecker extends CompositeFileChecker {
                 .build());
       }
     }
-  }
-
-  private List<String> getfileNames(String pattern) {
-    val fileNames = getSubmissionDirectory().listFile(Pattern.compile(pattern));
-
-    return ImmutableList.copyOf(fileNames);
   }
 
 }

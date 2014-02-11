@@ -33,7 +33,6 @@ import org.icgc.dcc.submission.validation.first.FileChecker.FileCheckers;
 import org.icgc.dcc.submission.validation.first.RowChecker.RowCheckers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 
 @Slf4j
 @NoArgsConstructor
@@ -64,7 +63,7 @@ public class FirstPassValidator implements Validator {
         RowCheckers.getDefaultRowChecker(validationContext) :
         this.rowChecker;
 
-    for (val fileName : listRelevantFiles(validationContext)) {
+    for (val fileName : fileChecker.getFs().listRelevantFiles(validationContext)) {
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, fileName);
 
       fileChecker.check(fileName);
@@ -76,18 +75,6 @@ public class FirstPassValidator implements Validator {
         checkInterrupted(getName());
       }
     }
-  }
-
-  private Iterable<String> listRelevantFiles(ValidationContext context) {
-    // Selective validation filtering
-    val fileSchemata = context.getDictionary().getFileSchemata(context.getDataTypes());
-
-    val patterns = Lists.<String> newArrayList();
-    for (val fileSchema : fileSchemata) {
-      patterns.add(fileSchema.getPattern());
-    }
-
-    return context.getSubmissionDirectory().listFiles(patterns);
   }
 
 }
