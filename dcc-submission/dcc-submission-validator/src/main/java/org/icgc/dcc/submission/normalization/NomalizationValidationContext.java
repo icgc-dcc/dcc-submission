@@ -77,17 +77,27 @@ public class NomalizationValidationContext implements ValidationContext {
   @NonNull
   private final String jobTracker;
 
+  /**
+   * Lazy-loaded.
+   */
+  private Dictionary dictionary;
+  private PlatformStrategy platform;
+
   @Override
   public PlatformStrategy getPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
-    val factory = provider.get();
+    if (platform == null) {
+      val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
+      val factory = provider.get();
 
-    // Reuse primary validation component
-    val project = new Path(fsRoot, new Path(releaseName, projectKey));
-    val input = project;
-    val output = project;
-    val system = new Path(SEPARATOR); // Not used by normalizer
-    return factory.get(input, output, system);
+      // Reuse primary validation component
+      val project = new Path(fsRoot, new Path(releaseName, projectKey));
+      val input = project;
+      val output = project;
+      val system = new Path(SEPARATOR); // Not used by normalizer
+      platform = factory.get(input, output, system);
+    }
+
+    return platform;
   }
 
   @Override
@@ -108,20 +118,22 @@ public class NomalizationValidationContext implements ValidationContext {
   @Override
   @SneakyThrows
   public Dictionary getDictionary() {
-    // Resolve
-    val entryName = "org/icgc/dcc/resources/Dictionary.json";
-    URL url = getDictionaryUrl(DICTIONARY_VERSION);
-    @Cleanup
-    val zip = new ZipInputStream(url.openStream());
-    ZipEntry entry;
+    if (dictionary == null) {
+      // Resolve
+      val entryName = "org/icgc/dcc/resources/Dictionary.json";
+      URL url = getDictionaryUrl(DICTIONARY_VERSION);
+      @Cleanup
+      val zip = new ZipInputStream(url.openStream());
+      ZipEntry entry;
 
-    do {
-      entry = zip.getNextEntry();
-    } while (!entryName.equals(entry.getName()));
+      do {
+        entry = zip.getNextEntry();
+      } while (!entryName.equals(entry.getName()));
 
-    // Deserialize
-    val reader = new ObjectMapper().reader(Dictionary.class);
-    Dictionary dictionary = reader.readValue(zip);
+      // Deserialize
+      val reader = new ObjectMapper().reader(Dictionary.class);
+      dictionary = reader.readValue(zip);
+    }
 
     return dictionary;
   }

@@ -17,10 +17,6 @@
  */
 package org.icgc.dcc.submission.normalization.steps;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-import lombok.val;
-
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
@@ -29,28 +25,12 @@ import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Discard;
 import cascading.tuple.Fields;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 /**
  * May never be used.
  */
 public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
 
   public static final String STEP_NAME = "confidential-fields";
-
-  /**
-   * TODO
-   */
-  public static ImmutableMap<String, ImmutableList<String>> getControlledFields(Dictionary dictionary) {
-    val controlledFields = new ImmutableMap.Builder<String, ImmutableList<String>>();
-    for (val fileSchema : dictionary.getFiles()) {
-      controlledFields.put(
-          fileSchema.getName(),
-          copyOf(fileSchema.getControlledFieldNames()));
-    }
-    return controlledFields.build();
-  }
 
   @Override
   public String shortName() {

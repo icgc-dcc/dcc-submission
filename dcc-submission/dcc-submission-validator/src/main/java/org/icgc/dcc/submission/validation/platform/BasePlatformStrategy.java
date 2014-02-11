@@ -17,13 +17,24 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import lombok.Getter;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
@@ -31,6 +42,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -41,12 +53,16 @@ import org.icgc.dcc.submission.validation.primary.core.Key;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+@Slf4j
 public abstract class BasePlatformStrategy implements PlatformStrategy {
 
-  @Getter
+  private static final Splitter ROW_SPLITTER = Splitter.on('\t');
+
   protected final FileSystem fileSystem;
 
   private final Path input;
@@ -146,7 +162,8 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
    * DCC-1876).
    */
   @Override
-  public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
+  @SneakyThrows
+  public Path path(final FileSchema fileSchema) {
 
     RemoteIterator<LocatedFileStatus> files;
     if (fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
@@ -190,4 +207,55 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     }
     return dupHeaders;
   }
+
+  @Override
+  public Map<String, String> getSampleToDonorMap(Dictionary dictionary) {
+
+    val sampleToSpecimen = Maps.<String, String> newTreeMap();
+    val sampleFileSchema = dictionary.getFileSchema(SAMPLE_TYPE);
+    val samplePath = path(sampleFileSchema);
+    val sampleSampleIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_ANALYZED_SAMPLE_ID).get();
+    val sampleSpecimenIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
+    boolean first = true;
+    for (String row : readSmallTextFile(fileSystem, samplePath)) { // Clinical files are small
+      if (!first) {
+        val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
+        val sampleId = fields.get(sampleSampleIdOrdinal);
+        val specimenId = fields.get(sampleSpecimenIdOrdinal);
+        checkState(!sampleToSpecimen.containsKey(sampleId));
+        sampleToSpecimen.put(sampleId, specimenId);
+      }
+      first = false;
+    }
+    log.info("Sample to specimen mapping: {}", sampleToSpecimen);
+
+    val specimenToDonor = Maps.<String, String> newTreeMap();
+    val specimenFileSchema = dictionary.getFileSchema(SPECIMEN_TYPE);
+    val specimenPath = path(specimenFileSchema);
+    val specimenSpecimenIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
+    val specimenDonorIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_DONOR_ID).get();
+    first = true;
+    for (String row : readSmallTextFile(fileSystem, specimenPath)) { // Clinical files are small
+      if (!first) {
+        val fields = Lists.<String> newArrayList(ROW_SPLITTER.split(row));
+        val specimenId = fields.get(specimenSpecimenIdOrdinal);
+        val donorId = fields.get(specimenDonorIdOrdinal);
+        checkState(!specimenToDonor.containsKey(specimenId));
+        specimenToDonor.put(specimenId, donorId);
+      }
+      first = false;
+    }
+    log.info("Specimen to donor mapping: {}", specimenToDonor);
+
+    val sampleToDonor = Maps.<String, String> newTreeMap();
+    for (val entry : sampleToSpecimen.entrySet()) {
+      sampleToDonor.put(
+          entry.getKey(),
+          specimenToDonor.get(entry.getValue()));
+    }
+    log.info("Sample to donor mapping: {}", sampleToDonor);
+
+    return sampleToDonor;
+  }
+
 }

@@ -30,6 +30,7 @@ import javax.validation.Valid;
 
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.val;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
@@ -224,8 +225,7 @@ public class FileSchema implements DictionaryElement, Serializable {
    * Returns whether or not the provided file name matches the pattern for the current {@link FileSchema}.
    */
   public boolean matches(
-      @NonNull
-      String fileName) {
+      @NonNull String fileName) {
     return compile(pattern) // TODO: lazy-load
         .matcher(fileName)
         .matches();
@@ -248,4 +248,14 @@ public class FileSchema implements DictionaryElement, Serializable {
     }
     return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
   }
+
+  /**
+   * Returns the optional field ordinal (0-based).
+   */
+  @JsonIgnore
+  public Optional<Integer> getFieldOrdinal(String fieldName) {
+    val index = newArrayList(getFieldNames()).indexOf(fieldName);
+    return index == -1 ? Optional.<Integer> absent() : Optional.of(index);
+  }
+
 }
