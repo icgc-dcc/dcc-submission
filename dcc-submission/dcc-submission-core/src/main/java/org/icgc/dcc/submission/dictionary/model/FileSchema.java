@@ -271,7 +271,7 @@ public class FileSchema implements DictionaryElement, Serializable {
    * 
    * TODO: move to dictionary? better name?
    */
-  public List<FileSchema> getBidirectionalAfferentFileSchemata(Dictionary dictionary) {
+  public List<FileSchema> getIncomingSurjectiveRelationFileSchemata(Dictionary dictionary) {
     List<FileSchema> afferentFileSchemata = Lists.newArrayList();
     for (FileSchema tmp : dictionary.getFiles()) {
       for (Relation relation : tmp.getRelations()) {

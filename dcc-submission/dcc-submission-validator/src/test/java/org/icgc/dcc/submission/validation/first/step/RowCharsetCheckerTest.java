@@ -31,7 +31,7 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.CodecUtil;
+import org.icgc.dcc.submission.validation.first.Util;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +42,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.google.common.base.Optional;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(CodecUtil.class)
+@PrepareForTest(Util.class)
 public class RowCharsetCheckerTest {
 
   @Mock
@@ -89,8 +89,8 @@ public class RowCharsetCheckerTest {
   @Test
   public void invalidLineSeparator() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\tf2\r\na\tb\r\n".getBytes()));
-    mockStatic(CodecUtil.class);
-    when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    mockStatic(Util.class);
+    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());
@@ -100,8 +100,8 @@ public class RowCharsetCheckerTest {
   @Test
   public void invalidContentWithCarriageReturn() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\t\rf2\na\r\tb\n".getBytes()));
-    mockStatic(CodecUtil.class);
-    when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    mockStatic(Util.class);
+    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext));
     checker.check(anyString());

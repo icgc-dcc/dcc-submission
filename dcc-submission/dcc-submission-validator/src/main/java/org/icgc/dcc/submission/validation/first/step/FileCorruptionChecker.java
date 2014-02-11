@@ -27,8 +27,8 @@ import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.icgc.dcc.submission.validation.first.CodecUtil;
-import org.icgc.dcc.submission.validation.first.CodecUtil.CodecType;
+import org.icgc.dcc.submission.validation.first.Util;
+import org.icgc.dcc.submission.validation.first.Util.CodecType;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
@@ -47,8 +47,8 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   @Override
   public void performSelfCheck(String filename) {
     try {
-      CodecType contentType = CodecUtil.determineCodecFromContent(getFs(), filename);
-      CodecType filenameType = CodecUtil.determineCodecFromFilename(filename);
+      CodecType contentType = Util.determineCodecFromContent(getFs(), filename);
+      CodecType filenameType = Util.determineCodecFromFilename(filename);
       if (contentType == filenameType) {
         switch (contentType) {
         case GZIP:

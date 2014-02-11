@@ -52,7 +52,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(CodecUtil.class)
+@PrepareForTest(Util.class)
 public class FirstPassValidatorTest {
 
   private SubmissionDirectory submissionDir;
@@ -65,7 +65,7 @@ public class FirstPassValidatorTest {
   public void setup() throws IOException {
     submissionDir = mock(SubmissionDirectory.class);
     dict = mock(Dictionary.class);
-    mockStatic(CodecUtil.class);
+    mockStatic(Util.class);
 
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("anyfile"));
     when(submissionDir.listFiles(Mockito.anyListOf(String.class))).thenReturn(ImmutableList.of("anyfile"));
@@ -78,7 +78,7 @@ public class FirstPassValidatorTest {
     when(dict.getFileSchemata(anyDataTypeIterable())).thenReturn(ImmutableList.<FileSchema> of(schema));
 
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
-    when(CodecUtil.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
     when(validationContext.getDictionary()).thenReturn(dict);

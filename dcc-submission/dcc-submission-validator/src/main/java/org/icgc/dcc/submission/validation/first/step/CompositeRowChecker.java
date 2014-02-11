@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.first.CodecUtil;
+import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.RowChecker;
 
@@ -73,7 +73,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
       @Cleanup
       Scanner reader = new Scanner(new BufferedReader(
           new InputStreamReader(
-              CodecUtil.createInputStream(getFs(), filename),
+              Util.createInputStream(getFs(), filename),
               DEFAULT_CHARSET)));
       reader.useDelimiter(LINE_SEPARATOR);
       String line;

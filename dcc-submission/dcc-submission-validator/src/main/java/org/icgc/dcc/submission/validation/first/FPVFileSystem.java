@@ -27,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 /**
@@ -39,8 +38,8 @@ public class FPVFileSystem {
 
   private final SubmissionDirectory submissionDirectory;
 
-  public Iterable<String> listRelevantFiles(Dictionary dictionary) {
-    return submissionDirectory.listFiles(dictionary.getFilePatterns());
+  public Iterable<String> listMatchingSubmissionFiles(List<String> filePatterns) {
+    return submissionDirectory.listFiles(filePatterns);
   }
 
   public List<String> getMatchingFileNames(String pattern) {

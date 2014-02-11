@@ -37,16 +37,16 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
  * TODO: move this to {@link FPVFileSystem} (some to {@link SubmissionDirectory} even).
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class CodecUtil {
+public final class Util {
 
   public enum CodecType {
     GZIP, BZIP2, PLAIN_TEXT;
   }
 
-  public static CodecType determineCodecFromFilename(String filename)
+  public static CodecType determineCodecFromFilename(String fileName)
   {
     Tika tika = new Tika();
-    String mediaType = tika.detect(filename);
+    String mediaType = tika.detect(fileName);
     if (mediaType.equals("application/x-gzip")) {
       return CodecType.GZIP;
     } else if (mediaType.equals("application/x-bzip2")) {
@@ -56,13 +56,13 @@ public final class CodecUtil {
     return CodecType.PLAIN_TEXT;
   }
 
-  public static CodecType determineCodecFromContent(FPVFileSystem fs, String filename) throws IOException {
+  public static CodecType determineCodecFromContent(FPVFileSystem fs, String fileName) throws IOException {
     @Cleanup
-    BufferedInputStream bis = new BufferedInputStream(fs.getDataInputStream(filename));
+    BufferedInputStream bis = new BufferedInputStream(fs.getDataInputStream(fileName));
     AutoDetectParser parser = new AutoDetectParser();
     Detector detector = parser.getDetector();
     Metadata md = new Metadata();
-    md.add(Metadata.RESOURCE_NAME_KEY, filename);
+    md.add(Metadata.RESOURCE_NAME_KEY, fileName);
 
     String mediaType = detector.detect(bis, md).toString();
     if (mediaType.equals("application/x-gzip")) {

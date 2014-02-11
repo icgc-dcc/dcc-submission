@@ -33,7 +33,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.fs.SubmissionDirectoryFile;
-import org.icgc.dcc.submission.validation.first.CodecUtil;
+import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
@@ -78,7 +78,7 @@ public class FileHeaderChecker extends CompositeFileChecker {
    */
   @SneakyThrows
   private final List<String> peekFileHeader(String filename) {
-    InputStream is = CodecUtil.createInputStream(getFs(), filename);
+    InputStream is = Util.createInputStream(getFs(), filename);
     @Cleanup
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
     String header = reader.readLine();

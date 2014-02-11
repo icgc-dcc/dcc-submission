@@ -63,7 +63,10 @@ public class FirstPassValidator implements Validator {
         RowCheckers.getDefaultRowChecker(validationContext) :
         this.rowChecker;
 
-    for (val fileName : fileChecker.getFs().listRelevantFiles(validationContext.getDictionary())) {
+    // TODO: add check that at least DONOR exists (+ create new error)
+
+    for (val fileName : fileChecker.getFs().listMatchingSubmissionFiles(
+        validationContext.getDictionary().getFilePatterns())) {
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, fileName);
 
       fileChecker.check(fileName);
