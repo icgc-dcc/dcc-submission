@@ -7,4 +7,5 @@ a2	b2	l2	c	e	d	1	A		A	T		A	o	n	2.0	1.0	x	w	1	1	m	MASKED	A>T	v5
 a2	b2	l2	c	e	d	1	A	A/G	G	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m	CONTROLLED	G>T	v6
 a5	b3	l3	c	e	d	1	A	A/A	A	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m	OPEN	A>T	v7
 a7	b4	l4	c	e	d	1	T	A/G	G	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m	CONTROLLED	G>T	v8
-a10	b5	l5	c	e	d	1	A	A/A	A	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m	OPEN	A>T	v9
+a7	b4	l4	c	e	d	1	T		T	T		A	o	n	2.0	1.0	x	w	1	1	m	MASKED	T>T	v9
+a10	b5	l5	c	e	d	1	A	A/A	A	T	A/T	A	o	n	2.0	1.0	x	w	1	1	m	OPEN	A>T	v10
