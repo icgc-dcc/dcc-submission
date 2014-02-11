@@ -17,16 +17,33 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+/**
+ * A classical visitor operating on composite {@link ReportElement} nodes only.
+ * <p>
+ * Visitor traversal is in the standard post-order walk pattern:
+ * 
+ * <pre>
+ * 
+ *  .- report ------------------->               15 
+ *  |                                        /        \
+ *  +- dataTypeReport ----------->         7           14   
+ *   |                                   /   \        /   \
+ *   +- fileTypeReport----------->      3     5     10     13  
+ *    |                                / \   / \    / \   / \ 
+ *    + fileReport -------------->    1   2 4   6  8   9 11  12
+ * </pre>
+ * 
+ */
 public interface ReportVisitor {
 
-  void visit(Report report);
+  /**/void visit(Report report);
 
-  void visit(DataTypeReport dataTypeReport);
+  /*  */void visit(DataTypeReport dataTypeReport);
 
-  void visit(FileTypeReport fileTypeReport);
+  /*     */void visit(FileTypeReport fileTypeReport);
 
-  void visit(FileReport fileReport);
+  /*       */void visit(FileReport fileReport);
 
-  void visit(ErrorReport errorReport);
+  /*          */void visit(ErrorReport errorReport);
 
 }

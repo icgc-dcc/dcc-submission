@@ -27,6 +27,9 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
 
+/**
+ * Removes a file from a report and adjusts the internal structure to accomodate the loss.
+ */
 @NotThreadSafe
 public class RemoveFileVisitor extends AbstractFileReportVisitor {
 
@@ -43,7 +46,7 @@ public class RemoveFileVisitor extends AbstractFileReportVisitor {
 
   @Override
   public void visit(@NonNull DataTypeReport dataTypeReport) {
-    if (isMatch(dataTypeReport) && isRemovable(fileTypeReport)) {
+    if (isTarget(dataTypeReport) && isRemovable(fileTypeReport)) {
       this.dataTypeReport = dataTypeReport;
       dataTypeReport.removeFileTypeReport(fileTypeReport);
     }
@@ -51,7 +54,7 @@ public class RemoveFileVisitor extends AbstractFileReportVisitor {
 
   @Override
   public void visit(@NonNull FileTypeReport fileTypeReport) {
-    if (isMatch(fileTypeReport) && isRemovable(fileReport)) {
+    if (isTarget(fileTypeReport) && isRemovable(fileReport)) {
       this.fileTypeReport = fileTypeReport;
       fileTypeReport.removeFileReport(fileReport);
     }
@@ -59,10 +62,14 @@ public class RemoveFileVisitor extends AbstractFileReportVisitor {
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
+    if (isTarget(fileReport)) {
       this.fileReport = fileReport;
     }
   }
+
+  //
+  // Helpers
+  //
 
   private static boolean isRemovable(DataTypeReport dataTypeReport) {
     return dataTypeReport != null && dataTypeReport.getFileTypeReports().isEmpty();

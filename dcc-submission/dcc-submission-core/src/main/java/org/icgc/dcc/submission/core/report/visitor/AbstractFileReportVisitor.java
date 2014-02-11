@@ -24,10 +24,19 @@ import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 
+/**
+ * Useful visitor base class that does nothing but offers convienient state and helps.
+ */
 public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
 
+  /**
+   * Input
+   */
   protected final FileType fileType;
 
+  /**
+   * State
+   */
   protected DataTypeReport dataTypeReport;
   protected FileTypeReport fileTypeReport;
   protected FileReport fileReport;
@@ -37,11 +46,15 @@ public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVi
     this.fileType = fileType;
   }
 
-  protected boolean isMatch(@NonNull FileTypeReport fileTypeReport) {
+  //
+  // Helpers
+  //
+
+  protected boolean isTarget(@NonNull FileTypeReport fileTypeReport) {
     return fileTypeReport.getFileType() == fileType;
   }
 
-  protected boolean isMatch(@NonNull DataTypeReport dataTypeReport) {
+  protected boolean isTarget(@NonNull DataTypeReport dataTypeReport) {
     return dataTypeReport.getDataType() == fileType.getDataType();
   }
 

@@ -58,7 +58,7 @@ public class AddErrorVisitor extends AbstractFileNameReportVisitor {
 
   @Override
   public void visit(DataTypeReport dataTypeReport) {
-    if (isMatch(dataTypeReport)) {
+    if (isTarget(dataTypeReport)) {
       dataTypeReport.setDataTypeState(DataTypeState.INVALID);
     }
   }
@@ -69,7 +69,7 @@ public class AddErrorVisitor extends AbstractFileNameReportVisitor {
 
   @Override
   public void visit(FileTypeReport fileTypeReport) {
-    if (isMatch(fileTypeReport)) {
+    if (isTarget(fileTypeReport)) {
       fileTypeReport.setFileTypeState(FileTypeState.INVALID);
     }
   }
@@ -80,7 +80,7 @@ public class AddErrorVisitor extends AbstractFileNameReportVisitor {
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
+    if (isTarget(fileReport)) {
       fileReport.setFileState(FileState.INVALID);
       fileReport.addError(error);
 
@@ -90,11 +90,15 @@ public class AddErrorVisitor extends AbstractFileNameReportVisitor {
     }
   }
 
-  private boolean isMatch(DataTypeReport dataTypeReport) {
+  //
+  // Helpers
+  //
+
+  private boolean isTarget(DataTypeReport dataTypeReport) {
     return dataTypes.contains(dataTypeReport.getDataType());
   }
 
-  private boolean isMatch(FileTypeReport fileTypeReport) {
+  private boolean isTarget(FileTypeReport fileTypeReport) {
     return fileTypes.contains(fileTypeReport.getFileType());
   }
 

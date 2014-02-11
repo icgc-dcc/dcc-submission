@@ -33,7 +33,7 @@ public class AddFieldVisitor extends AbstractFileNameReportVisitor {
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
+    if (isTarget(fileReport)) {
       fileReport.addFieldReport(fieldReport);
     }
   }

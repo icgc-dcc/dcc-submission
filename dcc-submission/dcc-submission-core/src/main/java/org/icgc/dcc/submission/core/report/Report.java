@@ -58,7 +58,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * Represents a validation report for a submission within a release.
+ * Represents a validation report for a submission within a release. This is an "Aggregate Root" in the DDD sense.
  * <p>
  * Example:
  * 
@@ -69,6 +69,8 @@ import com.google.common.collect.ImmutableMap;
  *    } ]
  *  }
  * </pre>
+ * 
+ * @see http://martinfowler.com/bliki/DDD_Aggregate.html
  */
 @Data
 @Embedded

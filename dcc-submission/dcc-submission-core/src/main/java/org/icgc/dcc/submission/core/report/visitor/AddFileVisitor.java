@@ -41,7 +41,7 @@ public class AddFileVisitor extends AbstractFileReportVisitor {
 
   @Override
   public void visit(@NonNull DataTypeReport dataTypeReport) {
-    if (isMatch(dataTypeReport) && isAddable(fileTypeReport)) {
+    if (isTarget(dataTypeReport) && isAddable(fileTypeReport)) {
       this.dataTypeReport = dataTypeReport;
       this.dataTypeReport.addFileTypeReport(createFileTypeReport());
     }
@@ -49,7 +49,7 @@ public class AddFileVisitor extends AbstractFileReportVisitor {
 
   @Override
   public void visit(@NonNull FileTypeReport fileTypeReport) {
-    if (isMatch(fileTypeReport) && isAddable(fileReport)) {
+    if (isTarget(fileTypeReport) && isAddable(fileReport)) {
       this.fileTypeReport = fileTypeReport;
       this.fileTypeReport.addFileReport(createFileReport());
     }
@@ -57,7 +57,7 @@ public class AddFileVisitor extends AbstractFileReportVisitor {
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
+    if (isTarget(fileReport)) {
       this.fileReport = fileReport;
     }
   }

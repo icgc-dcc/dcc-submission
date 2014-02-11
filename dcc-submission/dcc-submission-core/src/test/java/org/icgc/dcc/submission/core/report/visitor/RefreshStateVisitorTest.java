@@ -42,7 +42,7 @@ public class RefreshStateVisitorTest {
     report.accept(refreshState);
 
     // Assert via vistor
-    report.accept(new AbstractReportVisitor() {
+    report.accept(new NoOpVisitor() {
 
       @Override
       public void visit(Report report) {

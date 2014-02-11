@@ -34,7 +34,7 @@ public class AddSummaryVisitor extends AbstractFileNameReportVisitor {
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
+    if (isTarget(fileReport)) {
       fileReport.addSummaryReport(summaryReport);
     }
   }

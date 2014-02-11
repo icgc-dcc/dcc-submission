@@ -59,10 +59,22 @@ import com.mongodb.BasicDBObject;
 @EqualsAndHashCode(of = { "name", "type" })
 public class FieldReport implements Comparable<FieldReport> {
 
+  /**
+   * Key
+   */
+
   private String name;
   private SummaryType type;
 
+  /**
+   * Metadata
+   */
+
   private String label;
+
+  /**
+   * Data
+   */
 
   private long nulls;
   private long missing;

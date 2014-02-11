@@ -25,7 +25,7 @@ import lombok.NonNull;
 import org.icgc.dcc.submission.core.report.ErrorReport;
 
 @NotThreadSafe
-public class ErrorCountVisitor extends AbstractReportVisitor {
+public class ErrorCountVisitor extends NoOpVisitor {
 
   @Getter
   int errorCount = 0;
@@ -35,6 +35,10 @@ public class ErrorCountVisitor extends AbstractReportVisitor {
     // Accumulate leaf level error counts
     errorCount += getErrorReportCount(errorReport);
   }
+
+  //
+  // Helpers
+  //
 
   private static int getErrorReportCount(ErrorReport errorReport) {
     return errorReport.getFieldErrorReports().size();

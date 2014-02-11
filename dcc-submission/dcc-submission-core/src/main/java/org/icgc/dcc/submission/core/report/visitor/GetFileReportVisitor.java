@@ -34,7 +34,7 @@ public class GetFileReportVisitor extends AbstractFileNameReportVisitor {
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
+    if (isTarget(fileReport)) {
       this.fileReport = fileReport;
     }
   }

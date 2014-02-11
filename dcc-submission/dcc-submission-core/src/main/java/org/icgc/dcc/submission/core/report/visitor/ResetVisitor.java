@@ -34,10 +34,16 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
+import org.icgc.dcc.submission.core.report.Report;
 
+/**
+ * Resets all internal states and leaf contents of the {@link Report}.
+ * <p>
+ * Equivalent of {@code new Report().addFiles(existingFiles)}
+ */
 @NotThreadSafe
 @RequiredArgsConstructor
-public class ResetVisitor extends AbstractReportVisitor {
+public class ResetVisitor extends NoOpVisitor {
 
   @NonNull
   private final Iterable<DataType> dataTypes;
@@ -71,6 +77,10 @@ public class ResetVisitor extends AbstractReportVisitor {
       fileReport.getErrorReports().clear();
     }
   }
+
+  //
+  // Helpers
+  //
 
   private boolean isResettable(DataType dataType) {
     return isEmpty(dataTypes) || contains(dataTypes, dataType);

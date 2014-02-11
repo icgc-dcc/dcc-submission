@@ -37,20 +37,23 @@ import org.icgc.dcc.submission.core.report.ReportElement;
  * Refreshes stale {@link ReportElement} states based on non-state attributes and transitive relationships.
  */
 @RequiredArgsConstructor
-public class RefreshStateVisitor extends AbstractReportVisitor {
+public class RefreshStateVisitor extends NoOpVisitor {
 
   /**
-   * Accumulation: journals the <em>valid<em> file and data types as visiting proceeds.
+   * State - journals the <em>valid<em> file and data types as visiting proceeds.
    */
   private final Set<DataType> validDataTypes = newHashSet();
   private final Set<FileType> validFileTypes = newHashSet();
 
   /**
-   * Accumulation: journals the <em>invalid</em> file and data types as visiting proceeds.
+   * State - journals the <em>invalid</em> file and data types as visiting proceeds.
    */
   private final Set<DataType> invalidDataTypes = newHashSet();
   private final Set<FileType> invalidFileTypes = newHashSet();
 
+  /**
+   * Refreshes any dirty valid or invalid states at the data-type level.
+   */
   @Override
   public void visit(DataTypeReport dataTypeReport) {
     // Use the file type results
@@ -61,6 +64,9 @@ public class RefreshStateVisitor extends AbstractReportVisitor {
     }
   }
 
+  /**
+   * Refreshes any dirty valid or invalid states at the file-type level.
+   */
   @Override
   public void visit(FileTypeReport fileTypeReport) {
     // Use the file type results
@@ -71,6 +77,11 @@ public class RefreshStateVisitor extends AbstractReportVisitor {
     }
   }
 
+  /**
+   * Refreshes any dirty valid or invalid states at the file level.
+   * <p>
+   * Tracks valid and invalid types for higher levels.
+   */
   @Override
   public void visit(FileReport fileReport) {
     if (refreshInvalid(fileReport)) {
@@ -101,7 +112,7 @@ public class RefreshStateVisitor extends AbstractReportVisitor {
   }
 
   //
-  // Refresh - valid helpers
+  // Helpers - Refresh valid predicates
   //
 
   private boolean refreshValid(DataTypeReport dataTypeReport) {
@@ -120,7 +131,7 @@ public class RefreshStateVisitor extends AbstractReportVisitor {
   }
 
   //
-  // Refresh - invalid helpers
+  // Helpers - Refresh invalid predicates
   //
 
   private boolean refreshInvalid(DataTypeReport dataTypeReport) {
@@ -139,7 +150,7 @@ public class RefreshStateVisitor extends AbstractReportVisitor {
   }
 
   //
-  // isValid helpers
+  // Helpers - valid predicates
   //
 
   private boolean isValid(DataType dataType) {
@@ -155,7 +166,7 @@ public class RefreshStateVisitor extends AbstractReportVisitor {
   }
 
   //
-  // isInvalid helpers
+  // Helpers - invalid predicates
   //
 
   private boolean isInvalid(DataType dataType) {
@@ -171,7 +182,7 @@ public class RefreshStateVisitor extends AbstractReportVisitor {
   }
 
   //
-  // Journaling
+  // Helpers - journaling
   //
 
   private void recordValid(FileReport fileReport) {

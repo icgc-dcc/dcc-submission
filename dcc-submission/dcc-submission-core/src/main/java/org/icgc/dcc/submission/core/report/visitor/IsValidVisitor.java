@@ -27,7 +27,10 @@ import lombok.NonNull;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
 
-public class IsValidVisitor extends AbstractReportVisitor {
+/**
+ * Value producing visitor that returns the global valid status based on the internal state of the report.
+ */
+public class IsValidVisitor extends NoOpVisitor {
 
   @NonNull
   private final Set<FileState> fileStates = newHashSet();
@@ -37,9 +40,17 @@ public class IsValidVisitor extends AbstractReportVisitor {
     fileStates.add(fileReport.getFileState());
   }
 
+  //
+  // Result
+  //
+
   public boolean isValid() {
     return hasOneFileState() && hasFileState(VALID);
   }
+
+  //
+  // Helpers
+  //
 
   private boolean hasOneFileState() {
     return fileStates.size() == 1;

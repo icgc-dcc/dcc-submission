@@ -24,9 +24,15 @@ import org.icgc.dcc.submission.core.report.ErrorReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.report.ReportElement;
 import org.icgc.dcc.submission.core.report.ReportVisitor;
 
-public abstract class AbstractReportVisitor implements ReportVisitor {
+/**
+ * All operations have no side-effects.
+ * <p>
+ * Useful for lazy subclass-ers or when a {@link ReportElement} interface needs to be satisfied.
+ */
+public class NoOpVisitor implements ReportVisitor {
 
   @Override
   public void visit(@NonNull Report report) {

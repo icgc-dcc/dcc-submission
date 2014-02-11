@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.collect.ImmutableMap.builder;
+
 import java.util.Map;
 
 import lombok.NonNull;
@@ -24,17 +26,26 @@ import lombok.NonNull;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.FileReport;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-public class GetFilesVisitor extends AbstractReportVisitor {
+/**
+ * Value producing visitor that returns a mapping of file names to file types for all files in the report.
+ */
+public class GetFilesVisitor extends NoOpVisitor {
 
-  private final Builder<String, FileType> files = ImmutableMap.<String, FileType> builder();
+  /**
+   * Mapping of {@link FileReport#getFileName()} to {@link FileReport#getFileType()}.
+   */
+  private final Builder<String, FileType> files = builder();
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
     files.put(fileReport.getFileName(), fileReport.getFileType());
   }
+
+  //
+  // Result
+  //
 
   public Map<String, FileType> getFiles() {
     return files.build();
