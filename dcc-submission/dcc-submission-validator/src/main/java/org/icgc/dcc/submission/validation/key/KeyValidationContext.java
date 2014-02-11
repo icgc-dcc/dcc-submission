@@ -164,6 +164,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   private SubmissionDirectory createSubmissionDirectory() {
     return new SubmissionDirectory(
         getDccFileSystem(),
+        getReleaseFileSystem(),
         getRelease(),
         getProjectKey(),
         new Submission(projectKey, projectKey, releaseName));

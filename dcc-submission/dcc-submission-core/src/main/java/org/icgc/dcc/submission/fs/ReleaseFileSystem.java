@@ -70,7 +70,7 @@ public class ReleaseFileSystem {
     }
 
     val submission = optional.get();
-    return new SubmissionDirectory(dccFileSystem, release, projectKey, submission);
+    return new SubmissionDirectory(dccFileSystem, this, release, projectKey, submission);
   }
 
   public void setUpNewReleaseFileSystem(
@@ -138,7 +138,7 @@ public class ReleaseFileSystem {
     return new Path(this.dccFileSystem.getRootStringPath(), this.release.getName());
   }
 
-  public Path getSystemDirPath() {
+  protected Path getSystemDirPath() {
     return new Path(this.getReleaseDirectory(), SYSTEM_FILES_DIR_NAME);
   }
 

@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.isFile;
@@ -28,6 +27,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,26 +42,19 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 @Slf4j
+@RequiredArgsConstructor
 public class SubmissionDirectory {
 
+  @NonNull
   private final DccFileSystem dccFileSystem;
+  @NonNull
+  private final ReleaseFileSystem releaseFileSystem;
+  @NonNull
   private final Release release;
+  @NonNull
   private final String projectKey;
+  @NonNull
   private final Submission submission;
-
-  public SubmissionDirectory(DccFileSystem dccFileSystem, Release release, String projectKey, Submission submission) {
-    super();
-
-    checkArgument(dccFileSystem != null);
-    checkArgument(release != null);
-    checkArgument(projectKey != null);
-    checkArgument(submission != null);
-
-    this.dccFileSystem = dccFileSystem;
-    this.release = release;
-    this.projectKey = projectKey;
-    this.submission = submission;
-  }
 
   /**
    * (non-recursive) TODO: confirm
@@ -117,6 +111,14 @@ public class SubmissionDirectory {
 
   public String getSubmissionDirPath() {
     return dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
+  }
+
+  /**
+   * Delegates to the {@link ReleaseFileSystem} since the system dir lives at the release level (but is most typically
+   * accessed in the context of the processing a submission directory).
+   */
+  public String getSystemDirPath() {
+    return releaseFileSystem.getSystemDirPath().toUri().toString();
   }
 
   public String getValidationDirPath() {

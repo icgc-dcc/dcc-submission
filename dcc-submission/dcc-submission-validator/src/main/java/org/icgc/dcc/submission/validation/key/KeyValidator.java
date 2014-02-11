@@ -83,15 +83,13 @@ public class KeyValidator implements Validator {
   }
 
   private static KVValidatorRunner createRunner(ValidationContext context, Path reportPath) {
+    val submissionDirectory = context.getSubmissionDirectory();
     return new KVValidatorRunner(
         context.getFileSystem().getUri(),
         context.getDataTypes(),
         context.getDictionary(),
-
-        // TODO: homogenize this (one returns a String the other a Path)
-        context.getSubmissionDirectory().getSubmissionDirPath(),
-        context.getReleaseFileSystem().getSystemDirPath().toUri().toString(),
-
+        submissionDirectory.getSubmissionDirPath(),
+        submissionDirectory.getSystemDirPath(),
         reportPath.toUri().toString());
   }
 

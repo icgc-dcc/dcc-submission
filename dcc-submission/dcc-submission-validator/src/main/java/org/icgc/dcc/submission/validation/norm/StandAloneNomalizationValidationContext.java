@@ -29,8 +29,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import lombok.Cleanup;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -52,8 +52,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
-@RequiredArgsConstructor
-public class NomalizationValidationContext extends AbstractValidationContext {
+public class StandAloneNomalizationValidationContext extends AbstractValidationContext {
 
   @NonNull
   private final String releaseName;
@@ -67,9 +66,66 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   @NonNull
   private final String jobTracker;
 
+  @Getter
+  @NonNull
+  private final Release release;
+  @Getter
+  @NonNull
+  private final Submission submission;
+  @Getter
+  @NonNull
+  private final FileSystem fileSystem;
+  @Getter
+  @NonNull
+  private final DccFileSystem dccFileSystem;
+  @Getter
+  @NonNull
+  private final ReleaseFileSystem releaseFileSystem;
+  @Getter
+  @NonNull
+  private final SubmissionDirectory submissionDirectory;
+
+  @SneakyThrows
+  public StandAloneNomalizationValidationContext(
+      String releaseName, String projectKey, String fsRoot, String fsUrl, String jobTracker) {
+    this.releaseName = releaseName;
+    this.projectKey = projectKey;
+    this.fsRoot = fsRoot;
+    this.fsUrl = fsUrl;
+    this.jobTracker = jobTracker;
+
+    this.release = new Release(releaseName);
+    this.submission = new Submission(projectKey, projectKey, releaseName);
+
+    val config = getHadoopConfig();
+    this.fileSystem = FileSystem.get(config);
+    this.dccFileSystem = new DccFileSystem(getAppConfig(), fileSystem);
+    this.releaseFileSystem = new ReleaseFileSystem(dccFileSystem, release);
+    this.submissionDirectory = new SubmissionDirectory(
+        dccFileSystem, releaseFileSystem, release, projectKey, submission);
+  }
+
+  private final Configuration getHadoopConfig() {
+    val fsUrl = getAppConfig().getString(FS_URL);
+    val configuration = new Configuration();
+    configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
+
+    return configuration;
+  }
+
+  private final Config getAppConfig() {
+    return parseMap(ImmutableMap.<String, Object> of(
+        "hadoop.mapred.job.tracker", jobTracker,
+        "hadoop.fs.defaultFS", fsUrl,
+
+        "fs.root", fsRoot,
+        "fs.url", fsUrl
+        ));
+  }
+
   @Override
   public PlatformStrategy getPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
+    val provider = new PlatformStrategyFactoryProvider(getAppConfig(), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component
@@ -78,16 +134,6 @@ public class NomalizationValidationContext extends AbstractValidationContext {
     val output = project;
     val system = new Path(SEPARATOR); // Not used by normalizer
     return factory.get(input, output, system);
-  }
-
-  @Override
-  public String getProjectKey() {
-    return projectKey;
-  }
-
-  @Override
-  public Release getRelease() {
-    return new Release(releaseName);
   }
 
   @Override
@@ -112,27 +158,6 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   }
 
   @Override
-  @SneakyThrows
-  public FileSystem getFileSystem() {
-    return FileSystem.get(getConfiguration());
-  }
-
-  @Override
-  public DccFileSystem getDccFileSystem() {
-    return new DccFileSystem(getConfig(), getFileSystem());
-  }
-
-  @Override
-  public ReleaseFileSystem getReleaseFileSystem() {
-    return new ReleaseFileSystem(getDccFileSystem(), getRelease());
-  }
-
-  @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return new SubmissionDirectory(getDccFileSystem(), getRelease(), getProjectKey(), getSubmission());
-  }
-
-  @Override
   public Report getReport() {
     throw new UnsupportedOperationException();
   }
@@ -143,29 +168,6 @@ public class NomalizationValidationContext extends AbstractValidationContext {
     URL url = new URL(format(template, basePath, version, version));
 
     return url;
-  }
-
-  private Config getConfig() {
-    return parseMap(ImmutableMap.<String, Object> of(
-        "hadoop.mapred.job.tracker", jobTracker,
-        "hadoop.fs.defaultFS", fsUrl,
-
-        "fs.root", fsRoot,
-        "fs.url", fsUrl
-        ));
-  }
-
-  private Configuration getConfiguration() {
-    val fsUrl = getConfig().getString(FS_URL);
-    val configuration = new Configuration();
-    configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
-
-    return configuration;
-  }
-
-  private Submission getSubmission() {
-    val projectName = getProjectKey();
-    return new Submission(getProjectKey(), projectName, releaseName);
   }
 
 }

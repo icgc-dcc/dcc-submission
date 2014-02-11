@@ -76,8 +76,8 @@ public class ReleaseFileSystemTest {
     val previousReleaseDir = new File(rootDir, previousReleaseName);
 
     val previousSubmission = mock(Submission.class);
-    val previousSubmissionDirectory = new SubmissionDirectory(dccFileSystem, previousRelease, projectKey,
-        previousSubmission);
+    val previousSubmissionDirectory = new SubmissionDirectory(
+        dccFileSystem, previousReleaseFileSystem, previousRelease, projectKey, previousSubmission);
     val previousSubmissionDir = new File(previousReleaseDir, projectKey);
     val previousSubmissionPath = previousSubmissionDir.getAbsolutePath();
     val previousSubmissionSampleFile = new File(previousSubmissionPath, submissionSampleFileName);

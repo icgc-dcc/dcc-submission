@@ -34,7 +34,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 /**
- * 
+ * Class representing interactions with the file system in the context of FPV.
  */
 @RequiredArgsConstructor
 public class FPVFileSystem {
@@ -55,9 +55,6 @@ public class FPVFileSystem {
     return dccFileSystem.open(submissionDirectory.getDataFilePath(filename));
   }
 
-  /**
-   * TODO: move to {@link DccFileSystem} directly...
-   */
   public CompressionCodec getCodec(String filename) {
     return new CompressionCodecFactory(dccFileSystem.getFileSystem().getConf())
         .getCodec(new Path(
