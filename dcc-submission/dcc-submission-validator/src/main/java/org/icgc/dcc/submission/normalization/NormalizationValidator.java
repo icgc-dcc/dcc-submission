@@ -27,6 +27,7 @@ import static org.icgc.dcc.submission.normalization.NormalizationReport.Normaliz
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.TOTAL_START;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
 import static org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter.UNIQUE_START;
+import static org.icgc.dcc.submission.normalization.steps.DonorIdAddition.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -39,6 +40,7 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.normalization.NormalizationContext.DefaultNormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.normalization.steps.Counting;
+import org.icgc.dcc.submission.normalization.steps.DonorIdAddition;
 import org.icgc.dcc.submission.normalization.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
 import org.icgc.dcc.submission.normalization.steps.PreMarking;
@@ -117,6 +119,8 @@ public final class NormalizationValidator implements Validator {
                 UNIQUE_START))
             .add(new Counting(TOTAL_START))
 
+            .add(new DonorIdAddition())
+
             // Must happen before rebuilding the mutation
             .add(new PreMarking()) // Must happen no matter what
             .add(new SensitiveRowMarking())
@@ -133,6 +137,8 @@ public final class NormalizationValidator implements Validator {
 
             // Must happen after removing duplicates and allele masking
             .add(new PrimaryKeyGeneration())
+
+            .add(new FieldDiscarding(DONOR_ID_FIELD))
 
             .add(new Counting(TOTAL_END))
 
@@ -164,7 +170,8 @@ public final class NormalizationValidator implements Validator {
     String projectKey = context.getProjectKey();
 
     // Plan cascade
-    val pipes = planCascade(DefaultNormalizationContext.getNormalizationContext(context.getDictionary()));
+    val pipes = planCascade(DefaultNormalizationContext.getNormalizationContext(
+        context.getPlatformStrategy(), context.getDictionary()));
 
     // Connect cascade
     val ssmPFileSchema = context.getDictionary().getFileSchema(FOCUS_TYPE);

@@ -24,7 +24,7 @@ import java.util.List;
 
 import lombok.Delegate;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,8 +45,8 @@ import com.google.common.base.Optional;
 /**
  * The "default" implementation of the {@link ValidationContext}.
  */
-@Value
 @Slf4j
+@RequiredArgsConstructor
 public class DefaultValidationContext implements ValidationContext {
 
   /**
@@ -54,23 +54,28 @@ public class DefaultValidationContext implements ValidationContext {
    */
   @Delegate
   @NonNull
-  SubmissionReportContext reportContext;
+  private final SubmissionReportContext reportContext;
 
   /**
    * Supports the non-inherited {@link ValidationContext} contract.
    */
   @NonNull
-  String projectKey;
+  private final String projectKey;
   @NonNull
-  List<String> emails;
+  private final List<String> emails;
   @NonNull
-  Release release;
+  private final Release release;
   @NonNull
-  Dictionary dictionary;
+  private final Dictionary dictionary;
   @NonNull
-  DccFileSystem dccFileSystem;
+  private final DccFileSystem dccFileSystem;
   @NonNull
-  PlatformStrategyFactory platformStrategyFactory;
+  private final PlatformStrategyFactory platformStrategyFactory;
+
+  /**
+   * Lazy-loaded.
+   */
+  private PlatformStrategy platform;
 
   @Override
   public String getProjectKey() {
@@ -114,19 +119,21 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public PlatformStrategy getPlatformStrategy() {
-    // Round about way to get the inputs and outputs
-    Path inputDir = new Path(getSubmissionDirectory().getSubmissionDirPath());
-    log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
-    Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
-    log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);
-    Path systemDir = getReleaseFileSystem().getSystemDirectory();
-    log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
+    if (platform == null) {
+      // Round about way to get the inputs and outputs
+      Path inputDir = new Path(getSubmissionDirectory().getSubmissionDirPath());
+      log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
+      Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
+      log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);
+      Path systemDir = getReleaseFileSystem().getSystemDirectory();
+      log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
 
-    // Abstractions to support local / Hadoop
-    log.info("Creating platform strategy for project {}", projectKey);
-    val platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
+      // Abstractions to support local / Hadoop
+      log.info("Creating platform strategy for project {}", projectKey);
+      platform = platformStrategyFactory.get(inputDir, outputDir, systemDir);
+    }
 
-    return platformStrategy;
+    return platform;
   }
 
   @Override

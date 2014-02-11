@@ -49,15 +49,12 @@ public class MaskedRowGeneratorTest extends CascadingTestCase {
     String dummyValue = "dummy";
     Tuple open = // Just passed through as is
         new Tuple(dummyValue, dummyValue, "A/A", "A/T", "A", "A", "T", Marking.OPEN.getTupleValue());
-    Tuple nonTrivial = // They differ -> masked
+    Tuple controlled1 =
         new Tuple(dummyValue, dummyValue, "A/G", "A/T", "A", "G", "T", Marking.CONTROLLED.getTupleValue());
-    Tuple trivial = // reference genome allele equals mutation_to -> not masked
-        new Tuple(dummyValue, dummyValue, "A/G", "A/A", "A", "G", "A", Marking.CONTROLLED.getTupleValue());
 
     TupleEntry[] entries = new TupleEntry[] {
         new TupleEntry(inputFields, open),
-        new TupleEntry(inputFields, nonTrivial),
-        new TupleEntry(inputFields, trivial)
+        new TupleEntry(inputFields, controlled1)
     };
     Fields resultFields = inputFields;
 
@@ -65,15 +62,14 @@ public class MaskedRowGeneratorTest extends CascadingTestCase {
 
     Tuple[] resultTuples = new Tuple[] {
         open, // Untouched
-        nonTrivial, // Untouched
+        controlled1, // Untouched
         new Tuple(
             dummyValue, dummyValue,
             null, null, // Erased
             "A",
             "A", // Changed to match reference genome allele
             "T",
-            Marking.MASKED.getTupleValue()), // Marked as masked
-        trivial, // Untouched
+            Marking.MASKED.getTupleValue()) // Marked as masked
     };
     checkOperationResults(iterator, resultTuples);
   }

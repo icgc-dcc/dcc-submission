@@ -60,6 +60,7 @@ import cascading.tap.local.FileTap;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 @RunWith(PowerMockRunner.class)
@@ -145,6 +146,17 @@ public class NormalizationValidatorTest {
         .thenReturn(PROJECT_NAME);
     when(mockValidationContext.getPlatformStrategy())
         .thenReturn(mockPlatformStrategy);
+
+    when(mockPlatformStrategy.getFlowConnector())
+        .thenReturn(new LocalFlowConnector());
+    when(mockPlatformStrategy.getSampleToDonorMap(mockDictionary)).thenReturn(
+        new ImmutableMap.Builder<String, String>()
+            .put("00302", "dr1")
+            .put("00312", "dr1")
+            .put("00322", "dr2")
+            .put("00352", "dr2")
+            .put("00372", "dr3")
+            .build());
   }
 
   @SneakyThrows
@@ -192,12 +204,9 @@ public class NormalizationValidatorTest {
   private void test(String inputFile, String referenceFile) {
     mockInputTap(inputFile);
     mockOutputTap(OUTPUT_FILE);
-    when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(new LocalFlowConnector());
 
     new File(OUTPUT_FILE).delete();
-    normalizationValidator = NormalizationValidator
-        .getDefaultInstance(mockDccFileSystem2, mockConfig);
+    normalizationValidator = NormalizationValidator.getDefaultInstance(mockDccFileSystem2, mockConfig);
     normalizationValidator.validate(mockValidationContext);
 
     List<String> outputLines = readLines(new File(OUTPUT_FILE), UTF_8);

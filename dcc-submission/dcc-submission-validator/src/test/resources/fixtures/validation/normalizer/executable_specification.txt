@@ -92,6 +92,9 @@ input	1	A	C/G	A/G	C	A
 result	1	A	C/G	A/G	C	A	C>A	CTRL	
 result	1	A			A	A	A>A	MASK		
 
+input	1	A	A/A	A/C/C	A	C
+result	1	A	A/A	A/C/C	A	C	A>C	OPEN
+
 input	2	-	-/-	-/A	-	A		
 result	2	-	-/-	-/A	-	A	->A	OPEN	
 									

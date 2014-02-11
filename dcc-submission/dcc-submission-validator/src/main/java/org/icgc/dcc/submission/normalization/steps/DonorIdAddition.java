@@ -17,32 +17,75 @@
  */
 package org.icgc.dcc.submission.normalization.steps;
 
-import org.icgc.dcc.submission.normalization.NormalizationConfig.OptionalStep;
+import static cascading.tuple.Fields.ALL;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+
+import java.util.Map;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+
 import org.icgc.dcc.submission.normalization.NormalizationContext;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
 
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Discard;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
- * May never be used.
+ * Adds the corresponding donor ID for sample IDs.
  */
-public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
+@RequiredArgsConstructor
+public final class DonorIdAddition implements NormalizationStep {
 
-  public static final String STEP_NAME = "confidential-fields";
+  public static final Fields SAMPLE_ID_FIELD = new Fields(SUBMISSION_ANALYZED_SAMPLE_ID);
+  public static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
 
   @Override
   public String shortName() {
-    return STEP_NAME;
+    return "donor-id-addition";
+  }
+
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Each(pipe, new DonorIdAdder(context.getSampleToDonorMap()), ALL);
   }
 
   /**
-   * TODO
+   * See {@link DonorIdAddition}.
    */
-  @Override
-  public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Discard(pipe, new Fields("TODO"));
-  }
+  @VisibleForTesting
+  final class DonorIdAdder extends BaseOperation<Void> implements Function<Void> {
 
+    @NonNull
+    private final Map<String, String> sampleToDonorMap;
+
+    @VisibleForTesting
+    DonorIdAdder(Map<String, String> sampleToDonorMap) {
+      super(DONOR_ID_FIELD);
+      this.sampleToDonorMap = sampleToDonorMap;
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+      val donorId = sampleToDonorMap.get(
+          functionCall
+              .getArguments()
+              .getString(SAMPLE_ID_FIELD));
+      functionCall
+          .getOutputCollector()
+          .add(new Tuple(donorId));
+    }
+  }
 }
