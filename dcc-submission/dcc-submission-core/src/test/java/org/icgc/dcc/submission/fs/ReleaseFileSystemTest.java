@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -75,8 +76,8 @@ public class ReleaseFileSystemTest {
     val previousReleaseDir = new File(rootDir, previousReleaseName);
 
     val previousSubmission = mock(Submission.class);
-    val previousSubmissionDirectory =
-        new SubmissionDirectory(dccFileSystem, previousRelease, projectKey, previousSubmission);
+    val previousSubmissionDirectory = new SubmissionDirectory(dccFileSystem, previousRelease, projectKey,
+        previousSubmission);
     val previousSubmissionDir = new File(previousReleaseDir, projectKey);
     val previousSubmissionPath = previousSubmissionDir.getAbsolutePath();
     val previousSubmissionSampleFile = new File(previousSubmissionPath, submissionSampleFileName);
@@ -87,7 +88,7 @@ public class ReleaseFileSystemTest {
     val previousSubmissionDonorErrorFile = new File(previousSubmissionValidationDirPath, "donor--errors.json");
     val previousSubmissionSampleErrorFile = new File(previousSubmissionValidationDirPath, "sample--errors.json");
 
-    val previousSystemDir = new File(previousReleaseDir, "SystemFiles");
+    val previousSystemDir = new File(previousReleaseDir, SYSTEM_FILES_DIR_NAME);
     val previousSystemPath = new Path(previousSystemDir.getAbsolutePath());
     val previousSystemFile = new File(previousSystemDir, "system.txt");
 
@@ -109,7 +110,7 @@ public class ReleaseFileSystemTest {
     when(previousRelease.getSubmission(anyString())).thenReturn(
         Optional.<Submission> of(previousSubmission));
     when(previousReleaseFileSystem.getSubmissionDirectory(projectKey)).thenReturn(previousSubmissionDirectory);
-    when(previousReleaseFileSystem.getSystemDirectory()).thenReturn(previousSystemPath);
+    when(previousReleaseFileSystem.getSystemDirPath()).thenReturn(previousSystemPath);
     when(previousSubmissionDirectory.getValidationDirPath()).thenReturn(previousSubmissionValidationDirPath);
     when(previousSubmissionDirectory.getDataFilePath(previousSubmissionDonorFile.getName())).thenReturn(
         previousSubmissionDonorFile.getAbsolutePath());
@@ -139,7 +140,7 @@ public class ReleaseFileSystemTest {
     val nextSubmissionDonorErrorFile = new File(nextSubmissionValidationDir, "donor--errors.json");
     val nextSubmissionSampleErrorFile = new File(nextSubmissionValidationDir, "sample--errors.json");
 
-    val nextSystemDir = new File(nextReleaseDir, "SystemFiles");
+    val nextSystemDir = new File(nextReleaseDir, SYSTEM_FILES_DIR_NAME);
     val nextSystemFile = new File(nextSystemDir, "system.txt");
 
     // Create files and directories
@@ -171,20 +172,16 @@ public class ReleaseFileSystemTest {
 
     val signedOffProjectKeys = Lists.<String> newArrayList();
     val nonSignedOffProjectKeys = projectKeys(projectKey);
-    nextReleaseFileSystem.setUpNewReleaseFileSystem(
-        previousReleaseName,
-        nextReleaseName,
-        previousReleaseFileSystem,
-        signedOffProjectKeys,
-        nonSignedOffProjectKeys
-        );
+    nextReleaseFileSystem.setUpNewReleaseFileSystem(previousReleaseName, nextReleaseName, previousReleaseFileSystem,
+        signedOffProjectKeys, nonSignedOffProjectKeys);
 
     //
     // Verify
     //
 
     // The "moveFrom" validation folder moved
-    // Un-comment after addressing DCC-419: would have to make createProjectDirectory() work
+    // Un-comment after addressing DCC-419: would have to make
+    // createProjectDirectory() work
     // assertThat(previousSubmissionDir).exists();
 
     assertThat(previousSubmissionValidationDir).doesNotExist();

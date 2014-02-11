@@ -28,6 +28,7 @@ import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
@@ -60,6 +61,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
@@ -204,6 +206,11 @@ public final class TestUtils {
 
   @SneakyThrows
   public static String dictionaryToString(Dictionary dictionary) {
+    val ssmP = dictionary.getFileSchema(SSM_P_TYPE);
+    ssmP.setPattern("ssm_p(\\..+)?\\.txt");
+
+    Dictionaries.addNewModels(dictionary);
+
     return MAPPER.writeValueAsString(dictionary);
   }
 

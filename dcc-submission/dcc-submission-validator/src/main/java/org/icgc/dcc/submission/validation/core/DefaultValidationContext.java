@@ -136,7 +136,7 @@ public class DefaultValidationContext implements ValidationContext {
     log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
     Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
     log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);
-    Path systemDir = getReleaseFileSystem().getSystemDirectory();
+    Path systemDir = getReleaseFileSystem().getSystemDirPath();
     log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
 
     // Abstractions to support local / Hadoop

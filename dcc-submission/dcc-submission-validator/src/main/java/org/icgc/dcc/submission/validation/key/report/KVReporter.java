@@ -21,12 +21,14 @@ import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.codehaus.jackson.map.SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType1;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType2;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getPrimaryKeyNames;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getReferencingFileType;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getSurjectionForeignKeyNames;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.PRIMARY_RELATION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SECONDARY_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.OPTIONAL_RELATION;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION1;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION2;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SURJECTION;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUENESS;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
@@ -88,12 +90,16 @@ public class KVReporter implements Closeable {
     reportError(fileType, fileName, lineNumber, UNIQUENESS, pk);
   }
 
-  public void reportRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey fk) {
-    reportError(fileType, fileName, lineNumber, PRIMARY_RELATION, fk);
+  public void reportRelation1Error(KVFileType fileType, String fileName, long lineNumber, KVKey fk1) {
+    reportError(fileType, fileName, lineNumber, RELATION1, fk1);
   }
 
-  public void reportSecondaryRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey secondaryFk) {
-    reportError(fileType, fileName, lineNumber, SECONDARY_RELATION, secondaryFk);
+  public void reportRelation2Error(KVFileType fileType, String fileName, long lineNumber, KVKey fk2) {
+    reportError(fileType, fileName, lineNumber, RELATION2, fk2);
+  }
+
+  public void reportOptionalRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey optionalFk) {
+    reportError(fileType, fileName, lineNumber, OPTIONAL_RELATION, optionalFk);
   }
 
   public void reportSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
@@ -122,9 +128,11 @@ public class KVReporter implements Closeable {
   private Object[] getErrorParams(KVFileType fileType, KVErrorType errorType) {
     Object[] errorParams = null;
 
-    // PRIMARY/SECONDARY RELATION:
-    if (errorType == PRIMARY_RELATION || errorType == SECONDARY_RELATION) {
-      val referencedFileType = getOptionalReferencedFileType(fileType).get();
+    // RELATIONS:
+    if (errorType == RELATION1 || errorType == RELATION2 || errorType == OPTIONAL_RELATION) {
+      val referencedFileType = errorType != RELATION2 ?
+          getOptionalReferencedFileType1(fileType).get() : // Optional relation also uses it
+          getOptionalReferencedFileType2(fileType).get();
       val referencedFields = getPrimaryKeyNames(referencedFileType);
       errorParams = new Object[] { referencedFileType, referencedFields };
     }

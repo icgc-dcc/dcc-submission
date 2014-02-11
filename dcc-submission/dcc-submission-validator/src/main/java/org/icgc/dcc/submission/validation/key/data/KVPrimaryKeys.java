@@ -20,16 +20,18 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newTreeMap;
-import static org.icgc.dcc.submission.validation.key.core.KVProcessor.ROW_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+
+import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.collect.Sets;
 
@@ -41,8 +43,18 @@ public final class KVPrimaryKeys {
 
   private final Map<String, Set<KVKey>> pks = newTreeMap();
 
+  /**
+   * Re-using the PK mechanism even though the keys in {@link KVFileType#MIRNA_P} aren't actually unique (they are
+   * however referenced).
+   */
+  public void updateMirnaPKeys(KVFileType fileType, String fileName, KVRow row) {
+    if (ROW_CHECKS_ENABLED) checkState(fileType == MIRNA_P,
+        "Only applicable for '%s', instead got: '%s'", MIRNA_P, fileType);
+    updatePks(fileName, row);
+  }
+
   public void updatePks(String fileName, KVRow row) {
-    if (ROW_CHECKS_ENABLED) checkState(row.hasPk(), "Expected to have a PK: '{}' ('{}')", row, fileName);
+    if (ROW_CHECKS_ENABLED) checkState(row.hasPk(), "Expected to have a PK: '%s' ('%s')", row, fileName);
     if (!pks.containsKey(fileName)) {
       pks.put(fileName, Sets.<KVKey> newTreeSet());
     }
@@ -57,9 +69,7 @@ public final class KVPrimaryKeys {
     return pks.get(fileName).iterator();
   }
 
-  public boolean containsPk(
-      @NonNull// TODO: consider removing such time consuming checks?
-      KVKey key) {
+  public boolean containsPk(KVKey key) {
     for (val filePks : pks.values()) {
       if (filePks.contains(key)) {
         return true;

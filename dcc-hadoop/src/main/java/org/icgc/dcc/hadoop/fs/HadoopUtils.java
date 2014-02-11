@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -236,6 +237,28 @@ public class HadoopUtils {
       filenameList.add(path.getName());
     }
     return filenameList;
+  }
+
+  /**
+   * Only use for logging and debugging purposes
+   */
+  @SneakyThrows
+  public static List<String> lsRecursive(FileSystem fileSystem, Path path) {
+    val files = new ImmutableList.Builder<String>();
+    val iterator = fileSystem.listFiles(path, true);
+    while (iterator.hasNext()) {
+      files.add(iterator.next()
+          .getPath()
+          .toUri().toString());
+    }
+    return files.build();
+  }
+
+  /**
+   * See {@link #lsRecursive(FileSystem, Path)}.
+   */
+  public static List<String> tree(FileSystem fileSystem, Path path) {
+    return lsRecursive(fileSystem, path);
   }
 
   /**

@@ -26,9 +26,14 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_P;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_SYSTEM;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_SEQ_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_SEQ_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
@@ -57,16 +62,18 @@ public enum KVExperimentalDataType {
   STSM(STSM_M, of(STSM_M, STSM_P, STSM_S)),
   MIRNA(MIRNA_M, of(MIRNA_M, MIRNA_P, MIRNA_S)),
   METH(METH_M, of(METH_M, METH_P, METH_S)),
+  METH_ARRAY(METH_ARRAY_M, of(METH_ARRAY_M, METH_ARRAY_SYSTEM, METH_ARRAY_P)),
+  METH_SEQ(METH_SEQ_M, of(METH_SEQ_M, METH_SEQ_P)),
   EXP(EXP_M, of(EXP_M, EXP_G)),
   PEXP(PEXP_M, of(PEXP_M, PEXP_P)),
   JCN(JCN_M, of(JCN_M, JCN_P)),
   SGV(SGV_M, of(SGV_M, SGV_P));
 
   @Getter
-  private final KVFileType dataTypePresenceFlagship;
+  private final KVFileType dataTypePresenceIndicator;
 
   /**
-   * Order matters.
+   * Order matters (referenced files first).
    */
   @Getter
   private final List<KVFileType> fileTypes;

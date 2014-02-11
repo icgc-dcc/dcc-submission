@@ -59,6 +59,8 @@ public class KVValidatorRunner implements Runnable, Serializable {
   @NonNull
   private final String submissionPath;
   @NonNull
+  private final String systemPath;
+  @NonNull
   private final String reportPath;
 
   @Override
@@ -76,9 +78,10 @@ public class KVValidatorRunner implements Runnable, Serializable {
     val fileSystem = getFileSystem();
     val report = new KVReporter(fileSystem, new Path(reportPath));
     try {
-      val validator = new KVProcessor(
+      val validator = new KVSubmissionProcessor(
           new KVFileParser(fileSystem, new FileLineListParser(), false),
-          new KVFileSystem(fileSystem, dataTypes, dictionary, new Path(submissionPath)), report);
+          new KVFileSystem(fileSystem, dataTypes, dictionary,
+              new Path(submissionPath), new Path(systemPath)), report);
 
       log.info("Starting key validation...");
       validator.processSubmission();

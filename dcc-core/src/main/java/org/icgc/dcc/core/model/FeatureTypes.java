@@ -61,7 +61,9 @@ public final class FeatureTypes {
     CNGV_TYPE("cngv", "_cngv_exists"),
     STSM_TYPE("stsm", "_stsm_exists"),
     STGV_TYPE("stgv", "_stgv_exists"),
-    METH_TYPE("meth", "_meth_exists"),
+    METH_TYPE("meth", "_meth_exists"), // Old meth
+    METH_ARRAY_TYPE("meth_array", "_meth_array_exists"),
+    METH_SEQ_TYPE("meth_seq", "_meth_seq_exists"),
     MIRNA_TYPE("mirna", "_mirna_exists"),
     EXP_TYPE("exp", "_exp_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),

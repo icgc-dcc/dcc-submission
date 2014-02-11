@@ -21,7 +21,8 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType1;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType2;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.hasOutgoingSurjectiveRelation;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
@@ -37,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
+import org.icgc.dcc.submission.validation.key.data.KVReferencedPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
@@ -49,7 +51,7 @@ import com.google.common.base.Optional;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class KVProcessor {
+public class KVSubmissionProcessor {
 
   /**
    * Enables/disables checks at the row level (for performance); TODO: make this configurable.
@@ -101,21 +103,19 @@ public class KVProcessor {
     // Primary keys for the type under consideration (each file will augment it)
     val primaryKeys = new KVPrimaryKeys();
 
-    // Obtain referenced file type (if applicable, for instance DONOR has none)
-    val optionalReferencedFileType = getOptionalReferencedFileType(fileType);
-
-    // Obtain corresponding PKs for the referenced file type (also if applicable)
-    val optionalReferencedPrimaryKeys = optionalReferencedFileType.isPresent() ?
-        of(fileTypeToPrimaryKeys.get(optionalReferencedFileType.get())) :
-        Optional.<KVPrimaryKeys> absent();
+    val optionallyReferencedPrimaryKeys1 = getOptionallyReferencedPrimaryKeys1(fileType);
+    val optionallyReferencedPrimaryKeys2 = getOptionallyReferencedPrimaryKeys2(fileType);
 
     // Encountered foreign keys in the case where we need to check for surjection
     val optionalEncounteredForeignKeys = hasOutgoingSurjectiveRelation(fileType) ?
         of(new KVEncounteredForeignKeys()) :
         Optional.<KVEncounteredForeignKeys> absent();
 
-    log.info("Processing file type: '{}'; Referencing '{}' (will be collecting FKs: '{}')",
-        new Object[] { fileType, optionalReferencedFileType, optionalEncounteredForeignKeys.isPresent() });
+    log.info(
+        "Processing file type: '{}'; Referencing '{} and {}' (will be collecting FKs: '{}')",
+        new Object[] { fileType,
+            optionallyReferencedPrimaryKeys1, optionallyReferencedPrimaryKeys2,
+            optionalEncounteredForeignKeys.isPresent() });
 
     // Process files matching the current file type
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
@@ -123,8 +123,8 @@ public class KVProcessor {
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
       log.info("{}", banner("-"));
-      log.info("Processing '{}' file: '{}'; Referencing '{}': '{}'",
-          new Object[] { fileType, optionalReferencedFileType, dataFilePath });
+      log.info("Processing '{}' file: '{}'; Referencing '{} and {}': '{}'",
+          new Object[] { fileType, optionallyReferencedPrimaryKeys1, optionallyReferencedPrimaryKeys2, dataFilePath });
 
       // TODO: subclass for referencing/non-referencing?
       new KVFileProcessor(fileType, dataFilePath)
@@ -134,26 +134,31 @@ public class KVProcessor {
               fileParser,
               reporter,
               primaryKeys,
-              optionalReferencedPrimaryKeys,
+              optionallyReferencedPrimaryKeys1,
+              optionallyReferencedPrimaryKeys2,
               optionalEncounteredForeignKeys
           );
     }
     fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
-    checkSurjection(fileType, optionalReferencedFileType, optionalEncounteredForeignKeys);
+    // Check surjection (N/A for FK2 at the moment)
+    if (optionallyReferencedPrimaryKeys1.isPresent()) {
+      checkSurjection(
+          fileType,
+          optionallyReferencedPrimaryKeys1.get()
+              .getReferencedFileType(),
+          optionalEncounteredForeignKeys);
+    }
   }
 
   private void checkSurjection(
       KVFileType fileType,
-      Optional<KVFileType> optionalReferencedType,
+      KVFileType referencedType,
       Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys) {
 
     log.info("{}", banner("-"));
     if (hasOutgoingSurjectiveRelation(fileType)) {
       log.info("Post-processing: surjectivity check for type '{}'", fileType);
-
-      checkState(optionalReferencedType.isPresent());
-      val referencedType = optionalReferencedType.get();
 
       checkState(optionalEncounteredForeignKeys.isPresent());
       surjectivityValidator
@@ -165,6 +170,32 @@ public class KVProcessor {
               referencedType);
     } else {
       log.info("No outgoing surjection relation for file type: '{}'", fileType);
+    }
+  }
+
+  private Optional<KVReferencedPrimaryKeys> getOptionallyReferencedPrimaryKeys1(KVFileType fileType) {
+    return getOptionallyReferencedPrimaryKeys(fileType, false);
+  }
+
+  private Optional<KVReferencedPrimaryKeys> getOptionallyReferencedPrimaryKeys2(KVFileType fileType) {
+    return getOptionallyReferencedPrimaryKeys(fileType, true);
+  }
+
+  private Optional<KVReferencedPrimaryKeys> getOptionallyReferencedPrimaryKeys(KVFileType fileType, boolean secondary) {
+    // Obtain referenced file type (if applicable, for instance DONOR has none)
+    val optionalReferencedFileType = secondary ?
+        getOptionalReferencedFileType2(fileType) :
+        getOptionalReferencedFileType1(fileType);
+
+    if (optionalReferencedFileType.isPresent()) {
+      // Obtain corresponding PKs for the referenced file type (also if applicable)
+      val referencedFileType = optionalReferencedFileType.get();
+      return Optional.<KVReferencedPrimaryKeys> of(
+          new KVReferencedPrimaryKeys(
+              referencedFileType,
+              fileTypeToPrimaryKeys.get(referencedFileType)));
+    } else {
+      return Optional.absent();
     }
   }
 

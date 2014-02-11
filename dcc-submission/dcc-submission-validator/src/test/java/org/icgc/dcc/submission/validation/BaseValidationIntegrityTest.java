@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.io.Files.readLines;
 import static java.util.Collections.sort;
+import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 
 import java.io.File;
 import java.net.URL;
@@ -62,7 +63,8 @@ public abstract class BaseValidationIntegrityTest {
    */
   private static final ObjectMapper MAPPER = new ObjectMapper();
   protected static final Path SYSTEM_DIR = new Path(
-      "../dcc-submission-server/src/test/resources/fixtures/submission/dcc_root_dir/release1/SystemFiles");
+      "../dcc-submission-server/src/test/resources/fixtures/submission/dcc_root_dir/release1",
+      SYSTEM_FILES_DIR_NAME);
 
   /**
    * Mocks.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,52 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.core.model;
 
-import lombok.Value;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_SYSTEM_TYPE;
 
-import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
+import java.util.Map;
+
+import org.icgc.dcc.core.model.FileTypes.FileType;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Data relevant to the key validation for a given row.
+ * Temporary class to describe system file properties.
  */
-@Value
-public class KVRow {
+public class SystemFiles {
 
-  /**
-   * Applicable for most file except for the leafs (see dictionary DAG).
-   */
-  private final KVKey pk;
-
-  /**
-   * Applicable for all files but 'donor'.
-   */
-  private final KVKey fk1;
-
-  /**
-   * Only applicable for the array types.
-   */
-  private final KVKey fk2;
-
-  /**
-   * Only applicable for some meta files. See {@link KeysType#OPTIONAL_FK}.
-   */
-  private final KVKey optionalFk;
-
-  public boolean hasPk() {
-    return pk != null;
-  }
-
-  public boolean hasFk1() {
-    return fk1 != null;
-  }
-
-  public boolean hasFk2() {
-    return fk2 != null;
-  }
-
-  public boolean hasOptionalFk() {
-    return optionalFk != null;
-  }
+  public static Map<FileType, String> PATTERNS =
+      new ImmutableMap.Builder<FileTypes.FileType, String>()
+          .put(METH_ARRAY_SYSTEM_TYPE, "meth_([a-zA-Z0-9]+)\\.tsv") // TODO: underscore/dash? \w?
+          .build();
 
 }

@@ -18,9 +18,23 @@
 package org.icgc.dcc.submission.validation.key.enumeration;
 
 /**
- * The types of keys encountered in the submission files. A "secondary FK" is one that may actually be null, unlike a
- * regular FK.
+ * The types of keys encountered in the submission files.
  */
 public enum KeysType {
-  PK, FK, SECONDARY_FK;
+  PK,
+
+  /**
+   * For most schema, there is only one FK.
+   */
+  FK1,
+
+  /**
+   * We only have a maximum of 2 FKs maximum per file, not generalizing for now.
+   */
+  FK2,
+
+  /**
+   * An "optional FK" is one that may actually be null, unlike a regular FK.
+   */
+  OPTIONAL_FK;
 }
