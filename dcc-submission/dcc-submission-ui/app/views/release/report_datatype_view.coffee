@@ -49,7 +49,6 @@ module.exports = class ReportDatatypeView extends View
 
   update: ->
     #console.log "ReportDatatypeView -> update"
-    console.log "update", @model
 
     # Update file meta data
     submissionFiles = @model.get "submissionFiles"
@@ -61,10 +60,10 @@ module.exports = class ReportDatatypeView extends View
     # Start contstructing
     @report = @model.get "report"
     @reportDataType = @report.dataTypeReports
-    console.log "2 reportdatatype", @reportDataType
 
 
     # Extract the datatypes for logical sort
+    # Clinical is alway present, and should be shown first
     datatypes = []
     datatypes.push("CLINICAL_CORE_TYPE")
     @reportDataType.forEach (d) ->
@@ -77,20 +76,16 @@ module.exports = class ReportDatatypeView extends View
           return 0
         when "CLINICAL_OPTIONAL_TYPE"
           return 1
-        when "MISCELLANEOUS"
-          return 999
         else
           return 10
 
-    console.log "3 sorted", datatypes
 
 
+    # Dynamically manage tables
     datatypes.forEach (datatype)=>
       container = null
       if datatype in ["CLINICAL_OPTIONAL_TYPE", "CLINICAL_CORE_TYPE"]
         container = @$el.find("#clinical-report-container")
-      else if datatype == "MISCELLANEOUS"
-        container = @$el.find("#miscellaneous-report-container")
       else
         container = @$el.find("#experimental-report-container")
 
@@ -145,9 +140,11 @@ module.exports = class ReportDatatypeView extends View
     lc_state = state.toLowerCase()
     ui_state = state.replace("_", " ")
 
-    if state == ""
+    globalState = @model.get "state"
+
+    if state == "" or globalState in ["QUEUED", "VALIDATING", "ERROR"]
       ""
-    else if state in ["VALIDATED", "INVALID", "NOT_VALIDATED"]
+    else if state in ["VALID", "INVALID", "NOT_VALIDATED"]
       """
       <a data-toggle="modal"
          class="m-btn mini green"
@@ -171,7 +168,6 @@ module.exports = class ReportDatatypeView extends View
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
     #console.log @model.get("dataState")
-    console.log "updateDataTable"
 
 
     @datatypes = @report.dataTypeReports
@@ -179,19 +175,18 @@ module.exports = class ReportDatatypeView extends View
       files = []
       filesCache = {}
 
-      console.log "4", dataType
       dt = @$el.find("#"+dataType.dataType).dataTable()
       fileTypeReports = dataType.fileTypeReports
       fileTypeReports.forEach (fileType) =>
-        console.log "5", fileType
         fileReports = fileType.fileReports
         fileReports.forEach (file) =>
+          # Datatable
           files.push file
-          filesCache[file.fileName] = @fileMap[file.fileName].lastUpdate
-          console.log "6", file
-      console.log "4", files, filesCache
 
-      # Prevent pagination reset due to reload
+          # To tell if files changed
+          filesCache[file.fileName] = @fileMap[file.fileName].lastUpdate + file.fileState
+
+      # Only reset pagination when delete/update/new files,  status change
       if not _.isEqual filesCache, @datatypeCache[dataType.dataType]
         dt.fnClearTable()
         dt.fnAddData files

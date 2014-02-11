@@ -65,7 +65,7 @@ module.exports = class ValidateSubmissionView extends View
 
 
   initialize: ->
-    console.debug "ValidateSubmissionView#initialize", @options
+    #console.debug "ValidateSubmissionView#initialize", @options
     datatype = @options.datatype
     @model = new Model @options.submission.getAttributes()
     @model.set({email: mediator.user.get("email")}, {silent: true})
@@ -76,7 +76,6 @@ module.exports = class ValidateSubmissionView extends View
 
     # Only need shallow copy
     @dataTypes = _.clone( @report.dataTypeReports )
-    console.log @dataTypes
 
     # Default to all selected
     @dataTypes.forEach (d)->
