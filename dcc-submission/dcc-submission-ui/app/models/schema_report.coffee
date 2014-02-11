@@ -29,7 +29,7 @@ SchemaReportSummaryReports = require 'models/schema_report_summary_reports'
 module.exports = class SchemaReport extends Model
 
   initialize: ->
-    #console.debug 'SchemaReport#initialize', @, @attributes
+    console.debug 'SchemaReport#initialize', @, @attributes
     super
 
     @urlPath = ->
@@ -37,36 +37,36 @@ module.exports = class SchemaReport extends Model
         "submissions/#{@get('submission')}" +
         "/report/#{@get('name')}"
 
-    if @get "errors"
+    if @get "errorReports"
       errors = []
-      for e in @get "errors"
-        for c in e.columns
+      for e in @get "errorReports"
+        for c in e.fieldErrorReports
           c.errorType = e.errorType
           c.lineValueMap = {}
-          for i in [0 .. c.lines.length - 1]
-            c.lineValueMap[c.lines[i]] = c.values[i]
-          c.lines = c.lines.sort((a,b)-> a - b)
+          for i in [0 .. c.lineNumbers.length - 1]
+            c.lineValueMap[c.lineNumbers[i]] = c.values[i]
+          c.lineNumbers = c.lineNumbers.sort((a,b)-> a - b)
           errors.push c
 
-    @set "errors", new SchemaReportErrors errors
+    @set "errorReports", new SchemaReportErrors errors
     @set "fieldReports", new SchemaReportFieldReports @get "fieldReports"
     @set "summaryReports", new SchemaReportSummaryReports @get "summaryReports"
 
   parse: (response) ->
-    response.state =
-      if response.errors.length then "INVALID" else "VALID"
+    #response.state =
+    #  if response.errors.length then "INVALID" else "VALID"
 
     errors = []
-    for e in response.errors
-      for c in e.columns
+    for e in response.errorReports
+      for c in e.fieldErrorReports
         c.errorType = e.errorType
         c.lineValueMap = {}
-        for i in [0 .. c.lines.length - 1]
-          c.lineValueMap[c.lines[i]] = c.values[i]
-        c.lines = c.lines.sort((a,b)-> a - b)
+        for i in [0 .. c.lineNumbers.length - 1]
+          c.lineValueMap[c.lineNumbers[i]] = c.values[i]
+        c.lineNumbers = c.lineNumbers.sort((a,b)-> a - b)
         errors.push c
 
-    response.errors = new SchemaReportErrors errors
+    response.errorReports = new SchemaReportErrors errors
     response.fieldReports = new SchemaReportFieldReports response.fieldReports
     response.summaryReports =
       new SchemaReportSummaryReports response.summaryReports
