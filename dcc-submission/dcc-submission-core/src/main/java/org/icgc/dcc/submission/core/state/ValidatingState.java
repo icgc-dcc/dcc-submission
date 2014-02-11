@@ -31,20 +31,12 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
-public class ValidatingState extends AbstractState {
+public class ValidatingState extends AbstractCancellableState {
 
   @Override
   public boolean isReadOnly() {
+    // Can't modify when transient
     return true;
-  }
-
-  @Override
-  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
-    val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
   }
 
   @Override
@@ -53,7 +45,9 @@ public class ValidatingState extends AbstractState {
     val oldReport = context.getReport();
 
     if (outcome == SUCCEEDED) {
+      // Valid status needs to be refreshed since there are no natural events that do this (unlike with Errors)
       newReport.refreshState();
+
       context.setReport(newReport);
 
       context.setState(newReport.isValid() ? SubmissionState.VALID : SubmissionState.NOT_VALIDATED);
@@ -62,7 +56,7 @@ public class ValidatingState extends AbstractState {
 
       context.setState(SubmissionState.ERROR);
     } else if (outcome == CANCELLED) {
-      // TODO: Should this branch be removed gue to cancelValidation?
+      // TODO: Should this branch be removed gue to cancelValidation in parent?
       context.setState(SubmissionState.NOT_VALIDATED);
     }
   }

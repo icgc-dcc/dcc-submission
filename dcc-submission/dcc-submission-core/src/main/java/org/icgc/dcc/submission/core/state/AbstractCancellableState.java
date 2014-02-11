@@ -15,18 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.report;
+package org.icgc.dcc.submission.core.state;
+
+import static lombok.AccessLevel.PACKAGE;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
+
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
- * Represents an element within a {@link Report} that accepts a {@link ReportVisitor} for visitation.
+ * A state that allow validation cancellation of the associated submission.
  */
-public interface ReportElement {
+@NoArgsConstructor(access = PACKAGE)
+public class AbstractCancellableState extends AbstractState {
 
-  /**
-   * Accepts the visitor for traversal.
-   * 
-   * @param visitor the visitor to allow visitation
-   */
-  void accept(ReportVisitor visitor);
+  @Override
+  public boolean isReadOnly() {
+    // If something is cancellable it must be transient and therefore protected
+    return true;
+  }
+
+  @Override
+  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.NOT_VALIDATED);
+
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
+  }
 
 }

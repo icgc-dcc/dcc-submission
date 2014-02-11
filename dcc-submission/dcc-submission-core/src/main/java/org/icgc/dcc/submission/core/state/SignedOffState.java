@@ -20,11 +20,15 @@ package org.icgc.dcc.submission.core.state;
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 
+/**
+ * Terminal state for a release. Can only be released.
+ */
 @NoArgsConstructor(access = PACKAGE)
-public class SignedOffState extends AbstractState {
+public class SignedOffState extends AbstractReleaseResettableState {
 
   @Override
   public boolean isReadOnly() {
+    // Can't do much in this state...
     return true;
   }
 

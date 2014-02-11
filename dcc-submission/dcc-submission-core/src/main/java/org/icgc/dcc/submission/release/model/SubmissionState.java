@@ -23,16 +23,17 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.core.state.State;
+import org.icgc.dcc.submission.core.state.States;
 
 @RequiredArgsConstructor(access = PRIVATE)
 public enum SubmissionState implements State {
 
-  NOT_VALIDATED(State.NOT_VALIDATED),
-  QUEUED(State.QUEUED),
-  VALIDATING(State.VALIDATING),
-  VALID(State.VALID),
-  SIGNED_OFF(State.SIGNED_OFF),
-  ERROR(State.ERROR);
+  NOT_VALIDATED(States.NOT_VALIDATED),
+  QUEUED(States.QUEUED),
+  VALIDATING(States.VALIDATING),
+  VALID(States.VALID),
+  SIGNED_OFF(States.SIGNED_OFF),
+  ERROR(States.ERROR);
 
   @NonNull
   @Delegate

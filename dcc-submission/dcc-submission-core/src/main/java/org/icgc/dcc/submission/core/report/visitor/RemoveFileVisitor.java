@@ -28,7 +28,7 @@ import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
 
 /**
- * Removes a file from a report and adjusts the internal structure to accomodate the loss.
+ * Removes a file from a report and adjusts the internal structure to accommodate the loss.
  */
 @NotThreadSafe
 public class RemoveFileVisitor extends AbstractFileReportVisitor {

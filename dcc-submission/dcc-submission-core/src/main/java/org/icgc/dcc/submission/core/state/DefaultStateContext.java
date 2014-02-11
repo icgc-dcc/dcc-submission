@@ -35,13 +35,23 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.base.Optional;
 
+/**
+ * Default implementation of the {@link StateContext} contract.
+ */
 @Slf4j
 @Value
 public class DefaultStateContext implements StateContext {
 
+  /**
+   * Delegate.
+   */
   @NonNull
   @Getter(NONE)
   private final Submission submission;
+
+  /**
+   * The current set of files submitted by the associated submission.
+   */
   @NonNull
   private final Iterable<SubmissionFile> submissionFiles;
 
@@ -118,6 +128,10 @@ public class DefaultStateContext implements StateContext {
 
     return result;
   }
+
+  //
+  // Helpers
+  //
 
   private void beginTransition(@NonNull String action) {
     log.info("Action '{}' requested while in state '{}'", action, getState());

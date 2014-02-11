@@ -20,38 +20,25 @@ package org.icgc.dcc.submission.core.state;
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
-public class QueuedState extends AbstractState {
-
-  @Override
-  public boolean isReadOnly() {
-    return true;
-  }
+public class QueuedState extends AbstractCancellableState {
 
   @Override
   public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
       @NonNull Report nextReport) {
+    // Set to validating and clobber the report
     context.setState(SubmissionState.VALIDATING);
     context.setReport(nextReport);
 
+    // Ensure the latest files are accounted for
     nextReport.updateFiles(context.getSubmissionFiles());
     nextReport.reset(dataTypes);
     nextReport.setState(SubmissionState.VALIDATING, dataTypes);
-  }
-
-  @Override
-  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
-    val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
   }
 
 }

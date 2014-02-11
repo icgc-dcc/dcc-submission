@@ -26,13 +26,7 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
-public class ErrorState extends AbstractState {
-
-  @Override
-  public boolean isReadOnly() {
-    // Allow user to make file modifications to "un-error" the submission
-    return false;
-  }
+public class ErrorState extends AbstractModifiableState {
 
   @Override
   public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {

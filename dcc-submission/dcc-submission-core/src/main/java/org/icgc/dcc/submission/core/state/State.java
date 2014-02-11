@@ -26,10 +26,22 @@ import org.icgc.dcc.submission.release.model.Submission;
 
 import com.google.common.base.Optional;
 
+/**
+ * Classical State Pattern abstraction modeling the state behavior of an associated submission within the context of a
+ * release.
+ * 
+ * @see http://en.wikipedia.org/wiki/State_pattern
+ */
 public interface State {
 
+  /**
+   * The name of the state
+   */
   String getName();
 
+  /**
+   * Are file system modifications allowed?
+   */
   boolean isReadOnly();
 
   void initializeSubmission(StateContext context);
@@ -47,12 +59,5 @@ public interface State {
   void signOff(StateContext context);
 
   Submission performRelease(StateContext context, Release nextRelease);
-
-  static final State NOT_VALIDATED = new NotValidatedState();
-  static final State QUEUED = new QueuedState();
-  static final State VALIDATING = new ValidatingState();
-  static final State ERROR = new ErrorState();
-  static final State VALID = new ValidState();
-  static final State SIGNED_OFF = new SignedOffState();
 
 }

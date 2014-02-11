@@ -23,39 +23,34 @@ import lombok.NonNull;
 
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+/**
+ * State utilities.
+ */
 @NoArgsConstructor(access = PRIVATE)
 public final class States {
 
-  public static State convert(@NonNull SubmissionState submissionState) {
-    if (submissionState == SubmissionState.NOT_VALIDATED) {
-      return State.NOT_VALIDATED;
-    } else if (submissionState == SubmissionState.QUEUED) {
-      return State.QUEUED;
-    } else if (submissionState == SubmissionState.VALIDATING) {
-      return State.VALIDATING;
-    } else if (submissionState == SubmissionState.ERROR) {
-      return State.ERROR;
-    } else if (submissionState == SubmissionState.VALID) {
-      return State.VALID;
-    } else if (submissionState == SubmissionState.SIGNED_OFF) {
-      return State.SIGNED_OFF;
-    }
-
-    throw new IllegalArgumentException("Cannot covert " + submissionState + " to " + State.class);
-  }
+  /**
+   * State constants.
+   */
+  public static final State NOT_VALIDATED = new NotValidatedState();
+  public static final State QUEUED = new QueuedState();
+  public static final State VALIDATING = new ValidatingState();
+  public static final State ERROR = new ErrorState();
+  public static final State VALID = new ValidState();
+  public static final State SIGNED_OFF = new SignedOffState();
 
   public static SubmissionState convert(@NonNull State state) {
-    if (state == State.NOT_VALIDATED) {
+    if (state == NOT_VALIDATED) {
       return SubmissionState.NOT_VALIDATED;
-    } else if (state == State.QUEUED) {
+    } else if (state == QUEUED) {
       return SubmissionState.QUEUED;
-    } else if (state == State.VALIDATING) {
+    } else if (state == VALIDATING) {
       return SubmissionState.VALIDATING;
-    } else if (state == State.ERROR) {
+    } else if (state == ERROR) {
       return SubmissionState.ERROR;
-    } else if (state == State.VALID) {
+    } else if (state == VALID) {
       return SubmissionState.VALID;
-    } else if (state == State.SIGNED_OFF) {
+    } else if (state == SIGNED_OFF) {
       return SubmissionState.SIGNED_OFF;
     }
 

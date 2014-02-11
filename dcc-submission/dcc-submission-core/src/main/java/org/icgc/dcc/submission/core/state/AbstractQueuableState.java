@@ -15,18 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.report;
+package org.icgc.dcc.submission.core.state;
+
+import static lombok.AccessLevel.PACKAGE;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
+
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
- * Represents an element within a {@link Report} that accepts a {@link ReportVisitor} for visitation.
+ * A state that allows queuing of the associated submission.
  */
-public interface ReportElement {
+@NoArgsConstructor(access = PACKAGE)
+public class AbstractQueuableState extends AbstractModifiableState {
 
-  /**
-   * Accepts the visitor for traversal.
-   * 
-   * @param visitor the visitor to allow visitation
-   */
-  void accept(ReportVisitor visitor);
+  @Override
+  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    // Enter state
+    context.setState(SubmissionState.QUEUED);
+
+    // Refelect new queue request in the report
+    val report = context.getReport();
+    report.updateFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
+    report.setState(SubmissionState.QUEUED, dataTypes);
+  }
 
 }

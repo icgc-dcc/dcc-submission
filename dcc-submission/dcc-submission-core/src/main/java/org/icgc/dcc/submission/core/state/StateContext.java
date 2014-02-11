@@ -28,6 +28,9 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.base.Optional;
 
+/**
+ * The "context" in the State Pattern.
+ */
 public interface StateContext {
 
   /**
