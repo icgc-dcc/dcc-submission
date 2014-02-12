@@ -27,15 +27,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.step.CompositeFileChecker;
 import org.icgc.dcc.submission.validation.first.step.TestUtils;
@@ -55,7 +51,6 @@ import com.google.common.collect.ImmutableList;
 @PrepareForTest(Util.class)
 public class FirstPassValidatorTest {
 
-  private SubmissionDirectory submissionDir;
   private Dictionary dict;
 
   @Mock
@@ -63,7 +58,6 @@ public class FirstPassValidatorTest {
 
   @Before
   public void setup() throws IOException {
-    submissionDir = mock(SubmissionDirectory.class);
     dict = mock(Dictionary.class);
     mockStatic(Util.class);
 
@@ -76,9 +70,6 @@ public class FirstPassValidatorTest {
     when(dict.getFiles()).thenReturn(newArrayList(schema));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(schema));
     when(dict.getFileSchemata(anyDataTypeIterable())).thenReturn(ImmutableList.<FileSchema> of(schema));
-
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
     when(validationContext.getDictionary()).thenReturn(dict);
