@@ -17,14 +17,20 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
 
 import lombok.Cleanup;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.tika.Tika;
@@ -76,10 +82,24 @@ public final class Util {
 
   public static InputStream createInputStream(FPVFileSystem fs, String fileName) throws IOException {
     val codec = fs.getCompressionCodec(fileName);
+    @Cleanup
     val in = fs.getDataInputStream(fileName);
     return codec == null ?
         in : // This is assumed to be PLAIN_TEXT
         codec.createInputStream(in);
+  }
+
+  /**
+   * Files are expected to be present and uncorrupted at this stage.
+   */
+  @SneakyThrows
+  public static final List<String> peekFileHeader(FPVFileSystem fs, String filename) {
+    InputStream is = Util.createInputStream(fs, filename);
+    @Cleanup
+    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    String header = reader.readLine();
+    header = (header == null) ? "" : header;
+    return copyOf(FIELD_SPLITTER.split(header));
   }
 
 }

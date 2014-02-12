@@ -17,24 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static com.google.common.collect.ImmutableList.copyOf;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.FILE_HEADER_ERROR;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 
-import lombok.Cleanup;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.fs.SubmissionDirectoryFile;
-import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.FileChecker;
+import org.icgc.dcc.submission.validation.first.Util;
 
 @Slf4j
 public class FileHeaderChecker extends CompositeFileChecker {
@@ -50,7 +42,7 @@ public class FileHeaderChecker extends CompositeFileChecker {
   @Override
   public void performSelfCheck(String filename) {
     val expectedHeader = retrieveExpectedHeader(filename);
-    val actualHeader = peekFileHeader(filename);
+    val actualHeader = Util.peekFileHeader(getFs(), filename);
     if (!isExactMatch(expectedHeader, actualHeader)) {
       log.info(
           "Different from the expected header: '{}', actual header: '{}'",
@@ -69,21 +61,6 @@ public class FileHeaderChecker extends CompositeFileChecker {
 
   private final List<String> retrieveExpectedHeader(String filename) {
     return getFileSchema(filename).getFieldNames();
-  }
-
-  /**
-   * TODO: move to {@link SubmissionDirectoryFile}.
-   * <p>
-   * Files are expected to be present and uncorrupted at this stage.
-   */
-  @SneakyThrows
-  private final List<String> peekFileHeader(String filename) {
-    InputStream is = Util.createInputStream(getFs(), filename);
-    @Cleanup
-    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-    String header = reader.readLine();
-    header = (header == null) ? "" : header;
-    return copyOf(FIELD_SPLITTER.split(header));
   }
 
   private boolean isExactMatch(List<String> expectedHeader,

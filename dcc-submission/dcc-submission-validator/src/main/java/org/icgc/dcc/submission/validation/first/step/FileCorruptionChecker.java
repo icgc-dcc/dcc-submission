@@ -27,9 +27,9 @@ import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.icgc.dcc.submission.validation.first.FileChecker;
 import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.Util.CodecType;
-import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
 public class FileCorruptionChecker extends CompositeFileChecker {
@@ -45,45 +45,47 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public void performSelfCheck(String filename) {
+  public void performSelfCheck(String fileName) {
     try {
-      CodecType contentType = Util.determineCodecFromContent(getFs(), filename);
-      CodecType filenameType = Util.determineCodecFromFilename(filename);
-      if (contentType == filenameType) {
+      CodecType contentType = Util.determineCodecFromContent(getFs(), fileName);
+      CodecType fileNameType = Util.determineCodecFromFilename(fileName);
+      if (contentType == fileNameType) {
+        log.info("Check '{}' integrity in '{}'", contentType, fileName);
         switch (contentType) {
         case GZIP:
-          checkGZip(filename);
+          checkGZip(fileName);
           break;
         case BZIP2:
-          checkBZip2(filename);
+          checkBZip2(fileName);
           break;
         case PLAIN_TEXT:
           // Do nothing
           break;
         }
       } else {
-        log.info("Content type does not match the extension for file: " + filename);
+        log.info("Content type does not match the extension for file: '{}' ('{}' != '{}')",
+            new Object[] { fileName, contentType, fileNameType });
         // TODO: create new error type rather?
 
         incrementCheckErrorCount();
 
         getReportContext().reportError(
             error()
-                .fileName(filename)
+                .fileName(fileName)
                 .type(COMPRESSION_CODEC_ERROR)
-                .params(getFileSchema(filename).getName())
+                .params(getFileSchema(fileName).getName())
                 .build());
       }
     } catch (IOException e) {
-      log.info("Exception caught in reading file (corruption): {}", filename, e);
+      log.info("Exception caught in reading file (corruption): {}", fileName, e);
 
       incrementCheckErrorCount();
 
       getReportContext().reportError(
           error()
-              .fileName(filename)
+              .fileName(fileName)
               .type(COMPRESSION_CODEC_ERROR)
-              .params(getFileSchema(filename).getName())
+              .params(getFileSchema(fileName).getName())
               .build());
     }
   }
@@ -91,50 +93,50 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   /**
    * TODO: merge with gzip one with a flag for the input stream based on the type.
    */
-  private void checkBZip2(String filename) {
+  private void checkBZip2(String fileName) {
     try {
       // check the bzip2 header
       @Cleanup
-      BZip2CompressorInputStream in = new BZip2CompressorInputStream(getFs().getDataInputStream(filename));
+      BZip2CompressorInputStream in = new BZip2CompressorInputStream(getFs().getDataInputStream(fileName));
 
       // see if it can be read through
       byte[] buf = new byte[BUFFER_SIZE];
       while (in.read(buf) > 0) {
       }
     } catch (IOException e) {
-      log.info("Exception caught in decoding bzip2 file '{}': '{}'", filename, e.getMessage());
+      log.info("Exception caught in decoding bzip2 file '{}': '{}'", fileName, e.getMessage());
 
       incrementCheckErrorCount();
 
       getReportContext().reportError(
           error()
-              .fileName(filename)
+              .fileName(fileName)
               .type(COMPRESSION_CODEC_ERROR)
-              .params(getFileSchema(filename).getName())
+              .params(getFileSchema(fileName).getName())
               .build());
     }
   }
 
-  private void checkGZip(String filename) {
+  private void checkGZip(String fileName) {
     try {
       // check the gzip header
       @Cleanup
-      GZIPInputStream in = new GZIPInputStream(getFs().getDataInputStream(filename));
+      GZIPInputStream in = new GZIPInputStream(getFs().getDataInputStream(fileName));
 
       // see if it can be read through
       byte[] buf = new byte[BUFFER_SIZE];
       while (in.read(buf) > 0) {
       }
     } catch (IOException e) {
-      log.info("Exception caught in decoding gzip file '{}': '{}'", filename, e.getMessage());
+      log.info("Exception caught in decoding gzip file '{}': '{}'", fileName, e.getMessage());
 
       incrementCheckErrorCount();
 
       getReportContext().reportError(
           error()
-              .fileName(filename)
+              .fileName(fileName)
               .type(COMPRESSION_CODEC_ERROR)
-              .params(getFileSchema(filename).getName())
+              .params(getFileSchema(fileName).getName())
               .build());
     }
   }
