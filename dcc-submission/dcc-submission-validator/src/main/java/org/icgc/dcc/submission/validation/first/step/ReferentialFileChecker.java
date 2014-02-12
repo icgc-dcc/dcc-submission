@@ -24,8 +24,13 @@ import static org.icgc.dcc.submission.core.report.ErrorType.REVERSE_RELATION_FIL
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
+import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.validation.first.FileChecker;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 @Slf4j
 public class ReferentialFileChecker extends CompositeFileChecker {
@@ -40,7 +45,10 @@ public class ReferentialFileChecker extends CompositeFileChecker {
 
   @Override
   public void performSelfCheck(String fileName) {
+    log.info("Checking referenced file presence");
     referencedCheck(fileName);
+
+    log.info("Checking referencing file presence");
     referencingCheck(fileName);
   }
 
@@ -51,7 +59,17 @@ public class ReferentialFileChecker extends CompositeFileChecker {
    */
   private void referencedCheck(String fileName) {
     val fileSchema = getFileSchema(fileName);
-    for (val relation : fileSchema.getRelations()) {
+    val relations = fileSchema.getRelations();
+    log.info("Checking presence for '{}' referenced schemata: '{}'", relations.size(),
+        Iterables.transform(relations, new Function<Relation, String>() {
+
+          @Override
+          public String apply(Relation relation) {
+            return relation.getOther();
+          }
+        }));
+
+    for (val relation : relations) {
       val optionalReferencedFileSchema = getDictionary().getFileSchemaByName(relation.getOther());
       checkState(optionalReferencedFileSchema.isPresent(), "Invalid file schema: '%s'", relation.getOther());
       val referencedFileSchema = optionalReferencedFileSchema.get();
@@ -71,6 +89,8 @@ public class ReferentialFileChecker extends CompositeFileChecker {
                   .params(fileSchema.getName())
                   .build());
         }
+      } else {
+        log.info("Skipping check for system file presence");
       }
     }
   }
@@ -82,22 +102,31 @@ public class ReferentialFileChecker extends CompositeFileChecker {
    */
   private void referencingCheck(String fileName) {
     val fileSchema = getFileSchema(fileName);
-    for (val referencingFileSchema : fileSchema.getIncomingSurjectiveRelationFileSchemata(getDictionary())) {
-      if (referencingFileSchema.getRole() == FileSchemaRole.SUBMISSION) {
-        val referencingFileNames = getFs().getMatchingFileNames(referencingFileSchema.getPattern());
-        if (referencingFileNames.isEmpty()) {
-          log.info("Fail referencing check for '{}': missing referencing file with schema '{}'",
-              fileName, referencingFileSchema.getName());
+    val referencingFileSchemata = fileSchema.getIncomingSurjectiveRelationFileSchemata(getDictionary());
+    log.info("Checking presence for '{}' referencing schemata: '{}'", referencingFileSchemata.size(),
+        Iterables.transform(referencingFileSchemata, new Function<FileSchema, String>() {
 
-          incrementCheckErrorCount();
+          @Override
+          public String apply(FileSchema fileSchema) {
+            return fileSchema.getName();
+          }
+        }));
 
-          getReportContext().reportError(
-              error()
-                  .fileName(fileName)
-                  .type(REVERSE_RELATION_FILE_ERROR)
-                  .params(referencingFileSchema.getName())
-                  .build());
-        }
+    for (val referencingFileSchema : referencingFileSchemata) {
+      checkState(referencingFileSchema.getRole() == FileSchemaRole.SUBMISSION);
+      val referencingFileNames = getFs().getMatchingFileNames(referencingFileSchema.getPattern());
+      if (referencingFileNames.isEmpty()) {
+        log.info("Fail referencing check for '{}': missing referencing file with schema '{}'",
+            fileName, referencingFileSchema.getName());
+
+        incrementCheckErrorCount();
+
+        getReportContext().reportError(
+            error()
+                .fileName(fileName)
+                .type(REVERSE_RELATION_FILE_ERROR)
+                .params(referencingFileSchema.getName())
+                .build());
       }
     }
   }

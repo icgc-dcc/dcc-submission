@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,16 +26,14 @@ import java.io.DataInputStream;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 import org.icgc.dcc.submission.validation.first.Util;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -47,189 +44,151 @@ import com.google.common.collect.ImmutableList;
 @PrepareForTest(Util.class)
 public class FileHeaderCheckerTest {
 
-	private SubmissionDirectory submissionDir;
-	private Dictionary dict;
-	private DccFileSystem fs;
+  private Dictionary dict;
 
-	@Mock
-	ValidationContext validationContext;
+  @Mock
+  ValidationContext validationContext;
+  @Mock
+  FPVFileSystem fs;
 
-	@Before
-	public void setup() {
-		submissionDir = mock(SubmissionDirectory.class);
-		dict = mock(Dictionary.class);
-		fs = mock(DccFileSystem.class);
-		when(submissionDir.listFile()).thenReturn(
-				ImmutableList.of("testfile1", "testfile2"));
+  @Before
+  public void setup() {
+    dict = mock(Dictionary.class);
 
-		FileSchema fileSchema = mock(FileSchema.class);
-		Optional<FileSchema> option = Optional.of(fileSchema);
-		when(fileSchema.getFieldNames()).thenReturn(ImmutableList.of("a", "b"));
-		when(dict.getFileSchemaByName(anyString())).thenReturn(option);
-		when(dict.getFileSchemaByFileName(anyString())).thenReturn(
-				Optional.of(fileSchema));
+    FileSchema fileSchema = mock(FileSchema.class);
+    Optional<FileSchema> option = Optional.of(fileSchema);
+    when(fileSchema.getFieldNames()).thenReturn(ImmutableList.of("a", "b"));
+    when(dict.getFileSchemaByName(anyString())).thenReturn(option);
+    when(dict.getFileSchemaByFileName(anyString())).thenReturn(
+        Optional.of(fileSchema));
 
-		when(validationContext.getDccFileSystem()).thenReturn(fs);
-		when(validationContext.getSubmissionDirectory()).thenReturn(
-				submissionDir);
-		when(validationContext.getDictionary()).thenReturn(dict);
-	}
+    when(validationContext.getDictionary()).thenReturn(dict);
+  }
 
-	@Test
-	public void simpleValidation() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"a\tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
+  @Test
+  public void simpleValidation() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "a\tb\rf1\t\f2\r".getBytes()));
+    when(Util.createInputStream(fs, anyString())).thenReturn(fis);
 
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkNoErrorsReported(validationContext);
-	}
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
+  }
 
-	@Test
-	public void notValidMissingHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"a\tr".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
+  @Test
+  public void notValidMissingHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "a\tr".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
+  }
 
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
-	}
+  @Test
+  public void notValidOutOfOrderHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "b\ta\rf1\t\f2\r".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
+  }
 
-	@Test
-	public void notValidOutOfOrderHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"b\ta\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
+  @Test
+  public void notValidDuplicateHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "b\tb\rf1\t\f2\r".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
+  }
 
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
-	}
+  @Test
+  public void notValidExtraHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "a\tb\tc\rf1\t\f2\r".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
-	@Test
-	public void notValidDuplicateHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"b\tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
+  }
 
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
-	}
+  @Test
+  public void notValidWhiteSpacesInHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        " a \tb\rf1\t\f2\r".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
-	@Test
-	public void notValidExtraHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"a\tb\tc\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
+  }
 
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
+  @Test
+  public void notValidCapitalHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "A\tB\rf1\t\f2\r".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
-	}
+  }
 
-	@Test
-	public void notValidWhiteSpacesInHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				" a \tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
+  @Test
+  public void notValidMispellHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "ab\tb\rf1\t\f2\r".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
+  }
 
-	}
+  @Test
+  public void validLineFeedNewLineHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "a\tb\r\nf1\t\f2\r\n".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
+  }
 
-	@Test
-	public void notValidCapitalHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"A\tB\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
+  @Test
+  public void notValidNoContentHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        new byte[0]));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkFileHeaderErrorReported(validationContext, 1);
+  }
 
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
+  @Test
+  public void validNewLineHeader() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
+        "a\tb\nf1\t\f2\n".getBytes()));
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+        validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
+  }
 
-	}
-
-	@Test
-	public void notValidMispellHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"ab\tb\rf1\t\f2\r".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
-
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
-
-	}
-
-	@Test
-	public void validLineFeedNewLineHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"a\tb\r\nf1\t\f2\r\n".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
-
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkNoErrorsReported(validationContext);
-	}
-
-	@Test
-	public void notValidNoContentHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				new byte[0]));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
-
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkFileHeaderErrorReported(validationContext, 1);
-	}
-
-	@Test
-	public void validNewLineHeader() throws Exception {
-		DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-				"a\tb\nf1\t\f2\n".getBytes()));
-		PowerMockito.mockStatic(Util.class);
-		when(Util.createInputStream(any(DccFileSystem.class), anyString()))
-				.thenReturn(fis);
-
-		FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-				validationContext));
-		checker.check(anyString());
-		TestUtils.checkNoErrorsReported(validationContext);
-	}
 }
