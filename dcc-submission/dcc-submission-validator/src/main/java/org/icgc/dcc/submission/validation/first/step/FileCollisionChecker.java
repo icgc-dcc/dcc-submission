@@ -46,6 +46,7 @@ public class FileCollisionChecker extends CompositeFileChecker {
 
     val pattern = fileSchema.getPattern();
     val fileNames = getFs().getMatchingFileNames(pattern);
+    log.info("Files: '{}'", fileNames);
     if (hasCollisions(fileNames)) {
       log.info("More than 1 file matching the file pattern: {}", pattern);
 

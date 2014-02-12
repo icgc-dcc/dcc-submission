@@ -20,20 +20,18 @@ package org.icgc.dcc.submission.validation.first.step;
 import static org.icgc.dcc.submission.validation.first.step.TestUtils.checkFileCollisionErrorReported;
 import static org.icgc.dcc.submission.validation.first.step.TestUtils.checkNoErrorsReported;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,13 +55,13 @@ public class FileCollisionCheckerTest {
   @Mock
   DccFileSystem dccFileSystem;
   @Mock
-  SubmissionDirectory submissionDirectory;
-  @Mock
   Dictionary dictionary;
   @Mock
   FileSchema fileSchema;
   @Mock
   ValidationContext context;
+  @Mock
+  FPVFileSystem fs;
 
   @Before
   public void setup() {
@@ -72,18 +70,16 @@ public class FileCollisionCheckerTest {
     when(dictionary.getFileSchemaByName(anyString())).thenReturn(Optional.of(fileSchema));
     when(dictionary.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(fileSchema));
 
-    when(submissionDirectory.listFile()).thenReturn(fileNames("testfile1", "testfile2"));
-
     when(context.getDccFileSystem()).thenReturn(dccFileSystem);
-    when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(context.getDictionary()).thenReturn(dictionary);
 
-    checker = new FileCollisionChecker(new NoOpFileChecker(context));
+    checker = new FileCollisionChecker(new NoOpFileChecker(context, fs));
   }
 
   @Test
   public void matchNone() throws Exception {
-    when(submissionDirectory.listFile(anyPattern())).thenReturn(fileNames());
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames());
 
     checker.check("testfile1");
 
@@ -93,7 +89,8 @@ public class FileCollisionCheckerTest {
 
   @Test
   public void matchOne() throws Exception {
-    when(submissionDirectory.listFile(anyPattern())).thenReturn(fileNames("testfile1"));
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames("testfile1"));
 
     checker.check("testfile1");
 
@@ -104,7 +101,8 @@ public class FileCollisionCheckerTest {
 
   @Test
   public void matchTwo_coexsit() throws Exception {
-    when(submissionDirectory.listFile(anyPattern())).thenReturn(fileNames("testfile1", "testfile2"));
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames("testfile1", "testfile2"));
 
     checker.check("testfile1");
 
@@ -113,15 +111,12 @@ public class FileCollisionCheckerTest {
 
   @Test
   public void matchTwo_collide() throws Exception {
-    when(submissionDirectory.listFile(anyPattern())).thenReturn(fileNames("testfile1", "testfile12"));
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames("testfile1", "testfile1.gz"));
 
     checker.check("testfile1");
 
     checkFileCollisionErrorReported(context, 1);
-  }
-
-  private static Pattern anyPattern() {
-    return any(Pattern.class);
   }
 
   private static List<String> fileNames(String... fileNames) {
