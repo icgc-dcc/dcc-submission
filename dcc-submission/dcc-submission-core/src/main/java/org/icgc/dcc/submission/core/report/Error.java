@@ -124,7 +124,7 @@ public class Error {
       return this;
     }
 
-    public Builder params(@NonNull Map<String, Object> params) {
+    public Builder params(@NonNull Map<?, ?> params) {
       this.params = params.values().toArray();
       return this;
     }
