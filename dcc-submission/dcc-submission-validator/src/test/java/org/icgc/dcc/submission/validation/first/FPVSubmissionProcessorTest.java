@@ -25,9 +25,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import java.io.IOException;
+
+import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -49,21 +50,21 @@ import com.google.common.collect.ImmutableList;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Util.class)
-public class FirstPassValidatorTest {
+public class FPVSubmissionProcessorTest {
 
   private Dictionary dict;
 
   @Mock
   ValidationContext validationContext;
+  @Mock
+  FPVFileSystem fs;
 
   @Before
   public void setup() throws IOException {
     dict = mock(Dictionary.class);
-    mockStatic(Util.class);
 
-    when(submissionDir.listFile()).thenReturn(ImmutableList.of("anyfile"));
-    when(submissionDir.listFiles(Mockito.anyListOf(String.class))).thenReturn(ImmutableList.of("anyfile"));
-    when(submissionDir.getDataFilePath(anyString())).thenReturn("/tmp/anyfile");
+    when(fs.listMatchingSubmissionFiles(Mockito.anyListOf(String.class))).thenReturn(ImmutableList.of("anyfile"));
+    when(fs.getMatchingFileNames(anyString())).thenReturn(ImmutableList.of("anyfile"));
 
     FileSchema schema = new FileSchema("anyfile");
     schema.setPattern("anyfile");
@@ -71,7 +72,6 @@ public class FirstPassValidatorTest {
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(schema));
     when(dict.getFileSchemata(anyDataTypeIterable())).thenReturn(ImmutableList.<FileSchema> of(schema));
 
-    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
     when(validationContext.getDictionary()).thenReturn(dict);
   }
 
@@ -85,8 +85,10 @@ public class FirstPassValidatorTest {
     when(dummyRowChecker.canContinue()).thenReturn(true);
     when(dummyRowChecker.isValid()).thenReturn(true);
 
-    FirstPassValidator fpc = new FirstPassValidator(dummyFileChecker, dummyRowChecker);
-    fpc.validate(validationContext);
+    val fpv = new FPVSubmissionProcessor();
+    fpv.setFileChecker(dummyFileChecker);
+    fpv.setRowChecker(dummyRowChecker);
+    fpv.process("mystepname", validationContext, fs);
 
     TestUtils.checkNoErrorsReported(validationContext);
     verify(dummyFileChecker, times(1)).check(anyString());
@@ -105,8 +107,10 @@ public class FirstPassValidatorTest {
     when(rowChecker.isFailFast()).thenReturn(false);
     when(rowChecker.canContinue()).thenReturn(true);
 
-    new FirstPassValidator(fileChecker, rowChecker)
-        .validate(validationContext);
+    val fpv = new FPVSubmissionProcessor();
+    fpv.setFileChecker(fileChecker);
+    fpv.setRowChecker(rowChecker);
+    fpv.process("mystepname", validationContext, fs);
 
     verify(fileChecker, times(1)).check(anyString());
     verify(rowChecker, times(1)).check(anyString());
@@ -128,8 +132,10 @@ public class FirstPassValidatorTest {
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.isValid()).thenReturn(true);
 
-    new FirstPassValidator(fileChecker, rowChecker)
-        .validate(validationContext);
+    val fpv = new FPVSubmissionProcessor();
+    fpv.setFileChecker(fileChecker);
+    fpv.setRowChecker(rowChecker);
+    fpv.process("mystepname", validationContext, fs);
 
     verify(fileChecker, times(1)).check(anyString());
     verify(moreChecker, never()).performSelfCheck(anyString());
@@ -146,8 +152,10 @@ public class FirstPassValidatorTest {
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.isValid()).thenReturn(true);
 
-    new FirstPassValidator(fileChecker, rowChecker)
-        .validate(validationContext);
+    val fpv = new FPVSubmissionProcessor();
+    fpv.setFileChecker(fileChecker);
+    fpv.setRowChecker(rowChecker);
+    fpv.process("mystepname", validationContext, fs);
 
     verify(fileChecker, times(1)).check(anyString());
     verify(rowChecker, times(1)).check(anyString());
@@ -163,8 +171,10 @@ public class FirstPassValidatorTest {
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.isValid()).thenReturn(false);
 
-    new FirstPassValidator(fileChecker, rowChecker)
-        .validate(validationContext);
+    val fpv = new FPVSubmissionProcessor();
+    fpv.setFileChecker(fileChecker);
+    fpv.setRowChecker(rowChecker);
+    fpv.process("mystepname", validationContext, fs);
 
     verify(fileChecker, times(1)).check(anyString());
     verify(rowChecker, times(1)).check(anyString());

@@ -41,14 +41,14 @@ public class NoOpFileChecker implements FileChecker {
   @Getter
   private final boolean failFast;
 
-  public NoOpFileChecker(ValidationContext validationContext) {
-    this(validationContext, false);
+  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fs) {
+    this(validationContext, fs, false);
   }
 
-  public NoOpFileChecker(ValidationContext validationContext, boolean failFast) {
+  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fs, boolean failFast) {
     this.dictionary = validationContext.getDictionary();
     this.reportContext = validationContext;
-    this.fs = new FPVFileSystem(validationContext.getSubmissionDirectory());
+    this.fs = fs;
     this.failFast = false;
   }
 

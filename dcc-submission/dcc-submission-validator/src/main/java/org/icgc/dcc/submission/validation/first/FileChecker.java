@@ -47,7 +47,7 @@ public interface FileChecker extends Checker {
   @NoArgsConstructor(access = PRIVATE)
   class FileCheckers {
 
-    static FileChecker getDefaultFileChecker(ValidationContext validationContext) {
+    static FileChecker getDefaultFileChecker(ValidationContext validationContext, FPVFileSystem fs) {
 
       // Chaining multiple file checker
       return new FileHeaderChecker(
@@ -55,7 +55,7 @@ public interface FileChecker extends Checker {
               new FileCollisionChecker(
                   new ReferentialFileChecker(
                       // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)?
-                      new NoOpFileChecker(validationContext)))));
+                      new NoOpFileChecker(validationContext, fs)))));
     }
   }
 }

@@ -40,13 +40,13 @@ public interface RowChecker extends FileChecker {
   @NoArgsConstructor(access = PRIVATE)
   class RowCheckers {
 
-    static RowChecker getDefaultRowChecker(ValidationContext validationContext) {
+    static RowChecker getDefaultRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
 
       // Chaining multiple row checkers
       return new RowColumnChecker(
           new RowCharsetChecker(
               // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
-              new NoOpRowChecker(validationContext)));
+              new NoOpRowChecker(validationContext, fs)));
     }
   }
 

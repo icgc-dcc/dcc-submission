@@ -35,8 +35,7 @@ public class FirstPassValidator implements Validator {
     new FPVSubmissionProcessor().process(
         getName(),
         validationContext,
-        new FPVFileSystem(
-            validationContext.getSubmissionDirectory()));
+        new FPVFileSystem(validationContext.getSubmissionDirectory()));
   }
 
 }
