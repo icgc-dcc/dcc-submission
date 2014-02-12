@@ -33,7 +33,7 @@ public class ErrorState extends AbstractModifiableState {
     context.setState(SubmissionState.QUEUED);
 
     val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
+    report.refreshFiles(context.getSubmissionFiles());
     report.reset(dataTypes);
     report.setState(SubmissionState.QUEUED, dataTypes);
   }

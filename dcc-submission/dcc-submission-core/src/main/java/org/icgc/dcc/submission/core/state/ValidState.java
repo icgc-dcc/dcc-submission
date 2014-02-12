@@ -20,12 +20,12 @@ package org.icgc.dcc.submission.core.state;
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.val;
 
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+/**
+ * All data-types must be {@code VALID}.
+ */
 @NoArgsConstructor(access = PACKAGE)
 public class ValidState extends AbstractQueuableState {
 
@@ -33,27 +33,6 @@ public class ValidState extends AbstractQueuableState {
   public void signOff(@NonNull StateContext context) {
     // Only state that allows this
     context.setState(SubmissionState.SIGNED_OFF);
-  }
-
-  @Override
-  public Submission performRelease(StateContext context, Release nextRelease) {
-    // This is different than all other states in that it doesn't reset
-    val validSubmission = createValidSubmission(context, nextRelease);
-    validSubmission.setReport(context.getReport());
-
-    return validSubmission;
-  }
-
-  //
-  // Helpers
-  //
-
-  private static Submission createValidSubmission(StateContext context, Release nextRelease) {
-    return new Submission(
-        context.getProjectKey(),
-        context.getProjectName(),
-        nextRelease.getName(),
-        SubmissionState.VALID);
   }
 
 }

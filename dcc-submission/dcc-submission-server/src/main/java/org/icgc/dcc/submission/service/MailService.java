@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.service;
 import static java.lang.String.format;
 import static javax.mail.Message.RecipientType.TO;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
+import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
@@ -187,6 +188,7 @@ public class MailService {
     // @formatter:off
     return
       state == ERROR         ? template(MAIL_ERROR_BODY,           projectKey, state)                         : 
+      state == INVALID       ? template(MAIL_INVALID_BODY,         projectKey, state, projectKey, projectKey) :
       state == NOT_VALIDATED ? template(MAIL_NOT_VALIDATED_BODY,   projectKey, state, projectKey, projectKey) :
       state == VALID         ? template(MAIL_VALID_BODY,           projectKey, state, projectKey, projectKey) :
                                format("Unexpected validation state '%s' prevented loading email text.", state);

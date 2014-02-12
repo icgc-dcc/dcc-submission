@@ -50,7 +50,7 @@ public class ValidatingState extends AbstractCancellableState {
 
       context.setReport(newReport);
 
-      context.setState(newReport.isValid() ? SubmissionState.VALID : SubmissionState.NOT_VALIDATED);
+      context.setState(newReport.isValid() ? SubmissionState.VALID : SubmissionState.INVALID);
     } else if (outcome == FAILED) {
       oldReport.setState(SubmissionState.ERROR, dataTypes);
 

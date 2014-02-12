@@ -36,7 +36,7 @@ public class QueuedState extends AbstractCancellableState {
     context.setReport(nextReport);
 
     // Ensure the latest files are accounted for
-    nextReport.updateFiles(context.getSubmissionFiles());
+    nextReport.refreshFiles(context.getSubmissionFiles());
     nextReport.reset(dataTypes);
     nextReport.setState(SubmissionState.VALIDATING, dataTypes);
   }

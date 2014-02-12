@@ -29,7 +29,7 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
  * A state that allow validation cancellation of the associated submission.
  */
 @NoArgsConstructor(access = PACKAGE)
-public class AbstractCancellableState extends AbstractState {
+public class AbstractCancellableState extends AbstractReleasePreservingState {
 
   @Override
   public boolean isReadOnly() {
@@ -42,7 +42,7 @@ public class AbstractCancellableState extends AbstractState {
     context.setState(SubmissionState.NOT_VALIDATED);
 
     val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
+    report.refreshFiles(context.getSubmissionFiles());
     report.reset(dataTypes);
   }
 

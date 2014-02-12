@@ -28,23 +28,28 @@ import org.icgc.dcc.submission.core.state.States;
 /**
  * Canonical set of allowed behavioral states for a submission.
  * <p>
- * Uses a delegate to allow for source partitioning the implementation so that:
+ * Uses a delegate to allow for:
  * <ul>
+ * <li>the Bridge Pattern (abstraction = SubmissionState, implementer = State)</li>
  * <li>source partitioning the implementation</li>
- * <li>allowing for hierarchical states</li>
+ * <li>polymorphism of states</li>
+ * <li>semantic hierarchical states / substates</li>
  * </ul>
  * 
+ * @see http://en.wikipedia.org/wiki/Bridge_pattern
  * @see http://www.javacodegeeks.com/2011/02/state-pattern-domain-driven-design.html
  */
 @RequiredArgsConstructor(access = PRIVATE)
 public enum SubmissionState implements State {
 
+  // In (typical) sequence order:
   NOT_VALIDATED(States.NOT_VALIDATED),
   QUEUED(States.QUEUED),
   VALIDATING(States.VALIDATING),
+  ERROR(States.ERROR),
+  INVALID(States.INVALID),
   VALID(States.VALID),
-  SIGNED_OFF(States.SIGNED_OFF),
-  ERROR(States.ERROR);
+  SIGNED_OFF(States.SIGNED_OFF);
 
   /**
    * Delegate

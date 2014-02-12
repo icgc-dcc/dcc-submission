@@ -87,7 +87,7 @@ public class Report implements ReportElement {
   }
 
   public Report(@NonNull Map<String, FileType> files) {
-    updateFiles(files);
+    refreshFiles(files);
   }
 
   public Report(@NonNull Report report) {
@@ -131,22 +131,25 @@ public class Report implements ReportElement {
     return executeVisitor(new GetFilesVisitor()).getFiles();
   }
 
-  public void updateFiles(@NonNull Iterable<SubmissionFile> submissionFiles) {
-    updateFiles(transformFiles(submissionFiles));
+  public void refreshFiles(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    refreshFiles(transformFiles(submissionFiles));
   }
 
-  public void updateFiles(@NonNull Map<String, FileType> newFiles) {
-    val files = getFiles();
+  public void refreshFiles(@NonNull Map<String, FileType> currentFiles) {
+    val previousFiles = getFiles();
 
-    val difference = difference(files, newFiles);
-    val added = difference.entriesOnlyOnRight();
-    val removed = difference.entriesOnlyOnLeft();
+    // Calculate the difference between files:
+    val diff = difference(previousFiles, currentFiles);
+    val addedFiles = diff.entriesOnlyOnRight();
+    val removedFiles = diff.entriesOnlyOnLeft();
 
-    for (val entry : added.entrySet()) {
+    // Remove files that have been deleted
+    for (val entry : addedFiles.entrySet()) {
       addFile(entry.getValue(), entry.getKey());
     }
 
-    for (val entry : removed.entrySet()) {
+    // Add files that have been submitted
+    for (val entry : removedFiles.entrySet()) {
       removeFile(entry.getValue(), entry.getKey());
     }
   }
@@ -175,7 +178,11 @@ public class Report implements ReportElement {
     return executeVisitor(new IsValidVisitor()).isValid();
   }
 
-  public void reset(DataType... dataTypes) {
+  public void resetAll() {
+    resetDataTypes();
+  }
+
+  public void resetDataTypes(DataType... dataTypes) {
     reset(copyOf(dataTypes));
   }
 

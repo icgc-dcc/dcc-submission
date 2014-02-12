@@ -14,7 +14,7 @@ import com.google.common.base.Optional;
 /**
  * A state that allows file system modifications of the associated submission.
  */
-public abstract class AbstractModifiableState extends AbstractReleaseResettableState {
+public abstract class AbstractModifiableState extends AbstractReleasePreservingState {
 
   @Override
   public final boolean isReadOnly() {
@@ -30,19 +30,19 @@ public abstract class AbstractModifiableState extends AbstractReleaseResettableS
     val submissionFiles = context.getSubmissionFiles();
 
     // Refresh
-    report.updateFiles(submissionFiles);
+    report.refreshFiles(submissionFiles);
 
     if (filePath.isPresent()) {
 
       //
-      // One data type
+      // A data type
       //
 
       // Reset this data type's reports if its is managed
       val dataType = getDataType(submissionFiles, filePath.get());
       val managed = dataType.isPresent();
       if (managed) {
-        report.reset(dataType.get());
+        report.resetDataTypes(dataType.get());
       }
     } else {
 
@@ -50,8 +50,8 @@ public abstract class AbstractModifiableState extends AbstractReleaseResettableS
       // All data types
       //
 
-      // Reset all data types' reports
-      report.reset();
+      // Reset all internal reports
+      report.resetDataTypes();
     }
   }
 

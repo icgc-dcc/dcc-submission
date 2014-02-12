@@ -19,24 +19,15 @@ package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-
-import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
- * A state that is neutral with respect to validity, in which all reporting is cleared and each level has a state of
- * {@code INVALID}.
+ * State which is defined when at least one file report is in error.
+ * <p>
+ * Similar to not being validated, but without being able to initialize.
  */
 @NoArgsConstructor(access = PACKAGE)
-public class NotValidatedState extends AbstractQueuableState {
+public class InvalidState extends AbstractQueuableState {
 
-  @Override
-  public void initializeSubmission(@NonNull StateContext context) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
-    val report = context.getReport();
-    report.refreshFiles(context.getSubmissionFiles());
-  }
+  // Nothing new here
 
 }

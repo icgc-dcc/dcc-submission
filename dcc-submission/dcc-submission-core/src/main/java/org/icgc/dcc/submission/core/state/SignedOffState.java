@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
  * Terminal state for a release. Can only be released.
  */
 @NoArgsConstructor(access = PACKAGE)
-public class SignedOffState extends AbstractReleaseResettableState {
+public class SignedOffState extends AbstractReleaseResettingState {
 
   @Override
   public boolean isReadOnly() {

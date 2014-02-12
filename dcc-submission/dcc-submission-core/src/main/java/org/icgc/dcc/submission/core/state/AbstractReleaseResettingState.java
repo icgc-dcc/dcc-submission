@@ -11,7 +11,7 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 /**
  * A state in which the associated submission must be reset upon release.
  */
-public abstract class AbstractReleaseResettableState extends AbstractState {
+public abstract class AbstractReleaseResettingState extends AbstractState {
 
   @Override
   public Submission performRelease(@NonNull StateContext context, @NonNull Release nextRelease) {

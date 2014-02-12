@@ -36,9 +36,9 @@ public class AbstractQueuableState extends AbstractModifiableState {
     // Enter state
     context.setState(SubmissionState.QUEUED);
 
-    // Refelect new queue request in the report
+    // Specified data-types need resetting
     val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
+    report.refreshFiles(context.getSubmissionFiles());
     report.reset(dataTypes);
     report.setState(SubmissionState.QUEUED, dataTypes);
   }

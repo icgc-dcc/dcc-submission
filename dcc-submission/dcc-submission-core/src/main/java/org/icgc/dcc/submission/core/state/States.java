@@ -35,6 +35,7 @@ public final class States {
   public static final State NOT_VALIDATED = new NotValidatedState();
   public static final State QUEUED = new QueuedState();
   public static final State VALIDATING = new ValidatingState();
+  public static final State INVALID = new InvalidState();
   public static final State ERROR = new ErrorState();
   public static final State VALID = new ValidState();
   public static final State SIGNED_OFF = new SignedOffState();
@@ -46,6 +47,8 @@ public final class States {
       return SubmissionState.QUEUED;
     } else if (state == VALIDATING) {
       return SubmissionState.VALIDATING;
+    } else if (state == INVALID) {
+      return SubmissionState.INVALID;
     } else if (state == ERROR) {
       return SubmissionState.ERROR;
     } else if (state == VALID) {
