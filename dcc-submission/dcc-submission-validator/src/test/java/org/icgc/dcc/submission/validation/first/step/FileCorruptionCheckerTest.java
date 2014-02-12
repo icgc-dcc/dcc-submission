@@ -56,7 +56,6 @@ public class FileCorruptionCheckerTest {
     when(testSchema.getPattern()).thenReturn(paramString);
     when(dict.getFileSchemaByName(anyString())).thenReturn(Optional.of(testSchema));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(testSchema));
-    // when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
 
     when(validationContext.getDictionary()).thenReturn(dict);
   }
