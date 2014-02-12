@@ -127,18 +127,26 @@ public class FPVSubmissionProcessorClientTest {
     when(fs.getMatchingFileNames(schema2.getName())).thenReturn(newArrayList(schema2.getName()));
     when(fs.getMatchingFileNames(schema3.getName())).thenReturn(newArrayList(schema3.getName()));
 
+    // We must use a trick here, the 3rd call returns plain text because mocking the correct CompressionCodec in
+    // FPVFileSystem#getCompressionCodec() is a bit difficult. What needs to happen is that Util (where
+    // createInputStream() lives) needs to be merged with FPVSubmissionProcessor. Until then, we'll have to use this
+    // trick.
+
     when(fs.getDataInputStream(schema1.getName()))
         .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2))
         .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2));
+        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT)); // See comment
+                                                                                                        // above
     when(fs.getDataInputStream(schema2.getName()))
         .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP))
         .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP));
+        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT)); // See comment
+                                                                                                        // above
     when(fs.getDataInputStream(schema3.getName()))
         .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT))
         .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT));
+        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT)); // See comment
+                                                                                                        // above
 
     when(validationContext.getDictionary()).thenReturn(dict);
   }

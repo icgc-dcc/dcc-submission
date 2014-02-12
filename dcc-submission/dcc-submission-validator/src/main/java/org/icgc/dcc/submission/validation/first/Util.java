@@ -82,7 +82,6 @@ public final class Util {
 
   public static InputStream createInputStream(FPVFileSystem fs, String fileName) throws IOException {
     val codec = fs.getCompressionCodec(fileName);
-    @Cleanup
     val in = fs.getDataInputStream(fileName);
     return codec == null ?
         in : // This is assumed to be PLAIN_TEXT
@@ -94,9 +93,8 @@ public final class Util {
    */
   @SneakyThrows
   public static final List<String> peekFileHeader(FPVFileSystem fs, String filename) {
-    InputStream is = Util.createInputStream(fs, filename);
     @Cleanup
-    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(createInputStream(fs, filename)));
     String header = reader.readLine();
     header = (header == null) ? "" : header;
     return copyOf(FIELD_SPLITTER.split(header));
