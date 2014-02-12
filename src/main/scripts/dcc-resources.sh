@@ -1,7 +1,7 @@
 #!/bin/bash -e
 # creates a dcc-resources jar
 # id: 131118160314
-# usage: ./dcc-resources.sh http ***REMOVED*** 5380 0.7a-beta
+# usage: ./dcc-resources.sh http ***REMOVED*** 5380 0.7e
 # notes: MUST have json_pp installed
 
 protocol=${1?} && shift
