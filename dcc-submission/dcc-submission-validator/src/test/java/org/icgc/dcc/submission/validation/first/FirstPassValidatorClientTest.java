@@ -41,7 +41,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.FsConfig;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.Util.CodecType;
 import org.icgc.dcc.submission.validation.first.step.FileCorruptionCheckerTest;
@@ -112,13 +111,10 @@ public class FirstPassValidatorClientTest {
   @Spy
   Dictionary dict;
 
-  DccFileSystem fs;
-
-  @Mock
-  SubmissionDirectory submissionDir;
-
   @Mock
   ValidationContext validationContext;
+  @Mock
+  FPVFileSystem fs;
 
   @Before
   public void setup() throws IOException {
@@ -154,12 +150,12 @@ public class FirstPassValidatorClientTest {
         .when(dict).getFileSchemata(anyDataTypeIterable());
 
     when(config.getString(FsConfig.FS_ROOT)).thenReturn(file1.getParent());
-    fs = new DccFileSystem(config, FileSystem.getLocal(new Configuration()));
+    //fs = new DccFileSystem(config, FileSystem.getLocal(new Configuration()));
 
     ImmutableList<String> files = ImmutableList.of(file1.getName(), file2.getName(), file3.getName());
-    when(submissionDir.listFile()).thenReturn(files);
-    when(submissionDir.listFiles(Mockito.anyListOf(String.class))).thenReturn(files);
-    when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new Answer<Iterable<String>>() {
+//    when(submissionDir.listFile()).thenReturn(files);
+//    when(submissionDir.listFiles(Mockito.anyListOf(String.class))).thenReturn(files);
+//    when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new Answer<Iterable<String>>() {
 
       @Override
       public Iterable<String> answer(InvocationOnMock invocation) throws Throwable {
@@ -167,15 +163,15 @@ public class FirstPassValidatorClientTest {
         return ImmutableList.of(pattern.pattern());
       }
     });
-    when(submissionDir.getDataFilePath(anyString())).thenAnswer(new Answer<String>() {
-
-      @Override
-      public String answer(InvocationOnMock invocation) throws Throwable {
-        String filename = (String) invocation.getArguments()[0];
-        File file = new File(file1.getParentFile(), filename);
-        return file.getAbsolutePath();
-      }
-    });
+//    when(submissionDir.getDataFilePath(anyString())).thenAnswer(new Answer<String>() {
+//
+//      @Override
+//      public String answer(InvocationOnMock invocation) throws Throwable {
+//        String filename = (String) invocation.getArguments()[0];
+//        File file = new File(file1.getParentFile(), filename);
+//        return file.getAbsolutePath();
+//      }
+//    });
 
     when(validationContext.getDccFileSystem()).thenReturn(fs);
     when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);

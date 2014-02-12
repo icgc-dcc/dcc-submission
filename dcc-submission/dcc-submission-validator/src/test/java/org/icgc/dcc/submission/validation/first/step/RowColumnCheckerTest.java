@@ -18,11 +18,9 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -30,9 +28,8 @@ import java.io.DataInputStream;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.Util;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,14 +46,11 @@ import com.google.common.collect.ImmutableList;
 public class RowColumnCheckerTest {
 
   @Mock
-  private SubmissionDirectory submissionDir;
-  @Mock
   private Dictionary dict;
   @Mock
-  private DccFileSystem fs;
-
-  @Mock
   ValidationContext validationContext;
+  @Mock
+  FPVFileSystem fs;
 
   @Before
   public void setup() {
@@ -66,8 +60,6 @@ public class RowColumnCheckerTest {
     when(dict.getFileSchemaByName(anyString())).thenReturn(Optional.of(testSchema));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(testSchema));
 
-    when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
-
     Optional<FileSchema> option = Optional.of(testSchema);
     Field f1 = new Field();
     f1.setName("a");
@@ -76,18 +68,15 @@ public class RowColumnCheckerTest {
     when(testSchema.getFields()).thenReturn(ImmutableList.of(f1, f2));
     when(dict.getFileSchemaByName(anyString())).thenReturn(option);
 
-    when(validationContext.getDccFileSystem()).thenReturn(fs);
-    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
     when(validationContext.getDictionary()).thenReturn(dict);
   }
 
   @Test
   public void validColumns() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\nf1\tf2\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
@@ -96,10 +85,9 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\nf1\t\f2\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 1);
   }
@@ -107,10 +95,9 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsContent() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\nf2\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 1);
   }
@@ -118,10 +105,9 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsHeaderAndContent() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\nf2\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 2);
   }
@@ -130,10 +116,9 @@ public class RowColumnCheckerTest {
   public void invalidIrregularColumns() throws Exception {
     DataInputStream fis =
         new DataInputStream(new ByteArrayInputStream("a\tb\tc\nf1\tf2\tf3\tf3\tf4\n\f1\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 3);
   }
@@ -141,10 +126,9 @@ public class RowColumnCheckerTest {
   @Test
   public void validEmptyColumns() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("\t\n\t\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDataInputStream(anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
