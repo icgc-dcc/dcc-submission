@@ -68,6 +68,7 @@ import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -244,6 +245,26 @@ public class NextReleaseResource {
       return badRequest(code, e.getMessage());
     } catch (Throwable t) {
       log.error("Error cancelling validation for '" + projectKey + "':", t);
+      throw t;
+    }
+
+    return Response.ok().build();
+  }
+
+  @DELETE
+  @Path("state/{projectKey}")
+  @SneakyThrows
+  public Response resetState(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+    log.info("Resetting state for '{}'", projectKey);
+    if (isSuperUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      Release nextRelease = releaseService.getNextRelease();
+      releaseService.resetSubmission(nextRelease.getName(), projectKey, Optional.<org.apache.hadoop.fs.Path> absent());
+    } catch (Throwable t) {
+      log.error("Error resetting state for '" + projectKey + "':", t);
       throw t;
     }
 
