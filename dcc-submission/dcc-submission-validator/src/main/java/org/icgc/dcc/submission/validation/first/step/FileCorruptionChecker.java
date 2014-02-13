@@ -42,38 +42,44 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   @Override
   public void performSelfCheck(String fileName) {
     val fs = getFs();
+
+    CodecType fileNameType = fs.determineCodecFromFilename(fileName);
+    log.info("File name '{}' indicates type: '{}'", fileName, fileNameType);
+
+    CodecType contentType = null;
     try {
-      CodecType contentType = fs.determineCodecFromContent(fileName);
-      CodecType fileNameType = fs.determineCodecFromFilename(fileName);
-      if (contentType == fileNameType) {
-        log.info("Check '{}' integrity in '{}'", contentType, fileName);
-        switch (contentType) {
-        case GZIP:
-          checkGZip(fileName);
-          break;
-        case BZIP2:
-          checkBZip2(fileName);
-          break;
-        case PLAIN_TEXT:
-          // Do nothing
-          break;
-        }
-      } else {
-        log.info("Content type does not match the extension for file: '{}' ('{}' != '{}')",
-            new Object[] { fileName, contentType, fileNameType });
-        // TODO: create new error type rather?
-
-        incrementCheckErrorCount();
-
-        getReportContext().reportError(
-            error()
-                .fileName(fileName)
-                .type(COMPRESSION_CODEC_ERROR)
-                .params(getFileSchema(fileName).getName())
-                .build());
-      }
+      contentType = fs.determineCodecFromContent(fileName);
     } catch (IOException e) {
-      log.info("Exception caught in reading file (corruption): {}", fileName, e);
+      log.info("Exception caught in detecting file type for '{}' from content'{}'", fileName, e.getMessage());
+
+      incrementCheckErrorCount();
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(COMPRESSION_CODEC_ERROR) // TODO: create new "corrupted" file error rather
+              .params(getFileSchema(fileName).getName())
+              .build());
+    }
+    log.info("Content for '{}' indicates type: '{}'", fileName, contentType);
+
+    if (contentType == fileNameType) {
+      log.info("Check '{}' integrity of '{}'", contentType, fileName);
+      switch (contentType) {
+      case GZIP:
+        checkGZip(fileName);
+        break;
+      case BZIP2:
+        checkBZip2(fileName);
+        break;
+      case PLAIN_TEXT:
+        // Do nothing
+        break;
+      }
+    } else {
+      log.info("Content type does not match the extension for file: '{}' ('{}' != '{}')",
+          new Object[] { fileName, contentType, fileNameType });
+      // TODO: create new error type rather?
 
       incrementCheckErrorCount();
 
@@ -93,6 +99,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     try {
       getFs().attemptBzip2Read(fileName);
     } catch (IOException e) {
+      e.printStackTrace();
       log.info("Exception caught in decoding bzip2 file '{}': '{}'", fileName, e.getMessage());
 
       incrementCheckErrorCount();
@@ -110,6 +117,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     try {
       getFs().attemptGzipRead(fileName);
     } catch (IOException e) {
+      e.printStackTrace();
       log.info("Exception caught in decoding gzip file '{}': '{}'", fileName, e.getMessage());
 
       incrementCheckErrorCount();

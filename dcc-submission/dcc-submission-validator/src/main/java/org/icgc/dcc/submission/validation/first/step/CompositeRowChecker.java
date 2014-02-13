@@ -73,7 +73,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     Scanner reader = new Scanner(new BufferedReader(
         new InputStreamReader(
             getFs()
-                .getCompressionInputStream(fileName),
+                .getNoCompressionInputStream(fileName),
             DEFAULT_CHARSET)));
     reader.useDelimiter(LINE_SEPARATOR);
     String line;

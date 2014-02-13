@@ -64,7 +64,7 @@ public class FileCorruptionCheckerTest {
     // TODO: should close those...
     DataInputStream textInputStream = getTestInputStream(CodecType.PLAIN_TEXT);
 
-    when(fs.getCompressionInputStream(anyString())).thenReturn(textInputStream);
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(textInputStream);
     FileCorruptionChecker checker =
         new FileCorruptionChecker(
             new NoOpFileChecker(validationContext, fs));
@@ -75,7 +75,7 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testGZipInputValid() throws Exception {
-    when(fs.getCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.GZIP),
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.GZIP),
         getTestInputStream(CodecType.GZIP));
     FileCorruptionChecker checker =
         new FileCorruptionChecker(
@@ -87,7 +87,7 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testBZip2InputValid() throws Exception {
-    when(fs.getCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2),
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2),
         getTestInputStream(CodecType.BZIP2));
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
@@ -98,55 +98,55 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testGZipInputNotValid() throws Exception {
-    when(fs.getCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.GZIP),
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.GZIP),
         corruptInputStream(getTestInputStream(CodecType.GZIP)));
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.gz");
-    verify(fs, times(2)).getCompressionInputStream(anyString());
+    verify(fs, times(2)).getNoCompressionInputStream(anyString());
     checkErrorReported();
   }
 
   @Test
   public void testBZip2InputNotValid() throws Exception {
-    when(fs.getCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2),
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2),
         corruptInputStream(getTestInputStream(CodecType.BZIP2)));
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.bz2");
-    verify(fs, times(2)).getCompressionInputStream(anyString());
+    verify(fs, times(2)).getNoCompressionInputStream(anyString());
     checkErrorReported();
   }
 
   @Test
   public void testFilenameBzCodecMismatch() throws Exception {
-    when(fs.getCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2));
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2));
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.gz");
-    verify(fs, times(1)).getCompressionInputStream(anyString());
+    verify(fs, times(1)).getNoCompressionInputStream(anyString());
     checkErrorReported();
 
   }
 
   @Test
   public void testFilenameTextCodecMismatch() throws Exception {
-    when(fs.getCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.PLAIN_TEXT));
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.PLAIN_TEXT));
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.gz");
-    verify(fs, times(1)).getCompressionInputStream(anyString());
+    verify(fs, times(1)).getNoCompressionInputStream(anyString());
     checkErrorReported();
 
   }
 
   @Test
   public void testFilenameGzCodecMismatch() throws Exception {
-    when(fs.getCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.GZIP));
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(getTestInputStream(CodecType.GZIP));
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.txt");
-    verify(fs, times(1)).getCompressionInputStream(anyString());
+    verify(fs, times(1)).getNoCompressionInputStream(anyString());
     checkErrorReported();
   }
 
@@ -206,21 +206,21 @@ public class FileCorruptionCheckerTest {
   @Test
   public void testTextInputDetection() throws Exception {
     DataInputStream textInputStream = getTestInputStream(CodecType.PLAIN_TEXT);
-    when(fs.getCompressionInputStream(anyString())).thenReturn(textInputStream);
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(textInputStream);
     assertEquals(CodecType.PLAIN_TEXT, fs.determineCodecFromContent(anyString()));
   }
 
   @Test
   public void testGZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.GZIP);
-    when(fs.getCompressionInputStream(anyString())).thenReturn(inputStream);
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(inputStream);
     assertEquals(CodecType.GZIP, fs.determineCodecFromContent(anyString()));
   }
 
   @Test
   public void testBZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.BZIP2);
-    when(fs.getCompressionInputStream(anyString())).thenReturn(inputStream);
+    when(fs.getNoCompressionInputStream(anyString())).thenReturn(inputStream);
     assertEquals(CodecType.BZIP2, fs.determineCodecFromContent(anyString()));
   }
 

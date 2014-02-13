@@ -146,11 +146,11 @@ public class FPVSubmissionProcessorClientTest {
     when(fs.peekFileHeader(schema2.getName())).thenReturn(HEADERS);
     when(fs.peekFileHeader(schema3.getName())).thenReturn(HEADERS);
 
-    when(fs.getCompressionInputStream(schema1.getName())).thenReturn(
+    when(fs.getNoCompressionInputStream(schema1.getName())).thenReturn(
         FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, BZIP2));
-    when(fs.getCompressionInputStream(schema2.getName())).thenReturn(
+    when(fs.getNoCompressionInputStream(schema2.getName())).thenReturn(
         FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, GZIP));
-    when(fs.getCompressionInputStream(schema3.getName())).thenReturn(
+    when(fs.getNoCompressionInputStream(schema3.getName())).thenReturn(
         FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, PLAIN_TEXT));
   }
 

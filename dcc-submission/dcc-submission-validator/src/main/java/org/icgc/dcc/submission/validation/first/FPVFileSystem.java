@@ -66,41 +66,6 @@ public class FPVFileSystem {
     return copyOf(submissionDirectory.listFile(compile(pattern)));
   }
 
-  /**
-   * Must close stream after usage.
-   */
-  @SneakyThrows
-  public InputStream getCompressionInputStream(String fileName) {
-    val in = submissionDirectory.open(fileName);
-
-    val codec = submissionDirectory.getCompressionCodec(fileName);
-    return codec == null ?
-        in : // This is assumed to be PLAIN_TEXT
-        codec.createInputStream(in);
-  }
-
-  public void attemptGzipRead(String fileName) throws IOException {
-    // check the gzip header
-    @Cleanup
-    GZIPInputStream in = new GZIPInputStream(submissionDirectory.open(fileName));
-
-    // see if it can be read through
-    byte[] buf = new byte[BUFFER_SIZE];
-    while (in.read(buf) > 0) {
-    }
-  }
-
-  public void attemptBzip2Read(String fileName) throws IOException {
-    // check the bzip2 header
-    @Cleanup
-    BZip2CompressorInputStream in = new BZip2CompressorInputStream(submissionDirectory.open(fileName));
-
-    // see if it can be read through
-    byte[] buf = new byte[BUFFER_SIZE];
-    while (in.read(buf) > 0) {
-    }
-  }
-
   public CodecType determineCodecFromFilename(String fileName) {
     Tika tika = new Tika();
     String mediaType = tika.detect(fileName);
@@ -115,7 +80,7 @@ public class FPVFileSystem {
 
   public CodecType determineCodecFromContent(String fileName) throws IOException {
     @Cleanup
-    BufferedInputStream bis = new BufferedInputStream(getCompressionInputStream(fileName));
+    BufferedInputStream bis = new BufferedInputStream(submissionDirectory.open(fileName));
     AutoDetectParser parser = new AutoDetectParser();
     Detector detector = parser.getDetector();
     Metadata md = new Metadata();
@@ -131,13 +96,71 @@ public class FPVFileSystem {
     return CodecType.PLAIN_TEXT;
   }
 
+  public void attemptGzipRead(String fileName) throws IOException {
+
+    @Cleanup
+    BufferedInputStream bis = new BufferedInputStream(submissionDirectory.open(fileName));
+    AutoDetectParser parser = new AutoDetectParser();
+    Detector detector = parser.getDetector();
+    Metadata md = new Metadata();
+    md.add(Metadata.RESOURCE_NAME_KEY, fileName);
+
+    String mediaType = detector.detect(bis, md).toString();
+    System.out.println(">> " + mediaType);
+
+    // check the gzip header
+    @Cleanup
+    GZIPInputStream in = new GZIPInputStream(submissionDirectory.open(fileName));
+
+    // see if it can be read through
+    byte[] buf = new byte[BUFFER_SIZE];
+    while (in.read(buf) > 0) {
+    }
+  }
+
+  public void attemptBzip2Read(String fileName) throws IOException {
+    @Cleanup
+    BufferedInputStream bis = new BufferedInputStream(submissionDirectory.open(fileName));
+    AutoDetectParser parser = new AutoDetectParser();
+    Detector detector = parser.getDetector();
+    Metadata md = new Metadata();
+    md.add(Metadata.RESOURCE_NAME_KEY, fileName);
+
+    String mediaType = detector.detect(bis, md).toString();
+    System.out.println(">> " + mediaType);
+
+    // check the bzip2 header
+    @Cleanup
+    BZip2CompressorInputStream in = new BZip2CompressorInputStream(submissionDirectory.open(fileName));
+
+    // see if it can be read through
+    byte[] buf = new byte[BUFFER_SIZE];
+    while (in.read(buf) > 0) {
+    }
+  }
+
+  /**
+   * Must close stream after usage. The extension is expected to match the actual encoding at this point. The client
+   * code can read data from this stream without having to worry about what compression is used.
+   * <p>
+   * TODO: move to {@link SubmissionDirectory}?
+   */
+  @SneakyThrows
+  public InputStream getNoCompressionInputStream(String fileName) {
+    val in = submissionDirectory.open(fileName);
+    val codec = submissionDirectory.getCompressionCodecFromExtension(fileName);
+    return codec == null ?
+        in : // This is assumed to be PLAIN_TEXT
+        codec.createInputStream(in);
+  }
+
   /**
    * Files are expected to be present and uncorrupted at this stage.
    */
   @SneakyThrows
   public List<String> peekFileHeader(String fileName) {
     @Cleanup
-    BufferedReader reader = new BufferedReader(new InputStreamReader(getCompressionInputStream(fileName)));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(getNoCompressionInputStream(fileName)));
     String header = reader.readLine();
     header = (header == null) ? "" : header;
     return copyOf(FIELD_SPLITTER.split(header));

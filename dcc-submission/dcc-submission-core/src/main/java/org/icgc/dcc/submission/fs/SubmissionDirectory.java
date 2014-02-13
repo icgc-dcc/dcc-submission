@@ -182,7 +182,7 @@ public class SubmissionDirectory {
         .open(new Path(getDataFilePath(fileName)));
   }
 
-  public CompressionCodec getCompressionCodec(String fileName) {
+  public CompressionCodec getCompressionCodecFromExtension(String fileName) {
     return new CompressionCodecFactory(dccFileSystem.getFileSystemConfiguration())
         .getCodec(new Path(getDataFilePath(fileName)));
   }
