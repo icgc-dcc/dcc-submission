@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,9 +65,7 @@ public class FileHeaderCheckerTest {
 
   @Test
   public void simpleValidation() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-        "a\tb\rf1\t\f2\r".getBytes()));
-    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
+    when(fs.peekFileHeader(anyString())).thenReturn(newArrayList("a", "b"));
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
@@ -156,17 +155,6 @@ public class FileHeaderCheckerTest {
   }
 
   @Test
-  public void validLineFeedNewLineHeader() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-        "a\tb\r\nf1\t\f2\r\n".getBytes()));
-    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-        validationContext, fs));
-    checker.check(anyString());
-    TestUtils.checkNoErrorsReported(validationContext);
-  }
-
-  @Test
   public void notValidNoContentHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         new byte[0]));
@@ -175,17 +163,6 @@ public class FileHeaderCheckerTest {
         validationContext, fs));
     checker.check(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
-  }
-
-  @Test
-  public void validNewLineHeader() throws Exception {
-    DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
-        "a\tb\nf1\t\f2\n".getBytes()));
-    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
-        validationContext, fs));
-    checker.check(anyString());
-    TestUtils.checkNoErrorsReported(validationContext);
   }
 
 }

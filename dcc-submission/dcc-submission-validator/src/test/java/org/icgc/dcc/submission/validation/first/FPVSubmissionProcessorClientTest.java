@@ -146,11 +146,7 @@ public class FPVSubmissionProcessorClientTest {
     when(fs.peekFileHeader(schema2.getName())).thenReturn(HEADERS);
     when(fs.peekFileHeader(schema3.getName())).thenReturn(HEADERS);
 
-    when(fs.getDecompressingInputStream(schema1.getName())).thenReturn(
-        FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, BZIP2));
-    when(fs.getDecompressingInputStream(schema2.getName())).thenReturn(
-        FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, GZIP));
-    when(fs.getDecompressingInputStream(schema3.getName())).thenReturn(
+    when(fs.getDecompressingInputStream(Mockito.anyString())).thenReturn(
         FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, PLAIN_TEXT));
   }
 
