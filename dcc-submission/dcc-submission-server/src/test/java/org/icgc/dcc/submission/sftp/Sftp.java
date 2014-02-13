@@ -20,11 +20,14 @@ package org.icgc.dcc.submission.sftp;
 import static com.google.common.base.Charsets.UTF_8;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.junit.rules.TestRule;
@@ -136,7 +139,13 @@ public class Sftp implements TestRule {
     getChannel().put(inputStream(fileContent), sourceFileName);
   }
 
+  @SneakyThrows
+  public void put(String sourceFileName, File file) throws SftpException {
+    getChannel().put(new FileInputStream(file), sourceFileName);
+  }
+
   public void put(String sourceFileName, String destFileName, String fileContent) throws SftpException {
+    // FIXME: fileContent is never used
     getChannel().put(sourceFileName, destFileName);
   }
 

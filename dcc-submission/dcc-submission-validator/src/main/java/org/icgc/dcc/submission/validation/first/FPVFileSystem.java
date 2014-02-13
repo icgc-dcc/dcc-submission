@@ -86,7 +86,7 @@ public class FPVFileSystem {
     Metadata md = new Metadata();
     md.add(Metadata.RESOURCE_NAME_KEY, fileName);
 
-    String mediaType = detector.detect(bis, md).toString();
+    String mediaType = detector.detect(bis, md).toString(); // FIXME: shouldn't rely on toString()...
     if (mediaType.equals("application/x-gzip")) {
       return CodecType.GZIP;
     } else if (mediaType.equals("application/x-bzip2")) {
@@ -98,8 +98,10 @@ public class FPVFileSystem {
 
   public void attemptGzipRead(String fileName) throws IOException {
 
+    val dodo0 = submissionDirectory.open(fileName);
+    System.out.println(dodo0.getClass().getSimpleName());
     @Cleanup
-    BufferedInputStream bis = new BufferedInputStream(submissionDirectory.open(fileName));
+    BufferedInputStream bis = new BufferedInputStream(dodo0);
     AutoDetectParser parser = new AutoDetectParser();
     Detector detector = parser.getDetector();
     Metadata md = new Metadata();
@@ -109,8 +111,10 @@ public class FPVFileSystem {
     System.out.println(">> " + mediaType);
 
     // check the gzip header
+    val dodo = submissionDirectory.open(fileName);
+    System.out.println(dodo.getClass().getSimpleName());
     @Cleanup
-    GZIPInputStream in = new GZIPInputStream(submissionDirectory.open(fileName));
+    GZIPInputStream in = new GZIPInputStream(dodo);
 
     // see if it can be read through
     byte[] buf = new byte[BUFFER_SIZE];

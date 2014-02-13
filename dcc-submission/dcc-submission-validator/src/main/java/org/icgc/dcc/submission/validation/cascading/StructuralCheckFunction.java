@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.report.ErrorType;
 
 import cascading.flow.FlowProcess;
@@ -52,6 +54,7 @@ import com.google.common.collect.Lists;
  * TODO: this should be split in multiple operations.
  */
 @SuppressWarnings("rawtypes")
+@Slf4j
 public class StructuralCheckFunction extends BaseOperation implements Function {
 
   private static final String ROW_LEVEL_ERROR_COLUMN_NAME = "RowLevelError";
@@ -139,9 +142,12 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
         // ErrorType.FILE_LEVEL_ERROR_COLUMN_NAME, unknownHeaderIndices);
       }
     } else {
+
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
+
+      log.info("Reporting structural problem on: '{}' != '{}'", headerSize, dataSize);
 
       // see SUBM-15
       tupleState.reportError(ErrorType.STRUCTURALLY_INVALID_ROW_ERROR,//

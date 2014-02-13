@@ -33,6 +33,7 @@ import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.CELL_LEVE
 import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.ROW_LEVEL;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import javax.annotation.Nullable;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 
@@ -59,10 +61,9 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof Integer);
-      return ImmutableMap.of(EXPECTED, params[0]);
+      checkParams(params, Integer.class);
+      return ImmutableMap.of(
+          EXPECTED, params[0]);
     }
   },
 
@@ -73,10 +74,9 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
-      return ImmutableMap.of(EXPECTED, params[0]);
+      checkParams(params, String.class);
+      return ImmutableMap.of(
+          EXPECTED, params[0]);
     }
   },
 
@@ -87,10 +87,9 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
-      return ImmutableMap.of(VALUE, params[0]);
+      checkParams(params, String.class);
+      return ImmutableMap.of(
+          VALUE, params[0]);
     }
   },
 
@@ -105,11 +104,10 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 2);
-      checkArgument(params[0] instanceof String);
-      checkArgument(params[1] instanceof List);
-      return ImmutableMap.of(OTHER_SCHEMA, params[0], OTHER_FIELDS, params[1]);
+      checkParams(params, String.class, List.class);
+      return ImmutableMap.of(
+          OTHER_SCHEMA, params[0],
+          OTHER_FIELDS, params[1]);
     }
   },
 
@@ -126,11 +124,10 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 2);
-      checkArgument(params[0] instanceof String);
-      checkArgument(params[1] instanceof List);
-      return ImmutableMap.of(OTHER_SCHEMA, params[0], OTHER_FIELDS, params[1]);
+      checkParams(params, String.class, List.class);
+      return ImmutableMap.of(
+          OTHER_SCHEMA, params[0],
+          OTHER_FIELDS, params[1]);
     }
   },
 
@@ -141,6 +138,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params);
       return ImmutableMap.of();
     }
   },
@@ -152,10 +150,9 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof ValueType);
-      return ImmutableMap.of(EXPECTED, params[0]);
+      checkParams(params, ValueType.class);
+      return ImmutableMap.of(
+          EXPECTED, params[0]);
     }
   },
 
@@ -166,12 +163,10 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 2);
-      checkArgument(params[0] instanceof Long);
-      checkArgument(params[1] instanceof Long);
-
-      return ImmutableMap.of(MIN, params[0], MAX, params[1]);
+      checkParams(params, Long.class, Long.class);
+      return ImmutableMap.of(
+          MIN, params[0],
+          MAX, params[1]);
     }
   },
 
@@ -182,6 +177,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params);
       return ImmutableMap.of();
     }
   },
@@ -193,6 +189,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params);
       return ImmutableMap.of();
     }
   },
@@ -204,10 +201,9 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof Set);
-      return ImmutableMap.of(EXPECTED, params[0]);
+      checkParams(params, Set.class);
+      return ImmutableMap.of(
+          EXPECTED, params[0]);
     }
   },
 
@@ -218,10 +214,9 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
-      return ImmutableMap.of(EXPECTED, params[0]);
+      checkParams(params, String.class);
+      return ImmutableMap.of(
+          EXPECTED, params[0]);
     }
   },
 
@@ -232,9 +227,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 2);
-      checkArgument(params[0] instanceof String);
+      checkParams(params, String.class, String.class);
       return ImmutableMap.of(
           EXPECTED, params[0],
           DESCRIPTION, params[1]);
@@ -248,10 +241,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 2);
-      checkArgument(params[0] instanceof String);
-      checkArgument(params[1] instanceof List);
+      checkParams(params, String.class, List.class);
       return ImmutableMap.of(SCHEMA, params[0], FILES, params[1]);
     }
   },
@@ -267,9 +257,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
+      checkParams(params, String.class);
       return ImmutableMap.of(SCHEMA, params[0]);
     }
   },
@@ -286,9 +274,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
+      checkParams(params, String.class);
       return ImmutableMap.of(SCHEMA, params[0]);
     }
   },
@@ -300,9 +286,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
+      checkParams(params, String.class);
       return ImmutableMap.of(SCHEMA, params[0]);
     }
   },
@@ -314,9 +298,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof List);
+      checkParams(params, List.class);
       return ImmutableMap.of(FIELDS, params[0]);
     }
   },
@@ -328,10 +310,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 2);
-      checkArgument(params[0] instanceof List);
-      checkArgument(params[1] instanceof List);
+      checkParams(params, List.class, List.class);
       return ImmutableMap.of(EXPECTED, params[0], VALUE, params[1]);
     }
   },
@@ -343,9 +322,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
+      checkParams(params, String.class);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
   },
@@ -357,9 +334,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof String);
+      checkParams(params, String.class);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
   },
@@ -371,15 +346,10 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 3);
-      checkArgument(params[0] instanceof Long);
-      checkArgument(params[1] instanceof Long);
-      checkArgument(params[2] instanceof Float);
+      checkParams(params, Long.class, Long.class, Float.class);
       return ImmutableMap.of(VALUE, params[0], VALUE2, params[1], EXPECTED, params[2]);
     }
   };
-  ;
 
   /**
    * Metadata.
@@ -390,6 +360,41 @@ public enum ErrorType {
   private final boolean structural;
 
   public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable Object... params);
+
+  protected void checkParams(Object[] params, Class<?>... paramTypes) {
+    // Verify param existence
+    checkArgument(
+        params != null,
+        "'%s' expects params when build() is invoked but '%s' was supplied instead",
+        this, Arrays.toString(params));
+
+    // Verify param lengths
+    checkArgument(
+        params.length == paramTypes.length,
+        "'%s' expects %s params of types '%s' when build() is invoked but %s params ('%s') of types '%s' was supplied instead",
+        this, paramTypes.length, Arrays.toString(paramTypes), params.length, Arrays.toString(params),
+        Arrays.toString(getParamTypes(params)));
+
+    // Verify param types
+    for (int i = 0; i < paramTypes.length; i++) {
+      val param = params[i];
+      val paramType = paramTypes[i];
+
+      checkArgument(
+          paramType.isAssignableFrom(param.getClass()),
+          "'%s' expects param '%s' to be of type '%s' when build() is invoked but '%s' was supplied instead",
+          this, param, paramType, param.getClass());
+    }
+  }
+
+  protected Class<?>[] getParamTypes(Object[] params) {
+    Class<?>[] paramTypes = new Class<?>[params.length];
+    for (int i = 0; i < params.length; i++) {
+      paramTypes[i] = params[i].getClass();
+    }
+
+    return paramTypes;
+  }
 
   ErrorType(ErrorLevel level, String message) {
     this(level, message, false);
