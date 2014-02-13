@@ -21,20 +21,15 @@ import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.COMPRESSION_CODEC_ERROR;
 
 import java.io.IOException;
-import java.util.zip.GZIPInputStream;
 
-import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.Util.CodecType;
 
 @Slf4j
 public class FileCorruptionChecker extends CompositeFileChecker {
-
-  private static final int BUFFER_SIZE = 65536;
 
   public FileCorruptionChecker(FileChecker fileChecker, boolean failFast) {
     super(fileChecker, failFast);
@@ -95,14 +90,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
    */
   private void checkBZip2(String fileName) {
     try {
-      // check the bzip2 header
-      @Cleanup
-      BZip2CompressorInputStream in = new BZip2CompressorInputStream(getFs().getDataInputStream(fileName));
-
-      // see if it can be read through
-      byte[] buf = new byte[BUFFER_SIZE];
-      while (in.read(buf) > 0) {
-      }
+      getFs().attemptBzip2Read(fileName);
     } catch (IOException e) {
       log.info("Exception caught in decoding bzip2 file '{}': '{}'", fileName, e.getMessage());
 
@@ -119,14 +107,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
   private void checkGZip(String fileName) {
     try {
-      // check the gzip header
-      @Cleanup
-      GZIPInputStream in = new GZIPInputStream(getFs().getDataInputStream(fileName));
-
-      // see if it can be read through
-      byte[] buf = new byte[BUFFER_SIZE];
-      while (in.read(buf) > 0) {
-      }
+      getFs().attemptGzipRead(fileName);
     } catch (IOException e) {
       log.info("Exception caught in decoding gzip file '{}': '{}'", fileName, e.getMessage());
 

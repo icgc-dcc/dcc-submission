@@ -21,7 +21,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Scanner;
@@ -33,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.first.Util;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.RowChecker;
 
@@ -65,31 +63,28 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
-  public void performSelfCheck(String filename) {
+  public void performSelfCheck(String fileName) {
     log.info("Start performing {} validation...", name);
-    val fileSchema = getFileSchema(filename);
+    val fileSchema = getFileSchema(fileName);
 
-    try {
-      @Cleanup
-      Scanner reader = new Scanner(new BufferedReader(
-          new InputStreamReader(
-              Util.createInputStream(getFs(), filename),
-              DEFAULT_CHARSET)));
-      reader.useDelimiter(LINE_SEPARATOR);
-      String line;
-      long lineNumber = 1;
-      while (reader.hasNext()) {
-        line = reader.next();
-        checkRow(filename, fileSchema, line, lineNumber);
-        ++lineNumber;
+    @Cleanup
+    Scanner reader = new Scanner(new BufferedReader(
+        new InputStreamReader(
+            getFs()
+                .getCompressionInputStream(fileName),
+            DEFAULT_CHARSET)));
+    reader.useDelimiter(LINE_SEPARATOR);
+    String line;
+    long lineNumber = 1;
+    while (reader.hasNext()) {
+      line = reader.next();
+      checkRow(fileName, fileSchema, line, lineNumber);
+      ++lineNumber;
 
-        if (lineNumber % 10000 == 0) {
-          // Check for cancellation
-          checkInterrupted(name);
-        }
+      if (lineNumber % 10000 == 0) {
+        // Check for cancellation
+        checkInterrupted(name);
       }
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to check the file: " + filename, e);
     }
 
     log.info("End performing {} validation. Number of errors found: '{}'",

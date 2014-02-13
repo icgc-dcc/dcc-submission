@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import lombok.Cleanup;
 import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
@@ -132,21 +133,38 @@ public class FPVSubmissionProcessorClientTest {
     // createInputStream() lives) needs to be merged with FPVSubmissionProcessor. Until then, we'll have to use this
     // trick.
 
-    when(fs.getDataInputStream(schema1.getName()))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT)); // See comment
-                                                                                                        // above
-    when(fs.getDataInputStream(schema2.getName()))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT)); // See comment
-                                                                                                        // above
-    when(fs.getDataInputStream(schema3.getName()))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT))
-        .thenReturn(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT)); // See comment
-                                                                                                        // above
+    @Cleanup
+    val plainStream1 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
+    @Cleanup
+    val plainStream2 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
+    @Cleanup
+    val plainStream3 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
+    @Cleanup
+    val plainStream4 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
+    @Cleanup
+    val plainStream5 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
+    when(fs.getCompressionInputStream(schema3.getName()))
+        .thenReturn(plainStream1)
+        .thenReturn(plainStream2)
+        .thenReturn(plainStream3); // See comment above
+
+    @Cleanup
+    val bzip2Stream1 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2);
+    @Cleanup
+    val bzip2Stream2 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2);
+    when(fs.getCompressionInputStream(schema1.getName()))
+        .thenReturn(bzip2Stream1)
+        .thenReturn(bzip2Stream2)
+        .thenReturn(plainStream4); // See comment above
+
+    @Cleanup
+    val gzipStream1 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP);
+    @Cleanup
+    val gzipStream2 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP);
+    when(fs.getCompressionInputStream(schema2.getName()))
+        .thenReturn(gzipStream1)
+        .thenReturn(gzipStream2)
+        .thenReturn(plainStream5); // See comment above
 
     when(validationContext.getDictionary()).thenReturn(dict);
   }

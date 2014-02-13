@@ -19,22 +19,30 @@ package org.icgc.dcc.submission.validation.first;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 
-import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 
-import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 /**
  * Class representing interactions with the file system in the context of FPV (as a temporary measure to isolate such
  * operations from the FPV at first).
+ * <p>
+ * TODO: add test for this class
  */
 @RequiredArgsConstructor
 public class FPVFileSystem {
+
+  private static final int BUFFER_SIZE = 65536;
 
   private final SubmissionDirectory submissionDirectory;
 
@@ -46,13 +54,38 @@ public class FPVFileSystem {
     return copyOf(submissionDirectory.listFile(Pattern.compile(pattern)));
   }
 
+  /**
+   * Must close stream after usage.
+   */
   @SneakyThrows
-  public DataInputStream getDataInputStream(String fileName) {
-    return submissionDirectory.open(fileName);
+  public InputStream getCompressionInputStream(String fileName) {
+    val codec = submissionDirectory.getCompressionCodec(fileName);
+    val in = submissionDirectory.open(fileName);
+    return codec == null ?
+        in : // This is assumed to be PLAIN_TEXT
+        codec.createInputStream(in);
   }
 
-  public CompressionCodec getCompressionCodec(String fileName) {
-    return submissionDirectory.getCompressionCodec(fileName);
+  public void attemptGzipRead(String fileName) throws IOException {
+    // check the gzip header
+    @Cleanup
+    GZIPInputStream in = new GZIPInputStream(submissionDirectory.open(fileName));
+
+    // see if it can be read through
+    byte[] buf = new byte[BUFFER_SIZE];
+    while (in.read(buf) > 0) {
+    }
+  }
+
+  public void attemptBzip2Read(String fileName) throws IOException {
+    // check the bzip2 header
+    @Cleanup
+    BZip2CompressorInputStream in = new BZip2CompressorInputStream(submissionDirectory.open(fileName));
+
+    // see if it can be read through
+    byte[] buf = new byte[BUFFER_SIZE];
+    while (in.read(buf) > 0) {
+    }
   }
 
 }

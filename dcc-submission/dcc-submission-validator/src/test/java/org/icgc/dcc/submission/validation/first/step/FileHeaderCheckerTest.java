@@ -69,7 +69,7 @@ public class FileHeaderCheckerTest {
   public void simpleValidation() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "a\tb\rf1\t\f2\r".getBytes()));
-    when(Util.createInputStream(fs, anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
@@ -81,7 +81,7 @@ public class FileHeaderCheckerTest {
   public void notValidMissingHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "a\tr".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -92,7 +92,7 @@ public class FileHeaderCheckerTest {
   public void notValidOutOfOrderHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "b\ta\rf1\t\f2\r".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -103,7 +103,7 @@ public class FileHeaderCheckerTest {
   public void notValidDuplicateHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "b\tb\rf1\t\f2\r".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -114,7 +114,7 @@ public class FileHeaderCheckerTest {
   public void notValidExtraHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "a\tb\tc\rf1\t\f2\r".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -126,7 +126,7 @@ public class FileHeaderCheckerTest {
   public void notValidWhiteSpacesInHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         " a \tb\rf1\t\f2\r".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -138,7 +138,7 @@ public class FileHeaderCheckerTest {
   public void notValidCapitalHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "A\tB\rf1\t\f2\r".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -150,7 +150,7 @@ public class FileHeaderCheckerTest {
   public void notValidMispellHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "ab\tb\rf1\t\f2\r".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -162,7 +162,7 @@ public class FileHeaderCheckerTest {
   public void validLineFeedNewLineHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "a\tb\r\nf1\t\f2\r\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -173,7 +173,7 @@ public class FileHeaderCheckerTest {
   public void notValidNoContentHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         new byte[0]));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());
@@ -184,7 +184,7 @@ public class FileHeaderCheckerTest {
   public void validNewLineHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "a\tb\nf1\t\f2\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
     checker.check(anyString());

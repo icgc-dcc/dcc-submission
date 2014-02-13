@@ -74,7 +74,7 @@ public class RowColumnCheckerTest {
   @Test
   public void validColumns() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\nf1\tf2\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
@@ -85,7 +85,7 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\nf1\t\f2\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
@@ -95,7 +95,7 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsContent() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\nf2\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
@@ -105,7 +105,7 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsHeaderAndContent() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\nf2\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
@@ -116,7 +116,7 @@ public class RowColumnCheckerTest {
   public void invalidIrregularColumns() throws Exception {
     DataInputStream fis =
         new DataInputStream(new ByteArrayInputStream("a\tb\tc\nf1\tf2\tf3\tf3\tf4\n\f1\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
@@ -126,7 +126,7 @@ public class RowColumnCheckerTest {
   @Test
   public void validEmptyColumns() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("\t\n\t\n".getBytes()));
-    when(fs.getDataInputStream(anyString())).thenReturn(fis);
+    when(fs.getCompressionInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());

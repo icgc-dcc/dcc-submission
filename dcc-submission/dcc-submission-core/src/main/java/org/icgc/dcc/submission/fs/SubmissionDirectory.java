@@ -173,6 +173,9 @@ public class SubmissionDirectory {
     return null;
   }
 
+  /**
+   * Must close stream after usage.
+   */
   @SneakyThrows
   public DataInputStream open(@NonNull String fileName) {
     return dccFileSystem.getFileSystem()
