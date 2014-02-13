@@ -18,11 +18,15 @@
 package org.icgc.dcc.submission.validation.first;
 
 import static com.google.common.collect.ImmutableList.copyOf;
+import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
@@ -31,16 +35,24 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.tika.Tika;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 /**
  * Class representing interactions with the file system in the context of FPV (as a temporary measure to isolate such
  * operations from the FPV at first).
  * <p>
- * TODO: add test for this class
+ * TODO: add test for this class (especially after merging {@link Util} in it)
  */
 @RequiredArgsConstructor
 public class FPVFileSystem {
+
+  public enum CodecType {
+    GZIP, BZIP2, PLAIN_TEXT;
+  }
 
   private static final int BUFFER_SIZE = 65536;
 
@@ -51,7 +63,7 @@ public class FPVFileSystem {
   }
 
   public List<String> getMatchingFileNames(String pattern) {
-    return copyOf(submissionDirectory.listFile(Pattern.compile(pattern)));
+    return copyOf(submissionDirectory.listFile(compile(pattern)));
   }
 
   /**
@@ -59,8 +71,9 @@ public class FPVFileSystem {
    */
   @SneakyThrows
   public InputStream getCompressionInputStream(String fileName) {
-    val codec = submissionDirectory.getCompressionCodec(fileName);
     val in = submissionDirectory.open(fileName);
+
+    val codec = submissionDirectory.getCompressionCodec(fileName);
     return codec == null ?
         in : // This is assumed to be PLAIN_TEXT
         codec.createInputStream(in);
@@ -86,6 +99,48 @@ public class FPVFileSystem {
     byte[] buf = new byte[BUFFER_SIZE];
     while (in.read(buf) > 0) {
     }
+  }
+
+  public CodecType determineCodecFromFilename(String fileName) {
+    Tika tika = new Tika();
+    String mediaType = tika.detect(fileName);
+    if (mediaType.equals("application/x-gzip")) {
+      return CodecType.GZIP;
+    } else if (mediaType.equals("application/x-bzip2")) {
+      return CodecType.BZIP2;
+    }
+
+    return CodecType.PLAIN_TEXT;
+  }
+
+  public CodecType determineCodecFromContent(String fileName) throws IOException {
+    @Cleanup
+    BufferedInputStream bis = new BufferedInputStream(getCompressionInputStream(fileName));
+    AutoDetectParser parser = new AutoDetectParser();
+    Detector detector = parser.getDetector();
+    Metadata md = new Metadata();
+    md.add(Metadata.RESOURCE_NAME_KEY, fileName);
+
+    String mediaType = detector.detect(bis, md).toString();
+    if (mediaType.equals("application/x-gzip")) {
+      return CodecType.GZIP;
+    } else if (mediaType.equals("application/x-bzip2")) {
+      return CodecType.BZIP2;
+    }
+
+    return CodecType.PLAIN_TEXT;
+  }
+
+  /**
+   * Files are expected to be present and uncorrupted at this stage.
+   */
+  @SneakyThrows
+  public List<String> peekFileHeader(String fileName) {
+    @Cleanup
+    BufferedReader reader = new BufferedReader(new InputStreamReader(getCompressionInputStream(fileName)));
+    String header = reader.readLine();
+    header = (header == null) ? "" : header;
+    return copyOf(FIELD_SPLITTER.split(header));
   }
 
 }

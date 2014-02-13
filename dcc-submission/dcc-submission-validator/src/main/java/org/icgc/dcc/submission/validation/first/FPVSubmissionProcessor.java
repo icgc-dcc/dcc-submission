@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
+import static com.google.common.base.Strings.repeat;
 import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.ROW_LEVEL;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
@@ -61,6 +62,7 @@ public class FPVSubmissionProcessor {
 
     for (val fileName : fs.listMatchingSubmissionFiles(
         validationContext.getDictionary().getFilePatterns())) {
+      log.info(banner());
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, fileName);
 
       fileChecker.check(fileName);
@@ -72,6 +74,10 @@ public class FPVSubmissionProcessor {
         checkInterrupted(stepName);
       }
     }
+  }
+
+  private String banner() {
+    return repeat("=", 75);
   }
 
 }

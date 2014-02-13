@@ -58,6 +58,8 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public void check(String filename) {
+    log.info(banner());
+
     // check all rows in the file
     performSelfCheck(filename);
   }

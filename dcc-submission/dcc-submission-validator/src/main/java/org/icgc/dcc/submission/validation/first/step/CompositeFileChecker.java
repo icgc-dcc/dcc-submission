@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.repeat;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,7 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public void check(String fileName) {
+    log.info(banner());
     delegate.check(fileName);
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", name);
@@ -116,4 +118,7 @@ public abstract class CompositeFileChecker implements FileChecker {
     return optional.get();
   }
 
+  protected String banner() {
+    return repeat("-", 75);
+  }
 }

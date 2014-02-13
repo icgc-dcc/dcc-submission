@@ -22,11 +22,11 @@ import static org.icgc.dcc.submission.core.report.ErrorType.COMPRESSION_CODEC_ER
 
 import java.io.IOException;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType;
 import org.icgc.dcc.submission.validation.first.FileChecker;
-import org.icgc.dcc.submission.validation.first.Util;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
 
 @Slf4j
 public class FileCorruptionChecker extends CompositeFileChecker {
@@ -41,9 +41,10 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
   @Override
   public void performSelfCheck(String fileName) {
+    val fs = getFs();
     try {
-      CodecType contentType = Util.determineCodecFromContent(getFs(), fileName);
-      CodecType fileNameType = Util.determineCodecFromFilename(fileName);
+      CodecType contentType = fs.determineCodecFromContent(fileName);
+      CodecType fileNameType = fs.determineCodecFromFilename(fileName);
       if (contentType == fileNameType) {
         log.info("Check '{}' integrity in '{}'", contentType, fileName);
         switch (contentType) {

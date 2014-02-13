@@ -26,7 +26,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.first.FileChecker;
-import org.icgc.dcc.submission.validation.first.Util;
 
 @Slf4j
 public class FileHeaderChecker extends CompositeFileChecker {
@@ -40,19 +39,21 @@ public class FileHeaderChecker extends CompositeFileChecker {
   }
 
   @Override
-  public void performSelfCheck(String filename) {
-    val expectedHeader = retrieveExpectedHeader(filename);
-    val actualHeader = Util.peekFileHeader(getFs(), filename);
-    if (!isExactMatch(expectedHeader, actualHeader)) {
+  public void performSelfCheck(String fileName) {
+    val expectedHeader = retrieveExpectedHeader(fileName);
+    val actualHeader = getFs().peekFileHeader(fileName);
+    if (isExactMatch(expectedHeader, actualHeader)) {
+      log.info("Correct header in '{}': '{}'", fileName, expectedHeader);
+    } else {
       log.info(
-          "Different from the expected header: '{}', actual header: '{}'",
-          expectedHeader, actualHeader);
+          "Different from the expected header in '{}': '{}', actual header: '{}'",
+          new Object[] { fileName, expectedHeader, actualHeader });
 
       incrementCheckErrorCount();
 
       getReportContext().reportError(
           error()
-              .fileName(filename)
+              .fileName(fileName)
               .type(FILE_HEADER_ERROR)
               .params(expectedHeader, actualHeader)
               .build());
@@ -63,8 +64,7 @@ public class FileHeaderChecker extends CompositeFileChecker {
     return getFileSchema(filename).getFieldNames();
   }
 
-  private boolean isExactMatch(List<String> expectedHeader,
-      List<String> actualHeader) {
+  private boolean isExactMatch(List<String> expectedHeader, List<String> actualHeader) {
     return actualHeader.equals(expectedHeader);
   }
 }

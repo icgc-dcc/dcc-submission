@@ -30,19 +30,16 @@ import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.Util;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Util.class)
+@RunWith(MockitoJUnitRunner.class)
 public class RowColumnCheckerTest {
 
   @Mock

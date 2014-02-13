@@ -26,8 +26,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.Util;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -177,6 +176,9 @@ public class FileCorruptionCheckerTest {
     }
   }
 
+  /**
+   * Must close stream afterwards.
+   */
   public static DataInputStream getTestInputStream(String content, CodecType type) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
@@ -205,21 +207,21 @@ public class FileCorruptionCheckerTest {
   public void testTextInputDetection() throws Exception {
     DataInputStream textInputStream = getTestInputStream(CodecType.PLAIN_TEXT);
     when(fs.getCompressionInputStream(anyString())).thenReturn(textInputStream);
-    assertEquals(CodecType.PLAIN_TEXT, Util.determineCodecFromContent(fs, anyString()));
+    assertEquals(CodecType.PLAIN_TEXT, fs.determineCodecFromContent(anyString()));
   }
 
   @Test
   public void testGZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.GZIP);
     when(fs.getCompressionInputStream(anyString())).thenReturn(inputStream);
-    assertEquals(CodecType.GZIP, Util.determineCodecFromContent(fs, anyString()));
+    assertEquals(CodecType.GZIP, fs.determineCodecFromContent(anyString()));
   }
 
   @Test
   public void testBZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.BZIP2);
     when(fs.getCompressionInputStream(anyString())).thenReturn(inputStream);
-    assertEquals(CodecType.BZIP2, Util.determineCodecFromContent(fs, anyString()));
+    assertEquals(CodecType.BZIP2, fs.determineCodecFromContent(anyString()));
   }
 
   private void checkErrorReported() {

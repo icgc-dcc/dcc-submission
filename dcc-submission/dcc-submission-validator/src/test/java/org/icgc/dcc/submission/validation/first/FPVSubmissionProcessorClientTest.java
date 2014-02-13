@@ -20,13 +20,16 @@ package org.icgc.dcc.submission.validation.first;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
 import static org.icgc.dcc.submission.dictionary.model.ValueType.INTEGER;
+import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.BZIP2;
+import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.GZIP;
+import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.PLAIN_TEXT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
 
-import lombok.Cleanup;
 import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
@@ -36,7 +39,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
 import org.icgc.dcc.submission.validation.first.step.FileCorruptionCheckerTest;
 import org.icgc.dcc.submission.validation.first.step.TestUtils;
 import org.junit.Before;
@@ -47,13 +49,16 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FPVSubmissionProcessorClientTest {
 
-  private final static String VALID_CONTENT = "H1\tH2\tH3\nf1\tf2\tf3";
+  private final static List<String> HEADERS = newArrayList("H1", "H2", "H3");
+  private final static String HEADER_LINE = Joiner.on('\t').join(HEADERS) + "\n";
+  private final static String VALID_CONTENT = HEADER_LINE + "f1\tf2\tf3";
 
   enum Schema {
     TESTFILE3("testfile3.txt"), TESTFILE2("testfile2.gz", TESTFILE3, false), TESTFILE1("testfile1.bz2", TESTFILE2, true);
@@ -120,6 +125,7 @@ public class FPVSubmissionProcessorClientTest {
     doReturn(Optional.of(schema3)).when(dict).getFileSchemaByFileName(schema3.getName());
     doReturn(ImmutableList.<FileSchema> of(schema1, schema2, schema3))
         .when(dict).getFileSchemata(anyDataTypeIterable());
+    when(validationContext.getDictionary()).thenReturn(dict);
 
     ImmutableList<String> files = ImmutableList.of(schema1.getName(), schema2.getName(), schema3.getName());
     when(fs.listMatchingSubmissionFiles(Mockito.anyListOf(String.class))).thenReturn(files);
@@ -128,45 +134,24 @@ public class FPVSubmissionProcessorClientTest {
     when(fs.getMatchingFileNames(schema2.getName())).thenReturn(newArrayList(schema2.getName()));
     when(fs.getMatchingFileNames(schema3.getName())).thenReturn(newArrayList(schema3.getName()));
 
-    // We must use a trick here, the 3rd call returns plain text because mocking the correct CompressionCodec in
-    // FPVFileSystem#getCompressionCodec() is a bit difficult. What needs to happen is that Util (where
-    // createInputStream() lives) needs to be merged with FPVSubmissionProcessor. Until then, we'll have to use this
-    // trick.
+    when(fs.determineCodecFromFilename(schema1.getName())).thenReturn(BZIP2);
+    when(fs.determineCodecFromFilename(schema2.getName())).thenReturn(GZIP);
+    when(fs.determineCodecFromFilename(schema3.getName())).thenReturn(PLAIN_TEXT);
 
-    @Cleanup
-    val plainStream1 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
-    @Cleanup
-    val plainStream2 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
-    @Cleanup
-    val plainStream3 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
-    @Cleanup
-    val plainStream4 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
-    @Cleanup
-    val plainStream5 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT);
-    when(fs.getCompressionInputStream(schema3.getName()))
-        .thenReturn(plainStream1)
-        .thenReturn(plainStream2)
-        .thenReturn(plainStream3); // See comment above
+    when(fs.determineCodecFromContent(schema1.getName())).thenReturn(BZIP2);
+    when(fs.determineCodecFromContent(schema2.getName())).thenReturn(GZIP);
+    when(fs.determineCodecFromContent(schema3.getName())).thenReturn(PLAIN_TEXT);
 
-    @Cleanup
-    val bzip2Stream1 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2);
-    @Cleanup
-    val bzip2Stream2 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2);
-    when(fs.getCompressionInputStream(schema1.getName()))
-        .thenReturn(bzip2Stream1)
-        .thenReturn(bzip2Stream2)
-        .thenReturn(plainStream4); // See comment above
+    when(fs.peekFileHeader(schema1.getName())).thenReturn(HEADERS);
+    when(fs.peekFileHeader(schema2.getName())).thenReturn(HEADERS);
+    when(fs.peekFileHeader(schema3.getName())).thenReturn(HEADERS);
 
-    @Cleanup
-    val gzipStream1 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP);
-    @Cleanup
-    val gzipStream2 = FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP);
-    when(fs.getCompressionInputStream(schema2.getName()))
-        .thenReturn(gzipStream1)
-        .thenReturn(gzipStream2)
-        .thenReturn(plainStream5); // See comment above
-
-    when(validationContext.getDictionary()).thenReturn(dict);
+    when(fs.getCompressionInputStream(schema1.getName())).thenReturn(
+        FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, BZIP2));
+    when(fs.getCompressionInputStream(schema2.getName())).thenReturn(
+        FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, GZIP));
+    when(fs.getCompressionInputStream(schema3.getName())).thenReturn(
+        FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, PLAIN_TEXT));
   }
 
   @Test
