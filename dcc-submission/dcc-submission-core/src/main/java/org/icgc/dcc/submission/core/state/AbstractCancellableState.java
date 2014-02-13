@@ -19,11 +19,6 @@ package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
  * A state that allow validation cancellation of the associated submission.
@@ -35,15 +30,6 @@ public class AbstractCancellableState extends AbstractReleasePreservingState {
   public boolean isReadOnly() {
     // If something is cancellable it must be transient and therefore protected
     return true;
-  }
-
-  @Override
-  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
-    val report = context.getReport();
-    report.refreshFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
   }
 
 }

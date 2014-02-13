@@ -40,6 +40,12 @@ public class ValidatingState extends AbstractCancellableState {
   }
 
   @Override
+  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    // Do not change state of submission since this will happen after the validation finishes with a CANCELLED outcome.
+    // Doing otherwise will lead to inconsistencies between the in-memory state and the persistence state
+  }
+
+  @Override
   public void finishValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
       @NonNull Outcome outcome, @NonNull Report newReport) {
     val oldReport = context.getReport();
@@ -56,8 +62,12 @@ public class ValidatingState extends AbstractCancellableState {
 
       context.setState(SubmissionState.ERROR);
     } else if (outcome == CANCELLED) {
-      // TODO: Should this branch be removed gue to cancelValidation in parent?
       context.setState(SubmissionState.NOT_VALIDATED);
+
+      context.setReport(newReport);
+
+      newReport.refreshFiles(context.getSubmissionFiles());
+      newReport.reset(dataTypes);
     }
   }
 

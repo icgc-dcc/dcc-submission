@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.core.state;
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.report.Report;
@@ -39,6 +40,15 @@ public class QueuedState extends AbstractCancellableState {
     nextReport.refreshFiles(context.getSubmissionFiles());
     nextReport.reset(dataTypes);
     nextReport.setState(SubmissionState.VALIDATING, dataTypes);
+  }
+
+  @Override
+  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    context.setState(SubmissionState.NOT_VALIDATED);
+
+    val report = context.getReport();
+    report.refreshFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
   }
 
 }
