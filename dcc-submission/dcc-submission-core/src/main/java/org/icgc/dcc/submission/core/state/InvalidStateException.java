@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.core.state;
 
+import static java.lang.String.format;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +31,7 @@ public class InvalidStateException extends RuntimeException {
 
   @Override
   public String getMessage() {
-    return "While in state '" + state + "' it is invalid to '" + action + "'.";
+    return format("While in state '%s' it is invalid to '%s'.", state.getName(), action);
   }
 
 }
