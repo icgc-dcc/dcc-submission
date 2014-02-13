@@ -97,34 +97,35 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, this.getClass());
 
-    if (isProduction()) {
-      // Specify available compression codecs
-      flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
-          on(PROPERTY_VALUES_SEPARATOR)
-              .join(
-                  DEFAULT_CODEC_PROPERTY_VALUE,
-                  GZIP_CODEC_PROPERTY_VALUE,
-                  BZIP2_CODEC_PROPERTY_VALUE));
+    // Specify available compression codecs
+    flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
+        on(PROPERTY_VALUES_SEPARATOR)
+            .join(
+                DEFAULT_CODEC_PROPERTY_VALUE,
+                GZIP_CODEC_PROPERTY_VALUE,
+                BZIP2_CODEC_PROPERTY_VALUE));
 
-      // Enable compression on intermediate map outputs
-      flowProperties.put(
-          MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
-          ENABLED_COMPRESSION);
-      flowProperties.put(
-          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
-          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+    // Enable compression on intermediate map outputs
+    flowProperties.put(
+        MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
+        ENABLED_COMPRESSION);
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
+        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+
+    if (isProduction()) {
       flowProperties.put(
           MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
           SNAPPY_CODEC_PROPERTY_VALUE);
-
-      // Enable compression on job outputs
-      flowProperties.put(
-          MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
-          ENABLED_COMPRESSION);
-      flowProperties.put(
-          MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
-          GZIP_CODEC_PROPERTY_VALUE);
     }
+
+    // Enable compression on job outputs
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
+        ENABLED_COMPRESSION);
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
+        GZIP_CODEC_PROPERTY_VALUE);
 
     flowProperties.putAll(properties);
     return new HadoopFlowConnector(flowProperties);

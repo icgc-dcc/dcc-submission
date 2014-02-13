@@ -32,18 +32,15 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleListCollector;
 
+/**
+ * Completely obsolete now... FIXME
+ */
 @Ignore
 public class StructuralCheckFunctionTest {
 
   private final Fields LINE_FIELDS = new Fields("line");
 
   private final List<String> DICTIONARY_FIELD_NAMES = Arrays.asList("col1", "col2", "col3", "col4");
-
-  private final Fields VALID_HEADER = new Fields("col1", "col3", "col2", "col4"); // intentionally in disorder
-
-  private final Fields EXTRA_HEADER_FIELDS = new Fields("col1", "col3", "col5", "col2", "col4", "col6");
-
-  private final Fields MISSING_HEADER_FIELDS = new Fields("col1", "col4");
 
   private final TupleEntry[] VALID_DATA_TUPLES = new TupleEntry[] {//
       new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.3\tv.1.2\tv.1.4")),//
@@ -66,8 +63,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_valid() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(VALID_HEADER);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -79,8 +74,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_missingColumns() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(MISSING_HEADER_FIELDS);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -92,8 +85,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_extraColumns() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(EXTRA_HEADER_FIELDS);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -105,8 +96,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_missingHeaders() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(MISSING_HEADER_FIELDS);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -118,8 +107,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_extraHeaders() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(EXTRA_HEADER_FIELDS);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -131,8 +118,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_missingData() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(VALID_HEADER);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -144,8 +129,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_extraData() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(VALID_HEADER);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -157,8 +140,6 @@ public class StructuralCheckFunctionTest {
   @Test
   public void test_operate_chaos() { // missing and extra headers, missing and extra data!
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
-
-    function.declareFieldsPostPlanning(new Fields("col1", "col5", "col4", "col6"));
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.4")),//
         new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.3\tv.2.2\tv.2.5\tv.2.4\tv.2.6")),//

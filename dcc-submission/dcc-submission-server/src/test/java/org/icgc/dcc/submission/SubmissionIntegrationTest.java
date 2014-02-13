@@ -680,10 +680,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     // TODO: Do the negation of following for the projects the failed primary validation
 
     // Project 1
-    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.txt.internal" + FILE_NAME_SEPARATOR
-        + "errors.json");
-    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.internal" + FILE_NAME_SEPARATOR
-        + "errors.json");
+    assertEmptyFile(fileSystem,
+        DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + FILE_NAME_SEPARATOR + "errors.json");
+    assertEmptyFile(fileSystem,
+        DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + FILE_NAME_SEPARATOR + "errors.json");
   }
 
   private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState) {

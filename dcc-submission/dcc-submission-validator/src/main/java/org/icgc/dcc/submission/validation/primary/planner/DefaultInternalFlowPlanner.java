@@ -21,7 +21,6 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.REPLACE;
 import static cascading.tuple.Fields.SWAP;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.dictionary.model.FileSchemaRole.SUBMISSION;
 import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
@@ -140,12 +139,6 @@ class DefaultInternalFlowPlanner extends BaseFileFlowPlanner implements Internal
 
   @Override
   protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy platformStrategy) {
-
-    // TODO: address trick to know what the header contain: DCC-996
-    checkNotNull(structuralCheckFunction, "TODO")
-        .declareFieldsPostPlanning(
-            platformStrategy.getFileHeader(fileName));
-
     flowDef.addSource(
         headPipe,
         platformStrategy.getSourceTap(fileName));

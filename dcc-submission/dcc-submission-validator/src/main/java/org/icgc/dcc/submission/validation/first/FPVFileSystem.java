@@ -97,24 +97,9 @@ public class FPVFileSystem {
   }
 
   public void attemptGzipRead(String fileName) throws IOException {
-
-    val dodo0 = submissionDirectory.open(fileName);
-    System.out.println(dodo0.getClass().getSimpleName());
-    @Cleanup
-    BufferedInputStream bis = new BufferedInputStream(dodo0);
-    AutoDetectParser parser = new AutoDetectParser();
-    Detector detector = parser.getDetector();
-    Metadata md = new Metadata();
-    md.add(Metadata.RESOURCE_NAME_KEY, fileName);
-
-    String mediaType = detector.detect(bis, md).toString();
-    System.out.println(">> " + mediaType);
-
     // check the gzip header
-    val dodo = submissionDirectory.open(fileName);
-    System.out.println(dodo.getClass().getSimpleName());
     @Cleanup
-    GZIPInputStream in = new GZIPInputStream(dodo);
+    GZIPInputStream in = new GZIPInputStream(submissionDirectory.open(fileName));
 
     // see if it can be read through
     byte[] buf = new byte[BUFFER_SIZE];
@@ -123,16 +108,6 @@ public class FPVFileSystem {
   }
 
   public void attemptBzip2Read(String fileName) throws IOException {
-    @Cleanup
-    BufferedInputStream bis = new BufferedInputStream(submissionDirectory.open(fileName));
-    AutoDetectParser parser = new AutoDetectParser();
-    Detector detector = parser.getDetector();
-    Metadata md = new Metadata();
-    md.add(Metadata.RESOURCE_NAME_KEY, fileName);
-
-    String mediaType = detector.detect(bis, md).toString();
-    System.out.println(">> " + mediaType);
-
     // check the bzip2 header
     @Cleanup
     BZip2CompressorInputStream in = new BZip2CompressorInputStream(submissionDirectory.open(fileName));
@@ -150,7 +125,7 @@ public class FPVFileSystem {
    * TODO: move to {@link SubmissionDirectory}?
    */
   @SneakyThrows
-  public InputStream getNoCompressionInputStream(String fileName) {
+  public InputStream getDecompressingInputStream(String fileName) {
     val in = submissionDirectory.open(fileName);
     val codec = submissionDirectory.getCompressionCodecFromExtension(fileName);
     return codec == null ?
@@ -164,7 +139,7 @@ public class FPVFileSystem {
   @SneakyThrows
   public List<String> peekFileHeader(String fileName) {
     @Cleanup
-    BufferedReader reader = new BufferedReader(new InputStreamReader(getNoCompressionInputStream(fileName)));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(getDecompressingInputStream(fileName)));
     String header = reader.readLine();
     header = (header == null) ? "" : header;
     return copyOf(FIELD_SPLITTER.split(header));

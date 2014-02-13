@@ -75,7 +75,7 @@ public class RowCharsetCheckerTest {
   @Test
   public void invalidLineSeparator() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\tf2\r\na\tb\r\n".getBytes()));
-    when(fs.getNoCompressionInputStream(anyString())).thenReturn(fis);
+    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
@@ -85,7 +85,7 @@ public class RowCharsetCheckerTest {
   @Test
   public void invalidContentWithCarriageReturn() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\t\rf2\na\r\tb\n".getBytes()));
-    when(fs.getNoCompressionInputStream(anyString())).thenReturn(fis);
+    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
