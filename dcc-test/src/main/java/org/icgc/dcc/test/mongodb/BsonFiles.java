@@ -51,7 +51,7 @@ public final class BsonFiles {
     @Cleanup
     val outputWriter = new FileOutputStream(outputFile);
 
-    log.info("Writing filtered cghub file from '{}' to '{}'", inputUrl, outputFile);
+    log.info("Writing filtered BSON file from '{}' to '{}'", inputUrl, outputFile);
     val iterator = reader.readValues(inputUrl);
     while (hasNext(iterator)) {
       val record = (ObjectNode) iterator.next();
