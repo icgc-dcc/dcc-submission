@@ -15,61 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import java.util.Iterator;
 
-/**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
- */
-public enum ClinicalType implements DataType {
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
+import org.junit.Test;
 
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
+import cascading.operation.Function;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
+public class MutationRebuildingTest {
+
+  @Test
+  public void test_cascading_MutationRebuilder() {
+    Function<?> function = new MutationRebuilding.MutationRebuilder();
+
+    Fields inputFields =
+        new Fields("f1", "f2")
+            .append(MutationRebuilding.MUTATED_FROM_ALLELE_FIELD)
+            .append(MutationRebuilding.MUTATED_TO_ALLELE_FIELD);
+
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "C")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C"))
+    };
+    Fields resultFields = MutationRebuilding.MUTATION_FIELD;
+
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("A>G"),
+        new Tuple("A>C"),
+        new Tuple("T>C")
+    };
+
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    checkOperationResults(iterator, resultTuples);
   }
-
-  @Getter
-  private final String typeName;
-
-  @Override
-  public boolean isClinicalType() {
-    return true;
-  }
-
-  @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
-  }
-
-  /**
-   * Returns an enum matching the type name provided.
-   */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
-  }
-
 }

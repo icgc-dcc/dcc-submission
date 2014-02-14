@@ -15,61 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import java.util.Iterator;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
+import org.junit.Test;
 
-/**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
- */
-public enum ClinicalType implements DataType {
+import cascading.operation.Buffer;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
+public class RedundantObservationRemovalTest {
 
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
+  @Test
+  public void test_cascading_FilterRedundantObservationBuffer() {
+    Buffer<?> buffer = new RedundantObservationRemoval.FilterRedundantObservationBuffer();
+
+    Fields inputFields = new Fields("f1", "f2");
+
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy1")),
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy2")),
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy3"))
+    };
+    Fields resultFields = inputFields;
+
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("dummy", "dummy1") // Only one left
+    };
+
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeBuffer(buffer, entries, resultFields);
+    CascadingTestUtils.checkOperationResults(iterator, resultTuples);
   }
-
-  @Getter
-  private final String typeName;
-
-  @Override
-  public boolean isClinicalType() {
-    return true;
-  }
-
-  @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
-  }
-
-  /**
-   * Returns an enum matching the type name provided.
-   */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
-  }
-
 }

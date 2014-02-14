@@ -15,61 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
+import cascading.tuple.Fields;
 
 /**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
+ * May never be used.
  */
-public enum ClinicalType implements DataType {
+public final class ConfidentialFieldsRemoval implements NormalizationStep, OptionalStep {
 
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
-
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
-  }
-
-  @Getter
-  private final String typeName;
+  public static final String STEP_NAME = "confidential-fields";
 
   @Override
-  public boolean isClinicalType() {
-    return true;
-  }
-
-  @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
+  public String shortName() {
+    return STEP_NAME;
   }
 
   /**
-   * Returns an enum matching the type name provided.
+   * TODO
    */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Discard(pipe, new Fields("TODO"));
   }
 
 }

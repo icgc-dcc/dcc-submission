@@ -15,61 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import java.util.Iterator;
 
-/**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
- */
-public enum ClinicalType implements DataType {
+import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking.PreMarker;
+import org.junit.Test;
 
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
+import cascading.CascadingTestCase;
+import cascading.operation.Function;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
-  }
+public class PreMarkingTest extends CascadingTestCase {
 
-  @Getter
-  private final String typeName;
+  @Test
+  public void test_cascading_PreMaskingMarker() {
+    Function<?> function = new PreMarker();
 
-  @Override
-  public boolean isClinicalType() {
-    return true;
-  }
+    Fields inputFields = new Fields("f1", "f2");
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
+    };
+    Fields resultFields = PreMarking.MARKING_FIELD;
 
-  @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
-  }
-
-  /**
-   * Returns an enum matching the type name provided.
-   */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    for (int i = 0; i < 3; i++) {
+      assertThat(iterator.hasNext());
+      TupleEntry entry = iterator.next();
+      Object object = entry.getObject(resultFields);
+      assertThat(object)
+          .isEqualTo(Marking.OPEN.getTupleValue());
+    }
+    assertFalse(iterator.hasNext());
   }
 
 }

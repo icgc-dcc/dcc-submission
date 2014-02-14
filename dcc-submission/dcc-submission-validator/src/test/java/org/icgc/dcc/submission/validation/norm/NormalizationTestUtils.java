@@ -15,61 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Resources.getResource;
+import static lombok.AccessLevel.PRIVATE;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import java.net.URL;
+import java.util.List;
+
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 /**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
+ * Mostly ported from TestUtils in the dcc-submission-server module (TODO: address code duplication).
  */
-public enum ClinicalType implements DataType {
-
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
-
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
-  }
-
-  @Getter
-  private final String typeName;
-
-  @Override
-  public boolean isClinicalType() {
-    return true;
-  }
-
-  @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
-  }
+@NoArgsConstructor(access = PRIVATE)
+final class NormalizationTestUtils {
 
   /**
-   * Returns an enum matching the type name provided.
+   * Jackson constants.
    */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
   }
 
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
+
+  public static List<String> getFieldNames(SubmissionFileType type) {
+    return newArrayList(dictionary()
+        .getFileSchema(type)
+        .getFieldNames());
+  }
 }

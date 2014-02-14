@@ -15,61 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import static cascading.tuple.Fields.ALL;
+import static cascading.tuple.Fields.RESULTS;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
 
 /**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
+ * Performs final count of observations.
  * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
+ * TODO: merge with {@link InitialCounting} by passing the counter to use.
  */
-public enum ClinicalType implements DataType {
-
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
-
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
-  }
-
-  @Getter
-  private final String typeName;
-
-  @Override
-  public boolean isClinicalType() {
-    return true;
-  }
-
-  @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
-  }
+@RequiredArgsConstructor
+public final class Counting implements NormalizationStep {
 
   /**
-   * Returns an enum matching the type name provided.
+   * Short name for the step.
    */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+  private static final String SHORT_NAME = "count";
+
+  private final NormalizationCounter counter;
+
+  @Override
+  public String shortName() {
+    return SHORT_NAME;
   }
 
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Each(
+        pipe,
+        ALL,
+        new Counter(counter, COUNT_INCREMENT),
+        RESULTS);
+  }
 }

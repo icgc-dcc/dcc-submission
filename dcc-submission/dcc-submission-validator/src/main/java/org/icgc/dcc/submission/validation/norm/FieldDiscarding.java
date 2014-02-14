@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,61 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
-
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import static java.lang.String.format;
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
+import cascading.tuple.Fields;
 
 /**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
+ * Discards specified field.
  */
-public enum ClinicalType implements DataType {
+public class FieldDiscarding implements NormalizationStep {
 
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
-
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
-  }
-
-  @Getter
-  private final String typeName;
+  private final Fields field;
 
   @Override
-  public boolean isClinicalType() {
-    return true;
+  public String shortName() {
+    return format("%s-discarding", field.toString().replace("'", ""));
+  }
+
+  public FieldDiscarding(Fields field) {
+    this.field = field;
   }
 
   @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
-  }
-
-  /**
-   * Returns an enum matching the type name provided.
-   */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Discard(pipe, field);
   }
 
 }
