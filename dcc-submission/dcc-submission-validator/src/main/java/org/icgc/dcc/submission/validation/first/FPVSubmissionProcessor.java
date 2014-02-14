@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first;
 
 import static com.google.common.base.Strings.repeat;
+import static com.google.common.collect.Iterables.transform;
 import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.ROW_LEVEL;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
@@ -29,9 +30,12 @@ import lombok.Setter;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.FileChecker.FileCheckers;
 import org.icgc.dcc.submission.validation.first.RowChecker.RowCheckers;
+
+import com.google.common.base.Function;
 
 /**
  * Main logic for the FPV.
@@ -58,10 +62,13 @@ public class FPVSubmissionProcessor {
         RowCheckers.getDefaultRowChecker(validationContext, fs) :
         this.rowChecker;
 
-    // TODO: add check that at least DONOR exists (+ create new error)
+    // TODO: Add check that at least DONOR exists (+ create new error)
 
-    for (val fileName : fs.listMatchingSubmissionFiles(
-        validationContext.getDictionary().getFilePatterns())) {
+    // Resolve the selected files to validate
+    val fileNames = getSelectedFileNames(validationContext, fs);
+
+    // Validate each file in turn
+    for (val fileName : fileNames) {
       log.info(banner());
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, fileName);
 
@@ -76,7 +83,27 @@ public class FPVSubmissionProcessor {
     }
   }
 
-  private String banner() {
+  private static Iterable<String> getSelectedFileNames(ValidationContext validationContext, FPVFileSystem fs) {
+    val selectedFilePatterns = getSelectedFilePatterns(validationContext);
+
+    return fs.listMatchingSubmissionFiles(selectedFilePatterns);
+  }
+
+  private static Iterable<String> getSelectedFilePatterns(ValidationContext context) {
+    val fileSchemata = context.getDictionary().getFileSchemata(context.getDataTypes());
+
+    // Selective validation filtering
+    return transform(fileSchemata, new Function<FileSchema, String>() {
+
+      @Override
+      public String apply(FileSchema fileSchema) {
+        return fileSchema.getPattern();
+      }
+
+    });
+  }
+
+  private static String banner() {
     return repeat("=", 75);
   }
 

@@ -41,7 +41,7 @@ public class RowColumnChecker extends CompositeRowChecker {
   public void performSelfCheck(
       String filename,
       FileSchema fileSchema,
-      String line,
+      CharSequence line,
       long lineNumber) {
 
     val expectedNumColumns = getExpectedColumnCount(fileSchema);
@@ -67,7 +67,7 @@ public class RowColumnChecker extends CompositeRowChecker {
     return fileSchema.getFields().size(); // TODO: fix inefficiency
   }
 
-  private int getActualColumnCount(String line) {
+  private int getActualColumnCount(CharSequence line) {
     int separatorCount = 0;
     for (int i = 0; i < line.length(); i++) {
       if (line.charAt(i) == FIELD_SEPARATOR_CHAR) {

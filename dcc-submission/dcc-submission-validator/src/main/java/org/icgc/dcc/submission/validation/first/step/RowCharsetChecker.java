@@ -54,7 +54,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
   public void performSelfCheck(
       String fileName,
       FileSchema fileSchema,
-      String line,
+      CharSequence line,
       long lineNumber) {
 
     if (containsInvalidCharacter(line)) {
@@ -72,7 +72,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
     }
   }
 
-  private boolean containsInvalidCharacter(String line) {
+  private boolean containsInvalidCharacter(CharSequence line) {
     return DEFAULT_INVALID_MATCHER.matchesAnyOf(line);
   }
 }
