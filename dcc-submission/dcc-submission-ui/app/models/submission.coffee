@@ -46,8 +46,6 @@ module.exports = class Submission extends Model
 
     # name -> report
 
-    console.log "report....", response
-
     response.validFileCount = 0
     response.report.dataTypeReports.forEach (dataType)->
       dataType.fileTypeReports.forEach (fileType)->

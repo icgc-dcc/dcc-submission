@@ -39,6 +39,8 @@ module.exports = class ValidateSubmissionView extends View
   className: "modal hide fade"
   id: 'validate-submission-popup'
 
+
+
   selectNone: ->
     @dataTypeTable.fnClearTable()
     for f, idx in @dataTypes
@@ -109,6 +111,7 @@ module.exports = class ValidateSubmissionView extends View
     @delegate 'click', '#toggle-feature', @toggleFeature
     @delegate 'click', '#feature-all', @selectAll
     @delegate 'click', '#feature-clear', @selectNone
+    @delegate 'input propertychange', '#emails', @checkEmail
 
   render: ->
     super
@@ -175,6 +178,14 @@ module.exports = class ValidateSubmissionView extends View
       aoColumns: aoColumns
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @dataTypes
+
+
+  checkEmail: (e)->
+    val = @.$("#emails").val()
+    if val and val.length > 0
+      @.$("#validate-submission-button").prop('disabled', false)
+    else
+      @.$("#validate-submission-button").prop('disabled', true)
 
      
   validateSubmission: (e) ->

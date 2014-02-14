@@ -29,7 +29,7 @@ SchemaReportSummaryReports = require 'models/schema_report_summary_reports'
 module.exports = class SchemaReport extends Model
 
   initialize: ->
-    console.debug 'SchemaReport#initialize', @, @attributes
+    #console.debug 'SchemaReport#initialize', @, @attributes
     super
 
     @urlPath = ->

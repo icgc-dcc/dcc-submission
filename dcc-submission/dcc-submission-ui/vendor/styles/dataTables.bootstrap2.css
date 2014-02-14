@@ -71,3 +71,7 @@ div.dataTables_paginate .paginate_button {
   margin-left: 0.5em;
 }
 
+div.dataTables_info {
+  color: #777;
+}
+

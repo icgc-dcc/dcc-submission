@@ -269,12 +269,23 @@ module.exports = class ReportDatatypeView extends View
         }
       ]
 
+
+    sDOMStr = switch datatype
+      when "MISCELLANEOUS"
+        """
+          <'row-fluid'<'span12'f>r>t
+        """
+      else
+        """
+          <'row-fluid' <'span12 #{datatype}_title'>>
+          <'row-fluid' <'span6 #{datatype}_action'><'span6'f>r>
+          t<'row-fluid'<'span6'i><'span6'p>>"
+        """
+
+
     @$el.find("##{datatype}").dataTable
       sDom:
-        """
-        <'row-fluid' <'span3 #{datatype}_title'><'span3 #{datatype}_action'> <'span6'f>r>
-        t<'row-fluid'<'span6'i><'span6'p>>"
-        """
+        sDOMStr
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission."
