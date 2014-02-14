@@ -76,6 +76,7 @@ module.exports = class ValidateSubmissionView extends View
 
     @report = @model.get "report"
 
+
     # Only need shallow copy
     @dataTypes = _.clone( @report.dataTypeReports )
 
@@ -115,6 +116,9 @@ module.exports = class ValidateSubmissionView extends View
 
   render: ->
     super
+
+    # Check if email is preset
+    @checkEmail(null)
 
     # Create a feature type selection table
     aoColumns = [
