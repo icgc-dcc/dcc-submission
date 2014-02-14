@@ -75,10 +75,10 @@ public enum KVFileType {
   SGV_P(FileType.SGV_P_TYPE);
 
   @Getter
-  private final FileType submissionFileType;
+  private final FileType fileType;
 
   public boolean isSystem() {
-    return submissionFileType.getSubType().isSystemSubType();
+    return fileType.getSubType().isSystemSubType();
   }
 
   public boolean isReplaceAll() {

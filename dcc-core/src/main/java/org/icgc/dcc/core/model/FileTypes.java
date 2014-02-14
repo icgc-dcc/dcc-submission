@@ -231,7 +231,10 @@ public final class FileTypes {
      * TODO: phase out as Strings are replaced with enums.
      */
     public static FileType from(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+      return valueOf(typeName
+          .replaceAll("mani", "system") // Until exact name is settled
+          .toUpperCase()
+          + TYPE_SUFFIX);
     }
 
   }
