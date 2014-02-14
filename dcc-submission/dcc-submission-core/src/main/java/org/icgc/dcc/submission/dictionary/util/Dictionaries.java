@@ -27,6 +27,7 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_P_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
+import java.io.File;
 import java.net.URL;
 
 import lombok.NoArgsConstructor;
@@ -35,7 +36,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.util.ObjectMappers;
+import org.icgc.dcc.submission.core.util.JacksonCodehaus;
+import org.icgc.dcc.submission.core.util.JacksonFaster;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
@@ -45,8 +47,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 @Slf4j
 public class Dictionaries {
 
-  private static final ObjectReader FILE_SCHEMA_READER = ObjectMappers.DEFAULT.reader(FileSchema.class);
-  private static final ObjectReader DICTIONARY_SCHEMA_READER = ObjectMappers.DEFAULT.reader(Dictionary.class);
+  private static final ObjectReader FILE_SCHEMA_READER = JacksonFaster.DEFAULT.reader(FileSchema.class);
+  private static final ObjectReader DICTIONARY_SCHEMA_READER = JacksonFaster.DEFAULT.reader(Dictionary.class);
   private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
 
   @SneakyThrows
@@ -69,6 +71,15 @@ public class Dictionaries {
   @SneakyThrows
   public static Dictionary readDictionary(URL dictionaryURL) {
     return DICTIONARY_SCHEMA_READER.readValue(dictionaryURL);
+  }
+
+  public static void writeDictionary(Dictionary dictionary, String filePath) {
+    writeDictionary(dictionary, new File(filePath));
+  }
+
+  @SneakyThrows
+  public static void writeDictionary(Dictionary dictionary, File file) {
+    JacksonCodehaus.PRETTY_WRITTER.writeValue(file, dictionary);
   }
 
   /**
