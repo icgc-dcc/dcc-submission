@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -35,7 +35,7 @@ import com.google.common.collect.Iterables;
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
  * <p>
- * Careful not to confuse this with {@link SubmissionFileType} which represents the ICGC file types, such as "donor",
+ * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor",
  * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
  */
 public interface DataType {

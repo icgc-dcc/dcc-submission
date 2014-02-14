@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SAMPLE_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
 
 import java.io.FileNotFoundException;
@@ -41,7 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
@@ -85,7 +85,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   /**
-   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}.
+   * TODO: phase out in favour of {@link #getSourceTap(FileType)}.
    */
   @Override
   @Deprecated
@@ -100,7 +100,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   /**
-   * TODO: phase out in favour of {@link #getSourceTap(SubmissionFileType)}; Temporary: see DCC-1876
+   * TODO: phase out in favour of {@link #getSourceTap(FileType)}; Temporary: see DCC-1876
    */
   @Override
   public Tap<?, ?, ?> getSourceTap2(FileSchema schema) {

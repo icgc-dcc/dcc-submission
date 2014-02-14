@@ -36,7 +36,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -113,14 +113,14 @@ public final class FeatureTypes {
      * <p>
      * TODO: move to {@link FileTypes} rather
      */
-    public Set<SubmissionFileType> getCorrespondingFileTypes() {
+    public Set<FileType> getCorrespondingFileTypes() {
       val dataType = this;
       return newLinkedHashSet(Iterables.filter(
-          newArrayList(SubmissionFileType.values()),
-          new Predicate<SubmissionFileType>() {
+          newArrayList(FileType.values()),
+          new Predicate<FileType>() {
 
             @Override
-            public boolean apply(SubmissionFileType fileType) {
+            public boolean apply(FileType fileType) {
               return fileType.getDataType() == dataType;
             }
           }));
@@ -132,8 +132,8 @@ public final class FeatureTypes {
      * <p>
      * TODO: move to {@link FileTypes} rather
      */
-    public SubmissionFileType getFileTypeFlagship() {
-      SubmissionFileType fileTypeFlagship = null;
+    public FileType getFileTypeFlagship() {
+      FileType fileTypeFlagship = null;
       for (val fileType : getCorrespondingFileTypes()) {
         checkState(fileType.getDataType() == this, "'%s' != '%s'", fileType, this); // By design
         if (fileType.getSubType() == META_SUBTYPE) {

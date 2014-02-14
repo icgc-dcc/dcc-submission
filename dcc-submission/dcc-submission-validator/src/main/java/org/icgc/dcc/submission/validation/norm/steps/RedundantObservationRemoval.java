@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.BusinessKeys;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.norm.NormalizationContext;
@@ -75,7 +75,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
    * Determines the fields for {@link NormalizationContext#getObservationUniqueFields()} based on the dictionary and the
    * file type.
    */
-  public static ImmutableList<String> getObservationUniqueFields(Dictionary dictionary, SubmissionFileType type) {
+  public static ImmutableList<String> getObservationUniqueFields(Dictionary dictionary, FileType type) {
     FileSchema ssmP = dictionary.getFileSchema(type);
 
     val observationUniqueFields = newArrayList(

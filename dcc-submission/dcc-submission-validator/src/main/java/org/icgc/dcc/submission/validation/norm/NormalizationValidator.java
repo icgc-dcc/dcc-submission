@@ -22,7 +22,7 @@ import static cascading.flow.FlowDef.flowDef;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_END;
 import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
@@ -34,7 +34,7 @@ import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -75,7 +75,7 @@ public final class NormalizationValidator implements Validator {
   /**
    * Type that is the focus of normalization (there could be more in the future).
    */
-  public static final SubmissionFileType FOCUS_TYPE = SSM_P_TYPE;
+  public static final FileType FOCUS_TYPE = SSM_P_TYPE;
 
   private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
   private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
@@ -308,7 +308,7 @@ public final class NormalizationValidator implements Validator {
   /**
    * Returns the submission file matching the type provided if there is such a file.
    */
-  private Optional<String> grabSubmissionFile(SubmissionFileType type, ValidationContext validationContext) {
+  private Optional<String> grabSubmissionFile(FileType type, ValidationContext validationContext) {
     return validationContext
         .getSubmissionDirectory()
         .getFile(

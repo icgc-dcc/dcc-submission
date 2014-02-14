@@ -39,7 +39,7 @@ import lombok.val;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -131,10 +131,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
-   * Returns a {@link FileSchema} matching {@link SubmissionFileType} provided.
+   * Returns a {@link FileSchema} matching {@link FileType} provided.
    */
   @JsonIgnore
-  public FileSchema getFileSchema(@NonNull SubmissionFileType type) {
+  public FileSchema getFileSchema(@NonNull FileType type) {
     val optional = getFileSchemaByName(type.getTypeName());
     checkState(optional.isPresent(), "Coun't find type '%s' in dictionary", type);
     return optional.get();
@@ -143,7 +143,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   /**
    * Optionally returns a {@link FileSchema} matching the file schema name provided.
    * <p>
-   * TODO: phase out in favour of {@link #getFileSchema(SubmissionFileType)}.
+   * TODO: phase out in favour of {@link #getFileSchema(FileType)}.
    */
   @JsonIgnore
   public Optional<FileSchema> getFileSchemaByName(@NonNull final String fileSchemaName) {
@@ -203,10 +203,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
-   * Returns a non-null String matching the file pattern for the given {@link SubmissionFileType}.
+   * Returns a non-null String matching the file pattern for the given {@link FileType}.
    */
   @JsonIgnore
-  public String getFilePattern(SubmissionFileType type) {
+  public String getFilePattern(FileType type) {
     String pattern = null;
     for (val fileSchema : files) {
       val match = type.getTypeName().equals(fileSchema.getName());
@@ -227,7 +227,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
       @Override
       public boolean apply(FileSchema input) {
-        SubmissionFileType type = SubmissionFileType.from(input.getName());
+        FileType type = FileType.from(input.getName());
         return type.getDataType() == featureType;
       }
     });
@@ -270,14 +270,14 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   /**
-   * Returns a mapping of {@link SubmissionFileType} to file pattern.
+   * Returns a mapping of {@link FileType} to file pattern.
    */
   @JsonIgnore
-  public Map<SubmissionFileType, String> getPatterns() {
-    val map = new ImmutableMap.Builder<SubmissionFileType, String>();
+  public Map<FileType, String> getPatterns() {
+    val map = new ImmutableMap.Builder<FileType, String>();
     for (val fileSchema : files) {
       map.put(
-          SubmissionFileType.from(fileSchema.getName()),
+          FileType.from(fileSchema.getName()),
           fileSchema.getPattern());
     }
     return map.build();

@@ -18,8 +18,8 @@
 package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SAMPLE_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)

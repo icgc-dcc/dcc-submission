@@ -117,7 +117,7 @@ public final class FileTypes {
     }
   }
 
-  public enum SubmissionFileType {
+  public enum FileType {
 
     SSM_M_TYPE(FeatureType.SSM_TYPE, FileSubType.META_SUBTYPE),
     SSM_P_TYPE(FeatureType.SSM_TYPE, FileSubType.PRIMARY_SUBTYPE),
@@ -173,22 +173,22 @@ public final class FileTypes {
 
     private static final Joiner JOINER = Joiner.on("_");
 
-    public static final Set<SubmissionFileType> MANDATORY_TYPES = newLinkedHashSet(
+    public static final Set<FileType> MANDATORY_TYPES = newLinkedHashSet(
         Iterables.filter(
-            newLinkedHashSet(newArrayList(SubmissionFileType.values())),
-            new Predicate<SubmissionFileType>() {
+            newLinkedHashSet(newArrayList(FileType.values())),
+            new Predicate<FileType>() {
 
               @Override
-              public boolean apply(SubmissionFileType input) {
+              public boolean apply(FileType input) {
                 return SubmissionDataTypes.isMandatoryType(input.dataType);
               }
             }));
 
-    private SubmissionFileType(DataType type) {
+    private FileType(DataType type) {
       this(type, null);
     }
 
-    private SubmissionFileType(DataType type, FileSubType subType) {
+    private FileType(DataType type, FileSubType subType) {
       this.dataType = checkNotNull(type);
       this.subType = subType;
     }
@@ -210,7 +210,7 @@ public final class FileTypes {
      * <p>
      * TODO: phase out as Strings are replaced with enums.
      */
-    public static SubmissionFileType from(String typeName) {
+    public static FileType from(String typeName) {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 

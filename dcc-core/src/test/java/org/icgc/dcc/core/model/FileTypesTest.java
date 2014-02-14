@@ -25,16 +25,16 @@ import static org.icgc.dcc.core.model.FileTypes.FileSubType.DONOR_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.GENE_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.SAMPLE_SUBTYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.BIOMARKER_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.DONOR_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.MIRNA_S_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SAMPLE_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SSM_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.from;
+import static org.icgc.dcc.core.model.FileTypes.FileType.BIOMARKER_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.DONOR_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_S_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.from;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.junit.Test;
 
 public class FileTypesTest {
@@ -61,7 +61,7 @@ public class FileTypesTest {
     assertThat(from("biomarker")).isEqualTo(BIOMARKER_TYPE);
     assertThat(BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_OPTIONAL_TYPE);
 
-    assertThat(SubmissionFileType.MANDATORY_TYPES).isEqualTo(
+    assertThat(FileType.MANDATORY_TYPES).isEqualTo(
         newLinkedHashSet(newArrayList(
             DONOR_TYPE,
             SPECIMEN_TYPE,

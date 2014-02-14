@@ -47,7 +47,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
@@ -146,7 +146,7 @@ public final class TestUtils {
     return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
   }
 
-  public static List<String> getFieldNames(SubmissionFileType type) {
+  public static List<String> getFieldNames(FileType type) {
     return newArrayList(dictionary().getFileSchema(type).getFieldNames());
   }
 

@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.util.regex.Pattern.matches;
-import static org.icgc.dcc.core.model.FileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.FileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -156,7 +156,7 @@ public class DefaultValidationContext implements ValidationContext {
 
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
     for (val fileSchema : dictionary.getFiles()) {
-      val fileType = SubmissionFileType.from(fileSchema.getName());
+      val fileType = FileType.from(fileSchema.getName());
       val ssmPrimary = fileType == SSM_P_TYPE;
       if (ssmPrimary) {
         return fileSchema;
