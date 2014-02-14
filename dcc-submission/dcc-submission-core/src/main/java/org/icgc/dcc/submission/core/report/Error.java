@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.core.report;
 
 import static java.util.Collections.emptyList;
-import static org.icgc.dcc.submission.core.util.ObjectMappers.DEFAULT;
+import static org.icgc.dcc.submission.core.util.JacksonFaster.DEFAULT;
 
 import java.util.Collection;
 import java.util.List;

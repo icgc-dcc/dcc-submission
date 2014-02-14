@@ -21,13 +21,15 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * Common object mappers.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class ObjectMappers {
+public final class JacksonFaster {
 
   public static final ObjectMapper DEFAULT = new ObjectMapper();
+  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
 
 }

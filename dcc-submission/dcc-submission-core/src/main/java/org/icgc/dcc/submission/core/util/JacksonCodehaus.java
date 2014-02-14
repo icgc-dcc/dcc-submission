@@ -15,24 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.core.util;
 
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_SYSTEM_TYPE;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import java.util.Map;
-
-import org.icgc.dcc.core.model.FileTypes.FileType;
-
-import com.google.common.collect.ImmutableMap;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
 
 /**
- * Temporary class to describe system file properties.
+ * Common object mappers.
  */
-public class SystemFiles {
+@NoArgsConstructor(access = PRIVATE)
+public final class JacksonCodehaus {
 
-  public static Map<FileType, String> PATTERNS =
-      new ImmutableMap.Builder<FileTypes.FileType, String>()
-          .put(METH_ARRAY_SYSTEM_TYPE, "meth_([a-zA-Z0-9]+)\\.tsv") // TODO: underscore/dash? \w?
-          .build();
+  public static final ObjectMapper DEFAULT = new ObjectMapper();
+  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.defaultPrettyPrintingWriter();
 
 }
