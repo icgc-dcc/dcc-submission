@@ -77,7 +77,7 @@ public class SubmissionDirectory {
   /**
    * Returns the list of files that match a file pattern in the dictionary.
    */
-  public Iterable<String> listFiles(final List<String> filePatterns) {
+  public Iterable<String> listFiles(final Iterable<String> filePatterns) {
     return Iterables.filter(listFile(), new Predicate<String>() {
 
       @Override

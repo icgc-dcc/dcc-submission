@@ -158,8 +158,8 @@ public class MailService {
   public void sendValidationFinsished(@NonNull String releaseName, @NonNull String projectKey,
       @NonNull List<String> emails, @NonNull State state, @NonNull Report report) {
     sendNotification(format(
-        "Validation finished for release '%s' project '%s' (on behalf of '%s') with state '%s' and data type state '%s'",
-        releaseName, projectKey, emails, state, report));
+        "Validation finished for release '%s' project '%s' (on behalf of '%s') with state '%s'",
+        releaseName, projectKey, emails, state));
   }
 
   public void sendValidationResult(@NonNull String releaseName, @NonNull String projectKey,

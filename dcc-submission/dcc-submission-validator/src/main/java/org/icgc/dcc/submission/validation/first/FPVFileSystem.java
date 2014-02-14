@@ -58,7 +58,7 @@ public class FPVFileSystem {
 
   private final SubmissionDirectory submissionDirectory;
 
-  public Iterable<String> listMatchingSubmissionFiles(List<String> filePatterns) {
+  public Iterable<String> listMatchingSubmissionFiles(Iterable<String> filePatterns) {
     return submissionDirectory.listFiles(filePatterns);
   }
 
