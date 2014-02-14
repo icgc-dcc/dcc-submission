@@ -17,45 +17,38 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.collect.ImmutableMap.builder;
+
+import java.util.Map;
+
 import lombok.NonNull;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
+
+import com.google.common.collect.ImmutableMap.Builder;
 
 /**
- * Useful visitor base class that does nothing but offers convienient state and helps.
+ * Value producing visitor that returns a mapping of file names to file types for all files in the report.
  */
-public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
+public class GetFilesVisitor extends NoOpVisitor {
 
   /**
-   * Input
+   * Mapping of {@link FileReport#getFileName()} to {@link FileReport#getFileType()}.
    */
-  protected final FileType fileType;
+  private final Builder<String, FileType> files = builder();
 
-  /**
-   * State
-   */
-  protected DataTypeReport dataTypeReport;
-  protected FileTypeReport fileTypeReport;
-  protected FileReport fileReport;
-
-  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
-    super(fileName);
-    this.fileType = fileType;
+  @Override
+  public void visit(@NonNull FileReport fileReport) {
+    files.put(fileReport.getFileName(), fileReport.getFileType());
   }
 
   //
-  // Helpers
+  // Result
   //
 
-  protected boolean isTarget(@NonNull FileTypeReport fileTypeReport) {
-    return fileTypeReport.getFileType() == fileType;
-  }
-
-  protected boolean isTarget(@NonNull DataTypeReport dataTypeReport) {
-    return dataTypeReport.getDataType() == fileType.getDataType();
+  public Map<String, FileType> getFiles() {
+    return files.build();
   }
 
 }

@@ -413,7 +413,7 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.initializeSubmission(submissionFiles);
+    submission.initialize(submissionFiles);
     releaseRepository.addReleaseSubmission(release.getName(), submission);
 
     log.info("Created Submission '{}' with directory '{}'", submission, submissionPath);
@@ -580,12 +580,12 @@ public class ReleaseService extends AbstractService {
   @Synchronized
   public void resetSubmissions(@NonNull String releaseName, @NonNull Iterable<String> projectKeys) {
     for (val projectKey : projectKeys) {
-      resetSubmission(releaseName, projectKey, Optional.<Path> absent());
+      resetSubmission(releaseName, projectKey);
     }
   }
 
   @Synchronized
-  public void resetSubmission(@NonNull String releaseName, @NonNull String projectKey, @NonNull Optional<Path> filePath) {
+  public Submission resetSubmission(@NonNull String releaseName, @NonNull String projectKey) {
     val release = releaseRepository.findReleaseByName(releaseName);
     val submission = release.getSubmission(projectKey).get();
     val submissionFiles = getSubmissionFiles(releaseName, projectKey);
@@ -594,9 +594,29 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.modifySubmission(submissionFiles, filePath);
+    submission.reset(submissionFiles);
     releaseRepository.updateReleaseSubmission(releaseName, submission);
     resetValidationFolder(projectKey, release);
+
+    return submission;
+  }
+
+  @Synchronized
+  public Submission modifySubmission(@NonNull String releaseName, @NonNull String projectKey,
+      @NonNull Optional<Path> filePath) {
+    val release = releaseRepository.findReleaseByName(releaseName);
+    val submission = release.getSubmission(projectKey).get();
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+    //
+    // Transition
+    //
+
+    submission.modifyFile(submissionFiles, filePath);
+    releaseRepository.updateReleaseSubmission(releaseName, submission);
+    resetValidationFolder(projectKey, release);
+
+    return submission;
   }
 
   /**
@@ -643,7 +663,7 @@ public class ReleaseService extends AbstractService {
       // Transition
       //
 
-      val newSubmission = submission.performRelease(submissionFiles, newRelease);
+      val newSubmission = submission.closeRelease(submissionFiles, newRelease);
 
       newRelease.addSubmission(newSubmission);
     }

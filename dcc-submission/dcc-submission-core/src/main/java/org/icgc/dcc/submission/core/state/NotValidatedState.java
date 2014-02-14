@@ -22,33 +22,23 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+/**
+ * A state that is neutral with respect to validity, in which all reporting is cleared and each level has a state of
+ * {@code INVALID}.
+ */
 @NoArgsConstructor(access = PACKAGE)
-public class NotValidatedState extends AbstractState {
+public class NotValidatedState extends AbstractQueuableState {
 
   @Override
-  public boolean isReadOnly() {
-    return false;
-  }
+  public void initialize(@NonNull StateContext context) {
+    // Start all report from new projects in a neutral state.
+    val report = context.getReport();
+    report.refreshFiles(context.getSubmissionFiles());
 
-  @Override
-  public void initializeSubmission(@NonNull StateContext context) {
+    // And their owners
     context.setState(SubmissionState.NOT_VALIDATED);
-
-    val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
-  }
-
-  @Override
-  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.QUEUED);
-
-    val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
-    report.setState(SubmissionState.QUEUED, dataTypes);
   }
 
 }

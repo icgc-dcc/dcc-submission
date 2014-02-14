@@ -250,6 +250,26 @@ public class NextReleaseResource {
     return Response.ok().build();
   }
 
+  @DELETE
+  @Path("state/{projectKey}")
+  @SneakyThrows
+  public Response resetState(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+    log.info("Resetting state for '{}'", projectKey);
+    if (isSuperUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      Release nextRelease = releaseService.getNextRelease();
+      releaseService.resetSubmission(nextRelease.getName(), projectKey);
+    } catch (Throwable t) {
+      log.error("Error resetting state for '" + projectKey + "':", t);
+      throw t;
+    }
+
+    return Response.ok().build();
+  }
+
   @GET
   @Path("signed")
   public Response getSignedOff() {

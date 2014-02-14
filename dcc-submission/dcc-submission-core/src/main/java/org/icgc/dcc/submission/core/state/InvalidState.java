@@ -15,42 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.report.visitor;
+package org.icgc.dcc.submission.core.state;
 
-import lombok.NonNull;
+import static lombok.AccessLevel.PACKAGE;
+import lombok.NoArgsConstructor;
 
-import org.icgc.dcc.submission.core.report.DataTypeReport;
-import org.icgc.dcc.submission.core.report.ErrorReport;
-import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
-import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.core.report.ReportVisitor;
+/**
+ * State which is defined when at least one file report is in error.
+ * <p>
+ * Similar to not being validated, but without being able to initialize.
+ */
+@NoArgsConstructor(access = PACKAGE)
+public class InvalidState extends AbstractQueuableState {
 
-public abstract class AbstractReportVisitor implements ReportVisitor {
-
-  @Override
-  public void visit(@NonNull Report report) {
-    // No-op
-  }
-
-  @Override
-  public void visit(@NonNull DataTypeReport dataTypeReport) {
-    // No-op
-  }
-
-  @Override
-  public void visit(@NonNull FileTypeReport fileTypeReport) {
-    // No-op
-  }
-
-  @Override
-  public void visit(@NonNull FileReport fileReport) {
-    // No-op
-  }
-
-  @Override
-  public void visit(@NonNull ErrorReport errorReport) {
-    // No-op
-  }
+  // Nothing new here
 
 }

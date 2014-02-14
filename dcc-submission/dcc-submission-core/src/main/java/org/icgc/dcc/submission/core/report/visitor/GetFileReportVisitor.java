@@ -17,26 +17,30 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.base.Optional.fromNullable;
 import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.SummaryReport;
 
-public class AddSummaryReportVisitor extends AbstractFileNameReportVisitor {
+import com.google.common.base.Optional;
 
-  @NonNull
-  private final SummaryReport summaryReport;
+public class GetFileReportVisitor extends AbstractFileNameReportVisitor {
 
-  public AddSummaryReportVisitor(@NonNull String fileName, @NonNull String name, @NonNull String value) {
+  private FileReport fileReport;
+
+  public GetFileReportVisitor(@NonNull String fileName) {
     super(fileName);
-    this.summaryReport = new SummaryReport(name, value);
   }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
-      fileReport.addSummaryReport(summaryReport);
+    if (isTarget(fileReport)) {
+      this.fileReport = fileReport;
     }
+  }
+
+  public Optional<FileReport> getFileReport() {
+    return fromNullable(fileReport);
   }
 
 }

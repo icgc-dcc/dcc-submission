@@ -47,10 +47,10 @@ module.exports = class SchemaReportPageView extends View
     #console.debug "SchemaReportPageView#render", @model
     super
 
-    if @model.get("errors").length
+    if @model.get("errorReports").length
       @subview('SchemaReportTable'
         new SchemaReportErrorTableView {
-          collection: @model.get "errors"
+          collection: @model.get "errorReports"
           el: @.$("#schema-report-container")
         }
       )

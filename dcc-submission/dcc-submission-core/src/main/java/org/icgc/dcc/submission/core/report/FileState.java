@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import lombok.val;
+
 /**
  * The validation state of a file within a submission.
  */
@@ -34,4 +36,13 @@ public enum FileState {
     return NOT_VALIDATED;
   }
 
+  public boolean in(FileState... states) {
+    for (val state : states) {
+      if (this == state) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

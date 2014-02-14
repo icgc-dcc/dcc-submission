@@ -31,78 +31,97 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.collect.Iterables;
 
+/**
+ * Propagates state changes internally based on outside influence.
+ */
 @RequiredArgsConstructor
-public class SetStateReportVisitor extends AbstractReportVisitor {
+public class NotifyStateVisitor extends NoOpVisitor {
 
   @NonNull
-  private final SubmissionState state;
+  private final SubmissionState nextState;
   @NonNull
   private final Iterable<DataType> dataTypes;
 
   @Override
   public void visit(DataTypeReport dataTypeReport) {
-    if (!isMatch(dataTypeReport)) {
+    // Not affected by the state change
+    if (!isTarget(dataTypeReport)) {
       return;
     }
 
-    if (state == SubmissionState.QUEUED) {
+    // Inherit state change
+    if (nextState == SubmissionState.QUEUED) {
       dataTypeReport.setDataTypeState(DataTypeState.QUEUED);
-    } else if (state == SubmissionState.VALIDATING) {
+    } else if (nextState == SubmissionState.VALIDATING) {
       dataTypeReport.setDataTypeState(DataTypeState.VALIDATING);
-    } else if (state == SubmissionState.ERROR) {
+    } else if (nextState == SubmissionState.ERROR) {
       dataTypeReport.setDataTypeState(DataTypeState.ERROR);
-    } else if (state == SubmissionState.SIGNED_OFF) {
+    } else if (nextState == SubmissionState.SIGNED_OFF) {
       dataTypeReport.setDataTypeState(DataTypeState.SIGNED_OFF);
+    } else {
+      // No change
     }
   }
 
   @Override
   public void visit(FileTypeReport fileTypeReport) {
-    if (!isMatch(fileTypeReport)) {
+    if (!isTarget(fileTypeReport)) {
+      // Not affected by the state change
       return;
     }
 
-    if (state == SubmissionState.QUEUED) {
+    // Inherit state change
+    if (nextState == SubmissionState.QUEUED) {
       fileTypeReport.setFileTypeState(FileTypeState.QUEUED);
-    } else if (state == SubmissionState.VALIDATING) {
+    } else if (nextState == SubmissionState.VALIDATING) {
       fileTypeReport.setFileTypeState(FileTypeState.VALIDATING);
-    } else if (state == SubmissionState.ERROR) {
+    } else if (nextState == SubmissionState.ERROR) {
       fileTypeReport.setFileTypeState(FileTypeState.ERROR);
-    } else if (state == SubmissionState.SIGNED_OFF) {
+    } else if (nextState == SubmissionState.SIGNED_OFF) {
       fileTypeReport.setFileTypeState(FileTypeState.SIGNED_OFF);
+    } else {
+      // No change
     }
   }
 
   @Override
   public void visit(FileReport fileReport) {
-    if (!isMatch(fileReport)) {
+    // Not affected by the state change
+    if (!isTarget(fileReport)) {
       return;
     }
 
-    if (state == SubmissionState.QUEUED) {
+    // Inherit state change
+    if (nextState == SubmissionState.QUEUED) {
       fileReport.setFileState(FileState.QUEUED);
-    } else if (state == SubmissionState.VALIDATING) {
+    } else if (nextState == SubmissionState.VALIDATING) {
       fileReport.setFileState(FileState.VALIDATING);
-    } else if (state == SubmissionState.ERROR) {
+    } else if (nextState == SubmissionState.ERROR) {
       fileReport.setFileState(FileState.ERROR);
-    } else if (state == SubmissionState.SIGNED_OFF) {
+    } else if (nextState == SubmissionState.SIGNED_OFF) {
       fileReport.setFileState(FileState.SIGNED_OFF);
+    } else {
+      // No change
     }
   }
 
-  private boolean isMatch(DataTypeReport dataTypeReport) {
-    return isMatch(dataTypeReport.getDataType());
+  //
+  // Helpers
+  //
+
+  private boolean isTarget(DataTypeReport dataTypeReport) {
+    return isTarget(dataTypeReport.getDataType());
   }
 
-  private boolean isMatch(@NonNull FileTypeReport fileTypeReport) {
-    return isMatch(fileTypeReport.getFileType().getDataType());
+  private boolean isTarget(@NonNull FileTypeReport fileTypeReport) {
+    return isTarget(fileTypeReport.getFileType().getDataType());
   }
 
-  private boolean isMatch(@NonNull FileReport fileReport) {
-    return isMatch(fileReport.getFileType().getDataType());
+  private boolean isTarget(@NonNull FileReport fileReport) {
+    return isTarget(fileReport.getFileType().getDataType());
   }
 
-  private boolean isMatch(@NonNull DataType dataType) {
+  private boolean isTarget(@NonNull DataType dataType) {
     return Iterables.contains(dataTypes, dataType);
   }
 

@@ -39,12 +39,9 @@ module.exports = class ReportDatatypeView extends View
     # For determining table visibility if files were added/removed
     @currentDatatypes = []
 
-
     @files = []
     @datatypeCache = {}
     @fileMap = {}
-
-    
 
     super
 
@@ -52,7 +49,6 @@ module.exports = class ReportDatatypeView extends View
 
   update: ->
     #console.log "ReportDatatypeView -> update"
-    console.log "update", @model
 
     # Update file meta data
     submissionFiles = @model.get "submissionFiles"
@@ -64,10 +60,10 @@ module.exports = class ReportDatatypeView extends View
     # Start contstructing
     @report = @model.get "report"
     @reportDataType = @report.dataTypeReports
-    console.log "2 reportdatatype", @reportDataType
 
 
     # Extract the datatypes for logical sort
+    # Clinical is alway present, and should be shown first
     datatypes = []
     datatypes.push("CLINICAL_CORE_TYPE")
     @reportDataType.forEach (d) ->
@@ -80,20 +76,16 @@ module.exports = class ReportDatatypeView extends View
           return 0
         when "CLINICAL_OPTIONAL_TYPE"
           return 1
-        when "MISCELLANEOUS"
-          return 999
         else
           return 10
 
-    console.log "3 sorted", datatypes
 
 
+    # Dynamically manage tables
     datatypes.forEach (datatype)=>
       container = null
       if datatype in ["CLINICAL_OPTIONAL_TYPE", "CLINICAL_CORE_TYPE"]
         container = @$el.find("#clinical-report-container")
-      else if datatype == "MISCELLANEOUS"
-        container = @$el.find("#miscellaneous-report-container")
       else
         container = @$el.find("#experimental-report-container")
 
@@ -111,15 +103,35 @@ module.exports = class ReportDatatypeView extends View
         @$el.find("[id^="+datatype+"]").remove()
         #container.find("[id^="+datatype+"]").remove()
     @currentDatatypes = datatypes
-
-    # Clean up (section visiblity)
-    if @$el.find("#miscellaneous-report-container table").length == 0
-      @$el.find("#miscellaneous-report-container").css("visibility", "hidden")
-    else
-      @$el.find("#miscellaneous-report-container").css("visibility", "visible")
-
         
     @updateDataTable()
+
+
+
+    # Handle special "null" types for misc/unrecognized
+    unrecognized = _.filter submissionFiles, (f)->
+      return f.fileType == null
+
+    container = @$el.find("#miscellaneous-report-container")
+    if unrecognized and unrecognized.length > 0
+      container.css("visibility", "visible")
+      elem = container.find("#MISCELLANEOUS")
+
+      # Create if not exist
+      if elem.length == 0
+        container.append("<table id='MISCELLANEOUS'></table>")
+        elem = container.find("#MISCELLANEOUS")
+        elem.addClass("report table table-striped table-bordered table-hover")
+        @createDataTable("MISCELLANEOUS")
+
+      dt = @$el.find("#MISCELLANEOUS").dataTable()
+      temp = []
+      unrecognized.forEach (f)->
+        temp.push({fileName:f.name, fileState:"SKIPPED"})
+      dt.fnClearTable()
+      dt.fnAddData temp
+    else
+      @$el.find("#miscellaneous-report-container").css("visibility", "hidden")
 
 
   getAction: (dataType)->
@@ -128,9 +140,11 @@ module.exports = class ReportDatatypeView extends View
     lc_state = state.toLowerCase()
     ui_state = state.replace("_", " ")
 
-    if state == ""
+    globalState = @model.get "state"
+
+    if state == "" or globalState in ["QUEUED", "VALIDATING", "ERROR"]
       ""
-    else if state in ["VALIDATED", "INVALID", "NOT_VALIDATED"]
+    else if state in ["VALID", "INVALID", "NOT_VALIDATED"]
       """
       <a data-toggle="modal"
          class="m-btn mini green"
@@ -154,81 +168,40 @@ module.exports = class ReportDatatypeView extends View
   # Since we chop and dice the collection, we need to use a different update
   updateDataTable: ->
     #console.log @model.get("dataState")
-    console.log "updateDataTable"
 
-    globalState = @model.get("state")
-
-    #@currentDatatypes.forEach (datatype) =>
-    #  console.log "4 ", @model.get "submissionFiles"
-    #  @files = _.filter @model.get "submissionFiles", (f)->
-    #    return f.type == datatype
-    #  console.log "4 ", datatype, @files
 
     @datatypes = @report.dataTypeReports
     @datatypes.forEach (dataType) =>
       files = []
-      console.log "4", dataType
+      filesCache = {}
+
       dt = @$el.find("#"+dataType.dataType).dataTable()
       fileTypeReports = dataType.fileTypeReports
       fileTypeReports.forEach (fileType) =>
-        console.log "5", fileType
         fileReports = fileType.fileReports
         fileReports.forEach (file) =>
-          # TODO: use map
-          # files.push( {name:'test', lastUpdate:'12345', size:'999'})
+          # Datatable
           files.push file
-          console.log "6", file
-      console.log "4", files
-      dt.fnClearTable()
-      dt.fnAddData files
 
+          # To tell if files changed
+          filesCache[file.fileName] = @fileMap[file.fileName].lastUpdate + file.fileState
+
+      # Only reset pagination when delete/update/new files,  status change
+      if not _.isEqual filesCache, @datatypeCache[dataType.dataType]
+        dt.fnClearTable()
+        dt.fnAddData files
+      @datatypeCache[dataType.dataType] = _.clone(filesCache)
+      
+      
+      # Update the table header and actions
       target = "." + dataType.dataType + "_title"
       $(target).children().remove()
       $(target).append( @getTitleBar(dataType) )
-
 
       target = "." + dataType.dataType + "_action"
       $(target).children().remove()
       $(target).data("datatype", dataType.dataType)
       $(target).append( @getAction(dataType) )
-      
-    return
-
-    @currentDatatypes.forEach (datatype)=>
-      @files = _.filter @report.get("schemaReports").toJSON(), (d)->
-        type = d.dataType
-        if type == null
-          type = "MISCELLANEOUS"
-        return type == datatype
-      dt = @$el.find("#"+datatype).dataTable()
-
-      state = @dataStateMap[datatype]
-      if not state
-        state = ""
-
-
-      # Check if the data has changed or not
-      tempCache = {}
-      @files.forEach (f)=>
-        tempCache[f.name] = f.lastUpdate
-      
-      if not _.isEqual tempCache, @datatypeCache[datatype]
-        console.log datatype + " has changed..."
-        dt.fnClearTable()
-        dt.fnAddData @files
-
-      @datatypeCache[datatype] = _.clone(tempCache)
-
-
-      target = "." + datatype + "_title"
-      $(target).children().remove()
-      $(target).append( @getTitleBar(datatype, state, globalState) )
-
-      target = "." + datatype + "_action"
-      $(target).children().remove()
-      $(target).data("datatype", datatype)
-      $(target).append( @getAction(datatype, state, globalState) )
-
 
   createDataTable: (datatype)->
     #console.debug "ReportTableView#createDataTable", @$el, @model.get "name"
@@ -284,7 +257,7 @@ module.exports = class ReportDatatypeView extends View
           bVisible: true
           mData: (source) =>
             fileState = source.fileState
-            if fileState in ["QUEUED", "VALIDATING"]
+            if fileState in ["QUEUED", "VALIDATING", "SKIPPED"]
               ""
             else if source.errorReports.length or source.fieldReports.length \
                 or source.summaryReports.length
@@ -299,7 +272,7 @@ module.exports = class ReportDatatypeView extends View
     @$el.find("##{datatype}").dataTable
       sDom:
         """
-        <'row-fluid' <'span3 #{datatype}_title'l><'span3 #{datatype}_action'> <'span6'f>r>
+        <'row-fluid' <'span3 #{datatype}_title'><'span3 #{datatype}_action'> <'span6'f>r>
         t<'row-fluid'<'span6'i><'span6'p>>"
         """
        oLanguage:
@@ -313,8 +286,8 @@ module.exports = class ReportDatatypeView extends View
       sAjaxSource: ""
       sAjaxDataProp: ""
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        switch aData.schemaName
-          when null
+        switch aData.fileState
+          when "SKIPPED"
             $(nRow).css {'color': '#999', 'font-style': 'italic'}
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @files

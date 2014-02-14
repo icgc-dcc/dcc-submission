@@ -22,13 +22,23 @@ import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.core.report.FileReport;
 
+/**
+ * Useful visitor base class.
+ */
 @RequiredArgsConstructor
-public abstract class AbstractFileNameReportVisitor extends AbstractReportVisitor {
+public abstract class AbstractFileNameReportVisitor extends NoOpVisitor {
 
+  /**
+   * Input
+   */
   @NonNull
   protected final String fileName;
 
-  protected boolean isMatch(FileReport fileReport) {
+  //
+  // Helpers
+  //
+
+  protected boolean isTarget(FileReport fileReport) {
     return fileReport.getFileName().equals(fileName);
   }
 

@@ -17,10 +17,8 @@
  */
 package org.icgc.dcc.submission.core.state;
 
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PACKAGE;
-import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
-import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
-import static org.icgc.dcc.submission.core.model.Outcome.SUCCEEDED;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
@@ -31,20 +29,18 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
-public class ValidatingState extends AbstractState {
+public class ValidatingState extends AbstractCancellableState {
 
   @Override
   public boolean isReadOnly() {
+    // Can't modify when transient
     return true;
   }
 
   @Override
   public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
-    val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
+    // Do not change state of submission since this will happen after the validation finishes with a CANCELLED outcome.
+    // Doing otherwise will lead to inconsistencies between the in-memory state and the persistence state
   }
 
   @Override
@@ -52,18 +48,34 @@ public class ValidatingState extends AbstractState {
       @NonNull Outcome outcome, @NonNull Report newReport) {
     val oldReport = context.getReport();
 
-    if (outcome == SUCCEEDED) {
-      newReport.refreshState();
+    // Valid status needs to be refreshed since there are no natural events that do this (unlike with Errors)
+    newReport.refreshState();
+
+    switch (outcome) {
+    case CANCELLED:
+      // Need to reset all the validating data types
+      newReport.reset(dataTypes);
+
+      // The missing "break" is deliberate!
+    case SUCCEEDED:
+      // Transition
+      val nextState = getReportedNextState(newReport);
+      context.setState(nextState);
+
+      // Commit the report that was collected during validation
       context.setReport(newReport);
 
-      context.setState(newReport.isValid() ? SubmissionState.VALID : SubmissionState.NOT_VALIDATED);
-    } else if (outcome == FAILED) {
-      oldReport.setState(SubmissionState.ERROR, dataTypes);
+      // Done
+      break;
+    case FAILED:
+      // Use the old report and force a state
+      oldReport.notifyState(SubmissionState.ERROR, dataTypes);
 
+      // Need to call DCC...
       context.setState(SubmissionState.ERROR);
-    } else if (outcome == CANCELLED) {
-      // TODO: Should this branch be removed gue to cancelValidation?
-      context.setState(SubmissionState.NOT_VALIDATED);
+      break;
+    default:
+      checkState(false, "Unexpected outcome '%s'", outcome);
     }
   }
 

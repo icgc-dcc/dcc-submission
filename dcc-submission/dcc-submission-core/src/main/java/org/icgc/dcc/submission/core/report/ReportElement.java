@@ -17,8 +17,16 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+/**
+ * Represents an element within a {@link Report} that accepts a {@link ReportVisitor} for visitation.
+ */
 public interface ReportElement {
 
+  /**
+   * Accepts the visitor for traversal.
+   * 
+   * @param visitor the visitor to allow visitation
+   */
   void accept(ReportVisitor visitor);
 
 }

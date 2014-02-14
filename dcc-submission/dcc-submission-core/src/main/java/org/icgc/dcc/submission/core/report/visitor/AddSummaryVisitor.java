@@ -17,63 +17,26 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import javax.annotation.concurrent.NotThreadSafe;
-
 import lombok.NonNull;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
-import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.report.SummaryReport;
 
-@NotThreadSafe
-public class RemoveFileReportVisitor extends AbstractFileReportVisitor {
+public class AddSummaryVisitor extends AbstractFileNameReportVisitor {
 
-  public RemoveFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
-    super(fileName, fileType);
-  }
+  @NonNull
+  private final SummaryReport summaryReport;
 
-  @Override
-  public void visit(@NonNull Report report) {
-    if (isRemovable(dataTypeReport)) {
-      report.removeDataTypeReport(dataTypeReport);
-    }
-  }
-
-  @Override
-  public void visit(@NonNull DataTypeReport dataTypeReport) {
-    if (isMatch(dataTypeReport) && isRemovable(fileTypeReport)) {
-      this.dataTypeReport = dataTypeReport;
-      dataTypeReport.removeFileTypeReport(fileTypeReport);
-    }
-  }
-
-  @Override
-  public void visit(@NonNull FileTypeReport fileTypeReport) {
-    if (isMatch(fileTypeReport) && isRemovable(fileReport)) {
-      this.fileTypeReport = fileTypeReport;
-      fileTypeReport.removeFileReport(fileReport);
-    }
+  public AddSummaryVisitor(@NonNull String fileName, @NonNull String name, @NonNull String value) {
+    super(fileName);
+    this.summaryReport = new SummaryReport(name, value);
   }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
-      this.fileReport = fileReport;
+    if (isTarget(fileReport)) {
+      fileReport.addSummaryReport(summaryReport);
     }
-  }
-
-  private static boolean isRemovable(DataTypeReport dataTypeReport) {
-    return dataTypeReport != null && dataTypeReport.getFileTypeReports().isEmpty();
-  }
-
-  private static boolean isRemovable(FileTypeReport fileTypeReport) {
-    return fileTypeReport != null && fileTypeReport.getFileReports().isEmpty();
-  }
-
-  private static boolean isRemovable(FileReport fileReport) {
-    return fileReport != null;
   }
 
 }

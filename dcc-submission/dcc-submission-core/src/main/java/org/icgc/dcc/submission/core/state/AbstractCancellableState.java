@@ -15,29 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.report.visitor;
+package org.icgc.dcc.submission.core.state;
 
-import java.util.Map;
+import static lombok.AccessLevel.PACKAGE;
+import lombok.NoArgsConstructor;
 
-import lombok.NonNull;
-
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.FileReport;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-
-public class GetFilesReportVisitor extends AbstractReportVisitor {
-
-  private final Builder<String, FileType> files = ImmutableMap.<String, FileType> builder();
+/**
+ * A state that allow validation cancellation of the associated submission.
+ */
+@NoArgsConstructor(access = PACKAGE)
+public class AbstractCancellableState extends AbstractClosePreservingState {
 
   @Override
-  public void visit(@NonNull FileReport fileReport) {
-    files.put(fileReport.getFileName(), fileReport.getFileType());
-  }
-
-  public Map<String, FileType> getFiles() {
-    return files.build();
+  public boolean isReadOnly() {
+    // Protect things that are cancellable from modificaiton
+    return true;
   }
 
 }

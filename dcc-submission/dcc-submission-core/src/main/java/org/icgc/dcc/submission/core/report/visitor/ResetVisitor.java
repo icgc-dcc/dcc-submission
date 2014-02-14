@@ -17,45 +17,77 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import lombok.NonNull;
+import static com.google.common.collect.Iterables.contains;
+import static com.google.common.collect.Iterables.isEmpty;
+import static com.google.common.collect.Sets.newHashSet;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.DataTypeState;
 import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.submission.core.report.FileTypeState;
+import org.icgc.dcc.submission.core.report.Report;
 
 /**
- * Useful visitor base class that does nothing but offers convienient state and helps.
+ * Resets all internal states and leaf contents of the {@link Report}.
+ * <p>
+ * Equivalent of {@code new Report().addFiles(existingFiles)}
  */
-public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
+@NotThreadSafe
+@RequiredArgsConstructor
+public class ResetVisitor extends NoOpVisitor {
 
-  /**
-   * Input
-   */
-  protected final FileType fileType;
+  @NonNull
+  private final Iterable<DataType> dataTypes;
 
-  /**
-   * State
-   */
-  protected DataTypeReport dataTypeReport;
-  protected FileTypeReport fileTypeReport;
-  protected FileReport fileReport;
+  public ResetVisitor() {
+    this.dataTypes = newHashSet();
+  }
 
-  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
-    super(fileName);
-    this.fileType = fileType;
+  @Override
+  public void visit(@NonNull DataTypeReport dataTypeReport) {
+    if (isResettable(dataTypeReport.getDataType())) {
+      dataTypeReport.setDataTypeState(DataTypeState.getDefaultState());
+    }
+  }
+
+  @Override
+  public void visit(@NonNull FileTypeReport fileTypeReport) {
+    if (isResettable(fileTypeReport.getFileType())) {
+      fileTypeReport.setFileTypeState(FileTypeState.getDefaultState());
+    }
+  }
+
+  @Override
+  public void visit(@NonNull FileReport fileReport) {
+    if (isResettable(fileReport.getFileType())) {
+      fileReport.setFileState(FileState.getDefaultState());
+
+      // Clear all leaf level reports
+      fileReport.getSummaryReports().clear();
+      fileReport.getFieldReports().clear();
+      fileReport.getErrorReports().clear();
+    }
   }
 
   //
   // Helpers
   //
 
-  protected boolean isTarget(@NonNull FileTypeReport fileTypeReport) {
-    return fileTypeReport.getFileType() == fileType;
+  private boolean isResettable(DataType dataType) {
+    return isEmpty(dataTypes) || contains(dataTypes, dataType);
   }
 
-  protected boolean isTarget(@NonNull DataTypeReport dataTypeReport) {
-    return dataTypeReport.getDataType() == fileType.getDataType();
+  private boolean isResettable(FileType fileType) {
+    return isResettable(fileType.getDataType());
   }
 
 }

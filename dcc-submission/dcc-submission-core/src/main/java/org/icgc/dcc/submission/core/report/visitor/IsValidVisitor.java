@@ -17,45 +17,47 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static org.icgc.dcc.submission.core.report.FileState.VALID;
+
+import java.util.Set;
+
 import lombok.NonNull;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.submission.core.report.FileState;
 
 /**
- * Useful visitor base class that does nothing but offers convienient state and helps.
+ * Value producing visitor that returns the global valid status based on the internal state of the report.
  */
-public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
+public class IsValidVisitor extends NoOpVisitor {
 
-  /**
-   * Input
-   */
-  protected final FileType fileType;
+  @NonNull
+  private final Set<FileState> fileStates = newHashSet();
 
-  /**
-   * State
-   */
-  protected DataTypeReport dataTypeReport;
-  protected FileTypeReport fileTypeReport;
-  protected FileReport fileReport;
+  @Override
+  public void visit(@NonNull FileReport fileReport) {
+    fileStates.add(fileReport.getFileState());
+  }
 
-  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
-    super(fileName);
-    this.fileType = fileType;
+  //
+  // Result
+  //
+
+  public boolean isValid() {
+    return hasOnlyOneFileState() && hasFileState(VALID);
   }
 
   //
   // Helpers
   //
 
-  protected boolean isTarget(@NonNull FileTypeReport fileTypeReport) {
-    return fileTypeReport.getFileType() == fileType;
+  private boolean hasOnlyOneFileState() {
+    return fileStates.size() == 1;
   }
 
-  protected boolean isTarget(@NonNull DataTypeReport dataTypeReport) {
-    return dataTypeReport.getDataType() == fileType.getDataType();
+  private boolean hasFileState(@NonNull FileState fileState) {
+    return fileStates.contains(fileState);
   }
 
 }

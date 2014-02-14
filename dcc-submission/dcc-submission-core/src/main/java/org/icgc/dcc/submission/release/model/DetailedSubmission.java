@@ -65,6 +65,11 @@ public class DetailedSubmission extends Submission {
     return projectAlias;
   }
 
+  @Override
+  public void setState(SubmissionState nextState) {
+    this.state = nextState;
+  }
+
   public List<SubmissionFile> getSubmissionFiles() {
     return submissionFiles;
   }

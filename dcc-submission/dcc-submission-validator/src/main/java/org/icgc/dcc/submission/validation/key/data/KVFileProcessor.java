@@ -339,7 +339,7 @@ public final class KVFileProcessor {
       ; // No uniqueness check for MIRNA_P (unlike for other types, the PK is on the secondary file for MIRNA)
       valid.validateForeignKey1(fileName, lineCount, optionallyReferencedPrimaryKeys1, row.getFk1(), reporter);
       if (ROW_CHECKS_ENABLED) {
-        sanity.ensureNoPK(row);
+        // sanity.ensureNoPK(row);
         sanity.ensureNoFK2(row);
         sanity.ensureNoOptionalFK(row);
       }

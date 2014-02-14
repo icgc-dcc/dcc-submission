@@ -17,85 +17,70 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import static com.google.common.collect.Sets.newHashSet;
-
-import java.util.Set;
+import javax.annotation.concurrent.NotThreadSafe;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
-import org.icgc.dcc.submission.core.report.DataTypeState;
-import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
-import org.icgc.dcc.submission.core.report.FileTypeState;
+import org.icgc.dcc.submission.core.report.Report;
 
-public class AddErrorReportVisitor extends AbstractFileNameReportVisitor {
+/**
+ * Removes a file from a report and adjusts the internal structure to accommodate the loss.
+ */
+@NotThreadSafe
+public class RemoveFileVisitor extends AbstractFileReportVisitor {
 
-  /**
-   * Input
-   */
-  private final Error error;
-
-  /**
-   * Accumulation
-   */
-  private final Set<DataType> dataTypes = newHashSet();
-  private final Set<FileType> fileTypes = newHashSet();
-
-  @SuppressWarnings("unused")
-  public AddErrorReportVisitor(@NonNull Error error) {
-    super(error.getFileName());
-    this.error = error;
+  public RemoveFileVisitor(@NonNull String fileName, @NonNull FileType fileType) {
+    super(fileName, fileType);
   }
 
-  //
-  // Data Type
-  //
-
   @Override
-  public void visit(DataTypeReport dataTypeReport) {
-    if (isMatch(dataTypeReport)) {
-      dataTypeReport.setDataTypeState(DataTypeState.INVALID);
+  public void visit(@NonNull Report report) {
+    if (isRemovable(dataTypeReport)) {
+      report.removeDataTypeReport(dataTypeReport);
     }
   }
 
-  //
-  // File Type
-  //
-
   @Override
-  public void visit(FileTypeReport fileTypeReport) {
-    if (isMatch(fileTypeReport)) {
-      fileTypeReport.setFileTypeState(FileTypeState.INVALID);
+  public void visit(@NonNull DataTypeReport dataTypeReport) {
+    if (isTarget(dataTypeReport) && isRemovable(fileTypeReport)) {
+      this.dataTypeReport = dataTypeReport;
+      dataTypeReport.removeFileTypeReport(fileTypeReport);
     }
   }
 
-  //
-  // File
-  //
+  @Override
+  public void visit(@NonNull FileTypeReport fileTypeReport) {
+    if (isTarget(fileTypeReport) && isRemovable(fileReport)) {
+      this.fileTypeReport = fileTypeReport;
+      fileTypeReport.removeFileReport(fileReport);
+    }
+  }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
-      fileReport.setFileState(FileState.INVALID);
-      fileReport.addError(error);
-
-      // For ancestors
-      fileTypes.add(fileReport.getFileType());
-      dataTypes.add(fileReport.getFileType().getDataType());
+    if (isTarget(fileReport)) {
+      this.fileReport = fileReport;
     }
   }
 
-  private boolean isMatch(DataTypeReport dataTypeReport) {
-    return dataTypes.contains(dataTypeReport.getDataType());
+  //
+  // Helpers
+  //
+
+  private static boolean isRemovable(DataTypeReport dataTypeReport) {
+    return dataTypeReport != null && dataTypeReport.getFileTypeReports().isEmpty();
   }
 
-  private boolean isMatch(FileTypeReport fileTypeReport) {
-    return fileTypes.contains(fileTypeReport.getFileType());
+  private static boolean isRemovable(FileTypeReport fileTypeReport) {
+    return fileTypeReport != null && fileTypeReport.getFileReports().isEmpty();
+  }
+
+  private static boolean isRemovable(FileReport fileReport) {
+    return fileReport != null;
   }
 
 }

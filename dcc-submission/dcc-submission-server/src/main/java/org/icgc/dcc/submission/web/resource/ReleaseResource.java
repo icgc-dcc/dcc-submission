@@ -42,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -50,6 +51,7 @@ import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 @Slf4j
@@ -170,6 +172,26 @@ public class ReleaseResource {
   }
 
   @GET
+  @Path("{name}/submissions/{projectKey}/report/{fileName}")
+  public Response getFileReport(
+      @PathParam("name") String releaseName,
+      @PathParam("projectKey") String projectKey,
+      @PathParam("fileName") String fileName,
+      @Context SecurityContext securityContext) {
+    log.debug("Getting file report for: {}.{}.{}", new Object[] { releaseName, projectKey, fileName });
+    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return Responses.unauthorizedResponse();
+    }
+
+    val fileReport = getFileReport(releaseName, projectKey, fileName);
+    if (fileReport.isPresent() == false) {
+      return noSuchEntityResponse(releaseName, projectKey, fileName);
+    }
+
+    return Response.ok(fileReport.get()).build();
+  }
+
+  @GET
   @Path("{name}/submissions/{projectKey}/files")
   public Response getSubmissionFileList(
       @PathParam("name") String releaseName,
@@ -187,6 +209,19 @@ public class ReleaseResource {
 
     val submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
     return Response.ok(submissionFiles).build();
+  }
+
+  private Optional<FileReport> getFileReport(String releaseName, String projectKey, String fileName) {
+    Optional<FileReport> optional = Optional.absent();
+    val submission = releaseService.getSubmission(releaseName, projectKey);
+    if (submission != null) {
+      val report = submission.getReport();
+      if (report != null) {
+        optional = report.getFileReport(fileName);
+      }
+    }
+
+    return optional;
   }
 
 }

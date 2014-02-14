@@ -15,47 +15,60 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.report.visitor;
+package org.icgc.dcc.test.mongodb;
 
-import lombok.NonNull;
+import static lombok.AccessLevel.PRIVATE;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.DataTypeReport;
-import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
 
-/**
- * Useful visitor base class that does nothing but offers convienient state and helps.
- */
-public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
+import lombok.Cleanup;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-  /**
-   * Input
-   */
-  protected final FileType fileType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Predicate;
 
-  /**
-   * State
-   */
-  protected DataTypeReport dataTypeReport;
-  protected FileTypeReport fileTypeReport;
-  protected FileReport fileReport;
+import de.undercouch.bson4jackson.BsonFactory;
 
-  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
-    super(fileName);
-    this.fileType = fileType;
+@Slf4j
+@NoArgsConstructor(access = PRIVATE)
+public final class BsonFiles {
+
+  @SneakyThrows
+  public static File filterBsonFile(URL inputUrl, File outputFile, Predicate<ObjectNode> filter) {
+    val mapper = new ObjectMapper(new BsonFactory());
+    val reader = mapper.reader(JsonNode.class);
+    val writer = mapper.writer();
+
+    @Cleanup
+    val outputWriter = new FileOutputStream(outputFile);
+
+    log.info("Writing filtered BSON file from '{}' to '{}'", inputUrl, outputFile);
+    val iterator = reader.readValues(inputUrl);
+    while (hasNext(iterator)) {
+      val record = (ObjectNode) iterator.next();
+      if (filter.apply(record)) {
+        outputWriter.write(writer.writeValueAsBytes(record));
+      }
+    }
+
+    return outputFile;
   }
 
-  //
-  // Helpers
-  //
-
-  protected boolean isTarget(@NonNull FileTypeReport fileTypeReport) {
-    return fileTypeReport.getFileType() == fileType;
-  }
-
-  protected boolean isTarget(@NonNull DataTypeReport dataTypeReport) {
-    return dataTypeReport.getDataType() == fileType.getDataType();
+  private static boolean hasNext(MappingIterator<?> iterator) {
+    try {
+      return iterator.hasNextValue();
+    } catch (IOException e) {
+      return false;
+    }
   }
 
 }

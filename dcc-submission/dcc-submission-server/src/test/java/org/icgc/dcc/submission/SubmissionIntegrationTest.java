@@ -59,6 +59,7 @@ import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
@@ -211,11 +212,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    */
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
   private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
-
-  /**
-   * TODO: Ensure this is correct.
-   */
-  private static final SubmissionState INVALID = NOT_VALIDATED;
 
   /**
    * Test utilities.

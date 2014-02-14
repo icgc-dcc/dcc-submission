@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Iterables.transform;
 import static org.icgc.dcc.submission.release.model.SubmissionState.getDefaultState;
 
@@ -28,8 +29,10 @@ import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,6 +82,14 @@ public class Submission implements Serializable {
     this(projectKey, projectName, releaseName, getDefaultState());
   }
 
+  public Submission(@NonNull Submission other) {
+    this.projectKey = other.projectKey;
+    this.projectName = other.projectName;
+    this.releaseName = other.releaseName;
+    this.state = other.state;
+    this.lastUpdated = new Date();
+  }
+
   public Submission(@NonNull String projectKey, @NonNull String projectName, @NonNull String releaseName,
       @NonNull SubmissionState state) {
     this.projectKey = projectKey;
@@ -87,6 +98,10 @@ public class Submission implements Serializable {
     this.state = state;
     this.lastUpdated = new Date();
   }
+
+  //
+  // Accessors
+  //
 
   public Date getLastUpdated() {
     return lastUpdated;
@@ -127,39 +142,124 @@ public class Submission implements Serializable {
     this.projectKey = projectKey;
   }
 
-  public void initializeSubmission(@NonNull Iterable<SubmissionFile> submissionFiles) {
-    state.initializeSubmission(createContext(submissionFiles));
+  //
+  // Actions
+  //
+
+  public void initialize(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    executeTransition(submissionFiles, new Transition<Void>("initialize") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.initialize(context);
+        return null;
+      }
+
+    });
   }
 
-  public void modifySubmission(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Optional<Path> filePath) {
-    state.modifySubmission(createContext(submissionFiles), filePath);
+  public void modifyFile(@NonNull Iterable<SubmissionFile> submissionFiles, final @NonNull Optional<Path> filePath) {
+    executeTransition(submissionFiles, new Transition<Void>("modifyFile") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.modifyFile(context, filePath);
+        return null;
+      }
+
+    });
   }
 
-  public void queueRequest(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
-    state.queueRequest(createContext(submissionFiles), dataTypes);
+  public void queueRequest(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Iterable<DataType> dataTypes) {
+    executeTransition(submissionFiles, new Transition<Void>("queueRequest") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.queueRequest(context, dataTypes);
+        return null;
+      }
+
+    });
   }
 
-  public void startValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes,
-      @NonNull Report nextReport) {
-    state.startValidation(createContext(submissionFiles), dataTypes, nextReport);
+  public void startValidation(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Iterable<DataType> dataTypes, final @NonNull Report nextReport) {
+    executeTransition(submissionFiles, new Transition<Void>("startValidation") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.startValidation(context, dataTypes, nextReport);
+        return null;
+      }
+
+    });
   }
 
-  public void cancelValidation(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
-    state.cancelValidation(createContext(submissionFiles), dataTypes);
+  public void cancelValidation(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Iterable<DataType> dataTypes) {
+    executeTransition(submissionFiles, new Transition<Void>("cancelValidation") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.cancelValidation(context, dataTypes);
+        return null;
+      }
+
+    });
   }
 
   public void finishValidation(@NonNull Iterable<SubmissionFile> submissionFiles,
-      @NonNull Iterable<DataType> dataTypes, @NonNull Outcome outcome, @NonNull Report nextReport) {
-    state.finishValidation(createContext(submissionFiles), dataTypes, outcome, nextReport);
+      final @NonNull Iterable<DataType> dataTypes, final @NonNull Outcome outcome, final @NonNull Report nextReport) {
+    executeTransition(submissionFiles, new Transition<Void>("finishValidation") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.finishValidation(context, dataTypes, outcome, nextReport);
+        return null;
+      }
+
+    });
   }
 
   public void signOff(@NonNull Iterable<SubmissionFile> submissionFiles) {
-    state.signOff(createContext(submissionFiles));
+    executeTransition(submissionFiles, new Transition<Void>("signOff") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.signOff(context);
+        return null;
+      }
+
+    });
   }
 
-  public Submission performRelease(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Release nextRelease) {
-    return state.performRelease(createContext(submissionFiles), nextRelease);
+  public Submission closeRelease(@NonNull Iterable<SubmissionFile> submissionFiles, final @NonNull Release nextRelease) {
+    return executeTransition(submissionFiles, new Transition<Submission>("closeRelease") {
+
+      @Override
+      public Submission execute(@NonNull StateContext context) {
+        return state.closeRelease(context, nextRelease);
+      }
+
+    });
   }
+
+  public void reset(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    executeTransition(submissionFiles, new Transition<Void>("reset") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.reset(context);
+        return null;
+      }
+
+    });
+  }
+
+  //
+  // Helpers
+  //
 
   private StateContext createContext(Iterable<SubmissionFile> submissionFiles) {
     return new DefaultStateContext(this, submissionFiles);
@@ -174,6 +274,34 @@ public class Submission implements Serializable {
       }
 
     });
+  }
+
+  private <Result> Result executeTransition(@NonNull Iterable<SubmissionFile> submissionFiles,
+      @NonNull Transition<Result> transition) {
+    val action = transition.getAction();
+    val context = createContext(submissionFiles);
+
+    try {
+      log.info("Action '{}' requested starting from state '{}'", action, state);
+      val result = transition.execute(context);
+      log.info("Finished action '{}' resulting in state '{}'", action, state);
+
+      return result;
+    } catch (Throwable t) {
+      log.error("Error transitioning in response to action '" + action + "'. " + this, t);
+      throw propagate(t);
+    }
+  }
+
+  @RequiredArgsConstructor
+  private abstract class Transition<Result> {
+
+    @Getter
+    @NonNull
+    final String action;
+
+    abstract Result execute(StateContext context);
+
   }
 
 }

@@ -22,41 +22,25 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+/**
+ * All data-types must be {@code VALID}.
+ */
 @NoArgsConstructor(access = PACKAGE)
-public class ValidState extends AbstractState {
-
-  @Override
-  public boolean isReadOnly() {
-    return false;
-  }
-
-  @Override
-  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.QUEUED);
-
-    val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
-    report.setState(SubmissionState.QUEUED, dataTypes);
-  }
+public class ValidState extends AbstractQueuableState {
 
   @Override
   public void signOff(@NonNull StateContext context) {
-    context.setState(SubmissionState.SIGNED_OFF);
-  }
+    val nextState = SubmissionState.SIGNED_OFF;
 
-  @Override
-  public Submission performRelease(StateContext context, Release nextRelease) {
-    val nextSubmission =
-        new Submission(context.getProjectKey(), context.getProjectName(), nextRelease.getName(), SubmissionState.VALID);
-    nextSubmission.setReport(context.getReport());
+    // Set all to report elements to "signed-off"
+    val report = context.getReport();
+    report.notifyState(nextState, DataTypes.values());
 
-    return nextSubmission;
+    // Only state that allows this
+    context.setState(nextState);
   }
 
 }

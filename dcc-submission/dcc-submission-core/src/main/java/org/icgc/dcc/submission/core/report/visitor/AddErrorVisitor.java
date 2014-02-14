@@ -18,35 +18,88 @@
 package org.icgc.dcc.submission.core.report.visitor;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static org.icgc.dcc.submission.core.report.FileState.VALID;
 
 import java.util.Set;
 
 import lombok.NonNull;
 
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.DataTypeState;
+import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
+import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.submission.core.report.FileTypeState;
 
-public class IsValidReportVisitor extends AbstractReportVisitor {
+public class AddErrorVisitor extends AbstractFileNameReportVisitor {
 
-  @NonNull
-  private final Set<FileState> fileStates = newHashSet();
+  /**
+   * Input
+   */
+  private final Error error;
+
+  /**
+   * Accumulation
+   */
+  private final Set<DataType> dataTypes = newHashSet();
+  private final Set<FileType> fileTypes = newHashSet();
+
+  @SuppressWarnings("unused")
+  public AddErrorVisitor(@NonNull Error error) {
+    super(error.getFileName());
+    this.error = error;
+  }
+
+  //
+  // Data Type
+  //
+
+  @Override
+  public void visit(DataTypeReport dataTypeReport) {
+    if (isTarget(dataTypeReport)) {
+      dataTypeReport.setDataTypeState(DataTypeState.INVALID);
+    }
+  }
+
+  //
+  // File Type
+  //
+
+  @Override
+  public void visit(FileTypeReport fileTypeReport) {
+    if (isTarget(fileTypeReport)) {
+      fileTypeReport.setFileTypeState(FileTypeState.INVALID);
+    }
+  }
+
+  //
+  // File
+  //
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    fileStates.add(fileReport.getFileState());
+    if (isTarget(fileReport)) {
+      fileReport.setFileState(FileState.INVALID);
+      fileReport.addError(error);
+
+      // For ancestors
+      fileTypes.add(fileReport.getFileType());
+      dataTypes.add(fileReport.getFileType().getDataType());
+    }
   }
 
-  public boolean isValid() {
-    return hasOneFileState() && hasFileState(VALID);
+  //
+  // Helpers
+  //
+
+  private boolean isTarget(DataTypeReport dataTypeReport) {
+    return dataTypes.contains(dataTypeReport.getDataType());
   }
 
-  private boolean hasOneFileState() {
-    return fileStates.size() == 1;
-  }
-
-  private boolean hasFileState(@NonNull FileState fileState) {
-    return fileStates.contains(fileState);
+  private boolean isTarget(FileTypeReport fileTypeReport) {
+    return fileTypes.contains(fileTypeReport.getFileType());
   }
 
 }

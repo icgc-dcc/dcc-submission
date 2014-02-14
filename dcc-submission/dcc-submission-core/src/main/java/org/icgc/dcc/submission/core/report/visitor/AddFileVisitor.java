@@ -17,67 +17,79 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import static com.google.common.collect.Iterables.contains;
-import static com.google.common.collect.Iterables.isEmpty;
-import static com.google.common.collect.Sets.newHashSet;
-
-import javax.annotation.concurrent.NotThreadSafe;
-
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
-import org.icgc.dcc.submission.core.report.DataTypeState;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
-import org.icgc.dcc.submission.core.report.FileTypeState;
+import org.icgc.dcc.submission.core.report.Report;
 
-@NotThreadSafe
-@RequiredArgsConstructor
-public class ResetReportVisitor extends AbstractReportVisitor {
+public class AddFileVisitor extends AbstractFileReportVisitor {
 
-  @NonNull
-  private final Iterable<DataType> dataTypes;
+  public AddFileVisitor(@NonNull String fileName, @NonNull FileType fileType) {
+    super(fileName, fileType);
+  }
 
-  public ResetReportVisitor() {
-    this.dataTypes = newHashSet();
+  @Override
+  public void visit(@NonNull Report report) {
+    if (isAddable(dataTypeReport)) {
+      report.addDataTypeReport(createDataTypeReport());
+    }
   }
 
   @Override
   public void visit(@NonNull DataTypeReport dataTypeReport) {
-    if (isResettable(dataTypeReport.getDataType())) {
-      dataTypeReport.setDataTypeState(DataTypeState.getDefaultState());
+    if (isTarget(dataTypeReport) && isAddable(fileTypeReport)) {
+      this.dataTypeReport = dataTypeReport;
+      this.dataTypeReport.addFileTypeReport(createFileTypeReport());
     }
   }
 
   @Override
   public void visit(@NonNull FileTypeReport fileTypeReport) {
-    if (isResettable(fileTypeReport.getFileType())) {
-      fileTypeReport.setFileTypeState(FileTypeState.getDefaultState());
+    if (isTarget(fileTypeReport) && isAddable(fileReport)) {
+      this.fileTypeReport = fileTypeReport;
+      this.fileTypeReport.addFileReport(createFileReport());
     }
   }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isResettable(fileReport.getFileType())) {
-      fileReport.setFileState(FileState.getDefaultState());
-
-      // Clear all leaf level reports
-      fileReport.getSummaryReports().clear();
-      fileReport.getFieldReports().clear();
-      fileReport.getErrorReports().clear();
+    if (isTarget(fileReport)) {
+      this.fileReport = fileReport;
     }
   }
 
-  private boolean isResettable(DataType dataType) {
-    return isEmpty(dataTypes) || contains(dataTypes, dataType);
+  private static boolean isAddable(DataTypeReport dataTypeReport) {
+    return dataTypeReport == null;
   }
 
-  private boolean isResettable(FileType fileType) {
-    return isResettable(fileType.getDataType());
+  private static boolean isAddable(FileTypeReport fileTypeReport) {
+    return fileTypeReport == null;
+  }
+
+  private static boolean isAddable(FileReport fileReport) {
+    return fileReport == null;
+  }
+
+  private DataTypeReport createDataTypeReport() {
+    val dataTypeReport = new DataTypeReport(fileType.getDataType());
+    dataTypeReport.addFileTypeReport(createFileTypeReport());
+
+    return dataTypeReport;
+  }
+
+  private FileTypeReport createFileTypeReport() {
+    val fileTypeReport = new FileTypeReport(fileType);
+    fileTypeReport.addFileReport(createFileReport());
+
+    return fileTypeReport;
+  }
+
+  private FileReport createFileReport() {
+    return new FileReport(fileName, fileType);
   }
 
 }

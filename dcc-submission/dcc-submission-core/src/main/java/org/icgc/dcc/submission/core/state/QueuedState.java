@@ -27,31 +27,31 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 @NoArgsConstructor(access = PACKAGE)
-public class QueuedState extends AbstractState {
-
-  @Override
-  public boolean isReadOnly() {
-    return true;
-  }
+public class QueuedState extends AbstractCancellableState {
 
   @Override
   public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
       @NonNull Report nextReport) {
+    // Ensure the latest files are accounted for
+    nextReport.refreshFiles(context.getSubmissionFiles());
+    nextReport.reset(dataTypes);
+    nextReport.notifyState(SubmissionState.VALIDATING, dataTypes);
+
+    // Set to validating and clobber the report
     context.setState(SubmissionState.VALIDATING);
     context.setReport(nextReport);
-
-    nextReport.updateFiles(context.getSubmissionFiles());
-    nextReport.reset(dataTypes);
-    nextReport.setState(SubmissionState.VALIDATING, dataTypes);
   }
 
   @Override
   public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
+    // Reset reports related to the validating data types
     val report = context.getReport();
-    report.updateFiles(context.getSubmissionFiles());
+    report.refreshFiles(context.getSubmissionFiles());
     report.reset(dataTypes);
+
+    // Transition based on report
+    val nextState = getReportedNextState(report);
+    context.setState(nextState);
   }
 
 }

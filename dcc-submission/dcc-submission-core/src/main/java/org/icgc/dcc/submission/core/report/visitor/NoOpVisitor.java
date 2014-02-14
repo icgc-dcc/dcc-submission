@@ -18,78 +18,45 @@
 package org.icgc.dcc.submission.core.report.visitor;
 
 import lombok.NonNull;
-import lombok.val;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
+import org.icgc.dcc.submission.core.report.ErrorReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.report.ReportElement;
+import org.icgc.dcc.submission.core.report.ReportVisitor;
 
-public class AddFileReportVisitor extends AbstractFileReportVisitor {
-
-  public AddFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
-    super(fileName, fileType);
-  }
+/**
+ * All operations have no side-effects.
+ * <p>
+ * Useful for lazy subclass-ers or when a {@link ReportElement} interface needs to be satisfied.
+ */
+public class NoOpVisitor implements ReportVisitor {
 
   @Override
   public void visit(@NonNull Report report) {
-    if (isAddable(dataTypeReport)) {
-      report.addDataTypeReport(createDataTypeReport());
-    }
+    // No-op
   }
 
   @Override
   public void visit(@NonNull DataTypeReport dataTypeReport) {
-    if (isMatch(dataTypeReport) && isAddable(fileTypeReport)) {
-      this.dataTypeReport = dataTypeReport;
-      this.dataTypeReport.addFileTypeReport(createFileTypeReport());
-    }
+    // No-op
   }
 
   @Override
   public void visit(@NonNull FileTypeReport fileTypeReport) {
-    if (isMatch(fileTypeReport) && isAddable(fileReport)) {
-      this.fileTypeReport = fileTypeReport;
-      this.fileTypeReport.addFileReport(createFileReport());
-    }
+    // No-op
   }
 
   @Override
   public void visit(@NonNull FileReport fileReport) {
-    if (isMatch(fileReport)) {
-      this.fileReport = fileReport;
-    }
+    // No-op
   }
 
-  private static boolean isAddable(DataTypeReport dataTypeReport) {
-    return dataTypeReport == null;
-  }
-
-  private static boolean isAddable(FileTypeReport fileTypeReport) {
-    return fileTypeReport == null;
-  }
-
-  private static boolean isAddable(FileReport fileReport) {
-    return fileReport == null;
-  }
-
-  private DataTypeReport createDataTypeReport() {
-    val dataTypeReport = new DataTypeReport(fileType.getDataType());
-    dataTypeReport.addFileTypeReport(createFileTypeReport());
-
-    return dataTypeReport;
-  }
-
-  private FileTypeReport createFileTypeReport() {
-    val fileTypeReport = new FileTypeReport(fileType);
-    fileTypeReport.addFileReport(createFileReport());
-
-    return fileTypeReport;
-  }
-
-  private FileReport createFileReport() {
-    return new FileReport(fileName, fileType);
+  @Override
+  public void visit(@NonNull ErrorReport errorReport) {
+    // No-op
   }
 
 }

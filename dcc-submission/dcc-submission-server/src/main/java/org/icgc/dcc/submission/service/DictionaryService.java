@@ -209,7 +209,7 @@ public class DictionaryService {
     val currentDictionary = getCurrentDictionary(release);
     if (currentDictionary.usesCodeList(codeListName)) {
       log.info("Resetting submission due to active dictionary code list term addition...");
-      releases.resetSubmissions(release.getName(), release.getNotValidatedProjectKeys());
+      releases.resetSubmissions(release.getName(), release.getInvalidProjectKeys());
     } else {
       log.info("No need to reset submissions due to active dictionary code list term addition...");
     }

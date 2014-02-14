@@ -21,27 +21,28 @@ import static lombok.AccessLevel.NONE;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
-import com.google.common.base.Optional;
-
-@Slf4j
+/**
+ * Default implementation of the {@link StateContext} contract.
+ */
 @Value
 public class DefaultStateContext implements StateContext {
 
+  /**
+   * Delegate.
+   */
   @NonNull
   @Getter(NONE)
   private final Submission submission;
+
+  /**
+   * The current set of files submitted by the associated submission.
+   */
   @NonNull
   private final Iterable<SubmissionFile> submissionFiles;
 
@@ -72,59 +73,6 @@ public class DefaultStateContext implements StateContext {
   @Override
   public void setReport(@NonNull Report nextReport) {
     submission.setReport(nextReport);
-  }
-
-  @Override
-  public void modifySubmission(@NonNull Optional<Path> filePath) {
-    beginTransition("modifySubmission");
-    getState().modifySubmission(this, filePath);
-    finishTransition("modifySubmission");
-  }
-
-  @Override
-  public void queueRequest(@NonNull Iterable<DataType> dataTypes) {
-    beginTransition("queueRequest");
-    getState().queueRequest(this, dataTypes);
-    finishTransition("queueRequest");
-  }
-
-  @Override
-  public void startValidation(@NonNull Iterable<DataType> dataTypes, @NonNull Report nextReport) {
-    beginTransition("startValidation");
-    getState().startValidation(this, dataTypes, nextReport);
-    finishTransition("startValidation");
-  }
-
-  @Override
-  public void finishValidation(@NonNull Iterable<DataType> dataTypes, @NonNull Outcome outcome,
-      @NonNull Report nextReport) {
-    beginTransition("finishValidation");
-    getState().finishValidation(this, dataTypes, outcome, nextReport);
-    finishTransition("finishValidation");
-  }
-
-  @Override
-  public void signOff() {
-    beginTransition("signOff");
-    getState().signOff(this);
-    finishTransition("signOff");
-  }
-
-  @Override
-  public Submission performRelease(@NonNull Release nextRelease) {
-    beginTransition("performRelease");
-    val result = getState().performRelease(this, nextRelease);
-    finishTransition("performRelease");
-
-    return result;
-  }
-
-  private void beginTransition(@NonNull String action) {
-    log.info("Action '{}' requested while in state '{}'", action, getState());
-  }
-
-  private void finishTransition(@NonNull String action) {
-    log.info("Finished action '{}' while in state '{}'", action, getState());
   }
 
 }

@@ -30,7 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.report.ErrorReport;
 import org.icgc.dcc.submission.core.report.FieldErrorReport;
 import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.visitor.AbstractReportVisitor;
+import org.icgc.dcc.submission.core.report.visitor.NoOpVisitor;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
 
 import com.google.common.base.Optional;
@@ -41,7 +41,7 @@ import com.google.common.collect.Lists;
  * Needed for updating byte offsets to line numbers
  */
 @RequiredArgsConstructor
-public class ConvertLineNumbersReportVisitor extends AbstractReportVisitor {
+public class ConvertLineNumbersReportVisitor extends NoOpVisitor {
 
   @NonNull
   private final Path filePath;

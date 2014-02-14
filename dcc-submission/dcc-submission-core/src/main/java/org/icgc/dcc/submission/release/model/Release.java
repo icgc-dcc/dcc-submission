@@ -22,7 +22,7 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 
 import java.util.Date;
@@ -153,15 +153,15 @@ public class Release extends BaseEntity implements HasName {
   }
 
   @JsonIgnore
-  public List<String> getNotValidatedProjectKeys() {
-    val invalidProjectKeys = Lists.<String> newArrayList();
+  public List<String> getInvalidProjectKeys() {
+    val invalidProjectKeys = ImmutableList.<String> builder();
     for (val submission : getSubmissions()) {
-      if (submission.getState() == NOT_VALIDATED) {
+      if (submission.getState() == INVALID) {
         invalidProjectKeys.add(submission.getProjectKey());
       }
     }
 
-    return ImmutableList.copyOf(invalidProjectKeys);
+    return invalidProjectKeys.build();
   }
 
   public void addSubmission(Submission submission) {

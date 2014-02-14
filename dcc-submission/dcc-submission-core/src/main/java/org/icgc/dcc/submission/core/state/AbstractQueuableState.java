@@ -15,47 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.report.visitor;
+package org.icgc.dcc.submission.core.state;
 
+import static lombok.AccessLevel.PACKAGE;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.report.DataTypeReport;
-import org.icgc.dcc.submission.core.report.FileReport;
-import org.icgc.dcc.submission.core.report.FileTypeReport;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
- * Useful visitor base class that does nothing but offers convienient state and helps.
+ * A state that allows queuing of the associated submission.
  */
-public abstract class AbstractFileReportVisitor extends AbstractFileNameReportVisitor {
+@NoArgsConstructor(access = PACKAGE)
+public class AbstractQueuableState extends AbstractModifiableState {
 
-  /**
-   * Input
-   */
-  protected final FileType fileType;
+  @Override
+  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+    // The transition endpoint
+    val nextState = SubmissionState.QUEUED;
 
-  /**
-   * State
-   */
-  protected DataTypeReport dataTypeReport;
-  protected FileTypeReport fileTypeReport;
-  protected FileReport fileReport;
+    // Specified data-types need resetting
+    val report = context.getReport();
+    report.refreshFiles(context.getSubmissionFiles());
+    report.reset(dataTypes);
+    report.notifyState(nextState, dataTypes);
 
-  public AbstractFileReportVisitor(@NonNull String fileName, @NonNull FileType fileType) {
-    super(fileName);
-    this.fileType = fileType;
-  }
-
-  //
-  // Helpers
-  //
-
-  protected boolean isTarget(@NonNull FileTypeReport fileTypeReport) {
-    return fileTypeReport.getFileType() == fileType;
-  }
-
-  protected boolean isTarget(@NonNull DataTypeReport dataTypeReport) {
-    return dataTypeReport.getDataType() == fileType.getDataType();
+    // Enter state
+    context.setState(nextState);
   }
 
 }

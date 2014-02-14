@@ -17,27 +17,25 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import javax.annotation.concurrent.NotThreadSafe;
-
-import lombok.Getter;
 import lombok.NonNull;
 
-import org.icgc.dcc.submission.core.report.ErrorReport;
+import org.icgc.dcc.submission.core.report.FieldReport;
+import org.icgc.dcc.submission.core.report.FileReport;
 
-@NotThreadSafe
-public class ErrorCountReportVisitor extends AbstractReportVisitor {
+public class AddFieldVisitor extends AbstractFileNameReportVisitor {
 
-  @Getter
-  int errorCount = 0;
+  private final FieldReport fieldReport;
 
-  @Override
-  public void visit(@NonNull ErrorReport errorReport) {
-    // Accumulate leaf level error counts
-    errorCount += getErrorReportCount(errorReport);
+  public AddFieldVisitor(@NonNull String fileName, @NonNull FieldReport fieldReport) {
+    super(fileName);
+    this.fieldReport = fieldReport;
   }
 
-  private static int getErrorReportCount(ErrorReport errorReport) {
-    return errorReport.getFieldErrorReports().size();
+  @Override
+  public void visit(@NonNull FileReport fileReport) {
+    if (isTarget(fileReport)) {
+      fileReport.addFieldReport(fieldReport);
+    }
   }
 
 }

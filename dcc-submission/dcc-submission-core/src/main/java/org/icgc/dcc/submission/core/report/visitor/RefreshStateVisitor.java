@@ -22,7 +22,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
@@ -32,117 +31,166 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
+import org.icgc.dcc.submission.core.report.ReportElement;
 
+/**
+ * Refreshes stale {@link ReportElement} states based on non-state attributes and transitive relationships.
+ */
 @RequiredArgsConstructor
-public class RefreshStateReportVisitor extends AbstractReportVisitor {
+public class RefreshStateVisitor extends NoOpVisitor {
 
   /**
-   * Accumulation
+   * State - journals the <em>valid<em> file and data types as visiting proceeds.
    */
   private final Set<DataType> validDataTypes = newHashSet();
   private final Set<FileType> validFileTypes = newHashSet();
+
+  /**
+   * State - journals the <em>invalid</em> file and data types as visiting proceeds.
+   */
   private final Set<DataType> invalidDataTypes = newHashSet();
   private final Set<FileType> invalidFileTypes = newHashSet();
 
+  /**
+   * Refreshes any dirty valid or invalid states at the data-type level.
+   */
   @Override
   public void visit(DataTypeReport dataTypeReport) {
-    if (isValid(dataTypeReport)) {
+    // Use the file type results
+    if (refreshInvalid(dataTypeReport)) {
       dataTypeReport.setDataTypeState(DataTypeState.INVALID);
-    } else if (isInvalid(dataTypeReport)) {
+    } else if (refreshValid(dataTypeReport)) {
       dataTypeReport.setDataTypeState(DataTypeState.VALID);
     }
   }
 
+  /**
+   * Refreshes any dirty valid or invalid states at the file-type level.
+   */
   @Override
   public void visit(FileTypeReport fileTypeReport) {
-    if (isValid(fileTypeReport)) {
+    // Use the file type results
+    if (refreshInvalid(fileTypeReport)) {
       fileTypeReport.setFileTypeState(FileTypeState.INVALID);
-    } else if (isInvalid(fileTypeReport)) {
+    } else if (refreshValid(fileTypeReport)) {
       fileTypeReport.setFileTypeState(FileTypeState.VALID);
     }
   }
 
+  /**
+   * Refreshes any dirty valid or invalid states at the file level.
+   * <p>
+   * Tracks valid and invalid types for higher levels.
+   */
   @Override
   public void visit(FileReport fileReport) {
-    if (isValid(fileReport)) {
+    if (refreshInvalid(fileReport)) {
+      // Errors:
       fileReport.setFileState(FileState.INVALID);
 
-      recordInvalidFile(fileReport);
-    } else if (isInvalid(fileReport)) {
+      // Track
+      recordInvalid(fileReport);
+    } else if (refreshValid(fileReport)) {
+      // Clean:
       fileReport.setFileState(FileState.VALID);
 
-      recordValidFile(fileReport);
+      // Track
+      recordValid(fileReport);
+    } else if (fileReport.getFileState().in(FileState.VALID)) {
+      // Pass-through:
+      // - Was previously validated
+
+      // Track
+      recordValid(fileReport);
+    } else if (fileReport.getFileState().in(FileState.INVALID)) {
+      // Pass-through:
+      // - Was previously validated
+
+      // Track
+      recordInvalid(fileReport);
     }
   }
 
-  private boolean isValid(DataTypeReport dataTypeReport) {
-    return dataTypeReport.getDataTypeState() == DataTypeState.VALID && hasErrors(dataTypeReport);
+  //
+  // Helpers - Refresh valid predicates
+  //
+
+  private boolean refreshValid(DataTypeReport dataTypeReport) {
+    return dataTypeReport.getDataTypeState().in(DataTypeState.INVALID, DataTypeState.VALIDATING)
+        && isValid(dataTypeReport.getDataType());
   }
 
-  private boolean isValid(FileTypeReport fileTypeReport) {
-    return fileTypeReport.getFileTypeState() == FileTypeState.VALID && hasErrors(fileTypeReport);
+  private boolean refreshValid(FileTypeReport fileTypeReport) {
+    return fileTypeReport.getFileTypeState().in(FileTypeState.INVALID, FileTypeState.VALIDATING)
+        && isValid(fileTypeReport.getFileType());
+  }
+
+  private boolean refreshValid(FileReport fileReport) {
+    return fileReport.getFileState().in(FileState.INVALID, FileState.VALIDATING)
+        && isValid(fileReport);
+  }
+
+  //
+  // Helpers - Refresh invalid predicates
+  //
+
+  private boolean refreshInvalid(DataTypeReport dataTypeReport) {
+    return dataTypeReport.getDataTypeState().in(DataTypeState.VALID, DataTypeState.VALIDATING)
+        && isInvalid(dataTypeReport.getDataType());
+  }
+
+  private boolean refreshInvalid(FileTypeReport fileTypeReport) {
+    return fileTypeReport.getFileTypeState().in(FileTypeState.VALID, FileTypeState.VALIDATING)
+        && isInvalid(fileTypeReport.getFileType());
+  }
+
+  private boolean refreshInvalid(FileReport fileReport) {
+    return fileReport.getFileState().in(FileState.VALID, FileState.VALIDATING)
+        && isInvalid(fileReport);
+  }
+
+  //
+  // Helpers - valid predicates
+  //
+
+  private boolean isValid(DataType dataType) {
+    return validDataTypes.contains(dataType) && !invalidDataTypes.contains(dataType);
+  }
+
+  private boolean isValid(FileType fileType) {
+    return validFileTypes.contains(fileType) && !invalidFileTypes.contains(fileType);
   }
 
   private boolean isValid(FileReport fileReport) {
-    return isFileStateIn(fileReport, FileState.VALIDATING) && hasErrors(fileReport);
-  }
-
-  private boolean isInvalid(DataTypeReport dataTypeReport) {
-    return dataTypeReport.getDataTypeState() == DataTypeState.INVALID && hasNoErrors(dataTypeReport);
-  }
-
-  private boolean isInvalid(FileTypeReport fileTypeReport) {
-    return fileTypeReport.getFileTypeState() == FileTypeState.INVALID && hasNoErrors(fileTypeReport);
-  }
-
-  private boolean isInvalid(FileReport fileReport) {
-    return isFileStateIn(fileReport, FileState.VALIDATING) && hasNoErrors(fileReport);
-  }
-
-  private boolean hasNoErrors(DataTypeReport dataTypeReport) {
-    val dataType = dataTypeReport.getDataType();
-    return validDataTypes.contains(dataTypeReport.getDataType()) && !validDataTypes.contains(dataType);
-  }
-
-  private boolean hasNoErrors(FileTypeReport fileTypeReport) {
-    val fileType = fileTypeReport.getFileType();
-    return validFileTypes.contains(fileTypeReport.getFileType()) && !invalidFileTypes.contains(fileType);
-  }
-
-  private boolean hasNoErrors(FileReport fileReport) {
     return fileReport.getErrorReports().isEmpty();
   }
 
-  private boolean hasErrors(DataTypeReport dataTypeReport) {
-    val dataType = dataTypeReport.getDataType();
+  //
+  // Helpers - invalid predicates
+  //
+
+  private boolean isInvalid(DataType dataType) {
     return invalidDataTypes.contains(dataType);
   }
 
-  private boolean hasErrors(FileTypeReport fileTypeReport) {
-    val fileType = fileTypeReport.getFileType();
+  private boolean isInvalid(FileType fileType) {
     return invalidFileTypes.contains(fileType);
   }
 
-  private boolean hasErrors(FileReport fileReport) {
-    return !hasNoErrors(fileReport);
+  private boolean isInvalid(FileReport fileReport) {
+    return !isValid(fileReport);
   }
 
-  private boolean isFileStateIn(FileReport fileReport, FileState... fileStates) {
-    for (val fileState : fileStates) {
-      if (fileReport.getFileState() == fileState) {
-        return true;
-      }
-    }
+  //
+  // Helpers - journaling
+  //
 
-    return false;
-  }
-
-  private void recordValidFile(FileReport fileReport) {
+  private void recordValid(FileReport fileReport) {
     validFileTypes.add(fileReport.getFileType());
     validDataTypes.add(fileReport.getFileType().getDataType());
   }
 
-  private void recordInvalidFile(FileReport fileReport) {
+  private void recordInvalid(FileReport fileReport) {
     invalidFileTypes.add(fileReport.getFileType());
     invalidDataTypes.add(fileReport.getFileType().getDataType());
   }
