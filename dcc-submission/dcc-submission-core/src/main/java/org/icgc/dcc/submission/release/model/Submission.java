@@ -79,6 +79,14 @@ public class Submission implements Serializable {
     this(projectKey, projectName, releaseName, getDefaultState());
   }
 
+  public Submission(@NonNull Submission other) {
+    this.projectKey = other.projectKey;
+    this.projectName = other.projectName;
+    this.releaseName = other.releaseName;
+    this.state = other.state;
+    this.lastUpdated = new Date();
+  }
+
   public Submission(@NonNull String projectKey, @NonNull String projectName, @NonNull String releaseName,
       @NonNull SubmissionState state) {
     this.projectKey = projectKey;
@@ -87,6 +95,10 @@ public class Submission implements Serializable {
     this.state = state;
     this.lastUpdated = new Date();
   }
+
+  //
+  // Accessors
+  //
 
   public Date getLastUpdated() {
     return lastUpdated;
@@ -127,12 +139,16 @@ public class Submission implements Serializable {
     this.projectKey = projectKey;
   }
 
+  //
+  // Actions
+  //
+
   public void initializeSubmission(@NonNull Iterable<SubmissionFile> submissionFiles) {
-    state.initializeSubmission(createContext(submissionFiles));
+    state.initialize(createContext(submissionFiles));
   }
 
-  public void modifySubmission(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Optional<Path> filePath) {
-    state.modifySubmission(createContext(submissionFiles), filePath);
+  public void modifyFile(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Optional<Path> filePath) {
+    state.modifyFile(createContext(submissionFiles), filePath);
   }
 
   public void queueRequest(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Iterable<DataType> dataTypes) {
@@ -157,9 +173,17 @@ public class Submission implements Serializable {
     state.signOff(createContext(submissionFiles));
   }
 
-  public Submission performRelease(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Release nextRelease) {
-    return state.performRelease(createContext(submissionFiles), nextRelease);
+  public Submission closeRelease(@NonNull Iterable<SubmissionFile> submissionFiles, @NonNull Release nextRelease) {
+    return state.closeRelease(createContext(submissionFiles), nextRelease);
   }
+
+  public void reset(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    state.reset(createContext(submissionFiles));
+  }
+
+  //
+  // Utilities
+  //
 
   private StateContext createContext(Iterable<SubmissionFile> submissionFiles) {
     return new DefaultStateContext(this, submissionFiles);

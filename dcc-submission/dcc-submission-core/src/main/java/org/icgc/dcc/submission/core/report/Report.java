@@ -44,10 +44,10 @@ import org.icgc.dcc.submission.core.report.visitor.ErrorCountVisitor;
 import org.icgc.dcc.submission.core.report.visitor.GetFileReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.GetFilesVisitor;
 import org.icgc.dcc.submission.core.report.visitor.IsValidVisitor;
+import org.icgc.dcc.submission.core.report.visitor.NotifyStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RefreshStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RemoveFileVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ResetVisitor;
-import org.icgc.dcc.submission.core.report.visitor.SetStateVisitor;
 import org.icgc.dcc.submission.core.util.TypeConverters.DataTypeConverter;
 import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -190,8 +190,8 @@ public class Report implements ReportElement {
     executeVisitor(new ResetVisitor(dataTypes));
   }
 
-  public void setState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
-    executeVisitor(new SetStateVisitor(state, dataTypes));
+  public void notifyState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
+    executeVisitor(new NotifyStateVisitor(state, dataTypes));
   }
 
   public void refreshState() {

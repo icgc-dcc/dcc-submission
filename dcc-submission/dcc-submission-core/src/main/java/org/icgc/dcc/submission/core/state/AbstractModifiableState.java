@@ -7,14 +7,13 @@ import lombok.val;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
-import org.icgc.dcc.submission.release.model.SubmissionState;
 
 import com.google.common.base.Optional;
 
 /**
  * A state that allows file system modifications of the associated submission.
  */
-public abstract class AbstractModifiableState extends AbstractReleasePreservingState {
+public abstract class AbstractModifiableState extends AbstractClosePreservingState {
 
   @Override
   public final boolean isReadOnly() {
@@ -23,9 +22,8 @@ public abstract class AbstractModifiableState extends AbstractReleasePreservingS
   }
 
   @Override
-  public void modifySubmission(@NonNull StateContext context, @NonNull Optional<Path> filePath) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
+  public void modifyFile(@NonNull StateContext context, @NonNull Optional<Path> filePath) {
+    // Current submission data state
     val report = context.getReport();
     val submissionFiles = context.getSubmissionFiles();
 
@@ -33,11 +31,6 @@ public abstract class AbstractModifiableState extends AbstractReleasePreservingS
     report.refreshFiles(submissionFiles);
 
     if (filePath.isPresent()) {
-
-      //
-      // A data type
-      //
-
       // Reset this data type's reports if its is managed
       val dataType = getDataType(submissionFiles, filePath.get());
       val managed = dataType.isPresent();
@@ -45,14 +38,13 @@ public abstract class AbstractModifiableState extends AbstractReleasePreservingS
         report.resetDataTypes(dataType.get());
       }
     } else {
-
-      //
-      // All data types
-      //
-
       // Reset all internal reports
       report.resetDataTypes();
     }
+
+    // Transition based on report
+    val nextState = getReportedNextState(report);
+    context.setState(nextState);
   }
 
   //

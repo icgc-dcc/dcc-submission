@@ -9,14 +9,14 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
- * A state in which the associated submission must be reset upon release.
+ * A state in which the associated submission must be copied and reset upon release.
  */
-public abstract class AbstractReleaseResettingState extends AbstractState {
+public abstract class AbstractCloseResettingState extends AbstractState {
 
   @Override
-  public Submission performRelease(@NonNull StateContext context, @NonNull Release nextRelease) {
+  public Submission closeRelease(@NonNull StateContext context, @NonNull Release nextRelease) {
     // Reset (and copy!)
-    val resetReport = createResetReport(context);
+    val resetReport = new Report(context.getSubmissionFiles());
 
     val resetSubmission = createResetSubmission(context, nextRelease);
     resetSubmission.setReport(resetReport);
@@ -27,10 +27,6 @@ public abstract class AbstractReleaseResettingState extends AbstractState {
   //
   // Helpers
   //
-
-  private static Report createResetReport(StateContext context) {
-    return new Report(context.getSubmissionFiles());
-  }
 
   private static Submission createResetSubmission(StateContext context, Release nextRelease) {
     return new Submission(

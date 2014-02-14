@@ -32,11 +32,13 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 public class NotValidatedState extends AbstractQueuableState {
 
   @Override
-  public void initializeSubmission(@NonNull StateContext context) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
+  public void initialize(@NonNull StateContext context) {
+    // Start all report from new projects in a neutral state.
     val report = context.getReport();
     report.refreshFiles(context.getSubmissionFiles());
+
+    // And their owners
+    context.setState(SubmissionState.NOT_VALIDATED);
   }
 
 }

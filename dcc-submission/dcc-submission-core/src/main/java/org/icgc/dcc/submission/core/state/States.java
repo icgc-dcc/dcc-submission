@@ -55,9 +55,9 @@ public final class States {
       return SubmissionState.VALID;
     } else if (state == SIGNED_OFF) {
       return SubmissionState.SIGNED_OFF;
+    } else {
+      throw new IllegalArgumentException("Cannot covert " + state + " to " + SubmissionState.class);
     }
-
-    throw new IllegalArgumentException("Cannot covert " + state + " to " + SubmissionState.class);
   }
 
 }

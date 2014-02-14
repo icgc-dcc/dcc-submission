@@ -48,9 +48,9 @@ public interface State {
    * Operations
    */
 
-  void initializeSubmission(StateContext context);
+  void initialize(StateContext context);
 
-  void modifySubmission(StateContext context, Optional<Path> path);
+  void modifyFile(StateContext context, Optional<Path> path);
 
   void queueRequest(StateContext context, Iterable<DataType> dataTypes);
 
@@ -62,6 +62,8 @@ public interface State {
 
   void signOff(StateContext context);
 
-  Submission performRelease(StateContext context, Release nextRelease);
+  Submission closeRelease(StateContext context, Release nextRelease);
+
+  void reset(StateContext context);
 
 }

@@ -33,14 +33,17 @@ public class AbstractQueuableState extends AbstractModifiableState {
 
   @Override
   public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    // Enter state
-    context.setState(SubmissionState.QUEUED);
+    // The transition endpoint
+    val nextState = SubmissionState.QUEUED;
 
     // Specified data-types need resetting
     val report = context.getReport();
     report.refreshFiles(context.getSubmissionFiles());
     report.reset(dataTypes);
-    report.setState(SubmissionState.QUEUED, dataTypes);
+    report.notifyState(nextState, dataTypes);
+
+    // Enter state
+    context.setState(nextState);
   }
 
 }

@@ -35,7 +35,7 @@ import com.google.common.collect.Iterables;
  * Propagates state changes internally based on outside influence.
  */
 @RequiredArgsConstructor
-public class SetStateVisitor extends NoOpVisitor {
+public class NotifyStateVisitor extends NoOpVisitor {
 
   @NonNull
   private final SubmissionState nextState;

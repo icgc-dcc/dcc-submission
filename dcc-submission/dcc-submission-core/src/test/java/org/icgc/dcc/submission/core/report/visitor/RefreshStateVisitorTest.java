@@ -32,7 +32,7 @@ public class RefreshStateVisitorTest {
     report.addFile(FileType.SAMPLE_TYPE, "sample.txt");
 
     // Simulate validating state
-    report.setState(VALIDATING, dataTypes(CLINICAL_CORE_TYPE));
+    report.notifyState(VALIDATING, dataTypes(CLINICAL_CORE_TYPE));
 
     // Add an error on the validating data type
     report.addError(error().fileName("donor.txt").type(SCRIPT_ERROR).params("p1", "p2").build());

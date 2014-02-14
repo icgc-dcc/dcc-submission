@@ -24,11 +24,11 @@ import lombok.NoArgsConstructor;
  * A state that allow validation cancellation of the associated submission.
  */
 @NoArgsConstructor(access = PACKAGE)
-public class AbstractCancellableState extends AbstractReleasePreservingState {
+public class AbstractCancellableState extends AbstractClosePreservingState {
 
   @Override
   public boolean isReadOnly() {
-    // If something is cancellable it must be transient and therefore protected
+    // Protect things that are cancellable from modificaiton
     return true;
   }
 

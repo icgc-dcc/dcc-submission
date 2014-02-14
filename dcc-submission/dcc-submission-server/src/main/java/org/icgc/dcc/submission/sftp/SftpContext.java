@@ -126,7 +126,7 @@ public class SftpContext {
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
   public void notifySubmissionChange(@NonNull Submission submission, @NonNull Optional<Path> path) {
     log.info("Resetting submission '{}'...", submission.getProjectKey());
-    releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey(), path);
+    releaseService.modifySubmission(getNextReleaseName(), submission.getProjectKey(), path);
   }
 
   public void notifySystemChange() {

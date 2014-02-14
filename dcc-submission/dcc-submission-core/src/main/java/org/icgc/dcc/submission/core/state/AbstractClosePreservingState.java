@@ -7,17 +7,17 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 
 /**
- * A state in which the associated submission must be reset upon release.
+ * A state in which the associated submission must be copied and reset upon release.
  */
-public abstract class AbstractReleasePreservingState extends AbstractState {
+public abstract class AbstractClosePreservingState extends AbstractState {
 
   @Override
-  public Submission performRelease(StateContext context, Release nextRelease) {
-    // Preserve the state of the submmssion
-    val validSubmission = createPreservedSubmission(context, nextRelease);
-    validSubmission.setReport(context.getReport());
+  public Submission closeRelease(StateContext context, Release nextRelease) {
+    // Preserve the state of the submission when copying
+    val preservedSubmission = createPreservedSubmission(context, nextRelease);
+    preservedSubmission.setReport(context.getReport());
 
-    return validSubmission;
+    return preservedSubmission;
   }
 
   //

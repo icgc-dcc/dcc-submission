@@ -68,7 +68,6 @@ import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -262,7 +261,7 @@ public class NextReleaseResource {
 
     try {
       Release nextRelease = releaseService.getNextRelease();
-      releaseService.resetSubmission(nextRelease.getName(), projectKey, Optional.<org.apache.hadoop.fs.Path> absent());
+      releaseService.resetSubmission(nextRelease.getName(), projectKey);
     } catch (Throwable t) {
       log.error("Error resetting state for '" + projectKey + "':", t);
       throw t;

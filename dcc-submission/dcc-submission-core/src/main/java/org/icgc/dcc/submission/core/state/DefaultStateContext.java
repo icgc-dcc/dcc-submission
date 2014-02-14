@@ -87,7 +87,7 @@ public class DefaultStateContext implements StateContext {
   @Override
   public void modifySubmission(@NonNull Optional<Path> filePath) {
     beginTransition("modifySubmission");
-    getState().modifySubmission(this, filePath);
+    getState().modifyFile(this, filePath);
     finishTransition("modifySubmission");
   }
 
@@ -123,7 +123,7 @@ public class DefaultStateContext implements StateContext {
   @Override
   public Submission performRelease(@NonNull Release nextRelease) {
     beginTransition("performRelease");
-    val result = getState().performRelease(this, nextRelease);
+    val result = getState().closeRelease(this, nextRelease);
     finishTransition("performRelease");
 
     return result;

@@ -20,7 +20,9 @@ package org.icgc.dcc.submission.core.state;
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
 
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
@@ -31,8 +33,14 @@ public class ValidState extends AbstractQueuableState {
 
   @Override
   public void signOff(@NonNull StateContext context) {
+    val nextState = SubmissionState.SIGNED_OFF;
+
+    // Set all to report elements to "signed-off"
+    val report = context.getReport();
+    report.notifyState(nextState, DataTypes.values());
+
     // Only state that allows this
-    context.setState(SubmissionState.SIGNED_OFF);
+    context.setState(nextState);
   }
 
 }

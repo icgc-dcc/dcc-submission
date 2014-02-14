@@ -32,23 +32,26 @@ public class QueuedState extends AbstractCancellableState {
   @Override
   public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
       @NonNull Report nextReport) {
-    // Set to validating and clobber the report
-    context.setState(SubmissionState.VALIDATING);
-    context.setReport(nextReport);
-
     // Ensure the latest files are accounted for
     nextReport.refreshFiles(context.getSubmissionFiles());
     nextReport.reset(dataTypes);
-    nextReport.setState(SubmissionState.VALIDATING, dataTypes);
+    nextReport.notifyState(SubmissionState.VALIDATING, dataTypes);
+
+    // Set to validating and clobber the report
+    context.setState(SubmissionState.VALIDATING);
+    context.setReport(nextReport);
   }
 
   @Override
   public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.NOT_VALIDATED);
-
+    // Reset reports related to the validating data types
     val report = context.getReport();
     report.refreshFiles(context.getSubmissionFiles());
     report.reset(dataTypes);
+
+    // Transition based on report
+    val nextState = getReportedNextState(report);
+    context.setState(nextState);
   }
 
 }

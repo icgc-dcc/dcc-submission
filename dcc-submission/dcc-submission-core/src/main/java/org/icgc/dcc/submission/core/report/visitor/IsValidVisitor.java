@@ -45,14 +45,14 @@ public class IsValidVisitor extends NoOpVisitor {
   //
 
   public boolean isValid() {
-    return hasOneFileState() && hasFileState(VALID);
+    return hasOnlyOneFileState() && hasFileState(VALID);
   }
 
   //
   // Helpers
   //
 
-  private boolean hasOneFileState() {
+  private boolean hasOnlyOneFileState() {
     return fileStates.size() == 1;
   }
 

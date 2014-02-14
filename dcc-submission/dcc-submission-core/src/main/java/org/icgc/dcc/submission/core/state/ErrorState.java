@@ -19,23 +19,17 @@ package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.submission.release.model.SubmissionState;
-
+/**
+ * Terminal state that requires manual intervention to transition (except for reset).
+ */
 @NoArgsConstructor(access = PACKAGE)
-public class ErrorState extends AbstractModifiableState {
+public class ErrorState extends AbstractState {
 
   @Override
-  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    context.setState(SubmissionState.QUEUED);
-
-    val report = context.getReport();
-    report.refreshFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
-    report.setState(SubmissionState.QUEUED, dataTypes);
+  public boolean isReadOnly() {
+    // Prevent users from "un-erroring"
+    return true;
   }
 
 }

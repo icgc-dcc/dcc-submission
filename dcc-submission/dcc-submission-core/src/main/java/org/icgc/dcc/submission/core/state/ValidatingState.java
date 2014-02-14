@@ -17,10 +17,8 @@
  */
 package org.icgc.dcc.submission.core.state;
 
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PACKAGE;
-import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
-import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
-import static org.icgc.dcc.submission.core.model.Outcome.SUCCEEDED;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
@@ -50,24 +48,34 @@ public class ValidatingState extends AbstractCancellableState {
       @NonNull Outcome outcome, @NonNull Report newReport) {
     val oldReport = context.getReport();
 
-    if (outcome == SUCCEEDED) {
-      // Valid status needs to be refreshed since there are no natural events that do this (unlike with Errors)
-      newReport.refreshState();
+    // Valid status needs to be refreshed since there are no natural events that do this (unlike with Errors)
+    newReport.refreshState();
 
-      context.setReport(newReport);
-
-      context.setState(newReport.isValid() ? SubmissionState.VALID : SubmissionState.INVALID);
-    } else if (outcome == FAILED) {
-      oldReport.setState(SubmissionState.ERROR, dataTypes);
-
-      context.setState(SubmissionState.ERROR);
-    } else if (outcome == CANCELLED) {
-      context.setState(SubmissionState.NOT_VALIDATED);
-
-      context.setReport(newReport);
-
-      newReport.refreshFiles(context.getSubmissionFiles());
+    switch (outcome) {
+    case CANCELLED:
+      // Need to reset all the validating data types
       newReport.reset(dataTypes);
+
+      // The missing "break" is deliberate!
+    case SUCCEEDED:
+      // Transition
+      val nextState = getReportedNextState(newReport);
+      context.setState(nextState);
+
+      // Commit the report that was collected during validation
+      context.setReport(newReport);
+
+      // Done
+      break;
+    case FAILED:
+      // Use the old report and force a state
+      oldReport.notifyState(SubmissionState.ERROR, dataTypes);
+
+      // Need to call DCC...
+      context.setState(SubmissionState.ERROR);
+      break;
+    default:
+      checkState(false, "Unexpected outcome '%s'", outcome);
     }
   }
 
