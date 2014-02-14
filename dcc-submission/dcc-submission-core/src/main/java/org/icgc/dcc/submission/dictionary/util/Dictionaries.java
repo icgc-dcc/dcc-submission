@@ -22,6 +22,7 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_SYSTEM_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_P_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
@@ -31,6 +32,7 @@ import java.net.URL;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.ObjectMappers;
@@ -40,6 +42,7 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import com.fasterxml.jackson.databind.ObjectReader;
 
 @NoArgsConstructor(access = PRIVATE)
+@Slf4j
 public class Dictionaries {
 
   private static final ObjectReader FILE_SCHEMA_READER = ObjectMappers.DEFAULT.reader(FileSchema.class);
@@ -49,7 +52,7 @@ public class Dictionaries {
   @SneakyThrows
   public static FileSchema readFileSchema(FileType fileType) {
     val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
-
+    log.info("Augmenting dictionary with: '{}'", fileSchemaPath);
     return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
   }
 
@@ -72,15 +75,9 @@ public class Dictionaries {
    * Temporary method to augment the dictionary with the new models.
    */
   public static void addNewModels(Dictionary dictionary) {
-    val methArrayM = new FileSchema();
-    methArrayM.setName(METH_ARRAY_M_TYPE.getTypeName());
-    methArrayM.setPattern("^meth_array_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary.addFile(methArrayM);
-
-    val methArrayP = new FileSchema();
-    methArrayP.setName(METH_ARRAY_P_TYPE.getTypeName());
-    methArrayP.setPattern("^meth_array_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary.addFile(methArrayP);
+    dictionary.addFile(readFileSchema(METH_ARRAY_M_TYPE));
+    dictionary.addFile(readFileSchema(METH_ARRAY_P_TYPE));
+    dictionary.addFile(readFileSchema(METH_ARRAY_SYSTEM_TYPE));
 
     val methSeqM = new FileSchema();
     methSeqM.setName(METH_SEQ_M_TYPE.getTypeName());

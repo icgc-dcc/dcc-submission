@@ -215,9 +215,14 @@ public final class FileTypes {
     private final FileSubType subType;
 
     public String getTypeName() {
-      return subType.usedAsAbbrevatiation() ?
-          JOINER.join(dataType.getTypeName(), subType.getAbbreviation()) :
-          subType.getFullName();
+      if (subType.usedAsAbbrevatiation()) {
+        return JOINER.join(dataType.getTypeName(), subType.getAbbreviation());
+      } else if (subType.isSystemSubType()) {
+        return JOINER.join(dataType.getTypeName(), "mani"); // TODO: name to be finalized (mani is short for manifest,
+                                                            // consider changing subtype from "system" to "mani"?)
+      } else {
+        return subType.getFullName();
+      }
     }
 
     /**
