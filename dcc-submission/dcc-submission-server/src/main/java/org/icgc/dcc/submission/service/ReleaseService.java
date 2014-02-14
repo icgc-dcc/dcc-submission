@@ -413,7 +413,7 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.initializeSubmission(submissionFiles);
+    submission.initialize(submissionFiles);
     releaseRepository.addReleaseSubmission(release.getName(), submission);
 
     log.info("Created Submission '{}' with directory '{}'", submission, submissionPath);

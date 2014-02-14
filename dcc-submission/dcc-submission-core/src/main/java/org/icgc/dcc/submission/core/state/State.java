@@ -45,7 +45,7 @@ public interface State {
   boolean isReadOnly();
 
   /**
-   * Operations
+   * Actions
    */
 
   void initialize(StateContext context);

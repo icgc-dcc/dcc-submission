@@ -17,16 +17,9 @@
  */
 package org.icgc.dcc.submission.core.state;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-
-import com.google.common.base.Optional;
 
 /**
  * The "context" in the State Pattern.
@@ -52,21 +45,5 @@ public interface StateContext {
   void setState(SubmissionState state);
 
   void setReport(Report newReport);
-
-  /**
-   * Actions
-   */
-
-  void modifySubmission(Optional<Path> filePath);
-
-  void queueRequest(Iterable<DataType> dataTypes);
-
-  void startValidation(Iterable<DataType> dataTypes, Report nextReport);
-
-  void finishValidation(Iterable<DataType> dataTypes, Outcome outcome, Report nextReport);
-
-  void signOff();
-
-  Submission performRelease(Release nextRelease);
 
 }
