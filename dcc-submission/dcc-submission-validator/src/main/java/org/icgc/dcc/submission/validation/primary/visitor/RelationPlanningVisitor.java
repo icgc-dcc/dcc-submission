@@ -81,7 +81,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
   @Override
   public void visit(Relation relation) {
     val currentFileSchema = getCurrentFileSchema();
-    val afferentStrictFileSchemata = currentFileSchema.getBidirectionalAfferentFileSchemata(dictionary);
+    val afferentStrictFileSchemata = currentFileSchema.getIncomingSurjectiveRelationFileSchemata(dictionary);
 
     if (currentFileSchema.getRole() != FileSchemaRole.SYSTEM) { // skip checking relations in file to be re-annotated
       collectPlanElement(new RelationPlanElement(

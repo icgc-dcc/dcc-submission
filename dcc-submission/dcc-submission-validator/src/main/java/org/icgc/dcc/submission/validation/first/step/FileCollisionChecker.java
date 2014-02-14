@@ -22,13 +22,11 @@ import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_FILES_ERROR;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
@@ -47,26 +45,20 @@ public class FileCollisionChecker extends CompositeFileChecker {
     val fileSchema = getFileSchema(fileName);
 
     val pattern = fileSchema.getPattern();
-    val fileNames = listMatchingFiles(pattern);
+    val fileNames = getFs().getMatchingFileNames(pattern);
+    log.info("Files: '{}'", fileNames);
     if (hasCollisions(fileNames)) {
       log.info("More than 1 file matching the file pattern: {}", pattern);
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(fileName)
               .type(TOO_MANY_FILES_ERROR)
               .params(fileSchema.getName(), copyOf(fileNames))
               .build());
     }
-  }
-
-  /**
-   * TODO: move to {@link SubmissionDirectory}.
-   */
-  private List<String> listMatchingFiles(String pattern) {
-    return copyOf(getSubmissionDirectory().listFile(Pattern.compile(pattern)));
   }
 
   /**

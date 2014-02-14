@@ -62,7 +62,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
 
       incrementCheckErrorCount();
 
-      getValidationContext().reportError(
+      getReportContext().reportError(
           error()
               .fileName(fileName)
               .lineNumber(lineNumber)

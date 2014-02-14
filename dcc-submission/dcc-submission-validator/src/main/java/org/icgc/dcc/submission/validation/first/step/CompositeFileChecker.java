@@ -18,17 +18,17 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.repeat;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.first.Checker;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
@@ -45,9 +45,6 @@ public abstract class CompositeFileChecker implements FileChecker {
    */
   protected long checkErrorCount = 0;
 
-  /**
-   * @param name
-   */
   public CompositeFileChecker(FileChecker delegate, boolean failFast) {
     this.delegate = delegate;
     this.failFast = failFast;
@@ -60,6 +57,7 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public void check(String fileName) {
+    log.info(banner());
     delegate.check(fileName);
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", name);
@@ -86,7 +84,7 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean isValid() {
-    return (delegate.isValid() && !getValidationContext().hasErrors());
+    return (delegate.isValid() && !getReportContext().hasErrors());
   }
 
   @Override
@@ -105,18 +103,13 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return delegate.getSubmissionDirectory();
+  public FPVFileSystem getFs() {
+    return delegate.getFs();
   }
 
   @Override
-  public DccFileSystem getDccFileSystem() {
-    return delegate.getDccFileSystem();
-  }
-
-  @Override
-  public ValidationContext getValidationContext() {
-    return delegate.getValidationContext();
+  public ReportContext getReportContext() {
+    return delegate.getReportContext();
   }
 
   protected FileSchema getFileSchema(String fileName) {
@@ -125,4 +118,7 @@ public abstract class CompositeFileChecker implements FileChecker {
     return optional.get();
   }
 
+  protected String banner() {
+    return repeat("-", 75);
+  }
 }

@@ -128,7 +128,8 @@ public class SimpleValidationContext extends AbstractValidationContext {
 
   @Override
   public SubmissionDirectory getSubmissionDirectory() {
-    return new SubmissionDirectory(getDccFileSystem(), getRelease(), getProjectKey(), getSubmission());
+    return new SubmissionDirectory(
+        getDccFileSystem(), getReleaseFileSystem(), getRelease(), getProjectKey(), getSubmission());
   }
 
   @Override

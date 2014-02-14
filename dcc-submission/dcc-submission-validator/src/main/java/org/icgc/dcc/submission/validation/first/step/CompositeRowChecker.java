@@ -21,7 +21,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Scanner;
@@ -31,11 +30,10 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.RowChecker;
-import org.icgc.dcc.submission.validation.first.Util;
 
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
@@ -60,40 +58,35 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public void check(String filename) {
+    log.info(banner());
+
     // check all rows in the file
     performSelfCheck(filename);
   }
 
   @Override
-  public void performSelfCheck(String filename) {
+  public void performSelfCheck(String fileName) {
     log.info("Start performing {} validation...", name);
+    val fileSchema = getFileSchema(fileName);
 
-    String filePathname = getSubmissionDirectory().getDataFilePath(filename);
-    val fileSchema = getFileSchema(filename);
+    @Cleanup
+    Scanner reader = new Scanner(new BufferedReader(
+        new InputStreamReader(
+            getFs()
+                .getDecompressingInputStream(fileName),
+            DEFAULT_CHARSET)));
+    reader.useDelimiter(LINE_SEPARATOR);
+    String line;
+    long lineNumber = 1;
+    while (reader.hasNext()) {
+      line = reader.next();
+      checkRow(fileName, fileSchema, line, lineNumber);
+      ++lineNumber;
 
-    try {
-      @Cleanup
-      Scanner reader = new Scanner(new BufferedReader(
-          new InputStreamReader(
-              Util.createInputStream(
-                  getDccFileSystem(),
-                  filePathname),
-              DEFAULT_CHARSET)));
-      reader.useDelimiter(LINE_SEPARATOR);
-      String line;
-      long lineNumber = 1;
-      while (reader.hasNext()) {
-        line = reader.next();
-        checkRow(filename, fileSchema, line, lineNumber);
-        ++lineNumber;
-
-        if (lineNumber % 10000 == 0) {
-          // Check for cancellation
-          checkInterrupted(name);
-        }
+      if (lineNumber % 10000 == 0) {
+        // Check for cancellation
+        checkInterrupted(name);
       }
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to check the file: " + filename, e);
     }
 
     log.info("End performing {} validation. Number of errors found: '{}'",
@@ -125,7 +118,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public boolean isValid() {
-    return !getValidationContext().hasErrors();
+    return !getReportContext().hasErrors();
   }
 
   @Override
@@ -139,8 +132,8 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
-  public DccFileSystem getDccFileSystem() {
-    return delegate.getDccFileSystem();
+  public FPVFileSystem getFs() {
+    return delegate.getFs();
   }
 
 }

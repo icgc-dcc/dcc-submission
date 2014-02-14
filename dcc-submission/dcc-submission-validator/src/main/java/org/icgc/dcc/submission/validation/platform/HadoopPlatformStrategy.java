@@ -113,6 +113,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
       flowProperties.put(
           MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
           MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+
       flowProperties.put(
           MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
           SNAPPY_CODEC_PROPERTY_VALUE);

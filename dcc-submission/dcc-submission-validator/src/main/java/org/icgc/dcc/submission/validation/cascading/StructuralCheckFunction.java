@@ -20,15 +20,10 @@ package org.icgc.dcc.submission.validation.cascading;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.icgc.dcc.hadoop.cascading.Fields2.buildSortedList;
-import static org.icgc.dcc.hadoop.cascading.Fields2.indicesOf;
 import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import org.icgc.dcc.submission.core.report.ErrorType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -54,8 +49,6 @@ import com.google.common.collect.Lists;
 @SuppressWarnings("rawtypes")
 public class StructuralCheckFunction extends BaseOperation implements Function {
 
-  private static final String ROW_LEVEL_ERROR_COLUMN_NAME = "RowLevelError";
-
   public static final String LINE_FIELD_NAME = "line";
 
   public static final char FIELD_SEPARATOR = '\t';
@@ -72,36 +65,16 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
    */
   public static final List<String> MISSING_CODES = newArrayList("-777", "-888", LEGACY_CODE); // TODO: move elsewhere?
 
-  private static boolean REPORT_WARNINGS = false; // see DCC-270 & DCC-411
-
-  private Integer headerSize;
+  private final Integer headerSize;
 
   private final Fields dictionaryFields;
 
-  private List<Integer> unknownHeaderIndices;
-
+  @SuppressWarnings("unchecked")
   public StructuralCheckFunction(Iterable<String> fieldNames) {
     super(1);
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
-  }
-
-  /**
-   * TODO: address trick to know what the header contain: DCC-996 (also in PreProcessFunction)
-   */
-  @SuppressWarnings("unchecked")
-  public void declareFieldsPostPlanning(Fields headerFields) {
-    headerSize = headerFields.size();
-
-    Fields mergedFields = Fields.merge(headerFields, dictionaryFields);
-    Fields extraFields = mergedFields.subtract(dictionaryFields);
-    Fields adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
-    Fields missingFields = dictionaryFields.subtract(adjustedFields);
-    adjustedFields = adjustedFields.append(missingFields); // then missing fields to be emulated
-    checkState(buildSortedList(dictionaryFields)//
-        .equals(buildSortedList(adjustedFields))); // worth checking; order may differ but nothing else
-    fieldDeclaration = adjustedFields.append(ValidationFields.STATE_FIELD); // lastly state
-
-    unknownHeaderIndices = indicesOf(headerFields, extraFields);
+    headerSize = dictionaryFields.size();
+    fieldDeclaration = dictionaryFields.append(ValidationFields.STATE_FIELD);
   }
 
   @Override
@@ -126,30 +99,11 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
   }
 
   private List<String> adjustValues(List<String> values, TupleState tupleState) {
-    List<String> adjustedValues = null;
-    int dataSize = values.size();
-    if (headerSize == dataSize) {
-      adjustedValues = filterUnknownColumns(values); // existing valid fields first
-      adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
-      adjustedValues = convertMissingCodes(adjustedValues, tupleState);
-      adjustedValues = replaceEmptyStrings(adjustedValues);
-      if (REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
-        // FIXME: not working as expected anyway: this would report the error on all tuples
-        // tupleState.reportError(ErrorType.UNKNOWN_COLUMNS_WARNING,
-        // ErrorType.FILE_LEVEL_ERROR_COLUMN_NAME, unknownHeaderIndices);
-      }
-    } else {
-      adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
-                                                                           // of fields in headers for later merge in
-                                                                           // error reporting
-
-      // see SUBM-15
-      tupleState.reportError(ErrorType.STRUCTURALLY_INVALID_ROW_ERROR,//
-          ROW_LEVEL_ERROR_COLUMN_NAME, // because we don't have a specific column to report this on (TODO: revisit not
-                                       // elegant)
-          dataSize, headerSize); // we use dataSize as the value, and headerSize as an expected value parameter
-    }
-    return adjustedValues;
+    checkState(headerSize == values.size(),
+        "'%s' != '%s'", headerSize, values.size());
+    return replaceEmptyStrings(convertMissingCodes(
+        values,
+        tupleState));
   }
 
   private List<String> convertMissingCodes(List<String> values, TupleState tupleState) {
@@ -168,29 +122,6 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     return adjustedValues;
   }
 
-  /*
-   * ignore columns corresponding to unknown headers (TODO: see DCC-270 to improve on this)
-   */
-  private List<String> filterUnknownColumns(List<String> values) {
-    List<String> adjustedValues = new ArrayList<String>();
-    for (int i = 0; i < values.size(); i++) {
-      if (unknownHeaderIndices.contains(i) == false) {
-        adjustedValues.add(values.get(i));
-      }
-    }
-    return adjustedValues;
-  }
-
-  private List<String> padMissingColumns(List<String> adjustedValues) {
-    int adjustedDataSize = adjustedValues.size();
-    int size = dictionaryFields.size();
-    checkState(adjustedDataSize <= size); // by design (since we discarded unknown columns)
-    if (adjustedDataSize < size) { // padding with nulls
-      adjustedValues.addAll(Arrays.asList(new String[size - adjustedDataSize]));
-    }
-    return adjustedValues;
-  }
-
   private List<String> replaceEmptyStrings(List<String> adjustedValues) {
     for (int i = 0; i < adjustedValues.size(); i++) {
       String value = adjustedValues.get(i);
@@ -200,4 +131,5 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     }
     return adjustedValues;
   }
+
 }

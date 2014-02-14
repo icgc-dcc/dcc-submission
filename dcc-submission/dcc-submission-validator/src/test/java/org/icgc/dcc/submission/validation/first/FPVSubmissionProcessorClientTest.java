@@ -17,33 +17,28 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
 import static org.icgc.dcc.submission.dictionary.model.ValueType.INTEGER;
+import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.BZIP2;
+import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.GZIP;
+import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.PLAIN_TEXT;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.regex.Pattern;
+import java.util.List;
 
 import lombok.val;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.dictionary.model.Relation;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.FsConfig;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
 import org.icgc.dcc.submission.validation.first.step.FileCorruptionCheckerTest;
 import org.icgc.dcc.submission.validation.first.step.TestUtils;
 import org.junit.Before;
@@ -52,18 +47,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.typesafe.config.Config;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FirstPassValidatorClientTest {
+public class FPVSubmissionProcessorClientTest {
 
-  private final static String VALID_CONTENT = "H1\tH2\tH3\nf1\tf2\tf3";
+  private final static List<String> HEADERS = newArrayList("H1", "H2", "H3");
+  private final static String HEADER_LINE = Joiner.on('\t').join(HEADERS) + "\n";
+  private final static String VALID_CONTENT = HEADER_LINE + "f1\tf2\tf3";
 
   enum Schema {
     TESTFILE3("testfile3.txt"), TESTFILE2("testfile2.gz", TESTFILE3, false), TESTFILE1("testfile1.bz2", TESTFILE2, true);
@@ -73,6 +68,7 @@ public class FirstPassValidatorClientTest {
     Schema(String schemaName, Schema referencedSchema, boolean isBidirectional) {
       fileSchema = new FileSchema(schemaName);
       fileSchema.setPattern(schemaName);
+      fileSchema.setRole(FileSchemaRole.SUBMISSION);
       fileSchema.addField(getTestField("H1"));
       fileSchema.addField(getTestField("H2"));
       fileSchema.addField(getTestField("H3"));
@@ -95,6 +91,7 @@ public class FirstPassValidatorClientTest {
 
     Schema(String schemaName) {
       fileSchema = new FileSchema(schemaName);
+      fileSchema.setRole(FileSchemaRole.SUBMISSION);
       fileSchema.setPattern(schemaName);
       fileSchema.addField(getTestField("H1"));
       fileSchema.addField(getTestField("H2"));
@@ -106,86 +103,57 @@ public class FirstPassValidatorClientTest {
     }
   }
 
-  @Mock
-  Config config;
-
   @Spy
   Dictionary dict;
 
-  DccFileSystem fs;
-
-  @Mock
-  SubmissionDirectory submissionDir;
-
   @Mock
   ValidationContext validationContext;
+  @Mock
+  FPVFileSystem fs;
 
   @Before
   public void setup() throws IOException {
-    final File file1 = File.createTempFile("testfile1", ".bz2");
-    final File file2 = File.createTempFile("testfile2", ".gz", file1.getParentFile());
-    final File file3 = File.createTempFile("testfile3", ".txt", file1.getParentFile());
+    val schema1 = Schema.TESTFILE1.getSchema();
+    val schema2 = Schema.TESTFILE2.getSchema();
+    val schema3 = Schema.TESTFILE3.getSchema();
 
-    file1.deleteOnExit();
-    file2.deleteOnExit();
-    file3.deleteOnExit();
-
-    IOUtils.copy(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.BZIP2), new FileOutputStream(
-        file1));
-    IOUtils.copy(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.GZIP), new FileOutputStream(
-        file2));
-    IOUtils.copy(FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, CodecType.PLAIN_TEXT),
-        new FileOutputStream(
-            file3));
-
-    Schema.TESTFILE1.getSchema().setPattern(file1.getName());
-    Schema.TESTFILE2.getSchema().setPattern(file2.getName());
-    Schema.TESTFILE3.getSchema().setPattern(file3.getName());
-    dict.addFile(Schema.TESTFILE1.getSchema());
-    dict.addFile(Schema.TESTFILE2.getSchema());
-    dict.addFile(Schema.TESTFILE3.getSchema());
-    doReturn(Optional.of(Schema.TESTFILE1.getSchema())).when(dict).getFileSchemaByFileName(anyString());
-    doReturn(Optional.of(Schema.TESTFILE2.getSchema())).when(dict).getFileSchemaByFileName(anyString());
-    doReturn(Optional.of(Schema.TESTFILE3.getSchema())).when(dict).getFileSchemaByFileName(anyString());
-    doReturn(ImmutableList.<FileSchema> of(
-        Schema.TESTFILE1.getSchema(),
-        Schema.TESTFILE2.getSchema(),
-        Schema.TESTFILE3.getSchema()))
+    dict.addFile(schema1);
+    dict.addFile(schema2);
+    dict.addFile(schema3);
+    doReturn(Optional.of(schema1)).when(dict).getFileSchemaByFileName(schema1.getName());
+    doReturn(Optional.of(schema2)).when(dict).getFileSchemaByFileName(schema2.getName());
+    doReturn(Optional.of(schema3)).when(dict).getFileSchemaByFileName(schema3.getName());
+    doReturn(ImmutableList.<FileSchema> of(schema1, schema2, schema3))
         .when(dict).getFileSchemata(anyDataTypeIterable());
-
-    when(config.getString(FsConfig.FS_ROOT)).thenReturn(file1.getParent());
-    fs = new DccFileSystem(config, FileSystem.getLocal(new Configuration()));
-
-    ImmutableList<String> files = ImmutableList.of(file1.getName(), file2.getName(), file3.getName());
-    when(submissionDir.listFile()).thenReturn(files);
-    when(submissionDir.listFiles(Mockito.anyListOf(String.class))).thenReturn(files);
-    when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new Answer<Iterable<String>>() {
-
-      @Override
-      public Iterable<String> answer(InvocationOnMock invocation) throws Throwable {
-        Pattern pattern = (Pattern) invocation.getArguments()[0];
-        return ImmutableList.of(pattern.pattern());
-      }
-    });
-    when(submissionDir.getDataFilePath(anyString())).thenAnswer(new Answer<String>() {
-
-      @Override
-      public String answer(InvocationOnMock invocation) throws Throwable {
-        String filename = (String) invocation.getArguments()[0];
-        File file = new File(file1.getParentFile(), filename);
-        return file.getAbsolutePath();
-      }
-    });
-
-    when(validationContext.getDccFileSystem()).thenReturn(fs);
-    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
     when(validationContext.getDictionary()).thenReturn(dict);
+
+    ImmutableList<String> files = ImmutableList.of(schema1.getName(), schema2.getName(), schema3.getName());
+    when(fs.listMatchingSubmissionFiles(Mockito.anyListOf(String.class))).thenReturn(files);
+
+    when(fs.getMatchingFileNames(schema1.getName())).thenReturn(newArrayList(schema1.getName()));
+    when(fs.getMatchingFileNames(schema2.getName())).thenReturn(newArrayList(schema2.getName()));
+    when(fs.getMatchingFileNames(schema3.getName())).thenReturn(newArrayList(schema3.getName()));
+
+    when(fs.determineCodecFromFilename(schema1.getName())).thenReturn(BZIP2);
+    when(fs.determineCodecFromFilename(schema2.getName())).thenReturn(GZIP);
+    when(fs.determineCodecFromFilename(schema3.getName())).thenReturn(PLAIN_TEXT);
+
+    when(fs.determineCodecFromContent(schema1.getName())).thenReturn(BZIP2);
+    when(fs.determineCodecFromContent(schema2.getName())).thenReturn(GZIP);
+    when(fs.determineCodecFromContent(schema3.getName())).thenReturn(PLAIN_TEXT);
+
+    when(fs.peekFileHeader(schema1.getName())).thenReturn(HEADERS);
+    when(fs.peekFileHeader(schema2.getName())).thenReturn(HEADERS);
+    when(fs.peekFileHeader(schema3.getName())).thenReturn(HEADERS);
+
+    when(fs.getDecompressingInputStream(Mockito.anyString())).thenReturn(
+        FileCorruptionCheckerTest.getTestInputStream(VALID_CONTENT, PLAIN_TEXT));
   }
 
   @Test
   public void sanity() throws IOException {
-    FirstPassValidator fpc = new FirstPassValidator();
-    fpc.validate(validationContext);
+    val fpv = new FPVSubmissionProcessor();
+    fpv.process("mystepname", validationContext, fs);
     TestUtils.checkNoErrorsReported(validationContext);
   }
 

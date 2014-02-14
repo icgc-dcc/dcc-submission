@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission;
 
-import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -27,7 +26,6 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.fest.util.Files.contentOf;
 import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
@@ -363,7 +361,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
             } else {
               val path = projectName + "/" + file.getName();
               status("user", "SFTP transferring file from '{}' to '{}'...", file, path);
-              sftp.put(path, contentOf(file, UTF_8));
+              sftp.put(path, file);
             }
           }
         }
@@ -678,10 +676,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     // TODO: Do the negation of following for the projects the failed primary validation
 
     // Project 1
-    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.txt.internal" + FILE_NAME_SEPARATOR
-        + "errors.json");
-    assertEmptyFile(fileSystem, DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.internal" + FILE_NAME_SEPARATOR
-        + "errors.json");
+    assertEmptyFile(fileSystem,
+        DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + FILE_NAME_SEPARATOR + "errors.json");
+    assertEmptyFile(fileSystem,
+        DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + FILE_NAME_SEPARATOR + "errors.json");
   }
 
   private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState) {

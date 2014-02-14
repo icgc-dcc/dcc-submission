@@ -134,13 +134,13 @@ public class KeyValidatorTest {
     val dictionary = getDictionary();
 
     val releaseFileSystem = mock(ReleaseFileSystem.class);
-    when(releaseFileSystem.getSystemDirPath()).thenReturn(
-        new Path(PATH.join(rootDir.toUri().toString(), RELEASE_NAME, SYSTEM_FILES_DIR_NAME)));
 
     val submissionDirectory = mock(SubmissionDirectory.class);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
     when(submissionDirectory.getSubmissionDirPath()).thenReturn(
         PATH.join(rootDir.toUri().toString(), RELEASE_NAME, PROJECT_NAME));
+    when(submissionDirectory.getSystemDirPath()).thenReturn(
+        PATH.join(rootDir.toUri().toString(), RELEASE_NAME, SYSTEM_FILES_DIR_NAME));
 
     val platformStrategy = mock(PlatformStrategy.class);
     val flowConnectorProperties = newLinkedHashMap(new ImmutableMap.Builder<Object, Object>()
