@@ -17,16 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static com.google.common.base.Charsets.UTF_8;
+import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.Scanner;
+import java.io.BufferedInputStream;
 
 import lombok.Cleanup;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,14 +33,28 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.RowChecker;
 
+import com.google.common.base.Stopwatch;
+
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
   /**
+   * Number of bytes to buffer when reading submission files.
+   * 
+   * @see http
+   * ://stackoverflow.com/questions/236861/how-do-you-determine-the-ideal-buffer-size-when-using-fileinputstream
+   */
+  private static final int LINE_BUFFER_SIZE = 8192;
+
+  /**
+   * Number of lines checked between status logging.
+   */
+  private static final long LINE_STATUS_THRESHOLD = 1000L * 1000L;
+
+  /**
    * Constants.
    */
-  private static final Charset DEFAULT_CHARSET = UTF_8;
-  private static final String LINE_SEPARATOR = "\n";
+  private static final char LINE_SEPARATOR_CHAR = '\n';
 
   @NonNull
   protected final RowChecker delegate;
@@ -65,45 +77,68 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
+  @SneakyThrows
   public void performSelfCheck(String fileName) {
     log.info("Start performing {} validation...", name);
     val fileSchema = getFileSchema(fileName);
 
     @Cleanup
-    Scanner reader = new Scanner(new BufferedReader(
-        new InputStreamReader(
-            getFs()
-                .getDecompressingInputStream(fileName),
-            DEFAULT_CHARSET)));
-    reader.useDelimiter(LINE_SEPARATOR);
-    String line;
+    val inputStream = new BufferedInputStream(getFs().getDecompressingInputStream(fileName), LINE_BUFFER_SIZE);
+    val watch = Stopwatch.createStarted();
+    val line = new StringBuilder(512);
     long lineNumber = 1;
-    while (reader.hasNext()) {
-      line = reader.next();
-      checkRow(fileName, fileSchema, line, lineNumber);
-      ++lineNumber;
 
-      if (lineNumber % 10000 == 0) {
-        // Check for cancellation
-        checkInterrupted(name);
+    int nextByte = 0;
+    while ((nextByte = inputStream.read()) > 0) {
+      if ((char) nextByte == LINE_SEPARATOR_CHAR) {
+
+        // Delegate
+        checkRow(fileName, fileSchema, line, lineNumber);
+
+        // Book-keeping
+        ++lineNumber;
+
+        if (lineNumber % 10000 == 0) {
+          // Check for cancellation
+          checkInterrupted(name);
+        }
+
+        if (lineNumber % LINE_STATUS_THRESHOLD == 0L) {
+          // Log status
+          log.info("Checked {} lines of '{}' in {}",
+              new Object[] { formatCount(lineNumber), fileName, watch });
+        }
+
+        // Reset
+        line.setLength(0);
+      } else {
+        // Buffer
+        line.appendCodePoint(nextByte);
       }
     }
 
-    log.info("End performing {} validation. Number of errors found: '{}'",
-        new Object[] {
-            name,
-            checkErrorCount });
+    // Check buffer to be empty, otherwise we have a file with no trailing new line
+    // TODO: Enable when the test data is fixed
+    // if (line.length() > 0) {
+    // getReportContext().reportError(
+    // error()
+    // .fileName(fileName)
+    // .lineNumber(lineNumber)
+    // .type(LINE_TERMINATOR_MISSING_ERROR)
+    // .build());
+    // }
+
+    log.info("End performing '{}' validation on '{}' in {}. Number of errors found: {}",
+        new Object[] { name, fileName, watch, formatCount(checkErrorCount) });
   }
 
   @Override
-  public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
+  public void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber) {
     delegate.checkRow(filename, fileSchema, row, lineNumber);
     if (delegate.canContinue()) {
       if (log.isDebugEnabled()) {
         log.debug(
-            "Start performing {} validation for row '{}'...",
-            row,
-            name);
+            "Start performing {} validation for row '{}'...", row, name);
       }
 
       performSelfCheck(filename, fileSchema, row, lineNumber);
@@ -114,7 +149,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     }
   }
 
-  public abstract void performSelfCheck(String filename, FileSchema fileSchema, String row, long lineNumber);
+  public abstract void performSelfCheck(String filename, FileSchema fileSchema, CharSequence row, long lineNumber);
 
   @Override
   public boolean isValid() {

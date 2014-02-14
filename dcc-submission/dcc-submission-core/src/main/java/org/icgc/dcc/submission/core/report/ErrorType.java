@@ -68,6 +68,17 @@ public enum ErrorType {
   },
 
   /**
+   * Number of columns does not match that of header.
+   */
+  LINE_TERMINATOR_MISSING_ERROR(ROW_LEVEL, "Row is missing line terminator. Expected \\n", true) {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      return ImmutableMap.of();
+    }
+  },
+
+  /**
    * TODO.
    */
   INVALID_CHARSET_ROW_ERROR(ROW_LEVEL, "Row contains invalid charset", true) {
@@ -138,7 +149,6 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params);
       return ImmutableMap.of();
     }
   },
@@ -177,7 +187,6 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params);
       return ImmutableMap.of();
     }
   },
@@ -189,7 +198,6 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params);
       return ImmutableMap.of();
     }
   },

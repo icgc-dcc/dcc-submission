@@ -57,8 +57,8 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public void check(String fileName) {
-    log.info(banner());
     delegate.check(fileName);
+    log.info(banner());
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", name);
       performSelfCheck(fileName);

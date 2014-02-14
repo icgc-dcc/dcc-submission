@@ -38,7 +38,7 @@ public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
   }
 
   @Override
-  public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
+  public void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber) {
   }
 
   @Override
