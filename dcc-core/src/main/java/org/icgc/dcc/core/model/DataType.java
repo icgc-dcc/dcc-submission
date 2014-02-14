@@ -57,7 +57,7 @@ public interface DataType {
 
   FeatureType asFeatureType();
 
-  public static class SubmissionDataTypes {
+  public static class DataTypes {
 
     /**
      * These types are always provided for a submission to be {@link SubmissionState#VALID}.

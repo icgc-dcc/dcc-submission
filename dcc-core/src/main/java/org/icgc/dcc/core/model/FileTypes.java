@@ -30,7 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.DataType.SubmissionDataTypes;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -180,7 +180,7 @@ public final class FileTypes {
 
               @Override
               public boolean apply(FileType input) {
-                return SubmissionDataTypes.isMandatoryType(input.dataType);
+                return DataTypes.isMandatoryType(input.dataType);
               }
             }));
 
