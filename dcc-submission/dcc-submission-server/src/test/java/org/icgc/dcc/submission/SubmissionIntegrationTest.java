@@ -55,6 +55,7 @@ import static org.icgc.dcc.submission.TestUtils.get;
 import static org.icgc.dcc.submission.TestUtils.post;
 import static org.icgc.dcc.submission.TestUtils.put;
 import static org.icgc.dcc.submission.TestUtils.replaceDictionaryVersion;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.writeDictionary;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
@@ -121,7 +122,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * Test file system.
    */
   private static final String INTEGRATION_TEST_DIR = "/fixtures/submission";
-  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/dcc_root_dir";
+  private static final String DESTINATION_DIR_NAME = "dcc_root_dir";
+  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/" + DESTINATION_DIR_NAME;
 
   /**
    * Projects.
@@ -299,6 +301,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       adminPerformsRelease();
       adminUpdatesDictionary();
       adminUpdatesRelease();
+      dumpTestDictionary();
     } catch (Exception e) {
       status("test", "Caught exception: " + e);
       throw e;
@@ -715,6 +718,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private static List<SubmissionState> hasSubmisisonStates(SubmissionState... states) {
     return newArrayList(states);
+  }
+
+  private void dumpTestDictionary() {
+    writeDictionary(
+        dictionary(),
+        "/tmp/dictionary_submission_integration_test.json");
   }
 
   private static void banner(String message) {

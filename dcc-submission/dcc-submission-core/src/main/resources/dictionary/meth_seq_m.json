@@ -1,0 +1,313 @@
+{
+   "pattern" : "^meth_seq_m\\.txt(?:\\.gz|\\.bz2)?$",
+   "fields" : [
+      {
+         "summaryType" : "UNIQUE_COUNT",
+         "controlled" : false,
+         "name" : "analysis_id",
+         "label" : "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : false
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : "^([\\w+\\-\\_]+)$"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "UNIQUE_COUNT",
+         "controlled" : false,
+         "name" : "analyzed_sample_id",
+         "label" : "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : false
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : "^([\\w+\\-\\_]+)$"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "UNIQUE_COUNT",
+         "controlled" : false,
+         "name" : "matched_sample_id",
+         "label" : "Unique identifier(s) for the matched sample(s) used in the analysis; must exist in the sample file; can provide a list of >1 IDs using comma (',') as a delimiter",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : true
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : "^([\\w+\\-\\_]+)$"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "assembly_version",
+         "label" : "Version of human reference genome assembly used in the analysis; specify the version used in alignments, or associated with the particular platform used",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : false
+               }
+            },
+            {
+               "type" : "codelist",
+               "config" : {
+                  "name" : "GLOBAL.0.assembly_version.v1"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "platform",
+         "label" : "Identifier of platform or technology used for analysis or verification; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : false
+               }
+            },
+            {
+               "type" : "codelist",
+               "config" : {
+                  "name" : "GLOBAL.0.platform.v1"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "experimental_protocol",
+         "label" : "Name of experimental protocol and URL to written protocol",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : false
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : ".*([a-z0-9+.-]+):(?://(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?.*"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "base_calling_algorithm",
+         "label" : "Name of base calling algorithm and URL to written protocol",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : true
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : ".*([a-z0-9+.-]+):(?://(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?.*"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "alignment_algorithm",
+         "label" : "Name of alignment algorithm and URL to written protocol",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : true
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : ".*([a-z0-9+.-]+):(?://(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?.*"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "variation_calling_algorithm",
+         "label" : "Name of variation calling algorithm and URL to written protocol",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : true
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : ".*([a-z0-9+.-]+):(?://(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?.*"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "other_analysis_algorithm",
+         "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
+         "valueType" : "TEXT",
+         "restrictions" : []
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "raw_data_repository",
+         "label" : "Public repository where raw data is submitted",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : false
+               }
+            },
+            {
+               "type" : "codelist",
+               "config" : {
+                  "name" : "GLOBAL.0.raw_data_repository.v1"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "raw_data_accession",
+         "label" : "Accession and URL for referencing the raw data at the public repository",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "required",
+               "config" : {
+                  "acceptMissingCode" : false
+               }
+            },
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : "(?iu)(EGA:)?EGA[DNS]\\d+|(GEO:)?G(SE|DS|SM)\\d+|((CGHub|TCGA):)?TCGA-[\\w\\-]+|([A-Z0-9_\\-]{2,}:)?[\\w_\\-0-9]+.*"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "UNIQUE_COUNT",
+         "controlled" : false,
+         "name" : "uri",
+         "label" : "Provide one or more URIs that are related to the data provided; Use URL-encoding for special characters, and delimit multiple URIs with a comma.",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : "^([\\w0-9+.-]+):(?://(?:((?:[\\w0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[\\w0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[\\w0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[\\w0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[\\w0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[\\w0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[\\w0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : "FREQUENCY",
+         "controlled" : false,
+         "name" : "db_xref",
+         "label" : "Provide one or more related public database identifier cross-references in the format: 'DB:ID', where DB is defined database token and ID is the identifier in that database. For example, to annotate with one (or more) Ensembl gene IDs use the syntax: 'Ensembl:ENSGxxx'. See: http://www.ncbi.nlm.nih.gov/genbank/collab/db_xref/",
+         "valueType" : "TEXT",
+         "restrictions" : [
+            {
+               "type" : "regex",
+               "config" : {
+                  "pattern" : "^[\\w\\d_-]{2,}:[\\w\\-_\\d\\.]+"
+               }
+            }
+         ]
+      },
+      {
+         "summaryType" : null,
+         "controlled" : true,
+         "name" : "note",
+         "label" : "Optional field to leave notes",
+         "valueType" : "TEXT",
+         "restrictions" : []
+      }
+   ],
+   "name" : "meth_seq_m",
+   "relations" : [
+      {
+         "bidirectional" : false,
+         "optionals" : [],
+         "fields" : [
+            "analyzed_sample_id"
+         ],
+         "other" : "sample",
+         "otherFields" : [
+            "analyzed_sample_id"
+         ]
+      },
+      {
+         "bidirectional" : false,
+         "optionals" : [],
+         "fields" : [
+            "matched_sample_id"
+         ],
+         "other" : "sample",
+         "otherFields" : [
+            "analyzed_sample_id"
+         ]
+      }
+   ],
+   "label" : "DNA Methylation (meth) - Analysis Metadata File (m)",
+   "uniqueFields" : [
+      "analysis_id",
+      "analyzed_sample_id"
+   ],
+   "role" : "SUBMISSION"
+}

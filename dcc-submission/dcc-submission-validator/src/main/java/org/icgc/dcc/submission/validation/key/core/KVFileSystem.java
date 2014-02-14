@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Optional.of;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
@@ -37,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.SystemFiles;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -56,7 +54,7 @@ public final class KVFileSystem {
   @NonNull
   private final Collection<DataType> dataTypes;
   @NonNull
-  private final Dictionary dictionary;
+  private final Dictionary dictionary; // TODO: move out of this class (pass where needed instead)
   @NonNull
   private final Path submissionDirPath;
   @NonNull
@@ -68,21 +66,16 @@ public final class KVFileSystem {
 
   public Optional<List<Path>> getDataFilePaths(KVFileType fileType) {
     // Selective validation filtering
-    val requested = dataTypes.contains(fileType.getSubmissionFileType().getDataType());
+    val requested = dataTypes.contains(fileType.getFileType().getDataType());
     if (!requested) {
       return Optional.<List<Path>> absent();
     }
 
-    val system = fileType.isSystem();
-    val filePattern = compile(
-        system ?
-            checkNotNull(SystemFiles.PATTERNS.get(fileType.getSubmissionFileType()),
-                "Expecting a matching pattern for '%s'", fileType.getSubmissionFileType()) :
-            getFileSchema(fileType).getPattern());
-    val basePath = system ? systemDirPath : submissionDirPath;
+    val filePattern = getFileSchema(fileType).getPattern();
+    val basePath = fileType.isSystem() ? systemDirPath : submissionDirPath;
 
     log.info("Listing '{}' with filter '{}'", basePath, filePattern);
-    val filePaths = HadoopUtils.lsFile(fileSystem, basePath, filePattern);
+    val filePaths = HadoopUtils.lsFile(fileSystem, basePath, compile(filePattern));
     return filePaths.isEmpty() ? Optional.<List<Path>> absent() : of(filePaths);
   }
 
@@ -95,14 +88,15 @@ public final class KVFileSystem {
   }
 
   private FileSchema getFileSchema(KVFileType fileType) {
-    val targetName = fileType.toString().toLowerCase();
+    val targetName = fileType.getFileType().getTypeName();
     for (val fileSchema : dictionary.getFiles()) {
       if (targetName.equals(fileSchema.getName())) {
         return fileSchema;
       }
     }
 
-    throw new IllegalArgumentException(format("No file schema found for file type: '%s'", fileType));
+    throw new IllegalArgumentException(
+        format("No file schema found for file type: '%s' ('%s')", fileType, targetName));
   }
 
 }
