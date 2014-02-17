@@ -253,7 +253,6 @@ public class SftpServerServiceTest {
 
     // Source file
     String filePath = filePath(1);
-    String fileContent = "This is the content of the file";
     File file = new File(root, filePath);
     file.createNewFile();
     String fileName = file.getName();
@@ -266,7 +265,31 @@ public class SftpServerServiceTest {
     assertThat(sftp.pwd()).isEqualTo(projectDirectoryName);
 
     // Put file
-    sftp.put(file.getAbsolutePath(), currentDirectoryName, fileContent);
+    sftp.put(currentDirectoryName + File.separator + file.getName(), file);
+    assertThat(sftp.ls(projectDirectoryName)).hasSize(1);
+    assertThat(sftp.ls(projectDirectoryName).get(0).getFilename()).isEqualTo(fileName);
+  }
+
+  @Test
+  public void testPutMultiple() throws SftpException, IOException {
+    // Create the simulated project directory
+    String projectDirectoryName = createProjectDirectory();
+
+    // Source file
+    String filePath = filePath(1);
+    File file = new File(root, filePath);
+    file.createNewFile();
+    String fileName = file.getName();
+
+    // Change directory
+    sftp.cd(projectDirectoryName);
+    assertThat(sftp.pwd()).isEqualTo(projectDirectoryName);
+
+    for (int i = 0; i < 10; i++) {
+      // Put file
+      sftp.put(file.getName(), file);
+    }
+
     assertThat(sftp.ls(projectDirectoryName)).hasSize(1);
     assertThat(sftp.ls(projectDirectoryName).get(0).getFilename()).isEqualTo(fileName);
   }

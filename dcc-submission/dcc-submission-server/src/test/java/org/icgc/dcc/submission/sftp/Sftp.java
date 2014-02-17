@@ -140,13 +140,8 @@ public class Sftp implements TestRule {
   }
 
   @SneakyThrows
-  public void put(String sourceFileName, File file) throws SftpException {
-    getChannel().put(new FileInputStream(file), sourceFileName);
-  }
-
-  public void put(String sourceFileName, String destFileName, String fileContent) throws SftpException {
-    // FIXME: fileContent is never used
-    getChannel().put(sourceFileName, destFileName);
+  public void put(String destinationFileName, File file) throws SftpException {
+    getChannel().put(new FileInputStream(file), destinationFileName);
   }
 
   public String get(String fileName) throws SftpException, IOException {
