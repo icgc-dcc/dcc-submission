@@ -212,8 +212,25 @@ found on host #{host}"
         "PEXP"
       when "JCN_TYPE"
         "JCN"
-      else
-        "Unrecognized"
 
+      # TODO, confirm display names
+      when "METH_ARRAY_TYPE"
+        dataType
+      when "METH_SEQ_TYPE"
+        dataTYpe
+      when "GEXP_ARRAY_TYPE"
+        dataTYpe
+      when "GEXP_SEQ_TYPE"
+        dataTYpe
+      when "PEXP_ARRAY_TYPE"
+        dataTYpe
+      when "PEXP_SEQ_TYPE"
+        dataTYpe
+      when "MIRNA_ARRAY_TYPE"
+        dataTYpe
+      when "MIRNA_SEQ_TYPE"
+        dataTYpe
+      else
+        dataType
 
 module.exports = utils
