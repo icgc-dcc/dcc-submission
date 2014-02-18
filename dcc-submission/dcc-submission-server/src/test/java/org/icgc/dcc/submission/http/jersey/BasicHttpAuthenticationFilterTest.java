@@ -22,6 +22,7 @@ import static org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter.
 import static org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter.WWW_AUTHENTICATE_REALM;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -85,20 +86,14 @@ public class BasicHttpAuthenticationFilterTest {
   @Mock
   private UriInfo mockUriInfo;
 
-  /**
-   * Book-keeping
-   */
-  private String threadName;
-
   @Before
   public void setUp() {
-    this.threadName = Thread.currentThread().getName();
-
     // Create some behaviour
     when(mockRequestContext.getRequest()).thenReturn(mockRequest);
     when(mockRequestContext.getHeaders()).thenReturn(mockHeaders);
     when(mockRequestContext.getSecurityContext()).thenReturn(mockSecurityContext);
     when(mockRequestContext.getUriInfo()).thenReturn(mockUriInfo);
+    when(mockRequestContext.getProperty(anyString())).thenReturn(Thread.currentThread().getName());
     when(mockUriInfo.getPath()).thenReturn("/fake/path");
 
     when(mockAuthenticator.authenticate(TEST_USERNAME, TEST_PASSWORD, TEST_HOST)).thenReturn(mockSubject);
@@ -108,15 +103,16 @@ public class BasicHttpAuthenticationFilterTest {
   public void tearDown() {
     // Cleanup thread locals and thread names
     authenticationFilter.filter(mockRequestContext, mockResponseContext);
-    Thread.currentThread().setName(threadName);
   }
 
   @Test
   public void test_filter_handlesCorrectAuthorizationHeader() throws IOException {
+    // (generate using: $ echo -n "brett:brettspasswd" | base64)
     when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION))
         .thenReturn(String.format("%s YnJldHQ6YnJldHRzcGFzc3dk", HTTP_AUTH_PREFIX));
-    // (generate using: $ echo -n "brett:brettspasswd" | base64)
-    this.runFilter();
+
+    executeFilter();
+
     // Make sure there was a login attempt and capture the token
     // Assert username and password match
     verify(this.mockAuthenticator).authenticate(TEST_USERNAME, TEST_PASSWORD, TEST_HOST);
@@ -125,11 +121,11 @@ public class BasicHttpAuthenticationFilterTest {
 
   @Test
   public void test_filter_handlesIncorrectAuthorizationHeader() throws IOException {
+    // (generate using: $ echo -n "brett:NOTbrettspasswd" | base64)
     when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION))//
         .thenReturn(String.format("%s YnJldHQ6Tk9UYnJldHRzcGFzc3dk", HTTP_AUTH_PREFIX)); // encodes "brett:brettspasswd"
                                                                                          // in base64
-    // (generate using: $ echo -n "brett:NOTbrettspasswd" | base64)
-    this.runFilter();
+    executeFilter();
 
     verify(this.mockAuthenticator).authenticate(TEST_USERNAME, "NOTbrettspasswd".toCharArray(), TEST_HOST);
 
@@ -145,7 +141,7 @@ public class BasicHttpAuthenticationFilterTest {
     // This test is testing that the header is absent
     when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(null);
 
-    this.runFilter();
+    executeFilter();
 
     ArgumentCaptor<Response> response = ArgumentCaptor.forClass(Response.class);
     verify(mockRequestContext).abortWith(response.capture());
@@ -174,7 +170,8 @@ public class BasicHttpAuthenticationFilterTest {
    */
   private void testMalformedHeader(String malformed) throws IOException {
     when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(malformed);
-    this.runFilter();
+
+    executeFilter();
 
     ArgumentCaptor<Response> response = ArgumentCaptor.forClass(Response.class);
     verify(mockRequestContext).abortWith(response.capture());
@@ -182,8 +179,8 @@ public class BasicHttpAuthenticationFilterTest {
   }
 
   // Exercise the code we're testing
-  private void runFilter() throws IOException {
-    this.authenticationFilter.filter(mockRequestContext);
+  private void executeFilter() throws IOException {
+    authenticationFilter.filter(mockRequestContext);
   }
 
 }
