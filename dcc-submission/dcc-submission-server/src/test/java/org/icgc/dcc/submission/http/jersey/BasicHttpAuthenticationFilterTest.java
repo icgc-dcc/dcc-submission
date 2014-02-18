@@ -85,8 +85,15 @@ public class BasicHttpAuthenticationFilterTest {
   @Mock
   private UriInfo mockUriInfo;
 
+  /**
+   * Book-keeping
+   */
+  private String threadName;
+
   @Before
   public void setUp() {
+    this.threadName = Thread.currentThread().getName();
+
     // Create some behaviour
     when(mockRequestContext.getRequest()).thenReturn(mockRequest);
     when(mockRequestContext.getHeaders()).thenReturn(mockHeaders);
@@ -101,6 +108,7 @@ public class BasicHttpAuthenticationFilterTest {
   public void tearDown() {
     // Cleanup thread locals and thread names
     authenticationFilter.filter(mockRequestContext, mockResponseContext);
+    Thread.currentThread().setName(threadName);
   }
 
   @Test
