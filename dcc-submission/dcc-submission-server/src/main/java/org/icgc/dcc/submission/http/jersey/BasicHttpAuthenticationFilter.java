@@ -65,9 +65,10 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
   /**
    * Custom authentication headers.
    */
-  private static final String HTTP_AUTH_PREFIX = "X-DCC-Auth";
-  private static final String TOKEN_INFO_SEPARATOR = ":";
-  private static final String WWW_AUTHENTICATE_REALM = "DCC";
+  public static final String DEFAULT_AUTH_HOST = "";
+  public static final String HTTP_AUTH_PREFIX = "X-DCC-Auth";
+  public static final String TOKEN_INFO_SEPARATOR = ":";
+  public static final String WWW_AUTHENTICATE_REALM = "DCC";
 
   /**
    * List of paths that are publicly accessible.
@@ -146,7 +147,7 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
     updateThreadName(context, username);
 
     // Raison d'être
-    val currentUser = authenticator.authenticate(username, password.toCharArray(), "");
+    val currentUser = authenticator.authenticate(username, password.toCharArray(), DEFAULT_AUTH_HOST);
     if (currentUser == null) {
       abort(context);
     }
@@ -205,7 +206,7 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
   }
 
   private static String removePathTrailingSlash(UriInfo uriInfo) {
-    return uriInfo.getPath().replaceAll("/$", "");
+    return uriInfo.getPath().replaceAll("/$", DEFAULT_AUTH_HOST);
   }
 
   private static void updateThreadName(ContainerRequestContext context, String username) {
