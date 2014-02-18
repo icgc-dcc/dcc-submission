@@ -15,6 +15,7 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.Application;
 
+import org.apache.shiro.util.ThreadContext;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -30,6 +31,7 @@ import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.web.WebModule;
+import org.junit.After;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
@@ -40,12 +42,16 @@ import com.google.inject.util.Modules;
 public abstract class ResourceTest extends JerseyTest {
 
   private static final String AUTH_HEADER = Authorization.toString();
-
   private static final String AUTH_VALUE = "X-DCC-Auth " + encodeAsString("admin:adminspasswd");
-
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
   protected Injector injector;
+
+  @After
+  public void after() {
+    // Clean-up threads
+    ThreadContext.remove();
+  }
 
   @Override
   public TestContainerFactory getTestContainerFactory() {

@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
@@ -166,5 +167,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   @After
   public void tearDown() {
     HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName()));
+
+    // Clean-up threads
+    ThreadContext.remove();
   }
 }

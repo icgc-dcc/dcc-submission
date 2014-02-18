@@ -46,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.sshd.SshServer;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.Status;
@@ -169,6 +170,9 @@ public class SftpServerServiceTest {
   public void tearDown() {
     service.stopAsync().awaitTerminated();
     sftp.disconnect();
+
+    // Clean-up threads
+    ThreadContext.remove();
   }
 
   @Test

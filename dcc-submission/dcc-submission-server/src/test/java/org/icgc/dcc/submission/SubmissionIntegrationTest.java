@@ -373,8 +373,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       sftp.disconnect();
     }
 
-    // sftp.put(sourceFileName, destFileName, fileContent);
-
     val list = fileSystem.listFiles(destination, true);
     while (list.hasNext()) {
       log.info("Copied: {}", list.next().getPath());
