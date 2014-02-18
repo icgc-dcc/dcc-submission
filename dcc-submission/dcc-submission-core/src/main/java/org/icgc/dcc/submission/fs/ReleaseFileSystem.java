@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.fs;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
+import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -33,7 +34,6 @@ import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 
 @Slf4j
 @AllArgsConstructor
@@ -58,9 +58,10 @@ public class ReleaseFileSystem {
   }
 
   public SubmissionDirectory getSubmissionDirectory(@NonNull String projectKey) {
-    if (hasPrivileges(projectKey) == false) {
-      throw new DccFileSystemException("User " + userSubject.getPrincipal()
-          + " does not have permission to access project " + projectKey);
+    val allowed = hasPrivileges(projectKey);
+    if (!allowed) {
+      throw new DccFileSystemException("User '%s' with principal '%s' does not have permission to access project '%s'",
+          userSubject, userSubject == null ? null : userSubject.getPrincipal(), projectKey);
     }
 
     val optional = release.getSubmission(projectKey);
@@ -151,11 +152,11 @@ public class ReleaseFileSystem {
   }
 
   private boolean isApplication() {
-    return this.userSubject == null;
+    return userSubject == null;
   }
 
   private boolean hasPrivileges(String projectKey) {
-    return isApplication() || this.userSubject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
+    return isApplication() || userSubject.isPermitted(projectViewPrivilege(projectKey));
   }
 
   private static void moveSystemDir(ReleaseFileSystem previous, FileSystem fileSystem, ReleaseFileSystem next) {
