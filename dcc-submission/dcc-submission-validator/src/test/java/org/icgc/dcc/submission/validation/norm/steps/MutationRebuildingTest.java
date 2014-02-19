@@ -15,35 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
 
-/**
- * Contains keys used in configuration files and used across components.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+import java.util.Iterator;
 
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
+import org.junit.Test;
 
-  /**
-   * ETL component.
-   */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+import cascading.operation.Function;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+public class MutationRebuildingTest {
 
-  public static final String HADOOP_KEY = "hadoop";
+  @Test
+  public void test_cascading_MutationRebuilder() {
+    Function<?> function = new MutationRebuilding.MutationRebuilder();
 
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
+    Fields inputFields =
+        new Fields("f1", "f2")
+            .append(MutationRebuilding.MUTATED_FROM_ALLELE_FIELD)
+            .append(MutationRebuilding.MUTATED_TO_ALLELE_FIELD);
 
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "G")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "A", "C")),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue, "T", "C"))
+    };
+    Fields resultFields = MutationRebuilding.MUTATION_FIELD;
+
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("A>G"),
+        new Tuple("A>C"),
+        new Tuple("T>C")
+    };
+
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    checkOperationResults(iterator, resultTuples);
+  }
 }

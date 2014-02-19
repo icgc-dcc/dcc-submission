@@ -15,35 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static cascading.tuple.Fields.ALL;
+import static cascading.tuple.Fields.RESULTS;
+import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
 
 /**
- * Contains keys used in configuration files and used across components.
+ * Performs final count of observations.
+ * <p>
+ * TODO: merge with {@link InitialCounting} by passing the counter to use.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+@RequiredArgsConstructor
+public final class Counting implements NormalizationStep {
 
   /**
-   * Submitter component.
+   * Short name for the step.
    */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+  private static final String SHORT_NAME = "count";
 
-  /**
-   * ETL component.
-   */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+  private final NormalizationCounter counter;
 
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+  @Override
+  public String shortName() {
+    return SHORT_NAME;
+  }
 
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
-
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Each(
+        pipe,
+        ALL,
+        new Counter(counter, COUNT_INCREMENT),
+        RESULTS);
+  }
 }

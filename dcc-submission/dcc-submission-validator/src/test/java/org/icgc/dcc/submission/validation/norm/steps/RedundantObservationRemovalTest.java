@@ -15,35 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.util.Iterator;
 
-/**
- * Contains keys used in configuration files and used across components.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
+import org.junit.Test;
 
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+import cascading.operation.Buffer;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  /**
-   * ETL component.
-   */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+public class RedundantObservationRemovalTest {
 
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+  @Test
+  public void test_cascading_FilterRedundantObservationBuffer() {
+    Buffer<?> buffer = new RedundantObservationRemoval.FilterRedundantObservationBuffer();
 
-  public static final String HADOOP_KEY = "hadoop";
+    Fields inputFields = new Fields("f1", "f2");
 
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy1")),
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy2")),
+        new TupleEntry(inputFields, new Tuple("dummy", "dummy3"))
+    };
+    Fields resultFields = inputFields;
 
+    Tuple[] resultTuples = new Tuple[] {
+        new Tuple("dummy", "dummy1") // Only one left
+    };
+
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeBuffer(buffer, entries, resultFields);
+    CascadingTestUtils.checkOperationResults(iterator, resultTuples);
+  }
 }

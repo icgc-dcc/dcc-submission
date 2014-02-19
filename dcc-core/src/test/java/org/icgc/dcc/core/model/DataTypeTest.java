@@ -17,59 +17,46 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.model.DataType.DataTypes.from;
+import static org.icgc.dcc.core.model.DataType.DataTypes.hasControlSampleId;
+import static org.icgc.dcc.core.model.DataType.DataTypes.isAggregatedType;
+import static org.icgc.dcc.core.model.DataType.DataTypes.isMandatoryType;
+import static org.icgc.dcc.core.model.DataType.DataTypes.values;
+
+import java.util.HashSet;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import org.junit.Test;
 
-/**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
- */
-public enum ClinicalType implements DataType {
+public class DataTypeTest {
 
-  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
+  @Test
+  public void test_SubmissionDataTypes_valid() {
+    assertThat(from("ssm")).isEqualTo(SSM_TYPE);
+    assertThat(from("donor")).isEqualTo(CLINICAL_CORE_TYPE);
 
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
+    assertThat(values().size()).isEqualTo(13); // 11 feature types + 1 clinical type + 1 optional clinical type
+    assertThat(values().size()).isEqualTo( // Check no duplicates
+        new HashSet<DataType>(values()).size());
+
+    assertThat(isMandatoryType(ClinicalType.CLINICAL_CORE_TYPE)).isTrue();
+    assertThat(isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
+
+    assertThat(isAggregatedType(FeatureType.SSM_TYPE)).isTrue();
+    assertThat(isAggregatedType(FeatureType.METH_TYPE)).isFalse();
+    assertThat(isAggregatedType(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
+
+    assertThat(hasControlSampleId(FeatureType.SSM_TYPE)).isTrue();
+    assertThat(hasControlSampleId(FeatureType.MIRNA_TYPE)).isFalse();
+    assertThat(hasControlSampleId(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
   }
 
-  @Getter
-  private final String typeName;
-
-  @Override
-  public boolean isClinicalType() {
-    return true;
-  }
-
-  @Override
-  public boolean isFeatureType() {
-    return false;
-  }
-
-  @Override
-  public ClinicalType asClinicalType() {
-    return this;
-  }
-
-  @Override
-  public FeatureType asFeatureType() {
-    checkState(false, "Not a '%s': '%s'",
-        FeatureType.class.getSimpleName(), this);
-    return null;
-  }
-
-  /**
-   * Returns an enum matching the type name provided.
-   */
-  public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+  @Test(expected = IllegalStateException.class)
+  public void test_SubmissionDataTypes_invalid() {
+    from("dummy");
   }
 
 }

@@ -15,35 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-/**
- * Contains keys used in configuration files and used across components.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+import java.util.Iterator;
 
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
+import org.icgc.dcc.submission.validation.norm.steps.PreMarking.PreMarker;
+import org.junit.Test;
 
-  /**
-   * ETL component.
-   */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+import cascading.CascadingTestCase;
+import cascading.operation.Function;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+public class PreMarkingTest extends CascadingTestCase {
 
-  public static final String HADOOP_KEY = "hadoop";
+  @Test
+  public void test_cascading_PreMaskingMarker() {
+    Function<?> function = new PreMarker();
 
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
+    Fields inputFields = new Fields("f1", "f2");
+    String dummyValue = "dummy";
+    TupleEntry[] entries = new TupleEntry[] {
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
+        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
+    };
+    Fields resultFields = PreMarking.MARKING_FIELD;
+
+    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
+    for (int i = 0; i < 3; i++) {
+      assertThat(iterator.hasNext());
+      TupleEntry entry = iterator.next();
+      Object object = entry.getObject(resultFields);
+      assertThat(object)
+          .isEqualTo(Marking.OPEN.getTupleValue());
+    }
+    assertFalse(iterator.hasNext());
+  }
 
 }

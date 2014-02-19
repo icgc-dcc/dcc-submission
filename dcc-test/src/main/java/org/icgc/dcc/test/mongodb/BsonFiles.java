@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,35 +15,60 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.test.mongodb;
 
 import static lombok.AccessLevel.PRIVATE;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+
+import lombok.Cleanup;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * Contains keys used in configuration files and used across components.
- */
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Predicate;
+
+import de.undercouch.bson4jackson.BsonFactory;
+
+@Slf4j
 @NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+public final class BsonFiles {
 
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+  @SneakyThrows
+  public static File filterBsonFile(URL inputUrl, File outputFile, Predicate<ObjectNode> filter) {
+    val mapper = new ObjectMapper(new BsonFactory());
+    val reader = mapper.reader(JsonNode.class);
+    val writer = mapper.writer();
 
-  /**
-   * ETL component.
-   */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+    @Cleanup
+    val outputWriter = new FileOutputStream(outputFile);
 
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+    log.info("Writing filtered BSON file from '{}' to '{}'", inputUrl, outputFile);
+    val iterator = reader.readValues(inputUrl);
+    while (hasNext(iterator)) {
+      val record = (ObjectNode) iterator.next();
+      if (filter.apply(record)) {
+        outputWriter.write(writer.writeValueAsBytes(record));
+      }
+    }
 
-  public static final String HADOOP_KEY = "hadoop";
+    return outputFile;
+  }
 
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
+  private static boolean hasNext(MappingIterator<?> iterator) {
+    try {
+      return iterator.hasNextValue();
+    } catch (IOException e) {
+      return false;
+    }
+  }
 
 }

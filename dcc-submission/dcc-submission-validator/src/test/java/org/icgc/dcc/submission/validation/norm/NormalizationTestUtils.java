@@ -15,35 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PRIVATE;
+
+import java.net.URL;
+import java.util.List;
+
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 /**
- * Contains keys used in configuration files and used across components.
+ * Mostly ported from TestUtils in the dcc-submission-server module (TODO: address code duplication).
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+final class NormalizationTestUtils {
 
   /**
-   * Submitter component.
+   * Jackson constants.
    */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+  public static final ObjectMapper MAPPER = new ObjectMapper()
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
-  /**
-   * ETL component.
-   */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+  }
 
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
 
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
-
+  public static List<String> getFieldNames(FileType type) {
+    return newArrayList(dictionary()
+        .getFileSchema(type)
+        .getFieldNames());
+  }
 }

@@ -15,35 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm.steps.hacks;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import org.icgc.dcc.submission.validation.norm.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
+import cascading.tuple.Fields;
 
 /**
- * Contains keys used in configuration files and used across components.
+ * Temporary hack
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+public class HackFieldDiscarding implements NormalizationStep {
 
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+  private final String fieldName;
 
-  /**
-   * ETL component.
-   */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+  @Override
+  public String shortName() {
+    return this.getClass().getSimpleName();
+  }
 
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+  public HackFieldDiscarding(String fieldName) {
+    this.fieldName = fieldName;
+  }
 
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
+  @Override
+  public Pipe extend(Pipe pipe, NormalizationContext context) {
+    return new Discard(pipe, new Fields(fieldName));
+  }
 
 }

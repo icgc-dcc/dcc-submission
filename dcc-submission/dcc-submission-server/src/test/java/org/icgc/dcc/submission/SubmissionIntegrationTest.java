@@ -84,7 +84,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonNode;
-import org.icgc.dcc.core.model.SubmissionFileTypes;
+import org.icgc.dcc.core.model.FileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -425,14 +425,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Adding Script restriction #1 to OPENED dictionary");
     Dictionary dictionary =
-        addScript(dictionary(), SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
+        addScript(dictionary(), FileTypes.FileType.SSM_M_TYPE.getTypeName(),
             "note",
             "if (note == null) { return true; } else { return note != \"script_error_here\";}",
             "Note field cannot be 'script_error_here'");
 
     status("admin", "Adding Script restriction #2 to OPENED dictionary");
     dictionary =
-        addScript(dictionary, SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE.getTypeName(),
+        addScript(dictionary, FileTypes.FileType.SSM_M_TYPE.getTypeName(),
             "note",
             "if (note == null) { return true; } else { return note.indexOf('_') == -1; }",
             "Note field cannot contain the underscore(_) character");

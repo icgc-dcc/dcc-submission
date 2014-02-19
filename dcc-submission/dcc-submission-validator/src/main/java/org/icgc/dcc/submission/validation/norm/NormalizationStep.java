@@ -15,35 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.validation.norm;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.io.Serializable;
+
+import cascading.pipe.Pipe;
 
 /**
- * Contains keys used in configuration files and used across components.
+ * Step in the normalization process. It is in charge of extending the main cascading {@link Pipe}.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class Configurations {
+public interface NormalizationStep extends Serializable {
 
   /**
-   * Submitter component.
+   * Returns a short name for the step.
    */
-  public static final String FS_URL_KEY = "fs.url";
-  public static final String FS_ROOT_KEY = "fs.root";
-  public static final String MONGO_URI_KEY = "mongo.uri";
+  String shortName();
 
   /**
-   * ETL component.
+   * 
    */
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
-
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
-
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
-  public static final String IDENTIFIER_KEY = "identifier";
-  public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
-
+  Pipe extend(Pipe pipe, NormalizationContext context);
 }
