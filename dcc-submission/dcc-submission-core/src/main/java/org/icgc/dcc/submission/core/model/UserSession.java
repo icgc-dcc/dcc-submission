@@ -19,38 +19,26 @@ package org.icgc.dcc.submission.core.model;
 
 import java.util.Map;
 
+import lombok.Value;
+
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
-
-import com.google.common.base.Objects;
 
 /**
  * Represents a user session.
  */
+@Value
 public class UserSession {
 
   private final String userName;
-
-  private final long creationTime;
-
-  private final long lastWriteTime;
-
   private final Map<String, String> ioSessionMap;
 
   @JsonCreator
   public UserSession(
-      @JsonProperty("userName")
-      String userName,
-      @JsonProperty("creationTime")
-      long creationTime,
-      @JsonProperty("lastWriteTime")
-      long lastWriteTime,
-      @JsonProperty("ioSessionMap")
-      Map<String, String> ioSessionMap) {
+      @JsonProperty("userName") String userName,
+      @JsonProperty("ioSessionMap") Map<String, String> ioSessionMap) {
     super();
     this.userName = userName;
-    this.creationTime = creationTime;
-    this.lastWriteTime = lastWriteTime;
     this.ioSessionMap = ioSessionMap;
 
   }
@@ -61,24 +49,6 @@ public class UserSession {
 
   public Map<String, String> getIoSessionMap() {
     return ioSessionMap;
-  }
-
-  public long getCreationTime() {
-    return creationTime;
-  }
-
-  public long getLastWriteTime() {
-    return lastWriteTime;
-  }
-
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(UserSession.class)
-        .add("userName", this.userName)
-        .add("creationTime", this.creationTime)
-        .add("lastWriteTime", this.lastWriteTime)
-        .add("ioSessionMap", this.ioSessionMap)
-        .toString();
   }
 
 }

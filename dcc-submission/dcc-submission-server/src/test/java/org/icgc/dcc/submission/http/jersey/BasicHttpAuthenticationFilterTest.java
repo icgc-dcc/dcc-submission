@@ -33,7 +33,9 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,6 +89,12 @@ public class BasicHttpAuthenticationFilterTest {
 
     when(this.usernamePasswordAuthenticator.authenticate("brett", "brettspasswd".toCharArray(), "")).thenReturn(
         mockSubject);
+  }
+
+  @After
+  public void tearDown() {
+    // Clean-up threads
+    ThreadContext.remove();
   }
 
   @Test
@@ -166,4 +174,5 @@ public class BasicHttpAuthenticationFilterTest {
   private void runFilter() throws IOException {
     this.basicHttpAuthenticationRequestFilter.filter(this.mockContext);
   }
+
 }

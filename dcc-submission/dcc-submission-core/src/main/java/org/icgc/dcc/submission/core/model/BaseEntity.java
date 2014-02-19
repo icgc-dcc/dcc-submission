@@ -22,9 +22,8 @@ import java.util.Date;
 
 import org.bson.types.ObjectId;
 import org.codehaus.jackson.annotate.JsonIgnore;
-
-import com.google.code.morphia.annotations.Id;
-import com.google.code.morphia.annotations.Version;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Version;
 
 public abstract class BaseEntity extends Timestamped implements HasId, Serializable {
 

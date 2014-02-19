@@ -17,46 +17,38 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.io.IOException;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.typesafe.config.Config;
 
-class FileSystemProvider implements Provider<FileSystem> {
+@Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
+public class FileSystemProvider implements Provider<FileSystem> {
 
-  private static final Logger log = LoggerFactory.getLogger(FileSystemProvider.class);
-
-  private final Configuration configuration; // hadoop's
-
-  private final Config config; // typesafe's
-
-  @Inject
-  FileSystemProvider(Config config, Configuration hadoopConfig) {
-    checkArgument(config != null);
-    checkArgument(hadoopConfig != null);
-    this.config = config;
-    this.configuration = hadoopConfig;
-  }
+  @NonNull
+  private final Config config;
+  @NonNull
+  private final Configuration configuration;
 
   @Override
+  @SneakyThrows
   public FileSystem get() {
-    String fsUrl = this.config.getString(FsConfig.FS_URL);
-    this.configuration.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsUrl);
-    try {
-      log.info("configuration = " + HadoopUtils.getConfigurationDescription(this.configuration)); // TODO formatting?
-      return FileSystem.get(this.configuration);
-    } catch(IOException e) {
-      throw new RuntimeException(e);// TODO: better
-    }
+    String fsUrl = config.getString(FS_URL);
+    configuration.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsUrl);
+    log.info("configuration = {}", getConfigurationDescription(configuration));
+
+    return FileSystem.get(configuration);
   }
+
 }

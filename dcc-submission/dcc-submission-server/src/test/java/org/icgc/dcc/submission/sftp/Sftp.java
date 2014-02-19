@@ -17,16 +17,30 @@
  */
 package org.icgc.dcc.submission.sftp;
 
+import static com.google.common.base.Charsets.UTF_8;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import com.google.common.io.CharStreams;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 
 @Slf4j
 public class Sftp implements TestRule {
@@ -102,6 +116,48 @@ public class Sftp implements TestRule {
 
     sftpChannel.exit();
     session.disconnect();
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<LsEntry> ls(String directoryName) throws SftpException {
+    return getChannel().ls(directoryName);
+  }
+
+  public String pwd() throws SftpException {
+    return getChannel().pwd();
+  }
+
+  public void rm(String newFileName) throws SftpException {
+    getChannel().rm(newFileName);
+  }
+
+  public void rename(String fileName, String newFileName) throws SftpException {
+    getChannel().rename(fileName, newFileName);
+  }
+
+  public void put(String sourceFileName, String fileContent) throws SftpException {
+    getChannel().put(inputStream(fileContent), sourceFileName);
+  }
+
+  @SneakyThrows
+  public void put(String destinationFileName, File file) throws SftpException {
+    getChannel().put(new FileInputStream(file), destinationFileName);
+  }
+
+  public String get(String fileName) throws SftpException, IOException {
+    return read(getChannel().get(fileName));
+  }
+
+  public void cd(String projectDirectoryName) throws SftpException {
+    getChannel().cd(projectDirectoryName);
+  }
+
+  private static String read(InputStream inputStream) throws IOException {
+    return CharStreams.toString(new InputStreamReader(inputStream, UTF_8));
+  }
+
+  private static InputStream inputStream(String text) {
+    return new ByteArrayInputStream(text.getBytes(UTF_8));
   }
 
   public static class SftpLogger implements com.jcraft.jsch.Logger {

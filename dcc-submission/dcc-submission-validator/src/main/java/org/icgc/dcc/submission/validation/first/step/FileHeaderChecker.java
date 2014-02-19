@@ -17,73 +17,54 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.validation.core.ErrorType.FILE_HEADER_ERROR;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.FILE_HEADER_ERROR;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 
-import lombok.Cleanup;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.fs.SubmissionDirectory.SubmissionDirectoryFile;
 import org.icgc.dcc.submission.validation.first.FileChecker;
-import org.icgc.dcc.submission.validation.first.Util;
 
 @Slf4j
 public class FileHeaderChecker extends CompositeFileChecker {
 
-	public FileHeaderChecker(FileChecker fileChecker, boolean failFast) {
-		super(fileChecker, failFast);
-	}
+  public FileHeaderChecker(FileChecker fileChecker, boolean failFast) {
+    super(fileChecker, failFast);
+  }
 
-	public FileHeaderChecker(FileChecker fileChecker) {
-		this(fileChecker, true);
-	}
+  public FileHeaderChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
+  }
 
-	@Override
-	public void performSelfCheck(String filename) {
-		val expectedHeader = retrieveExpectedHeader(filename);
-		val actualHeader = peekFileHeader(filename);
-		if (!isExactMatch(expectedHeader, actualHeader)) {
-			log.info(
-					"Different from the expected header: '{}', actual header: '{}'",
-					expectedHeader, actualHeader);
+  @Override
+  public void performSelfCheck(String fileName) {
+    val expectedHeader = retrieveExpectedHeader(fileName);
+    val actualHeader = getFs().peekFileHeader(fileName);
+    if (isExactMatch(expectedHeader, actualHeader)) {
+      log.info("Correct header in '{}': '{}'", fileName, expectedHeader);
+    } else {
+      log.info(
+          "Different from the expected header in '{}': '{}', actual header: '{}'",
+          new Object[] { fileName, expectedHeader, actualHeader });
 
-			incrementCheckErrorCount();
-			getValidationContext().reportError(filename, FILE_HEADER_ERROR,
-					expectedHeader, actualHeader);
-		}
-	}
+      incrementCheckErrorCount();
 
-	private final List<String> retrieveExpectedHeader(String filename) {
-		return newArrayList(getFileSchema(filename).getFieldNames());
-	}
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(FILE_HEADER_ERROR)
+              .params(expectedHeader, actualHeader)
+              .build());
+    }
+  }
 
-	/**
-	 * TODO: move to {@link SubmissionDirectoryFile}.
-	 * <p>
-	 * Files are expected to be present and uncorrupted at this stage.
-	 */
-	@SneakyThrows
-	private final List<String> peekFileHeader(String filename) {
-		InputStream is = Util.createInputStream(getDccFileSystem(),
-				getSubmissionDirectory().getDataFilePath(filename));
-		@Cleanup
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-		String header = reader.readLine();
-		header = (header == null) ? "" : header;
-		return copyOf(FIELD_SPLITTER.split(header));
-	}
+  private final List<String> retrieveExpectedHeader(String filename) {
+    return getFileSchema(filename).getFieldNames();
+  }
 
-	private boolean isExactMatch(List<String> expectedHeader,
-			List<String> actualHeader) {
-		return actualHeader.equals(expectedHeader);
-	}
+  private boolean isExactMatch(List<String> expectedHeader, List<String> actualHeader) {
+    return actualHeader.equals(expectedHeader);
+  }
 }

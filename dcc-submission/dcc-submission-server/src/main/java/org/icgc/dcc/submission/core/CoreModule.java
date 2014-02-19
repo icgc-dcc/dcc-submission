@@ -21,10 +21,11 @@ import java.util.logging.LogManager;
 
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import com.google.inject.AbstractModule;
+import com.google.common.util.concurrent.Service;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
 
-public class CoreModule extends AbstractModule {
+public class CoreModule extends AbstractDccModule {
 
   public CoreModule() {
     // Reset java.util.logging settings
@@ -36,10 +37,7 @@ public class CoreModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(DccRuntime.class).in(Singleton.class);
-    bind(SystemService.class).in(Singleton.class);
-    bind(ProjectService.class).in(Singleton.class);
-    bind(UserService.class).in(Singleton.class);
-    bind(MailService.class).in(Singleton.class);
+    Multibinder.newSetBinder(binder(), Service.class);
   }
 
 }

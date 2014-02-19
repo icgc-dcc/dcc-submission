@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
 
@@ -27,15 +26,16 @@ import java.util.Map;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.mina.core.session.IoSession;
 import org.apache.sshd.SshServer;
+import org.apache.sshd.common.io.IoSession;
 import org.apache.sshd.common.session.AbstractSession;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
-import org.joda.time.DateTime;
 
+import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
@@ -72,16 +72,14 @@ public class SftpServerService extends AbstractService {
     for (AbstractSession activeSession : activeSessions) {
 
       // Shorthands
-      IoSession ioSession = activeSession.getIoSession();
-      long creationTime = ioSession.getCreationTime();
-      long lastWriteTime = ioSession.getLastWriteTime();
+      val ioSession = activeSession.getIoSession();
       String username = activeSession.getUsername();
 
       Map<String, String> ioSessionMap = getIoSessionMap(ioSession);
       log.info(getLogMessage(username),
-          new Object[] { username, formatDateTime(creationTime), formatDateTime(lastWriteTime), ioSessionMap });
+          new Object[] { username, ioSessionMap });
 
-      status.addUserSession(new UserSession(username, creationTime, lastWriteTime, ioSessionMap));
+      status.addUserSession(new UserSession(username, ioSessionMap));
     }
 
     return status;
@@ -165,41 +163,12 @@ public class SftpServerService extends AbstractService {
    * Returns some of the useful values for an {@link IoSession}.
    */
   private Map<String, String> getIoSessionMap(IoSession ioSession) {
-    Map<String, String> map = newLinkedHashMap();
-
+    val map = Maps.<String, String> newLinkedHashMap();
     map.put("id", valueOf(ioSession.getId()));
-    map.put("creationTime", formatDateTime(ioSession.getCreationTime()));
-
-    map.put("readerIdleCount", valueOf(ioSession.getReaderIdleCount()));
-    map.put("writerIdleCount", valueOf(ioSession.getWriterIdleCount()));
-    map.put("bothIdleCount", valueOf(ioSession.getBothIdleCount()));
-
-    map.put("lastIoTime", formatDateTime(ioSession.getLastIoTime()));
-    map.put("lastBothIdleTime", formatDateTime(ioSession.getLastBothIdleTime()));
-
-    map.put("lastReadTime", formatDateTime(ioSession.getLastReadTime()));
-    map.put("lastReaderIdleTime", formatDateTime(ioSession.getLastReaderIdleTime()));
-
-    map.put("lastWriteTime", formatDateTime(ioSession.getLastWriteTime()));
-    map.put("lastWriterIdleTime", formatDateTime(ioSession.getLastWriterIdleTime()));
-
-    map.put("readBytes", valueOf(ioSession.getReadBytes()));
-    map.put("readBytesThroughput", valueOf(ioSession.getReadBytesThroughput()));
-
-    map.put("scheduledWriteBytes", valueOf(ioSession.getScheduledWriteBytes()));
-    map.put("scheduledWriteMessages", valueOf(ioSession.getScheduledWriteMessages()));
-
-    map.put("writtenBytes", valueOf(ioSession.getWrittenBytes()));
-    map.put("writtenBytesThroughput", valueOf(ioSession.getWrittenBytesThroughput()));
-
-    map.put("writtenMessages", valueOf(ioSession.getWrittenMessages()));
-    map.put("writtenMessagesThroughput", valueOf(ioSession.getWrittenMessagesThroughput()));
+    map.put("localAddress", ioSession.getLocalAddress().toString());
+    map.put("remoteAddress", ioSession.getRemoteAddress().toString());
 
     return map;
-  }
-
-  private static String formatDateTime(long timestamp) {
-    return new DateTime(timestamp).toString();
   }
 
 }

@@ -18,7 +18,9 @@
 package org.icgc.dcc.submission.validation.core;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.core.report.Error;
+import org.icgc.dcc.submission.core.report.FieldReport;
+import org.icgc.dcc.submission.core.report.Report;
 
 /**
  * "Encapsulated Context Object" class that insulates and decouples the validation logic from report collection and
@@ -48,23 +50,22 @@ public interface ReportContext {
   /**
    * Reports on field statistics.
    */
+
   void reportField(String fileName, FieldReport fieldReport);
 
-  void reportError(String fileName, TupleError tupleError);
-
-  void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type, Object... params);
-
-  void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params);
-
-  void reportError(String fileName, Object value, ErrorType type, Object... params);
-
-  void reportError(String fileName, ErrorType type, Object... params);
-
-  void reportError(String fileName, ErrorType type);
+  /**
+   * Report a single validation error.
+   */
+  void reportError(Error error);
 
   /**
    * Allows the context an opportunity to update line numbers referenced in report elements.
    */
   void reportLineNumbers(Path path);
+
+  /**
+   * Gets the submission report of the associated project under validation.
+   */
+  Report getReport();
 
 }

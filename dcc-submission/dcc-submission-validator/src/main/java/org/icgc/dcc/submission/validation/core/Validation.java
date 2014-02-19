@@ -125,7 +125,6 @@ public class Validation {
 
       log.error("Exception running validation for '{}': {}", getId(), t);
 
-      // For {@link ListeningFuture#onError()}
       throw t;
     } finally {
       duration.stop();

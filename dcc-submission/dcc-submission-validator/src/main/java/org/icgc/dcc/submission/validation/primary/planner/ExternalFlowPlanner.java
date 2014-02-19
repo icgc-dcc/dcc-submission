@@ -19,12 +19,12 @@ package org.icgc.dcc.submission.validation.primary.planner;
 
 import org.icgc.dcc.submission.validation.primary.core.ExternalPlanElement;
 
-public interface ExternalFlowPlanner extends FileSchemaFlowPlanner {
+public interface ExternalFlowPlanner extends FileFlowPlanner {
 
   /**
    * Applies an {@code ExternalPlanElement} to this {@code planner}
    * @param planElement
    */
-  public void apply(ExternalPlanElement planElement);
+  public void applyExternalPlanElement(ExternalPlanElement planElement);
 
 }

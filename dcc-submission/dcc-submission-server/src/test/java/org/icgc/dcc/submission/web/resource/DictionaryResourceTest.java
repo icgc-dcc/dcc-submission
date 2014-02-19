@@ -17,9 +17,9 @@ import javax.ws.rs.core.Response;
 import lombok.val;
 
 import org.icgc.dcc.submission.core.AbstractDccModule;
-import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.release.ReleaseService;
+import org.icgc.dcc.submission.service.DictionaryService;
+import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -46,7 +46,7 @@ public class DictionaryResourceTest extends ResourceTest {
     mockDictionaryService = mock(DictionaryService.class);
     mockReleaseService = mock(ReleaseService.class);
 
-    when(mockDictionaryService.list()).thenReturn(ImmutableList.of(dictionary1, dictionary2));
+    when(mockDictionaryService.getDictionaries()).thenReturn(ImmutableList.of(dictionary1, dictionary2));
     when(mockReleaseService.getNextDictionary()).thenReturn(dictionary2);
 
     return super.configure();

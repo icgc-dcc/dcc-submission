@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.fs;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
+import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -30,9 +31,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 
 @Slf4j
 @AllArgsConstructor
@@ -41,7 +42,7 @@ public class ReleaseFileSystem {
   /**
    * System files directory name.
    */
-  public static final String SYSTEM_FILES_DIR_NAME = "SystemFiles";
+  public static final String SYSTEM_FILES_DIR_NAME = ".system";
 
   /**
    * Dependencies.
@@ -56,27 +57,29 @@ public class ReleaseFileSystem {
     this(dccFilesystem, release, null);
   }
 
-  public SubmissionDirectory getSubmissionDirectory(
-      @NonNull
-      String projectKey) {
-
-    if (hasPrivileges(projectKey) == false) {
-      throw new DccFileSystemException("User " + userSubject.getPrincipal()
-          + " does not have permission to access project " + projectKey);
+  public SubmissionDirectory getSubmissionDirectory(@NonNull String projectKey) {
+    val allowed = hasPrivileges(projectKey);
+    if (!allowed) {
+      throw new DccFileSystemException("User '%s' with principal '%s' does not have permission to access project '%s'",
+          userSubject, userSubject == null ? null : userSubject.getPrincipal(), projectKey);
     }
-    val submission = release.getSubmission(projectKey);
-    return new SubmissionDirectory(dccFileSystem, release, projectKey, submission);
+
+    val optional = release.getSubmission(projectKey);
+    if (!optional.isPresent()) {
+      throw new ReleaseException("There is no project '%s' associated with release '%s'",
+          projectKey, release.getName());
+    }
+
+    val submission = optional.get();
+    return new SubmissionDirectory(dccFileSystem, this, release, projectKey, submission);
   }
 
   public void setUpNewReleaseFileSystem(
       String oldReleaseName, // Remove after DCC-1940
       String newReleaseName,
-      @NonNull
-      ReleaseFileSystem previous,
-      @NonNull
-      Iterable<String> signedOffProjectKeys,
-      @NonNull
-      Iterable<String> otherProjectKeys) {
+      @NonNull ReleaseFileSystem previous,
+      @NonNull Iterable<String> signedOffProjectKeys,
+      @NonNull Iterable<String> otherProjectKeys) {
     log.info("Setting up new release file system for: '{}'", newReleaseName);
 
     checkState(signedOffProjectKeys.iterator().hasNext() || otherProjectKeys.iterator().hasNext(),
@@ -103,7 +106,7 @@ public class ReleaseFileSystem {
       dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
     }
 
-    // Move "releaseName/projectKey/SystemFiles"
+    // Move "releaseName/projectKey/.system"
     moveSystemDir(previous, fileSystem, next);
   }
 
@@ -113,9 +116,7 @@ public class ReleaseFileSystem {
     }
   }
 
-  public void resetValidationFolder(
-      @NonNull
-      String projectKey) {
+  public void resetValidationFolder(@NonNull String projectKey) {
     val validationStringPath = dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);
@@ -138,26 +139,29 @@ public class ReleaseFileSystem {
     return new Path(this.dccFileSystem.getRootStringPath(), this.release.getName());
   }
 
-  public Path getSystemDirectory() {
-    return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES_DIR_NAME);
+  protected Path getSystemDirPath() {
+    return new Path(this.getReleaseDirectory(), SYSTEM_FILES_DIR_NAME);
   }
 
   public boolean isSystemDirectory(Path path) {
-    return this.getSystemDirectory().getName().equals(path.getName())
-        && this.userSubject.hasRole(Authorizations_ADMIN_ROLE);
+    return getSystemDirPath().getName().equals(path.getName());
+  }
+
+  public boolean isAdminUser() {
+    return userSubject.hasRole(Authorizations_ADMIN_ROLE);
   }
 
   private boolean isApplication() {
-    return this.userSubject == null;
+    return userSubject == null;
   }
 
   private boolean hasPrivileges(String projectKey) {
-    return isApplication() || this.userSubject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
+    return isApplication() || userSubject.isPermitted(projectViewPrivilege(projectKey));
   }
 
   private static void moveSystemDir(ReleaseFileSystem previous, FileSystem fileSystem, ReleaseFileSystem next) {
-    val sourceSystemDir = previous.getSystemDirectory();
-    val targetSystemDir = next.getSystemDirectory();
+    val sourceSystemDir = previous.getSystemDirPath();
+    val targetSystemDir = next.getSystemDirPath();
 
     log.info("Creating '{}'", targetSystemDir);
     HadoopUtils.mkdirs(fileSystem, targetSystemDir.toString());

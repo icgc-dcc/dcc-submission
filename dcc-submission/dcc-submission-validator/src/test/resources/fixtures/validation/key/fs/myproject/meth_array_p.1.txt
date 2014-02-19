@@ -1,0 +1,17 @@
+analysis_id	analyzed_sample_id	array_platform	probe_id	other
+a1	s1	pl1	pr1	o1
+a1	s1	pl1	pr1	o1
+a1	s1	pl1	pr1	o1
+a1	s1	pl1	pr1	o1
+a1	s2	pl1	pr2	o2
+a1	s2	pl1	pr2	o2
+a1	s2	pl1	pr2	o2
+a1	s2	pl1	pr2	o2
+a2	s3	pl2	pr3	o3
+a2	s3	pl2	pr3	o3
+a2	s3	pl2	pr3	o3
+a2	s3	pl2	pr3	o3
+a2	s4	pl2	pr4	o4
+a2	s4	pl2	pr4	o4
+a2	s4	pl2	pr4	o4
+a2	s4	pl2	pr4	o4

@@ -17,7 +17,9 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainerProvider;
@@ -32,19 +34,13 @@ import com.typesafe.config.Config;
  * A {@link HttpHandlerProvider} that will mount {@code Jersey} on a particular path. The path is configured through the
  * {@code http.ws.path} parameter.
  */
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class JerseyHandler implements HttpHandlerProvider {
 
+  @NonNull
   private final Config config;
-
+  @NonNull
   private final ResourceConfig resourceConfig;
-
-  @Inject
-  public JerseyHandler(Config config, ResourceConfig resourceConfig) {
-    checkArgument(config != null);
-    checkArgument(resourceConfig != null);
-    this.config = config;
-    this.resourceConfig = resourceConfig;
-  }
 
   @Override
   public String path() {
@@ -53,7 +49,11 @@ public class JerseyHandler implements HttpHandlerProvider {
 
   @Override
   public HttpHandler get() {
-    return new GrizzlyHttpContainerProvider()
-        .createContainer(HttpHandler.class, new ApplicationHandler(resourceConfig));
+    val provider = new GrizzlyHttpContainerProvider();
+    val handler = new ApplicationHandler(resourceConfig);
+    val container = provider.createContainer(HttpHandler.class, handler);
+
+    return container;
   }
+
 }
