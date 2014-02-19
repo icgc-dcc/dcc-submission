@@ -99,7 +99,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.sftp.Sftp;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,7 +111,6 @@ import com.google.inject.Inject;
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, PersistenceModule.class })
-@Ignore
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
