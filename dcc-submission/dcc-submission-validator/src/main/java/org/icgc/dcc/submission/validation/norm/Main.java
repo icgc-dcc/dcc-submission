@@ -73,7 +73,7 @@ public class Main {
     log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation/normalization");
     // @formatter:on
 
-    return new NomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
+    return new StandAloneNomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
   }
 
   private static NormalizationValidator getValidator(ValidationContext context) {

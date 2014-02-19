@@ -23,7 +23,6 @@ import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 
 import lombok.SneakyThrows;
@@ -38,7 +37,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.FutureCallback;
 
 public class ValidationExecutorTest {
 
@@ -76,7 +74,7 @@ public class ValidationExecutorTest {
       val validation = createValidation(projectKey);
 
       // Exercise: Should "immediately" begin asynchronously
-      executor.execute(validation, acceptCallback(latch), completedCallback(latch, latch));
+      executor.execute(validation, createValidationListener(latch, latch, latch, latch));
     }
 
     // Verify: Ensure that things are running concurrently
@@ -102,7 +100,8 @@ public class ValidationExecutorTest {
     // Counters
     val count = 1;
     val parties = count + 1; // Include this method
-    val latch = new CountDownLatch(count);
+    val started = new CountDownLatch(count);
+    val cancelled = new CountDownLatch(count);
     val succeeded = new CountDownLatch(count);
     val failed = new CountDownLatch(parties);
 
@@ -111,10 +110,20 @@ public class ValidationExecutorTest {
     val validation = createValidation(projectKey);
 
     // Setup: Start async validation
-    executor.execute(validation, acceptCallback(latch), new FutureCallback<Validation>() {
+    executor.execute(validation, new ValidationListener() {
 
       @Override
-      public void onSuccess(Validation result) {
+      public void onStarted(Validation validation) {
+        started.countDown();
+      }
+
+      @Override
+      public void onCancelled(Validation validation) {
+        cancelled.countDown();
+      }
+
+      @Override
+      public void onCompletion(Validation validation) {
         try {
           // Nope
           fail("Validation should not have succeeded after it has been cancelled");
@@ -124,10 +133,10 @@ public class ValidationExecutorTest {
       }
 
       @Override
-      public void onFailure(Throwable t) {
+      public void onFailure(Validation validation, Throwable t) {
         try {
-          // Yep
-          assertThat(t).isInstanceOf(CancellationException.class).as("Unexpected exception type");
+          // Nope
+          fail("Validation should not failed after it has been cancelled");
         } finally {
           failed.countDown();
         }
@@ -151,28 +160,30 @@ public class ValidationExecutorTest {
     assertThat(secondCancelled).isFalse();
   }
 
-  private static Runnable acceptCallback(final CountDownLatch latch) {
-    return new Runnable() {
-
-      @Override
-      public void run() {
-        latch.countDown();
-      }
-
-    };
-  }
-
-  private static FutureCallback<Validation> completedCallback(final CountDownLatch succeeded,
+  private static ValidationListener createValidationListener(
+      final CountDownLatch started,
+      final CountDownLatch cancelled,
+      final CountDownLatch completed,
       final CountDownLatch failed) {
-    return new FutureCallback<Validation>() {
+    return new ValidationListener() {
 
       @Override
-      public void onSuccess(Validation result) {
-        succeeded.countDown();
+      public void onStarted(Validation validation) {
+        started.countDown();
       }
 
       @Override
-      public void onFailure(Throwable t) {
+      public void onCancelled(Validation validation) {
+        cancelled.countDown();
+      }
+
+      @Override
+      public void onCompletion(Validation validation) {
+        completed.countDown();
+      }
+
+      @Override
+      public void onFailure(Validation validation, Throwable throwable) {
         failed.countDown();
       }
 

@@ -21,8 +21,7 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.step.FileCollisionChecker;
 import org.icgc.dcc.submission.validation.first.step.FileCorruptionChecker;
@@ -34,13 +33,11 @@ public interface FileChecker extends Checker {
 
   void check(String filename);
 
-  SubmissionDirectory getSubmissionDirectory();
+  FPVFileSystem getFs();
 
   Dictionary getDictionary();
 
-  DccFileSystem getDccFileSystem();
-
-  ValidationContext getValidationContext();
+  ReportContext getReportContext();
 
   boolean canContinue();
 
@@ -50,7 +47,7 @@ public interface FileChecker extends Checker {
   @NoArgsConstructor(access = PRIVATE)
   class FileCheckers {
 
-    static FileChecker getDefaultFileChecker(ValidationContext validationContext) {
+    static FileChecker getDefaultFileChecker(ValidationContext validationContext, FPVFileSystem fs) {
 
       // Chaining multiple file checker
       return new FileHeaderChecker(
@@ -58,7 +55,7 @@ public interface FileChecker extends Checker {
               new FileCollisionChecker(
                   new ReferentialFileChecker(
                       // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)?
-                      new NoOpFileChecker(validationContext)))));
+                      new NoOpFileChecker(validationContext, fs)))));
     }
   }
 }

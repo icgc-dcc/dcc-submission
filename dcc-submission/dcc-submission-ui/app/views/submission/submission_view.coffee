@@ -23,9 +23,7 @@
 
 View = require 'views/base/view'
 SubmissionHeaderView = require 'views/submission/submission_header_view'
-ReportTableView = require 'views/release/report_table_view'
-SubmissionFilesTableView =
-  require 'views/submission/submission_files_table_view'
+ReportDatatypeView = require 'views/release/report_datatype_view'
 SignOffSubmissionView = require 'views/submission/signoff_submission_view'
 ValidateSubmissionView = require 'views/submission/validate_submission_view'
 CancelSubmissionView = require 'views/submission/cancel_submission_view'
@@ -59,8 +57,10 @@ module.exports = class SubmissionView extends View
 
     @delegate 'click', '#signoff-submission-popup-button',
       @signOffSubmissionPopup
+
     @delegate 'click', '#validate-submission-popup-button',
       @validateSubmissionPopup
+
     @delegate 'click', '#cancel-submission-popup-button',
       @cancelSubmissionPopup
 
@@ -82,9 +82,11 @@ module.exports = class SubmissionView extends View
 
   validateSubmissionPopup: (e) ->
     #console.debug "SubmissionView#validateSubmissionPopup", e
+    datatype = $(e.target.parentNode).data("datatype")
     @subview("validateSubmissionView"
       new ValidateSubmissionView
         "submission": @model
+        datatype: datatype
     )
 
   cancelSubmissionPopup: (e) ->
@@ -104,10 +106,10 @@ module.exports = class SubmissionView extends View
       }
     )
 
-    @subview('ReportTableView'
-      new ReportTableView {
+    @subview('Clinical_core'
+      new ReportDatatypeView {
         @model
-        el: @.$("#report-container")
+        el: @.$("#datatype-report-container")
       }
     )
 

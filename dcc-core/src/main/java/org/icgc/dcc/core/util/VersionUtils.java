@@ -29,10 +29,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class VersionUtils {
 
+  private static final String LOCAL_VERSION = "?";
+
   private static final Map<String, String> SCM_INFO = loadScmInfo();
 
   public static Map<String, String> getScmInfo() {
     return SCM_INFO;
+  }
+
+  private static final String VERSION = firstNonNull(
+      VersionUtils.class.getPackage().getImplementationVersion(),
+      LOCAL_VERSION);
+
+  public static String getVersion() {
+    return VERSION;
+  }
+
+  public static String getApiVersion() {
+    return "v" + VERSION.split("\\.")[0];
   }
 
   public static String getCommitId() {

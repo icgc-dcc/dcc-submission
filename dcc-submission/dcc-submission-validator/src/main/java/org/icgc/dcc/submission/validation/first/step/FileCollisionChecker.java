@@ -17,18 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.TOO_MANY_FILES_ERROR;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_FILES_ERROR;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
+import lombok.NonNull;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.first.FileChecker;
-
-import com.google.common.collect.ImmutableList;
 
 @Slf4j
 public class FileCollisionChecker extends CompositeFileChecker {
@@ -42,32 +41,50 @@ public class FileCollisionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public void performSelfCheck(String filename) {
-    FileSchema fileSchema = getFileSchema(filename);
+  public void performSelfCheck(String fileName) {
+    val fileSchema = getFileSchema(fileName);
 
-    // more than 1 file that match the same pattern
-    String pattern = fileSchema.getPattern();
-    List<String> fileNames = listMatchingFiles(pattern);
-    if (collisions(fileNames)) {
-      log.info("More than 1 file matching the file pattern: " + pattern);
+    val pattern = fileSchema.getPattern();
+    val fileNames = getFs().getMatchingFileNames(pattern);
+    log.info("Files: '{}'", fileNames);
+    if (hasCollisions(fileNames)) {
+      log.info("More than 1 file matching the file pattern: {}", pattern);
 
       incrementCheckErrorCount();
-      getValidationContext().reportError(
-          filename,
-          TOO_MANY_FILES_ERROR,
-          fileSchema.getName(),
-          ImmutableList.copyOf(fileNames));
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(TOO_MANY_FILES_ERROR)
+              .params(fileSchema.getName(), copyOf(fileNames))
+              .build());
     }
   }
 
   /**
-   * TODO: move to {@link SubmissionDirectory}.
+   * Determines if a list of file names has collisions based on prefixes which would indicate either a poor choice in
+   * naming or accidental re-submission.
+   * <p>
+   * e.g. {@code hasCollisions(of("donor.1.txt", "donor.1.txt.gz")) == true}
+   * 
+   * @param fileNames the file names to check
+   * @return {@code true} if collisions exist, {@code false} otherwise
    */
-  private List<String> listMatchingFiles(String pattern) {
-    return ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(pattern)));
+  private boolean hasCollisions(@NonNull List<String> fileNames) {
+    val size = fileNames.size();
+    for (int i = 0; i < size; i++) {
+      val a = fileNames.get(i);
+      for (int j = i + 1; j < size; j++) {
+        val b = fileNames.get(j);
+
+        val prefix = a.startsWith(b) || b.startsWith(a);
+        if (prefix) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
-  private boolean collisions(List<String> files) {
-    return files.size() > 1;
-  }
 }

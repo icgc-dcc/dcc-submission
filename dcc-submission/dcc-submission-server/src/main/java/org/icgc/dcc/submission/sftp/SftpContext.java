@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 
 import java.util.List;
 
@@ -29,16 +29,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.service.MailService;
+import org.icgc.dcc.submission.service.ProjectService;
+import org.icgc.dcc.submission.service.ReleaseService;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 /**
@@ -74,9 +76,12 @@ public class SftpContext {
   }
 
   public List<String> getUserProjectKeys() {
-    List<String> projectKeys = newArrayList();
-    for (val project : projectService.getProjectsBySubject(getCurrentUser())) {
-      projectKeys.add(project.getKey());
+    val user = getCurrentUser();
+    val projectKeys = Lists.<String> newArrayList();
+    for (val project : projectService.getProjects()) {
+      if (user.isPermitted(projectViewPrivilege(project.getKey()))) {
+        projectKeys.add(project.getKey());
+      }
     }
 
     return projectKeys;
@@ -100,6 +105,14 @@ public class SftpContext {
     return fs.getFileSystem();
   }
 
+  public boolean isSystemDirectory(Path path) {
+    return getReleaseFileSystem().isSystemDirectory(path);
+  }
+
+  public boolean isAdminUser() {
+    return getReleaseFileSystem().isAdminUser();
+  }
+
   // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
   public SubmissionDirectory getSubmissionDirectory(String projectKey) {
     return getReleaseFileSystem().getSubmissionDirectory(projectKey);
@@ -111,20 +124,16 @@ public class SftpContext {
   }
 
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
-  public void resetSubmission(Submission submission) {
+  public void notifySubmissionChange(@NonNull Submission submission, @NonNull Optional<Path> path) {
     log.info("Resetting submission '{}'...", submission.getProjectKey());
-    releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey());
+    releaseService.modifySubmission(getNextReleaseName(), submission.getProjectKey(), path);
   }
 
-  public void resetSubmissions() {
+  public void notifySystemChange() {
     for (Submission submission : getNextRelease().getSubmissions()) {
       // TODO: DCC-903 (only if open release uses it)
-      resetSubmission(submission);
+      notifySubmissionChange(submission, Optional.<Path> absent());
     }
-  }
-
-  public boolean isSystemDirectory(Path path) {
-    return getReleaseFileSystem().isSystemDirectory(path);
   }
 
   public void notifyFileTransferred(Path path) {

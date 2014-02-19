@@ -31,6 +31,7 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.junit.Before;
 
+import com.google.common.base.Optional;
 import com.typesafe.config.Config;
 
 public class FileSystemTest {
@@ -97,7 +98,8 @@ public class FileSystemTest {
 
     when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
 
-    when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(this.mockSubmission);
+    when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(
+        Optional.<Submission> of(mockSubmission));
     List<String> projectKeys = Arrays.asList(this.mockProject.getKey()); // must be separated from thenReturn call
     // (mockito bug:
     // http://code.google.com/p/mockito/issues/detail?id=53)

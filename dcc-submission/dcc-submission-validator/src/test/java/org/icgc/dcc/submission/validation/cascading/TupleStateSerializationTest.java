@@ -29,7 +29,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.core.report.ErrorType;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;

@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
-import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 
 public interface Checker {
 

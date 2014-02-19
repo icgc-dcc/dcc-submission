@@ -17,13 +17,15 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
-import java.util.Iterator;
-import java.util.List;
+import static org.icgc.dcc.submission.dictionary.model.SummaryType.UNIQUE_COUNT;
+import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.MISSING;
+import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.NULLS;
+import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.POPULATED;
+import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD;
 
-import org.icgc.dcc.submission.dictionary.model.Field;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.model.SummaryType;
-import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -47,6 +49,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Optional;
+
 /**
  * Plans unique count and completeness (see DCC-770 about completeness) reporting.
  * <p>
@@ -59,36 +63,28 @@ import cascading.tuple.TupleEntry;
 public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement {
 
   private static final String UCOUNT = "unique_count";
-
   private static final String TMP_SUFFIX = "_tmp";
-
-  private static final String NULLS_TMP = CompletenessBy.NULLS + TMP_SUFFIX; // see DCC-770 about completeness
-
-  private static final String MISSING_TMP = CompletenessBy.MISSING + TMP_SUFFIX;
-
-  private static final String POPULATED_TMP = CompletenessBy.POPULATED + TMP_SUFFIX;
-
+  private static final String NULLS_TMP = NULLS + TMP_SUFFIX; // see DCC-770 about completeness
+  private static final String MISSING_TMP = MISSING + TMP_SUFFIX;
+  private static final String POPULATED_TMP = POPULATED + TMP_SUFFIX;
   private static final Fields COMPLETENESS_TMP_FIELDS = new Fields(MISSING_TMP, NULLS_TMP, POPULATED_TMP);
-
-  private static final Fields COMPLETENESS_FIELDS = new Fields(CompletenessBy.MISSING, CompletenessBy.NULLS,
-      CompletenessBy.POPULATED);
-
+  private static final Fields COMPLETENESS_FIELDS = new Fields(MISSING, NULLS, POPULATED);
   private static final Fields FIELD_FIELDS = new Fields(FIELD);
-
   private static final Fields VALUE_FIELDS = new Fields(VALUE);
 
-  public UniqueCountPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fields, SummaryType.UNIQUE_COUNT, flowType);
+  public UniqueCountPlanElement(
+      FlowType flowType, String fileName, Map<String, FieldStatDigest> fieldStatDigests) {
+    super(flowType, Optional.of(UNIQUE_COUNT), fileName, fieldStatDigests);
   }
 
   @Override
   public Pipe report(Pipe pipe) {
     pipe = keepStructurallyValidTuples(pipe);
 
-    Pipe[] counts = new Pipe[fields.size()];
+    Pipe[] counts = new Pipe[fieldNames.size()];
     int i = 0;
-    for(Field field : fields) {
-      counts[i++] = count(field.getName(), pipe);
+    for (String fieldName : fieldNames) {
+      counts[i++] = count(fieldName, pipe);
     }
 
     pipe = new Merge(counts);
@@ -101,18 +97,23 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
   }
 
   protected Pipe count(String fieldName, Pipe pipe) {
-    pipe = new Pipe(buildSubPipeName(UCOUNT + "_" + fieldName), pipe);
+    pipe = new Pipe(getSubPipeName(UCOUNT + "_" + fieldName), pipe);
 
     pipe = new Retain(pipe, new Fields(fieldName).append(ValidationFields.STATE_FIELD));
     pipe = new Rename(pipe, new Fields(fieldName), VALUE_FIELDS);
     pipe = new GroupBy(pipe, VALUE_FIELDS); // the GroupBy is also used to uniquify here
 
-    pipe =
-        new Every(pipe, ValidationFields.STATE_FIELD, new CompletenessAnnotationBuffer(fieldName),
-            VALUE_FIELDS.append(COMPLETENESS_TMP_FIELDS)); // grouped by value, each group contains a list of _state
-    pipe =
-        new Each(pipe, new Insert(FIELD_FIELDS, fieldName), VALUE_FIELDS.append(COMPLETENESS_TMP_FIELDS).append(
-            FIELD_FIELDS));
+    pipe = new Every(
+        pipe,
+        STATE_FIELD,
+        new CompletenessAnnotationBuffer(fieldName),
+        VALUE_FIELDS.append(COMPLETENESS_TMP_FIELDS)); // grouped by value, each group contains a list of _state
+    pipe = new Each(
+        pipe,
+        new Insert(FIELD_FIELDS, fieldName),
+        VALUE_FIELDS
+            .append(COMPLETENESS_TMP_FIELDS)
+            .append(FIELD_FIELDS));
 
     return pipe;
   }
@@ -134,16 +135,16 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
       Iterator<TupleEntry> entries = bufferCall.getArgumentsIterator();
       long nulls = 0, missing = 0, populated = 0;
 
-      while(entries.hasNext()) { // TODO: improve (very inefficient)
+      while (entries.hasNext()) { // TODO: improve (very inefficient)
         TupleEntry entry = entries.next();
         TupleState state = ValidationFields.state(entry);
-        if(value == null) {
-          if(state.isFieldMissing(fieldName)) {
+        if (value == null) {
+          if (state.isFieldMissing(fieldName)) {
             missing++;
           } else {
             nulls++;
           }
-        } else if(value.isEmpty()) {
+        } else if (value.isEmpty()) {
           nulls++;
         } else {
           populated++;
@@ -159,6 +160,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
    */
   @SuppressWarnings("rawtypes")
   public static class CompletenessBuffer extends BaseOperation implements Buffer {
+
     public CompletenessBuffer() {
       super(4, COMPLETENESS_FIELDS.append(new Fields(UCOUNT)));
     }
@@ -168,7 +170,7 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
       @SuppressWarnings("unchecked")
       Iterator<TupleEntry> entries = bufferCall.getArgumentsIterator();
       long nulls = 0, missing = 0, populated = 0, uniqueCount = 0;
-      while(entries.hasNext()) {
+      while (entries.hasNext()) {
         TupleEntry entry = entries.next();
         nulls += entry.getLong(NULLS_TMP);
         missing += entry.getLong(MISSING_TMP);
@@ -192,9 +194,9 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
       TupleEntry entry = functionCall.getArguments();
       FieldSummary fs = new FieldSummary();
       fs.field = entry.getString(FIELD);
-      fs.nulls = entry.getLong(CompletenessBy.NULLS);
-      fs.missing = entry.getLong(CompletenessBy.MISSING);
-      fs.populated = entry.getLong(CompletenessBy.POPULATED);
+      fs.nulls = entry.getLong(NULLS);
+      fs.missing = entry.getLong(MISSING);
+      fs.populated = entry.getLong(POPULATED);
       fs.summary.put(UCOUNT, entry.getLong(UCOUNT));
       functionCall.getOutputCollector().add(new Tuple(fs));
     }

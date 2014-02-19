@@ -17,39 +17,39 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.zip.GZIPInputStream;
 
-import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.apache.tika.Tika;
 import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
+import cascading.flow.FlowProcess;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.scheme.local.TextDelimited;
 import cascading.scheme.local.TextLine;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
+import cascading.tuple.TupleEntryIterator;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
-import com.google.common.io.LineReader;
-
-/**
- * 
- */
+@Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   public LocalPlatformStrategy(Path source, Path output, Path system) {
@@ -57,18 +57,20 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
+  public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides) {
+    return new LocalFlowConnector(propertyOverrides);
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
-    return new FileTap(new LocalJsonScheme(), reportPath(schema, type, reportName).toUri().getPath());
+  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
+    return new FileTap(new LocalJsonScheme(), getReportPath(fileName, type, reportName).toUri().getPath());
   }
 
   @Override
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
-    Path reportPath = reportPath(schema, type, reportName);
+  @SneakyThrows
+  public InputStream readReportTap(String fileName, FlowType type, String reportName) {
+    val reportPath = getReportPath(fileName, type, reportName);
+    log.info("Streaming through report: '{}'", reportPath);
     return fileSystem.open(reportPath);
   }
 
@@ -83,8 +85,38 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  protected Tap<?, ?, ?> tapSource(Path path) {
-    return new FileTap(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
+  public Tap<?, ?, ?> getSourceTap(String fileName) {
+    return new FileTap(
+        new TextLine(
+            new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")),
+        getFilePath(fileName).toUri().toString()) {
+
+      public static final String GZIP_MEDIA_TYPE = "application/x-gzip";
+      public static final String BZIP2_MEDIA_TYPE = "application/x-bzip2";
+
+      @Override
+      public TupleEntryIterator openForRead(FlowProcess<Properties> flowProcess, InputStream input) throws IOException {
+        checkState(input == null,
+            "Expecting input to be null here, instead: '{}'",
+            input == null ? null : input.getClass().getSimpleName());
+        return super.openForRead(flowProcess, getDecompressingInputStream(getIdentifier()));
+      }
+
+      private InputStream getDecompressingInputStream(String filePath) throws IOException {
+        val mediaType = new Tika().detect(filePath);
+
+        InputStream in = new FileInputStream(filePath);
+        if (mediaType.equals(GZIP_MEDIA_TYPE)) {
+          log.info("'{}' compression detected for '{}'", GZIP_MEDIA_TYPE, filePath);
+          in = new GZIPInputStream(in);
+        }
+        else if (mediaType.equals(BZIP2_MEDIA_TYPE)) {
+          log.info("'{}' compression detected for '{}'", GZIP_MEDIA_TYPE, filePath);
+          in = new BZip2CompressorInputStream(in);
+        }
+        return in;
+      }
+    };
   }
 
   /**
@@ -106,27 +138,4 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
       throw new RuntimeException(e);
     }
   }
-
-  /**
-   * TODO: try and combine with loader's equivalent. (DCC-996)
-   */
-  @Override
-  public Fields getFileHeader(FileSchema fileSchema) throws IOException {
-    Path path = this.path(fileSchema);
-
-    Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-
-    @Cleanup
-    InputStreamReader isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
-    LineReader lineReader = new LineReader(isr);
-    String firstLine = lineReader.readLine();
-    Iterable<String> header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
-    List<String> dupHeader = this.checkDuplicateHeader(header);
-    if (!dupHeader.isEmpty()) {
-      throw new DuplicateHeaderException(dupHeader);
-    }
-
-    return new Fields(Iterables.toArray(header, String.class));
-  }
-
 }

@@ -66,10 +66,15 @@ public enum ClinicalType implements DataType {
    * Returns an enum matching the type name provided.
    */
   public static DataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+    if (typeName.equals(CLINICAL_CORE_TYPE.getTypeName())) {
+      return CLINICAL_CORE_TYPE;
+    }
+    if (typeName.equals(CLINICAL_OPTIONAL_TYPE.getTypeName())) {
+      return CLINICAL_OPTIONAL_TYPE;
+    }
+
+    throw new IllegalArgumentException(
+        "Unknown " + ClinicalType.class.getSimpleName() + "  for type name'" + typeName + "'");
   }
 
 }

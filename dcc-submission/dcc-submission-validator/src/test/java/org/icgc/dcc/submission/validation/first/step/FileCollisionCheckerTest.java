@@ -17,19 +17,21 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static org.icgc.dcc.submission.validation.first.step.TestUtils.checkFileCollisionErrorReported;
+import static org.icgc.dcc.submission.validation.first.step.TestUtils.checkNoErrorsReported;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.regex.Pattern;
+import java.util.List;
+
+import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,59 +44,83 @@ import com.google.common.collect.ImmutableList;
 @RunWith(MockitoJUnitRunner.class)
 public class FileCollisionCheckerTest {
 
-  private SubmissionDirectory submissionDir;
-  private Dictionary dict;
-  private DccFileSystem fs;
+  /**
+   * Class under test.
+   */
+  FileCollisionChecker checker;
 
+  /**
+   * Collaborators.
+   */
   @Mock
-  ValidationContext validationContext;
+  DccFileSystem dccFileSystem;
+  @Mock
+  Dictionary dictionary;
+  @Mock
+  FileSchema fileSchema;
+  @Mock
+  ValidationContext context;
+  @Mock
+  FPVFileSystem fs;
 
   @Before
   public void setup() {
-    submissionDir = mock(SubmissionDirectory.class);
-    dict = mock(Dictionary.class);
-    fs = mock(DccFileSystem.class);
+    val pattern = "testfile1";
+    when(fileSchema.getPattern()).thenReturn(pattern);
+    when(dictionary.getFileSchemaByName(anyString())).thenReturn(Optional.of(fileSchema));
+    when(dictionary.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(fileSchema));
 
-    FileSchema testSchema = mock(FileSchema.class);
-    String paramString = "testfile1";
-    when(testSchema.getPattern()).thenReturn(paramString);
-    when(dict.getFileSchemaByName(anyString())).thenReturn(Optional.of(testSchema));
-    when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(testSchema));
-    when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
+    when(context.getDccFileSystem()).thenReturn(dccFileSystem);
+    when(context.getDictionary()).thenReturn(dictionary);
 
-    when(validationContext.getDccFileSystem()).thenReturn(fs);
-    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
-    when(validationContext.getDictionary()).thenReturn(dict);
+    checker = new FileCollisionChecker(new NoOpFileChecker(context, fs));
   }
 
   @Test
   public void matchNone() throws Exception {
-    when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.<String> of());
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames());
 
-    FileCollisionChecker checker = new FileCollisionChecker(new NoOpFileChecker(validationContext));
     checker.check("testfile1");
-    TestUtils.checkNoErrorsReported(validationContext);
+
+    checkNoErrorsReported(context);
     assertTrue(checker.isValid());
   }
 
   @Test
   public void matchOne() throws Exception {
-    when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of("testfile1"));
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames("testfile1"));
 
-    FileCollisionChecker checker = new FileCollisionChecker(new NoOpFileChecker(validationContext));
     checker.check("testfile1");
-    TestUtils.checkNoErrorsReported(validationContext);
+
+    checkNoErrorsReported(context);
     assertTrue(checker.isValid());
 
   }
 
   @Test
-  public void matchTwo() throws Exception {
-    when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of("testfile1", "testfile2"));
+  public void matchTwo_coexsit() throws Exception {
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames("testfile1", "testfile2"));
 
-    FileCollisionChecker checker = new FileCollisionChecker(new NoOpFileChecker(validationContext));
     checker.check("testfile1");
-    TestUtils.checkFileCollisionErrorReported(validationContext, 1);
 
+    checkFileCollisionErrorReported(context, 0);
   }
+
+  @Test
+  public void matchTwo_collide() throws Exception {
+    when(fs.getMatchingFileNames(anyString()))
+        .thenReturn(fileNames("testfile1", "testfile1.gz"));
+
+    checker.check("testfile1");
+
+    checkFileCollisionErrorReported(context, 1);
+  }
+
+  private static List<String> fileNames(String... fileNames) {
+    return ImmutableList.copyOf(fileNames);
+  }
+
 }

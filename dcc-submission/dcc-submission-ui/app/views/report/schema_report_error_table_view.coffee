@@ -263,7 +263,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "INVALID_CHARSET_ROW_ERROR"
       #"STRUCTURALLY_INVALID_ROW_ERROR"
       ]
-      return source.lines.join ', '
+      return source.lineNumbers.join ', '
     else if source.errorType is 'FILE_HEADER_ERROR'
       console.log ">>>", source
       expected = source.parameters.EXPECTED
@@ -288,7 +288,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       out += "</table>"
       return out
 
-    else if source.columnNames[0] is "FileLevelError"
+    else if source.fieldNames[0] is "FileLevelError"
       return ""
 
     out = ""
@@ -298,7 +298,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     out += "<br><table class='table table-condensed'>
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
-    for i in source.lines
+    for i in source.lineNumbers
       if i==-1
         display = "N/A"
       else
@@ -326,7 +326,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         {
           sTitle: "Columns"
           mData: (source) ->
-            source.columnNames.join "<br>"
+            source.fieldNames.join "<br>"
         }
         {
           sTitle: "Count of occurrences"

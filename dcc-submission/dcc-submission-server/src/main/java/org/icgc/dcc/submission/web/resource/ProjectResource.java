@@ -24,7 +24,7 @@ import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -42,7 +42,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
@@ -59,36 +58,29 @@ public class ProjectResource {
 
   @Inject
   private ProjectService projectService;
-
   @Inject
   private ReleaseService releaseService;
 
-  @Inject
-  private DccFileSystem dccFileSystem;
-
   @GET
-  public Response getProjects(@Context
-  SecurityContext securityContext) {
+  public Response getProjects(@Context SecurityContext securityContext) {
     log.info("Request for all Projects");
 
     val user = getSubject(securityContext);
-    Set<Project> projects;
+    List<Project> projects;
 
     if (isSuperUser(securityContext)) {
       log.info("'{}' is super user", user.getPrincipal());
-      projects = projectService.findAll();
+      projects = projectService.getProjects();
     } else {
       log.info("'{}' is not super user", user.getPrincipal());
-      projects = projectService.findAllForUser(user.getPrincipal().toString());
+      projects = projectService.getProjectsByUser(user.getPrincipal().toString());
     }
 
     return Response.ok(projects).build();
   }
 
   @POST
-  public Response addProject(@Context
-  SecurityContext securityContext, @Valid
-  Project project) {
+  public Response addProject(@Context SecurityContext securityContext, @Valid Project project) {
     log.info("Request to add Project '{}'", project);
 
     val user = getSubject(securityContext);
@@ -101,19 +93,13 @@ public class ProjectResource {
     Response response;
     try {
       // Save Project to DB
-      projectService.add(project);
+      projectService.addProject(project);
 
       // Update Release and save to DB
-      val release = releaseService.addSubmission(project.getKey(), project.getName());
-
-      // Add directory for submission
-      // TODO: move this to service
-      String projectDirectoryPath =
-          dccFileSystem.createNewProjectDirectoryStructure(release.getName(), project.getKey());
+      releaseService.addSubmission(project.getKey(), project.getName());
 
       response =
           Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
-      log.info("Project '{}' added ({})!", project.getKey(), projectDirectoryPath);
     } catch (DuplicateKey e) {
       response = Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
           .build();
@@ -125,9 +111,7 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}")
-  public Response getProject(@PathParam("projectKey")
-  String projectKey, @Context
-  SecurityContext securityContext) {
+  public Response getProject(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     log.info("Request for Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
@@ -138,7 +122,7 @@ public class ProjectResource {
       return Responses.notFound(projectKey);
     }
 
-    project = projectService.find(projectKey);
+    project = projectService.getProject(projectKey);
 
     if (project == null) {
       log.info("Project '{}' not found", projectKey);
@@ -151,12 +135,9 @@ public class ProjectResource {
   @POST
   @Path("{projectKey}")
   public Response updateProject(
-      @PathParam("projectKey")
-      String projectKey,
-      @Valid
-      Project project,
-      @Context
-      SecurityContext securityContext) {
+      @PathParam("projectKey") String projectKey,
+      @Valid Project project,
+      @Context SecurityContext securityContext) {
     log.info("Request to update Project '{}' with '{}'", projectKey, project);
 
     val user = getSubject(securityContext);
@@ -171,7 +152,7 @@ public class ProjectResource {
       return Response.status(PRECONDITION_FAILED).entity("Project Key Missmatch").build();
     }
 
-    val result = projectService.update(project);
+    val result = projectService.updateProject(project);
 
     return Response.ok(result).build();
   }
@@ -179,10 +160,8 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}/releases")
   public Response getProjectSubmissions(
-      @PathParam("projectKey")
-      String projectKey,
-      @Context
-      SecurityContext securityContext) {
+      @PathParam("projectKey") String projectKey,
+      @Context SecurityContext securityContext) {
     log.info("Request for all Submissions from Project '{}'", projectKey);
 
     val user = getSubject(securityContext);
@@ -192,8 +171,8 @@ public class ProjectResource {
       return Responses.notFound(projectKey);
     }
 
-    val releases = releaseService.findAll();
-    val submissions = projectService.extractSubmissions(releases, projectKey);
+    val releases = releaseService.getReleases();
+    val submissions = projectService.getSubmissions(releases, projectKey);
 
     return Response.ok(submissions).build();
   }
@@ -201,4 +180,5 @@ public class ProjectResource {
   private boolean hasAccess(SecurityContext securityContext, String projectKey) {
     return projectKey != null && hasSpecificProjectPrivilege(securityContext, projectKey);
   }
+
 }

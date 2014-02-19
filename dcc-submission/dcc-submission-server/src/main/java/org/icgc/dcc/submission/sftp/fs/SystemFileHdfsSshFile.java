@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.sftp.fs;
 
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
@@ -28,9 +29,9 @@ public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
   }
 
   @Override
-  protected void notifyModified() {
+  protected void notifyModified(Path path) {
     try {
-      context.resetSubmissions();
+      context.notifySystemChange();
     } catch (Exception e) {
       handleException(e);
     }

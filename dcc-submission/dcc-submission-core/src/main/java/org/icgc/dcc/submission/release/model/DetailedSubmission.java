@@ -17,18 +17,19 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.submission.fs.SubmissionFile;
-
-import static com.google.common.base.Preconditions.checkArgument;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 
 // TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
 public class DetailedSubmission extends Submission {
+
   @NotBlank
   private String projectName;
 
@@ -55,12 +56,18 @@ public class DetailedSubmission extends Submission {
     this.submissionFiles = new ArrayList<SubmissionFile>();
   }
 
+  @Override
   public String getProjectName() {
     return projectName;
   }
 
   public String getProjectAlias() {
     return projectAlias;
+  }
+
+  @Override
+  public void setState(SubmissionState nextState) {
+    this.state = nextState;
   }
 
   public List<SubmissionFile> getSubmissionFiles() {

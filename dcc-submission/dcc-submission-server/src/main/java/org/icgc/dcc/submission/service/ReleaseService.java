@@ -17,68 +17,785 @@
  */
 package org.icgc.dcc.submission.service;
 
-import java.util.Set;
+import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.filter;
+import static java.lang.String.format;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
+import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
+import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
+import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.submission.release.model.Submission.getProjectKeys;
+import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
+import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.DUPLICATE_RELEASE_NAME;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.QUEUE_NOT_EMPTY;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_MISSING_DICTIONARY;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED;
 
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.Synchronized;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
+import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.util.NameValidator;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.release.ReleaseException;
+import org.icgc.dcc.submission.release.model.DetailedSubmission;
+import org.icgc.dcc.submission.release.model.LiteProject;
+import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseState;
+import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
+import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
+import org.icgc.dcc.submission.web.InvalidNameException;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 @Slf4j
-@NoArgsConstructor
-@RequiredArgsConstructor(onConstructor = @_({ @Inject }))
-public class ReleaseService {
+public class ReleaseService extends AbstractService {
 
-	@NonNull
-	private ReleaseRepository releaseRepository;
+  private final DccFileSystem dccFileSystem;
+  private final ReleaseRepository releaseRepository;
+  private final DictionaryRepository dictionaryRepository;
+  private final ProjectRepository projectRepository;
 
-	public Release find(String releaseName) {
-		log.info("Request for Release '{}'", releaseName);
-		return releaseRepository.find(releaseName);
-	}
+  @Inject
+  public ReleaseService(
+      @NonNull MailService mailService,
+      @NonNull DccFileSystem dccFileSystem,
+      @NonNull ReleaseRepository releaseRepository,
+      @NonNull DictionaryRepository dictionaryRepository,
+      @NonNull ProjectRepository projectRepository) {
+    super(mailService);
+    this.dccFileSystem = dccFileSystem;
+    this.releaseRepository = releaseRepository;
+    this.dictionaryRepository = dictionaryRepository;
+    this.projectRepository = projectRepository;
+  }
 
-	public Set<Release> findAll() {
-		log.info("Request to find all Releases");
-		return releaseRepository.findAll();
-	}
+  /**
+   * Returns the number of releases.
+   */
+  @Synchronized
+  public long countReleases() {
+    return releaseRepository.countReleases();
+  }
 
-	/**
-	 * Query for {@code Release} with state {@code OPENED}
-	 * 
-	 * @return Current Open Release
-	 */
-	public Release findOpen() {
-		log.info("Request for current Open Release");
-		return releaseRepository.findOpen();
-	}
+  /**
+   * Returns the number of releases that are in the {@link ReleaseState#OPENED} state. It is expected that there always
+   * ever be one at a time.
+   */
+  @Synchronized
+  public long countOpenReleases() {
+    return releaseRepository.countOpenReleases();
+  }
 
-	/**
-	 * Creates a new {@code Submission} and adds it to the current open
-	 * {@code Release}
-	 * 
-	 * @return Current Open Release
-	 */
-	public Release addSubmission(String projectKey, String projectName) {
-		log.info(
-				"Creating Submission for Project '{}' in current open Release",
-				projectKey);
+  public List<Release> getReleases() {
+    log.info("Request to find all Releases");
+    return releaseRepository.findReleases();
+  }
 
-		val openRelease = releaseRepository.findOpen();
-		val submission = new Submission(projectKey, projectName,
-				openRelease.getName());
-		log.info("Created Submission '{}'", submission);
+  /**
+   * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
+   * projects.
+   */
+  @Synchronized
+  public List<Release> getReleasesBySubject(Subject subject) {
+    log.debug("getting releases for {}", subject.getPrincipal());
 
-		val release = releaseRepository.addSubmission(submission,
-				openRelease.getName());
+    List<Release> releases = releaseRepository.findReleases();
+    log.debug("Number of releases:{} ", releases.size());
 
-		return release;
-	}
+    // Filter out all the submissions that the current user can not see
+    for (val release : releases) {
+      val builder = ImmutableList.<Submission> builder();
+      for (val submission : release.getSubmissions()) {
+        val privilege = projectViewPrivilege(submission.getProjectKey());
+        val permitted = subject.isPermitted(privilege);
+        if (permitted) {
+          builder.add(submission);
+        }
+      }
+
+      val submissions = release.getSubmissions();
+      submissions.clear(); // TODO: should we manipulate release this way? consider creating DTO?
+      submissions.addAll(builder.build());
+    }
+
+    log.debug("Number of releases visible: {}", releases.size());
+    return releases;
+  }
+
+  public Release getReleaseByName(String releaseName) {
+    return releaseRepository.findReleaseByName(releaseName);
+  }
+
+  public List<Release> getCompletedReleases() throws IllegalReleaseStateException {
+    return releaseRepository.findCompletedReleases();
+  }
+
+  /**
+   * Optionally returns a {@code ReleaseView} matching the given name, and for which {@code Submission}s are filtered
+   * based on the user's privileges.
+   */
+  public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Subject subject) {
+    val release = releaseRepository.findReleaseByName(releaseName);
+    Optional<ReleaseView> releaseView = Optional.absent();
+    if (release != null) {
+      // populate project name for submissions
+      val projects = getProjects(release, subject);
+      val liteProjects = getLiteProjects(projects);
+      val submissionFilesMap = getSubmissionFilesByProjectKey(releaseName, release);
+
+      releaseView = Optional.of(new ReleaseView(release, liteProjects, submissionFilesMap));
+    }
+
+    return releaseView;
+  }
+
+  public List<String> getSignedOffReleases() {
+    val submissions = getNextRelease().getSubmissions();
+    return getProjectKeysBySubmissionState(submissions, SIGNED_OFF);
+  }
+
+  public Release getCompletedRelease(String releaseName) throws IllegalReleaseStateException {
+    val release = releaseRepository.findCompletedRelease(releaseName);
+    if (release == null) {
+      throw new IllegalArgumentException("Release " + releaseName + " is not complete");
+    }
+
+    return release;
+  }
+
+  /**
+   * Returns the {@code NextRelease} (guaranteed not to be null if returned).
+   */
+  @Synchronized
+  public Release getNextRelease() {
+    val nextRelease = releaseRepository.findNextRelease();
+    checkNotNull(nextRelease, "There is no next release in the database.");
+
+    return nextRelease;
+  }
+
+  /**
+   * Returns the current dictionary.
+   * <p>
+   * This is the dictionary, open or not, that the {@code NextRelease}'s {@code Release} points to.
+   */
+  public Dictionary getNextDictionary() {
+    val release = getNextRelease();
+    val version = release.getDictionaryVersion();
+    return dictionaryRepository.findDictionaryByVersion(version);
+  }
+
+  @Synchronized
+  public void createInitialRelease(Release initRelease) {
+    // check for init release name
+    val releaseName = initRelease.getName();
+    if (!NameValidator.validateEntityName(releaseName)) {
+      throw new InvalidNameException(initRelease.getName());
+    }
+
+    val dictionaryVersion = initRelease.getDictionaryVersion();
+    log.info("Dictionary version used: '{}'", dictionaryVersion);
+
+    val missing = dictionaryVersion == null;
+    if (missing) {
+      throw new ReleaseException("Dictionary version must not be null for initial release '%s'", releaseName);
+    } else if (dictionaryRepository.findDictionaryByVersion(dictionaryVersion) == null) {
+      throw new ReleaseException("Specified dictionary version '%s' not found", dictionaryVersion);
+    }
+
+    // Just use name and dictionaryVersion from incoming json
+    val nextRelease = new Release(releaseName);
+    nextRelease.setDictionaryVersion(dictionaryVersion);
+    log.info("Saving new release: '{}'", releaseName);
+    releaseRepository.saveNewRelease(nextRelease);
+
+    // After initial release, create initial file system
+    val projects = Sets.<String> newHashSet();
+    dccFileSystem.createInitialReleaseFilesystem(nextRelease, projects);
+  }
+
+  @Synchronized
+  public Release performRelease(@NonNull String nextReleaseName) throws InvalidStateException {
+    // Check for next release name
+    if (validateEntityName(nextReleaseName) == false) {
+      throw new InvalidNameException(nextReleaseName);
+    }
+
+    val oldRelease = getNextRelease();
+    Release newRelease = null;
+    try {
+      if (oldRelease == null) {
+        val errorMessage = "No current release";
+        log.error(errorMessage);
+        throw new ReleaseException(errorMessage);
+      }
+      if (oldRelease.getState() != OPENED) {
+        val errorMessage = "Release is not open";
+        log.error(errorMessage);
+        throw new InvalidStateException(INVALID_STATE, errorMessage);
+      }
+      if (!oldRelease.isSignOffAllowed()) {
+        val errorMessage = "No signed off project in " + oldRelease;
+        log.error(errorMessage);
+        throw new InvalidStateException(SIGNED_OFF_SUBMISSION_REQUIRED, errorMessage);
+      }
+      if (oldRelease.isQueued()) {
+        val errorMessage = "Some projects are still enqueued in " + oldRelease;
+        log.error(errorMessage);
+        throw new InvalidStateException(QUEUE_NOT_EMPTY, errorMessage);
+      }
+
+      val dictionaryVersion = oldRelease.getDictionaryVersion();
+      if (dictionaryVersion == null) {
+        val errorMessage = "Could not find a dictionary matching null";
+        log.error(errorMessage);
+        throw new InvalidStateException(RELEASE_MISSING_DICTIONARY, errorMessage);
+      }
+      if (releaseRepository.findReleaseByName(nextReleaseName) != null) {
+        val errorMessage = "Found a conflicting release for name " + nextReleaseName;
+        log.error(errorMessage);
+        throw new InvalidStateException(DUPLICATE_RELEASE_NAME, errorMessage);
+      }
+
+      // Actually perform the release
+      newRelease = performRelease(oldRelease, nextReleaseName, dictionaryVersion);
+    } catch (RuntimeException e) {
+      val errorMessage = "Unknown exception trying to release " + nextReleaseName;
+      log.error(errorMessage);
+      throw new ReleaseException(errorMessage, e);
+    }
+
+    return newRelease;
+  }
+
+  @Synchronized
+  public void signOffRelease(Release release, Iterable<String> projectKeys, String user) throws InvalidStateException,
+      DccModelOptimisticLockException {
+
+    String releaseName = release.getName();
+    log.info("signing off {} for {}", projectKeys, releaseName);
+
+    release.removeFromQueue(projectKeys);
+    for (val projectKey : projectKeys) {
+      val submission = release.getSubmission(projectKey).get();
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+      //
+      // Transition
+      //
+
+      submission.signOff(submissionFiles);
+    }
+
+    releaseRepository.updateRelease(releaseName, release);
+
+    // Remove validation files in the ".validation" folder (leave normalization files untouched)
+    val releaseFs = dccFileSystem.getReleaseFilesystem(release);
+    val projects = projectRepository.findProjects(projectKeys);
+    for (val project : projects) {
+      releaseFs.getSubmissionDirectory(project.getKey()).removeValidationFiles();
+    }
+
+    // after sign off, send a email to DCC support
+    mailService.sendSignoff(user, projectKeys, releaseName);
+
+    log.info("signed off {} for {}", projectKeys, releaseName);
+  }
+
+  /**
+   * Updates a release name and/or dictionary version.
+   * <p>
+   * Does not allow to update submissions per se, {@code ProjectService.addProject()} must be used instead.
+   * <p>
+   * This MUST reset submission states.
+   * <p>
+   * This method is not included in NextRelease because of its dependence on methods from NextRelease (we may reconsider
+   * in the future) - see comments in DCC-245
+   */
+  @Synchronized
+  public Release updateRelease(@NonNull String newReleaseName, String newDictionaryVersion) {
+    val release = getNextRelease();
+    val oldReleaseName = release.getName();
+    val oldDictionaryVersion = release.getDictionaryVersion();
+    checkState(release.getState() == ReleaseState.OPENED);
+
+    val sameName = oldReleaseName.equals(newReleaseName);
+    val sameDictionary = oldDictionaryVersion.equals(newDictionaryVersion);
+
+    if (!validateEntityName(newReleaseName)) {
+      throw new ReleaseException("Updated release name '%s' is not valid", newReleaseName);
+    }
+    if (sameName == false && releaseRepository.findReleaseByName(newReleaseName) != null) {
+      throw new ReleaseException("New release name '%s' conflicts with an existing release", newReleaseName);
+    }
+    if (newDictionaryVersion == null) {
+      throw new ReleaseException("Release must have associated dictionary before being updated");
+    }
+    if (sameDictionary == false && dictionaryRepository.findDictionaryByVersion(newDictionaryVersion) == null) {
+      throw new ReleaseException("Release must point to an existing dictionary, no match for '%s'",
+          newDictionaryVersion);
+    }
+
+    // Update release object and database entity (top-level entity only)
+    log.info("Updating release {} with {} and {}" + (sameDictionary ? " and emptying queue" : ""),
+        new Object[] { oldReleaseName, newReleaseName, newDictionaryVersion });
+    release.setName(newReleaseName);
+    release.setDictionaryVersion(newDictionaryVersion);
+    if (sameDictionary == false) {
+      release.emptyQueue();
+    }
+
+    val success = releaseRepository.updateRelease(oldReleaseName, release, newReleaseName, newDictionaryVersion);
+    if (success) { // Ensure update was successful
+      notifyUpdateError(oldReleaseName, on(",").join(newReleaseName, newDictionaryVersion, release.getQueue()));
+    }
+
+    // If a new dictionary was specified, reset submissions, TODO: use resetSubmission() instead (DCC-901)!
+    if (sameDictionary == false) {
+      // Reset all projects
+      resetSubmissions(newReleaseName, release.getProjectKeys());
+    }
+
+    return release;
+  }
+
+  @Synchronized
+  public List<String> getQueuedProjectKeys() {
+    return getNextRelease().getQueuedProjectKeys();
+  }
+
+  /**
+   * Creates a new {@code Submission} and adds it to the current open {@code Release}
+   * 
+   * @return Current Open Release
+   */
+  public void addSubmission(String projectKey, String projectName) {
+    log.info("Creating Submission for Project '{}' in current open Release", projectKey);
+    val release = releaseRepository.findOpenRelease();
+    val submissionPath = dccFileSystem.createNewProjectDirectoryStructure(release.getName(), projectKey);
+    val submission = new Submission(projectKey, projectName, release.getName(), NOT_VALIDATED);
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
+
+    //
+    // Transition
+    //
+
+    submission.initialize(submissionFiles);
+    releaseRepository.addReleaseSubmission(release.getName(), submission);
+
+    log.info("Created Submission '{}' with directory '{}'", submission, submissionPath);
+  }
+
+  public Submission getSubmission(String projectKey) {
+    val release = getNextRelease();
+
+    return getSubmission(release, projectKey);
+  }
+
+  public Submission getSubmission(String releaseName, String projectKey) {
+    val release = releaseRepository.findReleaseByName(releaseName);
+    val missing = release == null;
+    if (missing) {
+      throw new ReleaseException(
+          "No release with name '%s' found when attempting to get submission with project key '%s'",
+          releaseName, projectKey);
+    }
+
+    return getSubmission(release, projectKey);
+  }
+
+  public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
+    val submission = getSubmission(releaseName, projectKey);
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+    val liteProject = new LiteProject(checkNotNull(projectRepository.findProject(projectKey)));
+
+    val detailedSubmission = new DetailedSubmission(submission, liteProject);
+    detailedSubmission.setSubmissionFiles(submissionFiles);
+
+    return detailedSubmission;
+  }
+
+  @Synchronized
+  public List<SubmissionFile> getSubmissionFiles(@NonNull String releaseName, @NonNull String projectKey) {
+    val release = releaseRepository.findReleaseByName(releaseName);
+    if (release == null) {
+      throw new ReleaseException("No release with name '%s'", releaseName);
+    }
+
+    val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
+    if (dictionary == null) {
+      throw new ReleaseException("No dictionary with version '%s' found for release '%s'",
+          release.getDictionaryVersion(), release.getName());
+    }
+
+    val submissionFiles = new ArrayList<SubmissionFile>();
+    val buildProjectStringPath = new Path(dccFileSystem.buildProjectStringPath(release.getName(), projectKey));
+
+    for (val path : lsFile(dccFileSystem.getFileSystem(), buildProjectStringPath)) {
+      submissionFiles.add(getSubmissionFile(dictionary, path));
+    }
+
+    return submissionFiles;
+  }
+
+  @Synchronized
+  public void queueSubmissions(@NonNull Release release, @NonNull List<QueuedProject> queuedProjects)
+      throws InvalidStateException, DccModelOptimisticLockException {
+    val releaseName = release.getName();
+    log.info("enqueuing {} for {}", queuedProjects, releaseName);
+
+    // Update release object
+    release.enqueue(queuedProjects);
+
+    for (val queuedProject : queuedProjects) {
+      val projectKey = queuedProject.getKey();
+      val submission = release.getSubmission(projectKey).get();
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+      //
+      // Transition
+      //
+
+      submission.queueRequest(submissionFiles, queuedProject.getDataTypes());
+    }
+
+    releaseRepository.updateRelease(releaseName, release);
+    log.info("enqueued {} for {}", queuedProjects, releaseName);
+  }
+
+  /**
+   * Attempts to set the given project to VALIDATING.<br>
+   * <p>
+   * This method is robust enough to handle rare cases like when:<br>
+   * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
+   * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
+   * @param nextReport
+   * @param dataTypes
+   */
+  @Synchronized
+  public void dequeueSubmission(@NonNull final QueuedProject queuedProject, @NonNull final Report nextReport) {
+    val projectKey = queuedProject.getKey();
+
+    val description = format("validate project '%s'", projectKey);
+    log.info("Attempting to {}", description);
+
+    withRetry(description, new Callable<Optional<?>>() {
+
+      @Override
+      public Optional<?> call() throws DccModelOptimisticLockException {
+        val release = getNextRelease();
+        val releaseName = release.getName();
+
+        log.info("Dequeuing {} to validating for {}", projectKey, releaseName);
+
+        val dequeuedProject = release.dequeueProject();
+        val dequeuedProjectKey = dequeuedProject.getKey();
+        if (dequeuedProjectKey.equals(projectKey) == false) { // not recoverable: TODO: create dedicated exception?
+          throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, projectKey);
+        }
+
+        val submission = release.getSubmission(projectKey).get();
+        val submissionFiles = getSubmissionFiles(releaseName, queuedProject.getKey());
+
+        //
+        // Transition
+        //
+
+        submission.startValidation(submissionFiles, queuedProject.getDataTypes(), nextReport);
+        releaseRepository.updateRelease(releaseName, release);
+        resetValidationFolder(queuedProject.getKey(), release);
+
+        mailService.sendValidationStarted(releaseName, queuedProject.getKey(), queuedProject.getEmails());
+
+        log.info("Dequeued {} to validating state for {}", projectKey, releaseName);
+        return Optional.absent();
+      }
+
+    });
+  }
+
+  @Synchronized
+  public void removeQueuedSubmissions(@NonNull String... targets) throws InvalidStateException {
+    val release = getNextRelease();
+    val releaseName = release.getName();
+    val projectKeys = targets.length > 0 ? release.getQueuedProjectKeys() : ImmutableList.<String> copyOf(targets);
+
+    log.info("Deleting queued request for project(s) '{}'", projectKeys);
+    for (val queuedProject : release.getQueue()) {
+      val projectKey = queuedProject.getKey();
+      val dataTypes = queuedProject.getDataTypes();
+
+      val remove = projectKeys.contains(projectKey);
+      if (remove) {
+        val submission = release.getSubmission(projectKey).get();
+        val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+        //
+        // Transition
+        //
+
+        submission.cancelValidation(submissionFiles, dataTypes);
+        release.removeFromQueue(projectKey);
+        resetValidationFolder(projectKey, release);
+      }
+    }
+
+    releaseRepository.updateRelease(releaseName, release);
+  }
+
+  @Synchronized
+  public void resetSubmissions(@NonNull String releaseName, @NonNull Iterable<String> projectKeys) {
+    for (val projectKey : projectKeys) {
+      resetSubmission(releaseName, projectKey);
+    }
+  }
+
+  @Synchronized
+  public Submission resetSubmission(@NonNull String releaseName, @NonNull String projectKey) {
+    val release = releaseRepository.findReleaseByName(releaseName);
+    val submission = release.getSubmission(projectKey).get();
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+    //
+    // Transition
+    //
+
+    submission.reset(submissionFiles);
+    releaseRepository.updateReleaseSubmission(releaseName, submission);
+    resetValidationFolder(projectKey, release);
+
+    return submission;
+  }
+
+  @Synchronized
+  public Submission modifySubmission(@NonNull String releaseName, @NonNull String projectKey,
+      @NonNull Optional<Path> filePath) {
+    val release = releaseRepository.findReleaseByName(releaseName);
+    val submission = release.getSubmission(projectKey).get();
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+    //
+    // Transition
+    //
+
+    submission.modifyFile(submissionFiles, filePath);
+    releaseRepository.updateReleaseSubmission(releaseName, submission);
+    resetValidationFolder(projectKey, release);
+
+    return submission;
+  }
+
+  /**
+   * Attempts to resolve the given project, if the project is found the given state is set for it.<br>
+   * <p>
+   * This method is robust enough to handle rare cases like when:<br>
+   * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
+   * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
+   */
+  @Synchronized
+  public void resolveSubmission(@NonNull QueuedProject project, @NonNull Outcome outcome, @NonNull Report report) {
+    // Update the in-memory submission state
+    val projectKey = project.getKey();
+    val emails = project.getEmails();
+    val release = getNextRelease();
+    val submission = getSubmission(release, projectKey);
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
+
+    //
+    // Transition
+    //
+
+    submission.finishValidation(submissionFiles, project.getDataTypes(), outcome, report);
+    releaseRepository.updateReleaseSubmission(release.getName(), submission);
+
+    if (!emails.isEmpty()) {
+      log.info("Sending notification emails for project '{}'...", projectKey);
+      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState(), report);
+    }
+
+    log.info("Resolved project '{}'", projectKey);
+  }
+
+  private Release performRelease(@NonNull Release oldRelease, @NonNull String nextReleaseName,
+      @NonNull String dictionaryVersion) {
+
+    // Create new release entity
+    val newRelease = new Release(nextReleaseName, dictionaryVersion);
+
+    for (val submission : oldRelease.getSubmissions()) {
+      val submissionFiles = getSubmissionFiles(oldRelease.getName(), submission.getProjectKey());
+
+      //
+      // Transition
+      //
+
+      val newSubmission = submission.closeRelease(submissionFiles, newRelease);
+
+      newRelease.addSubmission(newSubmission);
+    }
+
+    // Set up new release file system counterpart
+    setUpNewReleaseFileSystem(oldRelease, newRelease);
+
+    // Must happen AFTER creating the new release object and setting up the file system (both operations need the old
+    // release in its pre-completion state)
+    log.info("Completing old release entity object: '{}'", oldRelease.getName());
+    oldRelease.complete();
+
+    // Persist modified entity objects
+    log.info("Closing dictionary: '{}'", dictionaryVersion);
+    dictionaryRepository.closeDictionary(dictionaryVersion);
+
+    log.info("Updating completed release: '{}'", oldRelease.getName());
+    releaseRepository.updateCompletedRelease(oldRelease);
+
+    log.info("Saving new release: '{}'", newRelease.getName());
+    releaseRepository.saveNewRelease(newRelease);
+
+    return newRelease;
+  }
+
+  private void setUpNewReleaseFileSystem(@NonNull Release oldRelease, @NonNull Release nextRelease) {
+    dccFileSystem.getReleaseFilesystem(nextRelease)
+        .setUpNewReleaseFileSystem(
+            oldRelease.getName(), // Remove after DCC-1940
+            nextRelease.getName(),
+
+            // The release file system
+            dccFileSystem.getReleaseFilesystem(oldRelease),
+
+            // The signed off projects
+            getProjectKeys(filter(oldRelease.getSubmissions(), SIGNED_OFF_PROJECTS_PREDICATE)),
+
+            // The remaining projects
+            getProjectKeys(filter(oldRelease.getSubmissions(), not(SIGNED_OFF_PROJECTS_PREDICATE))));
+  }
+
+  /**
+   * Empties .validation dir to ensure the cascade runs
+   * 
+   * TODO: only taken out of resetSubmission() until DCC-901 is done (to allow code that calls deprecated methods
+   * instead of resetSubmission() to still be able to empty those directories)
+   */
+  private void resetValidationFolder(@NonNull String projectKey, @NonNull Release release) {
+    log.info("Resetting validation folder for '{}' in release '{}'", projectKey, release.getName());
+    dccFileSystem.getReleaseFilesystem(release).resetValidationFolder(projectKey);
+  }
+
+  private List<Project> getProjects(Release release, Subject user) {
+    val builder = ImmutableList.<String> builder();
+    for (val projectKey : release.getProjectKeys()) {
+      val privilege = projectViewPrivilege(projectKey);
+      val viewable = user.isPermitted(privilege);
+      if (viewable) {
+        builder.add(projectKey);
+      }
+    }
+
+    return projectRepository.findProjects(builder.build());
+  }
+
+  private Submission getSubmission(Release release, String projectKey) {
+    val optional = release.getSubmission(projectKey);
+    if (optional.isPresent()) {
+      return optional.get();
+    }
+
+    throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, release.getName());
+  }
+
+  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) {
+    val fileName = filePath.getName();
+    val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
+    val fileLastUpdate = new Date(fileStatus.getModificationTime());
+    val fileSize = fileStatus.getLen();
+    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
+    val fileType = fileSchema.isPresent() ? fileSchema.get().getFileType() : null;
+
+    return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
+  }
+
+  private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {
+    val builder = ImmutableMap.<String, List<SubmissionFile>> builder();
+    for (val projectKey : release.getProjectKeys()) {
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+
+      builder.put(projectKey, submissionFiles);
+    }
+
+    return builder.build();
+  }
+
+  private static List<String> getProjectKeysBySubmissionState(@NonNull List<Submission> submissions,
+      @NonNull final SubmissionState state) {
+    val projectKeys = ImmutableList.<String> builder();
+    for (val submission : submissions) {
+      if (state.equals(submission.getState())) {
+        projectKeys.add(submission.getProjectKey());
+      }
+    }
+
+    return projectKeys.build();
+  }
+
+  private static List<LiteProject> getLiteProjects(List<Project> projects) {
+    val liteProjects = ImmutableList.<LiteProject> builder();
+    for (val project : projects) {
+      val liteProject = new LiteProject(project);
+
+      liteProjects.add(liteProject);
+    }
+
+    return liteProjects.build();
+  }
+
+  private void notifyUpdateError(String filter, String setValues) {
+    notifyUpdateError(filter, setValues, null);
+  }
+
+  /**
+   * To notify us that an update failed.
+   */
+  private void notifyUpdateError(String filter, String setValues, String unsetValues) {
+    val id = System.currentTimeMillis();
+    log.error("Unable to update the release (id: " + id + ") (maybe a lock problem)?", new IllegalStateException());
+
+    String message = format("filter: %s, set values: %s, unset values: %s, id: %s", filter, setValues, unsetValues, id);
+    mailService.sendSupportProblem("Automatic email - Failure update", message);
+  }
 
 }
