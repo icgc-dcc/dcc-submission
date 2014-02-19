@@ -21,6 +21,7 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.core.util.FormatUtils.formatBytes;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType1;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType2;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.hasOutgoingSurjectiveRelation;
@@ -45,6 +46,7 @@ import org.icgc.dcc.submission.validation.key.report.KVReporter;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 
 /**
  * Main processor for the key validation.
@@ -122,24 +124,26 @@ public class KVSubmissionProcessor {
     checkState(dataFilePaths.isPresent(),
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
+      val watch = Stopwatch.createStarted();
       log.info("{}", banner("-"));
       log.info(
-          "Processing '{}' file: '{}'; Referencing '{} and {}': '{}'",
+          "Processing '{}' file: '{}'; Referencing '{}' and '{}'",
           new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
               .isPresent(), dataFilePath });
 
       // TODO: subclass for referencing/non-referencing?
-      new KVFileProcessor(fileType, dataFilePath)
-
-          // Process file
-          .processFile(
-              fileParser,
-              reporter,
-              primaryKeys,
-              optionallyReferencedPrimaryKeys1,
-              optionallyReferencedPrimaryKeys2,
-              optionalEncounteredForeignKeys
+      val fileProcessor = new KVFileProcessor(fileType, dataFilePath);
+      fileProcessor.processFile(
+          fileParser,
+          reporter,
+          primaryKeys,
+          optionallyReferencedPrimaryKeys1,
+          optionallyReferencedPrimaryKeys2,
+          optionalEncounteredForeignKeys
           );
+
+      log.info("Finished processing file '{}' in {} with {} of JVM free memory remaining",
+          new Object[] { dataFilePath, watch, formatFreeMemory() });
     }
     fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
@@ -204,4 +208,9 @@ public class KVSubmissionProcessor {
   private String banner(String symbol) {
     return repeat(symbol, 75);
   }
+
+  private static String formatFreeMemory() {
+    return formatBytes(Runtime.getRuntime().freeMemory());
+  }
+
 }
