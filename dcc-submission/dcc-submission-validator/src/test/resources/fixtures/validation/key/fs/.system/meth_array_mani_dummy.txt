@@ -1,0 +1,5 @@
+array_platform	probe_id	other
+pl1	pr1	o1
+pl1	pr2	o2
+pl2	pr3	o3
+pl2	pr4	o4

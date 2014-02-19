@@ -31,14 +31,14 @@ import lombok.Getter;
 import lombok.ToString;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.icgc.dcc.submission.validation.core.ErrorType;
-import org.icgc.dcc.submission.validation.primary.core.ErrorParameterKey;
+import org.icgc.dcc.submission.core.report.ErrorParameterKey;
+import org.icgc.dcc.submission.core.report.ErrorType;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 /**
- * Each {@code Tuple} should have one field that holds an instance of this class. It is used to track the state
+ * Each {@code Tuple} should have one field that holds asn instance of this class. It is used to track the state
  * (valid/invalid and corresponding reasons) of the whole {@code Tuple}.
  */
 

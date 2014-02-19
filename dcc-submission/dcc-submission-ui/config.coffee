@@ -35,4 +35,11 @@ exports.config =
   conventions:
     ignored: /^vendor(\/|\\)styles(\/|\\)bootstrap/
 
+  coffeelint:
+    pattern: /^app\/.*\.coffee$/
+    options:
+      max_line_length:
+        value: 120
+        level: "error"
+        
   framework: 'chaplin'

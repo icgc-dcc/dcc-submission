@@ -1,0 +1,5 @@
+analyzed_sample_id	specimen_id	other_sample
+s1	sp-meth	dummy
+s2	sp-meth	dummy
+s3	sp-meth	dummy
+s4	sp-meth	dummy

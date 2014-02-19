@@ -26,6 +26,7 @@ import lombok.val;
 import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import com.google.common.collect.ImmutableList;
@@ -63,11 +64,11 @@ public interface NormalizationContext {
     /**
      * Creates the default {@link NormalizationContext}.
      */
-    static NormalizationContext getNormalizationContext(PlatformStrategy platform, Dictionary dictionary) {
+    static NormalizationContext getContext(SubmissionDirectory submissionDirectory, Dictionary dictionary) {
       return DefaultNormalizationContext
           .builder()
           .controlledFields(getControlledFields(dictionary))
-          .sampleToDonorMap(platform.getSampleToDonorMap(dictionary))
+          .sampleToDonorMap(submissionDirectory.getSampleToDonorMap(dictionary))
           .build();
     }
 

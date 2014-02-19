@@ -24,6 +24,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter;
+import org.icgc.dcc.submission.http.jersey.VersionFilter;
 import org.icgc.dcc.submission.web.mapper.DuplicateNameExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.InvalidNameExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.ReleaseExceptionMapper;
@@ -67,6 +68,7 @@ public class WebModule extends AbstractModule {
       config.addClasses(NextReleaseResource.class);
       config.addClasses(DictionaryResource.class);
       config.addClasses(CodeListResource.class);
+      config.addClasses(VersionFilter.class);
       config.addClasses(BasicHttpAuthenticationFilter.class);
       config.addClasses(UnsatisfiedPreconditionExceptionMapper.class);
       config.addClasses(ReleaseExceptionMapper.class);

@@ -29,8 +29,8 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -54,7 +54,10 @@ public final class FileTypes {
    * According to https://wiki.oicr.on.ca/display/DCCINT/Submission+File+Format, this would have to be called "FileType"
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
+
   public enum FileSubType {
+    SYSTEM_SUBTYPE,
+
     META_SUBTYPE,
     PRIMARY_SUBTYPE,
     SECONDARY_SUBTYPE,
@@ -74,6 +77,10 @@ public final class FileTypes {
 
     public boolean isMetaSubType() {
       return this == META_SUBTYPE;
+    }
+
+    public boolean isSystemSubType() {
+      return this == SYSTEM_SUBTYPE;
     }
 
     /**
@@ -145,9 +152,17 @@ public final class FileTypes {
     PEXP_M_TYPE(FeatureType.PEXP_TYPE, FileSubType.META_SUBTYPE),
     PEXP_P_TYPE(FeatureType.PEXP_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
+    // Old meth
     METH_M_TYPE(FeatureType.METH_TYPE, FileSubType.META_SUBTYPE),
     METH_P_TYPE(FeatureType.METH_TYPE, FileSubType.PRIMARY_SUBTYPE),
     METH_S_TYPE(FeatureType.METH_TYPE, FileSubType.SECONDARY_SUBTYPE),
+
+    METH_ARRAY_M_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.META_SUBTYPE),
+    METH_ARRAY_SYSTEM_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.SYSTEM_SUBTYPE),
+    METH_ARRAY_P_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.PRIMARY_SUBTYPE),
+
+    METH_SEQ_M_TYPE(FeatureType.METH_SEQ_TYPE, FileSubType.META_SUBTYPE),
+    METH_SEQ_P_TYPE(FeatureType.METH_SEQ_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
     MIRNA_M_TYPE(FeatureType.MIRNA_TYPE, FileSubType.META_SUBTYPE),
     MIRNA_P_TYPE(FeatureType.MIRNA_TYPE, FileSubType.PRIMARY_SUBTYPE),
@@ -200,9 +215,14 @@ public final class FileTypes {
     private final FileSubType subType;
 
     public String getTypeName() {
-      return subType.usedAsAbbrevatiation() ?
-          JOINER.join(dataType.getTypeName(), subType.getAbbreviation()) :
-          subType.getFullName();
+      if (subType.usedAsAbbrevatiation()) {
+        return JOINER.join(dataType.getTypeName(), subType.getAbbreviation());
+      } else if (subType.isSystemSubType()) {
+        return JOINER.join(dataType.getTypeName(), "mani"); // TODO: name to be finalized (mani is short for manifest,
+                                                            // consider changing subtype from "system" to "mani"?)
+      } else {
+        return subType.getFullName();
+      }
     }
 
     /**
@@ -211,8 +231,10 @@ public final class FileTypes {
      * TODO: phase out as Strings are replaced with enums.
      */
     public static FileType from(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+      return valueOf(typeName
+          .replaceAll("mani", "system") // Until exact name is settled
+          .toUpperCase()
+          + TYPE_SUFFIX);
     }
-
   }
 }

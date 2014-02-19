@@ -17,32 +17,26 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.Util;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Util.class)
+@RunWith(MockitoJUnitRunner.class)
 public class RowCharsetCheckerTest {
 
   @Mock
@@ -53,29 +47,21 @@ public class RowCharsetCheckerTest {
 
   @Mock
   ValidationContext validationContext;
-
   @Mock
-  private DccFileSystem fs;
-
-  @Mock
-  private SubmissionDirectory submissionDir;
+  FPVFileSystem fs;
 
   @Mock
   private Dictionary dict;
 
   @Before
   public void setup() {
-    when(baseChecker.getValidationContext()).thenReturn(validationContext);
-
     FileSchema testSchema = mock(FileSchema.class);
     String paramString = "testfile1";
     when(testSchema.getPattern()).thenReturn(paramString);
     when(dict.getFileSchemaByName(anyString())).thenReturn(Optional.of(testSchema));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(testSchema));
-
-    when(validationContext.getDccFileSystem()).thenReturn(fs);
-    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
     when(validationContext.getDictionary()).thenReturn(dict);
+    when(baseChecker.getReportContext()).thenReturn(validationContext);
   }
 
   @Test
@@ -89,10 +75,9 @@ public class RowCharsetCheckerTest {
   @Test
   public void invalidLineSeparator() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\tf2\r\na\tb\r\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
-    RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext));
+    RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkRowCharsetErrorReported(validationContext, 2);
   }
@@ -100,10 +85,9 @@ public class RowCharsetCheckerTest {
   @Test
   public void invalidContentWithCarriageReturn() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\t\rf2\na\r\tb\n".getBytes()));
-    mockStatic(Util.class);
-    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
-    RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext));
+    RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
     checker.check(anyString());
     TestUtils.checkRowCharsetErrorReported(validationContext, 2);
   }

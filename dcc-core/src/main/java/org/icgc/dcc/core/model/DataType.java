@@ -17,35 +17,42 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Set;
 
+import lombok.val;
+
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
  * <p>
- * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor",
- * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
+ * <<<<<<< HEAD:dcc-core/src/main/java/org/icgc/dcc/core/model/DataType.java Careful not to confuse this with
+ * {@link FileType} which represents the ICGC file types, such as "donor", "specimen", "ssm_m", "meth_m", ... They have
+ * the clinical ones in common. ======= Careful not to confuse this with {@link FileType} which represents the ICGC file
+ * types, such as "donor", "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common. >>>>>>>
+ * feature/submission-incremental:dcc-core/src/main/java/org/icgc/dcc/core/model/DataType.java
  */
 public interface DataType {
 
-  String TYPE_SUFFIX = "_TYPE";
+  String TYPE_SUFFIX = "TYPE";
 
   /**
    * Not really used anywhere (but here for consistency).
    */
   String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
+
+  String name();
 
   String getTypeName();
 
@@ -99,20 +106,42 @@ public interface DataType {
         // Do nothing
       }
 
-      return checkNotNull(type, "Could not find a match for type %s", typeName);
+      checkArgument(type != null, "Could not find a match for type %s", typeName);
+
+      return null;
+    }
+
+    /**
+     * Returns an enum matching the supplied name
+     */
+    public static DataType valueOf(String name) {
+      DataType type = null;
+      try {
+        return FeatureType.valueOf(name);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+      try {
+        return ClinicalType.valueOf(name);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+
+      return checkNotNull(type, "Could not find a match for name %s", name);
     }
 
     /**
      * Returns the values for all enums that implements the interface.
      */
     public static List<DataType> values() {
-      Builder<DataType> builder = new ImmutableList.Builder<DataType>();
-      for (FeatureType type : FeatureType.values()) {
+      val builder = new ImmutableList.Builder<DataType>();
+      for (val type : FeatureType.values()) {
         builder.add(type);
       }
-      for (ClinicalType type : ClinicalType.values()) {
+      for (val type : ClinicalType.values()) {
         builder.add(type);
       }
+
       return builder.build();
     }
 

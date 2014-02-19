@@ -18,15 +18,17 @@
 package org.icgc.dcc.submission.release;
 
 public class ReleaseException extends RuntimeException {
+
   public ReleaseException(Exception e) {
     super(e);
   }
 
-  public ReleaseException(String message) {
-    super(message);
+  public ReleaseException(String message, Object... args) {
+    super(String.format(message, args));
   }
 
   public ReleaseException(String message, Exception e) {
     super(message, e);
   }
+
 }

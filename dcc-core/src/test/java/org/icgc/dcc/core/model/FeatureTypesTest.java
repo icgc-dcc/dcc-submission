@@ -45,6 +45,8 @@ public class FeatureTypesTest {
                 FeatureType.STSM_TYPE,
                 FeatureType.CNGV_TYPE,
                 FeatureType.STGV_TYPE,
+                FeatureType.METH_ARRAY_TYPE,
+                FeatureType.METH_SEQ_TYPE,
                 FeatureType.MIRNA_TYPE,
                 FeatureType.JCN_TYPE)));
   }

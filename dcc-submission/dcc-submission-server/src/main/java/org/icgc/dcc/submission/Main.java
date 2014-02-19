@@ -41,17 +41,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.DccRuntime;
-import org.icgc.dcc.submission.core.morphia.MorphiaModule;
-import org.icgc.dcc.submission.dictionary.DictionaryModule;
+import org.icgc.dcc.submission.core.PersistenceModule;
+import org.icgc.dcc.submission.core.ValidationModule;
 import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
-import org.icgc.dcc.submission.release.ReleaseModule;
 import org.icgc.dcc.submission.repository.RepositoryModule;
 import org.icgc.dcc.submission.service.ServiceModule;
 import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
-import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.web.WebModule;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -164,19 +162,17 @@ public class Main {
 
         // Infrastructure modules
         new CoreModule(),
+        new PersistenceModule(),
         new HttpModule(),
         new JerseyModule(),
         new WebModule(),
-        new MorphiaModule(),
         new RepositoryModule(),
-        new ServiceModule(),
         new ShiroModule(),
         new FileSystemModule(),
         new SftpModule(),
 
         // Business modules
-        new DictionaryModule(),
-        new ReleaseModule(),
+        new ServiceModule(),
         new ValidationModule());
 
     injector.injectMembers(this);

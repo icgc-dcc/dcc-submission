@@ -36,23 +36,20 @@ import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VAL
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
 
-import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
@@ -66,15 +63,11 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
-import com.google.common.io.LineReader;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigValue;
 
+@Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
   /**
@@ -90,14 +83,14 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector() {
+  public FlowConnector getFlowConnector(Map<Object, Object> properties) {
     Map<Object, Object> flowProperties = newHashMap();
 
     // Custom serialization
     TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
-    for (Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
+    for (val configEntry : hadoopConfig.entrySet()) {
       flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
@@ -120,6 +113,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
       flowProperties.put(
           MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
           MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+
       flowProperties.put(
           MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
           SNAPPY_CODEC_PROPERTY_VALUE);
@@ -133,21 +127,23 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
           GZIP_CODEC_PROPERTY_VALUE);
     }
 
+    flowProperties.putAll(properties);
     return new HadoopFlowConnector(flowProperties);
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
-    val reportPath = reportPath(schema, type, reportName);
+  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
+    val reportPath = getReportPath(fileName, type, reportName);
+    log.info("Streaming through report: '{}'", reportPath);
     val scheme = new HadoopJsonScheme();
     scheme.setSinkCompression(ENABLE);
-
     return new Hfs(scheme, reportPath.toUri().getPath());
   }
 
   @Override
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
-    val reportPath = reportPath(schema, type, reportName);
+  @SneakyThrows
+  public InputStream readReportTap(String fileName, FlowType type, String reportName) {
+    val reportPath = getReportPath(fileName, type, reportName);
     if (fileSystem.isFile(reportPath)) {
       return getInputStream(reportPath);
     }
@@ -191,14 +187,14 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  protected Tap<?, ?, ?> tapSource(Path path) {
+  public Tap<?, ?, ?> getSourceTap(String fileName) {
     val scheme = new TextLine(
         new Fields(ValidationFields.OFFSET_FIELD_NAME,
             "line"));
     scheme.setSinkCompression(Compress.ENABLE);
     return new Hfs(
         scheme,
-        path.toUri().getPath());
+        getFilePath(fileName).toUri().getPath());
   }
 
   /**
@@ -213,27 +209,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     return new Hfs(
         scheme,
         path.toUri().getPath());
-  }
-
-  /**
-   * TODO: try and combine with validator's equivalent. (DCC-996)
-   */
-  @Override
-  public Fields getFileHeader(FileSchema fileSchema) throws IOException {
-    val path = path(fileSchema);
-
-    @Cleanup
-    InputStreamReader isr = new InputStreamReader(getInputStream(path), Charsets.UTF_8);
-
-    val lineReader = new LineReader(isr);
-    val firstLine = lineReader.readLine();
-    val header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
-    val dupHeader = checkDuplicateHeader(header);
-    if (!dupHeader.isEmpty()) {
-      throw new DuplicateHeaderException(dupHeader);
-    }
-
-    return new Fields(Iterables.toArray(header, String.class));
   }
 
   @SneakyThrows
@@ -256,5 +231,4 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     // See SubmissionIntegrationTest#setUp
     return System.getProperty("dcc.hadoop.test") == null;
   }
-
 }

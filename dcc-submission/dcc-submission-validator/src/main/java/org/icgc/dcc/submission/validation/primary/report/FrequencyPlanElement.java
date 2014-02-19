@@ -17,12 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
-import java.util.Iterator;
-import java.util.List;
+import static org.icgc.dcc.submission.dictionary.model.SummaryType.FREQUENCY;
 
-import org.icgc.dcc.submission.dictionary.model.Field;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.model.SummaryType;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -46,24 +45,26 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Optional;
+
 public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   private static final String FREQ = "freq";
-
   private static final String MISSING_FLAG = "missing?";
 
-  public FrequencyPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
-    super(fileSchema, fields, SummaryType.FREQUENCY, flowType);
+  public FrequencyPlanElement(
+      FlowType flowType, String fileName, Map<String, FieldStatDigest> fieldStatDigests) {
+    super(flowType, Optional.of(FREQUENCY), fileName, fieldStatDigests);
   }
 
   @Override
   public Pipe report(Pipe pipe) {
     pipe = keepStructurallyValidTuples(pipe);
 
-    Pipe[] freqs = new Pipe[fields.size()];
+    Pipe[] freqs = new Pipe[fieldNames.size()];
     int i = 0;
-    for (Field field : fields) {
-      freqs[i++] = frequency(field.getName(), pipe);
+    for (String fieldName : fieldNames) {
+      freqs[i++] = frequency(fieldName, pipe);
     }
     pipe = new Merge(freqs);
     pipe = new GroupBy(pipe, new Fields(FIELD));
@@ -108,7 +109,7 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
    * </table>
    */
   protected Pipe frequency(String field, Pipe pipe) {
-    pipe = new Pipe(buildSubPipeName(FREQ + "_" + field), pipe);
+    pipe = new Pipe(getSubPipeName(FREQ + "_" + field), pipe);
     pipe = new Retain(pipe, new Fields(field).append(ValidationFields.STATE_FIELD));
     pipe = new Each(pipe, ValidationFields.STATE_FIELD, new MissingFlaggerFunction(field), Fields.SWAP);
     pipe = new Rename(pipe, new Fields(field), new Fields(VALUE));

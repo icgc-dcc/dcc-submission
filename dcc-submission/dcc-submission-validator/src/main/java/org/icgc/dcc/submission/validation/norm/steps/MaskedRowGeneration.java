@@ -36,9 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
 import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.validation.norm.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.NormalizationStep;
-import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

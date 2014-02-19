@@ -32,9 +32,9 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
-import org.icgc.dcc.submission.core.UserService;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.service.UserService;
 
 import com.google.inject.Inject;
 

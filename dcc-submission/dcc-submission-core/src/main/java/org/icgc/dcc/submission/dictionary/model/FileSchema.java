@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.regex.Pattern.compile;
@@ -34,11 +35,12 @@ import lombok.val;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
+import org.mongodb.morphia.annotations.Embedded;
 
-import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -197,17 +199,47 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   public boolean containsField(String fieldName) {
-    return newArrayList(getFieldNames()).contains(fieldName);
+    return getFieldNames().contains(fieldName);
   }
 
   @JsonIgnore
-  public Iterable<String> getControlledFieldNames() {
-    return getFieldNames(filter(fields, IS_CONTROLLED));
+  public List<String> getControlledFieldNames() {
+    return newArrayList(getFieldNames(filter(fields, IS_CONTROLLED)));
+  }
+
+  /**
+   * TODO: change to List (never big)
+   */
+  @JsonIgnore
+  public List<String> getFieldNames() {
+    return newArrayList(getFieldNames(getFields()));
+  }
+
+  /**
+   * Returns the list of field names that have a {@link RequiredRestriction} set on them (irrespective of whether it's a
+   * strict one or not).
+   * <p>
+   * TODO: DCC-1076 will render it unnecessary (everything would take place in {@link RequiredRestriction}).
+   */
+  @JsonIgnore
+  public List<String> getRequiredFieldNames() {
+    List<String> requiredFieldnames = newArrayList();
+    for (val field : fields) {
+      if (field.hasRequiredRestriction()) {
+        requiredFieldnames.add(field.getName());
+      }
+    }
+    return copyOf(requiredFieldnames);
   }
 
   @JsonIgnore
-  public Iterable<String> getFieldNames() {
-    return getFieldNames(getFields());
+  public FileType getFileType() {
+    return FileType.from(name);
+  }
+
+  @JsonIgnore
+  public DataType getDataType() {
+    return getFileType().getDataType();
   }
 
   @JsonIgnore
@@ -218,17 +250,16 @@ public class FileSchema implements DictionaryElement, Serializable {
       public String apply(Field field) {
         return field.getName();
       }
+
     });
   }
 
   /**
    * Returns whether or not the provided file name matches the pattern for the current {@link FileSchema}.
    */
-  public boolean matches(
-      @NonNull String fileName) {
+  public boolean matches(@NonNull String fileName) {
     return compile(pattern) // TODO: lazy-load
-        .matcher(fileName)
-        .matches();
+        .matcher(fileName).matches();
   }
 
   /**
@@ -237,7 +268,7 @@ public class FileSchema implements DictionaryElement, Serializable {
    * 
    * TODO: move to dictionary? better name?
    */
-  public List<FileSchema> getBidirectionalAfferentFileSchemata(Dictionary dictionary) {
+  public List<FileSchema> getIncomingSurjectiveRelationFileSchemata(Dictionary dictionary) {
     List<FileSchema> afferentFileSchemata = Lists.newArrayList();
     for (FileSchema tmp : dictionary.getFiles()) {
       for (Relation relation : tmp.getRelations()) {

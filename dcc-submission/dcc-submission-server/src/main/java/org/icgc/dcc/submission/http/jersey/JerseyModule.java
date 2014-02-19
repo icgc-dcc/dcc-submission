@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
+import lombok.val;
+
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.submission.http.HttpHandlerProvider;
 
@@ -28,8 +30,14 @@ public class JerseyModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(ResourceConfig.class).toInstance(new ResourceConfig());
-    Multibinder<HttpHandlerProvider> handlerBinder = Multibinder.newSetBinder(binder(), HttpHandlerProvider.class);
+    val handlerBinder = createHandlerBinder();
     handlerBinder.addBinding().to(JerseyHandler.class);
+
     install(new InjectModule());
   }
+
+  private Multibinder<HttpHandlerProvider> createHandlerBinder() {
+    return Multibinder.newSetBinder(binder(), HttpHandlerProvider.class);
+  }
+
 }

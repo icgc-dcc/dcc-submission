@@ -45,8 +45,8 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.web.util.Responses;
+import org.mongodb.morphia.Datastore;
 
-import com.google.code.morphia.Datastore;
 import com.google.inject.Inject;
 
 /**
@@ -70,15 +70,11 @@ public class SeedResource {
   @Path("users")
   public Response seedUsers(
 
-      @Context
-      SecurityContext securityContext,
+      @Context SecurityContext securityContext,
 
-      @Valid
-      User[] users,
+      @Valid User[] users,
 
-      @QueryParam("delete")
-      @DefaultValue("false")
-      boolean delete
+      @QueryParam("delete") @DefaultValue("false") boolean delete
 
       )
   {
@@ -97,15 +93,11 @@ public class SeedResource {
   @Path("projects")
   public Response seedProjects(
 
-      @Context
-      SecurityContext securityContext,
+      @Context SecurityContext securityContext,
 
-      @Valid
-      Project[] projects,
+      @Valid Project[] projects,
 
-      @QueryParam("delete")
-      @DefaultValue("false")
-      boolean delete
+      @QueryParam("delete") @DefaultValue("false") boolean delete
 
       )
   {
@@ -124,15 +116,11 @@ public class SeedResource {
   @Path("releases")
   public Response seedReleases(
 
-      @Context
-      SecurityContext securityContext,
+      @Context SecurityContext securityContext,
 
-      @Valid
-      Release[] releases,
+      @Valid Release[] releases,
 
-      @QueryParam("delete")
-      @DefaultValue("false")
-      boolean delete
+      @QueryParam("delete") @DefaultValue("false") boolean delete
 
       )
   {
@@ -151,15 +139,11 @@ public class SeedResource {
   @Path("dictionaries")
   public Response seedDictionaries(
 
-      @Context
-      SecurityContext securityContext,
+      @Context SecurityContext securityContext,
 
-      @Valid
-      Dictionary[] dictionaries,
+      @Valid Dictionary[] dictionaries,
 
-      @QueryParam("delete")
-      @DefaultValue("false")
-      boolean delete
+      @QueryParam("delete") @DefaultValue("false") boolean delete
 
       )
   {
@@ -180,15 +164,11 @@ public class SeedResource {
   @Path("codelists")
   public Response seedCodeLists(
 
-      @Context
-      SecurityContext securityContext,
+      @Context SecurityContext securityContext,
 
-      @Valid
-      CodeList[] codelists,
+      @Valid CodeList[] codelists,
 
-      @QueryParam("delete")
-      @DefaultValue("false")
-      boolean delete
+      @QueryParam("delete") @DefaultValue("false") boolean delete
 
       )
   {
@@ -209,11 +189,9 @@ public class SeedResource {
   @Path("fs/{filepath: .*}")
   public Response seedFileSystem(
 
-      @Context
-      SecurityContext securityContext,
+      @Context SecurityContext securityContext,
 
-      @PathParam("filepath")
-      String filename,
+      @PathParam("filepath") String filename,
 
       InputStream fileContents
 
