@@ -17,15 +17,19 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
+import static org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter.DEFAULT_AUTH_HOST;
+import static org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter.HTTP_AUTH_PREFIX;
+import static org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter.WWW_AUTHENTICATE_REALM;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -33,13 +37,13 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -49,81 +53,84 @@ import com.google.common.net.HttpHeaders;
 @RunWith(MockitoJUnitRunner.class)
 public class BasicHttpAuthenticationFilterTest {
 
+  /**
+   * Test data.
+   */
+  private static final String TEST_USERNAME = "brett";
+  private static final char[] TEST_PASSWORD = "brettspasswd".toCharArray();
+  private static final String TEST_HOST = DEFAULT_AUTH_HOST;
+
+  /**
+   * Class under test.
+   */
+  @InjectMocks
+  private BasicHttpAuthenticationFilter authenticationFilter;
+
+  /**
+   * Collaborators.
+   */
+  @Mock
+  private Subject mockSubject;
+  @Mock
+  private SecurityContext mockSecurityContext;
+  @Mock
+  private UsernamePasswordAuthenticator mockAuthenticator;
+  @Mock
   private Request mockRequest;
-
+  @Mock
   private MultivaluedMap<String, String> mockHeaders;
-
-  private ContainerRequestContext mockContext;
-
+  @Mock
+  private ContainerRequestContext mockRequestContext;
+  @Mock
+  private ContainerResponseContext mockResponseContext;
   @Mock
   private UriInfo mockUriInfo;
 
-  private BasicHttpAuthenticationFilter basicHttpAuthenticationRequestFilter;
-
-  private UsernamePasswordAuthenticator usernamePasswordAuthenticator;
-
-  private static final String HTTP_AUTH_PREFIX = "X-DCC-Auth";
-  private static final String WWW_AUTHENTICATE_REALM = "DCC";
-
-  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-
-    // Create a few mock instances
-    this.mockRequest = mock(Request.class);
-    this.mockHeaders = mock(MultivaluedMap.class);
-    this.mockContext = mock(ContainerRequestContext.class);
-    this.usernamePasswordAuthenticator = mock(UsernamePasswordAuthenticator.class);
-    Subject mockSubject = mock(Subject.class);
-    SecurityContext mockSecurityContext = mock(SecurityContext.class);
-
-    this.basicHttpAuthenticationRequestFilter =
-        new BasicHttpAuthenticationFilter(this.usernamePasswordAuthenticator);
-
     // Create some behaviour
-    when(this.mockContext.getRequest()).thenReturn(this.mockRequest);
-    when(this.mockContext.getHeaders()).thenReturn(this.mockHeaders);
-    when(this.mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
-    when(this.mockContext.getUriInfo()).thenReturn(mockUriInfo);
+    when(mockRequestContext.getRequest()).thenReturn(mockRequest);
+    when(mockRequestContext.getHeaders()).thenReturn(mockHeaders);
+    when(mockRequestContext.getSecurityContext()).thenReturn(mockSecurityContext);
+    when(mockRequestContext.getUriInfo()).thenReturn(mockUriInfo);
+    when(mockRequestContext.getProperty(anyString())).thenReturn(Thread.currentThread().getName());
     when(mockUriInfo.getPath()).thenReturn("/fake/path");
 
-    when(this.usernamePasswordAuthenticator.authenticate("brett", "brettspasswd".toCharArray(), "")).thenReturn(
-        mockSubject);
+    when(mockAuthenticator.authenticate(TEST_USERNAME, TEST_PASSWORD, TEST_HOST)).thenReturn(mockSubject);
   }
 
   @After
   public void tearDown() {
-    // Clean-up threads
-    ThreadContext.remove();
+    // Cleanup thread locals and thread names
+    authenticationFilter.filter(mockRequestContext, mockResponseContext);
   }
 
   @Test
   public void test_filter_handlesCorrectAuthorizationHeader() throws IOException {
-
-    when(this.mockHeaders.getFirst(HttpHeaders.AUTHORIZATION))//
-        .thenReturn(String.format("%s YnJldHQ6YnJldHRzcGFzc3dk", HTTP_AUTH_PREFIX)); // encodes "brett:brettspasswd" in
-                                                                                     // base64
     // (generate using: $ echo -n "brett:brettspasswd" | base64)
-    this.runFilter();
+    when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION))
+        .thenReturn(String.format("%s YnJldHQ6YnJldHRzcGFzc3dk", HTTP_AUTH_PREFIX));
+
+    executeFilter();
+
     // Make sure there was a login attempt and capture the token
     // Assert username and password match
-    verify(this.usernamePasswordAuthenticator).authenticate("brett", "brettspasswd".toCharArray(), "");
-    verify(this.mockContext, Mockito.never()).abortWith(any(Response.class));
+    verify(this.mockAuthenticator).authenticate(TEST_USERNAME, TEST_PASSWORD, TEST_HOST);
+    verify(mockRequestContext, Mockito.never()).abortWith(any(Response.class));
   }
 
   @Test
   public void test_filter_handlesIncorrectAuthorizationHeader() throws IOException {
-
-    when(this.mockHeaders.getFirst(HttpHeaders.AUTHORIZATION))//
+    // (generate using: $ echo -n "brett:NOTbrettspasswd" | base64)
+    when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION))//
         .thenReturn(String.format("%s YnJldHQ6Tk9UYnJldHRzcGFzc3dk", HTTP_AUTH_PREFIX)); // encodes "brett:brettspasswd"
                                                                                          // in base64
-    // (generate using: $ echo -n "brett:NOTbrettspasswd" | base64)
-    this.runFilter();
+    executeFilter();
 
-    verify(this.usernamePasswordAuthenticator).authenticate("brett", "NOTbrettspasswd".toCharArray(), "");
+    verify(this.mockAuthenticator).authenticate(TEST_USERNAME, "NOTbrettspasswd".toCharArray(), TEST_HOST);
 
     ArgumentCaptor<Response> response = ArgumentCaptor.forClass(Response.class);
-    verify(this.mockContext).abortWith(response.capture());
+    verify(mockRequestContext).abortWith(response.capture());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getValue().getStatus());
     assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM), response.getValue()
         .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
@@ -132,12 +139,12 @@ public class BasicHttpAuthenticationFilterTest {
   @Test
   public void test_filter_handlesMissingHeader() throws IOException {
     // This test is testing that the header is absent
-    when(this.mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+    when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(null);
 
-    this.runFilter();
+    executeFilter();
 
     ArgumentCaptor<Response> response = ArgumentCaptor.forClass(Response.class);
-    verify(this.mockContext).abortWith(response.capture());
+    verify(mockRequestContext).abortWith(response.capture());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getValue().getStatus());
     assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM), response.getValue()
         .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
@@ -162,17 +169,18 @@ public class BasicHttpAuthenticationFilterTest {
    * Common test fixture for a malformed header
    */
   private void testMalformedHeader(String malformed) throws IOException {
-    when(this.mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(malformed);
-    this.runFilter();
+    when(mockHeaders.getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(malformed);
+
+    executeFilter();
 
     ArgumentCaptor<Response> response = ArgumentCaptor.forClass(Response.class);
-    verify(this.mockContext).abortWith(response.capture());
+    verify(mockRequestContext).abortWith(response.capture());
     assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getValue().getStatus());
   }
 
   // Exercise the code we're testing
-  private void runFilter() throws IOException {
-    this.basicHttpAuthenticationRequestFilter.filter(this.mockContext);
+  private void executeFilter() throws IOException {
+    authenticationFilter.filter(mockRequestContext);
   }
 
 }

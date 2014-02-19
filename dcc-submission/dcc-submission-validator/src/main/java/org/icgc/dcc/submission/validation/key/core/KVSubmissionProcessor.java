@@ -114,7 +114,7 @@ public class KVSubmissionProcessor {
     log.info(
         "Processing file type: '{}'; Referencing '{} and {}' (will be collecting FKs: '{}')",
         new Object[] { fileType,
-            optionallyReferencedPrimaryKeys1, optionallyReferencedPrimaryKeys2,
+            optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2.isPresent(),
             optionalEncounteredForeignKeys.isPresent() });
 
     // Process files matching the current file type
@@ -123,8 +123,10 @@ public class KVSubmissionProcessor {
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
       log.info("{}", banner("-"));
-      log.info("Processing '{}' file: '{}'; Referencing '{} and {}': '{}'",
-          new Object[] { fileType, optionallyReferencedPrimaryKeys1, optionallyReferencedPrimaryKeys2, dataFilePath });
+      log.info(
+          "Processing '{}' file: '{}'; Referencing '{} and {}': '{}'",
+          new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
+              .isPresent(), dataFilePath });
 
       // TODO: subclass for referencing/non-referencing?
       new KVFileProcessor(fileType, dataFilePath)
