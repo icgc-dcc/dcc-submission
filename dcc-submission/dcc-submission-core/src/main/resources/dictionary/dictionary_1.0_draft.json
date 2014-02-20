@@ -5,6 +5,215 @@
             "fields": [
                 {
                     "controlled": false, 
+                    "label": "Unique identifier assigned to a computational analysis run that was performed on a group of analyzed samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs", 
+                    "name": "analysis_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": "^([\\w+\\-\\_]+)$"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": "UNIQUE_COUNT", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files", 
+                    "name": "analyzed_sample_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": "^([\\w+\\-\\_]+)$"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": "UNIQUE_COUNT", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Controlled vocabulary for experimental array platform", 
+                    "name": "platform", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.platform.v1"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Name of experimental protocol and URL to written protocol.  Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>", 
+                    "name": "experimental_protocol", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": ".*([a-z0-9+.-]+):(?://(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?.*"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Name of normalization algorithm and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'", 
+                    "name": "normalization_algorithm", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": ".*([a-z0-9+.-]+):(?://(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?.*"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Names of other analysis algorithms.  Separate multiple algorithms by commas.", 
+                    "name": "other_analysis_algorithm", 
+                    "restrictions": [], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Public repository where raw data is submitted", 
+                    "name": "raw_data_repository", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.raw_data_repository.v1"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Accession and URL for referencing the raw data at the public repository", 
+                    "name": "raw_data_accession", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": "(?iu)(EGA:)?EGA[DNS]\\d+|(GEO:)?G(SE|DS|SM)\\d+|((CGHub|TCGA):)?TCGA-[\\w\\-]+|([A-Z0-9_\\-]{2,}:)?[\\w_\\-0-9]+.*"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "type of sample used as reference for calculating fold change", 
+                    "name": "reference_sample_type", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": true
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.reference_sample_type.v1"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": true, 
+                    "label": "Optional field to leave notes", 
+                    "name": "note", 
+                    "restrictions": [], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }
+            ], 
+            "label": "Arrary-base Gene Expression (exp_array) - Analysis Metadata File (m)", 
+            "name": "exp_array_m", 
+            "pattern": "^exp_array_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
+            "relations": [
+                {
+                    "bidirectional": false, 
+                    "fields": [
+                        "analyzed_sample_id"
+                    ], 
+                    "optionals": [], 
+                    "other": "sample", 
+                    "otherFields": [
+                        "analyzed_sample_id"
+                    ]
+                }
+            ], 
+            "role": "SUBMISSION", 
+            "uniqueFields": [
+                "analysis_id", 
+                "analyzed_sample_id"
+            ]
+        }, 
+        {
+            "fields": [
+                {
+                    "controlled": false, 
                     "label": "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs", 
                     "name": "analysis_id", 
                     "restrictions": [
@@ -1261,401 +1470,6 @@
                 "analysis_id", 
                 "analyzed_sample_id"
             ]
-        }, 
-        {
-            "fields": [
-                {
-                    "controlled": false, 
-                    "label": "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs. Cannot contain whitespace, semi-colons or special characters. Can contain alphanumeric characters, dashes or underscores.", 
-                    "name": "analysis_id", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "hnc_12, CCG_34_94583, BRCA47832-3239", 
-                                "pattern": "^[\\w+\\-\\_]+$"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "UNIQUE_COUNT", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files", 
-                    "name": "analyzed_sample_id", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "ov-45, 90343a, BRCAZ-TG", 
-                                "pattern": "^[\\w+\\-\\_]+$"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "UNIQUE_COUNT", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "For providing Ensembl gene or transcript annotation use the DB Xref syntax: 'Ensembl:ENSGxxx'. For multiple IDs, please split into one ID per row, repeating the same information for all other columns.", 
-                    "name": "gene_stable_id", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }
-                    ], 
-                    "summaryType": "UNIQUE_COUNT", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Name of the chromosome containing the above gene.", 
-                    "name": "gene_chromosome", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.chromosome.v3"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Strand of the chromosome", 
-                    "name": "gene_strand", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.strand.v1"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "INTEGER"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Start position of the entire gene on the chromosome as annotated in Ensembl", 
-                    "name": "gene_start", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "405343492", 
-                                "pattern": "^\\d+$"
-                            }, 
-                            "type": "regex"
-                        }, 
-                        {
-                            "config": {
-                                "description": "Chromosome start position must be equal or greater than 1", 
-                                "script": "lengths = ['1':249250621, '2':243199373, '3':198022430, '4':191154276, '5':180915260, '6':171115067, '7':159138663, '8':146364022, '9':141213431, '10':135534747, '11':135006516, '12':133851895, '13':115169878, '14':107349540, '15':102531392, '16':90354753, '17':81195210, '18':78077248, '19':59128983, '20':63025520, '21':48129895, '22':51304566, 'X':155270560, 'Y':59373566, 'MT':16569]; if (!(gene_start >= 1 && gene_end <= lengths[gene_chromosome] && gene_start <= gene_end)) { return false } return true"
-                            }, 
-                            "type": "script"
-                        }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "INTEGER"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "End position of the entire gene on the chromosome as annotated in Ensembl", 
-                    "name": "gene_end", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "405343499", 
-                                "pattern": "^\\d+$"
-                            }, 
-                            "type": "regex"
-                        }, 
-                        {
-                            "config": {
-                                "description": "Chromosome end position must be less than or equal to the length of the chromosome", 
-                                "script": "lengths = ['1':249250621, '2':243199373, '3':198022430, '4':191154276, '5':180915260, '6':171115067, '7':159138663, '8':146364022, '9':141213431, '10':135534747, '11':135006516, '12':133851895, '13':115169878, '14':107349540, '15':102531392, '16':90354753, '17':81195210, '18':78077248, '19':59128983, '20':63025520, '21':48129895, '22':51304566, 'X':155270560, 'Y':59373566, 'MT':16569]; if (!(gene_start >= 1 && gene_end <= lengths[gene_chromosome] && gene_start <= gene_end)) { return false } return true"
-                            }, 
-                            "type": "script"
-                        }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "INTEGER"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Normalized count of sequencing reads if analyzed by sequencing platforms", 
-                    "name": "normalized_read_count", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "DECIMAL"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Raw count of sequencing reads if analyzed by sequencing platforms", 
-                    "name": "raw_read_count", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "INTEGER"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Normalized expression level", 
-                    "name": "normalized_expression_level", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "DECIMAL"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Expressed fold change if differential expression is measured", 
-                    "name": "fold_change", 
-                    "restrictions": [], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "DECIMAL"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "ID of the reference sample if differential expression is measured", 
-                    "name": "reference_sample_id", 
-                    "restrictions": [], 
-                    "summaryType": "UNIQUE_COUNT", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Quality score of the observation", 
-                    "name": "quality_score", 
-                    "restrictions": [], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "DECIMAL"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Probability of the observation", 
-                    "name": "probability", 
-                    "restrictions": [], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "DECIMAL"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Indicate if the mutation/variation is annotated in dbSNP", 
-                    "name": "is_annotated", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.is_annotated.v1"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Indicate if the mutation/variation has been verified using an independent orthogonal genotype platform/technology", 
-                    "name": "verification_status", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.verification_status.v2"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Identifier of orthogonal platform or technology used to confirm that the mutation/variant is true; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.", 
-                    "name": "verification_platform", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.platform.v1"
-                            }, 
-                            "type": "codelist"
-                        }, 
-                        {
-                            "config": {
-                                "description": "If mutation is verified, the verification platform must be specified", 
-                                "script": "if (verification_status == '1') { verification_platform != '-777' && verification_platform != '-888' } else { return true }"
-                            }, 
-                            "type": "script"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "ID of the probeset used in microarray", 
-                    "name": "probeset_id", 
-                    "restrictions": [], 
-                    "summaryType": "UNIQUE_COUNT", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Indicate if the mutation/variation has been observed in a larger cohort/sample size, and is not an artifact or consequence of sample selection for sequencing", 
-                    "name": "biological_validation_status", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.biological_validation_status.v3"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Identifier of assay platform or technology used to validate the mutation/variant", 
-                    "name": "biological_validation_platform", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.platform.v1"
-                            }, 
-                            "type": "codelist"
-                        }, 
-                        {
-                            "config": {
-                                "description": "If mutation is biologically validated, the biological validation platform must be specified", 
-                                "script": "if (biological_validation_status == '1') { biological_validation_platform != '-777' && biological_validation_platform != '-888' } else { return true }"
-                            }, 
-                            "type": "script"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": true, 
-                    "label": "Optional field to leave notes", 
-                    "name": "note", 
-                    "restrictions": [], 
-                    "summaryType": null, 
-                    "valueType": "TEXT"
-                }
-            ], 
-            "label": "Gene Expression (gene) - Primary Analysis File (g)", 
-            "name": "exp_g", 
-            "pattern": "^exp_g\\.txt(?:\\.gz|\\.bz2)?$", 
-            "relations": [
-                {
-                    "bidirectional": true, 
-                    "fields": [
-                        "analysis_id", 
-                        "analyzed_sample_id"
-                    ], 
-                    "optionals": [], 
-                    "other": "exp_m", 
-                    "otherFields": [
-                        "analysis_id", 
-                        "analyzed_sample_id"
-                    ]
-                }
-            ], 
-            "role": "SUBMISSION", 
-            "uniqueFields": []
         }, 
         {
             "fields": [
@@ -5751,315 +5565,6 @@
             "role": "SUBMISSION", 
             "uniqueFields": [
                 "donor_id"
-            ]
-        }, 
-        {
-            "fields": [
-                {
-                    "controlled": false, 
-                    "label": "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs", 
-                    "name": "analysis_id", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "hnc_12, CCG_34_94583, BRCA47832-3239", 
-                                "pattern": "^[\\w+\\-\\_]+$"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "UNIQUE_COUNT", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files", 
-                    "name": "analyzed_sample_id", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "ov-45, 90343a, BRCAZ-TG", 
-                                "pattern": "^[\\w+\\-\\_]+$"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "UNIQUE_COUNT", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Version of human reference genome assembly used in the analysis; specify the version used in alignments, or associated with the particular platform used", 
-                    "name": "assembly_version", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.assembly_version.v2"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Gene build version associated with the platform, tools or other methods used in the analysis; Supports the following syntax: 'DB:VERSION'", 
-                    "name": "gene_build_version", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "Ensembl:69", 
-                                "pattern": "^(\\w+)\\:(\\w+)$"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Identifier of platform or technology used for analysis or verification; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.", 
-                    "name": "platform", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.platform.v1"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Name of experimental protocol and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'", 
-                    "name": "experimental_protocol", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "Paired End http://www.illumina.com/technology/paired_end_sequencing_assay.ilmn", 
-                                "pattern": "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Name of base calling algorithm and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'", 
-                    "name": "base_calling_algorithm", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "CASAVA http://support.illumina.com/sequencing/sequencing_software/casava.ilmn", 
-                                "pattern": "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Name of alignment algorithm and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'", 
-                    "name": "alignment_algorithm", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "BWA 0.6.2 http://bio-bwa.sourceforge.net bwa aln -q20 HGref s1.fastq > s1_bwa.sai", 
-                                "pattern": "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Name of normalization algorithm and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'", 
-                    "name": "normalization_algorithm", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "examples": "Cufflinks 2.1.0 http://cufflinks.cbcb.umd.edu", 
-                                "pattern": "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?"
-                            }, 
-                            "type": "regex"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Names of other analysis algorithms.  Separate multiple algorithms by commas.", 
-                    "name": "other_analysis_algorithm", 
-                    "restrictions": [], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Sequencing technique intended for the analyzed sample library.", 
-                    "name": "sequencing_strategy", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.sequencing_strategy.v1"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Sequence coverage if analyzed by sequencing platforms", 
-                    "name": "seq_coverage", 
-                    "restrictions": [], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "DECIMAL"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Public repository where raw data is submitted", 
-                    "name": "raw_data_repository", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.raw_data_repository.v2"
-                            }, 
-                            "type": "codelist"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Accession for referencing the raw data at the public repository", 
-                    "name": "raw_data_accession", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "description": "Format of raw data accession must match the format required by the raw data repository", 
-                                "script": "EGA = (raw_data_repository == 1); dbSNP = (raw_data_repository == 2); TCGA = (raw_data_repository == 3); CGHub = (raw_data_repository == 4); GEO = (raw_data_repository == 5); if (EGA) { raw_data_accession ~= '(?iu)EGA[DS][0-9]+' } else if (GEO) { raw_data_accession ~= 'G(SE|DS|SM)[0-9]+' } else if (TCGA) { raw_data_accession ~= 'TCGA-[A-Za-z0-9_-]+'} else if (CGHub) { raw_data_accession ~= '[A-Fa-f0-9-]+' } else if (dbSNP) { raw_data_accession ~= '[A-Za-z0-9_-]+.*' } else { return false }"
-                            }, 
-                            "type": "script"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": true, 
-                    "label": "Optional field to leave notes", 
-                    "name": "note", 
-                    "restrictions": [], 
-                    "summaryType": null, 
-                    "valueType": "TEXT"
-                }
-            ], 
-            "label": "Gene Expression (gene) - Analysis Metadata File (m)", 
-            "name": "exp_m", 
-            "pattern": "^exp_m\\.txt(?:\\.gz|\\.bz2)?$", 
-            "relations": [
-                {
-                    "bidirectional": false, 
-                    "fields": [
-                        "analyzed_sample_id"
-                    ], 
-                    "optionals": [], 
-                    "other": "sample", 
-                    "otherFields": [
-                        "analyzed_sample_id"
-                    ]
-                }
-            ], 
-            "role": "SUBMISSION", 
-            "uniqueFields": [
-                "analysis_id", 
-                "analyzed_sample_id"
             ]
         }, 
         {
