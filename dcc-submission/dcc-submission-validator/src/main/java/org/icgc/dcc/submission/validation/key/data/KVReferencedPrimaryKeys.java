@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
+import static java.lang.String.format;
+import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import lombok.Value;
 
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
@@ -29,6 +31,12 @@ public class KVReferencedPrimaryKeys {
 
   public boolean hasMatchingReference(KVKey fk) {
     return referencedPks.containsPk(fk);
+  }
+
+  @Override
+  public String toString() {
+    return format("KVReferencedPrimaryKeys(referencedFileType=%s, referencedPks=%s)",
+        referencedFileType, formatCount(referencedPks.getSize()));
   }
 
 }

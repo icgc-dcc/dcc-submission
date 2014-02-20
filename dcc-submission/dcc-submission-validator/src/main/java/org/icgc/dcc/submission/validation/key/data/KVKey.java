@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import java.util.List;
 
-import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.val;
 
@@ -28,7 +27,6 @@ import lombok.val;
  */
 // TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
 @Value
-@EqualsAndHashCode
 public class KVKey implements Comparable<KVKey> {
 
   public static final KVKey KEY_NOT_APPLICABLE = null;
@@ -87,6 +85,7 @@ public class KVKey implements Comparable<KVKey> {
         return compared2;
       }
     }
+
     // TODO: general case!!!!
     return 0;
   }

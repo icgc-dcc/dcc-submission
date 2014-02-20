@@ -19,7 +19,9 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newTreeMap;
+import static com.google.common.collect.Maps.newHashMap;
+import static java.lang.String.format;
+import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
 
@@ -41,23 +43,30 @@ import com.google.common.collect.Sets;
 @RequiredArgsConstructor
 public final class KVPrimaryKeys {
 
-  private final Map<String, Set<KVKey>> pks = newTreeMap();
+  private final Map<String, Set<KVKey>> pks = newHashMap();
 
   /**
    * Re-using the PK mechanism even though the keys in {@link KVFileType#MIRNA_P} aren't actually unique (they are
    * however referenced).
    */
   public void updateMirnaPKeys(KVFileType fileType, String fileName, KVRow row) {
-    if (ROW_CHECKS_ENABLED) checkState(fileType == MIRNA_P,
-        "Only applicable for '%s', instead got: '%s'", MIRNA_P, fileType);
+    if (ROW_CHECKS_ENABLED) {
+      checkState(fileType == MIRNA_P,
+          "Only applicable for '%s', instead got: '%s'", MIRNA_P, fileType);
+    }
+
     updatePks(fileName, row);
   }
 
   public void updatePks(String fileName, KVRow row) {
-    if (ROW_CHECKS_ENABLED) checkState(row.hasPk(), "Expected to have a PK: '%s' ('%s')", row, fileName);
-    if (!pks.containsKey(fileName)) {
-      pks.put(fileName, Sets.<KVKey> newTreeSet());
+    if (ROW_CHECKS_ENABLED) {
+      checkState(row.hasPk(), "Expected to have a PK: '%s' ('%s')", row, fileName);
     }
+
+    if (!pks.containsKey(fileName)) {
+      pks.put(fileName, Sets.<KVKey> newHashSet());
+    }
+
     pks.get(fileName).add(row.getPk());
   }
 
@@ -83,11 +92,13 @@ public final class KVPrimaryKeys {
     for (val filePks : pks.values()) {
       size += filePks.size();
     }
+
     return size;
   }
 
   @Override
   public String toString() {
-    return pks.toString();
+    return format("KVPrimaryKeys(pks=%s, size=%s)", formatCount(pks.size()), formatCount(getSize()));
   }
+
 }

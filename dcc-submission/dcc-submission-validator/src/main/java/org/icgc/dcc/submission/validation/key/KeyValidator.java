@@ -100,10 +100,18 @@ public class KeyValidator implements Validator {
   }
 
   private static void execute(ValidationContext context, KVValidatorRunner runnable) {
-    val properties = getProperties(context);
-    val executor = new FlowExecutor(properties);
+    // Change this switch to false to aid in step debugging
+    val distributable = true;
+    if (distributable) {
+      // Run on cluster if using HDFS
+      val properties = getProperties(context);
+      val executor = new FlowExecutor(properties);
 
-    executor.execute(runnable);
+      executor.execute(runnable);
+    } else {
+      // Run on this node
+      runnable.run();
+    }
   }
 
   private static Map<Object, Object> getProperties(ValidationContext context) {

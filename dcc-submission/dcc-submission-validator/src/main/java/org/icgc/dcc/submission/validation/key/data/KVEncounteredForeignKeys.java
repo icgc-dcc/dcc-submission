@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newTreeSet;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Set;
 
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class KVEncounteredForeignKeys {
 
-  private final Set<KVKey> encounteredFks = newTreeSet(); // TODO: change to array (optimization)?
+  private final Set<KVKey> encounteredFks = newHashSet(); // TODO: change to array (optimization)?
 
   public void addEncounteredForeignKey(KVKey fk) {
     encounteredFks.add(checkNotNull(fk));
@@ -54,7 +54,7 @@ public final class KVEncounteredForeignKeys {
 
   @Override
   public String toString() {
-    return encounteredFks.toString();
+    return String.format("KVEncounteredForeignKeys(encounteredFks=%s)", encounteredFks.size());
   }
 
 }
