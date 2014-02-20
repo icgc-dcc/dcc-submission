@@ -184,6 +184,11 @@ public final class FileTypes {
     SURGERY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.SURGERY_SUBTYPE),
     THERAPY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.THERAPY_SUBTYPE);
 
+    /**
+     * 
+     */
+    private static final String PROBES = "probes";
+
     private static String TYPE_SUFFIX = "_TYPE";
 
     private static final Joiner JOINER = Joiner.on("_");
@@ -218,8 +223,8 @@ public final class FileTypes {
       if (subType.usedAsAbbrevatiation()) {
         return JOINER.join(dataType.getTypeName(), subType.getAbbreviation());
       } else if (subType.isSystemSubType()) {
-        return JOINER.join(dataType.getTypeName(), "mani"); // TODO: name to be finalized (mani is short for manifest,
-                                                            // consider changing subtype from "system" to "mani"?)
+        return JOINER.join(dataType.getTypeName(), PROBES); // TODO: name to be finalized. consider changing subtype
+                                                              // from "system" to "mani"?)
       } else {
         return subType.getFullName();
       }
@@ -232,7 +237,7 @@ public final class FileTypes {
      */
     public static FileType from(String typeName) {
       return valueOf(typeName
-          .replaceAll("mani", "system") // Until exact name is settled
+          .replaceAll(PROBES, "system") // Until exact name is settled
           .toUpperCase()
           + TYPE_SUFFIX);
     }
