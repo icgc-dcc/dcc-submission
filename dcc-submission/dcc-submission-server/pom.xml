@@ -261,6 +261,10 @@
           </execution>
           <execution>
             <id>unit-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
             <configuration>
               <!-- Run in a shared JVM -->
               <reuseForks>true</reuseForks>
