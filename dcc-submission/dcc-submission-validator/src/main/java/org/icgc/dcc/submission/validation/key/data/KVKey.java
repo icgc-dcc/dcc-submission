@@ -38,7 +38,7 @@ public class KVKey implements Comparable<KVKey> {
   public static final KVKey KEY_NOT_APPLICABLE = null;
 
   // TODO: Move to another class? Clean up?
-  public static final Interner<ByteBuffer> interner = Interners.newWeakInterner();
+  private static final Interner<ByteBuffer> VALUE_INTERNER = Interners.newWeakInterner();
 
   /**
    * Values for the key.
@@ -55,8 +55,8 @@ public class KVKey implements Comparable<KVKey> {
     val values = new ByteBuffer[size];
     for (int index = 0; index < size; index++) {
       val text = row.get(indices.get(index));
-      ByteBuffer bytes = ByteBuffer.wrap(text.getBytes(US_ASCII));
-      val canonicalized = interner.intern(bytes);
+      val bytes = ByteBuffer.wrap(text.getBytes(US_ASCII));
+      val canonicalized = VALUE_INTERNER.intern(bytes);
 
       values[index] = canonicalized;
     }

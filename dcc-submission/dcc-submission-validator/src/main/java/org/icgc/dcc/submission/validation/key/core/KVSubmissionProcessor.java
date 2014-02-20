@@ -124,7 +124,7 @@ public class KVSubmissionProcessor {
     checkState(dataFilePaths.isPresent(),
         "Expecting to find at least one matching file at this point for: '%s'", fileType);
     for (val dataFilePath : dataFilePaths.get()) {
-      val watch = Stopwatch.createStarted();
+      val watch = createStopwatch();
       log.info("{}", banner("-"));
       log.info(
           "Processing '{}' file: '{}'; Referencing '{}' and '{}'",
@@ -205,7 +205,13 @@ public class KVSubmissionProcessor {
     }
   }
 
-  private String banner(String symbol) {
+  @SuppressWarnings("deprecation")
+  private static Stopwatch createStopwatch() {
+    // Can't use the new API here because Hadoop doesn't know about it.
+    return new Stopwatch().start();
+  }
+
+  private static String banner(String symbol) {
     return repeat(symbol, 75);
   }
 

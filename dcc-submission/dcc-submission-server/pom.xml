@@ -295,11 +295,6 @@
                   <pattern>org.codehaus.jackson</pattern>
                   <shadedPattern>org.icgc.dcc.shaded.jackson</shadedPattern>
                 </relocation>
-                <!-- Special case since Hadoop uses a different version. Note that dcc-etl-loader can see this so it is purposefully selective -->
-                <relocation>
-                  <pattern>com.google.common.base.StopWatch</pattern>
-                  <shadedPattern>org.icgc.dcc.shaded.google.common.base.StopWatch</shadedPattern>
-                </relocation>
               </relocations>
             </configuration>
           </execution>

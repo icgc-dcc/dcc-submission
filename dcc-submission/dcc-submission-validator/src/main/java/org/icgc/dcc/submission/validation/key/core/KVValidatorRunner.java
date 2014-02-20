@@ -83,7 +83,7 @@ public class KVValidatorRunner implements Runnable, Serializable {
 
     val fileSystem = getFileSystem();
     val report = new KVReporter(fileSystem, new Path(reportPath));
-    val watch = Stopwatch.createStarted();
+    val watch = createStopwatch();
     try {
       val validator = new KVSubmissionProcessor(
           new KVFileParser(fileSystem, new FileLineListParser(), false),
@@ -99,12 +99,15 @@ public class KVValidatorRunner implements Runnable, Serializable {
     }
   }
 
-  /**
-   * Re-establishes the file system cluster-side.
-   */
   @SneakyThrows
   private FileSystem getFileSystem() {
     return FileSystem.get(fsUri, new Configuration());
+  }
+
+  @SuppressWarnings("deprecation")
+  private static Stopwatch createStopwatch() {
+    // Can't use the new API here because Hadoop doesn't know about it.
+    return new Stopwatch().start();
   }
 
   private static String formatMemory() {
