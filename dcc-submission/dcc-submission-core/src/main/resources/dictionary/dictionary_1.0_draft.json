@@ -594,6 +594,12 @@
                                 "acceptMissingCode": false
                             }, 
                             "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.methylation_metric.v1"
+                            }, 
+                            "type": "codelist"
                         }
                     ], 
                     "summaryType": "FREQUENCY", 
