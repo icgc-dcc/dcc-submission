@@ -334,7 +334,12 @@
                 }
             ], 
             "role": "SUBMISSION", 
-            "uniqueFields": []
+            "uniqueFields": [
+                "analysis_id", 
+                "analyzed_sample_id",
+                "gene_model",
+                "gene_id"
+            ]
         }, 
         {
             "fields": [
