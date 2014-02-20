@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PUBLIC;
+import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getRow;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.OPTIONAL_RELATION;
@@ -102,7 +103,7 @@ public final class KVFileProcessor {
 
   private void processStatus(long lineNumber) {
     if ((lineNumber % DEFAULT_LOG_THRESHOLD) == 0) {
-      log.info("'{}' lines processed", lineNumber);
+      log.info("{} lines processed for '{}'", formatCount(lineNumber), filePath.getName());
     }
   }
 
@@ -205,9 +206,9 @@ public final class KVFileProcessor {
     if (context.getRow().hasOptionalFk()) {
       valid.validateOptionalForeignKey(context);
     }
-  
+
     sanity.ensureNoFK2(context.getRow());
-  
+
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
     ; // No surjection check for meta files
   }
@@ -215,10 +216,10 @@ public final class KVFileProcessor {
   private void processGenericMeta2(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
-  
+
     sanity.ensureNoFK2(context.getRow());
     sanity.ensureNoOptionalFK(context.getRow());
-  
+
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
     ; // No surjection check for meta files
   }
@@ -237,10 +238,10 @@ public final class KVFileProcessor {
   private void processGenericPrimary2(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
-  
+
     sanity.ensureNoFK2(context.getRow());
     sanity.ensureNoOptionalFK(context.getRow());
-  
+
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
     addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
   }
@@ -248,11 +249,11 @@ public final class KVFileProcessor {
   private void processGenericSecondary(KVRowContext context) {
     ; // No uniqueness check for METH_SEQ_P
     valid.validateForeignKey1(context);
-  
+
     sanity.ensureNoPK(context.getRow());
     sanity.ensureNoFK2(context.getRow());
     sanity.ensureNoOptionalFK(context.getRow());
-  
+
     ; // No surjection check for secondary files
   }
 
