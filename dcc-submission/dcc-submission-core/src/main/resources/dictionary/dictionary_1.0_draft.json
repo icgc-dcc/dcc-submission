@@ -1009,6 +1009,27 @@
                 },
                 {
                     "controlled": false, 
+                    "label": "Chromosome strand of the feature being described.", 
+                    "name": "chromosome_strand", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.strand.v1"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "INTEGER"
+                },
+                {
+                    "controlled": false, 
                     "label": "Indicate if the detected miRNA has been verified using an independent orthogonal genotype platform/technology", 
                     "name": "verification_status", 
                     "restrictions": [
