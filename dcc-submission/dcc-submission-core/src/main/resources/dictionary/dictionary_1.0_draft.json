@@ -272,7 +272,7 @@
                     "valueType": "TEXT"
                 }
             ], 
-            "label": "Gene Expression (gene) - Analysis Metadata File (m)", 
+            "label": "Sequencing-based Gene Expression (exp_seq) - Analysis Metadata File (m)", 
             "name": "exp_seq_m", 
             "pattern": "^exp_seq_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
@@ -292,6 +292,152 @@
             "uniqueFields": [
                 "analysis_id", 
                 "analyzed_sample_id"
+            ]
+        }, 
+        {
+            "fields": [
+                {
+                    "controlled": false, 
+                    "label": "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs", 
+                    "name": "analysis_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": "^([\\w+\\-\\_]+)$"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files", 
+                    "name": "analyzed_sample_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": "^([\\w+\\-\\_]+)$"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Gene model used", 
+                    "name": "gene_model", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.gene_db.v1"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Gene ID provied in the chosen gene model, eg, ENSG00000157764", 
+                    "name": "gene_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Normalized read count for the current gene", 
+                    "name": "normalized_read_count", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": "AVERAGE", 
+                    "valueType": "DECIMAL"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Raw read count for the current gene", 
+                    "name": "raw_read_count", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": "AVERAGE", 
+                    "valueType": "INTEGER"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Gene expression fold change", 
+                    "name": "fold_change", 
+                    "restrictions": [
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "DECIMAL"
+                }
+            ], 
+            "label": "Sequencing-base Gene Expression (exp_seq) - Primary File (p)", 
+            "name": "exp_seq_p", 
+            "pattern": "^exp_seq_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
+            "relations": [
+                {
+                    "bidirectional": true, 
+                    "fields": [
+                        "analysis_id", 
+                        "analyzed_sample_id"
+                    ], 
+                    "optionals": [], 
+                    "other": "exp_seq_m", 
+                    "otherFields": [
+                        "analysis_id", 
+                        "analyzed_sample_id"
+                    ]
+                }
+            ], 
+            "role": "SUBMISSION", 
+            "uniqueFields": [
+                "analysis_id", 
+                "analyzed_sample_id",
+                "gene_model",
+                "gene_id"
             ]
         }, 
         {
