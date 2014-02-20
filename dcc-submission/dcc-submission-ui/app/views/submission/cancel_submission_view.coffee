@@ -42,10 +42,10 @@ module.exports = class CancelSubmissionView extends View
     #console.debug "ValidateSubmissionView#initialize", @options
     @model = new Model @options.submission.getAttributes()
     
-    release = new NextRelease()
-    release.fetch
-      success: (data) =>
-        @model.set 'queue', data.get('queue').length
+    #release = new NextRelease()
+    #release.fetch
+    #  success: (data) =>
+    #    @model.set 'queue', data.get('queue').length
 
     super
 

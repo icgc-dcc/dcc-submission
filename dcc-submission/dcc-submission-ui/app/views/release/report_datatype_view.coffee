@@ -55,8 +55,9 @@ module.exports = class ReportDatatypeView extends View
     @fileMap = {}
     submissionFiles.forEach (f)=>
       @fileMap[f.name] = f
-    
-    
+
+
+
     # Start contstructing
     @report = @model.get "report"
     @reportDataType = @report.dataTypeReports
@@ -91,7 +92,7 @@ module.exports = class ReportDatatypeView extends View
 
       elem = container.find("#"+datatype)
       if elem.length == 0
-        container.append("<table id='#{datatype}'></table>")
+        container.append("<table id='#{datatype}'></table><br>")
 
         elem = container.find("##{datatype}")
         elem.addClass("report table table-striped table-bordered table-hover")
@@ -126,10 +127,15 @@ module.exports = class ReportDatatypeView extends View
 
       dt = @$el.find("#MISCELLANEOUS").dataTable()
       temp = []
-      unrecognized.forEach (f)->
+      miscCache = {}
+      unrecognized.forEach (f)=>
+        miscCache[f.name] = @fileMap[f.name].lastUpdate
         temp.push({fileName:f.name, fileState:"SKIPPED"})
-      dt.fnClearTable()
-      dt.fnAddData temp
+
+      if not _.isEqual miscCache, @datatypeCache["MISCELLANEOUS"]
+        dt.fnClearTable()
+        dt.fnAddData temp
+      @datatypeCache["MISCELLANEOUS"] = _.clone miscCache
     else
       @$el.find("#miscellaneous-report-container").css("visibility", "hidden")
 
@@ -230,25 +236,20 @@ module.exports = class ReportDatatypeView extends View
             #state = @dataStateMap[source.dataType]
             state = source.fileState.replace("_", " ")
 
-            #if source.schemaName
-            #  if state
-            #    state = state.replace("_", " ")
-            #  else
-            #    state = "NOT VALIDATED"
-            #else
-            #  state = "SKIPPED"
-
             if type == "display"
               return switch state
                 when "INVALID"
-                  "<span class='error'>" +
-                  "<i class='icon-remove-sign'></i> " +
-                  state + "</span>"
+                  "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
                 when "VALID"
-                    "<span class='valid'>" +
-                    "<i class='icon-ok-sign'></i> " +
-                    state + "</span>"
-
+                  "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
+                when "VALIDATING"
+                  "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
+                when "QUEUED"
+                  "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
+                when "ERROR"
+                  "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
+                when "NOT VALIDATED"
+                  "<span><i class='icon-question-sign'></i> " + state + "</span>"
             state
         }
         {
@@ -273,7 +274,7 @@ module.exports = class ReportDatatypeView extends View
     sDOMStr = switch datatype
       when "MISCELLANEOUS"
         """
-          <'row-fluid'<'span12'f>r>t
+          <'row-fluid'<'span12'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         """
       else
         """
@@ -289,6 +290,9 @@ module.exports = class ReportDatatypeView extends View
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission."
+        #"oPaginate":
+          #"sPrevious": "< "
+          #"sNext": " >"
       iDisplayLength: 10
       sPaginationType: "full_numbers"
       bPaginate: true
