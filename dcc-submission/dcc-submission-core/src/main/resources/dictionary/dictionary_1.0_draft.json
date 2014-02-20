@@ -394,7 +394,7 @@
                 },
                 {
                     "controlled": false, 
-                    "label": "Chromosome strand of the feature being described. Only accept positive strand", 
+                    "label": "Chromosome strand of the feature being described. Only accept positive strand (1)", 
                     "name": "chromosome_strand", 
                     "restrictions": [
                         {
@@ -405,8 +405,8 @@
                         }, 
                         {
                             "config": {
-                                "examples": "+", 
-                                "pattern": "^\\+$"
+                                "examples": "1", 
+                                "pattern": "^(1)$"
                             }, 
                             "type": "regex"
                         }
