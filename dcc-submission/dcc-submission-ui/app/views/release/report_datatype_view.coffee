@@ -91,7 +91,7 @@ module.exports = class ReportDatatypeView extends View
 
       elem = container.find("#"+datatype)
       if elem.length == 0
-        container.append("<table id='#{datatype}'></table>")
+        container.append("<table id='#{datatype}'></table><br>")
 
         elem = container.find("##{datatype}")
         elem.addClass("report table table-striped table-bordered table-hover")
@@ -230,25 +230,20 @@ module.exports = class ReportDatatypeView extends View
             #state = @dataStateMap[source.dataType]
             state = source.fileState.replace("_", " ")
 
-            #if source.schemaName
-            #  if state
-            #    state = state.replace("_", " ")
-            #  else
-            #    state = "NOT VALIDATED"
-            #else
-            #  state = "SKIPPED"
-
             if type == "display"
               return switch state
                 when "INVALID"
-                  "<span class='error'>" +
-                  "<i class='icon-remove-sign'></i> " +
-                  state + "</span>"
+                  "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
                 when "VALID"
-                    "<span class='valid'>" +
-                    "<i class='icon-ok-sign'></i> " +
-                    state + "</span>"
-
+                  "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
+                when "VALIDATING"
+                  "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
+                when "QUEUED"
+                  "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
+                when "ERROR"
+                  "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
+                when "NOT VALIDATED"
+                  "<span><i class='icon-question-sign'></i> " + state + "</span>"
             state
         }
         {
@@ -273,7 +268,7 @@ module.exports = class ReportDatatypeView extends View
     sDOMStr = switch datatype
       when "MISCELLANEOUS"
         """
-          <'row-fluid'<'span12'f>r>t
+          <'row-fluid'<'span12'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         """
       else
         """
@@ -289,7 +284,10 @@ module.exports = class ReportDatatypeView extends View
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission."
-      iDisplayLength: 10
+        "oPaginate":
+          "sPrevious": " < "
+          "sNext": " > "
+      iDisplayLength: 1
       sPaginationType: "full_numbers"
       bPaginate: true
       aaSorting: [[ 1, "asc" ]]
