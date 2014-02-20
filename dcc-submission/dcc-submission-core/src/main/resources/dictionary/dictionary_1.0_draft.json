@@ -71,7 +71,7 @@
                 {
                     "controlled": false, 
                     "label": "Identifier of platform or technology used for analysis or verification; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.", 
-                    "name": "platform", 
+                    "name": "sequencing_platform", 
                     "restrictions": [
                         {
                             "config": {
@@ -91,7 +91,7 @@
                 }, 
                 {
                     "controlled": false, 
-                    "label": "Total number of reads from RNA-Seq, an indication of sequencing depth", 
+                    "label": "Total number of reads containing miRNA sequences, this is an indication of sequencing depth", 
                     "name": "total_read_count", 
                     "restrictions": [
                         {
@@ -121,6 +121,27 @@
                                 "pattern": "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?"
                             }, 
                             "type": "regex"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Type of sample used as reference for calculating fold change", 
+                    "name": "reference_sample_type", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": true
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.reference_sample_type.v1"
+                            }, 
+                            "type": "codelist"
                         }
                     ], 
                     "summaryType": "FREQUENCY", 
@@ -237,27 +258,6 @@
                                 "script": "EGA = (raw_data_repository == 1); dbSNP = (raw_data_repository == 2); TCGA = (raw_data_repository == 3); CGHub = (raw_data_repository == 4); GEO = (raw_data_repository == 5); if (EGA) { raw_data_accession ~= '(?iu)EGA[DS][0-9]+' } else if (GEO) { raw_data_accession ~= 'G(SE|DS|SM)[0-9]+' } else if (TCGA) { raw_data_accession ~= 'TCGA-[A-Za-z0-9_-]+'} else if (CGHub) { raw_data_accession ~= '[A-Fa-f0-9-]+' } else if (dbSNP) { raw_data_accession ~= '[A-Za-z0-9_-]+.*' } else { return false }"
                             }, 
                             "type": "script"
-                        }
-                    ], 
-                    "summaryType": "FREQUENCY", 
-                    "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Type of sample used as reference for calculating fold change", 
-                    "name": "reference_sample_type", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": true
-                            }, 
-                            "type": "required"
-                        }, 
-                        {
-                            "config": {
-                                "name": "GLOBAL.0.reference_sample_type.v1"
-                            }, 
-                            "type": "codelist"
                         }
                     ], 
                     "summaryType": "FREQUENCY", 
