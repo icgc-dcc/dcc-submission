@@ -304,6 +304,15 @@
                     ], 
                     "summaryType": "AVERAGE", 
                     "valueType": "DECIMAL"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Gene expression fold change", 
+                    "name": "fold_change", 
+                    "restrictions": [
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "DECIMAL"
                 }
             ], 
             "label": "Arrary-base Gene Expression (exp_array) - Primary File (p)", 
