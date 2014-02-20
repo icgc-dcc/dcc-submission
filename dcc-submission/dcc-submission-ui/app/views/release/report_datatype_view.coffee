@@ -55,8 +55,9 @@ module.exports = class ReportDatatypeView extends View
     @fileMap = {}
     submissionFiles.forEach (f)=>
       @fileMap[f.name] = f
-    
-    
+
+
+
     # Start contstructing
     @report = @model.get "report"
     @reportDataType = @report.dataTypeReports
@@ -126,10 +127,15 @@ module.exports = class ReportDatatypeView extends View
 
       dt = @$el.find("#MISCELLANEOUS").dataTable()
       temp = []
-      unrecognized.forEach (f)->
+      miscCache = {}
+      unrecognized.forEach (f)=>
+        miscCache[f.name] = @fileMap[f.name].lastUpdate
         temp.push({fileName:f.name, fileState:"SKIPPED"})
-      dt.fnClearTable()
-      dt.fnAddData temp
+
+      if not _.isEqual miscCache, @datatypeCache["MISCELLANEOUS"]
+        dt.fnClearTable()
+        dt.fnAddData temp
+      @datatypeCache["MISCELLANEOUS"] = _.clone miscCache
     else
       @$el.find("#miscellaneous-report-container").css("visibility", "hidden")
 
@@ -284,10 +290,10 @@ module.exports = class ReportDatatypeView extends View
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission."
-        "oPaginate":
-          "sPrevious": " < "
-          "sNext": " > "
-      iDisplayLength: 1
+        #"oPaginate":
+          #"sPrevious": "< "
+          #"sNext": " >"
+      iDisplayLength: 10
       sPaginationType: "full_numbers"
       bPaginate: true
       aaSorting: [[ 1, "asc" ]]
