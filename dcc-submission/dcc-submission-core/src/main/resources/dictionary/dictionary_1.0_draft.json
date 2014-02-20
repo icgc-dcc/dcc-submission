@@ -298,6 +298,261 @@
             "fields": [
                 {
                     "controlled": false, 
+                    "label": "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs", 
+                    "name": "analysis_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": "^([\\w+\\-\\_]+)$"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files", 
+                    "name": "analyzed_sample_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "pattern": "^([\\w+\\-\\_]+)$"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "miRNA database used, choose from code list", 
+                    "name": "mirna_db", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": true
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.mirna_db.v1"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "miRNA ID in the chosen miRNA database. Use -777 when miRNA detected does not exist in the miRNA db, ie, a possibly novel miRNA", 
+                    "name": "mirna_id", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": true
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Normalized read count for the current miRNA", 
+                    "name": "normalized_read_count", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": "AVERAGE", 
+                    "valueType": "DECIMAL"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Flag indicates whether the current miRNA is a isomer of an annotated matured miRNA", 
+                    "name": "is_isomir", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": true
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.is_isomir.v1"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Name of the chromosome containing the miRNA. Do not fill when the detected miRNA is annotated in miRNA database", 
+                    "name": "chromosome", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.chromosome.v3"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Chromosome start position of the feature being described", 
+                    "name": "chromosome_start", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "examples": "243198475", 
+                                "pattern": "^\\d+$"
+                            }, 
+                            "type": "regex"
+                        }, 
+                        {
+                            "config": {
+                                "description": "Chromosome start position must be equal or greater than 1", 
+                                "script": "lengths = ['1':249250621, '2':243199373, '3':198022430, '4':191154276, '5':180915260, '6':171115067, '7':159138663, '8':146364022, '9':141213431, '10':135534747, '11':135006516, '12':133851895, '13':115169878, '14':107349540, '15':102531392, '16':90354753, '17':81195210, '18':78077248, '19':59128983, '20':63025520, '21':48129895, '22':51304566, 'X':155270560, 'Y':59373566, 'MT':16569]; if (!(chromosome_start >= 1 && chromosome_end <= lengths[chromosome] && chromosome_start <= chromosome_end)) { return false } return true"
+                            }, 
+                            "type": "script"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "INTEGER"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Chromosome end position of the feature being described", 
+                    "name": "chromosome_end", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "examples": "243198479", 
+                                "pattern": "^\\d+$"
+                            }, 
+                            "type": "regex"
+                        }, 
+                        {
+                            "config": {
+                                "description": "Chromosome end position must be less than or equal to the length of the chromosome", 
+                                "script": "lengths = ['1':249250621, '2':243199373, '3':198022430, '4':191154276, '5':180915260, '6':171115067, '7':159138663, '8':146364022, '9':141213431, '10':135534747, '11':135006516, '12':133851895, '13':115169878, '14':107349540, '15':102531392, '16':90354753, '17':81195210, '18':78077248, '19':59128983, '20':63025520, '21':48129895, '22':51304566, 'X':155270560, 'Y':59373566, 'MT':16569]; if (!(chromosome_start >= 1 && chromosome_end <= lengths[chromosome] && chromosome_start <= chromosome_end)) { return false } return true"
+                            }, 
+                            "type": "script"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "INTEGER"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Indicate if the detected miRNA has been verified using an independent orthogonal genotype platform/technology", 
+                    "name": "verification_status", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.verification_status.v2"
+                            }, 
+                            "type": "codelist"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Identifier of orthogonal platform or technology used to confirm that the detected miRNA  is true; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.", 
+                    "name": "verification_platform", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.platform.v1"
+                            }, 
+                            "type": "codelist"
+                        }, 
+                        {
+                            "config": {
+                                "description": "If mutation is verified, the verification platform must be specified (cannot be -777/-888)", 
+                                "script": "if (verification_status == '1' && verification_platform == null ) { return false } else { return true }"
+                            }, 
+                            "type": "script"
+                        }
+                    ], 
+                    "summaryType": "FREQUENCY", 
+                    "valueType": "TEXT"
+                }
+            ], 
+            "label": "Sequencing-base miRNA Expression (mirna_seq) - Primary File (p)", 
+            "name": "mirna_seq_p", 
+            "pattern": "^mirna_seq_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
+            "relations": [
+                {
+                    "bidirectional": true, 
+                    "fields": [
+                        "analysis_id", 
+                        "analyzed_sample_id"
+                    ], 
+                    "optionals": [], 
+                    "other": "mirna_seq_m", 
+                    "otherFields": [
+                        "analysis_id", 
+                        "analyzed_sample_id"
+                    ]
+                }
+            ], 
+            "role": "SUBMISSION", 
+            "uniqueFields": [
+            ]
+        }, 
+        {
+            "fields": [
+                {
+                    "controlled": false, 
                     "label": "Unique identifier assigned to a computational analysis run that was performed on a group of analyzed samples and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs", 
                     "name": "analysis_id", 
                     "restrictions": [
