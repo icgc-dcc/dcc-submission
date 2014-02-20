@@ -312,11 +312,11 @@
                     ], 
                     "summaryType": null, 
                     "valueType": "TEXT"
-                }, 
+                },
                 {
                     "controlled": false, 
-                    "label": "Gene model used", 
-                    "name": "gene_model", 
+                    "label": "Name of the chromosome containing the miRNA. Do not fill when the detected miRNA is annotated in miRNA database", 
+                    "name": "chromosome", 
                     "restrictions": [
                         {
                             "config": {
@@ -326,7 +326,7 @@
                         }, 
                         {
                             "config": {
-                                "name": "GLOBAL.0.gene_db.v1"
+                                "name": "GLOBAL.0.chromosome.v3"
                             }, 
                             "type": "codelist"
                         }
@@ -336,14 +336,139 @@
                 }, 
                 {
                     "controlled": false, 
-                    "label": "Gene ID provied in the chosen gene model, eg, ENSG00000157764", 
-                    "name": "gene_id", 
+                    "label": "Chromosome start position of the feature being described", 
+                    "name": "chromosome_start", 
                     "restrictions": [
                         {
                             "config": {
                                 "acceptMissingCode": false
                             }, 
                             "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "examples": "243198475", 
+                                "pattern": "^\\d+$"
+                            }, 
+                            "type": "regex"
+                        }, 
+                        {
+                            "config": {
+                                "description": "Chromosome start position must be equal or greater than 1", 
+                                "script": "lengths = ['1':249250621, '2':243199373, '3':198022430, '4':191154276, '5':180915260, '6':171115067, '7':159138663, '8':146364022, '9':141213431, '10':135534747, '11':135006516, '12':133851895, '13':115169878, '14':107349540, '15':102531392, '16':90354753, '17':81195210, '18':78077248, '19':59128983, '20':63025520, '21':48129895, '22':51304566, 'X':155270560, 'Y':59373566, 'MT':16569]; if (!(chromosome_start >= 1 && chromosome_end <= lengths[chromosome] && chromosome_start <= chromosome_end)) { return false } return true"
+                            }, 
+                            "type": "script"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "INTEGER"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Chromosome end position of the feature being described", 
+                    "name": "chromosome_end", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "examples": "243198479", 
+                                "pattern": "^\\d+$"
+                            }, 
+                            "type": "regex"
+                        }, 
+                        {
+                            "config": {
+                                "description": "Chromosome end position must be less than or equal to the length of the chromosome", 
+                                "script": "lengths = ['1':249250621, '2':243199373, '3':198022430, '4':191154276, '5':180915260, '6':171115067, '7':159138663, '8':146364022, '9':141213431, '10':135534747, '11':135006516, '12':133851895, '13':115169878, '14':107349540, '15':102531392, '16':90354753, '17':81195210, '18':78077248, '19':59128983, '20':63025520, '21':48129895, '22':51304566, 'X':155270560, 'Y':59373566, 'MT':16569]; if (!(chromosome_start >= 1 && chromosome_end <= lengths[chromosome] && chromosome_start <= chromosome_end)) { return false } return true"
+                            }, 
+                            "type": "script"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "INTEGER"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Chromosome strand of the feature being described. Only accept positive strand", 
+                    "name": "chromosome_strand", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }, 
+                        {
+                            "config": {
+                                "examples": "+", 
+                                "pattern": "^\\+$"
+                            }, 
+                            "type": "regex"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "INTEGER"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Float number with two decimal places. Values ranging from 0 (completely unmethylated) to 1 (completely methylated). Methylation_ration = methylated_read_count / (methylated_read_count + unmethylated_read_count)", 
+                    "name": "methylation_ratio", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "DECIMAL"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Count of methylated reads at the specified genomic location", 
+                    "name": "methylated_read_count", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "DECIMAL"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Count of unmethylated reads at the specified genomic location", 
+                    "name": "unmethylated_read_count", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": null, 
+                    "valueType": "DECIMAL"
+                },
+                {
+                    "controlled": false, 
+                    "label": "Indicate if the detected methylation status of this location is confirmed by using an independent orthogonal genotype platform/technology", 
+                    "name": "verification_status", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "name": "GLOBAL.0.verification_status.v2"
+                            }, 
+                            "type": "codelist"
                         }
                     ], 
                     "summaryType": null, 
@@ -351,42 +476,25 @@
                 }, 
                 {
                     "controlled": false, 
-                    "label": "Normalized read count for the current gene", 
-                    "name": "normalized_read_count", 
+                    "label": "Identifier of orthogonal platform or technology used to confirm that the detected methylation status is true; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.", 
+                    "name": "verification_platform", 
                     "restrictions": [
                         {
                             "config": {
-                                "acceptMissingCode": false
+                                "name": "GLOBAL.0.platform.v1"
                             }, 
-                            "type": "required"
-                        }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "DECIMAL"
-                },
-                {
-                    "controlled": false, 
-                    "label": "Raw read count for the current gene", 
-                    "name": "raw_read_count", 
-                    "restrictions": [
+                            "type": "codelist"
+                        }, 
                         {
                             "config": {
-                                "acceptMissingCode": false
+                                "description": "If mutation is verified, the verification platform must be specified (cannot be -777/-888)", 
+                                "script": "if (verification_status == '1' && verification_platform == null ) { return false } else { return true }"
                             }, 
-                            "type": "required"
+                            "type": "script"
                         }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "INTEGER"
-                },
-                {
-                    "controlled": false, 
-                    "label": "Gene expression fold change", 
-                    "name": "fold_change", 
-                    "restrictions": [
                     ], 
                     "summaryType": null, 
-                    "valueType": "DECIMAL"
+                    "valueType": "TEXT"
                 }
             ], 
             "label": "Sequencing-base DNA Methylation (meth_seq) - Primary File (p)", 
@@ -411,13 +519,6 @@
             "uniqueFields": [
             ]
         }, 
-
-
-
-
-
-
-
         {
             "fields": [
                 {
