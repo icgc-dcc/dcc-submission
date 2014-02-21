@@ -20,6 +20,7 @@ package org.icgc.dcc.core.model;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
+import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.junit.Test;
@@ -32,23 +33,13 @@ public class FeatureTypesTest {
     assertThat(FeatureType.from("exp")).isEqualTo(FeatureType.EXP_TYPE);
     assertThat(FeatureType.from("pexp")).isEqualTo(FeatureType.PEXP_TYPE);
 
-    assertThat(FeatureType.complement(
-        newLinkedHashSet(newArrayList(
-            FeatureType.SSM_TYPE,
-            FeatureType.CNSM_TYPE,
-            FeatureType.SGV_TYPE,
-            FeatureType.METH_TYPE,
-            FeatureType.EXP_TYPE,
-            FeatureType.PEXP_TYPE))))
-        .isEqualTo(
-            newLinkedHashSet(newArrayList(
-                FeatureType.STSM_TYPE,
-                FeatureType.CNGV_TYPE,
-                FeatureType.STGV_TYPE,
-                FeatureType.METH_ARRAY_TYPE,
-                FeatureType.METH_SEQ_TYPE,
-                FeatureType.MIRNA_TYPE,
-                FeatureType.JCN_TYPE)));
+    val featureType = FeatureType.SSM_TYPE;
+    val actual = FeatureType.complement(newLinkedHashSet(newArrayList(featureType)));
+
+    val expected = newLinkedHashSet(newArrayList(FeatureType.values()));
+    expected.remove(featureType);
+
+    assertThat(actual).isEqualTo(expected);
   }
 
 }

@@ -22,7 +22,7 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_P_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_SYSTEM_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_PROBES_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_P_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
@@ -88,7 +88,7 @@ public class Dictionaries {
   public static void addNewModels(Dictionary dictionary) {
     dictionary.addFile(readFileSchema(METH_ARRAY_M_TYPE));
     dictionary.addFile(readFileSchema(METH_ARRAY_P_TYPE));
-    dictionary.addFile(readFileSchema(METH_ARRAY_SYSTEM_TYPE));
+    dictionary.addFile(readFileSchema(METH_ARRAY_PROBES_TYPE));
 
     val methSeqM = new FileSchema();
     methSeqM.setName(METH_SEQ_M_TYPE.getTypeName());

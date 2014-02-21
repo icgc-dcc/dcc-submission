@@ -145,28 +145,26 @@ public final class KVFileProcessor {
     case STSM_P:            processGenericPrimary2(context); break;
     case STSM_S:            processGenericSecondary(context); break;
 
-    // MIRNA:
-    case MIRNA_M:           processGenericMeta2(context); break;
-    case MIRNA_P:           processMirnaPrimary(context); break;
-    case MIRNA_S:           processMirnaSecondary(context); break;
-
-    // OLD METH:
-    case METH_M:            processGenericMeta1(context); break;
-    case METH_P:            processGenericPrimary2(context); break;
-    case METH_S:            processGenericSecondary(context); break;
+    // MIRNA SEQ
+    case MIRNA_SEQ_M:       processGenericMeta2(context); break;
+    case MIRNA_SEQ_P:       processGenericPrimary1(context); break;
     
     // METH ARRAY:
     case METH_ARRAY_M:      processGenericMeta2(context); break;
-    case METH_ARRAY_SYSTEM: processMethArraySystem(context); break;
+    case METH_ARRAY_PROBES: processMethArrayProbes(context); break;
     case METH_ARRAY_P:      processMethArrayPrimary(context); break;
 
     // METH SEQ:
     case METH_SEQ_M:        processGenericMeta2(context); break;
     case METH_SEQ_P:        processMethSeqPrimary(context); break;
     
-    // EXP:
-    case EXP_M:             processGenericMeta2(context); break;
-    case EXP_G:             processGenericPrimary1(context); break;
+    // EXP ARRAY
+    case EXP_ARRAY_M:       processGenericMeta2(context); break;
+    case EXP_ARRAY_P:       processGenericPrimary2(context); break;
+    
+    // EXP SEQ
+    case EXP_SEQ_M:         processGenericMeta2(context); break;
+    case EXP_SEQ_P:         processGenericPrimary2(context); break;
 
     // PEXP:
     case PEXP_M:            processGenericMeta2(context); break;
@@ -180,10 +178,25 @@ public final class KVFileProcessor {
     case SGV_M:             processGenericMeta2(context); break;
     case SGV_P:             processGenericPrimary1(context); break;
 
-    // TODO: Remaining feature types
+    //
+    // Legacy Feature Types
+    // 
     
-    default: break;
-    // TODO: Throw exception
+    // OLD MIRNA:
+    case MIRNA_M:           processGenericMeta2(context); break;
+    case MIRNA_P:           processMirnaPrimary(context); break;
+    case MIRNA_S:           processMirnaSecondary(context); break;
+    
+    // OLD METH:
+    case METH_M:            processGenericMeta1(context); break;
+    case METH_P:            processGenericPrimary2(context); break;
+    case METH_S:            processGenericSecondary(context); break;
+    
+    // OLD EXP:
+    case EXP_M:             processGenericMeta2(context); break;
+    case EXP_G:             processGenericPrimary1(context); break;
+    
+    default:                throw new UnsupportedOperationException(fileType + " is not supported");
     }
     // @formatter:on
   }
@@ -291,7 +304,7 @@ public final class KVFileProcessor {
     // Not checking for surjection
   }
 
-  private void processMethArraySystem(KVRowContext context) {
+  private void processMethArrayProbes(KVRowContext context) {
     ; // We perform no validation on system files at the moment
 
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
