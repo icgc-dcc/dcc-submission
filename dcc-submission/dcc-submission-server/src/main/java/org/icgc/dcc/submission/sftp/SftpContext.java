@@ -17,8 +17,10 @@
  */
 package org.icgc.dcc.submission.sftp;
 
+import static com.google.common.base.Optional.fromNullable;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 
+import java.util.Date;
 import java.util.List;
 
 import lombok.NonNull;
@@ -29,6 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -126,10 +132,15 @@ public class SftpContext {
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
   public void notifySubmissionChange(@NonNull Submission submission, @NonNull Optional<Path> path) {
     log.info("Resetting submission '{}'...", submission.getProjectKey());
-    releaseService.modifySubmission(getNextReleaseName(), submission.getProjectKey(), path);
+
+    val submissionFile =
+        fromNullable(path.isPresent() ?
+            getSubmissionFile(releaseService.getNextDictionary(), path.get()) : null);
+
+    releaseService.modifySubmission(getNextReleaseName(), submission.getProjectKey(), submissionFile);
   }
 
-  public void notifySystemChange() {
+  public void notifyReferenceChange() {
     for (Submission submission : getNextRelease().getSubmissions()) {
       // TODO: DCC-903 (only if open release uses it)
       notifySubmissionChange(submission, Optional.<Path> absent());
@@ -150,6 +161,25 @@ public class SftpContext {
 
   private Subject getCurrentUser() {
     return authenticator.getSubject();
+  }
+
+  // TODO: Duplicated code with ReleaseService
+  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) {
+    val fileName = filePath.getName();
+    val fileStatus = HadoopUtils.getFileStatus(fs.getFileSystem(), filePath);
+    val fileLastUpdate = new Date(fileStatus.getModificationTime());
+    val fileSize = fileStatus.getLen();
+    val fileType = getSubmissionFileType(dictionary, filePath).orNull();
+
+    return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
+  }
+
+  // TODO: Duplicated code with ReleaseService
+  private Optional<FileType> getSubmissionFileType(Dictionary dictionary, Path filePath) {
+    val fileName = filePath.getName();
+    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
+
+    return fromNullable(fileSchema.isPresent() ? fileSchema.get().getFileType() : null);
   }
 
 }

@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.core.state;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -50,7 +50,7 @@ public interface State {
 
   void initialize(StateContext context);
 
-  void modifyFile(StateContext context, Optional<Path> path);
+  void modifyFile(StateContext context, Optional<SubmissionFile> submissionFile);
 
   void queueRequest(StateContext context, Iterable<DataType> dataTypes);
 

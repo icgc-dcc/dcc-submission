@@ -119,13 +119,14 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean delete() {
     try {
       if (isRemovable()) {
+        // This needs to happen here so that it can be seen by the listeners
+        context.notifyFileRemoved(path);
+        directory.notifyModified(path);
+
         val success = fileSystem.delete(path, false);
         if (success == false) {
           throw new IOException("Unable to delete file " + path.toUri());
         }
-
-        context.notifyFileRemoved(path);
-        directory.notifyModified(path);
 
         return success;
       }
@@ -148,12 +149,12 @@ public class FileHdfsSshFile extends HdfsSshFile {
         Path destinationPath =
             new Path(directory.getParentFile().path, destination.getAbsolutePath().substring(1));
 
+        directory.notifyModified(path);
         val success = fileSystem.rename(path, destinationPath);
         if (!success) {
           throw new IOException("Unable to move file " + path.toUri() + " to " + destinationPath.toUri());
         }
 
-        directory.notifyModified(path);
         path = destinationPath;
         directory.notifyModified(path);
 

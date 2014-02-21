@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.service;
 
 import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
@@ -50,6 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
@@ -603,7 +605,8 @@ public class ReleaseService extends AbstractService {
 
   @Synchronized
   public Submission modifySubmission(@NonNull String releaseName, @NonNull String projectKey,
-      @NonNull Optional<Path> filePath) {
+      @NonNull Optional<SubmissionFile> submissionFile) {
+
     val release = releaseRepository.findReleaseByName(releaseName);
     val submission = release.getSubmission(projectKey).get();
     val submissionFiles = getSubmissionFiles(releaseName, projectKey);
@@ -612,7 +615,7 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.modifyFile(submissionFiles, filePath);
+    submission.modifyFile(submissionFiles, submissionFile);
     releaseRepository.updateReleaseSubmission(releaseName, submission);
     resetValidationFolder(projectKey, release);
 
@@ -743,10 +746,16 @@ public class ReleaseService extends AbstractService {
     val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
-    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
-    val fileType = fileSchema.isPresent() ? fileSchema.get().getFileType() : null;
+    val fileType = getSubmissionFileType(dictionary, filePath).orNull();
 
     return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
+  }
+
+  private Optional<FileType> getSubmissionFileType(Dictionary dictionary, Path filePath) {
+    val fileName = filePath.getName();
+    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
+
+    return fromNullable(fileSchema.isPresent() ? fileSchema.get().getFileType() : null);
   }
 
   private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {

@@ -107,6 +107,7 @@ import org.mongodb.morphia.Datastore;
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import com.jcraft.jsch.SftpException;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
@@ -347,6 +348,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     val destination = new Path(DCC_ROOT_DIR);
     status("user", "SFTP transferring files from '{}' to '{}'...", source, destination);
 
+    boolean manipulatedFiles = false;
+
     try {
       sftp.connect();
       for (val releaseDir : new File(FS_DIR).listFiles()) {
@@ -365,6 +368,13 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
               val path = projectName + "/" + file.getName();
               status("user", "SFTP transferring file from '{}' to '{}'...", file, path);
               sftp.put(path, file);
+
+              if (!manipulatedFiles) {
+                // Simulate some additional SFTP file interactions
+                userManipulatesFiles(file, path);
+
+                manipulatedFiles = true;
+              }
             }
           }
         }
@@ -377,6 +387,13 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     while (list.hasNext()) {
       log.info("Copied: {}", list.next().getPath());
     }
+  }
+
+  private void userManipulatesFiles(File file, String path) throws SftpException {
+    sftp.rename(path, path + ".bak");
+    sftp.rename(path + ".bak", path);
+    sftp.rm(path);
+    sftp.put(path, file);
   }
 
   private void userValidates() throws Exception {

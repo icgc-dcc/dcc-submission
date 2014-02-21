@@ -3,9 +3,9 @@ package org.icgc.dcc.submission.core.state;
 import lombok.NonNull;
 import lombok.val;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -31,7 +31,7 @@ public abstract class AbstractState implements State {
   }
 
   @Override
-  public void modifyFile(@NonNull StateContext context, @NonNull Optional<Path> filePath) {
+  public void modifyFile(@NonNull StateContext context, @NonNull Optional<SubmissionFile> submissionFile) {
     throw new InvalidStateException(this, "modifySubmission");
   }
 

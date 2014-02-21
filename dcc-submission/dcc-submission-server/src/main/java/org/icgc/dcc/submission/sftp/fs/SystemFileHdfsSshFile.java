@@ -31,7 +31,7 @@ public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
   @Override
   protected void notifyModified(Path path) {
     try {
-      context.notifySystemChange();
+      context.notifyReferenceChange();
     } catch (Exception e) {
       handleException(e);
     }

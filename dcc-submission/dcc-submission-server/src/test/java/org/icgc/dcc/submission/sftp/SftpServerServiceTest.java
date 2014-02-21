@@ -24,6 +24,7 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.FileTypes.FileType.DONOR_TYPE;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalMatchers.not;
@@ -51,6 +52,8 @@ import org.apache.sshd.SshServer;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -70,6 +73,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
@@ -102,6 +106,10 @@ public class SftpServerServiceTest {
   UsernamePasswordAuthenticator authenticator;
   @Mock
   Release release;
+  @Mock
+  Dictionary dictionary;
+  @Mock
+  FileSchema fileSchema;
   @Mock
   Submission submission;
   @Mock
@@ -142,7 +150,10 @@ public class SftpServerServiceTest {
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
     when(release.getName()).thenReturn(RELEASE_NAME);
+    when(fileSchema.getFileType()).thenReturn(DONOR_TYPE);
+    when(dictionary.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(fileSchema));
     when(releaseService.getNextRelease()).thenReturn(release);
+    when(releaseService.getNextDictionary()).thenReturn(dictionary);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new RuntimeException(""));
     when(projectService.getProjects()).thenReturn(newArrayList(project));

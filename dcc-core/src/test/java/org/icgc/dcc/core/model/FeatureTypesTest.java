@@ -18,7 +18,10 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.difference;
+import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static java.util.Collections.singleton;
 import static org.fest.assertions.api.Assertions.assertThat;
 import lombok.val;
 
@@ -35,9 +38,7 @@ public class FeatureTypesTest {
 
     val featureType = FeatureType.SSM_TYPE;
     val actual = FeatureType.complement(newLinkedHashSet(newArrayList(featureType)));
-
-    val expected = newLinkedHashSet(newArrayList(FeatureType.values()));
-    expected.remove(featureType);
+    val expected = difference(newHashSet(FeatureType.values()), singleton(featureType));
 
     assertThat(actual).isEqualTo(expected);
   }
