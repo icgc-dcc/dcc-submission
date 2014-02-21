@@ -19,6 +19,7 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
@@ -35,7 +36,6 @@ import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
@@ -56,22 +56,39 @@ public final class FileTypes {
    */
 
   public enum FileSubType {
-    SYSTEM_SUBTYPE,
+
+    //
+    // Clinical
+    //
+
+    DONOR_SUBTYPE,
+    SPECIMEN_SUBTYPE,
+    SAMPLE_SUBTYPE,
+
+    //
+    // Optionals
+    //
+
+    BIOMARKER_SUBTYPE,
+    FAMILY_SUBTYPE,
+    EXPOSURE_SUBTYPE,
+    SURGERY_SUBTYPE,
+    THERAPY_SUBTYPE,
+
+    //
+    // Feature Types
+    //
 
     META_SUBTYPE,
     PRIMARY_SUBTYPE,
     SECONDARY_SUBTYPE,
     GENE_SUBTYPE,
 
-    DONOR_SUBTYPE,
-    SPECIMEN_SUBTYPE,
-    SAMPLE_SUBTYPE,
+    //
+    // System
+    //
 
-    BIOMARKER_SUBTYPE,
-    FAMILY_SUBTYPE,
-    EXPOSURE_SUBTYPE,
-    SURGERY_SUBTYPE,
-    THERAPY_SUBTYPE;
+    SYSTEM_SUBTYPE;
 
     private static final String SUBTYPE_SUFFIX = "_SUBTYPE";
 
@@ -126,6 +143,28 @@ public final class FileTypes {
 
   public enum FileType {
 
+    //
+    // Clinical
+    //
+
+    DONOR_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.DONOR_SUBTYPE),
+    SPECIMEN_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.SPECIMEN_SUBTYPE),
+    SAMPLE_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.SAMPLE_SUBTYPE),
+
+    //
+    // Optionals
+    //
+
+    BIOMARKER_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.BIOMARKER_SUBTYPE),
+    FAMILY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.FAMILY_SUBTYPE),
+    EXPOSURE_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.EXPOSURE_SUBTYPE),
+    SURGERY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.SURGERY_SUBTYPE),
+    THERAPY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.THERAPY_SUBTYPE),
+
+    //
+    // Feature Types
+    //
+
     SSM_M_TYPE(FeatureType.SSM_TYPE, FileSubType.META_SUBTYPE),
     SSM_P_TYPE(FeatureType.SSM_TYPE, FileSubType.PRIMARY_SUBTYPE),
     SSM_S_TYPE(FeatureType.SSM_TYPE, FileSubType.SECONDARY_SUBTYPE),
@@ -158,35 +197,33 @@ public final class FileTypes {
     METH_S_TYPE(FeatureType.METH_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
     METH_ARRAY_M_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.META_SUBTYPE),
-    METH_ARRAY_SYSTEM_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.SYSTEM_SUBTYPE),
+    METH_ARRAY_PROBES_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.SYSTEM_SUBTYPE),
     METH_ARRAY_P_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
     METH_SEQ_M_TYPE(FeatureType.METH_SEQ_TYPE, FileSubType.META_SUBTYPE),
     METH_SEQ_P_TYPE(FeatureType.METH_SEQ_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
+    // Old mirna
     MIRNA_M_TYPE(FeatureType.MIRNA_TYPE, FileSubType.META_SUBTYPE),
     MIRNA_P_TYPE(FeatureType.MIRNA_TYPE, FileSubType.PRIMARY_SUBTYPE),
     MIRNA_S_TYPE(FeatureType.MIRNA_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
+    MIRNA_SEQ_M_TYPE(FeatureType.MIRNA_SEQ_TYPE, FileSubType.META_SUBTYPE),
+    MIRNA_SEQ_P_TYPE(FeatureType.MIRNA_SEQ_TYPE, FileSubType.PRIMARY_SUBTYPE),
+
     JCN_M_TYPE(FeatureType.JCN_TYPE, FileSubType.META_SUBTYPE),
     JCN_P_TYPE(FeatureType.JCN_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
+    // Old exp
     EXP_M_TYPE(FeatureType.EXP_TYPE, FileSubType.META_SUBTYPE),
     EXP_G_TYPE(FeatureType.EXP_TYPE, FileSubType.GENE_SUBTYPE),
 
-    DONOR_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.DONOR_SUBTYPE),
-    SPECIMEN_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.SPECIMEN_SUBTYPE),
-    SAMPLE_TYPE(ClinicalType.CLINICAL_CORE_TYPE, FileSubType.SAMPLE_SUBTYPE),
+    EXP_ARRAY_M_TYPE(FeatureType.EXP_ARRAY_TYPE, FileSubType.META_SUBTYPE),
+    EXP_ARRAY_P_TYPE(FeatureType.EXP_ARRAY_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
-    BIOMARKER_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.BIOMARKER_SUBTYPE),
-    FAMILY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.FAMILY_SUBTYPE),
-    EXPOSURE_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.EXPOSURE_SUBTYPE),
-    SURGERY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.SURGERY_SUBTYPE),
-    THERAPY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, FileSubType.THERAPY_SUBTYPE);
+    EXP_SEQ_M_TYPE(FeatureType.EXP_SEQ_TYPE, FileSubType.META_SUBTYPE),
+    EXP_SEQ_P_TYPE(FeatureType.EXP_SEQ_TYPE, FileSubType.PRIMARY_SUBTYPE);
 
-    /**
-     * 
-     */
     private static final String PROBES = "probes";
 
     private static String TYPE_SUFFIX = "_TYPE";
@@ -194,7 +231,7 @@ public final class FileTypes {
     private static final Joiner JOINER = Joiner.on("_");
 
     public static final Set<FileType> MANDATORY_TYPES = newLinkedHashSet(
-        Iterables.filter(
+        filter(
             newLinkedHashSet(newArrayList(FileType.values())),
             new Predicate<FileType>() {
 
@@ -224,7 +261,7 @@ public final class FileTypes {
         return JOINER.join(dataType.getTypeName(), subType.getAbbreviation());
       } else if (subType.isSystemSubType()) {
         return JOINER.join(dataType.getTypeName(), PROBES); // TODO: name to be finalized. consider changing subtype
-                                                              // from "system" to "mani"?)
+                                                            // from "system" to "mani"?)
       } else {
         return subType.getFullName();
       }
@@ -236,10 +273,8 @@ public final class FileTypes {
      * TODO: phase out as Strings are replaced with enums.
      */
     public static FileType from(String typeName) {
-      return valueOf(typeName
-          .replaceAll(PROBES, "system") // Until exact name is settled
-          .toUpperCase()
-          + TYPE_SUFFIX);
+      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
   }
+
 }

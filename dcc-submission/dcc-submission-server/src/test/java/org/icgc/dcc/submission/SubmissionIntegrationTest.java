@@ -109,6 +109,7 @@ import com.dumbster.smtp.SimpleSmtpServer;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
+// https://jira.oicr.on.ca/browse/DCC-2066
 @Ignore
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
