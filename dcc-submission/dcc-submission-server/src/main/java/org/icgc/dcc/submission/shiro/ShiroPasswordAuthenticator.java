@@ -88,10 +88,13 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       log.info("User '{}' logged in successfully.", subject.getPrincipal());
       return subject;
     } else {
+      removeSubject();
       userService.reprimandUser(user);
+
       log.info(user.isLocked() ?
           "User {} was locked after too many failed attempts" :
           "User {} was reprimanded after a failed attempt", username);
+
       return null;
     }
   }
@@ -114,11 +117,14 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       // Attempt to login user
       subject.login(token);
     } catch (UnknownAccountException uae) {
+      removeSubject();
       log.info("There is no user with username of '{}'", token.getPrincipal());
     } catch (IncorrectCredentialsException ice) {
+      removeSubject();
       log.info("Password for user '{}' was incorrect!", token.getPrincipal());
     } catch (LockedAccountException lae) { // TODO: look into this rather than using above hack?
-      log.info("The account for user '{}'is locked. Please contact your administrator to unlock it.",
+      removeSubject();
+      log.info("The account for user '{}' is locked. Please contact your administrator to unlock it.",
           token.getPrincipal());
     } catch (AuthenticationException ae) {
       // FIXME: it seems invalid credentials actually result in:
@@ -126,6 +132,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       // type [class org.apache.shiro.authc.UsernamePasswordToken] could not be
       // authenticated by any configured realms. Please ensure that at least one
       // realm can authenticate these tokens. (not IncorrectCredentialsException)
+      removeSubject();
       log.error("Unknown error logging in user '{}'. Please contact your administrator.", token.getPrincipal());
     }
   }

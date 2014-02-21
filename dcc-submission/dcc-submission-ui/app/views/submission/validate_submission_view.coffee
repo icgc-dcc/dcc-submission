@@ -158,9 +158,9 @@ module.exports = class ValidateSubmissionView extends View
             ui_state = state.replace("_", " ")
             switch state
               when "INVALID"
-                return "<span class='invalid'>"+ui_state+"</span>"
+                return "<span class='invalid'><i class='icon-remove-sign'>"+ui_state+"</span>"
               when "VALID"
-                return "<span class='valid'>"+ui_state+"</span>"
+                return "<span class='valid'><i class='icon-ok-sign'>"+ui_state+"</span>"
               else
                 return "<span>#{state}</span>"
           else

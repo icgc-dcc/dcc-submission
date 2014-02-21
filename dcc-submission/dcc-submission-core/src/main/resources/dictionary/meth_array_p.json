@@ -188,7 +188,7 @@
                 "probe_id"
             ], 
             "optionals": [], 
-            "other": "meth_array_mani", 
+            "other": "meth_array_probes", 
             "otherFields": [
                 "array_platform",
                 "probe_id"

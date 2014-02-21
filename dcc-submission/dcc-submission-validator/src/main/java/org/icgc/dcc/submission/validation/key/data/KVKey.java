@@ -17,26 +17,33 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
+import static com.google.common.base.Charsets.US_ASCII;
+
+import java.nio.ByteBuffer;
 import java.util.List;
 
-import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.val;
+
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 /**
  * Represents the values for a given key (a key may be composite).
  */
 // TODO: efficient equals/hashCode (maybe lombok is ok for the latter)
 @Value
-@EqualsAndHashCode
 public class KVKey implements Comparable<KVKey> {
 
   public static final KVKey KEY_NOT_APPLICABLE = null;
 
+  // TODO: Move to another class? Clean up?
+  private static final Interner<ByteBuffer> VALUE_INTERNER = Interners.newWeakInterner();
+
   /**
    * Values for the key.
    */
-  private final String[] values;
+  private final ByteBuffer[] values;
 
   /**
    * Size of the key for optimization purposes (may be 1 if the key is not a composite one).
@@ -45,9 +52,13 @@ public class KVKey implements Comparable<KVKey> {
 
   public static KVKey from(List<String> row, List<Integer> indices) {
     short size = (short) indices.size();
-    val values = new String[size];
+    val values = new ByteBuffer[size];
     for (int index = 0; index < size; index++) {
-      values[index] = row.get(indices.get(index));
+      val text = row.get(indices.get(index));
+      val bytes = ByteBuffer.wrap(text.getBytes(US_ASCII));
+      val canonicalized = VALUE_INTERNER.intern(bytes);
+
+      values[index] = canonicalized;
     }
     // TODO: checks
     return new KVKey(values, size);
@@ -87,7 +98,18 @@ public class KVKey implements Comparable<KVKey> {
         return compared2;
       }
     }
+
     // TODO: general case!!!!
     return 0;
   }
+
+  public String[] getValues() {
+    String[] result = new String[values.length];
+    for (int i = 0; i < values.length; i++) {
+      result[i] = new String(values[i].array());
+    }
+
+    return result;
+  }
+
 }

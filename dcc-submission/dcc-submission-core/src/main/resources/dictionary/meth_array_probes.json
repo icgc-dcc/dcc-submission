@@ -18,8 +18,8 @@
         }
     ],
     "label": "Arrary-base DNA Methylation (meth_array) - Manifest File (mani)", 
-    "name": "meth_array_mani", 
-    "pattern": "^meth_array_mani_([a-zA-Z0-9]+)?\\.txt$",
+    "name": "meth_array_probes", 
+    "pattern": "^meth_array_probes_([a-zA-Z0-9]+)?\\.txt$",
     "relations": [], 
     "role": "SYSTEM", 
     "uniqueFields": [

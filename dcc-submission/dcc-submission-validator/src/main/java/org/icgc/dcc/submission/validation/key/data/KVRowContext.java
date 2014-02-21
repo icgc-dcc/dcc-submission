@@ -17,26 +17,47 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import static java.lang.String.format;
-import static org.icgc.dcc.core.util.FormatUtils.formatCount;
-import lombok.Value;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
-@Value
-public class KVReferencedPrimaryKeys {
+import com.google.common.base.Optional;
 
-  KVFileType referencedFileType;
-  KVPrimaryKeys referencedPks;
+/**
+ * Context object representing the surrounding context of a row under processing.
+ */
+@RequiredArgsConstructor
+@Getter
+public class KVRowContext {
 
-  public boolean hasMatchingReference(KVKey fk) {
-    return referencedPks.containsPk(fk);
-  }
+  /**
+   * Immutable
+   */
+  private final String fileName;
+  private final KVFileType fileType;
+  private final KVReporter reporter;
+  private final KVPrimaryKeys primaryKeys;
+  private final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys1;
+  private final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys2;
+  private final Optional<KVEncounteredForeignKeys> optionallyEncounteredKeys;
 
-  @Override
-  public String toString() {
-    return format("KVReferencedPrimaryKeys(referencedFileType=%s, referencedPks=%s)",
-        referencedFileType, formatCount(referencedPks.getSize()));
+  /**
+   * Transient
+   */
+  private KVRow row;
+  private long lineNumber;
+
+  /**
+   * Update the context to reflect the new row.
+   * 
+   * @param row the next row under processing
+   * @param lineNumber the line number of the row in its associated file
+   */
+  public void nextRow(KVRow row, long lineNumber) {
+    this.row = row;
+    this.lineNumber = lineNumber;
   }
 
 }

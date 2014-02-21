@@ -109,10 +109,10 @@ import com.dumbster.smtp.SimpleSmtpServer;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
+@Ignore
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, PersistenceModule.class })
-@Ignore
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**

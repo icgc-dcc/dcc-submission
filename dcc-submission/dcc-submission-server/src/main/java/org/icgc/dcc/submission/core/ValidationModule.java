@@ -18,7 +18,11 @@
 package org.icgc.dcc.submission.core;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
@@ -55,6 +59,8 @@ import com.typesafe.config.Config;
 /**
  * Module that wires together components of the validation subsystem.
  */
+@Slf4j
+@RequiredArgsConstructor
 public class ValidationModule extends AbstractDccModule {
 
   /**
@@ -68,10 +74,12 @@ public class ValidationModule extends AbstractDccModule {
    */
   private static final int DEFAULT_MAX_VALIDATING = 1;
 
+  @NonNull
+  private final Config config;
+
   @Override
   protected void configure() {
     bindService();
-    bindPrimaryValidation();
     bindValidators();
   }
 
@@ -98,13 +106,61 @@ public class ValidationModule extends AbstractDccModule {
     }).in(Singleton.class);
   }
 
-  /**
-   * Binds primary validation components.
-   */
-  private void bindPrimaryValidation() {
+  private void bindValidators() {
+    // Bind common components
+    bindNewTemporaryFileSystemAbstraction(); // TODO: Shouldn't be bound here, see DCC-1876
+    bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
+
+    // Set binder will preserve bind order as iteration order for injectees
+    val validators = newSetBinder(binder(), Validator.class);
+
+    // Bind validators and their execution ordering
+    if (config.hasPath("validators")) {
+      val values = config.getList("validators").unwrapped();
+      log.info("Binding validators in the following order: {}", values);
+
+      // Externally configured validators and validator ordering
+      for (val value : values) {
+        if (value.equals("fpv")) {
+          bindFirstPassValidator(validators);
+        } else if (value.equals("kv")) {
+          bindKeyValidator(validators);
+        } else if (value.equals("pv")) {
+          bindKeyValidator(validators);
+        } else if (value.equals("rgv")) {
+          bindReferenceGenomeValidator(validators);
+        } else if (value.equals("nv")) {
+          bindNormalizationValidator(validators);
+        } else {
+          checkState(false, "Invalid validator specification '%s'", value);
+        }
+      }
+    } else {
+      // Default validators and validator ordering
+      bindFirstPassValidator(validators);
+      bindKeyValidator(validators);
+      bindPrimaryValidator(validators);
+      bindReferenceGenomeValidator(validators);
+      bindNormalizationValidator(validators);
+    }
+  }
+
+  private void bindFirstPassValidator(Multibinder<Validator> validators) {
+    bindValidator(validators, FirstPassValidator.class);
+  }
+
+  private void bindKeyValidator(Multibinder<Validator> validators) {
+    bindValidator(validators, KeyValidator.class);
+  }
+
+  private void bindPrimaryValidator(Multibinder<Validator> validators) {
+    bindValidator(validators, PrimaryValidator.class);
+
     // Builder of plans
     bind(Planner.class).in(Singleton.class);
-    bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
+
+    // Bind static
+    requestStaticInjection(ByteOffsetToLineNumber.class);
 
     // Primary restrictions
     bindRestrictionTypes();
@@ -124,38 +180,7 @@ public class ValidationModule extends AbstractDccModule {
 
   }
 
-  /**
-   * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
-   */
-  private void bindRestrictionTypes() {
-    // Set binder will preserve bind order as iteration order for injectees
-    val types = Multibinder.newSetBinder(binder(), RestrictionType.class);
-
-    bindRestriction(types, DiscreteValuesRestriction.Type.class);
-    bindRestriction(types, RangeFieldRestriction.Type.class);
-    bindRestriction(types, RequiredRestriction.Type.class);
-    bindRestriction(types, CodeListRestriction.Type.class);
-    bindRestriction(types, RegexRestriction.Type.class);
-    bindRestriction(types, ScriptRestriction.Type.class);
-
-    requestStaticInjection(ByteOffsetToLineNumber.class);
-  }
-
-  private static void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
-    types.addBinding().to(type).in(Singleton.class);
-  }
-
-  private void bindValidators() {
-    // TODO: Shouldn't be bound here, see DCC-1876
-    bindNewTemporaryFileSystemAbstraction();
-
-    // Set binder will preserve bind order as iteration order for injectees
-    val validators = Multibinder.newSetBinder(binder(), Validator.class);
-
-    // Order: Syntactic, primary then semantic
-    bindValidator(validators, FirstPassValidator.class);
-    bindValidator(validators, KeyValidator.class);
-    bindValidator(validators, PrimaryValidator.class);
+  private void bindReferenceGenomeValidator(Multibinder<Validator> validators) {
     bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
 
       @Inject
@@ -174,6 +199,9 @@ public class ValidationModule extends AbstractDccModule {
       }
 
     });
+  }
+
+  private void bindNormalizationValidator(Multibinder<Validator> validators) {
     bindValidator(validators, new Provider<NormalizationValidator>() {
 
       @Inject
@@ -192,6 +220,25 @@ public class ValidationModule extends AbstractDccModule {
       }
 
     });
+  }
+
+  /**
+   * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
+   */
+  private void bindRestrictionTypes() {
+    // Set binder will preserve bind order as iteration order for injectees
+    val types = Multibinder.newSetBinder(binder(), RestrictionType.class);
+
+    bindRestriction(types, DiscreteValuesRestriction.Type.class);
+    bindRestriction(types, RangeFieldRestriction.Type.class);
+    bindRestriction(types, RequiredRestriction.Type.class);
+    bindRestriction(types, CodeListRestriction.Type.class);
+    bindRestriction(types, RegexRestriction.Type.class);
+    bindRestriction(types, ScriptRestriction.Type.class);
+  }
+
+  private static void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
+    types.addBinding().to(type).in(Singleton.class);
   }
 
   private static void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {

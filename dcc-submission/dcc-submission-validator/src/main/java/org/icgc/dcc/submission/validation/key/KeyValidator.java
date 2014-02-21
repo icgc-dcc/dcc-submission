@@ -59,7 +59,7 @@ public class KeyValidator implements Validator {
   /**
    * The size of the heap used when running in non-local mode.
    */
-  private static final String DEFAULT_HEAP_SIZE = "16g";
+  private static final String DEFAULT_MAX_HEAP_SIZE = "24g";
 
   @Override
   public String getName() {
@@ -100,10 +100,18 @@ public class KeyValidator implements Validator {
   }
 
   private static void execute(ValidationContext context, KVValidatorRunner runnable) {
-    val properties = getProperties(context);
-    val executor = new FlowExecutor(properties);
+    // Change this switch to false to aid in step debugging
+    val distributable = true;
+    if (distributable) {
+      // Run on cluster if using HDFS
+      val properties = getProperties(context);
+      val executor = new FlowExecutor(properties);
 
-    executor.execute(runnable);
+      executor.execute(runnable);
+    } else {
+      // Run on this node
+      runnable.run();
+    }
   }
 
   private static Map<Object, Object> getProperties(ValidationContext context) {
@@ -112,7 +120,7 @@ public class KeyValidator implements Validator {
 
     // This can't be an immutable map since the values can be null
     val properties = newHashMap();
-    properties.put(MAPRED_MAP_TASK_JAVA_OPTS, "-Xmx" + DEFAULT_HEAP_SIZE);
+    properties.put(MAPRED_MAP_TASK_JAVA_OPTS, "-Xmx" + DEFAULT_MAX_HEAP_SIZE);
     properties.put(FS_DEFAULT_NAME_KEY, hadoop.get(FS_DEFAULT_NAME_KEY));
     properties.put(MR_JOBTRACKER_ADDRESS_KEY, hadoop.get(MR_JOBTRACKER_ADDRESS_KEY));
 
