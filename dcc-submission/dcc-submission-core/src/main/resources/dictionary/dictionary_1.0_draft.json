@@ -1549,7 +1549,7 @@
 	   ],
 	   "label" : "Sequencing-base Gene Expression (exp_seq) - Primary File (p)",
 	   "role" : "SUBMISSION"
-	}
+	},
 	{
 	   "pattern" : "^exp_array_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$",
 	   "fields" : [
@@ -1710,6 +1710,7 @@
 			  "script" : "EGA = (raw_data_repository == 1); dbSNP = (raw_data_repository == 2); TCGA = (raw_data_repository == 3); CGHub = (raw_data_repository == 4); GEO = (raw_data_repository == 5); if (EGA) { raw_data_accession ~= '(?iu)EGA[DS][0-9]+' } else if (GEO) { raw_data_accession ~= 'G(SE|DS|SM)[0-9]+' } else if (TCGA) { raw_data_accession ~= 'TCGA-[A-Za-z0-9_-]+'} else if (CGHub) { raw_data_accession ~= '[A-Fa-f0-9-]+' } else if (dbSNP) { raw_data_accession ~= '[A-Za-z0-9_-]+.*' } else { return false }",
 			  "description" : "Format of raw data accession must match the format required by the raw data repository"
 		       }
+           }
 		 ]
 	      },
 	      {
@@ -1894,7 +1895,7 @@
 	   ],
 	   "label" : "Array-base Gene Expression (exp_array) - Primary File (p)",
 	   "role" : "SUBMISSION"
-	}
+	},
         {
             "fields": [
                 {
