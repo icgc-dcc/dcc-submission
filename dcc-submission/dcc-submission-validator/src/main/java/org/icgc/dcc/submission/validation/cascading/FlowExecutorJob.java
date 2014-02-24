@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,26 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.sftp.fs;
+package org.icgc.dcc.submission.validation.cascading;
 
-import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
+import org.apache.hadoop.conf.Configuration;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.sftp.SftpContext;
+/**
+ * A job that can be executed by a {@code FlowExecutor}.
+ */
+public interface FlowExecutorJob {
 
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
-
-  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
-    super(context, root, directoryName);
-  }
-
-  @Override
-  protected void notifyModified(Path path) {
-    try {
-      context.notifyReferenceChange();
-    } catch (Exception e) {
-      handleException(e);
-    }
-  }
+  /**
+   * Main execution contract called by the executor.
+   * 
+   * @param configuration the runtime configuration of the executing job
+   */
+  void execute(Configuration configuration);
 
 }

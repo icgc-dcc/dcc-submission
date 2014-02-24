@@ -22,13 +22,17 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_ARRAY_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_ARRAY_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_SEQ_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_SEQ_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_SYSTEM;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_PROBES;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
@@ -37,6 +41,8 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_SEQ_M;
+import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_SEQ_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
@@ -61,10 +67,13 @@ public enum KVExperimentalDataType {
   CNSM(CNSM_M, of(CNSM_M, CNSM_P, CNSM_S)),
   STSM(STSM_M, of(STSM_M, STSM_P, STSM_S)),
   MIRNA(MIRNA_M, of(MIRNA_M, MIRNA_P, MIRNA_S)),
+  MIRNA_SEQ(MIRNA_SEQ_M, of(MIRNA_SEQ_M, MIRNA_SEQ_P)),
   METH(METH_M, of(METH_M, METH_P, METH_S)),
-  METH_ARRAY(METH_ARRAY_M, of(METH_ARRAY_M, METH_ARRAY_SYSTEM, METH_ARRAY_P)),
+  METH_ARRAY(METH_ARRAY_M, of(METH_ARRAY_M, METH_ARRAY_PROBES, METH_ARRAY_P)),
   METH_SEQ(METH_SEQ_M, of(METH_SEQ_M, METH_SEQ_P)),
   EXP(EXP_M, of(EXP_M, EXP_G)),
+  EXP_ARRAY(EXP_ARRAY_M, of(EXP_ARRAY_M, EXP_ARRAY_P)),
+  EXP_SEQ(EXP_SEQ_M, of(EXP_SEQ_M, EXP_SEQ_P)),
   PEXP(PEXP_M, of(PEXP_M, PEXP_P)),
   JCN(JCN_M, of(JCN_M, JCN_P)),
   SGV(SGV_M, of(SGV_M, SGV_P));

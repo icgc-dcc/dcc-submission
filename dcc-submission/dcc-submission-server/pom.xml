@@ -109,6 +109,10 @@
       <groupId>com.mysema.querydsl</groupId>
       <artifactId>querydsl-mongodb</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.mysema.commons</groupId>
+      <artifactId>mysema-commons-lang</artifactId>
+    </dependency>
 
     <!-- Hadoop -->
     <dependency>

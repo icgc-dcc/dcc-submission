@@ -38,7 +38,7 @@ public class DataTypeTest {
     assertThat(from("ssm")).isEqualTo(SSM_TYPE);
     assertThat(from("donor")).isEqualTo(CLINICAL_CORE_TYPE);
 
-    assertThat(values().size()).isEqualTo(15); // 13 feature types + 1 clinical type + 1 optional clinical type
+    assertThat(values().size()).isEqualTo(18); // 16 feature types + 1 clinical type + 1 optional clinical type
     assertThat(values().size()).isEqualTo( // Check no duplicates
         new HashSet<DataType>(values()).size());
 

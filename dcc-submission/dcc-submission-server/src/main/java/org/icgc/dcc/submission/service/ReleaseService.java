@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.service;
 
 import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
@@ -50,6 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
@@ -105,7 +107,6 @@ public class ReleaseService extends AbstractService {
   /**
    * Returns the number of releases.
    */
-  @Synchronized
   public long countReleases() {
     return releaseRepository.countReleases();
   }
@@ -114,7 +115,6 @@ public class ReleaseService extends AbstractService {
    * Returns the number of releases that are in the {@link ReleaseState#OPENED} state. It is expected that there always
    * ever be one at a time.
    */
-  @Synchronized
   public long countOpenReleases() {
     return releaseRepository.countOpenReleases();
   }
@@ -128,11 +128,10 @@ public class ReleaseService extends AbstractService {
    * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
    * projects.
    */
-  @Synchronized
   public List<Release> getReleasesBySubject(Subject subject) {
     log.debug("getting releases for {}", subject.getPrincipal());
 
-    List<Release> releases = releaseRepository.findReleases();
+    List<Release> releases = releaseRepository.findReleaseSummaries();
     log.debug("Number of releases:{} ", releases.size());
 
     // Filter out all the submissions that the current user can not see
@@ -199,7 +198,6 @@ public class ReleaseService extends AbstractService {
   /**
    * Returns the {@code NextRelease} (guaranteed not to be null if returned).
    */
-  @Synchronized
   public Release getNextRelease() {
     val nextRelease = releaseRepository.findNextRelease();
     checkNotNull(nextRelease, "There is no next release in the database.");
@@ -449,7 +447,6 @@ public class ReleaseService extends AbstractService {
     return detailedSubmission;
   }
 
-  @Synchronized
   public List<SubmissionFile> getSubmissionFiles(@NonNull String releaseName, @NonNull String projectKey) {
     val release = releaseRepository.findReleaseByName(releaseName);
     if (release == null) {
@@ -603,7 +600,8 @@ public class ReleaseService extends AbstractService {
 
   @Synchronized
   public Submission modifySubmission(@NonNull String releaseName, @NonNull String projectKey,
-      @NonNull Optional<Path> filePath) {
+      @NonNull Optional<SubmissionFile> submissionFile) {
+
     val release = releaseRepository.findReleaseByName(releaseName);
     val submission = release.getSubmission(projectKey).get();
     val submissionFiles = getSubmissionFiles(releaseName, projectKey);
@@ -612,7 +610,7 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.modifyFile(submissionFiles, filePath);
+    submission.modifyFile(submissionFiles, submissionFile);
     releaseRepository.updateReleaseSubmission(releaseName, submission);
     resetValidationFolder(projectKey, release);
 
@@ -743,10 +741,16 @@ public class ReleaseService extends AbstractService {
     val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
-    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
-    val fileType = fileSchema.isPresent() ? fileSchema.get().getFileType() : null;
+    val fileType = getSubmissionFileType(dictionary, filePath).orNull();
 
     return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
+  }
+
+  private Optional<FileType> getSubmissionFileType(Dictionary dictionary, Path filePath) {
+    val fileName = filePath.getName();
+    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
+
+    return fromNullable(fileSchema.isPresent() ? fileSchema.get().getFileType() : null);
   }
 
   private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {

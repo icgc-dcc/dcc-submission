@@ -36,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.DataType;
@@ -158,12 +157,13 @@ public class Submission implements Serializable {
     });
   }
 
-  public void modifyFile(@NonNull Iterable<SubmissionFile> submissionFiles, final @NonNull Optional<Path> filePath) {
+  public void modifyFile(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Optional<SubmissionFile> submissionFile) {
     executeTransition(submissionFiles, new Transition<Void>("modifyFile") {
 
       @Override
       public Void execute(@NonNull StateContext context) {
-        state.modifyFile(context, filePath);
+        state.modifyFile(context, submissionFile);
         return null;
       }
 

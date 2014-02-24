@@ -65,7 +65,10 @@ public final class FeatureTypes {
     METH_ARRAY_TYPE("meth_array", "_meth_array_exists"),
     METH_SEQ_TYPE("meth_seq", "_meth_seq_exists"),
     MIRNA_TYPE("mirna", "_mirna_exists"),
-    EXP_TYPE("exp", "_exp_exists"),
+    MIRNA_SEQ_TYPE("mirna_seq", "_mirna_seq_exists"),
+    EXP_TYPE("exp", "_exp_exists"), // Old exp
+    EXP_ARRAY_TYPE("exp_array", "_exp_array_exists"),
+    EXP_SEQ_TYPE("exp_seq", "_exp_seq_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
 

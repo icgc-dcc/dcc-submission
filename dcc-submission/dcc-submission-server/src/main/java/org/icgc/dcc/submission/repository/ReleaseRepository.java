@@ -61,6 +61,10 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
     return list();
   }
 
+  public List<Release> findReleaseSummaries() {
+    return query().list(_.name, _.dictionaryVersion, _.releaseDate, _.state, _.submissions.any().projectKey);
+  }
+
   public Release findNextRelease() {
     return singleResult(_.state.eq(OPENED));
   }

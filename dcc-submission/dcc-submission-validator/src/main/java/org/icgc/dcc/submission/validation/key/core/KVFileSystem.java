@@ -71,6 +71,13 @@ public final class KVFileSystem {
       return Optional.<List<Path>> absent();
     }
 
+    // https://jira.oicr.on.ca/browse/DCC-2068
+    val fileSchema = getFileSchema(fileType);
+    if (fileSchema == null) {
+      log.error("{}", format("No file schema found for file type: '%s'", fileType));
+      return Optional.<List<Path>> absent();
+    }
+
     val filePattern = getFileSchema(fileType).getPattern();
     val basePath = fileType.isSystem() ? systemDirPath : submissionDirPath;
 
@@ -95,8 +102,13 @@ public final class KVFileSystem {
       }
     }
 
-    throw new IllegalArgumentException(
-        format("No file schema found for file type: '%s' ('%s')", fileType, targetName));
+    // https://jira.oicr.on.ca/browse/DCC-2068
+    // throw new IllegalArgumentException(
+    // format("No file schema found for file type: '%s' ('%s')", fileType, targetName));
+
+    // https://jira.oicr.on.ca/browse/DCC-2068
+    // No Optional because this is temporary...
+    return null;
   }
 
 }
