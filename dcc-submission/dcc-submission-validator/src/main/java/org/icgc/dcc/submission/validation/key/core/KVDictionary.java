@@ -76,6 +76,7 @@ import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.data.KVRow;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.base.Optional;
@@ -83,7 +84,10 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * TODO: make non-static + parse dictionary rather than hardcoding
+ * TODO:
+ * <p>
+ * - make non-static + parse dictionary rather than hardcoding<br/>
+ * - MUST also incorporate {@link KVExperimentalDataType} (which should be relation-driven instead)
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class KVDictionary {

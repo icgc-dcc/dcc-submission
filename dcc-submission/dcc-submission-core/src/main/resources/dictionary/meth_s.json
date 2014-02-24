@@ -1,5 +1,5 @@
 {
-   "pattern" : "^meth_s\\.txt(?:\\.gz|\\.bz2)?$",
+   "pattern" : "^meth_s(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$",
    "fields" : [
       {
          "summaryType" : "UNIQUE_COUNT",

@@ -1,0 +1,309 @@
+{
+     "pattern" : "^exp_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$",
+     "fields" : [
+        {
+           "controlled" : false,
+           "summaryType" : "UNIQUE_COUNT",
+           "name" : "analysis_id",
+           "label" : "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : false
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "pattern" : "^[\\w+\\-\\_]+$",
+                    "examples" : "hnc_12, CCG_34_94583, BRCA47832-3239"
+                 },
+                 "type" : "regex"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "UNIQUE_COUNT",
+           "name" : "analyzed_sample_id",
+           "label" : "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : false
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "pattern" : "^[\\w+\\-\\_]+$",
+                    "examples" : "ov-45, 90343a, BRCAZ-TG"
+                 },
+                 "type" : "regex"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "assembly_version",
+           "label" : "Version of human reference genome assembly used in the analysis; specify the version used in alignments, or associated with the particular platform used",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : false
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "name" : "GLOBAL.0.assembly_version.v2"
+                 },
+                 "type" : "codelist"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "gene_build_version",
+           "label" : "Gene build version associated with the platform, tools or other methods used in the analysis; Supports the following syntax: 'DB:VERSION'",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : true
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "pattern" : "^(\\w+)\\:(\\w+)$",
+                    "examples" : "Ensembl:69"
+                 },
+                 "type" : "regex"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "platform",
+           "label" : "Identifier of platform or technology used for analysis or verification; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : false
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "name" : "GLOBAL.0.platform.v1"
+                 },
+                 "type" : "codelist"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "experimental_protocol",
+           "label" : "Name of experimental protocol and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : true
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "pattern" : "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?",
+                    "examples" : "Paired End http://www.illumina.com/technology/paired_end_sequencing_assay.ilmn"
+                 },
+                 "type" : "regex"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "base_calling_algorithm",
+           "label" : "Name of base calling algorithm and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : true
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "pattern" : "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?",
+                    "examples" : "CASAVA http://support.illumina.com/sequencing/sequencing_software/casava.ilmn"
+                 },
+                 "type" : "regex"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "alignment_algorithm",
+           "label" : "Name of alignment algorithm and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : true
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "pattern" : "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?",
+                    "examples" : "BWA 0.6.2 http://bio-bwa.sourceforge.net bwa aln -q20 HGref s1.fastq > s1_bwa.sai"
+                 },
+                 "type" : "regex"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "normalization_algorithm",
+           "label" : "Name of normalization algorithm and option to include URL to written protocol and/or algorithm parameters. Syntax should be: '<Name of Protocol><single whitespace><URL to protocol (optional)><single whitespace><algorithm parameters (optional)>'",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : true
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "pattern" : "(^[\\w\\s_\\-\\.]+)((\\s)(http(s)?://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*)?((\\s)[-A-Za-z0-9_\\s|><.]+)?",
+                    "examples" : "Cufflinks 2.1.0 http://cufflinks.cbcb.umd.edu"
+                 },
+                 "type" : "regex"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "other_analysis_algorithm",
+           "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
+           "restrictions" : [],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "sequencing_strategy",
+           "label" : "Sequencing technique intended for the analyzed sample library.",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : false
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "name" : "GLOBAL.0.sequencing_strategy.v1"
+                 },
+                 "type" : "codelist"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "AVERAGE",
+           "name" : "seq_coverage",
+           "label" : "Sequence coverage if analyzed by sequencing platforms",
+           "restrictions" : [],
+           "valueType" : "DECIMAL"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "raw_data_repository",
+           "label" : "Public repository where raw data is submitted",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : false
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "name" : "GLOBAL.0.raw_data_repository.v2"
+                 },
+                 "type" : "codelist"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : false,
+           "summaryType" : "FREQUENCY",
+           "name" : "raw_data_accession",
+           "label" : "Accession for referencing the raw data at the public repository",
+           "restrictions" : [
+              {
+                 "config" : {
+                    "acceptMissingCode" : false
+                 },
+                 "type" : "required"
+              },
+              {
+                 "config" : {
+                    "script" : "EGA = (raw_data_repository == 1); dbSNP = (raw_data_repository == 2); TCGA = (raw_data_repository == 3); CGHub = (raw_data_repository == 4); GEO = (raw_data_repository == 5); if (EGA) { raw_data_accession ~= '(?iu)EGA[DS][0-9]+' } else if (GEO) { raw_data_accession ~= 'G(SE|DS|SM)[0-9]+' } else if (TCGA) { raw_data_accession ~= 'TCGA-[A-Za-z0-9_-]+'} else if (CGHub) { raw_data_accession ~= '[A-Fa-f0-9-]+' } else if (dbSNP) { raw_data_accession ~= '[A-Za-z0-9_-]+.*' } else { return false }",
+                    "description" : "Format of raw data accession must match the format required by the raw data repository"
+                 },
+                 "type" : "script"
+              }
+           ],
+           "valueType" : "TEXT"
+        },
+        {
+           "controlled" : true,
+           "summaryType" : null,
+           "name" : "note",
+           "label" : "Optional field to leave notes",
+           "restrictions" : [],
+           "valueType" : "TEXT"
+        }
+     ],
+     "relations" : [
+        {
+           "bidirectional" : false,
+           "optionals" : [],
+           "fields" : [
+              "analyzed_sample_id"
+           ],
+           "other" : "sample",
+           "otherFields" : [
+              "analyzed_sample_id"
+           ]
+        }
+     ],
+     "name" : "exp_m",
+     "uniqueFields" : [
+        "analysis_id",
+        "analyzed_sample_id"
+     ],
+     "label" : "Gene Expression (gene) - Analysis Metadata File (m)",
+     "role" : "SUBMISSION"
+}

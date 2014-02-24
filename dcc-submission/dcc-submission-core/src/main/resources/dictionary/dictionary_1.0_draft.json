@@ -2653,7 +2653,7 @@
             ], 
             "label": "Copy Number Somatic Mutations (cnsm) - Primary Analysis File (p)", 
             "name": "cnsm_p", 
-            "pattern": "^cnsm_p\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^cnsm_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -2793,7 +2793,7 @@
             ], 
             "label": "Copy Number Somatic Mutations (cnsm) - Secondary Analysis File (s)", 
             "name": "cnsm_s", 
-            "pattern": "^cnsm_s\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^cnsm_s(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -3103,7 +3103,7 @@
             ], 
             "label": "Copy Number Somatic Mutations (cnsm) - Analysis Metadata File (m)", 
             "name": "cnsm_m", 
-            "pattern": "^cnsm_m\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^cnsm_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -3371,7 +3371,7 @@
             ], 
             "label": "Protein Expression (pexp) - Primary Analysis File (p)", 
             "name": "pexp_p", 
-            "pattern": "^pexp_p\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^pexp_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -3533,7 +3533,7 @@
             ], 
             "label": "Protein Expression (pexp) - Analysis Metadata File (m)", 
             "name": "pexp_m", 
-            "pattern": "^pexp_m\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^pexp_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -3899,7 +3899,7 @@
             ], 
             "label": "Simple Germline Variation (sgv) - Primary Analysis File (p)", 
             "name": "sgv_p", 
-            "pattern": "^sgv_p\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^sgv_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -4185,7 +4185,7 @@
             ], 
             "label": "Simple Germline Variation (sgv) - Analysis Metadata File (m)", 
             "name": "sgv_m", 
-            "pattern": "^sgv_m\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^sgv_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -4696,7 +4696,7 @@
             ], 
             "label": "Simple Somatic Mutations (ssm) - Primary Analysis File (p)", 
             "name": "ssm_p", 
-            "pattern": "^ssm_p\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^ssm_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -5004,7 +5004,7 @@
             ], 
             "label": "Simple Somatic Mutations (ssm) - Analysis Metadata File (m)", 
             "name": "ssm_m", 
-            "pattern": "^ssm_m\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^ssm_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -5500,7 +5500,7 @@
             ], 
             "label": "Structural Somatic Mutations (stsm) - Primary Analysis File (p)", 
             "name": "stsm_p", 
-            "pattern": "^stsm_p\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^stsm_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -5688,7 +5688,7 @@
             ], 
             "label": "Structural Somatic Mutations (stsm) - Secondary Analysis File (s)", 
             "name": "stsm_s", 
-            "pattern": "^stsm_s\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^stsm_s(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -6000,7 +6000,7 @@
             ], 
             "label": "Structural Somatic Mutations (stsm) - Analysis Metadata File (m)", 
             "name": "stsm_m", 
-            "pattern": "^stsm_m\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^stsm_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -6131,7 +6131,7 @@
             ], 
             "label": "Donor Biomarkers (biomarker)", 
             "name": "biomarker", 
-            "pattern": "^biomarker\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^biomarker(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -6447,7 +6447,7 @@
             ], 
             "label": "Donor Data File (donor)", 
             "name": "donor", 
-            "pattern": "^donor\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^donor(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [], 
             "role": "SUBMISSION", 
             "uniqueFields": [
@@ -6526,7 +6526,7 @@
             ], 
             "label": "Donor Exposure (exposure)", 
             "name": "exposure", 
-            "pattern": "exposure\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "exposure(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -6672,7 +6672,7 @@
             ], 
             "label": "Donor Family (family)", 
             "name": "family", 
-            "pattern": "family\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "family(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -7212,7 +7212,7 @@
             ], 
             "label": "Splice Variation (jcn) - Primary Analysis File (p)", 
             "name": "jcn_p", 
-            "pattern": "^jcn_p\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^jcn_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -7520,7 +7520,7 @@
             ], 
             "label": "Splice Variation (jcn) - Analysis Metadata File (m)", 
             "name": "jcn_m", 
-            "pattern": "^jcn_m\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "^jcn_m(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -7670,7 +7670,7 @@
             ], 
             "label": "Analyzed Sample Data File (sample)", 
             "name": "sample", 
-            "pattern": "sample\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "sample(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -8133,7 +8133,7 @@
             ], 
             "label": "Specimen Data File (specimen)", 
             "name": "specimen", 
-            "pattern": "specimen\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "specimen(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": true, 
@@ -8273,7 +8273,7 @@
             ], 
             "label": "Donor Surgery (surgery)", 
             "name": "surgery", 
-            "pattern": "surgery\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "surgery(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -8413,7 +8413,7 @@
             ], 
             "label": "Donor Therapy (therapy)", 
             "name": "therapy", 
-            "pattern": "therapy\\.txt(?:\\.gz|\\.bz2)?$", 
+            "pattern": "therapy(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
             "relations": [
                 {
                     "bidirectional": false, 
@@ -8433,5 +8433,5 @@
     ], 
     "lastUpdate": 1389389096243, 
     "state": "OPENED", 
-    "version": "0.7e"
+    "version": "1.0-draft"
 }
