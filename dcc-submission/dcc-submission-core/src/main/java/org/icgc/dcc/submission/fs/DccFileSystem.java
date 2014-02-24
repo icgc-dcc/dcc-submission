@@ -19,21 +19,23 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsAll;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.mkdirs;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.rmr;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.Set;
 
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 
 import com.google.common.base.Joiner;
@@ -114,14 +116,15 @@ public class DccFileSystem {
     val releaseStringPath = createReleaseDirectory(newReleaseName);
     createProjectDirectoryStructures(release.getName(), projectKeyList);
 
-    // create system files for release directory
-    val systemFilePath = this.getReleaseFilesystem(release).getSystemDirectory();
-    checkState(!HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString()),
-        "'%s' already exists", systemFilePath.toString());
-    HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
+    // create system files dir for release directory
+    val systemDirPath = this.getReleaseFilesystem(release).getSystemDirPath();
+    checkState(
+        !checkExistence(this.fileSystem, systemDirPath),
+        "'%s' already exists", systemDirPath.toString());
+    mkdirs(this.fileSystem, systemDirPath.toString());
 
     // log resulting sub-directories
-    val lsAll = HadoopUtils.lsAll(this.fileSystem, new Path(releaseStringPath));
+    val lsAll = lsAll(this.fileSystem, new Path(releaseStringPath));
     log.info("ls {} = {}", releaseStringPath, toFilenameList(lsAll));
   }
 
@@ -132,12 +135,12 @@ public class DccFileSystem {
     val releaseStringPath = this.buildReleaseStringPath(newReleaseName);
     log.info("Creating new release path: '{}'", releaseStringPath);
 
-    checkState(!HadoopUtils.checkExistence(this.fileSystem, releaseStringPath),
+    checkState(!checkExistence(this.fileSystem, releaseStringPath),
         "Release directory already exists: '%s'", releaseStringPath);
     log.info("Creating filesystem for release: '{}'", newReleaseName);
 
     // create corresponding release directory
-    HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
+    mkdirs(this.fileSystem, releaseStringPath);
 
     return releaseStringPath;
   }
@@ -164,10 +167,8 @@ public class DccFileSystem {
   }
 
   public String createValidationDirectory(
-      @NonNull
-      String release,
-      @NonNull
-      String projectKey) {
+      @NonNull String release,
+      @NonNull String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
 
@@ -182,9 +183,9 @@ public class DccFileSystem {
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
   void createDirIfDoesNotExist(final String stringPath) {
-    if (HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
-      HadoopUtils.mkdirs(this.fileSystem, stringPath);
-      checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath));
+    if (checkExistence(this.fileSystem, stringPath) == false) {
+      mkdirs(this.fileSystem, stringPath);
+      checkState(checkExistence(this.fileSystem, stringPath));
     }
   }
 
@@ -192,9 +193,9 @@ public class DccFileSystem {
    * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
    */
   void removeDirIfExist(final String stringPath) {
-    if (HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
-      HadoopUtils.rmr(this.fileSystem, stringPath);
-      checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false);
+    if (checkExistence(this.fileSystem, stringPath)) {
+      rmr(this.fileSystem, stringPath);
+      checkState(checkExistence(this.fileSystem, stringPath) == false);
     }
   }
 
@@ -222,14 +223,17 @@ public class DccFileSystem {
    */
   protected void createProjectDirectoryStructures(
       String release,
-      @NonNull
-      Set<String> projectKeys) {
+      @NonNull Set<String> projectKeys) {
 
     // Create sub-directory for each project
     log.info("# of projects = " + projectKeys.size());
     for (String projectKey : projectKeys) {
       this.createNewProjectDirectoryStructure(release, projectKey);
     }
+  }
+
+  protected Configuration getFileSystemConfiguration() {
+    return fileSystem.getConf();
   }
 
   private String concatPath(String... parts) {
@@ -241,21 +245,12 @@ public class DccFileSystem {
    */
   private void mkdirsRootDirectory() {
     // create root dir if it does not exist
-    boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.rootStringPath);
+    boolean rootExists = checkExistence(this.fileSystem, this.rootStringPath);
     if (!rootExists) {
       log.info(this.rootStringPath + " does not exist");
-      HadoopUtils.mkdirs(this.fileSystem, this.rootStringPath);
+      mkdirs(this.fileSystem, this.rootStringPath);
       log.info("created " + this.rootStringPath);
     }
-  }
-
-  /**
-   * @param filePath
-   * @throws IOException
-   */
-  public DataInputStream open(String filePathname) throws IOException {
-    checkArgument(filePathname != null);
-    return fileSystem.open(new Path(filePathname));
   }
 
 }

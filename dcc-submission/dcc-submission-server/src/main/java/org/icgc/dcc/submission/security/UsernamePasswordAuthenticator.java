@@ -27,10 +27,10 @@ public interface UsernamePasswordAuthenticator {
   /**
    * @return true when authentication succeeds, false otherwise.
    */
-  public Subject authenticate(String username, char[] password, String host);
+  Subject authenticate(String username, char[] password, String host);
 
-  public Subject getSubject();
+  Subject getSubject();
 
-  public void removeSubject();
+  void removeSubject();
 
 }

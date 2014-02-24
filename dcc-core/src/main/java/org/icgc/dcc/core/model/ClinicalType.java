@@ -21,16 +21,16 @@ import static com.google.common.base.Preconditions.checkState;
 import lombok.Getter;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
+import org.icgc.dcc.core.model.FileTypes.FileSubType;
 
 /**
  * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
  * <p>
  * The "donor" name is reused here (which makes things a bit confusing...).
  */
-public enum ClinicalType implements SubmissionDataType {
+public enum ClinicalType implements DataType {
 
-  CLINICAL_CORE_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName()),
+  CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
   CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
 
   private ClinicalType(String typeName) {
@@ -65,11 +65,16 @@ public enum ClinicalType implements SubmissionDataType {
   /**
    * Returns an enum matching the type name provided.
    */
-  public static SubmissionDataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+  public static DataType from(String typeName) {
+    if (typeName.equals(CLINICAL_CORE_TYPE.getTypeName())) {
+      return CLINICAL_CORE_TYPE;
+    }
+    if (typeName.equals(CLINICAL_OPTIONAL_TYPE.getTypeName())) {
+      return CLINICAL_OPTIONAL_TYPE;
+    }
+
+    throw new IllegalArgumentException(
+        "Unknown " + ClinicalType.class.getSimpleName() + "  for type name'" + typeName + "'");
   }
 
 }

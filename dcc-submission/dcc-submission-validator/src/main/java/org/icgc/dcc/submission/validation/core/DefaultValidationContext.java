@@ -18,19 +18,22 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.util.regex.Pattern.matches;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 
+import java.util.Collection;
 import java.util.List;
 
 import lombok.Delegate;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.ClinicalType;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -40,13 +43,14 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * The "default" implementation of the {@link ValidationContext}.
  */
-@Value
 @Slf4j
+@RequiredArgsConstructor
 public class DefaultValidationContext implements ValidationContext {
 
   /**
@@ -54,23 +58,30 @@ public class DefaultValidationContext implements ValidationContext {
    */
   @Delegate
   @NonNull
-  SubmissionReportContext reportContext;
+  ReportContext reportContext;
 
   /**
    * Supports the non-inherited {@link ValidationContext} contract.
    */
   @NonNull
-  String projectKey;
+  private final String projectKey;
   @NonNull
-  List<String> emails;
+  private final List<String> emails;
   @NonNull
-  Release release;
+  private final List<DataType> dataTypes;
   @NonNull
-  Dictionary dictionary;
+  private final Release release;
   @NonNull
-  DccFileSystem dccFileSystem;
+  private final Dictionary dictionary;
   @NonNull
-  PlatformStrategyFactory platformStrategyFactory;
+  private final DccFileSystem dccFileSystem;
+  @NonNull
+  private final PlatformStrategyFactory platformStrategyFactory;
+
+  /**
+   * Lazy-loaded.
+   */
+  private PlatformStrategy platform;
 
   @Override
   public String getProjectKey() {
@@ -80,6 +91,17 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public List<String> getEmails() {
     return emails;
+  }
+
+  @Override
+  public Collection<DataType> getDataTypes() {
+    val effectiveDataTypes = ImmutableSet.<DataType> builder();
+
+    // Ensure clinical core is always validated
+    effectiveDataTypes.add(ClinicalType.CLINICAL_CORE_TYPE);
+    effectiveDataTypes.addAll(dataTypes);
+
+    return effectiveDataTypes.build();
   }
 
   @Override
@@ -114,42 +136,50 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public PlatformStrategy getPlatformStrategy() {
-    // Round about way to get the inputs and outputs
-    Path inputDir = new Path(getSubmissionDirectory().getSubmissionDirPath());
-    log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
-    Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
-    log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);
-    Path systemDir = getReleaseFileSystem().getSystemDirectory();
-    log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
+    if (platform == null) {
+      // Round about way to get the inputs and outputs
+      Path inputDir = new Path(getSubmissionDirectory().getSubmissionDirPath());
+      log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
+      Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
+      log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);
+      Path systemDir = new Path(getSubmissionDirectory().getSystemDirPath());
+      log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
 
-    // Abstractions to support local / Hadoop
-    log.info("Creating platform strategy for project {}", projectKey);
-    val platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
+      // Abstractions to support local / Hadoop
+      log.info("Creating platform strategy for project {}", projectKey);
+      platform = platformStrategyFactory.get(inputDir, outputDir, systemDir);
+    }
 
-    return platformStrategy;
+    return platform;
   }
 
   @Override
-  public Optional<Path> getSsmPrimaryFile() {
+  public List<Path> getSsmPrimaryFiles() {
     val submissionDirectory = getSubmissionDirectory();
     val ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
     val ssmPrimaryFileNamePattern = ssmPrimaryFileSchema.getPattern();
 
+    val builder = ImmutableList.<Path> builder();
     for (val submissionFileName : submissionDirectory.listFile()) {
       val ssmPrimary = matches(ssmPrimaryFileNamePattern, submissionFileName);
       if (ssmPrimary) {
         Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(submissionFileName));
 
-        return Optional.of(ssmPrimaryFile);
+        builder.add(ssmPrimaryFile);
       }
     }
 
-    return Optional.<Path> absent();
+    return builder.build();
+  }
+
+  @Override
+  public FileSchema getSsmPrimaryFileSchema() {
+    return getSsmPrimaryFileSchema(getDictionary());
   }
 
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
     for (val fileSchema : dictionary.getFiles()) {
-      val fileType = SubmissionFileType.from(fileSchema.getName());
+      val fileType = FileType.from(fileSchema.getName());
       val ssmPrimary = fileType == SSM_P_TYPE;
       if (ssmPrimary) {
         return fileSchema;

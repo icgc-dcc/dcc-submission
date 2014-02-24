@@ -17,24 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.COMPRESSION_CODEC_ERROR;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.COMPRESSION_CODEC_ERROR;
 
 import java.io.IOException;
-import java.util.zip.GZIPInputStream;
 
-import lombok.Cleanup;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType;
 import org.icgc.dcc.submission.validation.first.FileChecker;
-import org.icgc.dcc.submission.validation.first.Util;
-import org.icgc.dcc.submission.validation.first.Util.CodecType;
 
 @Slf4j
 public class FileCorruptionChecker extends CompositeFileChecker {
-
-  private static final int BUFFER_SIZE = 65536;
 
   public FileCorruptionChecker(FileChecker fileChecker, boolean failFast) {
     super(fileChecker, failFast);
@@ -45,86 +40,94 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public void performSelfCheck(String filename) {
-    try {
-      CodecType contentType = Util.determineCodecFromContent(getDccFileSystem(), getSubmissionDirectory(), filename);
-      CodecType filenameType = Util.determineCodecFromFilename(filename);
-      if (contentType == filenameType) {
-        switch (contentType) {
-        case GZIP:
-          checkGZip(filename, getValidationContext());
-          break;
-        case BZIP2:
-          checkBZip2(filename, getValidationContext());
-          break;
-        case PLAIN_TEXT:
-          // Do nothing
-          break;
-        }
-      } else {
-        log.info("Content type does not match the extension for file: " + filename);
-        // TODO: create new error type rather?
+  public void performSelfCheck(String fileName) {
+    val fs = getFs();
 
-        incrementCheckErrorCount();
-        getValidationContext().reportError(
-            filename,
-            COMPRESSION_CODEC_ERROR,
-            getFileSchema(filename).getName());
-      }
+    CodecType fileNameType = fs.determineCodecFromFilename(fileName);
+    log.info("File name '{}' indicates type: '{}'", fileName, fileNameType);
+
+    CodecType contentType = null;
+    try {
+      contentType = fs.determineCodecFromContent(fileName);
     } catch (IOException e) {
-      log.info("Exception caught in reading file (corruption): {}", filename, e);
+      log.info("Exception caught in detecting file type for '{}' from content'{}'", fileName, e.getMessage());
 
       incrementCheckErrorCount();
-      getValidationContext().reportError(
-          filename,
-          COMPRESSION_CODEC_ERROR,
-          getFileSchema(filename).getName());
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(COMPRESSION_CODEC_ERROR) // TODO: create new "corrupted" file error rather
+              .params(getFileSchema(fileName).getName())
+              .build());
+    }
+    log.info("Content for '{}' indicates type: '{}'", fileName, contentType);
+
+    if (contentType == fileNameType) {
+      log.info("Check '{}' integrity of '{}'", contentType, fileName);
+      switch (contentType) {
+      case GZIP:
+        checkGZip(fileName);
+        break;
+      case BZIP2:
+        checkBZip2(fileName);
+        break;
+      case PLAIN_TEXT:
+        // Do nothing
+        break;
+      }
+    } else {
+      log.info("Content type does not match the extension for file: '{}' ('{}' != '{}')",
+          new Object[] { fileName, contentType, fileNameType });
+      // TODO: create new error type rather?
+
+      incrementCheckErrorCount();
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(COMPRESSION_CODEC_ERROR)
+              .params(getFileSchema(fileName).getName())
+              .build());
     }
   }
 
   /**
    * TODO: merge with gzip one with a flag for the input stream based on the type.
    */
-  private void checkBZip2(String filename, ValidationContext context) {
+  private void checkBZip2(String fileName) {
     try {
-      // check the bzip2 header
-      @Cleanup
-      BZip2CompressorInputStream in =
-          new BZip2CompressorInputStream(getDccFileSystem().open(getSubmissionDirectory().getDataFilePath(filename)));
-      // see if it can be read through
-      byte[] buf = new byte[BUFFER_SIZE];
-      while (in.read(buf) > 0) {
-      }
+      getFs().attemptBzip2Read(fileName);
     } catch (IOException e) {
-      log.info("Exception caught in decoding bzip2 file '{}': '{}'", filename, e.getMessage());
+      e.printStackTrace();
+      log.info("Exception caught in decoding bzip2 file '{}': '{}'", fileName, e.getMessage());
 
       incrementCheckErrorCount();
-      context.reportError(
-          filename,
-          COMPRESSION_CODEC_ERROR,
-          getFileSchema(filename).getName());
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(COMPRESSION_CODEC_ERROR)
+              .params(getFileSchema(fileName).getName())
+              .build());
     }
   }
 
-  private void checkGZip(String filename, ValidationContext context) {
+  private void checkGZip(String fileName) {
     try {
-      // check the gzip header
-      @Cleanup
-      GZIPInputStream in =
-          new GZIPInputStream(getDccFileSystem().open(getSubmissionDirectory().getDataFilePath(filename)));
-      // see if it can be read through
-      byte[] buf = new byte[BUFFER_SIZE];
-      while (in.read(buf) > 0) {
-      }
+      getFs().attemptGzipRead(fileName);
     } catch (IOException e) {
-      log.info("Exception caught in decoding gzip file '{}': '{}'", filename, e.getMessage());
+      e.printStackTrace();
+      log.info("Exception caught in decoding gzip file '{}': '{}'", fileName, e.getMessage());
 
       incrementCheckErrorCount();
-      context.reportError(
-          filename,
-          COMPRESSION_CODEC_ERROR,
-          getFileSchema(filename).getName());
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(COMPRESSION_CODEC_ERROR)
+              .params(getFileSchema(fileName).getName())
+              .build());
     }
   }
-
 }

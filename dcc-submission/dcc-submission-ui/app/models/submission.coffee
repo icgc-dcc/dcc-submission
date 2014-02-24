@@ -44,14 +44,38 @@ module.exports = class Submission extends Model
       'schemaReports': response.submissionFiles
     }
 
+    # name -> report
+
+    response.validFileCount = 0
+    response.report.dataTypeReports.forEach (dataType)->
+      dataType.fileTypeReports.forEach (fileType)->
+        fileType.fileReports.forEach (file)->
+          if file.fileState == "VALID"
+            response.validFileCount += 1
+
+
+    # Inject report into submission file list
     if response.report
       for file in data.schemaReports
-        for report in response.report.schemaReports
-          if report.name is file.name
-            _.extend(file, report)
-            break
+        for dataTypeReport in response.report.dataTypeReports
+          for fileTypeReport in dataTypeReport.fileTypeReports
+            for fileReport in fileTypeReport.fileReports
+              if fileReport.fileName == file.name
+                _.extend(file, fileReport)
+                break
 
-    response.report = new Report _.extend(data,
+    #if response.report
+    #  for file in data.schemaReports
+    #    for report in response.report.schemaReports
+    #      if report.name is file.name
+    #        _.extend(file, report)
+    #        break
+
+    #response.submissionFiles.forEach (file)->
+    #  if file.fieldReports
+    #    response.validFileCount += 1
+
+    response.fileReports = new Report _.extend(data,
       {"release": @attributes?.release, "projectKey": response.projectKey})
 
     response

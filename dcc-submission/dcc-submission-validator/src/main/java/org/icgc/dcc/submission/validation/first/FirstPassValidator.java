@@ -17,40 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.first;
 
-import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
-import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
-import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
-
-import javax.validation.constraints.NotNull;
-
 import lombok.NoArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.first.FileChecker.FileCheckers;
-import org.icgc.dcc.submission.validation.first.RowChecker.RowCheckers;
 
-import com.google.common.annotations.VisibleForTesting;
-
-@Slf4j
 @NoArgsConstructor
 public class FirstPassValidator implements Validator {
-
-  @NotNull
-  private FileChecker fileChecker;
-  @NotNull
-  private RowChecker rowChecker;
-
-  /**
-   * For testing purposes only.
-   */
-  @VisibleForTesting
-  FirstPassValidator(FileChecker fileChecker, RowChecker rowChecker) {
-    this.fileChecker = fileChecker;
-    this.rowChecker = rowChecker;
-  }
 
   @Override
   public String getName() {
@@ -59,33 +32,10 @@ public class FirstPassValidator implements Validator {
 
   @Override
   public void validate(ValidationContext validationContext) {
-    FileChecker fileChecker = this.fileChecker == null ?
-        FileCheckers.getDefaultFileChecker(validationContext) :
-        this.fileChecker;
-    RowChecker rowChecker = this.rowChecker == null ?
-        RowCheckers.getDefaultRowChecker(validationContext) :
-        this.rowChecker;
-
-    for (String filename : listRelevantFiles(validationContext)) {
-      log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, filename);
-
-      fileChecker.check(filename);
-      checkInterrupted(getName());
-
-      if (fileChecker.canContinue()) {
-        log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, filename);
-        rowChecker.check(filename);
-        checkInterrupted(getName());
-      }
-    }
-  }
-
-  private Iterable<String> listRelevantFiles(ValidationContext context) {
-    val dictionary = context.getDictionary();
-    val submissionDirectory = context.getSubmissionDirectory();
-    val relevantPatterns = dictionary.getFilePatterns();
-
-    return submissionDirectory.listFiles(relevantPatterns);
+    new FPVSubmissionProcessor().process(
+        getName(),
+        validationContext,
+        new FPVFileSystem(validationContext.getSubmissionDirectory()));
   }
 
 }

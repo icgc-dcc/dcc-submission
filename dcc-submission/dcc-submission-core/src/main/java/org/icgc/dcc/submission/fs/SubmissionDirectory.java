@@ -17,65 +17,68 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.isFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.rm;
+import static org.icgc.dcc.submission.core.util.Splitters.TAB;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
-import lombok.Value;
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.release.model.SubmissionState;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 @Slf4j
+@RequiredArgsConstructor
 public class SubmissionDirectory {
 
+  @NonNull
   private final DccFileSystem dccFileSystem;
-
+  @NonNull
+  private final ReleaseFileSystem releaseFileSystem;
+  @NonNull
   private final Release release;
-
+  @NonNull
   private final String projectKey;
-
+  @NonNull
   private final Submission submission;
 
-  public SubmissionDirectory(DccFileSystem dccFileSystem, Release release, String projectKey, Submission submission) {
-    super();
-
-    checkArgument(dccFileSystem != null);
-    checkArgument(release != null);
-    checkArgument(projectKey != null);
-    checkArgument(submission != null);
-
-    this.dccFileSystem = dccFileSystem;
-    this.release = release;
-    this.projectKey = projectKey;
-    this.submission = submission;
-  }
-
   /**
-   * (non-recursive) TODO: confirm
+   * (non-recursive).
    */
   public Iterable<String> listFile(Pattern pattern) {
-    List<Path> pathList = HadoopUtils.lsFile(this.dccFileSystem.getFileSystem(), new Path(getSubmissionDirPath()),
-        pattern);
+    List<Path> pathList = lsFile(
+        this.dccFileSystem.getFileSystem(),
+        new Path(getSubmissionDirPath()), pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 
@@ -86,7 +89,7 @@ public class SubmissionDirectory {
   /**
    * Returns the list of files that match a file pattern in the dictionary.
    */
-  public Iterable<String> listFiles(final List<String> filePatterns) {
+  public Iterable<String> listFiles(final Iterable<String> filePatterns) {
     return Iterables.filter(listFile(), new Predicate<String>() {
 
       @Override
@@ -99,23 +102,6 @@ public class SubmissionDirectory {
         return false;
       }
     });
-  }
-
-  /**
-   * If there is a matching file for the pattern, returns the one matching file
-   * or nothing. Errors out if there are more than one matching file.
-   */
-  public Optional<String> getFile(String filePattern) {
-    Iterable<String> files = listFiles(newArrayList(filePattern));
-    val iterator = files.iterator();
-    if (iterator.hasNext()) {
-      val optional = Optional.of(iterator.next());
-      checkState(!iterator.hasNext(), "There should only be one matching file for pattern '{}', instead got: '{}'",
-          filePattern, files);
-      return optional;
-    } else {
-      return Optional.<String> absent();
-    }
   }
 
   public String addFile(String filename, InputStream data) {
@@ -131,7 +117,7 @@ public class SubmissionDirectory {
   }
 
   public boolean isReadOnly() {
-    SubmissionState state = this.submission.getState();
+    val state = this.submission.getState();
 
     return (state.isReadOnly() || this.release.getState() == ReleaseState.COMPLETED);
   }
@@ -142,6 +128,14 @@ public class SubmissionDirectory {
 
   public String getSubmissionDirPath() {
     return dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
+  }
+
+  /**
+   * Delegates to the {@link ReleaseFileSystem} since the system dir lives at the release level (but is most typically
+   * accessed in the context of the processing a submission directory).
+   */
+  public String getSystemDirPath() {
+    return releaseFileSystem.getSystemDirPath().toUri().toString();
   }
 
   public String getValidationDirPath() {
@@ -169,8 +163,7 @@ public class SubmissionDirectory {
   }
 
   /**
-   * Removes all files pertaining to validation (not including normalization),
-   * leaving nested directories untouched.
+   * Removes all files pertaining to validation (not including normalization), leaving nested directories untouched.
    */
   public void removeValidationFiles() {
     val fs = dccFileSystem.getFileSystem();
@@ -193,14 +186,103 @@ public class SubmissionDirectory {
   }
 
   /**
-   * There's already a "SubmissionFile" class (for the UI)...
+   * Must close stream after usage.
    */
-  @Value
-  public class SubmissionDirectoryFile {
+  @SneakyThrows
+  public DataInputStream open(@NonNull String fileName) {
+    return dccFileSystem.getFileSystem()
+        .open(new Path(getDataFilePath(fileName)));
+  }
 
-    String fileName;
-    SubmissionFileType type;
-    Pattern pattern;
+  /**
+   * Must close stream after usage. The extension is expected to match the actual encoding at this point. The client
+   * code can read data from this stream without having to worry about what compression is used.
+   */
+  @SneakyThrows
+  public InputStream getDecompressingInputStream(String fileName) {
+    val in = open(fileName);
+    val codec = new CompressionCodecFactory(dccFileSystem.getFileSystemConfiguration())
+        .getCodec(new Path(getDataFilePath(fileName)));
+    return codec == null ?
+        in : // This is assumed to be PLAIN_TEXT
+        codec.createInputStream(in);
+  }
+
+  /**
+   * Returns a map of sample IDs to their corresponding donor IDs, a mapping commonly needed.
+   * <p>
+   * TODO: properly handle using cascading rather.
+   */
+  public Map<String, String> getSampleToDonorMap(Dictionary dictionary) {
+
+    val sampleToSpecimen = Maps.<String, String> newTreeMap();
+    val sampleFileSchema = dictionary.getFileSchema(SAMPLE_TYPE);
+    val sampleSampleIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_ANALYZED_SAMPLE_ID).get();
+    val sampleSpecimenIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
+    val sampleFileNames = listFile(compile(sampleFileSchema.getPattern()));
+    for (val sampleFileName : sampleFileNames) {
+      boolean first = true;
+      for (String row : readClinicalFile(sampleFileName)) { // Clinical files are small
+        if (!first) {
+          val fields = Lists.<String> newArrayList(TAB.split(row));
+          val sampleId = fields.get(sampleSampleIdOrdinal);
+          val specimenId = fields.get(sampleSpecimenIdOrdinal);
+          checkState(!sampleToSpecimen.containsKey(sampleId));
+          sampleToSpecimen.put(sampleId, specimenId);
+        }
+        first = false;
+      }
+    }
+    log.info("Sample to specimen mapping: {}", sampleToSpecimen);
+
+    val specimenToDonor = Maps.<String, String> newTreeMap();
+    val specimenFileSchema = dictionary.getFileSchema(SPECIMEN_TYPE);
+    val specimenSpecimenIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
+    val specimenDonorIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_DONOR_ID).get();
+    val specimenFileNames = listFile(compile(specimenFileSchema.getPattern()));
+    boolean first = true;
+    for (val specimenFileName : specimenFileNames) {
+      for (String row : readClinicalFile(specimenFileName)) { // Clinical files are small
+        if (!first) {
+          val fields = Lists.<String> newArrayList(TAB.split(row));
+          val specimenId = fields.get(specimenSpecimenIdOrdinal);
+          val donorId = fields.get(specimenDonorIdOrdinal);
+          checkState(!specimenToDonor.containsKey(specimenId));
+          specimenToDonor.put(specimenId, donorId);
+        }
+        first = false;
+      }
+    }
+    log.info("Specimen to donor mapping: {}", specimenToDonor);
+
+    val sampleToDonor = Maps.<String, String> newTreeMap();
+    for (val entry : sampleToSpecimen.entrySet()) {
+      sampleToDonor.put(
+          entry.getKey(),
+          specimenToDonor.get(entry.getValue()));
+    }
+    log.info("Sample to donor mapping: {}", sampleToDonor);
+
+    return sampleToDonor;
+  }
+
+  /**
+   * Only intended for clinical files (small enough).
+   */
+  @SneakyThrows
+  private List<String> readClinicalFile(String fileName) {
+    @Cleanup
+    BufferedReader br = new BufferedReader(new InputStreamReader(getDecompressingInputStream(fileName)));
+    val lines = Lists.<String> newArrayList();
+    for (String line; (line = br.readLine()) != null;) {
+      lines.add(line);
+    }
+    return lines;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("SubmissionDirectory [%s]", getSubmissionDirPath());
   }
 
 }

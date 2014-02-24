@@ -23,9 +23,10 @@ import java.io.IOException;
 import java.util.List;
 
 import lombok.NonNull;
+import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.sshd.server.SshFile;
+import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 public class FileHdfsSshFile extends HdfsSshFile {
@@ -34,7 +35,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
   private final BaseDirectoryHdfsSshFile directory;
 
   public FileHdfsSshFile(SftpContext context, BaseDirectoryHdfsSshFile directory, String fileName) {
-    super(context, new Path(directory.path, fileName), directory.fs);
+    super(context, new Path(directory.path, fileName), directory.fileSystem);
     this.directory = directory;
   }
 
@@ -103,8 +104,8 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean create() throws IOException {
     try {
       if (isWritable()) {
-        directory.notifyModified();
-        fs.createNewFile(path);
+        fileSystem.createNewFile(path);
+        directory.notifyModified(path);
 
         return true;
       }
@@ -118,14 +119,14 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean delete() {
     try {
       if (isRemovable()) {
-        directory.notifyModified();
-        boolean success = fs.delete(path, false);
+        // This needs to happen here so that it can be seen by the listeners
+        context.notifyFileRemoved(path);
+        directory.notifyModified(path);
 
+        val success = fileSystem.delete(path, false);
         if (success == false) {
           throw new IOException("Unable to delete file " + path.toUri());
         }
-
-        context.notifyFileRemoved(path);
 
         return success;
       }
@@ -148,14 +149,14 @@ public class FileHdfsSshFile extends HdfsSshFile {
         Path destinationPath =
             new Path(directory.getParentFile().path, destination.getAbsolutePath().substring(1));
 
-        directory.notifyModified();
-        boolean success = fs.rename(path, destinationPath);
-
-        if (success == false) {
+        directory.notifyModified(path);
+        val success = fileSystem.rename(path, destinationPath);
+        if (!success) {
           throw new IOException("Unable to move file " + path.toUri() + " to " + destinationPath.toUri());
         }
 
         path = destinationPath;
+        directory.notifyModified(path);
 
         return success;
       }

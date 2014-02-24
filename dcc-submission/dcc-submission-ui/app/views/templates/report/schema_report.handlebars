@@ -12,7 +12,7 @@
             </h2>
         </div>
         <span class="key">File name</span>&nbsp;&nbsp;&nbsp;<span>{{name}}</span><br>
-        <span class="key">State</span>&nbsp;&nbsp;&nbsp;<span class="{{lowercase state}}">{{underscore2space state}}</span>
+        <span class="key">State</span>&nbsp;&nbsp;&nbsp;<span class="{{lowercase fileState}}">{{underscore2space fileState}}</span>
     </div>
 </div>
 
@@ -22,6 +22,6 @@
 {{/if}}
 
 <h2 style="margin-bottom:0;">
-{{#if errors.length}}Error{{else}}Detailed{{/if}} Report
+{{#if errorReports.length}}Error{{else}}Detailed{{/if}} Report
 </h2>
-<table width="100%" id="schema-report-container" class="alert-{{#if errors.length}}danger{{else}}info{{/if}} schema-report table table-striped table-bordered"></table>
+<table width="100%" id="schema-report-container" class="alert-{{#if errorReports.length}}danger{{else}}info{{/if}} schema-report table table-striped table-bordered"></table>

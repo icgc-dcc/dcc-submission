@@ -231,7 +231,7 @@ module.exports = class ReportTableView extends DataTableView
           sTitle: "Status"
           bVisible: false
           mData: (source, type) ->
-            state = if source.matchedSchemaName
+            state = if source.schemaName
               if source.errors.length
                 "INVALID"
               else if source.fieldReports.length or source.summaryReports.length
@@ -281,7 +281,7 @@ module.exports = class ReportTableView extends DataTableView
       sAjaxSource: ""
       sAjaxDataProp: ""
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        switch aData.matchedSchemaName
+        switch aData.schemaName
           when null
             $(nRow).css {'color': '#999', 'font-style': 'italic'}
 

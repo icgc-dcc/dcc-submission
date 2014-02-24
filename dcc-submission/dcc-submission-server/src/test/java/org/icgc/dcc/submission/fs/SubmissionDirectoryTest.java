@@ -41,6 +41,8 @@ public class SubmissionDirectoryTest extends FileSystemTest {
 
   private DccFileSystem mockDccFileSystem;
 
+  private ReleaseFileSystem mockReleaseFileSystem;
+
   private SubmissionDirectory submissionDirectory;
 
   @Override
@@ -50,6 +52,7 @@ public class SubmissionDirectoryTest extends FileSystemTest {
     this.mockFSDataOutputStream = mock(FSDataOutputStream.class);
     this.mockFileSystem = mock(FileSystem.class);
     this.mockDccFileSystem = mock(DccFileSystem.class);
+    this.mockReleaseFileSystem = mock(ReleaseFileSystem.class);
 
     when(this.mockFileSystem.mkdirs(any(Path.class))).thenReturn(true);
     when(this.mockFileSystem.listStatus(any(Path.class))).thenReturn(new FileStatus[] {});
@@ -60,8 +63,8 @@ public class SubmissionDirectoryTest extends FileSystemTest {
         FILEPATH_1);
     when(this.mockDccFileSystem.getFileSystem()).thenReturn(this.mockFileSystem);
 
-    this.submissionDirectory =
-        new SubmissionDirectory(this.mockDccFileSystem, this.mockRelease, PROJECT_KEY, this.mockSubmission);
+    this.submissionDirectory = new SubmissionDirectory(
+        this.mockDccFileSystem, this.mockReleaseFileSystem, this.mockRelease, PROJECT_KEY, this.mockSubmission);
   }
 
   @Test

@@ -17,6 +17,25 @@
  */
 package org.icgc.dcc.submission.sftp.fs;
 
+import static org.apache.commons.io.IOUtils.skip;
+import static org.apache.sshd.common.file.SshFile.Attribute.Group;
+import static org.apache.sshd.common.file.SshFile.Attribute.IsDirectory;
+import static org.apache.sshd.common.file.SshFile.Attribute.IsRegularFile;
+import static org.apache.sshd.common.file.SshFile.Attribute.IsSymbolicLink;
+import static org.apache.sshd.common.file.SshFile.Attribute.LastAccessTime;
+import static org.apache.sshd.common.file.SshFile.Attribute.LastModifiedTime;
+import static org.apache.sshd.common.file.SshFile.Attribute.Owner;
+import static org.apache.sshd.common.file.SshFile.Attribute.Permissions;
+import static org.apache.sshd.common.file.SshFile.Attribute.Size;
+import static org.apache.sshd.common.file.SshFile.Permission.GroupExecute;
+import static org.apache.sshd.common.file.SshFile.Permission.GroupRead;
+import static org.apache.sshd.common.file.SshFile.Permission.GroupWrite;
+import static org.apache.sshd.common.file.SshFile.Permission.OthersExecute;
+import static org.apache.sshd.common.file.SshFile.Permission.OthersRead;
+import static org.apache.sshd.common.file.SshFile.Permission.OthersWrite;
+import static org.apache.sshd.common.file.SshFile.Permission.UserExecute;
+import static org.apache.sshd.common.file.SshFile.Permission.UserRead;
+import static org.apache.sshd.common.file.SshFile.Permission.UserWrite;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
@@ -24,21 +43,36 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Delegate;
 import lombok.NonNull;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.sshd.server.SshFile;
+import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 @Slf4j
 @AllArgsConstructor
 public abstract class HdfsSshFile implements SshFile {
+
+  /**
+   * Based on Jerry's experimentation with {@code ReadonlyExportedDataSshFile} this seems like a good nominal value
+   * compared to Hadoop's default of 4096.
+   * 
+   * @see {@link FileSystem#open(Path)}
+   */
+  private static final int HDFS_READ_BUFFER_SIZE_BYTES = 32768;
+
+  private static final String FILE_SYSTEM_GROUP = "icgc";
+  private static final String FILE_SYSTEM_OWNER = "dcc";
 
   protected static final String SEPARATOR = "/";
 
@@ -47,7 +81,65 @@ public abstract class HdfsSshFile implements SshFile {
   @NonNull
   protected Path path;
   @NonNull
-  protected final FileSystem fs;
+  protected final FileSystem fileSystem;
+
+  @Override
+  public Map<Attribute, Object> getAttributes(boolean followLinks) throws IOException {
+    val map = new HashMap<Attribute, Object>();
+    map.put(Size, getSize());
+    map.put(IsDirectory, isDirectory());
+    map.put(IsRegularFile, isFile());
+    map.put(IsSymbolicLink, false);
+    map.put(LastModifiedTime, getLastModified());
+    map.put(LastAccessTime, getLastModified());
+    map.put(Group, FILE_SYSTEM_GROUP);
+    map.put(Owner, FILE_SYSTEM_OWNER);
+
+    val p = EnumSet.noneOf(Permission.class);
+    if (isReadable()) {
+      p.add(UserRead);
+      p.add(GroupRead);
+      p.add(OthersRead);
+    }
+    if (isWritable()) {
+      p.add(UserWrite);
+      p.add(GroupWrite);
+      p.add(OthersWrite);
+    }
+    if (isExecutable()) {
+      p.add(UserExecute);
+      p.add(GroupExecute);
+      p.add(OthersExecute);
+    }
+
+    map.put(Permissions, p);
+
+    return map;
+  }
+
+  @Override
+  public void setAttributes(Map<Attribute, Object> attributes) throws IOException {
+    // Do not inherit the attributes sent from the SFTP client.
+    // See {@link NativeSshFileNio#setAttributes} for an example implementation.
+  }
+
+  @Override
+  public Object getAttribute(Attribute attribute, boolean followLinks) throws IOException {
+    return getAttributes(followLinks).get(attribute);
+  }
+
+  @Override
+  public void setAttribute(Attribute attribute, Object value) throws IOException {
+    val map = new HashMap<Attribute, Object>();
+    map.put(attribute, value);
+
+    setAttributes(map);
+  }
+
+  @Override
+  public String readSymbolicLink() throws IOException {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   public boolean doesExist() {
@@ -57,7 +149,7 @@ public abstract class HdfsSshFile implements SshFile {
         return false;
       }
 
-      return fs.exists(path);
+      return fileSystem.exists(path);
     } catch (Exception e) {
       return handleException(Boolean.class, e);
     }
@@ -66,7 +158,7 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public boolean isReadable() {
     try {
-      FsAction u = fs.getFileStatus(path).getPermission().getUserAction();
+      FsAction u = fileSystem.getFileStatus(path).getPermission().getUserAction();
 
       return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.READ || u == FsAction.READ_EXECUTE);
     } catch (Exception e) {
@@ -77,7 +169,7 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public boolean isWritable() {
     try {
-      FsAction u = fs.getFileStatus(path).getPermission().getUserAction();
+      FsAction u = fileSystem.getFileStatus(path).getPermission().getUserAction();
 
       return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.WRITE || u == FsAction.WRITE_EXECUTE);
     } catch (Exception e) {
@@ -98,7 +190,7 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public long getLastModified() {
     try {
-      return fs.getFileStatus(path).getModificationTime();
+      return fileSystem.getFileStatus(path).getModificationTime();
     } catch (Exception e) {
       return handleException(Long.class, e);
     }
@@ -107,7 +199,7 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public boolean setLastModified(long time) {
     try {
-      fs.setTimes(path, time, -1);
+      fileSystem.setTimes(path, time, -1);
 
       return true;
     } catch (Exception e) {
@@ -118,7 +210,7 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public long getSize() {
     try {
-      return fs.getFileStatus(path).getLen();
+      return fileSystem.getFileStatus(path).getLen();
     } catch (Exception e) {
       return handleException(Long.class, e);
     }
@@ -127,7 +219,7 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public String getOwner() {
     try {
-      return fs.getFileStatus(path).getOwner();
+      return fileSystem.getFileStatus(path).getOwner();
     } catch (Exception e) {
       return handleException(String.class, e);
     }
@@ -159,7 +251,7 @@ public abstract class HdfsSshFile implements SshFile {
       return new OutputStream() {
 
         @Delegate(excludes = Closeable.class)
-        OutputStream delegate = fs.create(path);
+        OutputStream delegate = fileSystem.create(path);
 
         @Override
         public void close() throws IOException {
@@ -177,13 +269,26 @@ public abstract class HdfsSshFile implements SshFile {
     }
   }
 
+  /**
+   * Opens the underlying {@code path} for SFTP download streaming.
+   * <p>
+   * Added download to support "Incremental Submission"
+   * 
+   * @see https://issues.apache.org/jira/browse/HDFS-246
+   * @see https://jira.oicr.on.ca/browse/DCC-412
+   */
   @Override
   public InputStream createInputStream(long offset) throws IOException {
-    // because of DCC-412, the download size bug, we will temporarily disable download
-    // return fs.open(path);
-    // Ideally we would throw an Unsupported Exception, but mina will kick user out
-    // so we have to use a low level IOException to keep user connected
-    throw new IOException("Download from SFTP is disabled");
+    val inputStream = fileSystem.open(path, HDFS_READ_BUFFER_SIZE_BYTES);
+    try {
+      inputStream.seek(offset);
+    } catch (IOException e) {
+      // Seek fails when the offset requested passes the file length,
+      // this line guarantee we are positioned at the end of the file
+      skip(inputStream, offset);
+    }
+
+    return inputStream;
   }
 
   @Override
@@ -197,7 +302,7 @@ public abstract class HdfsSshFile implements SshFile {
       return false;
     }
 
-    String uri = path.toString();
+    val uri = path.toString();
     return uri.contains(VALIDATION_DIRNAME);
   }
 

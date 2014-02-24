@@ -29,9 +29,9 @@ import org.icgc.dcc.submission.dictionary.model.RestrictionType.RestrictionTypeC
 import org.icgc.dcc.submission.dictionary.model.validation.CheckRestriction;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
+import org.mongodb.morphia.annotations.Converters;
+import org.mongodb.morphia.annotations.Embedded;
 
-import com.google.code.morphia.annotations.Converters;
-import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 
 /**

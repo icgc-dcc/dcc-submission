@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.core.model;
 
-import com.google.code.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Entity;
 
 /**
  * This class/collection is only intended to persist the number of failed login attempts per user. It should not try to

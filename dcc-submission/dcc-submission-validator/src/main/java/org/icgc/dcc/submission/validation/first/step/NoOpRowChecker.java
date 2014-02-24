@@ -17,19 +17,20 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.RowChecker;
 
 public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
 
-  public NoOpRowChecker(ValidationContext validationContext) {
-    this(validationContext, false);
+  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
+    this(validationContext, fs, false);
   }
 
-  public NoOpRowChecker(ValidationContext validationContext, boolean failFast) {
-    super(validationContext, failFast);
+  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fs, boolean failFast) {
+    super(validationContext, fs, failFast);
   }
 
   @Override
@@ -37,7 +38,7 @@ public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
   }
 
   @Override
-  public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
+  public void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber) {
   }
 
   @Override
