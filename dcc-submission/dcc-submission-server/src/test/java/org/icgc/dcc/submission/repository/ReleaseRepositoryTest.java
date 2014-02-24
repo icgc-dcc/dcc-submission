@@ -39,8 +39,10 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
     releaseOne = new Release("R1");
     releaseOne.setState(ReleaseState.COMPLETED);
+    releaseOne.addSubmission(new Submission("P1", "P1", "R1"));
 
     releaseTwo = new Release("R2");
+    releaseOne.addSubmission(new Submission("P2", "P2", "R2"));
 
     datastore.save(releaseOne);
     datastore.save(releaseTwo);
@@ -60,6 +62,14 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
     assertThat(actual).isEqualTo(expected);
     assertThat(morphiaResponse).isEqualTo(expected);
+  }
+
+  @Test
+  public void testFindReleaseSummaries() {
+    val actual = releaseRepository.findReleaseSummaries();
+    val full = releaseRepository.findReleases();
+
+    assertThat(actual).hasSize(full.size());
   }
 
   @Test

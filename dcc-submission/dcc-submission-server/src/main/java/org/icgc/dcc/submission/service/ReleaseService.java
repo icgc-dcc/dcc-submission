@@ -107,7 +107,6 @@ public class ReleaseService extends AbstractService {
   /**
    * Returns the number of releases.
    */
-  @Synchronized
   public long countReleases() {
     return releaseRepository.countReleases();
   }
@@ -116,7 +115,6 @@ public class ReleaseService extends AbstractService {
    * Returns the number of releases that are in the {@link ReleaseState#OPENED} state. It is expected that there always
    * ever be one at a time.
    */
-  @Synchronized
   public long countOpenReleases() {
     return releaseRepository.countOpenReleases();
   }
@@ -130,11 +128,10 @@ public class ReleaseService extends AbstractService {
    * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
    * projects.
    */
-  @Synchronized
   public List<Release> getReleasesBySubject(Subject subject) {
     log.debug("getting releases for {}", subject.getPrincipal());
 
-    List<Release> releases = releaseRepository.findReleases();
+    List<Release> releases = releaseRepository.findReleaseSummaries();
     log.debug("Number of releases:{} ", releases.size());
 
     // Filter out all the submissions that the current user can not see
@@ -201,7 +198,6 @@ public class ReleaseService extends AbstractService {
   /**
    * Returns the {@code NextRelease} (guaranteed not to be null if returned).
    */
-  @Synchronized
   public Release getNextRelease() {
     val nextRelease = releaseRepository.findNextRelease();
     checkNotNull(nextRelease, "There is no next release in the database.");
@@ -451,7 +447,6 @@ public class ReleaseService extends AbstractService {
     return detailedSubmission;
   }
 
-  @Synchronized
   public List<SubmissionFile> getSubmissionFiles(@NonNull String releaseName, @NonNull String projectKey) {
     val release = releaseRepository.findReleaseByName(releaseName);
     if (release == null) {
