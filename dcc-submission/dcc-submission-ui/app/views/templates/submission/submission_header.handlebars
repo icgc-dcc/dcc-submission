@@ -4,24 +4,33 @@
     <li><span>{{projectKey}}</span></li>
 </ul>
 <div class="row-fluid" style="margin-bottom:20px">
-    <div class="summary span6">
+    <div class="summary span12">
         <div class="row-fluid">
             <h2 class="pull-left">
                 Submission Summary
             </h2>
         </div>
+        
         <span class="key">Name</span>&nbsp;&nbsp;&nbsp;<span>{{projectName}}</span><br>
         <span class="key">Alias</span>&nbsp;&nbsp;&nbsp;<span>{{projectAlias}}</span><br>
         <span class="key">State</span>&nbsp;&nbsp;&nbsp;<strong><span class="{{lowercase state}}">{{underscore2space state}}</span></strong><br>
         <span class="key">Number of submitted files</span>&nbsp;&nbsp;&nbsp;<span>{{submissionFiles.length}}</span><br>
         <span class="key">Number of valid files</span>&nbsp;&nbsp;&nbsp;<span>{{validFileCount}}</span><br>
-        <span class="key">Size of submission data</span>&nbsp;&nbsp;&nbsp;<span>{{fileSize submissionFiles}}</span>
-        <div>
-            {{#show_submission_action_button submissionFiles}}
-            <div style="margin-top:7px; margin-right:50px">
-                {{submission_action state}}
-            </div>
-            {{/show_submission_action_button}}
+        <span class="key">Size of submission data</span>&nbsp;&nbsp;&nbsp;<span>{{fileSize submissionFiles}}</span><br>
+
+        <br>
+        <div class="row-fluid">
+            <h4 class="pull-left alert"> 
+                <span class="{{lowercase state}}">The current submission state is: <strong>{{underscore2space state}}</strong></span></strong><br>
+
+                <div>
+                    {{#show_submission_action_button submissionFiles}}
+                    <div style="margin-top:7px; margin-right:50px">
+                        {{submission_action state}}
+                    </div>
+                    {{/show_submission_action_button}}
+                </div>
+            </h4>
         </div>
 
         <!--
