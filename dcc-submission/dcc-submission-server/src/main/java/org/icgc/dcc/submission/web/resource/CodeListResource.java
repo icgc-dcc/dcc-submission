@@ -23,6 +23,7 @@ import static javax.ws.rs.core.Response.ok;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_EXISTS;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.NAME_MISMATCH;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.web.util.Responses.UNPROCESSABLE_ENTITY;
 import static org.icgc.dcc.submission.web.util.Responses.badRequest;
 import static org.icgc.dcc.submission.web.util.Responses.created;
 import static org.icgc.dcc.submission.web.util.Responses.noContent;
@@ -45,6 +46,7 @@ import javax.ws.rs.core.SecurityContext;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.elasticsearch.common.collect.Sets;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.service.DictionaryService;
@@ -75,17 +77,34 @@ public class CodeListResource {
   @POST
   public Response addCodeLists(
 
-      @Valid
-      List<CodeList> codeLists,
+      @Valid List<CodeList> codeLists,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
     log.info("Adding codelists: {}", codeLists);
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
+    }
+
+    val codes = Sets.<String> newHashSet();
+    val values = Sets.<String> newHashSet();
+
+    for (val codeList : codeLists) {
+      for (val term : codeList.getTerms()) {
+        if (codes.contains(term.getCode()) || values.contains(term.getValue())) {
+          log.warn("Code or value of {} is duplicated in {}", term, codeList);
+          return Response
+              .status(UNPROCESSABLE_ENTITY)
+              .header(DictionaryResource.VALIDATION_ERROR_HEADER,
+                  "Code or value in " + term + " is duplicated in " + codeList)
+              .build();
+        } else {
+          codes.add(term.getCode());
+          values.add(term.getValue());
+        }
+      }
     }
 
     checkArgument(codeLists != null);
@@ -98,8 +117,7 @@ public class CodeListResource {
   @Path("{name}")
   public Response getCodeList(
 
-      @PathParam("name")
-      String name
+      @PathParam("name") String name
 
       )
   {
@@ -124,17 +142,13 @@ public class CodeListResource {
   @Path("{name}")
   public Response updateCodeList(
 
-      @PathParam("name")
-      String name,
+      @PathParam("name") String name,
 
-      @Valid
-      CodeList newCodeList,
+      @Valid CodeList newCodeList,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -164,17 +178,13 @@ public class CodeListResource {
   @Path("{name}/terms")
   public Response addTerms(
 
-      @PathParam("name")
-      String name,
+      @PathParam("name") String name,
 
-      @Valid
-      List<Term> terms,
+      @Valid List<Term> terms,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {

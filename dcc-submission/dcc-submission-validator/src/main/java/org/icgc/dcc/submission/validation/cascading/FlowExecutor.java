@@ -42,19 +42,24 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TaskLog;
 import org.icgc.dcc.hadoop.io.NullInputFormat;
 import org.icgc.dcc.hadoop.io.NullOutputFormat;
 
 import cascading.flow.Flow;
+import cascading.flow.FlowException;
 import cascading.flow.FlowStep;
 import cascading.flow.hadoop.MapReduceFlow;
 import cascading.flow.hadoop.util.JavaObjectSerializer;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.pipe.Each;
+import cascading.stats.CascadingStats.Status;
+import cascading.stats.hadoop.HadoopStepStats;
 import cascading.tap.Tap;
 
 import com.google.common.collect.ImmutableMap;
 
+@Slf4j
 @RequiredArgsConstructor
 public class FlowExecutor {
 
@@ -69,7 +74,13 @@ public class FlowExecutor {
 
   public void execute(@NonNull FlowExecutorJob job) {
     val flow = createFlow(job);
-    flow.complete();
+    try {
+      flow.complete();
+    } catch (FlowException e) {
+      handleFlowException(flow);
+
+      throw e;
+    }
   }
 
   private Flow<?> createFlow(FlowExecutorJob job) {
@@ -175,6 +186,33 @@ public class FlowExecutor {
 
   private String getId() {
     return createUniqueID();
+  }
+
+  private static void handleFlowException(Flow<?> flow) {
+    try {
+      for (val stepStats : flow.getFlowStats().getFlowStepStats()) {
+        if (stepStats instanceof HadoopStepStats) {
+          val hadoopStepStats = (HadoopStepStats) stepStats;
+          for (val taskStats : hadoopStepStats.getTaskStats().values()) {
+            for (val hadoopAttempt : taskStats.getAttempts().values()) {
+              if (hadoopAttempt.getStatusFor() == Status.FAILED) {
+                val logUrl = new StringBuilder(hadoopAttempt.getTaskTrackerHttp());
+                logUrl
+                    .append("/tasklog?attemptid=")
+                    .append(taskStats.getTaskID())
+                    .append("&plaintext=true")
+                    .append("&filter=")
+                    .append(TaskLog.LogName.STDOUT);
+
+                log.info("Log url: ", logUrl);
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error handling flow excpetion:", e);
+    }
   }
 
   @Slf4j
