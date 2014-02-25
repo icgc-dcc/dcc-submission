@@ -194,6 +194,7 @@ public class KVSubmissionProcessor {
     val optionalReferencedFileType = secondary ?
         getOptionalReferencedFileType2(fileType) :
         getOptionalReferencedFileType1(fileType);
+    log.info("'{}' references '{}'", fileType, optionalReferencedFileType);
 
     if (optionalReferencedFileType.isPresent()) {
       // Obtain corresponding PKs for the referenced file type (also if applicable)
