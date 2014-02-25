@@ -58,12 +58,17 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
    */
   private static final String LEGACY_CODE = "-9999";
 
+  public static final String MISSING_CODE1 = "-777";  
+  public static final String MISSING_CODE2 = "-888";
+  
+  
   /**
    * Values representing absent values.
    * <p>
    * "-999" has been deprecated {@link ForbiddenValuesFunction}
    */
-  public static final List<String> MISSING_CODES = newArrayList("-777", "-888", LEGACY_CODE); // TODO: move elsewhere?
+  public static final List<String> MISSING_CODES =
+      newArrayList(MISSING_CODE1, MISSING_CODE2, LEGACY_CODE); // TODO: move elsewhere?
 
   private final Integer headerSize;
 
