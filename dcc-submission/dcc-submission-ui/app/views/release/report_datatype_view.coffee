@@ -153,7 +153,7 @@ module.exports = class ReportDatatypeView extends View
     else if state in ["VALID", "INVALID", "NOT_VALIDATED"]
       """
       <a data-toggle="modal"
-         class="m-btn mini green"
+         class="m-btn mini blue"
          style="height:auto; margin-top:0"
          href="#validate-submission-popup"
          id="validate-submission-popup-button">
