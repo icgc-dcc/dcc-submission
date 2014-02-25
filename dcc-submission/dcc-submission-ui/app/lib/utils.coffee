@@ -215,21 +215,25 @@ found on host #{host}"
 
       # TODO, confirm display names
       when "METH_ARRAY_TYPE"
-        dataType
+        "METH Array"
       when "METH_SEQ_TYPE"
-        dataTYpe
-      when "GEXP_ARRAY_TYPE"
-        dataTYpe
-      when "GEXP_SEQ_TYPE"
-        dataTYpe
-      when "PEXP_ARRAY_TYPE"
-        dataTYpe
-      when "PEXP_SEQ_TYPE"
-        dataTYpe
-      when "MIRNA_ARRAY_TYPE"
-        dataTYpe
+        "METH Seq"
+      #when "GEXP_ARRAY_TYPE"
+      #  dataType
+      #when "GEXP_SEQ_TYPE"
+      #  dataType
+      #when "PEXP_ARRAY_TYPE"
+      #  dataTYpe
+      #when "PEXP_SEQ_TYPE"
+      #  dataType
+      #when "MIRNA_ARRAY_TYPE"
+      #  dataType
       when "MIRNA_SEQ_TYPE"
-        dataTYpe
+        "miRNA Seq"
+      when "EXP_ARRAY_TYPE"
+        "EXP Array"
+      when "EXP_SEQ_TYPE"
+        "EXP Seq"
       else
         dataType
 
