@@ -38,6 +38,7 @@ import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.EntityPath;
+import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 
 @Accessors(fluent = true)
@@ -83,24 +84,24 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
     return where(predicate).count();
   }
 
-  protected E uniqueResult(@NonNull Predicate predicate) {
-    return where(predicate).uniqueResult();
+  protected E uniqueResult(@NonNull Predicate predicate, Path<?>... paths) {
+    return where(predicate).uniqueResult(paths);
   }
 
-  protected E singleResult(@NonNull Predicate predicate) {
-    return where(predicate).singleResult();
+  protected E singleResult(@NonNull Predicate predicate, Path<?>... paths) {
+    return where(predicate).singleResult(paths);
   }
 
-  protected List<E> list() {
-    return list(query());
+  protected List<E> list(Path<?>... paths) {
+    return list(query(), paths);
   }
 
-  protected List<E> list(@NonNull Predicate predicate) {
-    return list(where(predicate));
+  protected List<E> list(@NonNull Predicate predicate, Path<?>... paths) {
+    return list(where(predicate), paths);
   }
 
-  protected List<E> list(@NonNull MongodbQuery<E> query) {
-    return ImmutableList.copyOf(query.list());
+  protected List<E> list(@NonNull MongodbQuery<E> query, Path<?>... paths) {
+    return ImmutableList.copyOf(query.list(paths));
   }
 
   protected Query<E> createQuery() {

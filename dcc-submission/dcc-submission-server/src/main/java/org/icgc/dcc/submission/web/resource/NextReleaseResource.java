@@ -152,7 +152,7 @@ public class NextReleaseResource {
   @GET
   @Path("queue")
   public Response getQueue() {
-    // No authorization check needed (see DCC-808)
+    // No authorization check needed, but authentication required (see DCC-808)
     log.debug("Getting the queue for nextRelease");
     List<String> projectIds = releaseService.getQueuedProjectKeys();
     Object[] projectIdArray = projectIds.toArray();

@@ -73,6 +73,16 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
   }
 
   @Test
+  public void testFindNextReleaseQueue() {
+    val actual = releaseRepository.findNextReleaseQueue();
+    val full = releaseRepository.findNextRelease();
+
+    assertThat(full.getName()).isNotEmpty();
+    assertThat(actual.getName()).isNull();
+    assertThat(actual.getQueue()).isEqualTo(full.getQueue());
+  }
+
+  @Test
   public void testFind() {
     val expected = releaseOne;
     val actual = releaseRepository.findReleaseByName(releaseOne.getName());

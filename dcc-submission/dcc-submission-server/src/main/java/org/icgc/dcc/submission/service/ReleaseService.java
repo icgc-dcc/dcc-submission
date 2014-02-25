@@ -392,7 +392,7 @@ public class ReleaseService extends AbstractService {
 
   @Synchronized
   public List<String> getQueuedProjectKeys() {
-    return getNextRelease().getQueuedProjectKeys();
+    return releaseRepository.findNextReleaseQueue().getQueuedProjectKeys();
   }
 
   /**
