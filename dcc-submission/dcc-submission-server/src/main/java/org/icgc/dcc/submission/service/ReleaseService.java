@@ -64,7 +64,6 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
-import org.icgc.dcc.submission.release.model.LiteProject;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
@@ -167,15 +166,14 @@ public class ReleaseService extends AbstractService {
    * based on the user's privileges.
    */
   public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Subject subject) {
-    val release = releaseRepository.findReleaseByName(releaseName);
+    val release = releaseRepository.findReleaseSummaryByName(releaseName);
     Optional<ReleaseView> releaseView = Optional.absent();
     if (release != null) {
       // populate project name for submissions
       val projects = getProjects(release, subject);
-      val liteProjects = getLiteProjects(projects);
       val submissionFilesMap = getSubmissionFilesByProjectKey(releaseName, release);
 
-      releaseView = Optional.of(new ReleaseView(release, liteProjects, submissionFilesMap));
+      releaseView = Optional.of(new ReleaseView(release, projects, submissionFilesMap));
     }
 
     return releaseView;
@@ -438,10 +436,8 @@ public class ReleaseService extends AbstractService {
   public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
     val submission = getSubmission(releaseName, projectKey);
     val submissionFiles = getSubmissionFiles(releaseName, projectKey);
-
-    val liteProject = new LiteProject(checkNotNull(projectRepository.findProject(projectKey)));
-
-    val detailedSubmission = new DetailedSubmission(submission, liteProject);
+    val project = projectRepository.findProject(projectKey);
+    val detailedSubmission = new DetailedSubmission(submission, project);
     detailedSubmission.setSubmissionFiles(submissionFiles);
 
     return detailedSubmission;
@@ -774,17 +770,6 @@ public class ReleaseService extends AbstractService {
     }
 
     return projectKeys.build();
-  }
-
-  private static List<LiteProject> getLiteProjects(List<Project> projects) {
-    val liteProjects = ImmutableList.<LiteProject> builder();
-    for (val project : projects) {
-      val liteProject = new LiteProject(project);
-
-      liteProjects.add(liteProject);
-    }
-
-    return liteProjects.build();
   }
 
   private void notifyUpdateError(String filter, String setValues) {

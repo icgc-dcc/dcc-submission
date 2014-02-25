@@ -77,6 +77,14 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
     return uniqueResult(_.name.eq(releaseName));
   }
 
+  public Release findReleaseSummaryByName(@NonNull String releaseName) {
+    return uniqueResult(_.name.eq(releaseName),
+        _.name, _.dictionaryVersion, _.releaseDate, _.state,
+        _.submissions.any().projectKey, _.submissions.any().projectName, _.submissions.any().state,
+        _.submissions.any().report.dataTypeReports.any().dataType,
+        _.submissions.any().report.dataTypeReports.any().dataTypeState);
+  }
+
   public Release findCompletedRelease(@NonNull String releaseName) {
     return uniqueResult(_.state.eq(COMPLETED).and(_.name.eq(releaseName)));
   }
