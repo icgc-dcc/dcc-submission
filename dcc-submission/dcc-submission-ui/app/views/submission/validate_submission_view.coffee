@@ -25,6 +25,7 @@ mediator = require 'mediator'
 View = require 'views/base/view'
 Model = require 'models/base/model'
 NextRelease = require 'models/next_release'
+Queue = require 'models/queue'
 template = require 'views/templates/submission/validate_submission'
 utils = require 'lib/utils'
 
@@ -100,10 +101,11 @@ module.exports = class ValidateSubmissionView extends View
       @dataTypes.forEach (f)->
         f.selected = false unless (f.dataType == "CLINICAL_CORE_TYPE" or f.dataType == datatype)
 
-    release = new NextRelease()
-    release.fetch
+    # Grab queue length
+    queue = new Queue()
+    queue.fetch
       success: (data) =>
-        @model.set 'queue', data.get('queue').length
+        @model.set 'queue', data.get 'queue'
 
     super
 
@@ -113,6 +115,8 @@ module.exports = class ValidateSubmissionView extends View
     @delegate 'click', '#feature-all', @selectAll
     @delegate 'click', '#feature-clear', @selectNone
     @delegate 'input propertychange', '#emails', @checkEmail
+
+    @render()
 
   render: ->
     super
