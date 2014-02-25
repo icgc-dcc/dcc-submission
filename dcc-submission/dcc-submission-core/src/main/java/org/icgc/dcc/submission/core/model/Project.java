@@ -30,7 +30,9 @@ import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Indexed;
@@ -48,14 +50,17 @@ public class Project {
   @JsonIgnore
   private ObjectId id;
 
+  @JsonView(Digest.class)
   @NotBlank
   @Pattern(regexp = PROJECT_ID_PATTERN)
   @Indexed(unique = true)
   private String key;
 
+  @JsonView(Digest.class)
   @NotBlank
   private String name;
 
+  @JsonView(Digest.class)
   private String alias;
 
   @NonNull
@@ -82,4 +87,5 @@ public class Project {
   public boolean hasUser(String user) {
     return users.contains(user);
   }
+
 }

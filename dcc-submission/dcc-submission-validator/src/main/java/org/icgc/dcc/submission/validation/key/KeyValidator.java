@@ -36,6 +36,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -99,7 +100,7 @@ public class KeyValidator implements Validator {
     return new Path(validationDir, REPORT_FILE_NAME);
   }
 
-  private static void execute(ValidationContext context, KVValidatorRunner runnable) {
+  private static void execute(ValidationContext context, KVValidatorRunner runner) {
     // Change this switch to false to aid in step debugging
     val distributable = true;
     if (distributable) {
@@ -107,10 +108,10 @@ public class KeyValidator implements Validator {
       val properties = getProperties(context);
       val executor = new FlowExecutor(properties);
 
-      executor.execute(runnable);
+      executor.execute(runner);
     } else {
       // Run on this node
-      runnable.run();
+      runner.execute(new Configuration());
     }
   }
 

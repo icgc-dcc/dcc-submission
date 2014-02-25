@@ -41,7 +41,7 @@ public class FlowExecutorTest {
     executeLocal(new FailureTask());
   }
 
-  private static void executeHadoop(Runnable runnable) throws IOException {
+  private static void executeHadoop(FlowExecutorJob job) throws IOException {
     val hadoop = createHadoop();
     val jobConf = hadoop.createJobConf();
     val properties = ImmutableMap.<Object, Object> of(
@@ -50,33 +50,33 @@ public class FlowExecutorTest {
         );
 
     val executor = new FlowExecutor(properties);
-    executor.execute(runnable);
+    executor.execute(job);
   }
 
-  private static void executeLocal(Runnable runnable) throws IOException {
+  private static void executeLocal(FlowExecutorJob job) throws IOException {
     val properties = ImmutableMap.<Object, Object> of();
 
     val executor = new FlowExecutor(properties);
-    executor.execute(runnable);
+    executor.execute(job);
   }
 
   private static MiniHadoop createHadoop() throws IOException {
     return new MiniHadoop(new Configuration(), 1, 1, new File("/tmp/hadoop"));
   }
 
-  private static class SuccessTask implements Runnable, Serializable {
+  private static class SuccessTask implements FlowExecutorJob, Serializable {
 
     @Override
-    public void run() {
+    public void execute(Configuration configuration) {
       log.info("Running!");
     }
 
   }
 
-  private static class FailureTask implements Runnable, Serializable {
+  private static class FailureTask implements FlowExecutorJob, Serializable {
 
     @Override
-    public void run() {
+    public void execute(Configuration configuration) {
       throw new RuntimeException();
     }
 

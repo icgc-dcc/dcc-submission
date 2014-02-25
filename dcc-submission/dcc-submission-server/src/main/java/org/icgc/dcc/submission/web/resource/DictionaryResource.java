@@ -65,8 +65,8 @@ public class DictionaryResource {
   /**
    * Custom HTTP headers for validation.
    */
-  private static final String VALIDATION_ERROR_HEADER = "X-Validation-Error";
-  private static final String VALIDATION_WARNING_HEADER = "X-Validation-Warning";
+  public static final String VALIDATION_ERROR_HEADER = "X-Validation-Error";
+  public static final String VALIDATION_WARNING_HEADER = "X-Validation-Warning";
 
   @Inject
   private DictionaryService dictionaryService;
@@ -89,8 +89,7 @@ public class DictionaryResource {
   @Path("{version}")
   public Response getDictionary(
 
-      @PathParam("version")
-      String version
+      @PathParam("version") String version
 
       )
   {
@@ -111,11 +110,9 @@ public class DictionaryResource {
   @POST
   public Response addDictionary(
 
-      @Valid
-      Dictionary dict,
+      @Valid Dictionary dict,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -160,17 +157,13 @@ public class DictionaryResource {
   @Path("{version}")
   public Response updateDictionary(
 
-      @PathParam("version")
-      String version,
+      @PathParam("version") String version,
 
-      @Valid
-      Dictionary newDictionary,
+      @Valid Dictionary newDictionary,
 
-      @Context
-      Request request,
+      @Context Request request,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
