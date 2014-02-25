@@ -46,12 +46,12 @@ import javax.ws.rs.core.SecurityContext;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.elasticsearch.common.collect.Sets;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 @Slf4j
