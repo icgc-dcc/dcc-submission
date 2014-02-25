@@ -20,23 +20,15 @@ package org.icgc.dcc.submission;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.repeat;
-import static com.google.common.collect.Lists.newArrayList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
-import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addNewModels;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addOldModels;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getDraftDictionary;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -58,9 +50,9 @@ import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
@@ -139,10 +131,8 @@ public final class TestUtils {
     throw new IllegalStateException("Code list '" + targetCodeListName + "' is not available");
   }
 
-  @SneakyThrows
   public static List<CodeList> codeLists() {
-    Iterator<CodeList> codeLists = MAPPER.reader(CodeList.class).readValues(getDccResource("CodeList.json"));
-    return newArrayList(codeLists);
+    return Dictionaries.getDraftCodeLists();
   }
 
   @SneakyThrows
@@ -152,17 +142,7 @@ public final class TestUtils {
 
   @SneakyThrows
   public static Dictionary dictionary() {
-    val dictionary = readDccResourcesDictionary();
-
-    // Add file schemata
-    dictionary.addFile(readFileSchema(SSM_S_TYPE));
-    dictionary.addFile(readFileSchema(METH_M_TYPE));
-    dictionary.addFile(readFileSchema(METH_P_TYPE));
-    dictionary.addFile(readFileSchema(METH_S_TYPE));
-    patchDictionary(dictionary);
-    addNewModels(dictionary);
-
-    return dictionary;
+    return addOldModels(getDraftDictionary());
   }
 
   public static List<String> getFieldNames(FileType type) {
@@ -314,22 +294,6 @@ public final class TestUtils {
 
   private static void banner() {
     log.info("{}", repeat("\u00B7", 80));
-  }
-
-  private static void patchDictionary(Dictionary dictionary) {
-    // Patch file name patterns to support multiple files per file type
-    for (val fileSchema : dictionary.getFiles()) {
-      patchFileSchema(fileSchema);
-    }
-  }
-
-  private static void patchFileSchema(FileSchema fileSchema) {
-    val regex = fileSchema.getPattern();
-    val patchedRegex = regex.replaceFirst("\\.", "\\.(?:[^.]+\\\\.)?");
-    fileSchema.setPattern(patchedRegex);
-
-    log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
-        new Object[] { fileSchema.getName(), regex, patchedRegex });
   }
 
 }

@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.validation.key;
 
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addOldModels;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getDraftDictionary;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
@@ -32,6 +34,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.util.Joiners;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -88,14 +91,21 @@ public class KeyValidatorIntegrationTest {
     validator.validate(context);
   }
 
-  private KeyValidationContext createContext() {
+  private StandAloneKeyValidationContext createContext() {
     val fsRoot = rootDir.toUri().toString();
     val fsUrl = fileSystem.getUri().toString();
     val jobTracker = "localhost"; // Not used
 
-    return new KeyValidationContext(
+    return new StandAloneKeyValidationContext(
         RELEASE_NAME, PROJECT_KEY,
-        fsRoot, fsUrl, jobTracker);
+        fsRoot, fsUrl, jobTracker) {
+
+      @Override
+      protected Dictionary createDictionary() {
+        return addOldModels(getDraftDictionary());
+      }
+
+    };
   }
 
   private FileSystem createFileSystem() throws IOException {

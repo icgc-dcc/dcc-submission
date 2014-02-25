@@ -38,8 +38,8 @@ import lombok.Cleanup;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,19 +66,24 @@ import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 @Slf4j
-@Value
+@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class KeyValidationContext extends AbstractValidationContext {
+public class StandAloneKeyValidationContext extends AbstractValidationContext {
 
   @NonNull
+  @Getter
   private final String releaseName;
   @NonNull
+  @Getter
   private final String projectKey;
   @NonNull
+  @Getter
   private final String fsRoot;
   @NonNull
+  @Getter
   private final String fsUrl;
   @NonNull
+  @Getter
   private final String jobTracker;
 
   @Getter(lazy = true)
@@ -103,7 +108,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   private final PlatformStrategy platformStrategy = createPlatformStrategy();
 
   @SneakyThrows
-  private Dictionary createDictionary() {
+  protected Dictionary createDictionary() {
     // Resolve
     val entryName = "org/icgc/dcc/resources/Dictionary.json";
     URL url = getDictionaryUrl(DICTIONARY_VERSION);

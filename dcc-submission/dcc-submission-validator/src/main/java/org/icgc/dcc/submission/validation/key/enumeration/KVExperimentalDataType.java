@@ -59,10 +59,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 
+ * TODO: Should be relation driven instead.
  */
 @RequiredArgsConstructor(access = PRIVATE)
 public enum KVExperimentalDataType {
+
   SSM(SSM_M, of(SSM_M, SSM_P)),
   CNSM(CNSM_M, of(CNSM_M, CNSM_P, CNSM_S)),
   STSM(STSM_M, of(STSM_M, STSM_P, STSM_S)),

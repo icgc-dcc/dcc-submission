@@ -17,18 +17,29 @@
  */
 package org.icgc.dcc.submission.dictionary.util;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_G_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_PROBES_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_SEQ_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_S_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -38,6 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.JacksonCodehaus;
 import org.icgc.dcc.submission.core.util.JacksonFaster;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
@@ -49,6 +61,7 @@ public class Dictionaries {
 
   private static final ObjectReader FILE_SCHEMA_READER = JacksonFaster.DEFAULT.reader(FileSchema.class);
   private static final ObjectReader DICTIONARY_SCHEMA_READER = JacksonFaster.DEFAULT.reader(Dictionary.class);
+  private static final ObjectReader CODELIST_SCHEMA_READER = JacksonFaster.DEFAULT.reader(CodeList.class);
   private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
 
   @SneakyThrows
@@ -64,6 +77,16 @@ public class Dictionaries {
   }
 
   @SneakyThrows
+  public static Dictionary getDraftDictionary() {
+    return readDictionary(getResource("dictionary/dictionary_1.0_draft.json"));
+  }
+
+  @SneakyThrows
+  public static List<CodeList> getDraftCodeLists() {
+    return readCodeList(getResource("dictionary/CodeList.140224.json"));
+  }
+
+  @SneakyThrows
   public static Dictionary readDictionary(String dictionaryResourcePath) {
     return readDictionary(getResource(dictionaryResourcePath));
   }
@@ -71,6 +94,12 @@ public class Dictionaries {
   @SneakyThrows
   public static Dictionary readDictionary(URL dictionaryURL) {
     return DICTIONARY_SCHEMA_READER.readValue(dictionaryURL);
+  }
+
+  @SneakyThrows
+  public static List<CodeList> readCodeList(URL codeListsURL) {
+    Iterator<CodeList> iterator = CODELIST_SCHEMA_READER.readValues(codeListsURL);
+    return newArrayList(iterator);
   }
 
   public static void writeDictionary(Dictionary dictionary, String filePath) {
@@ -99,6 +128,24 @@ public class Dictionaries {
     methSeqP.setName(METH_SEQ_P_TYPE.getTypeName());
     methSeqP.setPattern("^meth_seq_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$");
     dictionary.addFile(methSeqP);
+  }
+
+  /**
+   * Temporary method to support old models until the transition is over.
+   */
+  public static Dictionary addOldModels(Dictionary dictionary) {
+    dictionary.addFile(readFileSchema(METH_M_TYPE));
+    dictionary.addFile(readFileSchema(METH_P_TYPE));
+    dictionary.addFile(readFileSchema(METH_S_TYPE));
+
+    dictionary.addFile(readFileSchema(EXP_M_TYPE));
+    dictionary.addFile(readFileSchema(EXP_G_TYPE));
+
+    dictionary.addFile(readFileSchema(MIRNA_M_TYPE));
+    dictionary.addFile(readFileSchema(MIRNA_P_TYPE));
+    dictionary.addFile(readFileSchema(MIRNA_S_TYPE));
+
+    return dictionary;
   }
 
 }

@@ -73,6 +73,9 @@ public class FileParser<T> {
     return lineNumber - 1;
   }
 
+  /**
+   * TODO: move this to an FS abstraction.
+   */
   private DataInputStream createInputStream(Path file) {
     val factory = new CompressionCodecFactory(fileSystem.getConf());
 

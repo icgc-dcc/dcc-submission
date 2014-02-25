@@ -121,33 +121,35 @@ public class KVSubmissionProcessor {
 
     // Process files matching the current file type
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
-    checkState(dataFilePaths.isPresent(),
-        "Expecting to find at least one matching file at this point for: '%s'", fileType);
-    for (val dataFilePath : dataFilePaths.get()) {
-      val watch = createStopwatch();
-      log.info("{}", banner("-"));
-      log.info(
-          "Processing '{}' file: '{}'; Referencing '{}' and '{}'",
-          new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
-              .isPresent(), dataFilePath });
+    if (dataFilePaths.isPresent()) {
+      for (val dataFilePath : dataFilePaths.get()) {
+        val watch = createStopwatch();
+        log.info("{}", banner("-"));
+        log.info(
+            "Processing '{}' file: '{}'; Referencing '{}' and '{}'",
+            new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
+                .isPresent(), dataFilePath });
 
-      // TODO: subclass for referencing/non-referencing?
-      val fileProcessor = new KVFileProcessor(fileType, dataFilePath);
-      fileProcessor.processFile(
-          fileParser,
-          reporter,
-          primaryKeys,
-          optionallyReferencedPrimaryKeys1,
-          optionallyReferencedPrimaryKeys2,
-          optionalEncounteredForeignKeys
-          );
+        // TODO: subclass for referencing/non-referencing?
+        val fileProcessor = new KVFileProcessor(fileType, dataFilePath);
+        fileProcessor.processFile(
+            fileParser,
+            reporter,
+            primaryKeys,
+            optionallyReferencedPrimaryKeys1,
+            optionallyReferencedPrimaryKeys2,
+            optionalEncounteredForeignKeys
+            );
 
-      log.info("Finished processing file '{}' in {} with {} of JVM free memory remaining",
-          new Object[] { dataFilePath, watch, formatFreeMemory() });
+        log.info("Finished processing file '{}' in {} with {} of JVM free memory remaining",
+            new Object[] { dataFilePath, watch, formatFreeMemory() });
+      }
+    } else {
+      log.info("Skipping '{}', there are no matching files", fileType);
     }
     fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
-    // Check surjection (N/A for FK2 at the moment)
+    // Check surjection (N/A for FK2 or optional FK at the moment)
     if (optionallyReferencedPrimaryKeys1.isPresent()) {
       checkSurjection(
           fileType,
@@ -192,6 +194,7 @@ public class KVSubmissionProcessor {
     val optionalReferencedFileType = secondary ?
         getOptionalReferencedFileType2(fileType) :
         getOptionalReferencedFileType1(fileType);
+    log.info("'{}' references '{}'", fileType, optionalReferencedFileType);
 
     if (optionalReferencedFileType.isPresent()) {
       // Obtain corresponding PKs for the referenced file type (also if applicable)
