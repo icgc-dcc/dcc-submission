@@ -123,9 +123,9 @@ public class ValidationModule extends AbstractDccModule {
       for (val value : values) {
         if (value.equals("fpv")) {
           bindFirstPassValidator(validators);
-        } else if (value.equals("kv")) {
-          bindKeyValidator(validators);
         } else if (value.equals("pv")) {
+          bindKeyValidator(validators);
+        } else if (value.equals("kv")) {
           bindKeyValidator(validators);
         } else if (value.equals("rgv")) {
           bindReferenceGenomeValidator(validators);
@@ -138,8 +138,8 @@ public class ValidationModule extends AbstractDccModule {
     } else {
       // Default validators and validator ordering
       bindFirstPassValidator(validators);
-      bindKeyValidator(validators);
       bindPrimaryValidator(validators);
+      bindKeyValidator(validators);
       bindReferenceGenomeValidator(validators);
       bindNormalizationValidator(validators);
     }
