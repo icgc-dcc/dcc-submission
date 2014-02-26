@@ -908,6 +908,29 @@
                 }, 
                 {
                     "controlled": false, 
+                    "label": "Raw read count for the current gene", 
+                    "name": "raw_read_count", 
+                    "restrictions": [
+                        {
+                            "config": {
+                                "acceptMissingCode": false
+                            }, 
+                            "type": "required"
+                        }
+                    ], 
+                    "summaryType": "AVERAGE", 
+                    "valueType": "INTEGER"
+                }, 
+                {
+                    "controlled": false, 
+                    "label": "Gene expression fold change", 
+                    "name": "fold_change", 
+                    "restrictions": [], 
+                    "summaryType": null, 
+                    "valueType": "DECIMAL"
+                }, 
+                {
+                    "controlled": false, 
                     "label": "A flag from a codelist that indicates if the current miRNA is an isomer of an annotated mature miRNA", 
                     "name": "is_isomir", 
                     "restrictions": [
@@ -1063,29 +1086,6 @@
                     ], 
                     "summaryType": "FREQUENCY", 
                     "valueType": "TEXT"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Raw read count for the current gene", 
-                    "name": "raw_read_count", 
-                    "restrictions": [
-                        {
-                            "config": {
-                                "acceptMissingCode": false
-                            }, 
-                            "type": "required"
-                        }
-                    ], 
-                    "summaryType": "AVERAGE", 
-                    "valueType": "INTEGER"
-                }, 
-                {
-                    "controlled": false, 
-                    "label": "Gene expression fold change", 
-                    "name": "fold_change", 
-                    "restrictions": [], 
-                    "summaryType": null, 
-                    "valueType": "DECIMAL"
                 }
             ], 
             "label": "Sequencing-base miRNA Expression (mirna_seq) - Primary File (p)", 
