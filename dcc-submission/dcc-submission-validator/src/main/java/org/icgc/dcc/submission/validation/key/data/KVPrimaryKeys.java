@@ -22,8 +22,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_P;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
 
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +33,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
 
 import com.google.common.collect.Sets;
 

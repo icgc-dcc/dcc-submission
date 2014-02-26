@@ -15,37 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.enumeration;
-
-import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_VALUE_ERROR;
-import static org.icgc.dcc.submission.core.report.ErrorType.UNIQUE_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.FK1;
-import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.FK2;
-import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.OPTIONAL_FK;
-import static org.icgc.dcc.submission.validation.key.enumeration.KeysType.PK;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-import org.icgc.dcc.submission.core.report.ErrorType;
+package org.icgc.dcc.submission.validation.key.core;
 
 /**
- * Type of key validator errors.
+ * The types of keys encountered in the submission files.
  */
-@RequiredArgsConstructor
-public enum KVErrorType {
-  UNIQUENESS(PK, UNIQUE_VALUE_ERROR),
-  RELATION1(FK1, RELATION_VALUE_ERROR),
-  RELATION2(FK2, RELATION_VALUE_ERROR), // TODO: distinguish?
-  OPTIONAL_RELATION(OPTIONAL_FK, RELATION_VALUE_ERROR), // TODO: we should distinguish with primary (for ErrorType)
-  SURJECTION(PK, RELATION_PARENT_VALUE_ERROR);
+public enum KVKeyType {
+
+  PK,
 
   /**
-   * The fields on which the error is reported.
+   * For most schema, there is only one FK.
    */
-  @Getter
-  private final KeysType keysType;
+  FK1,
 
-  @Getter
-  private final ErrorType errorType;
+  /**
+   * We only have a maximum of 2 FKs maximum per file, not generalizing for now.
+   */
+  FK2,
+
+  /**
+   * An "optional FK" is one that may actually be null, unlike a regular FK.
+   */
+  OPTIONAL_FK;
+
 }
