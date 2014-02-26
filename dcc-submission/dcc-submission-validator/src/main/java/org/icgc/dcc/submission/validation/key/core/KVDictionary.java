@@ -21,45 +21,45 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.of;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_S;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_G;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_PROBES;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_S;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_SEQ_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_SEQ_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_S;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_SEQ_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_SEQ_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.PEXP_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.PEXP_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SGV_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SGV_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_S;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.KEY_NOT_APPLICABLE;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.from;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_ARRAY_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_ARRAY_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_SEQ_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_PROBES;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_SEQ_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_SEQ_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.PEXP_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SGV_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
 
 import java.util.List;
 import java.util.Map;
@@ -70,9 +70,6 @@ import lombok.val;
 import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.data.KVRow;
-import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -397,15 +394,16 @@ public final class KVDictionary {
           || fileType == CNSM_P
           || fileType == STSM_P
           || fileType == JCN_P
-          || fileType == PEXP_P
-          || fileType == MIRNA_P
           || fileType == METH_P
-          || fileType == EXP_G
           || fileType == METH_ARRAY_P
           || fileType == METH_SEQ_P
+          || fileType == EXP_G
           || fileType == EXP_ARRAY_P
           || fileType == EXP_SEQ_P
+          || fileType == MIRNA_P
           || fileType == MIRNA_SEQ_P
+          || fileType == PEXP_P
+          || fileType == SGV_P
       ;
     }
   };
