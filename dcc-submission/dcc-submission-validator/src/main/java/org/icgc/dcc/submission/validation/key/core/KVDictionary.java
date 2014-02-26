@@ -787,7 +787,7 @@ public final class KVDictionary {
     }
 
     // PEXP
-    else if (fileType == SSM_M) {
+    else if (fileType == PEXP_M) {
       pk = from(row, PEXP_M_PKS);
       fk1 = from(row, PEXP_M_FKS);
     } else if (fileType == PEXP_P) {
