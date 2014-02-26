@@ -28,8 +28,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.sshd.server.FileSystemView;
-import org.apache.sshd.server.SshFile;
+import org.apache.sshd.common.file.FileSystemView;
+import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 /**
@@ -123,9 +123,9 @@ public class HdfsFileSystemView implements FileSystemView {
 
   private BaseDirectoryHdfsSshFile getHdfsSshFile(RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
-    if (context.isSystemDirectory(path)) {
+    if (context.isSystemDirectory(path) && context.isAdminUser()) {
       result = new SystemFileHdfsSshFile(context, root, path.getName());
-    } else {
+    } else { // FIXME? What happens if is-system-dir but not is-admin...?
       result = new SubmissionDirectoryHdfsSshFile(context, root, path.getName());
     }
 

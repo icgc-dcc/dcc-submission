@@ -17,30 +17,47 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import static com.google.common.base.Charsets.UTF_8;
+import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.Scanner;
+import java.io.BufferedInputStream;
 
 import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.RowChecker;
-import org.icgc.dcc.submission.validation.first.Util;
+
+import com.google.common.base.Stopwatch;
 
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
-  private static final Charset DEFAULT_CHARSET = UTF_8;
-  protected RowChecker delegate;
-  private static final String LINE_SEPARATOR = "\n";
+  /**
+   * Number of bytes to buffer when reading submission files.
+   * 
+   * @see http
+   * ://stackoverflow.com/questions/236861/how-do-you-determine-the-ideal-buffer-size-when-using-fileinputstream
+   */
+  private static final int LINE_BUFFER_SIZE = 8192;
+
+  /**
+   * Number of lines checked between status logging.
+   */
+  private static final long LINE_STATUS_THRESHOLD = 1000L * 1000L;
+
+  /**
+   * Constants.
+   */
+  private static final char LINE_SEPARATOR_CHAR = '\n';
+
+  @NonNull
+  protected final RowChecker delegate;
 
   public CompositeRowChecker(RowChecker delegate, boolean failFast) {
     super(delegate, failFast);
@@ -53,61 +70,92 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public void check(String filename) {
+    log.info(banner());
+
     // check all rows in the file
     performSelfCheck(filename);
   }
 
   @Override
-  public void performSelfCheck(String filename) {
-    log.info("Start performing {} validation...", this.getClass().getSimpleName());
+  @SneakyThrows
+  public void performSelfCheck(String fileName) {
+    log.info("Start performing {} validation...", name);
+    val fileSchema = getFileSchema(fileName);
 
-    String filePathname = getSubmissionDirectory().getDataFilePath(filename);
-    val fileSchema = getFileSchema(filename);
+    @Cleanup
+    val inputStream = new BufferedInputStream(
+        getFs().getDecompressingInputStream(fileName),
+        LINE_BUFFER_SIZE);
+    val watch = Stopwatch.createStarted();
+    val line = new StringBuilder(512);
+    long lineNumber = 1;
 
-    try {
-      @Cleanup
-      Scanner reader = new Scanner(new BufferedReader(
-          new InputStreamReader(
-              Util.createInputStream(
-                  getDccFileSystem(),
-                  filePathname),
-              DEFAULT_CHARSET)));
-      reader.useDelimiter(LINE_SEPARATOR);
-      String line;
-      long lineNumber = 1;
-      while (reader.hasNext()) {
-        line = reader.next();
-        checkRow(filename, fileSchema, line, lineNumber);
+    int nextByte = 0;
+    while ((nextByte = inputStream.read()) > 0) {
+      if ((char) nextByte == LINE_SEPARATOR_CHAR) {
+
+        // Delegate
+        checkRow(fileName, fileSchema, line, lineNumber);
+
+        // Book-keeping
         ++lineNumber;
+
+        if (lineNumber % 10000 == 0) {
+          // Check for cancellation
+          checkInterrupted(name);
+        }
+
+        if (lineNumber % LINE_STATUS_THRESHOLD == 0L) {
+          // Log status
+          log.info("Checked {} lines of '{}' in {}",
+              new Object[] { formatCount(lineNumber), fileName, watch });
+        }
+
+        // Reset
+        line.setLength(0);
+      } else {
+        // Buffer
+        line.appendCodePoint(nextByte);
       }
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to check the file: " + filename, e);
     }
 
-    log.info("End performing {} validation. Number of errors found: '{}'",
-        new Object[] {
-            this.getClass().getSimpleName(),
-            checkErrorCount });
+    // Check buffer to be empty, otherwise we have a file with no trailing new line
+    // TODO: Enable when the test data is fixed
+    // if (line.length() > 0) {
+    // getReportContext().reportError(
+    // error()
+    // .fileName(fileName)
+    // .lineNumber(lineNumber)
+    // .type(LINE_TERMINATOR_MISSING_ERROR)
+    // .build());
+    // }
+
+    log.info("End performing '{}' validation on '{}' in {}. Number of errors found: {}",
+        new Object[] { name, fileName, watch, formatCount(checkErrorCount) });
   }
 
   @Override
-  public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
+  public void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber) {
     delegate.checkRow(filename, fileSchema, row, lineNumber);
     if (delegate.canContinue()) {
-      log.debug(
-          "Start performing {} validation for row '{}'...",
-          row,
-          this.getClass().getSimpleName());
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "Start performing {} validation for row '{}'...", row, name);
+      }
+
       performSelfCheck(filename, fileSchema, row, lineNumber);
-      log.debug("End performing {} validation for row '{}'", row, this.getClass().getSimpleName());
+
+      if (log.isDebugEnabled()) {
+        log.debug("End performing {} validation for row '{}'", row, name);
+      }
     }
   }
 
-  public abstract void performSelfCheck(String filename, FileSchema fileSchema, String row, long lineNumber);
+  public abstract void performSelfCheck(String filename, FileSchema fileSchema, CharSequence row, long lineNumber);
 
   @Override
   public boolean isValid() {
-    return !getValidationContext().hasErrors();
+    return !getReportContext().hasErrors();
   }
 
   @Override
@@ -121,7 +169,8 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
-  public DccFileSystem getDccFileSystem() {
-    return delegate.getDccFileSystem();
+  public FPVFileSystem getFs() {
+    return delegate.getFs();
   }
+
 }

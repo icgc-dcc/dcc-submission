@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.primary;
 import static com.google.common.collect.Iterables.size;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -39,11 +38,14 @@ import com.google.inject.Inject;
  * @see https://groups.google.com/d/msg/cascading-user/gjxB2Bg-56w/R1h5lhn-g2IJ
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class PrimaryValidator implements Validator {
 
-  @NonNull
   private final Planner planner;
+
+  @Inject
+  public PrimaryValidator(@NonNull Planner planner) {
+    this.planner = planner;
+  }
 
   @Override
   public String getName() {
@@ -55,18 +57,19 @@ public class PrimaryValidator implements Validator {
   public void validate(ValidationContext context) {
     // Shorthands
     val projectKey = context.getProjectKey();
+    val dataTypes = context.getDataTypes();
     val dictionary = context.getDictionary();
-    val platformStrategy = context.getPlatformStrategy();
+    val platform = context.getPlatformStrategy();
 
     // Plan
     log.info("Planning cascade for project '{}'", projectKey);
-    Plan plan = planner.plan(projectKey, platformStrategy, dictionary);
+    Plan plan = planner.plan(projectKey, dataTypes, platform, dictionary);
     log.info("Planned cascade for project '{}', # of internal flows: {}, # of external flows: {}",
         new Object[] { projectKey, size(plan.getInternalFlows()), size(plan.getExternalFlows()) });
 
     // Connect
     log.info("Connecting cascade for project '{}'", projectKey);
-    plan.connect(platformStrategy);
+    plan.connect();
     log.info("Connected cascade for project '{}'", projectKey);
     checkInterrupted(getName());
 
@@ -79,17 +82,16 @@ public class PrimaryValidator implements Validator {
 
       // Report
       log.info("Collecting report for project '{}'", projectKey);
-      plan.collect(context);
+      plan.collectSubmissionReport(context);
       log.info("Finished collecting report for project '{}'", projectKey);
     } catch (Throwable t) {
-      log.info("Exception completing cascade for project '{}'", projectKey, t);
+      log.info("Exception completing cascade for project '{}': '{}'", projectKey, t.getMessage());
 
       // Stop (blocking)
       log.info("Stopping cascade for project '{}'", projectKey);
       plan.getCascade().stop();
       log.info("Stopped cascade for project '{}'", projectKey);
 
-      // Rethrow for {@link Validator}
       throw t;
     }
   }

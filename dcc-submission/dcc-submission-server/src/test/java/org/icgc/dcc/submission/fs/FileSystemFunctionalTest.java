@@ -18,42 +18,42 @@
 package org.icgc.dcc.submission.fs;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import junit.framework.Assert;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
-import org.icgc.dcc.submission.core.morphia.MorphiaModule;
+import org.icgc.dcc.submission.core.PersistenceModule;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.submission.http.HttpModule;
-import org.icgc.dcc.submission.http.jersey.JerseyModule;
+import org.icgc.dcc.submission.repository.RepositoryModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
+@Slf4j
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class,//
-HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
-MorphiaModule.class, FileSystemModule.class, ShiroModule.class })
+@GuiceModules({
+    ConfigModule.class, CoreModule.class,
+    FileSystemModule.class,
+    PersistenceModule.class, RepositoryModule.class, ShiroModule.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
-
-  private static final Logger log = LoggerFactory.getLogger(FileSystemFunctionalTest.class);
 
   protected DccFileSystem dccFileSystem;
 
@@ -102,7 +102,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
     Iterable<String> filenameList2 =
         HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(releaseStringPath)));
-    assertThat(filenameList2).isNotNull().contains("DBQ", "SystemFiles");
+    assertThat(filenameList2).isNotNull().contains("DBQ", SYSTEM_FILES_DIR_NAME);
     log.info("ls2 = " + filenameList2);
 
     log.info("ls = " + filenameList0);
@@ -167,5 +167,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   @After
   public void tearDown() {
     HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName()));
+
+    // Clean-up threads
+    ThreadContext.remove();
   }
 }

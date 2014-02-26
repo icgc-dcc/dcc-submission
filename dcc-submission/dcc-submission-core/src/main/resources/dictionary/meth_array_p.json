@@ -1,0 +1,201 @@
+{
+    "fields": [
+        {
+            "controlled": false, 
+            "label": "Unique identifier assigned to a computational analysis run that was performed on a single analyzed sample and any associated matched samples using a particular set of methods, tools, etc.; analysis IDs must be unique and must not be reused by a project across subsequent analysis runs", 
+            "name": "analysis_id", 
+            "restrictions": [
+                {
+                    "config": {
+                        "acceptMissingCode": false
+                    }, 
+                    "type": "required"
+                }, 
+                {
+                    "config": {
+                        "pattern": "^([\\w+\\-\\_]+)$"
+                    }, 
+                    "type": "regex"
+                }
+            ], 
+            "summaryType": null, 
+            "valueType": "TEXT"
+        }, 
+        {
+            "controlled": false, 
+            "label": "A unique identifier representing the particular sample that was analyzed; analyzed sample identifiers must be used consistently to relate those described in the sample file and in the related analysis files", 
+            "name": "analyzed_sample_id", 
+            "restrictions": [
+                {
+                    "config": {
+                        "acceptMissingCode": false
+                    }, 
+                    "type": "required"
+                }, 
+                {
+                    "config": {
+                        "pattern": "^([\\w+\\-\\_]+)$"
+                    }, 
+                    "type": "regex"
+                }
+            ], 
+            "summaryType": null, 
+            "valueType": "TEXT"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Controlled vocabulary for methylation array platform", 
+            "name": "array_platform", 
+            "restrictions": [
+                {
+                    "config": {
+                        "acceptMissingCode": false
+                    }, 
+                    "type": "required"
+                }, 
+                {
+                    "config": {
+                        "name": "GLOBAL.0.platform.v1"
+                    }, 
+                    "type": "codelist"
+                }
+            ], 
+            "summaryType": "FREQUENCY", 
+            "valueType": "TEXT"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Methylation array probe ID", 
+            "name": "probe_id", 
+            "restrictions": [
+                {
+                    "config": {
+                        "acceptMissingCode": false
+                    }, 
+                    "type": "required"
+                } 
+            ], 
+            "summaryType": null, 
+            "valueType": "TEXT"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Methylation value", 
+            "name": "methylation_value", 
+            "restrictions": [
+                {
+                    "config": {
+                        "acceptMissingCode": false
+                    }, 
+                    "type": "required"
+                }
+            ], 
+            "summaryType": "AVERAGE", 
+            "valueType": "DECIMAL"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Metric used", 
+            "name": "metric_used", 
+            "restrictions": [
+                {
+                    "config": {
+                        "acceptMissingCode": false
+                    }, 
+                    "type": "required"
+                }
+            ], 
+            "summaryType": "FREQUENCY", 
+            "valueType": "TEXT"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Methylated probe intensity", 
+            "name": "methylated_probe_intensity", 
+            "restrictions": [
+            ], 
+            "summaryType": "AVERAGE", 
+            "valueType": "DECIMAL"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Unmethylated probe intensity", 
+            "name": "unmethylated_probe_intensity", 
+            "restrictions": [
+            ], 
+            "summaryType": "AVERAGE", 
+            "valueType": "DECIMAL"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Indicate if the methylation status has been verified using an independent orthogonal genotype platform/technology", 
+            "name": "verification_status", 
+            "restrictions": [
+                {
+                    "config": {
+                        "name": "GLOBAL.0.verification_status.v2"
+                    }, 
+                    "type": "codelist"
+                }
+            ], 
+            "summaryType": "FREQUENCY", 
+            "valueType": "TEXT"
+        }, 
+        {
+            "controlled": false, 
+            "label": "Identifier of orthogonal platform or technology used to confirm that the methylation status is true; identifier should be taken from controlled vocabulary list of platforms recognized by the DCC and should directly correspond to the particular technology (including version) used. If no appropriate term exists for a given platform, please contact the DCC to request an addition to the CV terms.", 
+            "name": "verification_platform", 
+            "restrictions": [
+                {
+                    "config": {
+                        "name": "GLOBAL.0.platform.v1"
+                    }, 
+                    "type": "codelist"
+                }, 
+                {
+                    "config": {
+                        "description": "If mutation is verified, the verification platform must be specified (cannot be -777/-888)", 
+                        "script": "if (verification_status == '1' && verification_platform == null ) { return false } else { return true }"
+                    }, 
+                    "type": "script"
+                }
+            ], 
+            "summaryType": "FREQUENCY", 
+            "valueType": "TEXT"
+        }
+    ], 
+    "label": "Arrary-base DNA Methylation (meth_array) - Primary File (p)", 
+    "name": "meth_array_p", 
+    "pattern": "^meth_array_p(\\.[a-zA-Z0-9]+)?\\.txt(?:\\.gz|\\.bz2)?$", 
+    "relations": [
+        {
+            "bidirectional": true, 
+            "fields": [
+                "analysis_id",
+                "analyzed_sample_id"
+            ], 
+            "optionals": [], 
+            "other": "meth_array_m", 
+            "otherFields": [
+                "analysis_id",
+                "analyzed_sample_id"
+            ]
+        },
+        {
+            "bidirectional": false, 
+            "fields": [
+                "array_platform",
+                "probe_id"
+            ], 
+            "optionals": [], 
+            "other": "meth_array_probes", 
+            "otherFields": [
+                "array_platform",
+                "probe_id"
+            ]
+        }                
+    ], 
+    "role": "SUBMISSION", 
+    "uniqueFields": [
+    ]
+}

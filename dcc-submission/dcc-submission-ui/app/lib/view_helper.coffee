@@ -60,7 +60,7 @@ Handlebars.registerHelper 'if_completed', (state, options) ->
 Handlebars.registerHelper 'show_submission_action_button', (files, options) ->
   show = false
   if files
-    show = _.without((f.matchedSchemaName for f in files), null).length
+    show = _.without((f.schemaName for f in files), null).length
   if show
     options.fn(this)
   else
@@ -76,17 +76,25 @@ Handlebars.registerHelper 'submission_action', (state) ->
         id="signoff-submission-popup-button"
         data-toggle="modal"
         href="#signoff-submission-popup">
+        <i class="icon-ok icon-white"></i>
         Sign Off
       </button>
+      <button
+        class="m-btn green"
+        id="validate-submission-popup-button"
+        data-toggle="modal"
+        href="#validate-submission-popup">
+        Validate
+      </button>
       """
-    when "NOT_VALIDATED"
+    when "NOT_VALIDATED", "INVALID"
       new Handlebars.SafeString """
       <button
         class="m-btn green"
         id="validate-submission-popup-button"
         data-toggle="modal"
         href="#validate-submission-popup">
-        Launch Validation
+        Validate
       </button>
       """
     when "QUEUED", "VALIDATING"

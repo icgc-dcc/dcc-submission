@@ -1,9 +1,0 @@
-analysis_id	analyzed_sample_id	mutation_id	mutation_type	chromosome	chromosome_start	chromosome_end	chromosome_strand	refsnp_allele	refsnp_strand	reference_genome_allele	control_genotype	tumour_genotype	mutation	expressed_allele	quality_score	probability	read_count	is_annotated	verification_status	verification_platform	xref_ensembl_var_id	uri	db_xref	note
-0040	00312	0050	1	5	106706335	106706335	-1	IqnofQaZ V		C	T/T	C/T	T>C		11.467261580823779			-9999	2	41		http://www.icgc.org	00:a	CCYso jjzB
-0040	00312	0051	3	4	114381846	114381846	1	-888		C	A/T	T/T	A>T		18.43359813138004		32.477239786064786	2	3	72	rs0	http://www.icgc.org	00:a	FAaGFIz UT
-0040	00312	0052	4	12	129638975	129638975	1	 XLyMkIoaq		G	A/A	A/T	A>T		4.845227194564439	23.964085338815877	23.65237073061484	1	2	-888			00:a	
-0040	00312	0057	2	20	16016117	16016117	-1	XDE SA Wts	1	A	A/T	T/T	A>T	jewhHZNjrA	11.605743931915569	7.647703650632931	23.91749980426682	1	1	-9999	rs0	http://www.icgc.org	00:a	dUxJNqMxai
-0040	00312	0050	1	5	106706335	106706335	-1	IqnofQaZ V		A	T/T	C/T	T>C		11.467261580823779			-9999	2	41		http://www.icgc.org	00:a	CCYso jjzB
-0040	00312	0051	3	4	114381846	114381846	1	-888		T	A/T	T/T	A>T		18.43359813138004		32.477239786064786	2	3	72	rs0	http://www.icgc.org	00:a	FAaGFIz UT
-0040	00312	0052	4	12	129638975	129638975	1	 XLyMkIoaq		T	A/A	A/T	A>T		4.845227194564439	23.964085338815877	23.65237073061484	1	2	-888			00:a	
-0040	00312	0057	2	20	16016117	16016117	-1	XDE SA Wts	1	-	A/T	T/T	A>T	jewhHZNjrA	11.605743931915569	7.647703650632931	23.91749980426682	1	1	-9999	rs0	http://www.icgc.org	00:a	dUxJNqMxai

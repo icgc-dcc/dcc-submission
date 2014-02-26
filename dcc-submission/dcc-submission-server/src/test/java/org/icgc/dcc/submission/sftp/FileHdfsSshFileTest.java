@@ -7,17 +7,12 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.sftp.fs.FileHdfsSshFile;
 import org.icgc.dcc.submission.sftp.fs.RootHdfsSshFile;
 import org.icgc.dcc.submission.sftp.fs.SubmissionDirectoryHdfsSshFile;
@@ -45,23 +40,11 @@ public class FileHdfsSshFileTest {
   Submission submission;
   @Mock
   Project project;
-
-  @Mock
-  DccFileSystem fs;
   @Mock
   SubmissionDirectory submissionDirectory;
   @Mock
-  ReleaseFileSystem releaseFileSystem;
-  @Mock
-  ProjectService projectService;
-  @Mock
-  ReleaseService releaseService;
-  @Mock
-  UsernamePasswordAuthenticator authenticator;
-  @Mock
-  MailService mailService;
-
   SftpContext context;
+
   SubmissionDirectoryHdfsSshFile directory;
 
   @Before
@@ -72,23 +55,11 @@ public class FileHdfsSshFileTest {
     File projectDirectory = new File(root, projectDirectoryName);
     projectDirectory.mkdir();
 
-    // Mock release / project
-    when(project.getKey()).thenReturn(PROJECT_KEY);
-    when(releaseService.getNextRelease()).thenReturn(release);
-    when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
-
-    // Mock file system
-    when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
-    when(fs.getReleaseFilesystem(release, null)).thenReturn(releaseFileSystem);
-    when(fs.getFileSystem()).thenReturn(createFileSystem());
-    when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
-    when(releaseFileSystem.getRelease()).thenReturn(release);
-    when(releaseFileSystem.getSubmissionDirectory(PROJECT_KEY)).thenReturn(submissionDirectory);
     when(submissionDirectory.isReadOnly()).thenReturn(false);
     when(submissionDirectory.getSubmission()).thenReturn(submission);
-
-    // Create shared context
-    context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
+    when(context.getFileSystem()).thenReturn(createFileSystem());
+    when(context.getReleasePath()).thenReturn(new Path(root.getAbsolutePath()));
+    when(context.getSubmissionDirectory(PROJECT_KEY)).thenReturn(submissionDirectory);
 
     RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context);
     String directoryName = PROJECT_KEY;

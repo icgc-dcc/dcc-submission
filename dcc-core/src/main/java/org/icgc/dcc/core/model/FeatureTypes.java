@@ -27,7 +27,7 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.META_SUBTYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
 
 import java.util.List;
 import java.util.Set;
@@ -36,7 +36,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -52,7 +52,7 @@ public final class FeatureTypes {
   /**
    * Represents a type of observation data, see {@link ClinicalType} for the clinical counterpart.
    */
-  public enum FeatureType implements SubmissionDataType {
+  public enum FeatureType implements DataType {
 
     /** From the ICGC Submission Manual */
     SSM_TYPE("ssm", "_ssm_count"),
@@ -61,9 +61,14 @@ public final class FeatureTypes {
     CNGV_TYPE("cngv", "_cngv_exists"),
     STSM_TYPE("stsm", "_stsm_exists"),
     STGV_TYPE("stgv", "_stgv_exists"),
-    METH_TYPE("meth", "_meth_exists"),
+    METH_TYPE("meth", "_meth_exists"), // Old meth
+    METH_ARRAY_TYPE("meth_array", "_meth_array_exists"),
+    METH_SEQ_TYPE("meth_seq", "_meth_seq_exists"),
     MIRNA_TYPE("mirna", "_mirna_exists"),
-    EXP_TYPE("exp", "_exp_exists"),
+    MIRNA_SEQ_TYPE("mirna_seq", "_mirna_seq_exists"),
+    EXP_TYPE("exp", "_exp_exists"), // Old exp
+    EXP_ARRAY_TYPE("exp_array", "_exp_array_exists"),
+    EXP_SEQ_TYPE("exp_seq", "_exp_seq_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
 
@@ -111,16 +116,16 @@ public final class FeatureTypes {
     /**
      * Returns the file types corresponding to the feature type.
      * <p>
-     * TODO: move to {@link SubmissionFileTypes} rather
+     * TODO: move to {@link FileTypes} rather
      */
-    public Set<SubmissionFileType> getCorrespondingFileTypes() {
+    public Set<FileType> getCorrespondingFileTypes() {
       val dataType = this;
       return newLinkedHashSet(Iterables.filter(
-          newArrayList(SubmissionFileType.values()),
-          new Predicate<SubmissionFileType>() {
+          newArrayList(FileType.values()),
+          new Predicate<FileType>() {
 
             @Override
-            public boolean apply(SubmissionFileType fileType) {
+            public boolean apply(FileType fileType) {
               return fileType.getDataType() == dataType;
             }
           }));
@@ -130,10 +135,10 @@ public final class FeatureTypes {
      * Returns the file type whose presence indicates that the type is considered as "present" and therefore to be
      * processed.
      * <p>
-     * TODO: move to {@link SubmissionFileTypes} rather
+     * TODO: move to {@link FileTypes} rather
      */
-    public SubmissionFileType getFileTypeFlagship() {
-      SubmissionFileType fileTypeFlagship = null;
+    public FileType getFileTypeFlagship() {
+      FileType fileTypeFlagship = null;
       for (val fileType : getCorrespondingFileTypes()) {
         checkState(fileType.getDataType() == this, "'%s' != '%s'", fileType, this); // By design
         if (fileType.getSubType() == META_SUBTYPE) {
@@ -146,10 +151,22 @@ public final class FeatureTypes {
     }
 
     /**
+     * TODO
+     */
+    public static boolean hasMatch(String typeName) {
+      for (val featureType : values()) {
+        if (featureType.name().equals(format(typeName))) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
      * Returns an enum matching the type like "ssm", "meth", ...
      */
     public static FeatureType from(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+      return valueOf(format(typeName));
     }
 
     /**
@@ -161,6 +178,12 @@ public final class FeatureTypes {
       return newLinkedHashSet(complement);
     }
 
+    /**
+     * TODO
+     */
+    private static String format(String typeName) {
+      return String.format("%s_%s", typeName.toUpperCase(), TYPE_SUFFIX);
+    }
   }
 
   /**

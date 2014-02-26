@@ -17,18 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-
-import com.google.common.base.Optional;
 
 /**
  * The umbilical cord to the rest of the system provided to {@link Validator}s to act as a "façade" that reduces
@@ -51,6 +52,11 @@ public interface ValidationContext extends ReportContext {
   List<String> getEmails();
 
   /**
+   * Gets the list of data types to validate.
+   */
+  Collection<DataType> getDataTypes();
+
+  /**
    * Gets the current release.
    */
   Release getRelease();
@@ -66,12 +72,17 @@ public interface ValidationContext extends ReportContext {
   SubmissionDirectory getSubmissionDirectory();
 
   /**
-   * Gets the optionally available SSM primary file of the associated project under validation.
+   * Gets the available SSM primary file(s) of the associated project under validation.
    */
-  Optional<Path> getSsmPrimaryFile();
+  List<Path> getSsmPrimaryFiles();
 
   /**
-   * Gets the root DCC filesystem.
+   * Gets the {@code FileSchema} associated with the SSM primary file.
+   */
+  FileSchema getSsmPrimaryFileSchema();
+
+  /**
+   * Gets the root DCC file system.
    */
   DccFileSystem getDccFileSystem();
 
@@ -89,10 +100,5 @@ public interface ValidationContext extends ReportContext {
    * Gets the cascading platform strategy for cascading-based {@link Validator}s.
    */
   PlatformStrategy getPlatformStrategy();
-
-  /**
-   * Gets the submission report of the associated project under validation.
-   */
-  SubmissionReport getSubmissionReport();
 
 }

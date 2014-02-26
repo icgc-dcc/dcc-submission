@@ -23,10 +23,9 @@ import lombok.val;
 
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonValue;
-
-import com.google.code.morphia.converters.TypeConverter;
-import com.google.code.morphia.mapping.MappedField;
-import com.google.code.morphia.mapping.MappingException;
+import org.mongodb.morphia.converters.TypeConverter;
+import org.mongodb.morphia.mapping.MappedField;
+import org.mongodb.morphia.mapping.MappingException;
 
 @RequiredArgsConstructor
 public enum RestrictionType {

@@ -77,12 +77,17 @@ module.exports = class LoginView extends PageView
       beforeSend: (xhr) ->
         xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
 
-      success: (data) ->
+      success: (data, status, xhr) ->
         data.accessToken = accessToken
         user = new User data
         Chaplin.mediator.user = user
         Chaplin.mediator.publish 'loginSuccessful'
         Chaplin.mediator.publish '!startupController', 'release', 'list'
+
+        # Piggyback a successful login to send release infomration
+        releaseName = xhr.getResponseHeader "x-icgc-submission-version"
+        commitId = xhr.getResponseHeader "x-icgc-submission-commitid"
+        Chaplin.mediator.publish 'releaseInfo', releaseName, commitId
 
       error: (jqXHR, textStatus, errorThrown) =>
         alert = @.$('#login-error')

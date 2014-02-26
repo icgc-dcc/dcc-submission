@@ -18,22 +18,17 @@
 package org.icgc.dcc.submission.validation.primary.planner;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.EXTERNAL;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.primary.MissingFileException;
-import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.primary.core.ExternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
-import org.icgc.dcc.submission.validation.primary.visitor.RelationPlanningVisitor.RelationPlanElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +39,7 @@ import cascading.pipe.Pipe;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements ExternalFlowPlanner {
+class DefaultExternalFlowPlanner extends BaseFileFlowPlanner implements ExternalFlowPlanner {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 
@@ -55,58 +50,24 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
   DefaultExternalFlowPlanner(Plan plan, FileSchema fileSchema) {
-    super(fileSchema, FlowType.EXTERNAL);
+    super(fileSchema, null, EXTERNAL); // FIXME: provide file name if ever re-enabled
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.plan = plan;
   }
 
   @Override
-  public void apply(ExternalPlanElement element) {
+  public void applyExternalPlanElement(ExternalPlanElement element) {
+    checkState(false, "Should not be used");
     checkArgument(element != null);
 
-    String currentFileSchemaName = getSchema().getName();
+    String currentFileSchemaName = getSchemaName();
     String referencedFileSchema = element.rhs();
 
-    String fileName = null;
-    try {
-      fileName = this.plan.path(getSchema());
-    } catch(FileNotFoundException fnfe) {
-      throw new PlanningException(fnfe);
-    } catch(IOException ioe) {
-      throw new PlanningException(ioe);
-    }
+    InternalFlowPlanner lhsInternalFlow = plan.getInternalFlow(currentFileSchemaName);
+    InternalFlowPlanner rhsInternalFlow = plan.getInternalFlow(referencedFileSchema);
 
-    InternalFlowPlanner lhsInternalFlow;
-    InternalFlowPlanner rhsInternalFlow;
-    try {
-      lhsInternalFlow = plan.getInternalFlow(currentFileSchemaName);
-      rhsInternalFlow = plan.getInternalFlow(referencedFileSchema);
-    } catch(MissingFileException e) {
-      log.error(String.format("missing corresponding file for %s in relation coming from %s", referencedFileSchema,
-          currentFileSchemaName));
-      throw new PlanningFileLevelException(fileName, ErrorType.RELATION_FILE_ERROR, referencedFileSchema);
-    }
-
-    if(element instanceof RelationPlanElement) { // FIXME: see DCC-391; lesser of all evils for now, file-level error
-                                                 // reporting should be thought through as a whole as we are currently
-                                                 // too dependent on visiting FileSchema-ta based on file presence (see
-                                                 // visitors' apply() method); visiting dictionary may be the way to go
-      RelationPlanElement relationPlanElement = (RelationPlanElement) element;
-      for(FileSchema afferentFileSchemata : relationPlanElement.getAfferentFileSchemata()) {
-        String afferentFileSchemataName = afferentFileSchemata.getName();
-        try {
-          plan.getInternalFlow(afferentFileSchemataName);
-        } catch(MissingFileException e) { // FIXME: this will only catch the first one (consider DCC-391)
-          log.error(String.format("missing corresponding file for %s in relation going to %s", referencedFileSchema,
-              currentFileSchemaName));
-          throw new PlanningFileLevelException(fileName, ErrorType.REVERSE_RELATION_FILE_ERROR,
-              afferentFileSchemataName);
-        }
-      }
-    }
-
-    log.info("[{}] applying element [{}]", getName(), element.describe());
+    log.info("[{}] applying element [{}]", getFlowName(), element.describe());
     Key lhsKey = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
     Key rhsKey = rhsInternalFlow.addTrimmedOutput(element.rhsFields());
 
@@ -118,7 +79,8 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   @Override
   protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy) {
-    for(Key key : trimmedHeads.keySet()) {
+    checkState(false, "Should not be used");
+    for (Key key : trimmedHeads.keySet()) {
       flowDef.addSource(key.getName(), strategy.getTrimmedTap(key));
     }
     return flowDef;
@@ -136,7 +98,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   private Pipe getTrimmedHead(Key key) {
     Pipe head = trimmedHeads.get(key);
-    if(head == null) {
+    if (head == null) {
       head = new Pipe(key.getName());
       trimmedHeads.put(key, head);
     }

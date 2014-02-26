@@ -35,11 +35,11 @@ import javax.ws.rs.core.SecurityContext;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.UserService;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.release.model.DetailedUser;
+import org.icgc.dcc.submission.service.MailService;
+import org.icgc.dcc.submission.service.UserService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;

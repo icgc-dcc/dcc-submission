@@ -18,23 +18,25 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static com.google.common.base.Preconditions.checkState;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.base.Strings.repeat;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.first.Checker;
+import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FileChecker;
 
 @Slf4j
-@RequiredArgsConstructor
 public abstract class CompositeFileChecker implements FileChecker {
 
+  @NonNull
+  protected final String name;
+  @NonNull
   protected final FileChecker delegate;
   protected final boolean failFast;
 
@@ -43,23 +45,30 @@ public abstract class CompositeFileChecker implements FileChecker {
    */
   protected long checkErrorCount = 0;
 
+  public CompositeFileChecker(FileChecker delegate, boolean failFast) {
+    this.delegate = delegate;
+    this.failFast = failFast;
+    this.name = this.getClass().getSimpleName();
+  }
+
   public CompositeFileChecker(FileChecker delegate) {
     this(delegate, false);
   }
 
   @Override
-  public void check(String filename) {
-    delegate.check(filename);
+  public void check(String fileName) {
+    delegate.check(fileName);
+    log.info(banner());
     if (delegate.canContinue()) {
-      log.info("Start performing {} validation...", this.getClass().getSimpleName());
-      performSelfCheck(filename);
+      log.info("Start performing {} validation...", name);
+      performSelfCheck(fileName);
       log.info("End performing {} validation. Number of errors found: '{}'",
-          getClass().getSimpleName(),
+          name,
           checkErrorCount);
     }
   }
 
-  public abstract void performSelfCheck(String filename);
+  public abstract void performSelfCheck(String fileName);
 
   /**
    * Must always increment when reporting an error (TODO: address this).
@@ -75,7 +84,7 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean isValid() {
-    return (delegate.isValid() && !getValidationContext().hasErrors());
+    return (delegate.isValid() && !getReportContext().hasErrors());
   }
 
   @Override
@@ -94,23 +103,22 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return delegate.getSubmissionDirectory();
+  public FPVFileSystem getFs() {
+    return delegate.getFs();
   }
 
   @Override
-  public DccFileSystem getDccFileSystem() {
-    return delegate.getDccFileSystem();
+  public ReportContext getReportContext() {
+    return delegate.getReportContext();
   }
 
-  @Override
-  public ValidationContext getValidationContext() {
-    return delegate.getValidationContext();
-  }
-
-  protected FileSchema getFileSchema(String filename) {
-    val optional = getDictionary().getFileSchemaByFileName(filename);
-    checkState(optional.isPresent(), "At this stage, there should be a file schema matching '%s'", filename);
+  protected FileSchema getFileSchema(String fileName) {
+    val optional = getDictionary().getFileSchemaByFileName(fileName);
+    checkState(optional.isPresent(), "At this stage, there should be a file schema matching '%s'", fileName);
     return optional.get();
+  }
+
+  protected String banner() {
+    return repeat("-", 75);
   }
 }

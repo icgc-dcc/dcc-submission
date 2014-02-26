@@ -17,19 +17,45 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.base.Throwables.propagate;
+import static com.google.common.collect.Iterables.transform;
+import static org.icgc.dcc.submission.release.model.SubmissionState.getDefaultState;
+
 import java.io.Serializable;
 import java.util.Date;
 
 import javax.validation.Valid;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.state.DefaultStateContext;
+import org.icgc.dcc.submission.core.state.StateContext;
+import org.mongodb.morphia.annotations.Embedded;
 
-import com.google.code.morphia.annotations.Embedded;
-import com.google.common.base.Objects;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 
+@Slf4j
+@Data
 @Embedded
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "projectKey")
 public class Submission implements Serializable {
 
   @NotBlank
@@ -46,53 +72,64 @@ public class Submission implements Serializable {
 
   protected Date lastUpdated;
 
-  protected SubmissionState state;
+  protected SubmissionState state = getDefaultState();
 
-  // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-  // dcc-submission-server and dcc-submission-core.
   @Valid
-  protected Object report;
+  protected Report report = new Report();
 
-  public Submission() {
-    super();
+  public Submission(@NonNull String projectKey, @NonNull String projectName, @NonNull String releaseName) {
+    this(projectKey, projectName, releaseName, getDefaultState());
   }
 
-  public Submission(String projectKey, String projectName, String releaseName) {
-    super();
+  public Submission(@NonNull Submission other) {
+    this.projectKey = other.projectKey;
+    this.projectName = other.projectName;
+    this.releaseName = other.releaseName;
+    this.state = other.state;
+    this.lastUpdated = new Date();
+  }
+
+  public Submission(@NonNull String projectKey, @NonNull String projectName, @NonNull String releaseName,
+      @NonNull SubmissionState state) {
     this.projectKey = projectKey;
     this.projectName = projectName;
     this.releaseName = releaseName;
-    this.state = SubmissionState.NOT_VALIDATED;
+    this.state = state;
     this.lastUpdated = new Date();
   }
+
+  //
+  // Accessors
+  //
 
   public Date getLastUpdated() {
     return lastUpdated;
   }
 
-  public Object getReport() {
-    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-    // dcc-submission-server and dcc-submission-core.
+  public Report getReport() {
     return report;
   }
 
-  public void setReport(Object report) {
-    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-    // dcc-submission-server and dcc-submission-core.
+  public void setReport(Report report) {
+    this.lastUpdated = new Date();
     this.report = report;
-  }
-
-  public void resetReport() {
-    setReport(null);
   }
 
   public SubmissionState getState() {
     return state;
   }
 
-  public void setState(SubmissionState state) {
-    this.lastUpdated = new Date();
-    this.state = state;
+  public void setState(SubmissionState nextState) {
+    val change = state != nextState;
+    if (change) {
+      log.info("'{}' changed state from '{}' to '{}'", new Object[] { projectKey, getState(), nextState });
+      this.lastUpdated = new Date();
+      this.state = nextState;
+    }
+  }
+
+  public String getProjectName() {
+    return this.projectName;
   }
 
   public String getProjectKey() {
@@ -100,49 +137,171 @@ public class Submission implements Serializable {
   }
 
   public void setProjectKey(String projectKey) {
+    this.lastUpdated = new Date();
     this.projectKey = projectKey;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((projectKey == null) ? 0 : projectKey.hashCode());
-    return result;
+  //
+  // Actions
+  //
+
+  public void initialize(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    executeTransition(submissionFiles, new Transition<Void>("initialize") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.initialize(context);
+        return null;
+      }
+
+    });
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (obj == this) {
-      return true;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final Submission other = (Submission) obj;
-    return Objects.equal(this.projectKey, other.projectKey);
+  public void modifyFile(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Optional<SubmissionFile> submissionFile) {
+    executeTransition(submissionFiles, new Transition<Void>("modifyFile") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.modifyFile(context, submissionFile);
+        return null;
+      }
+
+    });
   }
 
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(Submission.class) //
-        .add("projectKey", this.projectKey) //
-        .add("projectName", this.projectName) //
-        .add("lastUpdated", this.lastUpdated) //
-        .add("state", this.state) //
-        .add("report", this.report) // TODO: toString for SubmissionReport
-        .toString();
+  public void queueRequest(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Iterable<DataType> dataTypes) {
+    executeTransition(submissionFiles, new Transition<Void>("queueRequest") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.queueRequest(context, dataTypes);
+        return null;
+      }
+
+    });
   }
 
-  /**
-   * @return
-   */
-  public String getProjectName() {
-    // TODO Auto-generated method stub
-    return this.projectName;
+  public void startValidation(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Iterable<DataType> dataTypes, final @NonNull Report nextReport) {
+    executeTransition(submissionFiles, new Transition<Void>("startValidation") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.startValidation(context, dataTypes, nextReport);
+        return null;
+      }
+
+    });
+  }
+
+  public void cancelValidation(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Iterable<DataType> dataTypes) {
+    executeTransition(submissionFiles, new Transition<Void>("cancelValidation") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.cancelValidation(context, dataTypes);
+        return null;
+      }
+
+    });
+  }
+
+  public void finishValidation(@NonNull Iterable<SubmissionFile> submissionFiles,
+      final @NonNull Iterable<DataType> dataTypes, final @NonNull Outcome outcome, final @NonNull Report nextReport) {
+    executeTransition(submissionFiles, new Transition<Void>("finishValidation") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.finishValidation(context, dataTypes, outcome, nextReport);
+        return null;
+      }
+
+    });
+  }
+
+  public void signOff(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    executeTransition(submissionFiles, new Transition<Void>("signOff") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.signOff(context);
+        return null;
+      }
+
+    });
+  }
+
+  public Submission closeRelease(@NonNull Iterable<SubmissionFile> submissionFiles, final @NonNull Release nextRelease) {
+    return executeTransition(submissionFiles, new Transition<Submission>("closeRelease") {
+
+      @Override
+      public Submission execute(@NonNull StateContext context) {
+        return state.closeRelease(context, nextRelease);
+      }
+
+    });
+  }
+
+  public void reset(@NonNull Iterable<SubmissionFile> submissionFiles) {
+    executeTransition(submissionFiles, new Transition<Void>("reset") {
+
+      @Override
+      public Void execute(@NonNull StateContext context) {
+        state.reset(context);
+        return null;
+      }
+
+    });
+  }
+
+  //
+  // Helpers
+  //
+
+  private StateContext createContext(Iterable<SubmissionFile> submissionFiles) {
+    return new DefaultStateContext(this, submissionFiles);
+  }
+
+  public static Iterable<String> getProjectKeys(@NonNull Iterable<Submission> submissions) {
+    return transform(submissions, new Function<Submission, String>() {
+
+      @Override
+      public String apply(Submission submission) {
+        return submission.getProjectKey();
+      }
+
+    });
+  }
+
+  private <Result> Result executeTransition(@NonNull Iterable<SubmissionFile> submissionFiles,
+      @NonNull Transition<Result> transition) {
+    val action = transition.getAction();
+    val context = createContext(submissionFiles);
+
+    try {
+      log.info("Action '{}' requested starting from state '{}'", action, state);
+      val result = transition.execute(context);
+      log.info("Finished action '{}' resulting in state '{}'", action, state);
+
+      return result;
+    } catch (Throwable t) {
+      log.error("Error transitioning in response to action '" + action + "'. " + this, t);
+      throw propagate(t);
+    }
+  }
+
+  @RequiredArgsConstructor
+  private abstract class Transition<Result> {
+
+    @Getter
+    @NonNull
+    final String action;
+
+    abstract Result execute(StateContext context);
+
   }
 
 }

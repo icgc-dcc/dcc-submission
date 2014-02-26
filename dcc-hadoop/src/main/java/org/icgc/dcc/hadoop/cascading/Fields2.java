@@ -19,6 +19,7 @@ package org.icgc.dcc.hadoop.cascading;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.ArrayList;
@@ -42,6 +43,10 @@ import com.google.common.collect.ImmutableList;
 public final class Fields2 {
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
+
+  public static Fields fields(Iterable<String> fieldNames) {
+    return fields(newArrayList(fieldNames));
+  }
 
   public static Fields fields(Collection<String> fieldNames) {
     return new Fields(toStringArray(fieldNames));

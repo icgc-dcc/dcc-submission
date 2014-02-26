@@ -249,12 +249,14 @@ function doFilter() {
       });
    }
 
+   //console.log(datatypeMap);
+
 
    // Highlight corresponding entires in the minimap
    d3.select("#minimap")
      .selectAll("g")
      .each(function(d) {
-        var datatype = d3.select(this).attr("id").split("_")[1];
+        var datatype = d3.select(this).attr("id").split("-")[1];
         if (datatype in datatypeMap) {
            d3.select(this).select("rect").style("fill", function(d) {
               d.cCurrent = cBarHighlight;
@@ -321,7 +323,7 @@ function buildRow( row, idx ) {
 
 
    // Updates the datatype minimap
-   var minimap = d3.select("#minimap").select("#vv_"+tableName).append("rect").attr("x", 2).attr("y", 2+idx).attr("height", 1).attr("width", 20);
+   var minimap = d3.select("#minimap").select("#minimap-"+tableName).append("rect").attr("x", 2).attr("y", 2+idx).attr("height", 1).attr("width", 20);
    if (!compareRow)  {
       minimap.style("fill", cRowNew);
       entryNew ++;
@@ -468,7 +470,7 @@ function showDictionary(version) {
    // Hardwire "all data type" minimap option, note minimap height is dynamically
    // computed.
    var currentY = 1;
-   var grp = d3.select("#minimap").append("g").attr("id", "vv_all").attr("transform", "translate(" + 0 + "," + (currentY) + ")");
+   var grp = d3.select("#minimap").append("g").attr("id", "minimap-all").attr("transform", "translate(" + 0 + "," + (currentY) + ")");
    buildFilterRow(grp, "all", "All Data Types", barHeight);
    currentY += barHeight;
 
@@ -529,7 +531,7 @@ function showDictionary(version) {
 
         // Create the minimap things
         var realH = Math.max(barHeight, 5+table.fields.length);
-        var grp = d3.select("#minimap").append("g").attr("id", "vv_"+table.name).attr("transform", "translate(" + 0 + "," + (currentY) + ")");
+        var grp = d3.select("#minimap").append("g").attr("id", "minimap-"+table.name).attr("transform", "translate(" + 0 + "," + (currentY) + ")");
         buildFilterRow(grp, table.name, table.label, realH);
         currentY += realH;
 

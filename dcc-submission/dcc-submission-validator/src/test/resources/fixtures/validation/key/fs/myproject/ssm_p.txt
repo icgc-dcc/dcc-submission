@@ -1,0 +1,4 @@
+analysis_id	analyzed_sample_id	mutation	other_ssm_p
+an-ssm-02	sa-ssm-02.01.T01	mut-ssm-02.02	dummy2
+an-ssm-03	sa-ssm-03.01.T01	mut-ssm-03.01	dummy2
+an-ssm-03	sa-ssm-03.01.T01	mut-ssm-03.02	dummy2
