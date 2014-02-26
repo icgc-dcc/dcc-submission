@@ -31,6 +31,71 @@ module.exports = class SubmissionHeaderView extends View
   autoRender: true
 
   initialize: ->
+    @dataTypeReports = []
+    @dt = null
     super
 
     @modelBind 'change', @render
+
+  render: ->
+    super
+    console.log "initing dataTable"
+    report = @model.get "report"
+    @dataTypeReports = report.dataTypeReports
+
+    if not @dataTypeReports
+      @dataTypeReports = []
+
+    console.log "datatype reports", @dataTypeReports
+
+    aoColumns = [
+       {
+          sTitle: "Data Type"
+          mData: (source)->
+            source.dataType
+       }
+       {
+          sTitle: "State"
+          mData: (source)->
+            #source.dataTypeState
+            state = source.dataTypeState.replace("_", " ")
+            return switch state
+              when "INVALID"
+                "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
+              when "VALID"
+                "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
+              when "VALIDATING"
+                "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
+              when "QUEUED"
+                "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
+              when "ERROR"
+                "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
+              when "NOT VALIDATED"
+                "<span><i class='icon-question-sign'></i> " + state + "</span>"
+              else
+                state
+
+       }
+    ]
+
+    @$el.find("#datatype-summary").dataTable
+      sDom:
+        "t"
+        #"<'row-fluid'<'span6'><'span6'>r>t<'row-fluid'<'span6'><'span6'>>"
+      bPaginate: false
+      bSort: false
+      #aaSorting: [[ 1, "asc" ]]
+      aoColumns: aoColumns
+      sAjaxSource: ""
+      sAjaxDataProp: ""
+      fnServerData: (sSource, aoData, fnCallback) =>
+        fnCallback @dataTypeReports
+
+    #@dt = @$el.find("#datatype-summary").dataTable()
+
+
+
+      #for dataType in dataTypeReports
+      #  console.log "d", dataType
+      #  @dt.fnAddData( dataType )
+
