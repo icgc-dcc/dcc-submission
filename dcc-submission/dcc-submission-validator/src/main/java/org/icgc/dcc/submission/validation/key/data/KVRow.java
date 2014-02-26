@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 import lombok.Value;
 
 import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
@@ -61,6 +64,18 @@ public class KVRow {
 
   public boolean hasOptionalFk() {
     return optionalFk != null;
+  }
+
+  /**
+   * Only applicable for existing non-composite keys.
+   */
+  public boolean hasCheckeableOptionalFk() {
+    if (ROW_CHECKS_ENABLED) {
+      checkState(!checkNotNull(optionalFk,
+          "Expecting an optional FK to exist")
+          .isSingleEmptyValue(), "Expecting optional FK to be a single value, instead: '{}'", optionalFk);
+    }
+    return !optionalFk.isSingleMissingCode();
   }
 
 }

@@ -218,7 +218,7 @@ public final class KVFileProcessor {
   private void processGenericMetaWithOptionalFK(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
-    if (context.getRow().hasOptionalFk()) {
+    if (context.getRow().hasCheckeableOptionalFk()) {
       valid.validateOptionalForeignKey(context);
     }
 
