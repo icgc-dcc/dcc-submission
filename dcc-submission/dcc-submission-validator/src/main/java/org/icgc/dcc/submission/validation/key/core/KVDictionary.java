@@ -406,6 +406,7 @@ public final class KVDictionary {
           || fileType == MIRNA_P
           || fileType == MIRNA_SEQ_P
           || fileType == PEXP_P
+          || fileType == SGV_P
       ;
     }
   };
