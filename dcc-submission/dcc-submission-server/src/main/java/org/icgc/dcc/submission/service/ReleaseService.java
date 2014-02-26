@@ -38,6 +38,7 @@ import static org.icgc.dcc.submission.web.model.ServerErrorCode.QUEUE_NOT_EMPTY;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_MISSING_DICTIONARY;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -459,7 +460,12 @@ public class ReleaseService extends AbstractService {
     val buildProjectStringPath = new Path(dccFileSystem.buildProjectStringPath(release.getName(), projectKey));
 
     for (val path : lsFile(dccFileSystem.getFileSystem(), buildProjectStringPath)) {
-      submissionFiles.add(getSubmissionFile(dictionary, path));
+      try {
+        submissionFiles.add(getSubmissionFile(dictionary, path));
+      } catch (Exception e) {
+        // This could happen if the file was renamed or removed in the meantime
+        log.warn("Could not get submission file '{}': {}", path, e.getMessage());
+      }
     }
 
     return submissionFiles;
@@ -732,7 +738,7 @@ public class ReleaseService extends AbstractService {
     throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, release.getName());
   }
 
-  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) {
+  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) throws IOException {
     val fileName = filePath.getName();
     val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());

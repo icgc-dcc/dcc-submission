@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.sftp;
 import static com.google.common.base.Optional.fromNullable;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -133,11 +134,15 @@ public class SftpContext {
   public void notifySubmissionChange(@NonNull Submission submission, @NonNull Optional<Path> path) {
     log.info("Resetting submission '{}'...", submission.getProjectKey());
 
-    val submissionFile =
-        fromNullable(path.isPresent() ?
-            getSubmissionFile(releaseService.getNextDictionary(), path.get()) : null);
+    try {
+      val submissionFile =
+          fromNullable(path.isPresent() ?
+              getSubmissionFile(releaseService.getNextDictionary(), path.get()) : null);
 
-    releaseService.modifySubmission(getNextReleaseName(), submission.getProjectKey(), submissionFile);
+      releaseService.modifySubmission(getNextReleaseName(), submission.getProjectKey(), submissionFile);
+    } catch (IOException e) {
+      log.warn("Could notify submission change for file '{}': {}", path.get(), e.getMessage());
+    }
   }
 
   public void notifyReferenceChange() {
@@ -164,7 +169,7 @@ public class SftpContext {
   }
 
   // TODO: Duplicated code with ReleaseService
-  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) {
+  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) throws IOException {
     val fileName = filePath.getName();
     val fileStatus = HadoopUtils.getFileStatus(fs.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
