@@ -124,8 +124,8 @@ public final class KVFileProcessor {
     
     // CORE:
     case DONOR:             processDonor(context); break;
-    case SPECIMEN:          processGenericPrimaryWithSecondary(context); break;
-    case SAMPLE:            processGenericPrimaryWithSecondary(context); break;
+    case SPECIMEN:          processGenericClinical(context); break;
+    case SAMPLE:            processGenericClinical(context); break;
     
     // TODO: OPTIONAL?
     
@@ -250,7 +250,18 @@ public final class KVFileProcessor {
     addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
   }
 
+  private void processGenericClinical(KVRowContext context) {
+    processMostGeneric(context);
+  }
+
   private void processGenericPrimaryWithSecondary(KVRowContext context) {
+    processMostGeneric(context);
+  }
+
+  /**
+   * Avoid calling directly, instead use aliases as shown above.
+   */
+  private void processMostGeneric(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
 
@@ -262,7 +273,7 @@ public final class KVFileProcessor {
   }
 
   private void processGenericSecondary(KVRowContext context) {
-    ; // No uniqueness check for METH_SEQ_P
+    ; // No uniqueness check
     valid.validateForeignKey1(context);
 
     sanity.ensureNoPK(context.getRow());

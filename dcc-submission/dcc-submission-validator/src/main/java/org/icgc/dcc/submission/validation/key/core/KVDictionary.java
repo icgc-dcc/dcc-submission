@@ -397,15 +397,15 @@ public final class KVDictionary {
           || fileType == CNSM_P
           || fileType == STSM_P
           || fileType == JCN_P
-          || fileType == PEXP_P
-          || fileType == MIRNA_P
           || fileType == METH_P
-          || fileType == EXP_G
           || fileType == METH_ARRAY_P
           || fileType == METH_SEQ_P
+          || fileType == EXP_G
           || fileType == EXP_ARRAY_P
           || fileType == EXP_SEQ_P
+          || fileType == MIRNA_P
           || fileType == MIRNA_SEQ_P
+          || fileType == PEXP_P
       ;
     }
   };
@@ -787,7 +787,7 @@ public final class KVDictionary {
     }
 
     // PEXP
-    else if (fileType == SSM_M) {
+    else if (fileType == PEXP_M) {
       pk = from(row, PEXP_M_PKS);
       fk1 = from(row, PEXP_M_FKS);
     } else if (fileType == PEXP_P) {

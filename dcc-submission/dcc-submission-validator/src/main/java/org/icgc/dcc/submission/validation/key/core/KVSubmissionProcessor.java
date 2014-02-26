@@ -114,7 +114,7 @@ public class KVSubmissionProcessor {
         Optional.<KVEncounteredForeignKeys> absent();
 
     log.info(
-        "Processing file type: '{}'; Referencing '{} and {}' (will be collecting FKs: '{}')",
+        "Processing file type: '{}'; has referencing is '{} and {}' (FK1 and FK2); will be collecting FKs: '{}'",
         new Object[] { fileType,
             optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2.isPresent(),
             optionalEncounteredForeignKeys.isPresent() });
@@ -126,7 +126,7 @@ public class KVSubmissionProcessor {
         val watch = createStopwatch();
         log.info("{}", banner("-"));
         log.info(
-            "Processing '{}' file: '{}'; Referencing '{}' and '{}'",
+            "Processing '{}' file: '{}'; has referencing is '{}' and '{}' (FK1 and FK2)",
             new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
                 .isPresent(), dataFilePath });
 
