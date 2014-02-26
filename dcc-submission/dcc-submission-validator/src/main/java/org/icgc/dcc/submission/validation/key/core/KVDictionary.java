@@ -24,19 +24,16 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.KEY_NOT_APPLICABLE;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.from;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXPOSURE;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_ARRAY_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_ARRAY_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_G;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_SEQ_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.EXP_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.FAMILY;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.METH_ARRAY_M;
@@ -63,8 +60,6 @@ import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SSM_
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_M;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_P;
 import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.STSM_S;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SURGERY;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.THERAPY;
 
 import java.util.List;
 import java.util.Map;
@@ -76,6 +71,7 @@ import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.data.KVRow;
 import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
+import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
 import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.base.Optional;
@@ -83,7 +79,10 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * TODO: make non-static + parse dictionary rather than hardcoding
+ * TODO:
+ * <p>
+ * - make non-static + parse dictionary rather than hardcoding<br/>
+ * - MUST also incorporate {@link KVExperimentalDataType} (which should be relation-driven instead)
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class KVDictionary {
@@ -267,12 +266,6 @@ public final class KVDictionary {
           .put(SPECIMEN, DONOR)
           .put(SAMPLE, SPECIMEN)
 
-          .put(BIOMARKER, DONOR)
-          .put(EXPOSURE, DONOR)
-          .put(FAMILY, DONOR)
-          .put(SURGERY, DONOR)
-          .put(THERAPY, DONOR)
-
           .put(SSM_M, SAMPLE)
           .put(SSM_P, SSM_M)
 
@@ -296,7 +289,16 @@ public final class KVDictionary {
           .put(METH_ARRAY_P, METH_ARRAY_M)
 
           .put(METH_SEQ_M, SAMPLE)
-          .put(METH_SEQ_P, METH_ARRAY_M)
+          .put(METH_SEQ_P, METH_SEQ_M)
+
+          .put(EXP_ARRAY_M, SAMPLE)
+          .put(EXP_ARRAY_P, EXP_ARRAY_M)
+
+          .put(EXP_SEQ_M, SAMPLE)
+          .put(EXP_SEQ_P, EXP_SEQ_M)
+
+          .put(MIRNA_SEQ_M, SAMPLE)
+          .put(MIRNA_SEQ_P, MIRNA_SEQ_M)
 
           .put(EXP_M, SAMPLE)
           .put(EXP_G, EXP_M)
@@ -316,7 +318,6 @@ public final class KVDictionary {
       new ImmutableMap.Builder<KVFileType, KVFileType>()
 
           .put(METH_ARRAY_P, METH_ARRAY_PROBES)
-          // TODO: same of gexp, pexp and mirna
 
           .build();
 
@@ -332,22 +333,24 @@ public final class KVDictionary {
           .put(SSM_M, SSM_M_PK_NAMES)
           .put(CNSM_M, CNSM_M_PK_NAMES)
           .put(STSM_M, STSM_M_PK_NAMES)
-          .put(MIRNA_M, MIRNA_M_PK_NAMES)
-          .put(MIRNA_SEQ_M, MIRNA_SEQ_M_PK_NAMES)
+          .put(JCN_M, JCN_M_PK_NAMES)
+          .put(SGV_M, SGV_M_PK_NAMES)
+          .put(PEXP_M, PEXP_M_PK_NAMES)
           .put(METH_M, METH_M_PK_NAMES)
           .put(METH_ARRAY_M, METH_ARRAY_M_PK_NAMES)
           .put(METH_SEQ_M, METH_SEQ_M_PK_NAMES)
           .put(EXP_M, EXP_M_PK_NAMES)
           .put(EXP_ARRAY_M, EXP_ARRAY_M_PK_NAMES)
-          .put(EXP_ARRAY_P, EXP_ARRAY_P_PK_NAMES)
-          .put(PEXP_M, PEXP_M_PK_NAMES)
-          .put(JCN_M, JCN_M_PK_NAMES)
-          .put(SGV_M, SGV_M_PK_NAMES)
+          .put(EXP_SEQ_M, EXP_SEQ_M_PK_NAMES)
+          .put(MIRNA_M, MIRNA_M_PK_NAMES)
+          .put(MIRNA_SEQ_M, MIRNA_SEQ_M_PK_NAMES)
 
           .put(CNSM_P, CNSM_P_PK_NAMES)
           .put(STSM_P, STSM_P_PK_NAMES)
           .put(MIRNA_P, MIRNA_P_PSEUDO_PK_NAMES)
           .put(METH_P, METH_P_PK_NAMES)
+          .put(EXP_ARRAY_P, EXP_ARRAY_P_PK_NAMES)
+          .put(EXP_SEQ_P, EXP_SEQ_P_PK_NAMES)
 
           .put(METH_ARRAY_PROBES, METH_ARRAY_SYSTEM_PK_NAMES)
 
@@ -364,12 +367,17 @@ public final class KVDictionary {
           .put(SSM_P, SSM_P_FK_NAMES)
           .put(CNSM_P, CNSM_P_FK_NAMES)
           .put(STSM_P, STSM_P_FK_NAMES)
-          .put(MIRNA_P, MIRNA_P_FK_NAMES)
-          .put(METH_P, METH_P_FK_NAMES)
-          .put(EXP_G, EXP_G_FK_NAMES)
-          .put(PEXP_P, PEXP_P_FK_NAMES)
           .put(JCN_P, JCN_P_FK_NAMES)
           .put(SGV_P, SGV_P_FK_NAMES)
+          .put(PEXP_P, PEXP_P_FK_NAMES)
+          .put(METH_P, METH_P_FK_NAMES)
+          .put(METH_ARRAY_P, METH_ARRAY_P_FK1_NAMES)
+          .put(METH_SEQ_P, METH_SEQ_P_FK_NAMES)
+          .put(EXP_G, EXP_G_FK_NAMES)
+          .put(EXP_ARRAY_P, EXP_ARRAY_P_FK_NAMES)
+          .put(EXP_SEQ_P, EXP_SEQ_P_FK_NAMES)
+          .put(MIRNA_P, MIRNA_P_FK_NAMES)
+          .put(MIRNA_SEQ_P, MIRNA_SEQ_P_FK_NAMES)
 
           .put(CNSM_S, CNSM_S_FK_NAMES)
           .put(STSM_S, STSM_S_FK_NAMES)
@@ -388,17 +396,24 @@ public final class KVDictionary {
           || fileType == SSM_P
           || fileType == CNSM_P
           || fileType == STSM_P
+          || fileType == JCN_P
+          || fileType == PEXP_P
           || fileType == MIRNA_P
           || fileType == METH_P
           || fileType == EXP_G
-          || fileType == PEXP_P
-          || fileType == JCN_P;
+          || fileType == METH_ARRAY_P
+          || fileType == METH_SEQ_P
+          || fileType == EXP_ARRAY_P
+          || fileType == EXP_SEQ_P
+          || fileType == MIRNA_SEQ_P
+      ;
     }
   };
 
   public static boolean hasOutgoingSurjectiveRelation(KVFileType fileType) {
     val b = SURJECTION_RELATION.apply(fileType);
-    checkState(!b || getOptionalReferencedFileType1(fileType).isPresent(), "TODO");
+    checkState(!b || getOptionalReferencedFileType1(fileType).isPresent(),
+        "Expecting a referenced type at this point for '{}'", fileType);
     return b;
   }
 
@@ -772,7 +787,7 @@ public final class KVDictionary {
     }
 
     // PEXP
-    else if (fileType == SSM_M) {
+    else if (fileType == PEXP_M) {
       pk = from(row, PEXP_M_PKS);
       fk1 = from(row, PEXP_M_FKS);
     } else if (fileType == PEXP_P) {
@@ -821,14 +836,21 @@ public final class KVDictionary {
     return SURJECTION_FKS.get(fileType);
   }
 
+  /**
+   * Do *not* apply with {@link KVFileType#SAMPLE}.
+   */
   public static KVFileType getReferencingFileType(KVFileType fileType) {
+    checkState(fileType != SAMPLE, "Not applicable for sample since it has multiple referencing types");
     KVFileType referencingFileType = null;
     for (val entry : RELATIONS1.entrySet()) {
       if (entry.getValue() == fileType) {
-        checkState(referencingFileType == null, "TODO");
-        return entry.getKey();
+        checkState(referencingFileType == null,
+            "There should be only one match for '%s'", fileType);
+        referencingFileType = entry.getKey();
       }
     }
-    return checkNotNull(referencingFileType, "TODO");
+    return checkNotNull(referencingFileType,
+        "There should be at least one match for '%s'", fileType);
   }
+
 }

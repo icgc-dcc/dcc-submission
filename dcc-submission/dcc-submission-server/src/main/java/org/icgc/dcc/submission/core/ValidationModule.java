@@ -64,6 +64,17 @@ import com.typesafe.config.Config;
 public class ValidationModule extends AbstractDccModule {
 
   /**
+   * Validator specifications.
+   * <p>
+   * See {@code application.conf}.
+   */
+  private static final String FIRST_PASS_VALIDATOR_CONFIG_VALUE = "fpv";
+  private static final String PRIMARY_VALIDATOR_CONFIG_VALUE = "pv";
+  private static final String KEY_VALIDATOR_CONFIG_VALUE = "kv";
+  private static final String REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE = "rgv";
+  private static final String NORMALIZATION_VALIDATOR_CONFIG_VALUE = "nv";
+
+  /**
    * Config property names.
    */
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
@@ -121,15 +132,15 @@ public class ValidationModule extends AbstractDccModule {
 
       // Externally configured validators and validator ordering
       for (val value : values) {
-        if (value.equals("fpv")) {
+        if (value.equals(FIRST_PASS_VALIDATOR_CONFIG_VALUE)) {
           bindFirstPassValidator(validators);
-        } else if (value.equals("kv")) {
+        } else if (value.equals(PRIMARY_VALIDATOR_CONFIG_VALUE)) {
           bindKeyValidator(validators);
-        } else if (value.equals("pv")) {
+        } else if (value.equals(KEY_VALIDATOR_CONFIG_VALUE)) {
           bindKeyValidator(validators);
-        } else if (value.equals("rgv")) {
+        } else if (value.equals(REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE)) {
           bindReferenceGenomeValidator(validators);
-        } else if (value.equals("nv")) {
+        } else if (value.equals(NORMALIZATION_VALIDATOR_CONFIG_VALUE)) {
           bindNormalizationValidator(validators);
         } else {
           checkState(false, "Invalid validator specification '%s'", value);
@@ -138,8 +149,8 @@ public class ValidationModule extends AbstractDccModule {
     } else {
       // Default validators and validator ordering
       bindFirstPassValidator(validators);
-      bindKeyValidator(validators);
       bindPrimaryValidator(validators);
+      bindKeyValidator(validators);
       bindReferenceGenomeValidator(validators);
       bindNormalizationValidator(validators);
     }

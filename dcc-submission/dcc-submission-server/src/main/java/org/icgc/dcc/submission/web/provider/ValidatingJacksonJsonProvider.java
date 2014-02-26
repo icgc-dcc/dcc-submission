@@ -105,8 +105,10 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
       WebApplicationException {
     try {
       delegate.writeTo(entity, type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    } catch (IOException e) {
+      log.warn("IOException error writing entity of type {}: {}", type, e.getMessage());
     } catch (Throwable t) {
-      log.error("Unknown error writing entity:", t);
+      log.error("Unknown error writing entity of type " + type + ":", t);
       throw t;
     }
   }

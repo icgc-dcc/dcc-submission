@@ -25,56 +25,43 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.Valid;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.val;
 
-import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.release.ReleaseException;
 
-/**
- * 
- */
+@NoArgsConstructor
+@Getter
+@ToString
 public class ReleaseView {
 
-  @NotBlank
   protected String name;
-
   protected ReleaseState state;
-
-  @Valid
   protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
-
   protected List<String> queue = new ArrayList<String>();
-
   protected Date releaseDate;
-
-  @NotBlank
   protected String dictionaryVersion;
-
   protected Map<SubmissionState, Integer> summary = newHashMap();
 
-  public ReleaseView() {
-
-  }
-
-  public ReleaseView(Release release, List<LiteProject> liteProjects,
-      Map<String, List<SubmissionFile>> submissionFilesMap) {
-
+  public ReleaseView(Release release, List<Project> projects, Map<String, List<SubmissionFile>> submissionFiles) {
     this.name = release.name;
     this.state = release.state;
     this.queue = release.getQueuedProjectKeys();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
-    for (LiteProject liteProject : liteProjects) {
-      String projectKey = liteProject.getKey();
+
+    for (val project : projects) {
+      String projectKey = project.getKey();
       val optional = release.getSubmission(projectKey);
       checkState(optional.isPresent(), "Could not find project '%s' in release '%s'", projectKey, name);
 
       val submission = optional.get();
-      DetailedSubmission detailedSubmission = new DetailedSubmission(submission, liteProject);
-      detailedSubmission.setSubmissionFiles(submissionFilesMap.get(projectKey));
+      DetailedSubmission detailedSubmission = new DetailedSubmission(submission, project);
+      detailedSubmission.setSubmissionFiles(submissionFiles.get(projectKey));
       this.submissions.add(detailedSubmission);
 
       Integer stateCount = this.summary.get(detailedSubmission.getState());
@@ -97,31 +84,4 @@ public class ReleaseView {
     throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, name);
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public ReleaseState getState() {
-    return state;
-  }
-
-  public List<DetailedSubmission> getSubmissions() {
-    return submissions;
-  }
-
-  public List<String> getQueue() {
-    return queue;
-  }
-
-  public Date getReleaseDate() {
-    return releaseDate;
-  }
-
-  public String getDictionaryVersion() {
-    return dictionaryVersion;
-  }
-
-  public Map<SubmissionState, Integer> getSummary() {
-    return summary;
-  }
 }
