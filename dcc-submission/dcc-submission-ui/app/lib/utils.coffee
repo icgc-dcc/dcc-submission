@@ -186,6 +186,27 @@ found on host #{host}"
     else
       Chaplin.mediator.publish '!startupController', 'session', 'login'
 
+
+
+  getStateDisplay: (state) ->
+    state = state.replace("_", " ")
+    return switch state
+      when "INVALID"
+        "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
+      when "VALID"
+        "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
+      when "VALIDATING"
+        "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
+      when "QUEUED"
+        "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
+      when "ERROR"
+        "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
+      when "NOT VALIDATED"
+        "<span><i class='icon-question-sign'></i> " + state + "</span>"
+      else
+        state
+
+
   translateDataType: (dataType) ->
     switch dataType
       when "CLINICAL_CORE_TYPE"
