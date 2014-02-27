@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Optional.of;
-import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
 
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -36,9 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 import com.google.common.base.Optional;
 
@@ -52,7 +51,7 @@ public final class KVFileSystem {
   @NonNull
   private final Collection<DataType> dataTypes;
   @NonNull
-  private final Dictionary dictionary; // TODO: move out of this class (pass where needed instead)
+  private final Map<FileType, String> filePatterns;
   @NonNull
   private final Path submissionDirPath;
   @NonNull
@@ -63,13 +62,14 @@ public final class KVFileSystem {
   }
 
   public Optional<List<Path>> getDataFilePaths(KVFileType fileType) {
+
     // Selective validation filtering
     val requested = dataTypes.contains(fileType.getFileType().getDataType());
     if (!requested) {
       return Optional.<List<Path>> absent();
     }
 
-    val filePattern = getFileSchema(fileType).getPattern();
+    val filePattern = filePatterns.get(fileType.getFileType());
     val basePath = fileType.isSystem() ? systemDirPath : submissionDirPath;
 
     log.info("Listing '{}' with filter '{}'", basePath, filePattern);
@@ -83,18 +83,6 @@ public final class KVFileSystem {
 
   public boolean hasDataType(KVExperimentalDataType dataType) {
     return getDataFilePaths(dataType.getDataTypePresenceIndicator()).isPresent();
-  }
-
-  private FileSchema getFileSchema(KVFileType fileType) {
-    val targetName = fileType.getFileType().getTypeName();
-    for (val fileSchema : dictionary.getFiles()) {
-      if (targetName.equals(fileSchema.getName())) {
-        return fileSchema;
-      }
-    }
-
-    throw new IllegalArgumentException(
-        format("No file schema found for file type: '%s' ('%s')", fileType, targetName));
   }
 
 }

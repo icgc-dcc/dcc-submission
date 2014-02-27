@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.key.core;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.of;
-import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.CNSM;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP_ARRAY;
@@ -79,7 +78,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NoArgsConstructor;
 import lombok.val;
 
 import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
@@ -90,11 +88,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 
-/**
- * TODO: parse dictionary rather than hardcoding<br/>
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class KVHardcodedDictionary {
+public final class KVHardcodedDictionary implements KVDictionary {
 
   private static final List<Integer> DONOR_PKS = of(0);
 
@@ -678,15 +672,18 @@ public final class KVHardcodedDictionary {
           .put(SGV, of(SGV_M, SGV_P))
           .build();
 
-  public static Iterable<KVExperimentalDataType> getDataTypes() {
+  @Override
+  public Iterable<KVExperimentalDataType> getDataTypes() {
     return Arrays.asList(KVExperimentalDataType.values());
   }
 
-  public static List<KVFileType> getFileTypes(KVExperimentalDataType dataType) {
+  @Override
+  public List<KVFileType> getFileTypes(KVExperimentalDataType dataType) {
     return DATA_TYPE_FILE_TYPES.get(dataType);
   }
 
-  public static boolean hasOutgoingSurjectiveRelation(KVFileType fileType) {
+  @Override
+  public boolean hasOutgoingSurjectiveRelation(KVFileType fileType) {
     val b = SURJECTION_RELATION.apply(fileType);
     checkState(!b || getOptionalReferencedFileType1(fileType).isPresent(),
         "Expecting a referenced type at this point for '{}'", fileType);
@@ -696,7 +693,8 @@ public final class KVHardcodedDictionary {
   /**
    * TODO: encode in dictionary data structure rather
    */
-  public static KVRow getRow(KVFileType fileType, List<String> row) {
+  @Override
+  public KVRow getRow(KVFileType fileType, List<String> row) {
     KVKey pk = KEY_NOT_APPLICABLE;
     KVKey fk1 = KEY_NOT_APPLICABLE;
     KVKey fk2 = KEY_NOT_APPLICABLE;
@@ -853,32 +851,38 @@ public final class KVHardcodedDictionary {
     return new KVRow(pk, fk1, fk2, optionalFk);
   }
 
-  public static Optional<KVFileType> getOptionalReferencedFileType1(KVFileType fileType) {
+  @Override
+  public Optional<KVFileType> getOptionalReferencedFileType1(KVFileType fileType) {
     return Optional.<KVFileType> fromNullable(RELATIONS1.get(fileType));
   }
 
-  public static Optional<KVFileType> getOptionalReferencedFileType2(KVFileType fileType) {
+  @Override
+  public Optional<KVFileType> getOptionalReferencedFileType2(KVFileType fileType) {
     return Optional.<KVFileType> fromNullable(RELATIONS2.get(fileType));
   }
 
-  public static List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType) {
+  @Override
+  public List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType) {
     return ERROR_TYPE_DESCRIPTIONS
         .get(fileType)
         .getErrorFieldNames(errorType);
   }
 
-  public static List<String> getPrimaryKeyNames(KVFileType fileType) {
+  @Override
+  public List<String> getPrimaryKeyNames(KVFileType fileType) {
     return PKS.get(fileType);
   }
 
-  public static List<String> getSurjectionForeignKeyNames(KVFileType fileType) {
+  @Override
+  public List<String> getSurjectionForeignKeyNames(KVFileType fileType) {
     return SURJECTION_FKS.get(fileType);
   }
 
   /**
    * Do *not* apply with {@link KVFileType#SAMPLE}.
    */
-  public static KVFileType getReferencingFileType(KVFileType fileType) {
+  @Override
+  public KVFileType getReferencingFileType(KVFileType fileType) {
     checkState(fileType != SAMPLE, "Not applicable for sample since it has multiple referencing types");
     KVFileType referencingFileType = null;
     for (val entry : RELATIONS1.entrySet()) {

@@ -83,12 +83,14 @@ public class KVValidatorRunner implements FlowExecutorJob, Serializable {
     log.info("Starting key validation with memory: {}...", formatMemory());
 
     val fileSystem = getFileSystem(configuration);
-    val report = new KVReporter(fileSystem, new Path(reportPath));
+    val kvDictionary = new KVHardcodedDictionary(); // TODO: inject
+    val report = new KVReporter(kvDictionary, fileSystem, new Path(reportPath));
     val watch = createStopwatch();
     try {
       val validator = new KVSubmissionProcessor(
+          kvDictionary,
           new KVFileParser(fileSystem, new FileLineListParser(), false),
-          new KVFileSystem(fileSystem, dataTypes, dictionary,
+          new KVFileSystem(fileSystem, dataTypes, dictionary.getPatterns(),
               new Path(submissionPath), new Path(systemPath)), report);
 
       log.info("Processing submission...");
