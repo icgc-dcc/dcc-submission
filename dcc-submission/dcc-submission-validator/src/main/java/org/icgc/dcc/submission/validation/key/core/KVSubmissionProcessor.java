@@ -22,6 +22,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.core.util.FormatUtils.formatBytes;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getDataTypes;
+import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getFileTypes;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType1;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType2;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.hasOutgoingSurjectiveRelation;
@@ -78,10 +80,10 @@ public class KVSubmissionProcessor {
     processFileType(SAMPLE);
 
     // Process experimental data
-    for (val dataType : KVExperimentalDataType.values()) {
+    for (val dataType : getDataTypes()) {
       if (kvFileSystem.hasDataType(dataType)) {
         log.info("Processing '{}' data", dataType);
-        for (val fileType : dataType.getFileTypes()) { // Order matters!
+        for (val fileType : getFileTypes(dataType)) { // Order matters!
           processFileType(fileType);
         }
       } else {

@@ -17,10 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static java.util.Arrays.asList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 @RequiredArgsConstructor
 public enum KVFileType {
@@ -88,6 +92,17 @@ public enum KVFileType {
 
   public boolean isReplaceAll() {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;
+  }
+
+  public static KVFileType from(final FileType fileType) {
+    return Iterables.find(asList(values()), new Predicate<KVFileType>() {
+
+      @Override
+      public boolean apply(KVFileType input) {
+        return input.fileType == fileType;
+      }
+
+    });
   }
 
 }

@@ -21,6 +21,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.of;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.CNSM;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP_ARRAY;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP_SEQ;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.JCN;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.METH;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.METH_ARRAY;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.METH_SEQ;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.MIRNA;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.MIRNA_SEQ;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.PEXP;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.SGV;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.SSM;
+import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.STSM;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_S;
@@ -61,6 +75,7 @@ import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.
 import static org.icgc.dcc.submission.validation.key.data.KVKey.KEY_NOT_APPLICABLE;
 import static org.icgc.dcc.submission.validation.key.data.KVKey.from;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -408,13 +423,6 @@ public final class KVDictionary {
     }
   };
 
-  public static boolean hasOutgoingSurjectiveRelation(KVFileType fileType) {
-    val b = SURJECTION_RELATION.apply(fileType);
-    checkState(!b || getOptionalReferencedFileType1(fileType).isPresent(),
-        "Expecting a referenced type at this point for '{}'", fileType);
-    return b;
-  }
-
   private static final Map<KVFileType, KVFileTypeErrorFields> ERROR_TYPE_DESCRIPTIONS =
       new ImmutableMap.Builder<KVFileType, KVFileTypeErrorFields>()
 
@@ -651,6 +659,42 @@ public final class KVDictionary {
                   .build())
 
           .build();
+
+  /**
+   * Order matters (referenced files first). TODO: get this from relations instead.
+   */
+  private static final Map<KVExperimentalDataType, List<KVFileType>> DATA_TYPE_FILE_TYPES =
+      new ImmutableMap.Builder<KVExperimentalDataType, List<KVFileType>>()
+          .put(SSM, of(SSM_M, SSM_P))
+          .put(CNSM, of(CNSM_M, CNSM_P, CNSM_S))
+          .put(STSM, of(STSM_M, STSM_P, STSM_S))
+          .put(MIRNA, of(MIRNA_M, MIRNA_P, MIRNA_S))
+          .put(MIRNA_SEQ, of(MIRNA_SEQ_M, MIRNA_SEQ_P))
+          .put(METH, of(METH_M, METH_P, METH_S))
+          .put(METH_ARRAY, of(METH_ARRAY_M, METH_ARRAY_PROBES, METH_ARRAY_P))
+          .put(METH_SEQ, of(METH_SEQ_M, METH_SEQ_P))
+          .put(EXP, of(EXP_M, EXP_G))
+          .put(EXP_ARRAY, of(EXP_ARRAY_M, EXP_ARRAY_P))
+          .put(EXP_SEQ, of(EXP_SEQ_M, EXP_SEQ_P))
+          .put(PEXP, of(PEXP_M, PEXP_P))
+          .put(JCN, of(JCN_M, JCN_P))
+          .put(SGV, of(SGV_M, SGV_P))
+          .build();
+
+  public static Iterable<KVExperimentalDataType> getDataTypes() {
+    return Arrays.asList(KVExperimentalDataType.values());
+  }
+
+  public static List<KVFileType> getFileTypes(KVExperimentalDataType dataType) {
+    return DATA_TYPE_FILE_TYPES.get(dataType);
+  }
+
+  public static boolean hasOutgoingSurjectiveRelation(KVFileType fileType) {
+    val b = SURJECTION_RELATION.apply(fileType);
+    checkState(!b || getOptionalReferencedFileType1(fileType).isPresent(),
+        "Expecting a referenced type at this point for '{}'", fileType);
+    return b;
+  }
 
   /**
    * TODO: encode in dictionary data structure rather
