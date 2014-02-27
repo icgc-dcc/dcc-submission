@@ -91,13 +91,10 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * TODO:
- * <p>
- * - make non-static + parse dictionary rather than hardcoding<br/>
- * - MUST also incorporate {@link KVExperimentalDataType} (which should be relation-driven instead)
+ * TODO: parse dictionary rather than hardcoding<br/>
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class KVDictionary {
+public final class KVHardcodedDictionary {
 
   private static final List<Integer> DONOR_PKS = of(0);
 
