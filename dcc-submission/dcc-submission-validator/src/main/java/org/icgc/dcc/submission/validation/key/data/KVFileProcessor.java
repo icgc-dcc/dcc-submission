@@ -90,7 +90,7 @@ public final class KVFileProcessor {
       @Override
       public void process(long lineNumber, List<String> record) {
         // Update the context
-        val row = dictionary.getRow(fileType, record);
+        val row = dictionary.getKeysIndices(fileType).getRow(record);
         context.nextRow(row, lineNumber);
 
         // Process the row

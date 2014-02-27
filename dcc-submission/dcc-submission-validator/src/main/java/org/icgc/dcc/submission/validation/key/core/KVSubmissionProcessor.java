@@ -77,10 +77,10 @@ public class KVSubmissionProcessor {
     processFileType(SAMPLE);
 
     // Process experimental data
-    for (val dataType : dictionary.getDataTypes()) {
+    for (val dataType : dictionary.getExperimentalDataTypes()) {
       if (kvFileSystem.hasDataType(dataType)) {
         log.info("Processing '{}' data", dataType);
-        for (val fileType : dictionary.getFileTypes(dataType)) { // Order matters!
+        for (val fileType : dictionary.getExperimentalFileTypes(dataType)) { // Order matters!
           processFileType(fileType);
         }
       } else {

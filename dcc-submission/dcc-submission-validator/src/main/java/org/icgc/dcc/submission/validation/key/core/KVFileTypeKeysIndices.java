@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,69 +15,50 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
+
+import java.util.List;
+
 import lombok.Value;
+import lombok.val;
 import lombok.experimental.Builder;
 
-import org.icgc.dcc.submission.validation.key.core.KVKeyType;
+import org.icgc.dcc.submission.validation.key.data.KVKey;
+import org.icgc.dcc.submission.validation.key.data.KVRow;
 
 /**
- * Data relevant to the key validation for a given row.
+ * Represents the indices for the keys that are relevant to a particular {@link KVFileType}.
  */
 @Value
 @Builder
-public class KVRow {
+public class KVFileTypeKeysIndices {
 
-  /**
-   * Applicable for most file except for the leafs (see dictionary DAG).
-   */
-  private final KVKey pk;
+  private final List<Integer> pk;
+  private final List<Integer> fk1;
+  private final List<Integer> fk2;
+  private final List<Integer> optionalFk;
 
-  /**
-   * Applicable for all files but 'donor'.
-   */
-  private final KVKey fk1;
+  public KVRow getRow(List<String> row) {
+    if (ROW_CHECKS_ENABLED) checkState(
+        pk != null || fk1 != null, "Invalid row: '%s'", row);
+    val builder = KVRow.builder();
 
-  /**
-   * Only applicable for the array types.
-   */
-  private final KVKey fk2;
-
-  /**
-   * Only applicable for some meta files. See {@link KVKeyType#OPTIONAL_FK}.
-   */
-  private final KVKey optionalFk;
-
-  public boolean hasPk() {
-    return pk != null;
-  }
-
-  public boolean hasFk1() {
-    return fk1 != null;
-  }
-
-  public boolean hasFk2() {
-    return fk2 != null;
-  }
-
-  public boolean hasOptionalFk() {
-    return optionalFk != null;
-  }
-
-  /**
-   * Only applicable for existing non-composite keys.
-   */
-  public boolean hasCheckeableOptionalFk() {
-    if (ROW_CHECKS_ENABLED) {
-      checkState(!checkNotNull(optionalFk,
-          "Expecting an optional FK to exist")
-          .isSingleEmptyValue(), "Expecting optional FK to be a single value, instead: '{}'", optionalFk);
+    if (pk != null) {
+      builder.pk(KVKey.from(row, pk));
     }
-    return !optionalFk.isSingleMissingCode();
-  }
+    if (fk1 != null) {
+      builder.fk1(KVKey.from(row, fk1));
+    }
+    if (fk2 != null) {
+      builder.fk2(KVKey.from(row, fk2));
+    }
+    if (optionalFk != null) {
+      builder.optionalFk(KVKey.from(row, optionalFk));
+    }
 
+    return builder.build();
+  }
 }

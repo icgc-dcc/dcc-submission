@@ -70,9 +70,6 @@ import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_S;
-import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
-import static org.icgc.dcc.submission.validation.key.data.KVKey.KEY_NOT_APPLICABLE;
-import static org.icgc.dcc.submission.validation.key.data.KVKey.from;
 
 import java.util.Arrays;
 import java.util.List;
@@ -81,8 +78,6 @@ import java.util.Map;
 import lombok.val;
 
 import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
-import org.icgc.dcc.submission.validation.key.data.KVKey;
-import org.icgc.dcc.submission.validation.key.data.KVRow;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -136,7 +131,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
 
   // Old METH
   private static final List<Integer> METH_M_PKS = of(0, 1);
-  private static final List<Integer> METH_M_FKS1 = of(1);
+  private static final List<Integer> METH_M_FKS = of(1);
   private static final List<Integer> METH_M_OPTIONAL_FKS = of(2);
   private static final List<Integer> METH_P_FKS = of(0, 1);
   private static final List<Integer> METH_P_PKS = of(0, 1, 2);
@@ -673,12 +668,12 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .build();
 
   @Override
-  public Iterable<KVExperimentalDataType> getDataTypes() {
+  public Iterable<KVExperimentalDataType> getExperimentalDataTypes() {
     return Arrays.asList(KVExperimentalDataType.values());
   }
 
   @Override
-  public List<KVFileType> getFileTypes(KVExperimentalDataType dataType) {
+  public List<KVFileType> getExperimentalFileTypes(KVExperimentalDataType dataType) {
     return DATA_TYPE_FILE_TYPES.get(dataType);
   }
 
@@ -690,165 +685,229 @@ public final class KVHardcodedDictionary implements KVDictionary {
     return b;
   }
 
-  /**
-   * TODO: encode in dictionary data structure rather
-   */
   @Override
-  public KVRow getRow(KVFileType fileType, List<String> row) {
-    KVKey pk = KEY_NOT_APPLICABLE;
-    KVKey fk1 = KEY_NOT_APPLICABLE;
-    KVKey fk2 = KEY_NOT_APPLICABLE;
-    KVKey optionalFk = KEY_NOT_APPLICABLE;
+  public KVFileTypeKeysIndices getKeysIndices(KVFileType fileType) {
+    KVFileTypeKeysIndices keysIndices = null;
 
     // CLINICAL
     if (fileType == DONOR) {
-      pk = from(row, DONOR_PKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(DONOR_PKS)
+          .build();
     } else if (fileType == SPECIMEN) {
-      pk = from(row, SPECIMEN_PKS);
-      fk1 = from(row, SPECIMEN_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(SPECIMEN_PKS)
+          .fk1(SPECIMEN_FKS)
+          .build();
     } else if (fileType == SAMPLE) {
-      pk = from(row, SAMPLE_PKS);
-      fk1 = from(row, SAMPLE_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(SAMPLE_PKS)
+          .fk1(SAMPLE_FKS)
+          .build();
     }
 
     // SSM
     else if (fileType == SSM_M) {
-      pk = from(row, SSM_M_PKS);
-      fk1 = from(row, SSM_M_FKS1);
-      optionalFk = from(row, SSM_M_OPTIONAL_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(SSM_M_PKS)
+          .fk1(SSM_M_FKS1)
+          .optionalFk(SSM_M_OPTIONAL_FKS)
+          .build();
     } else if (fileType == SSM_P) {
-      fk1 = from(row, SSM_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(SSM_P_FKS)
+          .build();
     }
 
     // CNSM
     else if (fileType == CNSM_M) {
-      pk = from(row, CNSM_M_PKS);
-      fk1 = from(row, CNSM_M_FKS1);
-      optionalFk = from(row, CNSM_M_OPTIONAL_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(CNSM_M_PKS)
+          .fk1(CNSM_M_FKS1)
+          .optionalFk(CNSM_M_OPTIONAL_FKS)
+          .build();
     } else if (fileType == CNSM_P) {
-      pk = from(row, CNSM_P_PKS);
-      fk1 = from(row, CNSM_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(CNSM_P_PKS)
+          .fk1(CNSM_P_FKS)
+          .build();
     } else if (fileType == CNSM_S) {
-      fk1 = from(row, CNSM_S_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(CNSM_S_FKS)
+          .build();
     }
 
     // STSM
     else if (fileType == STSM_M) {
-      pk = from(row, STSM_M_PKS);
-      fk1 = from(row, STSM_M_FKS1);
-      optionalFk = from(row, STSM_M_OPTIONAL_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(STSM_M_PKS)
+          .fk1(STSM_M_FKS1)
+          .optionalFk(STSM_M_OPTIONAL_FKS)
+          .build();
     } else if (fileType == STSM_P) {
-      pk = from(row, STSM_P_PKS);
-      fk1 = from(row, STSM_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(STSM_P_PKS)
+          .fk1(STSM_P_FKS)
+          .build();
     } else if (fileType == STSM_S) {
-      fk1 = from(row, STSM_S_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(STSM_S_FKS)
+          .build();
     }
 
     // MIRNA
     else if (fileType == MIRNA_M) {
-      pk = from(row, MIRNA_M_PKS);
-      fk1 = from(row, MIRNA_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(MIRNA_M_PKS)
+          .fk1(MIRNA_M_FKS)
+          .build();
     } else if (fileType == MIRNA_P) {
-      pk = from(row, MIRNA_P_PSEUDO_PKS); // Special case: uniqueness is not actually enforced
-      fk1 = from(row, MIRNA_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(MIRNA_P_PSEUDO_PKS) // Special case: uniqueness is not actually enforced
+          .fk1(MIRNA_P_FKS)
+          .build();
     } else if (fileType == MIRNA_S) {
-      pk = from(row, MIRNA_S_PKS); // Special case: we don't usually have a PK on secondary
-      fk1 = from(row, MIRNA_S_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(MIRNA_S_PKS) // Special case: we don't usually have a PK on secondary
+          .fk1(MIRNA_S_FKS)
+          .build();
     }
 
     // MIRNA SEQ
     else if (fileType == MIRNA_SEQ_M) {
-      pk = from(row, MIRNA_SEQ_M_PKS);
-      fk1 = from(row, MIRNA_SEQ_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(MIRNA_SEQ_M_PKS)
+          .fk1(MIRNA_SEQ_M_FKS)
+          .build();
     } else if (fileType == MIRNA_SEQ_P) {
-      fk1 = from(row, MIRNA_SEQ_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(MIRNA_SEQ_P_FKS)
+          .build();
     }
 
     // METH
     else if (fileType == METH_M) {
-      pk = from(row, METH_M_PKS);
-      fk1 = from(row, METH_M_FKS1);
-      optionalFk = from(row, METH_M_OPTIONAL_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(METH_M_PKS)
+          .fk1(METH_M_FKS)
+          .optionalFk(METH_M_OPTIONAL_FKS)
+          .build();
     } else if (fileType == METH_P) {
-      pk = from(row, METH_P_PKS);
-      fk1 = from(row, METH_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(METH_P_PKS)
+          .fk1(METH_P_FKS)
+          .build();
     } else if (fileType == METH_S) {
-      fk1 = from(row, METH_S_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(METH_S_FKS)
+          .build();
     }
 
     // METH ARRAY
     else if (fileType == METH_ARRAY_M) {
-      pk = from(row, METH_ARRAY_M_PKS);
-      fk1 = from(row, METH_ARRAY_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(METH_ARRAY_M_PKS)
+          .fk1(METH_ARRAY_M_FKS)
+          .build();
     } else if (fileType == METH_ARRAY_PROBES) {
-      pk = from(row, METH_ARRAY_SYSTEM_PKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(METH_ARRAY_SYSTEM_PKS)
+          .build();
     } else if (fileType == METH_ARRAY_P) {
       // In theory there is a PK but it's not enforced
-
-      fk1 = from(row, METH_ARRAY_P_FKS1);
-      fk2 = from(row, METH_ARRAY_P_FKS2);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(METH_ARRAY_P_FKS1)
+          .fk2(METH_ARRAY_P_FKS2)
+          .build();
     }
 
     // METH SEQ
     else if (fileType == METH_SEQ_M) {
-      pk = from(row, METH_SEQ_M_PKS);
-      fk1 = from(row, METH_SEQ_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(METH_SEQ_M_PKS)
+          .fk1(METH_SEQ_M_FKS)
+          .build();
     } else if (fileType == METH_SEQ_P) {
-      fk1 = from(row, METH_SEQ_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(METH_SEQ_P_FKS)
+          .build();
     }
 
     // EXP
     else if (fileType == EXP_M) {
-      pk = from(row, EXP_M_PKS);
-      fk1 = from(row, EXP_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(EXP_M_PKS)
+          .fk1(EXP_M_FKS)
+          .build();
     } else if (fileType == EXP_G) {
-      fk1 = from(row, EXP_G_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(EXP_G_FKS)
+          .build();
     }
 
     // EXP SEQ
     else if (fileType == EXP_SEQ_M) {
-      pk = from(row, EXP_SEQ_M_PKS);
-      fk1 = from(row, EXP_SEQ_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(EXP_SEQ_M_PKS)
+          .fk1(EXP_SEQ_M_FKS)
+          .build();
     } else if (fileType == EXP_SEQ_P) {
-      pk = from(row, EXP_SEQ_P_PKS);
-      fk1 = from(row, EXP_SEQ_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(EXP_SEQ_P_PKS)
+          .fk1(EXP_SEQ_P_FKS)
+          .build();
     }
 
     // EXP ARRAY
     else if (fileType == EXP_ARRAY_M) {
-      pk = from(row, EXP_ARRAY_M_PKS);
-      fk1 = from(row, EXP_ARRAY_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(EXP_ARRAY_M_PKS)
+          .fk1(EXP_ARRAY_M_FKS)
+          .build();
     } else if (fileType == EXP_ARRAY_P) {
-      pk = from(row, EXP_ARRAY_P_PKS);
-      fk1 = from(row, EXP_ARRAY_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(EXP_ARRAY_P_PKS)
+          .fk1(EXP_ARRAY_P_FKS)
+          .build();
     }
 
     // PEXP
     else if (fileType == PEXP_M) {
-      pk = from(row, PEXP_M_PKS);
-      fk1 = from(row, PEXP_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(PEXP_M_PKS)
+          .fk1(PEXP_M_FKS)
+          .build();
     } else if (fileType == PEXP_P) {
-      fk1 = from(row, PEXP_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(PEXP_P_FKS)
+          .build();
     }
 
     // JCN
     else if (fileType == JCN_M) {
-      pk = from(row, JCN_M_PKS);
-      fk1 = from(row, JCN_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(JCN_M_PKS)
+          .fk1(JCN_M_FKS)
+          .build();
     } else if (fileType == JCN_P) {
-      fk1 = from(row, JCN_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(JCN_P_FKS)
+          .build();
     }
 
     // SGV
     else if (fileType == SGV_M) {
-      pk = from(row, SGV_M_PKS);
-      fk1 = from(row, SGV_M_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(SGV_M_PKS)
+          .fk1(SGV_M_FKS)
+          .build();
     } else if (fileType == SGV_P) {
-      fk1 = from(row, SGV_P_FKS);
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(SGV_P_FKS)
+          .build();
     }
 
-    if (ROW_CHECKS_ENABLED) checkState(pk != null || fk1 != null, "Invalid row: '%s'", row);
-    return new KVRow(pk, fk1, fk2, optionalFk);
+    return keysIndices;
   }
 
   @Override

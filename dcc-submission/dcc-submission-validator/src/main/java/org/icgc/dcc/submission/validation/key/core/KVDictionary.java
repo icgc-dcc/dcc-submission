@@ -19,8 +19,6 @@ package org.icgc.dcc.submission.validation.key.core;
 
 import java.util.List;
 
-import org.icgc.dcc.submission.validation.key.data.KVRow;
-
 import com.google.common.base.Optional;
 
 /**
@@ -28,13 +26,13 @@ import com.google.common.base.Optional;
  */
 public interface KVDictionary {
 
-  Iterable<KVExperimentalDataType> getDataTypes();
+  Iterable<KVExperimentalDataType> getExperimentalDataTypes();
 
-  List<KVFileType> getFileTypes(KVExperimentalDataType dataType);
+  List<KVFileType> getExperimentalFileTypes(KVExperimentalDataType dataType);
 
   boolean hasOutgoingSurjectiveRelation(KVFileType fileType);
 
-  KVRow getRow(KVFileType fileType, List<String> row);
+  KVFileTypeKeysIndices getKeysIndices(KVFileType fileType);
 
   Optional<KVFileType> getOptionalReferencedFileType1(KVFileType fileType);
 
