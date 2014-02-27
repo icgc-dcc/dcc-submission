@@ -23,6 +23,7 @@
 
 View = require 'views/base/view'
 template = require 'views/templates/submission/submission_header'
+utils = require 'lib/utils'
 
 module.exports = class SubmissionHeaderView extends View
   template: template
@@ -39,42 +40,33 @@ module.exports = class SubmissionHeaderView extends View
 
   render: ->
     super
-    console.log "initing dataTable"
     report = @model.get "report"
     @dataTypeReports = report.dataTypeReports
 
     if not @dataTypeReports
       @dataTypeReports = []
 
-    console.log "datatype reports", @dataTypeReports
+    @dataTypeReports = _.sortBy @dataTypeReports, (dataType)->
+      switch dataType.dataType
+        when "CLINICAL_CORE_TYPE"
+          return 0
+        when "CLINICAL_OPTIONAL_TYPE"
+          return 1
+        else
+          return 10
+
+
 
     aoColumns = [
        {
           sTitle: "Data Type"
           mData: (source)->
-            source.dataType
+            utils.translateDataType(source.dataType)
        }
        {
           sTitle: "State"
           mData: (source)->
-            #source.dataTypeState
-            state = source.dataTypeState.replace("_", " ")
-            return switch state
-              when "INVALID"
-                "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
-              when "VALID"
-                "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
-              when "VALIDATING"
-                "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
-              when "QUEUED"
-                "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
-              when "ERROR"
-                "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
-              when "NOT VALIDATED"
-                "<span><i class='icon-question-sign'></i> " + state + "</span>"
-              else
-                state
-
+            return utils.getStateDisplay source.dataTypeState
        }
     ]
 
@@ -90,12 +82,10 @@ module.exports = class SubmissionHeaderView extends View
       sAjaxDataProp: ""
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @dataTypeReports
-
-    #@dt = @$el.find("#datatype-summary").dataTable()
-
-
-
-      #for dataType in dataTypeReports
-      #  console.log "d", dataType
-      #  @dt.fnAddData( dataType )
+      #fnDrawCallback:
+      #  $(document).on "click", "#datatype-summary tbody tr", (e)->
+      #    data = $("#datatype-summary").dataTable().fnGetData @
+      #    scroll = $("##{data.dataType}_wrapper").offset().top
+      #    console.log "scroll", scroll
+      #    $("body").animate({ "scrollTop": scroll}, 1)
 

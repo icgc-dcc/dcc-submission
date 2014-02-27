@@ -66,7 +66,15 @@ Handlebars.registerHelper 'show_submission_action_button', (files, options) ->
   else
     options.inverse(this)
 
-# Return a Unreleased if no release date
+
+# Return submission state label
+Handlebars.registerHelper 'submission_label', (state) ->
+  if state
+    return new Handlebars.SafeString utils.getStateDisplay state
+  else
+    return ""
+
+# Return available action
 Handlebars.registerHelper 'submission_action', (state) ->
   switch state
     when "VALID"

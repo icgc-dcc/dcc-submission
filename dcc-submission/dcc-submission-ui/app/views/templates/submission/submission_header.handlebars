@@ -21,8 +21,8 @@
             <div class="row-fluid">
                 <!--<span class="pull-left alert"> -->
                 <span>
-                    <span class="{{lowercase state}}">Submission state is:  <strong>{{underscore2space state}}</strong></span></strong><br>
-
+                    <!--<span class="{{lowercase state}}" style="font-size:1.10em">Submission state is:  {{underscore2space state}}</span>-->
+                    <div style="font-size:2em">{{submission_label state}}</div>
                     <div>
                         {{#show_submission_action_button submissionFiles}}
                         <div style="margin-top:7px; margin-right:50px">

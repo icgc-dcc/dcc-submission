@@ -234,23 +234,7 @@ module.exports = class ReportDatatypeView extends View
           bVisible: true
           mData: (source, type) =>
             #state = @dataStateMap[source.dataType]
-            state = source.fileState.replace("_", " ")
-
-            if type == "display"
-              return switch state
-                when "INVALID"
-                  "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
-                when "VALID"
-                  "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
-                when "VALIDATING"
-                  "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
-                when "QUEUED"
-                  "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
-                when "ERROR"
-                  "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
-                when "NOT VALIDATED"
-                  "<span><i class='icon-question-sign'></i> " + state + "</span>"
-            state
+            return utils.getStateDisplay source.fileState
         }
         {
           sTitle: "Report"
