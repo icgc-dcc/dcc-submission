@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static com.google.common.collect.Iterables.find;
+import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_ARRAY_TYPE;
@@ -32,9 +34,12 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+
+import com.google.common.base.Predicate;
 
 @RequiredArgsConstructor(access = PRIVATE)
 public enum KVExperimentalDataType {
@@ -54,10 +59,22 @@ public enum KVExperimentalDataType {
   JCN(JCN_TYPE),
   SGV(SGV_TYPE);
 
-  private final DataType dataType;
+  @Getter
+  private final FeatureType featureType;
 
   public KVFileType getDataTypePresenceIndicator() {
-    return KVFileType.from(dataType.asFeatureType().getDataTypePresenceIndicator());
+    return KVFileType.from(featureType.getDataTypePresenceIndicator());
+  }
+
+  public static KVExperimentalDataType from(final FeatureType featureType) {
+    return find(asList(values()), new Predicate<KVExperimentalDataType>() {
+
+      @Override
+      public boolean apply(KVExperimentalDataType dataType) {
+        return dataType.featureType == featureType;
+      }
+
+    });
   }
 
 }

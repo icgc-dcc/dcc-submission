@@ -22,6 +22,7 @@ import static com.google.common.collect.Iterables.contains;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
 
 import java.util.ArrayList;
@@ -310,6 +311,70 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     }
 
     return map.build();
+  }
+
+  @JsonIgnore
+  public List<FileType> getFileTypes() {
+    return newArrayList(transform(files, new Function<FileSchema, FileType>() {
+
+      @Override
+      public FileType apply(FileSchema input) {
+        return input.getFileType();
+      }
+
+    }));
+  }
+
+  /**
+   * Returns the list of feature types defined in the dictionary.
+   */
+  @JsonIgnore
+  public List<FeatureType> getFeatureTypes() {
+    return newArrayList(transform(
+
+        // Only get file types indicators of a feature type
+        filter(
+            getFileTypes(),
+            new Predicate<FileType>() {
+
+              @Override
+              public boolean apply(FileType fileType) {
+                val dataType = fileType.getDataType();
+                return !dataType.isFeatureType()
+                    || isPresenceIndicatorOf(fileType, dataType.asFeatureType());
+              }
+
+              private boolean isPresenceIndicatorOf(FileType fileType, FeatureType featureType) {
+                return featureType.getDataTypePresenceIndicator() == fileType;
+              }
+
+            }),
+
+        // Transform them into their corresponding feature type
+        new Function<FileType, FeatureType>() {
+
+          @Override
+          public FeatureType apply(FileType fileType) {
+            val dataType = fileType.getDataType();
+            checkState(dataType.isFeatureType(),
+                "Expecting a '%s' at this point, instead got: '%s'",
+                FeatureType.class.getSimpleName(), dataType);
+            return dataType.asFeatureType();
+          }
+
+        }));
+  }
+
+  /**
+   * Returns the list of {@link FileType} that constitutes a branch for the given {@link FeatureType} in the relation
+   * tree (ordered by referenced types).
+   * <p>
+   * For instance for {@link FeatureType#SSM_TYPE}, one would obtain: [{@link FileType#SSM_M_TYPE},
+   * {@link FileType#SSM_P_TYPE}], because {@link FileType#SSM_P_TYPE} references {@link FileType#SSM_M_TYPE}.
+   */
+  @JsonIgnore
+  public List<FileType> getFileTypesReferencedBranch(FeatureType featureType) {
+    return null;
   }
 
 }

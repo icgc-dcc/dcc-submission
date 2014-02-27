@@ -46,6 +46,8 @@ public interface KVDictionary {
 
   /**
    * Do *not* apply with {@link KVFileType#SAMPLE}.
+   * <p>
+   * TODO: optional
    */
   KVFileType getReferencingFileType(KVFileType fileType);
 
