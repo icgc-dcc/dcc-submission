@@ -81,9 +81,13 @@ module.exports = class ValidateSubmissionView extends View
     # Only need shallow copy
     @dataTypes = _.clone( @report.dataTypeReports )
 
-    # Default to all selected
+
+    # Default, preselect NOT_VALIDATED and CLINICAL
     @dataTypes.forEach (d)->
-      d.selected = true
+      if d.dataType == "CLINICAL_CORE_TYPE" or d.dataTypeState in ["INVALID", "NOT_VALIDATED"]
+        d.selected = true
+      else
+        d.selected = false
 
 
     # Make clinical related files go first
@@ -99,7 +103,10 @@ module.exports = class ValidateSubmissionView extends View
     # Pre-filter if datatype is provided
     if datatype
       @dataTypes.forEach (f)->
-        f.selected = false unless (f.dataType == "CLINICAL_CORE_TYPE" or f.dataType == datatype)
+        if f.dataType == "CLINICAL_CORE_TYPE" or f.dataType == datatype
+          f.selected = true
+        else
+          f.selected = false
 
     # Grab queue length
     queue = new Queue()
