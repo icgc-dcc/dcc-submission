@@ -374,7 +374,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<FileType> getFileTypesReferencedBranch(FeatureType featureType) {
-    return null;
+    checkState(false, "WIP");
+    return null; // FIXME: not ready for prime time
   }
 
 }
