@@ -23,9 +23,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
+import static org.icgc.dcc.submission.core.report.ErrorParameterKey.EXPECTED;
+import static org.icgc.dcc.submission.core.report.ErrorType.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
+import static org.icgc.dcc.submission.dictionary.model.RestrictionType.SCRIPT;
 import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.Submission.getProjectKeys;
@@ -59,9 +63,11 @@ import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
@@ -74,9 +80,11 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.web.InvalidNameException;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -469,6 +477,60 @@ public class ReleaseService extends AbstractService {
     }
 
     return submissionFiles;
+  }
+
+  public Optional<FileReport> getFileReport(String releaseName, String projectKey, String fileName) {
+    Optional<FileReport> optional = Optional.absent();
+    val submission = getSubmission(releaseName, projectKey);
+    if (submission != null) {
+      val report = submission.getReport();
+      if (report != null) {
+        optional = hack(report.getFileReport(fileName));
+      }
+    }
+
+    return optional;
+  }
+
+  private Optional<FileReport> hack(Optional<FileReport> optional) {
+    if (optional.isPresent()) {
+      val fileReport = optional.get();
+      val errorReports = fileReport.getErrorReports();
+
+      val dictionary = dictionaryRepository.findDictionaryByVersion(
+          releaseRepository.findNextReleaseDictionaryVersion());
+
+      val fileType = fileReport.getFileType();
+      val fileSchema = dictionary.getFileSchema(fileType);
+
+      for (val errorReport : errorReports) {
+        if (errorReport.getErrorType() == SCRIPT_ERROR) {
+          for (val fieldReport : errorReport.getFieldErrorReports()) {
+            val fieldNames = fieldReport.getFieldNames();
+            checkState(fieldNames.size() == 1, "Expecting only one field name for script restriction (by design)");
+            val fieldName = fieldNames.get(0);
+            val scriptRestrictionOrdinal = 0; // FIXME: https://jira.oicr.on.ca/browse/DCC-2087
+            val field = fileSchema.getField(fieldName);
+            val scriptRestrictions = newArrayList(filter(
+                field.getRestrictions(),
+                new Predicate<Restriction>() {
+
+                  @Override
+                  public boolean apply(Restriction restriction) {
+                    return restriction.getType() == SCRIPT;
+                  }
+
+                }));
+            checkState(scriptRestrictions.size() > scriptRestrictionOrdinal);
+            val scriptRestriction = scriptRestrictions.get(scriptRestrictionOrdinal);
+            val restrictionConfig = scriptRestriction.getConfig();
+            val script = restrictionConfig.get(ScriptRestriction.PARAM);
+            fieldReport.addParameter(EXPECTED, script);
+          }
+        }
+      }
+    }
+    return optional;
   }
 
   @Synchronized

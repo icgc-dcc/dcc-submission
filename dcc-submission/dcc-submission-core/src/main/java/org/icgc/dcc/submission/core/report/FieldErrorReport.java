@@ -94,6 +94,13 @@ public class FieldErrorReport implements Serializable {
     lineNumbers.add(lineNumber);
   }
 
+  /**
+   * Temporary: see DCC-2085, remove if/when unused.
+   */
+  public void addParameter(ErrorParameterKey key, Object value) {
+    parameters.put(key, value);
+  }
+
   public void addValue(Object value) {
     values.add(value);
   }
