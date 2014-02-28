@@ -15,25 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.report;
+package org.icgc.dcc.submission.validation.cascading;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import java.util.Map;
 
-import org.icgc.dcc.submission.dictionary.model.Field;
-import org.icgc.dcc.submission.dictionary.model.SummaryType;
+import org.icgc.dcc.submission.core.report.ErrorParameterKey;
 
-@Value
-@RequiredArgsConstructor(access = PRIVATE)
-public class FieldStatDigest {
+/**
+ * 
+ */
+public class MongoMaxSizeHack {
 
-  private final String name;
-  private final SummaryType summaryType;
+  public static Map<ErrorParameterKey, Object> dodo(Map<ErrorParameterKey, Object> parameters) {
+    if (parameters != null) {
 
-  public static FieldStatDigest from(Field field) {
-    return new FieldStatDigest(
-        field.getName(),
-        field.getSummaryType());
+    }
+    return parameters;
   }
 }
