@@ -134,7 +134,7 @@ module.exports = class ValidateSubmissionView extends View
     # Create a feature type selection table
     aoColumns = [
       {
-         sTitle: "Data Types To Valdiate"
+         sTitle: "Data Type"
          mData: (source) ->
            displayName = utils.translateDataType(source.dataType)
            if source.dataType != "CLINICAL_CORE_TYPE"
@@ -164,18 +164,7 @@ module.exports = class ValidateSubmissionView extends View
       {
         sTitle: "State"
         mData: (source) =>
-          state = source.dataTypeState
-          if state
-            ui_state = state.replace("_", " ")
-            switch state
-              when "INVALID"
-                return "<span class='invalid'><i class='icon-remove-sign'>"+ui_state+"</span>"
-              when "VALID"
-                return "<span class='valid'><i class='icon-ok-sign'>"+ui_state+"</span>"
-              else
-                return "<span>#{state}</span>"
-          else
-            return "<span>Not Validated</span>"
+          return utils.getStateDisplay source.dataTypeState
       }
     ]
 

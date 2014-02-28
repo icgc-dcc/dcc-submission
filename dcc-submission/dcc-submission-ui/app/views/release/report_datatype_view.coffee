@@ -167,8 +167,7 @@ module.exports = class ReportDatatypeView extends View
     ui_state = dataType.dataTypeState.replace("_", " ")
 
     """
-    <span>#{title} - </span>
-    <span class="#{lc_state}">#{ui_state}</span>
+    <span>#{title}&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;</span> #{utils.getStateDisplay dataType.dataTypeState}
     """
 
   # Since we chop and dice the collection, we need to use a different update
@@ -280,7 +279,7 @@ module.exports = class ReportDatatypeView extends View
       iDisplayLength: 10
       sPaginationType: "full_numbers"
       bPaginate: true
-      aaSorting: [[ 1, "asc" ]]
+      aaSorting: [[ 0, "asc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""
