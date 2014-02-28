@@ -59,6 +59,10 @@ import org.mongodb.morphia.annotations.Embedded;
 public class ErrorReport implements ReportElement, Comparable<ErrorReport> {
 
   private ErrorType errorType;
+
+  /**
+   * FIXME: https://jira.oicr.on.ca/browse/DCC-2087.
+   */
   private int number;
 
   private String description;

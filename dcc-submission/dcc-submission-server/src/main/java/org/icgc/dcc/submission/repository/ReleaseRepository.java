@@ -73,6 +73,10 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
     return singleResult(_.state.eq(OPENED), _.queue);
   }
 
+  public String findNextReleaseDictionaryVersion() {
+    return singleResult(_.state.eq(OPENED), _.dictionaryVersion).getDictionaryVersion();
+  }
+
   public Release findReleaseByName(@NonNull String releaseName) {
     return uniqueResult(_.name.eq(releaseName));
   }

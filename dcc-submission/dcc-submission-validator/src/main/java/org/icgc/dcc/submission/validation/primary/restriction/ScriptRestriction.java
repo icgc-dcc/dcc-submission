@@ -23,10 +23,10 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static java.lang.reflect.Modifier.STATIC;
 import static lombok.AccessLevel.PROTECTED;
+import static org.icgc.dcc.submission.core.report.ErrorType.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.state;
-import static org.icgc.dcc.submission.core.report.ErrorType.SCRIPT_ERROR;
 
 import java.util.Map;
 
@@ -90,7 +90,6 @@ public class ScriptRestriction implements InternalPlanElement {
   private final String reportedField;
   private final int number;
   private final String script;
-  private final String description;
 
   @Override
   public String describe() {
@@ -100,7 +99,7 @@ public class ScriptRestriction implements InternalPlanElement {
   @Override
   public Pipe extend(Pipe pipe) {
     val fields = ALL;
-    val function = new ScriptFunction(reportedField, number, script, description);
+    val function = new ScriptFunction(reportedField, number, script);
 
     return new Each(pipe, fields, function, REPLACE);
   }
@@ -134,9 +133,8 @@ public class ScriptRestriction implements InternalPlanElement {
     public PlanElement build(Field field, Restriction restriction) {
       val number = getNumber(field, restriction);
       val script = restriction.getConfig().getString(PARAM);
-      val description = restriction.getConfig().getString(PARAM_DESCRIPTION);
 
-      return new ScriptRestriction(field.getName(), number, script, description);
+      return new ScriptRestriction(field.getName(), number, script);
     }
 
     private static int getNumber(Field field, Restriction restriction) {
@@ -177,19 +175,18 @@ public class ScriptRestriction implements InternalPlanElement {
   @Slf4j
   public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
 
-    private static final Joiner.MapJoiner VARIABLE_JOINER = Joiner.on(", ").withKeyValueSeparator(" = ").useForNull("null");
+    private static final Joiner.MapJoiner VARIABLE_JOINER = Joiner.on(", ").withKeyValueSeparator(" = ")
+        .useForNull("null");
 
     private final String reportedField;
     private final int number;
     private final String script;
-    private final String description;
 
-    protected ScriptFunction(String reportedField, int number, String script, String description) {
+    protected ScriptFunction(String reportedField, int number, String script) {
       super(2, Fields.ARGS);
       this.reportedField = reportedField;
       this.number = number;
       this.script = script;
-      this.description = description;
     }
 
     @Override
@@ -230,7 +227,7 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     private void reportError(TupleState state, String reportedValue) {
-      state.reportError(number, SCRIPT_ERROR, reportedField, reportedValue, script, description);
+      state.reportError(number, SCRIPT_ERROR, reportedField, reportedValue);
     }
 
   }

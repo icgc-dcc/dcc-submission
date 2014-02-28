@@ -58,6 +58,7 @@ import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -470,6 +471,21 @@ public class ReleaseService extends AbstractService {
     }
 
     return submissionFiles;
+  }
+
+  public Optional<FileReport> getFileReport(String releaseName, String projectKey, String fileName) {
+    Optional<FileReport> optional = Optional.absent();
+    val submission = getSubmission(releaseName, projectKey);
+    if (submission != null) {
+      val report = submission.getReport();
+      if (report != null) {
+        optional = MongoMaxSizeHack.augmentScriptErrors(
+            report.getFileReport(fileName),
+            releaseRepository, dictionaryRepository);
+      }
+    }
+
+    return optional;
   }
 
   @Synchronized
