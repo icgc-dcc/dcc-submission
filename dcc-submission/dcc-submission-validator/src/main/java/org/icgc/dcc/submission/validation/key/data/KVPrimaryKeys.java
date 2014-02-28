@@ -39,6 +39,9 @@ import com.google.common.collect.Sets;
 
 /**
  * Keeps track of primary keys for each file.
+ * <p>
+ * There's trade off here, we accept to potentially store the same PK under different files (if there's a uniqueness
+ * violation). It's a bit wasteful but keeps the code complexity lower in {@link KVFileProcessor}.
  */
 @RequiredArgsConstructor
 public final class KVPrimaryKeys {

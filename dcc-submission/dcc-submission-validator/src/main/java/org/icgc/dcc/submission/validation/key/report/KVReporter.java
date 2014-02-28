@@ -20,12 +20,6 @@ package org.icgc.dcc.submission.validation.key.report;
 import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.codehaus.jackson.map.SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS;
 import static org.icgc.dcc.submission.core.report.Error.error;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getErrorFieldNames;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType1;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType2;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getPrimaryKeyNames;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getReferencingFileType;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getSurjectionForeignKeyNames;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION2;
@@ -48,6 +42,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectWriter;
 import org.icgc.dcc.submission.core.report.Error;
+import org.icgc.dcc.submission.validation.key.core.KVDictionary;
 import org.icgc.dcc.submission.validation.key.core.KVErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
@@ -68,6 +63,8 @@ public class KVReporter implements Closeable {
       .writer();
 
   @NonNull
+  private final KVDictionary dictionary;
+  @NonNull
   private final FileSystem fileSystem;
   @NonNull
   private final Path path;
@@ -75,7 +72,8 @@ public class KVReporter implements Closeable {
   private final OutputStream outputStream;
 
   @SneakyThrows
-  public KVReporter(FileSystem fileSystem, Path path) {
+  public KVReporter(KVDictionary dictionary, FileSystem fileSystem, Path path) {
+    this.dictionary = dictionary;
     this.fileSystem = fileSystem;
     this.path = path;
     this.outputStream = fileSystem.create(path);
@@ -112,7 +110,7 @@ public class KVReporter implements Closeable {
 
     persistError(error()
         .fileName(fileName)
-        .fieldNames(getErrorFieldNames(fileType, errorType))
+        .fieldNames(dictionary.getErrorFieldNames(fileType, errorType))
         .params(getErrorParams(fileType, errorType))
         .type(errorType.getErrorType())
         .lineNumber(lineNumber)
@@ -131,16 +129,16 @@ public class KVReporter implements Closeable {
     // RELATIONS:
     if (errorType == RELATION1 || errorType == RELATION2 || errorType == OPTIONAL_RELATION) {
       val referencedFileType = errorType != RELATION2 ?
-          getOptionalReferencedFileType1(fileType).get() : // Optional relation also uses it
-          getOptionalReferencedFileType2(fileType).get();
-      val referencedFields = getPrimaryKeyNames(referencedFileType);
+          dictionary.getOptionalReferencedFileType1(fileType).get() : // Optional relation also uses it
+          dictionary.getOptionalReferencedFileType2(fileType).get();
+      val referencedFields = dictionary.getPrimaryKeyNames(referencedFileType);
       errorParams = new Object[] { referencedFileType, referencedFields };
     }
 
     // SURJECTION
     else if (errorType == SURJECTION) {
-      val referencingFileType = getReferencingFileType(fileType);
-      val referencingFields = getSurjectionForeignKeyNames(referencingFileType);
+      val referencingFileType = dictionary.getReferencingFileType(fileType);
+      val referencingFields = dictionary.getSurjectionForeignKeyNames(referencingFileType);
       errorParams = new Object[] { referencingFileType, referencingFields };
     }
 

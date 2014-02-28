@@ -17,75 +17,64 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.Iterables.find;
+import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_S;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_G;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_PROBES;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_S;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_SEQ_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_S;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_SEQ_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.PEXP_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.PEXP_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SGV_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SGV_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_S;
-
-import java.util.List;
-
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_ARRAY_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_SEQ_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.JCN_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_ARRAY_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_SEQ_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_SEQ_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SGV_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * TODO: Should be relation driven instead.
- */
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+
+import com.google.common.base.Predicate;
+
 @RequiredArgsConstructor(access = PRIVATE)
 public enum KVExperimentalDataType {
 
-  SSM(SSM_M, of(SSM_M, SSM_P)),
-  CNSM(CNSM_M, of(CNSM_M, CNSM_P, CNSM_S)),
-  STSM(STSM_M, of(STSM_M, STSM_P, STSM_S)),
-  MIRNA(MIRNA_M, of(MIRNA_M, MIRNA_P, MIRNA_S)),
-  MIRNA_SEQ(MIRNA_SEQ_M, of(MIRNA_SEQ_M, MIRNA_SEQ_P)),
-  METH(METH_M, of(METH_M, METH_P, METH_S)),
-  METH_ARRAY(METH_ARRAY_M, of(METH_ARRAY_M, METH_ARRAY_PROBES, METH_ARRAY_P)),
-  METH_SEQ(METH_SEQ_M, of(METH_SEQ_M, METH_SEQ_P)),
-  EXP(EXP_M, of(EXP_M, EXP_G)),
-  EXP_ARRAY(EXP_ARRAY_M, of(EXP_ARRAY_M, EXP_ARRAY_P)),
-  EXP_SEQ(EXP_SEQ_M, of(EXP_SEQ_M, EXP_SEQ_P)),
-  PEXP(PEXP_M, of(PEXP_M, PEXP_P)),
-  JCN(JCN_M, of(JCN_M, JCN_P)),
-  SGV(SGV_M, of(SGV_M, SGV_P));
+  SSM(SSM_TYPE),
+  CNSM(CNSM_TYPE),
+  STSM(STSM_TYPE),
+  MIRNA(MIRNA_TYPE),
+  MIRNA_SEQ(MIRNA_SEQ_TYPE),
+  METH(METH_TYPE),
+  METH_ARRAY(METH_ARRAY_TYPE),
+  METH_SEQ(METH_SEQ_TYPE),
+  EXP(EXP_TYPE),
+  EXP_ARRAY(EXP_ARRAY_TYPE),
+  EXP_SEQ(EXP_SEQ_TYPE),
+  PEXP(PEXP_TYPE),
+  JCN(JCN_TYPE),
+  SGV(SGV_TYPE);
 
   @Getter
-  private final KVFileType dataTypePresenceIndicator;
+  private final FeatureType featureType;
 
-  /**
-   * Order matters (referenced files first).
-   */
-  @Getter
-  private final List<KVFileType> fileTypes;
+  public KVFileType getDataTypePresenceIndicator() {
+    return KVFileType.from(featureType.getDataTypePresenceIndicator());
+  }
+
+  public static KVExperimentalDataType from(final FeatureType featureType) {
+    return find(asList(values()), new Predicate<KVExperimentalDataType>() {
+
+      @Override
+      public boolean apply(KVExperimentalDataType dataType) {
+        return dataType.featureType == featureType;
+      }
+
+    });
+  }
 
 }

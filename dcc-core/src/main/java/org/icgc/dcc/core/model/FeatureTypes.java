@@ -137,7 +137,7 @@ public final class FeatureTypes {
      * <p>
      * TODO: move to {@link FileTypes} rather
      */
-    public FileType getFileTypeFlagship() {
+    public FileType getDataTypePresenceIndicator() {
       FileType fileTypeFlagship = null;
       for (val fileType : getCorrespondingFileTypes()) {
         checkState(fileType.getDataType() == this, "'%s' != '%s'", fileType, this); // By design
