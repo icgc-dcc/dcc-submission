@@ -27,9 +27,9 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
-import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
+import org.icgc.dcc.submission.validation.key.core.KVErrorType;
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
+import org.icgc.dcc.submission.validation.key.core.KVKeyType;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -125,7 +125,7 @@ public class KVFileTypeErrorFields {
   }
 
   private final Optional<List<String>> getOptionalNames(
-      KeysType keysType,
+      KVKeyType keysType,
       List<String> pkFieldNames,
       List<String> fk1FieldNames,
       List<String> fk2FieldNames,

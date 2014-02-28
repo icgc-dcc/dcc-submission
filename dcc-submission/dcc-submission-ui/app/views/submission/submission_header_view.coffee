@@ -23,6 +23,7 @@
 
 View = require 'views/base/view'
 template = require 'views/templates/submission/submission_header'
+utils = require 'lib/utils'
 
 module.exports = class SubmissionHeaderView extends View
   template: template
@@ -31,6 +32,60 @@ module.exports = class SubmissionHeaderView extends View
   autoRender: true
 
   initialize: ->
+    @dataTypeReports = []
+    @dt = null
     super
 
     @modelBind 'change', @render
+
+  render: ->
+    super
+    report = @model.get "report"
+    @dataTypeReports = report.dataTypeReports
+
+    if not @dataTypeReports
+      @dataTypeReports = []
+
+    @dataTypeReports = _.sortBy @dataTypeReports, (dataType)->
+      switch dataType.dataType
+        when "CLINICAL_CORE_TYPE"
+          return 0
+        when "CLINICAL_OPTIONAL_TYPE"
+          return 1
+        else
+          return 10
+
+
+
+    aoColumns = [
+       {
+          sTitle: "Data Type"
+          mData: (source)->
+            utils.translateDataType(source.dataType)
+       }
+       {
+          sTitle: "State"
+          mData: (source)->
+            return utils.getStateDisplay source.dataTypeState
+       }
+    ]
+
+    @$el.find("#datatype-summary").dataTable
+      sDom:
+        "t"
+        #"<'row-fluid'<'span6'><'span6'>r>t<'row-fluid'<'span6'><'span6'>>"
+      bPaginate: false
+      bSort: false
+      #aaSorting: [[ 1, "asc" ]]
+      aoColumns: aoColumns
+      sAjaxSource: ""
+      sAjaxDataProp: ""
+      fnServerData: (sSource, aoData, fnCallback) =>
+        fnCallback @dataTypeReports
+      #fnDrawCallback:
+      #  $(document).on "click", "#datatype-summary tbody tr", (e)->
+      #    data = $("#datatype-summary").dataTable().fnGetData @
+      #    scroll = $("##{data.dataType}_wrapper").offset().top
+      #    console.log "scroll", scroll
+      #    $("body").animate({ "scrollTop": scroll}, 1)
+

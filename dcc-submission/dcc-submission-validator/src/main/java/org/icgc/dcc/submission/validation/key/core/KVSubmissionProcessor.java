@@ -25,9 +25,9 @@ import static org.icgc.dcc.core.util.FormatUtils.formatBytes;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType1;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOptionalReferencedFileType2;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.hasOutgoingSurjectiveRelation;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
 
 import java.util.Map;
 
@@ -40,8 +40,6 @@ import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.data.KVReferencedPrimaryKeys;
-import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
@@ -114,7 +112,7 @@ public class KVSubmissionProcessor {
         Optional.<KVEncounteredForeignKeys> absent();
 
     log.info(
-        "Processing file type: '{}'; Referencing '{} and {}' (will be collecting FKs: '{}')",
+        "Processing file type: '{}'; has referencing is '{} and {}' (FK1 and FK2); will be collecting FKs: '{}'",
         new Object[] { fileType,
             optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2.isPresent(),
             optionalEncounteredForeignKeys.isPresent() });
@@ -126,7 +124,7 @@ public class KVSubmissionProcessor {
         val watch = createStopwatch();
         log.info("{}", banner("-"));
         log.info(
-            "Processing '{}' file: '{}'; Referencing '{}' and '{}'",
+            "Processing '{}' file: '{}'; has referencing is '{}' and '{}' (FK1 and FK2)",
             new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
                 .isPresent(), dataFilePath });
 

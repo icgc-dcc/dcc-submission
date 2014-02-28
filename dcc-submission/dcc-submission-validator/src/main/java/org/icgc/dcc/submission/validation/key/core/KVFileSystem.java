@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.key.core;
 import static com.google.common.base.Optional.of;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +39,6 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.key.enumeration.KVExperimentalDataType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 import com.google.common.base.Optional;
 

@@ -66,7 +66,15 @@ Handlebars.registerHelper 'show_submission_action_button', (files, options) ->
   else
     options.inverse(this)
 
-# Return a Unreleased if no release date
+
+# Return submission state label
+Handlebars.registerHelper 'submission_label', (state) ->
+  if state
+    return new Handlebars.SafeString utils.getStateDisplay state
+  else
+    return ""
+
+# Return available action
 Handlebars.registerHelper 'submission_action', (state) ->
   switch state
     when "VALID"
@@ -80,7 +88,7 @@ Handlebars.registerHelper 'submission_action', (state) ->
         Sign Off
       </button>
       <button
-        class="m-btn green"
+        class="m-btn blue"
         id="validate-submission-popup-button"
         data-toggle="modal"
         href="#validate-submission-popup">
@@ -90,7 +98,7 @@ Handlebars.registerHelper 'submission_action', (state) ->
     when "NOT_VALIDATED", "INVALID"
       new Handlebars.SafeString """
       <button
-        class="m-btn green"
+        class="m-btn blue"
         id="validate-submission-popup-button"
         data-toggle="modal"
         href="#validate-submission-popup">

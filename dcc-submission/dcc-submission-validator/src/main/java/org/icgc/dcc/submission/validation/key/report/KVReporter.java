@@ -26,11 +26,11 @@ import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getOption
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getPrimaryKeyNames;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getReferencingFileType;
 import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getSurjectionForeignKeyNames;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.OPTIONAL_RELATION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION1;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION2;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.SURJECTION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.UNIQUENESS;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION2;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.SURJECTION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.UNIQUENESS;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
 
 import java.io.Closeable;
@@ -48,9 +48,9 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectWriter;
 import org.icgc.dcc.submission.core.report.Error;
+import org.icgc.dcc.submission.validation.key.core.KVErrorType;
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
-import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
 
 /**
  * Reports key validation errors in the context of the submission system.
