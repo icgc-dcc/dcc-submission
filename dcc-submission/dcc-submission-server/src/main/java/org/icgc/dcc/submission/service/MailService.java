@@ -143,6 +143,11 @@ public class MailService {
         user, path));
   }
 
+  public void sendFileRenamed(@NonNull String user, @NonNull String path, @NonNull String newPath) {
+    sendNotification(format("User '%s' renamed file '%s' to '%s'",
+        user, path, newPath));
+  }
+
   public void sendSignoff(@NonNull String user, @NonNull Iterable<String> projectKeys, @NonNull String nextReleaseName) {
     sendNotification(
         format("Signed off Projects: %s", projectKeys),

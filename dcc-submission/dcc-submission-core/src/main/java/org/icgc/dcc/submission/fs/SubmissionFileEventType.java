@@ -15,35 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.state;
+package org.icgc.dcc.submission.fs;
 
-import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.fs.SubmissionFile;
-import org.icgc.dcc.submission.release.model.SubmissionState;
+public enum SubmissionFileEventType {
 
-/**
- * The "context" in the State Pattern.
- */
-public interface StateContext {
-
-  /**
-   * Read
-   */
-
-  String getProjectName();
-
-  String getProjectKey();
-
-  Iterable<SubmissionFile> getSubmissionFiles();
-
-  Report getReport();
-
-  /**
-   * Write
-   */
-
-  void setState(SubmissionState state);
-
-  void setReport(Report newReport);
+  FILE_RENAMED,
+  FILE_REMOVED,
+  FILE_CREATED,
+  FILE_COMPETED;
 
 }

@@ -19,7 +19,9 @@ package org.icgc.dcc.submission.sftp.fs;
 
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
-import org.apache.hadoop.fs.Path;
+import java.io.IOException;
+
+import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
@@ -29,9 +31,26 @@ public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
   }
 
   @Override
-  protected void notifyModified(Path path) {
+  public boolean create() throws IOException {
+    registerChange();
+    return super.create();
+  }
+
+  @Override
+  public boolean move(SshFile destination) {
+    registerChange();
+    return super.move(destination);
+  }
+
+  @Override
+  public boolean delete() {
+    registerChange();
+    return super.delete();
+  }
+
+  private void registerChange() {
     try {
-      context.notifyReferenceChange();
+      context.registerReferenceChange();
     } catch (Exception e) {
       handleException(e);
     }

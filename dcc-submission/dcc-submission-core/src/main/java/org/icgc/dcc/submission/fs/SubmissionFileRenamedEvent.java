@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,57 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.fs;
 
-import java.util.Date;
-
+import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_RENAMED;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
-import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
-import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
-import org.mongodb.morphia.annotations.Converters;
-
-/**
- * For serializing file data through the REST interface
- */
 @Value
-@Converters(FileTypeConverter.class)
-public class SubmissionFile {
+@EqualsAndHashCode(callSuper = false)
+public class SubmissionFileRenamedEvent extends SubmissionFileEvent {
 
-  private final String name;
-  private final Date lastUpdate;
-  private final long size;
-  private final FileType fileType;
+  @NonNull
+  private final SubmissionFile newFile;
 
-  @JsonCreator
-  public SubmissionFile(
-      @NonNull//
-      @JsonProperty("name")//
-      String name,
-
-      @NonNull//
-      @JsonProperty("lastUpdate")//
-      Date lastUpdate,
-
-      @JsonProperty("size")//
-      long size,
-
-      @JsonProperty("fileType")//
-      @JsonSerialize(using = FileTypeSerializer.class)//
-      @JsonDeserialize(using = FileTypeDeserializer.class)//
-      FileType fileType)
-  {
-    this.name = name;
-    this.lastUpdate = lastUpdate;
-    this.size = size;
-    this.fileType = fileType;
+  public SubmissionFileRenamedEvent(SubmissionFile file, SubmissionFile newFile) {
+    super(FILE_RENAMED, file);
+    this.newFile = newFile;
   }
 
 }

@@ -15,35 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.state;
+package org.icgc.dcc.submission.fs;
 
-import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.fs.SubmissionFile;
-import org.icgc.dcc.submission.release.model.SubmissionState;
+import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_CREATED;
 
-/**
- * The "context" in the State Pattern.
- */
-public interface StateContext {
+public class SubmissionFileCreatedEvent extends SubmissionFileEvent {
 
-  /**
-   * Read
-   */
-
-  String getProjectName();
-
-  String getProjectKey();
-
-  Iterable<SubmissionFile> getSubmissionFiles();
-
-  Report getReport();
-
-  /**
-   * Write
-   */
-
-  void setState(SubmissionState state);
-
-  void setReport(Report newReport);
+  public SubmissionFileCreatedEvent(SubmissionFile file) {
+    super(FILE_CREATED, file);
+  }
 
 }

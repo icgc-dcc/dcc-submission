@@ -26,7 +26,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 
 // TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
 @NoArgsConstructor

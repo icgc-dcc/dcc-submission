@@ -40,15 +40,15 @@ import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.state.DefaultStateContext;
 import org.icgc.dcc.submission.core.state.StateContext;
+import org.icgc.dcc.submission.fs.SubmissionFile;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 
 @Slf4j
 @Data
@@ -157,13 +157,12 @@ public class Submission implements Serializable {
     });
   }
 
-  public void modifyFile(@NonNull Iterable<SubmissionFile> submissionFiles,
-      final @NonNull Optional<SubmissionFile> submissionFile) {
+  public void modifyFile(@NonNull Iterable<SubmissionFile> submissionFiles, final @NonNull SubmissionFileEvent event) {
     executeTransition(submissionFiles, new Transition<Void>("modifyFile") {
 
       @Override
       public Void execute(@NonNull StateContext context) {
-        state.modifyFile(context, submissionFile);
+        state.modifyFile(context, event);
         return null;
       }
 

@@ -58,11 +58,12 @@ import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFile;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -383,7 +384,7 @@ public class ReleaseService extends AbstractService {
     // If a new dictionary was specified, reset submissions, TODO: use resetSubmission() instead (DCC-901)!
     if (sameDictionary == false) {
       // Reset all projects
-      resetSubmissions(newReleaseName, release.getProjectKeys());
+      resetSubmissions();
     }
 
     return release;
@@ -577,24 +578,39 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void resetSubmissions(@NonNull String releaseName, @NonNull Iterable<String> projectKeys) {
-    for (val projectKey : projectKeys) {
-      resetSubmission(releaseName, projectKey);
+  public void resetSubmissions() {
+    val release = getNextRelease();
+    for (val projectKey : release.getProjectKeys()) {
+      resetSubmission(release, projectKey);
     }
   }
 
   @Synchronized
-  public Submission resetSubmission(@NonNull String releaseName, @NonNull String projectKey) {
-    val release = releaseRepository.findReleaseByName(releaseName);
+  public void resetInvalidSubmissions() {
+    val release = getNextRelease();
+    for (val projectKey : release.getInvalidProjectKeys()) {
+      resetSubmission(release, projectKey);
+    }
+  }
+
+  @Synchronized
+  public void resetSubmissions(String... projectKeys) {
+    val release = getNextRelease();
+    for (val projectKey : projectKeys) {
+      resetSubmission(release, projectKey);
+    }
+  }
+
+  private Submission resetSubmission(@NonNull Release release, @NonNull String projectKey) {
     val submission = release.getSubmission(projectKey).get();
-    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
 
     //
     // Transition
     //
 
     submission.reset(submissionFiles);
-    releaseRepository.updateReleaseSubmission(releaseName, submission);
+    releaseRepository.updateReleaseSubmission(release.getName(), submission);
     resetValidationFolder(projectKey, release);
 
     return submission;
@@ -602,7 +618,7 @@ public class ReleaseService extends AbstractService {
 
   @Synchronized
   public Submission modifySubmission(@NonNull String releaseName, @NonNull String projectKey,
-      @NonNull Optional<SubmissionFile> submissionFile) {
+      @NonNull SubmissionFileEvent event) {
 
     val release = releaseRepository.findReleaseByName(releaseName);
     val submission = release.getSubmission(projectKey).get();
@@ -612,7 +628,7 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.modifyFile(submissionFiles, submissionFile);
+    submission.modifyFile(submissionFiles, event);
     releaseRepository.updateReleaseSubmission(releaseName, submission);
     resetValidationFolder(projectKey, release);
 

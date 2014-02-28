@@ -15,35 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.state;
+package org.icgc.dcc.submission.fs;
 
-import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.fs.SubmissionFile;
-import org.icgc.dcc.submission.release.model.SubmissionState;
+import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_REMOVED;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
-/**
- * The "context" in the State Pattern.
- */
-public interface StateContext {
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class SubmissionFileCompletedEvent extends SubmissionFileEvent {
 
-  /**
-   * Read
-   */
-
-  String getProjectName();
-
-  String getProjectKey();
-
-  Iterable<SubmissionFile> getSubmissionFiles();
-
-  Report getReport();
-
-  /**
-   * Write
-   */
-
-  void setState(SubmissionState state);
-
-  void setReport(Report newReport);
+  public SubmissionFileCompletedEvent(SubmissionFile file) {
+    super(FILE_REMOVED, file);
+  }
 
 }

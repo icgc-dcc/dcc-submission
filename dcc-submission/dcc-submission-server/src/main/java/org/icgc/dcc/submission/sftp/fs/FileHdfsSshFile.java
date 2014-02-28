@@ -27,6 +27,11 @@ import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.common.file.SshFile;
+import org.icgc.dcc.submission.fs.SubmissionFile;
+import org.icgc.dcc.submission.fs.SubmissionFileCreatedEvent;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
+import org.icgc.dcc.submission.fs.SubmissionFileRemovedEvent;
+import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 public class FileHdfsSshFile extends HdfsSshFile {
@@ -105,7 +110,8 @@ public class FileHdfsSshFile extends HdfsSshFile {
     try {
       if (isWritable()) {
         fileSystem.createNewFile(path);
-        directory.notifyModified(path);
+
+        registerEvent(new SubmissionFileCreatedEvent(getSubmissionFile()));
 
         return true;
       }
@@ -119,14 +125,13 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean delete() {
     try {
       if (isRemovable()) {
-        // This needs to happen here so that it can be seen by the listeners
-        context.notifyFileRemoved(path);
-        directory.notifyModified(path);
-
+        val file = getSubmissionFile();
         val success = fileSystem.delete(path, false);
         if (success == false) {
           throw new IOException("Unable to delete file " + path.toUri());
         }
+
+        registerEvent(new SubmissionFileRemovedEvent(file));
 
         return success;
       }
@@ -146,17 +151,18 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean move(SshFile destination) {
     try {
       if (isWritable() && destination.isWritable()) {
-        Path destinationPath =
-            new Path(directory.getParentFile().path, destination.getAbsolutePath().substring(1));
+        val destinationPath = new Path(directory.getParentFile().path, destination.getAbsolutePath().substring(1));
+        val oldFile = getSubmissionFile();
 
-        directory.notifyModified(path);
         val success = fileSystem.rename(path, destinationPath);
         if (!success) {
           throw new IOException("Unable to move file " + path.toUri() + " to " + destinationPath.toUri());
         }
 
         path = destinationPath;
-        directory.notifyModified(path);
+
+        val newFile = getSubmissionFile();
+        registerEvent(new SubmissionFileRenamedEvent(oldFile, newFile));
 
         return success;
       }
@@ -175,6 +181,15 @@ public class FileHdfsSshFile extends HdfsSshFile {
   @Override
   public HdfsSshFile getChild(Path filePath) {
     return handleException(HdfsSshFile.class, "Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
+  }
+
+  protected SubmissionFile getSubmissionFile() throws IOException {
+    return context.getSubmissionFile(path);
+  }
+
+  protected void registerEvent(SubmissionFileEvent event) {
+    val projectKey = directory.getName();
+    context.registerSubmissionEvent(projectKey, event);
   }
 
 }

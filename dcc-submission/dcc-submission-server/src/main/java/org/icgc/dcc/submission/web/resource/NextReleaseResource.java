@@ -260,8 +260,7 @@ public class NextReleaseResource {
     }
 
     try {
-      Release nextRelease = releaseService.getNextRelease();
-      releaseService.resetSubmission(nextRelease.getName(), projectKey);
+      releaseService.resetSubmissions(projectKey);
     } catch (Throwable t) {
       log.error("Error resetting state for '" + projectKey + "':", t);
       throw t;
