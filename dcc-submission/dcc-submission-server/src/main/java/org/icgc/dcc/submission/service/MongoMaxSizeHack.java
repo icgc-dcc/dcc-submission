@@ -57,7 +57,9 @@ public class MongoMaxSizeHack {
       for (val errorReport : errorReports) {
         if (errorReport.getErrorType() == SCRIPT_ERROR) {
           for (val fieldReport : errorReport.getFieldErrorReports()) {
-            processFieldReport(fileSchema, fieldReport);
+            fieldReport.addParameter(
+                EXPECTED,
+                getScript(fileSchema, getScriptRestrictionFieldName(fieldReport)));
           }
         }
       }
@@ -65,10 +67,9 @@ public class MongoMaxSizeHack {
     return optional;
   }
 
-  private static void processFieldReport(FileSchema fileSchema, FieldErrorReport fieldReport) {
-    val fieldName = getScriptRestrictionFieldName(fieldReport);
-    val scriptRestrictionOrdinal = 0; // FIXME: https://jira.oicr.on.ca/browse/DCC-2087
+  private static String getScript(FileSchema fileSchema, String fieldName) {
     val field = fileSchema.getField(fieldName);
+    val scriptRestrictionOrdinal = 0; // FIXME: https://jira.oicr.on.ca/browse/DCC-2087
     val scriptRestrictions = newArrayList(filter(
         field.getRestrictions(),
         new Predicate<Restriction>() {
@@ -82,8 +83,7 @@ public class MongoMaxSizeHack {
     checkState(scriptRestrictions.size() > scriptRestrictionOrdinal);
     val scriptRestriction = scriptRestrictions.get(scriptRestrictionOrdinal);
     val restrictionConfig = scriptRestriction.getConfig();
-    val script = restrictionConfig.get(ScriptRestriction.PARAM);
-    fieldReport.addParameter(EXPECTED, script);
+    return restrictionConfig.get(ScriptRestriction.PARAM).toString();
   }
 
   private static String getScriptRestrictionFieldName(FieldErrorReport fieldReport) {

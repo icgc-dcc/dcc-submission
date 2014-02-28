@@ -98,6 +98,9 @@ public class FieldErrorReport implements Serializable {
    * Temporary: see DCC-2085, remove if/when unused.
    */
   public void addParameter(ErrorParameterKey key, Object value) {
+    if (parameters == null) {
+      parameters = newHashMap();
+    }
     parameters.put(key, value);
   }
 
