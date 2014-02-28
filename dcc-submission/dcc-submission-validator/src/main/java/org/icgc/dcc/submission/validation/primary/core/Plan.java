@@ -42,6 +42,21 @@ import cascading.cascade.CascadeDef;
 public class Plan {
 
   /**
+   * The maximum number of flows that can run concurrently for a given project plan.
+   * <p>
+   * The number of threads is proportional to the number of steps which is a function of the number of files,
+   * restrictions and summaries for the schema associated with those files.
+   */
+  public static final int MAX_CONCURRENT_FLOWS = 50;
+
+  /**
+   * The maximum number of flow steps that may be executing concurrently per flow.
+   * <p>
+   * Limited to prevent overwhelming the server.
+   */
+  public static final int MAX_CONCURRENT_FLOW_STEPS = 10;
+
+  /**
    * Inputs.
    */
   @NonNull
@@ -63,7 +78,10 @@ public class Plan {
   private Cascade cascade;
 
   public void connect() {
-    val cascadeDef = new CascadeDef().setName(projectKey + " validation cascade");
+    val cascadeDef = new CascadeDef()
+        .setName(projectKey + " validation cascade")
+        .setMaxConcurrentFlows(MAX_CONCURRENT_FLOWS);
+
     for (val flowPlanner : getFlowPlanners()) {
       val flow = flowPlanner.connect(platform);
       if (flow != null) {
