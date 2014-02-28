@@ -169,7 +169,7 @@ public class TupleState implements Serializable {
       this.columnNames = columnNames;
       this.value = firstNonNull(value, "");
       this.line = line;
-      this.parameters = MongoMaxSizeHack.dodo(parameters);
+      this.parameters = parameters;
     }
 
     @JsonIgnore
