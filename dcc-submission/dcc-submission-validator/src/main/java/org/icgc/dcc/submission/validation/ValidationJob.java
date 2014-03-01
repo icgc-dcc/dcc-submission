@@ -47,6 +47,16 @@ public class ValidationJob implements Runnable {
   @SneakyThrows
   public void run() {
     try {
+      execute();
+    } catch (Throwable t) {
+      log.error("Unknown exception executing validation " + validation, t);
+    }
+
+    log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
+  }
+
+  private void execute() {
+    try {
 
       //
       // Event: Started
@@ -92,8 +102,6 @@ public class ValidationJob implements Runnable {
         listener.onFailure(validation, t);
       }
     }
-
-    log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
   }
 
 }

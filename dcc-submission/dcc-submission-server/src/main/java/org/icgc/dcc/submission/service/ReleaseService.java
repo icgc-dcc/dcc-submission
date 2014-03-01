@@ -617,21 +617,6 @@ public class ReleaseService extends AbstractService {
     }
   }
 
-  private Submission resetSubmission(@NonNull Release release, @NonNull String projectKey) {
-    val submission = release.getSubmission(projectKey).get();
-    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
-
-    //
-    // Transition
-    //
-
-    submission.reset(submissionFiles);
-    releaseRepository.updateReleaseSubmission(release.getName(), submission);
-    resetValidationFolder(projectKey, release);
-
-    return submission;
-  }
-
   @Synchronized
   public Submission modifySubmission(@NonNull String releaseName, @NonNull String projectKey,
       @NonNull SubmissionFileEvent event) {
@@ -746,6 +731,21 @@ public class ReleaseService extends AbstractService {
   private void resetValidationFolder(@NonNull String projectKey, @NonNull Release release) {
     log.info("Resetting validation folder for '{}' in release '{}'", projectKey, release.getName());
     dccFileSystem.getReleaseFilesystem(release).resetValidationFolder(projectKey);
+  }
+
+  private Submission resetSubmission(@NonNull Release release, @NonNull String projectKey) {
+    val submission = release.getSubmission(projectKey).get();
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
+
+    //
+    // Transition
+    //
+
+    submission.reset(submissionFiles);
+    releaseRepository.updateReleaseSubmission(release.getName(), submission);
+    resetValidationFolder(projectKey, release);
+
+    return submission;
   }
 
   private List<Project> getProjects(Release release, Subject user) {
