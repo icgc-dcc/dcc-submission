@@ -67,6 +67,8 @@ import org.mongodb.morphia.annotations.Embedded;
 public class FileReport implements ReportElement, Comparable<FileReport> {
 
   /**
+   * Key.
+   * <p>
    * The name of the file the report describes.
    */
   String fileName;
@@ -142,28 +144,36 @@ public class FileReport implements ReportElement, Comparable<FileReport> {
     fieldReports.add(fieldReport);
   }
 
-  public void addErrorReport(@NonNull ErrorReport errorReport) {
-    errorReports.add(errorReport);
-  }
-
   public void addError(@NonNull Error error) {
-    for (val errorReport : errorReports) {
-      if (errorReport.isReported(error)) {
-        errorReport.addColumn(error);
+    val errorReport = resolveErrorReport(error);
 
-        return;
-      }
-    }
-
-    val errorReport = new ErrorReport(error.getType(), error.getNumber(), error.getMessage());
-    errorReport.addColumn(error);
-
-    errorReports.add(errorReport);
+    errorReport.addError(error);
   }
 
   @Override
   public int compareTo(@NonNull FileReport other) {
     return fileName.compareTo(other.fileName);
+  }
+
+  private ErrorReport resolveErrorReport(Error error) {
+    ErrorReport errorReport = getErrorReport(error);
+    if (errorReport == null) {
+      errorReport = new ErrorReport(error.getType(), error.getNumber(), error.getMessage());
+
+      errorReports.add(errorReport);
+    }
+
+    return errorReport;
+  }
+
+  private ErrorReport getErrorReport(@NonNull Error error) {
+    for (val errorReport : errorReports) {
+      if (errorReport.reportsOn(error)) {
+        return errorReport;
+      }
+    }
+
+    return null;
   }
 
 }

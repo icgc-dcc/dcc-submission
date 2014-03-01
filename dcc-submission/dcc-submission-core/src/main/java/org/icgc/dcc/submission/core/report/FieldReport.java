@@ -59,16 +59,14 @@ import com.mongodb.BasicDBObject;
 public class FieldReport implements Comparable<FieldReport> {
 
   /**
-   * Key
+   * Key.
    */
-
   private String name;
   private SummaryType type;
 
   /**
-   * Data
+   * Values.
    */
-
   private long nulls;
   private long missing;
   private long populated;

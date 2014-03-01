@@ -47,7 +47,7 @@ public class Plan {
    * The number of threads is proportional to the number of steps which is a function of the number of files,
    * restrictions and summaries for the schema associated with those files.
    */
-  public static final int MAX_CONCURRENT_FLOWS = 50;
+  public static final int MAX_CONCURRENT_FLOWS = 25;
 
   /**
    * The maximum number of flow steps that may be executing concurrently per flow.
