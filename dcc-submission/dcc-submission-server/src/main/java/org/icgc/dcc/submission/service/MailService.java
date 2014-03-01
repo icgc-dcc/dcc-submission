@@ -181,7 +181,7 @@ public class MailService {
       message.setFrom(address(get(MAIL_FROM)));
       message.addRecipients(TO, addresses(emails));
       message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state, report));
-      message.setText(getResult(projectKey, state));
+      message.setText(getResult(releaseName, projectKey, state));
 
       send(message);
     } catch (Exception e) {
@@ -189,13 +189,13 @@ public class MailService {
     }
   }
 
-  private String getResult(final String projectKey, final State state) {
+  private String getResult(String releaseName, String projectKey, State state) {
     // @formatter:off
     return
       state == ERROR         ? template(MAIL_ERROR_BODY,           projectKey, state)                         : 
-      state == INVALID       ? template(MAIL_INVALID_BODY,         projectKey, state, projectKey, projectKey) :
-      state == NOT_VALIDATED ? template(MAIL_NOT_VALIDATED_BODY,   projectKey, state, projectKey, projectKey) :
-      state == VALID         ? template(MAIL_VALID_BODY,           projectKey, state, projectKey, projectKey) :
+      state == INVALID       ? template(MAIL_INVALID_BODY,         projectKey, state, releaseName, projectKey) :
+      state == NOT_VALIDATED ? template(MAIL_NOT_VALIDATED_BODY,   projectKey, state, releaseName, projectKey) :
+      state == VALID         ? template(MAIL_VALID_BODY,           projectKey, state, releaseName, projectKey) :
                                format("Unexpected validation state '%s' prevented loading email text.", state);
     // @formatter:on
   }
