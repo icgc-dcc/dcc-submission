@@ -210,7 +210,7 @@ public class Release extends BaseEntity implements HasName {
     return projectKeys.build();
   }
 
-  public void enqueue(QueuedProject queuedProject) {
+  public void enqueue(@NonNull QueuedProject queuedProject) {
     // Not sure why there is a test / expectation for this, but here it is:
     if (queuedProject.getKey() == null || queuedProject.getKey().isEmpty()) {
       return;
@@ -221,33 +221,26 @@ public class Release extends BaseEntity implements HasName {
     }
   }
 
-  public void enqueue(List<QueuedProject> queuedProjects) {
+  public void enqueue(@NonNull List<QueuedProject> queuedProjects) {
     for (val queuedProject : queuedProjects) {
       enqueue(queuedProject);
     }
   }
 
-  public int removeFromQueue(final String projectKey) {
-    int count = 0;
-    for (int i = queue.size() - 1; i >= 0; i--) {
-      val queuedProject = queue.get(i);
-      if (queuedProject.getKey().equals(projectKey)) {
-        queue.remove(i);
-
-        count++;
-      }
+  public void removeFromQueue(@NonNull final Iterable<String> projectKeys) {
+    for (val projectKey : projectKeys) {
+      removeFromQueue(projectKey);
     }
-
-    return count;
   }
 
-  public int removeFromQueue(final Iterable<String> projectKeys) {
-    int count = 0;
-    for (val projectKey : projectKeys) {
-      count += removeFromQueue(projectKey);
+  public void removeFromQueue(@NonNull final String projectKey) {
+    val iterator = queue.iterator();
+    while (iterator.hasNext()) {
+      val queuedProject = iterator.next();
+      if (queuedProject.getKey().equals(projectKey)) {
+        iterator.remove();
+      }
     }
-
-    return count;
   }
 
   /**
