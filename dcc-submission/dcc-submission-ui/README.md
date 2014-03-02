@@ -24,11 +24,13 @@ Development
 Start brunch (in another console):
 
 	cd dcc/dcc-submission/dcc-submission-ui
+	sudo npm install -g brew
 	brunch w -s
 
 Start the proxy (in yet another console)
 
 	cd dcc/dcc-submission/dcc-submission-ui
+	sudo npm install -g coffee-script
 	cake proxy
 
 Start the [dcc-submission-server](../dcc-submission-server/README.md)
