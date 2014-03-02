@@ -69,7 +69,7 @@ public class ValidationService extends AbstractScheduledService {
   /**
    * Period at which the service polls for an open release and for an enqueued project if there is one.
    */
-  private static final int POLLING_PERIOD_SECONDS = 1;
+  private static final int POLLING_PERIOD_SECONDS = 5;
 
   /**
    * Dependencies.

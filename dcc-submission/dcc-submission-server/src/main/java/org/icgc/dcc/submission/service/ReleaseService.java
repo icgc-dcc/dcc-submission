@@ -571,7 +571,8 @@ public class ReleaseService extends AbstractService {
     val projectKeys = targets.length > 0 ? release.getQueuedProjectKeys() : ImmutableList.<String> copyOf(targets);
 
     log.info("Deleting queued request for project(s) '{}'", projectKeys);
-    for (val queuedProject : release.getQueue()) {
+    val queue = ImmutableList.<QueuedProject> copyOf(release.getQueue());
+    for (val queuedProject : queue) {
       val projectKey = queuedProject.getKey();
       val dataTypes = queuedProject.getDataTypes();
 
