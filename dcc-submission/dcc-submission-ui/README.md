@@ -6,7 +6,7 @@ Setup
 
 Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are using a package manager such as `apt`, `brew` or `macports` please ensure the correct version has been installed.
 
-Install brunch and required modules:
+Install `brunch`, `cake` and required modules:
 
 	sudo npm install -g brunch@1.6.7 
    	sudo npm install -g coffee-script 
@@ -18,19 +18,21 @@ Ensure that `brunch` has been added to your `PATH` by typing:
 
 	brunch
 	
+Ensure that `cacke` has been added to your `PATH` by typing:
+
+	cake
+	
 Development
 ---
 
 Start brunch (in another console):
 
 	cd dcc/dcc-submission/dcc-submission-ui
-	sudo npm install -g brew
 	brunch w -s
 
 Start the proxy (in yet another console)
 
 	cd dcc/dcc-submission/dcc-submission-ui
-	sudo npm install -g coffee-script
 	cake proxy
 
 Start the [dcc-submission-server](../dcc-submission-server/README.md)
