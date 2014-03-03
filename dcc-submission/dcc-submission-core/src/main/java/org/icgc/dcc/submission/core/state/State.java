@@ -19,12 +19,10 @@ package org.icgc.dcc.submission.core.state;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-
-import com.google.common.base.Optional;
 
 /**
  * Classical State Pattern abstraction modeling the state behavior of an associated submission within the context of a
@@ -50,7 +48,7 @@ public interface State {
 
   void initialize(StateContext context);
 
-  void modifyFile(StateContext context, Optional<SubmissionFile> submissionFile);
+  void modifyFile(StateContext context, SubmissionFileEvent event);
 
   void queueRequest(StateContext context, Iterable<DataType> dataTypes);
 

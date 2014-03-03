@@ -2,7 +2,7 @@
   "offset" : 2,
   "errors" : [ {
     "type" : "FORBIDDEN_VALUE_ERROR",
-    "columnNames" : [ "donor_tumour_stage_at_diagnosis_supplemental" ],
+    "columnNames" : [ "donor_tumour_stage_at_diagnosis" ],
     "number" : 0,
     "value" : "-999",
     "line" : 2,
@@ -11,7 +11,7 @@
     }
   }, {
     "type" : "FORBIDDEN_VALUE_ERROR",
-    "columnNames" : [ "donor_survival_time" ],
+    "columnNames" : [ "donor_tumour_stage_at_diagnosis_supplemental" ],
     "number" : 0,
     "value" : "-999",
     "line" : 2,

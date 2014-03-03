@@ -27,6 +27,7 @@ import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -53,48 +54,88 @@ import org.mongodb.morphia.annotations.Embedded;
 @Embedded
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = { "fieldNames" })
 public class FieldErrorReport implements Serializable {
 
   /**
-   * Description
+   * Maximum number of errors to store.
+   * <p>
+   * Does not control error count.
+   */
+  public static final int MAXIMUM_NUM_STORED_ERRORS = 50;
+
+  /**
+   * Key.
    */
   private List<String> fieldNames;
+
+  /**
+   * Description.
+   */
   private Map<ErrorParameterKey, Object> parameters;
 
   /**
-   * Values
+   * Values.
    */
   private long count;
   private List<Long> lineNumbers = newLinkedList();
   private List<Object> values = newLinkedList();
 
-  public FieldErrorReport(@NonNull Error error) {
-    this.setFieldNames(error.getFieldNames());
-    this.setParameters(error.getType().build(error.getParams()));
+  public FieldErrorReport(@NonNull List<String> fieldNames, @NonNull Map<ErrorParameterKey, Object> parameters) {
+    this.fieldNames = fieldNames;
 
-    this.setCount(1L);
-    this.addValue(error.getValue());
-    this.addLineNumber(error.getLineNumber());
+    this.parameters = parameters;
   }
 
   public FieldErrorReport(@NonNull FieldErrorReport fieldErrorReport) {
     this.fieldNames = fieldErrorReport.fieldNames;
-    this.parameters = newHashMap(fieldErrorReport.parameters);
-    this.count = fieldErrorReport.count;
 
+    this.parameters = newHashMap(fieldErrorReport.parameters);
+
+    this.count = fieldErrorReport.count;
     this.lineNumbers = newArrayList(fieldErrorReport.lineNumbers);
     this.values = newArrayList(fieldErrorReport.values);
   }
 
-  public void incrementCount() {
+  public boolean reportsOn(@NonNull Error error) {
+    return fieldNames.equals(error.getFieldNames());
+  }
+
+  public void addError(@NonNull Error error) {
+    // Always increment count
+    incrementCount();
+
+    // Only store if their is capacity
+    if (isStorable()) {
+      addValue(error.getValue());
+      addLineNumber(error.getLineNumber());
+    }
+  }
+
+  /**
+   * Temporary: see DCC-2085, remove if/when unused.
+   */
+  public void addParameter(ErrorParameterKey key, Object value) {
+    if (parameters == null) {
+      parameters = newHashMap();
+    }
+
+    parameters.put(key, value);
+  }
+
+  private boolean isStorable() {
+    return count <= MAXIMUM_NUM_STORED_ERRORS;
+  }
+
+  private void incrementCount() {
     count++;
   }
 
-  public void addLineNumber(Long lineNumber) {
+  private void addLineNumber(Long lineNumber) {
     lineNumbers.add(lineNumber);
   }
 
-  public void addValue(Object value) {
+  private void addValue(Object value) {
     values.add(value);
   }
 

@@ -38,7 +38,6 @@ import com.mongodb.BasicDBObject;
  *  {
  *    "name": "f1",
  *    "type": "minmax",
- *    "label": "",
  *    
  *    "nulls": 0,            
  *    "missing": 1,             
@@ -60,22 +59,14 @@ import com.mongodb.BasicDBObject;
 public class FieldReport implements Comparable<FieldReport> {
 
   /**
-   * Key
+   * Key.
    */
-
   private String name;
   private SummaryType type;
 
   /**
-   * Metadata
+   * Values.
    */
-
-  private String label;
-
-  /**
-   * Data
-   */
-
   private long nulls;
   private long missing;
   private long populated;
@@ -86,8 +77,6 @@ public class FieldReport implements Comparable<FieldReport> {
   public FieldReport(@NonNull FieldReport fieldReport) {
     this.name = fieldReport.name;
     this.type = fieldReport.type;
-
-    this.label = fieldReport.label;
 
     this.nulls = fieldReport.nulls;
     this.missing = fieldReport.missing;

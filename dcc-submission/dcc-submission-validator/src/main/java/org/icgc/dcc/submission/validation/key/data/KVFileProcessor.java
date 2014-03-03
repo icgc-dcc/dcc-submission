@@ -21,11 +21,10 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getRow;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION2;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.OPTIONAL_RELATION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION1;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION2;
 
 import java.util.List;
 
@@ -36,9 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
+import org.icgc.dcc.submission.validation.key.core.KVDictionary;
+import org.icgc.dcc.submission.validation.key.core.KVErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVFileParser;
-import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import com.google.common.base.Optional;
@@ -69,6 +69,7 @@ public final class KVFileProcessor {
 
   @SneakyThrows
   public void processFile(
+      final KVDictionary dictionary, // TODO: necessary?
       final KVFileParser fileParser,
       final KVReporter reporter, // To report all but surjection errors at this point
       final KVPrimaryKeys primaryKeys,
@@ -89,7 +90,7 @@ public final class KVFileProcessor {
       @Override
       public void process(long lineNumber, List<String> record) {
         // Update the context
-        val row = getRow(fileType, record);
+        val row = dictionary.getKeysIndices(fileType).getRow(record);
         context.nextRow(row, lineNumber);
 
         // Process the row
@@ -116,14 +117,16 @@ public final class KVFileProcessor {
     // @formatter:off
     switch (fileType) {
     
+    // Order matters!!
+    
     //
     // Clinical
     //
     
     // CORE:
     case DONOR:             processDonor(context); break;
-    case SPECIMEN:          processGenericPrimary2(context); break;
-    case SAMPLE:            processGenericPrimary2(context); break;
+    case SPECIMEN:          processGenericClinical(context); break;
+    case SAMPLE:            processGenericClinical(context); break;
     
     // TODO: OPTIONAL?
     
@@ -132,69 +135,69 @@ public final class KVFileProcessor {
     //    
     
     // SSM:
-    case SSM_M:             processGenericMeta1(context); break;
-    case SSM_P:             processGenericPrimary1(context); break;
+    case SSM_M:             processGenericMetaWithOptionalFK(context); break;
+    case SSM_P:             processGenericPrimaryWithoutSecondary(context); break;
       
     // CNSM:
-    case CNSM_M:            processGenericMeta1(context); break;
-    case CNSM_P:            processGenericPrimary2(context); break;
+    case CNSM_M:            processGenericMetaWithOptionalFK(context); break;
+    case CNSM_P:            processGenericPrimaryWithSecondary(context); break;
     case CNSM_S:            processGenericSecondary(context); break;
 
     // STSM:
-    case STSM_M:            processGenericMeta1(context); break;
-    case STSM_P:            processGenericPrimary2(context); break;
+    case STSM_M:            processGenericMetaWithOptionalFK(context); break;
+    case STSM_P:            processGenericPrimaryWithSecondary(context); break;
     case STSM_S:            processGenericSecondary(context); break;
 
-    // MIRNA SEQ
-    case MIRNA_SEQ_M:       processGenericMeta2(context); break;
-    case MIRNA_SEQ_P:       processGenericPrimary1(context); break;
-    
     // METH ARRAY:
-    case METH_ARRAY_M:      processGenericMeta2(context); break;
+    case METH_ARRAY_M:      processGenericMetaWithoutOptionalFK(context); break;
     case METH_ARRAY_PROBES: processMethArrayProbes(context); break;
     case METH_ARRAY_P:      processMethArrayPrimary(context); break;
 
     // METH SEQ:
-    case METH_SEQ_M:        processGenericMeta2(context); break;
-    case METH_SEQ_P:        processMethSeqPrimary(context); break;
+    case METH_SEQ_M:        processGenericMetaWithoutOptionalFK(context); break;
+    case METH_SEQ_P:        processGenericPrimaryWithoutSecondary(context); break;
     
     // EXP ARRAY
-    case EXP_ARRAY_M:       processGenericMeta2(context); break;
-    case EXP_ARRAY_P:       processGenericPrimary2(context); break;
+    case EXP_ARRAY_M:       processGenericMetaWithoutOptionalFK(context); break;
+    case EXP_ARRAY_P:       processExpPrimary(context); break;
     
     // EXP SEQ
-    case EXP_SEQ_M:         processGenericMeta2(context); break;
-    case EXP_SEQ_P:         processGenericPrimary2(context); break;
+    case EXP_SEQ_M:         processGenericMetaWithoutOptionalFK(context); break;
+    case EXP_SEQ_P:         processExpPrimary(context); break;
 
+    // MIRNA SEQ
+    case MIRNA_SEQ_M:       processGenericMetaWithoutOptionalFK(context); break;
+    case MIRNA_SEQ_P:       processGenericPrimaryWithoutSecondary(context); break;
+    
     // PEXP:
-    case PEXP_M:            processGenericMeta2(context); break;
-    case PEXP_P:            processGenericPrimary1(context); break;
+    case PEXP_M:            processGenericMetaWithoutOptionalFK(context); break;
+    case PEXP_P:            processGenericPrimaryWithoutSecondary(context); break;
 
     // JCN:
-    case JCN_M:             processGenericMeta2(context); break;
-    case JCN_P:             processGenericPrimary1(context); break;
+    case JCN_M:             processGenericMetaWithoutOptionalFK(context); break;
+    case JCN_P:             processGenericPrimaryWithoutSecondary(context); break;
 
     // SGV:
-    case SGV_M:             processGenericMeta2(context); break;
-    case SGV_P:             processGenericPrimary1(context); break;
+    case SGV_M:             processGenericMetaWithoutOptionalFK(context); break;
+    case SGV_P:             processGenericPrimaryWithoutSecondary(context); break;
 
     //
     // Legacy Feature Types
     // 
     
     // OLD MIRNA:
-    case MIRNA_M:           processGenericMeta2(context); break;
+    case MIRNA_M:           processGenericMetaWithoutOptionalFK(context); break;
     case MIRNA_P:           processMirnaPrimary(context); break;
     case MIRNA_S:           processMirnaSecondary(context); break;
     
     // OLD METH:
-    case METH_M:            processGenericMeta1(context); break;
-    case METH_P:            processGenericPrimary2(context); break;
+    case METH_M:            processGenericMetaWithOptionalFK(context); break;
+    case METH_P:            processGenericPrimaryWithSecondary(context); break;
     case METH_S:            processGenericSecondary(context); break;
     
     // OLD EXP:
-    case EXP_M:             processGenericMeta2(context); break;
-    case EXP_G:             processGenericPrimary1(context); break;
+    case EXP_M:             processGenericMetaWithoutOptionalFK(context); break;
+    case EXP_G:             processGenericPrimaryWithoutSecondary(context); break;
     
     default:                throw new UnsupportedOperationException(fileType + " is not supported");
     }
@@ -213,10 +216,10 @@ public final class KVFileProcessor {
     ; // No surjection check for DONOR
   }
 
-  private void processGenericMeta1(KVRowContext context) {
+  private void processGenericMetaWithOptionalFK(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
-    if (context.getRow().hasOptionalFk()) {
+    if (context.getRow().hasCheckeableOptionalFk()) {
       valid.validateOptionalForeignKey(context);
     }
 
@@ -226,7 +229,7 @@ public final class KVFileProcessor {
     ; // No surjection check for meta files
   }
 
-  private void processGenericMeta2(KVRowContext context) {
+  private void processGenericMetaWithoutOptionalFK(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
 
@@ -237,8 +240,8 @@ public final class KVFileProcessor {
     ; // No surjection check for meta files
   }
 
-  private void processGenericPrimary1(KVRowContext context) {
-    ; // No uniqueness check for METH_SEQ_P
+  private void processGenericPrimaryWithoutSecondary(KVRowContext context) {
+    ; // No uniqueness check
     valid.validateForeignKey1(context);
 
     sanity.ensureNoPK(context.getRow());
@@ -248,7 +251,18 @@ public final class KVFileProcessor {
     addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
   }
 
-  private void processGenericPrimary2(KVRowContext context) {
+  private void processGenericClinical(KVRowContext context) {
+    processMostGeneric(context);
+  }
+
+  private void processGenericPrimaryWithSecondary(KVRowContext context) {
+    processMostGeneric(context);
+  }
+
+  /**
+   * Avoid calling directly, instead use aliases as shown above.
+   */
+  private void processMostGeneric(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
 
@@ -260,7 +274,7 @@ public final class KVFileProcessor {
   }
 
   private void processGenericSecondary(KVRowContext context) {
-    ; // No uniqueness check for METH_SEQ_P
+    ; // No uniqueness check
     valid.validateForeignKey1(context);
 
     sanity.ensureNoPK(context.getRow());
@@ -295,45 +309,54 @@ public final class KVFileProcessor {
   }
 
   private void processMethArrayPrimary(KVRowContext context) {
-    ; // No uniqueness check for METH_ARRAY_P (at Vincent's request)
+    // No uniqueness check for METH_ARRAY_P (at Vincent's request)
     valid.validateForeignKey1(context);
     valid.validateForeignKey2(context);
 
     sanity.ensureNoOptionalFK(context.getRow());
 
-    // Not checking for surjection
+    addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
   }
 
   private void processMethArrayProbes(KVRowContext context) {
     ; // We perform no validation on system files at the moment
 
+    // We only gather PKs for future relation check
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
   }
 
-  private void processMethSeqPrimary(KVRowContext context) {
-    ; // No uniqueness check for METH_SEQ_P
+  private void processExpPrimary(KVRowContext context) {
+    valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
 
-    sanity.ensureNoPK(context.getRow());
     sanity.ensureNoFK2(context.getRow());
     sanity.ensureNoOptionalFK(context.getRow());
+
+    addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
   }
 
+  /**
+   * For future relation checks.
+   */
   private void addEncounteredPrimaryKey(String fileName, KVPrimaryKeys primaryKeys, KVRow row) {
     sanity.ensurePK(fileName, row);
     primaryKeys.updatePks(fileName, row);
   }
 
-  private void addEncounteredForeignKey(String fileName, Optional<KVEncounteredForeignKeys> optionallyEncounteredKeys,
-      KVRow row) {
+  /**
+   * For future surjection check.
+   */
+  private void addEncounteredForeignKey(
+      String fileName, Optional<KVEncounteredForeignKeys> optionallyEncounteredKeys, KVRow row) {
     if (ROW_CHECKS_ENABLED) {
       checkState(optionallyEncounteredKeys.isPresent(),
           "Encountered keys are expected to be present for type '%s'", fileType);
     }
 
+    // Always uses FK1 at the moment.
     sanity.ensureFK1(fileName, row);
     optionallyEncounteredKeys.get()
-        .addEncounteredForeignKey(row.getFk1()); // Always uses FK1 at the moment.
+        .addEncounteredForeignKey(row.getFk1());
   }
 
   /**

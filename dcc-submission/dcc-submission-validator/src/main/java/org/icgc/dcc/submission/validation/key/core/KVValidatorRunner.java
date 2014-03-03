@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.validation.cascading.FlowExecutorJob;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import cascading.flow.hadoop.HadoopFlowStep;
@@ -47,7 +48,7 @@ import com.google.common.base.Stopwatch;
  */
 @Slf4j
 @Value
-public class KVValidatorRunner implements Runnable, Serializable {
+public class KVValidatorRunner implements FlowExecutorJob, Serializable {
 
   /**
    * Fields that need to be {@link Serializable} to survive the trip to the cluster.
@@ -69,25 +70,27 @@ public class KVValidatorRunner implements Runnable, Serializable {
 
   @Override
   @SneakyThrows
-  public void run() {
+  public void execute(@NonNull Configuration configuration) {
     try {
-      validate();
+      validate(configuration);
     } catch (Throwable t) {
       log.error("Error performing key validation:", t);
       throw t;
     }
   }
 
-  private void validate() throws IOException {
+  private void validate(Configuration configuration) throws IOException {
     log.info("Starting key validation with memory: {}...", formatMemory());
 
-    val fileSystem = getFileSystem();
-    val report = new KVReporter(fileSystem, new Path(reportPath));
+    val fileSystem = getFileSystem(configuration);
+    val kvDictionary = new KVHardcodedDictionary(); // TODO: inject
+    val report = new KVReporter(kvDictionary, fileSystem, new Path(reportPath));
     val watch = createStopwatch();
     try {
       val validator = new KVSubmissionProcessor(
+          kvDictionary,
           new KVFileParser(fileSystem, new FileLineListParser(), false),
-          new KVFileSystem(fileSystem, dataTypes, dictionary,
+          new KVFileSystem(fileSystem, dataTypes, dictionary.getPatterns(),
               new Path(submissionPath), new Path(systemPath)), report);
 
       log.info("Processing submission...");
@@ -100,13 +103,14 @@ public class KVValidatorRunner implements Runnable, Serializable {
   }
 
   @SneakyThrows
-  private FileSystem getFileSystem() {
-    return FileSystem.get(fsUri, new Configuration());
+  private FileSystem getFileSystem(Configuration configuration) {
+    return FileSystem.get(fsUri, configuration);
   }
 
   @SuppressWarnings("deprecation")
   private static Stopwatch createStopwatch() {
-    // Can't use the new API here because Hadoop doesn't know about it.
+    // Can't use the new API here because Hadoop doesn't know about it cluster side. Trying to use it will result in
+    // errors.
     return new Stopwatch().start();
   }
 

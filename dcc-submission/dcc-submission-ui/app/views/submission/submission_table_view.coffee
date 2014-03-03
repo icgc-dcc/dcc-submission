@@ -87,11 +87,11 @@ module.exports = class SubmissionTableView extends DataTableView
             k = source.projectKey
             "<a href='/releases/#{r}/submissions/#{k}'>#{k}</a>"
         }
-        {
-          sTitle: "Alias"
-          mData: (source) ->
-            source.projectAlias
-        }
+        #{
+        #  sTitle: "Alias"
+        #  mData: (source) ->
+        #    source.projectAlias
+        #}
         {
           sTitle: "Project Name"
           mData: (source) ->
@@ -143,17 +143,17 @@ module.exports = class SubmissionTableView extends DataTableView
 
             source.state
         }
-        {
-          sTitle: "Report"
-          bSortable: false
-          mData: (source) =>
-            switch source.state
-              when "VALID", "SIGNED_OFF", "INVALID"
-                r = @collection.release
-                s = source.projectKey.replace(/<.*?>/g, '')
-                "<a href='/releases/#{r}/submissions/#{s}'>View</a>"
-              else ""
-        }
+        #{
+        #  sTitle: "Report"
+        #  bSortable: false
+        #  mData: (source) =>
+        #    switch source.state
+        #      when "VALID", "SIGNED_OFF", "INVALID"
+        #        r = @collection.release
+        #        s = source.projectKey.replace(/<.*?>/g, '')
+        #        "<a href='/releases/#{r}/submissions/#{s}'>View</a>"
+        #      else ""
+        #}
         {
           sTitle: "Actions"
           bSortable: false
@@ -236,7 +236,7 @@ module.exports = class SubmissionTableView extends DataTableView
       oLanguage:
         "sLengthMenu": "_MENU_ submissions per page"
         "sEmptyTable": "You have no submissions for this release"
-      aaSorting: [[ 3, "desc" ]]
+      aaSorting: [[ 0, "asc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""

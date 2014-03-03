@@ -5,13 +5,11 @@ import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-
-import com.google.common.base.Optional;
 
 /**
  * Root of the implementation hierarchy that defines a taxonomy of states.
@@ -31,7 +29,7 @@ public abstract class AbstractState implements State {
   }
 
   @Override
-  public void modifyFile(@NonNull StateContext context, @NonNull Optional<SubmissionFile> submissionFile) {
+  public void modifyFile(@NonNull StateContext context, @NonNull SubmissionFileEvent event) {
     throw new InvalidStateException(this, "modifySubmission");
   }
 

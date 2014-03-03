@@ -58,6 +58,9 @@ import org.mongodb.morphia.annotations.Embedded;
 @EqualsAndHashCode(of = "dataType")
 public class DataTypeReport implements ReportElement, Comparable<DataTypeReport> {
 
+  /**
+   * Key.
+   */
   @JsonSerialize(using = DataTypeSerializer.class)
   @JsonDeserialize(using = DataTypeDeserializer.class)
   private DataType dataType;

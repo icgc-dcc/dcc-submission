@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.submission.dictionary.model.Field.IS_CONTROLLED;
@@ -26,6 +27,7 @@ import static org.icgc.dcc.submission.dictionary.model.Field.IS_CONTROLLED;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
 
@@ -287,6 +289,23 @@ public class FileSchema implements DictionaryElement, Serializable {
   public Optional<Integer> getFieldOrdinal(String fieldName) {
     val index = newArrayList(getFieldNames()).indexOf(fieldName);
     return index == -1 ? Optional.<Integer> absent() : Optional.of(index);
+  }
+
+  /**
+   * Returns the {@link Field} matching the name provided.
+   * 
+   * @throws NoSuchElementException if no such field exists.
+   */
+  @JsonIgnore
+  public Field getField(final String fieldName) {
+    return find(fields, new Predicate<Field>() {
+
+      @Override
+      public boolean apply(Field field) {
+        return field.getName().equals(fieldName);
+      }
+
+    });
   }
 
 }

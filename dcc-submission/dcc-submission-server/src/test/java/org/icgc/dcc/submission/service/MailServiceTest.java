@@ -173,7 +173,7 @@ public class MailServiceTest {
     assertThat(supportMessage.getAllRecipients()).containsAll(addresses);
     assertThat(supportMessage.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
     assertThat(supportMessage.getContent()).isEqualTo(
-        template(MAIL_NOT_VALIDATED_BODY, projectKey, state, projectKey, projectKey));
+        template(MAIL_NOT_VALIDATED_BODY, projectKey, state, releaseName, projectKey));
   }
 
   private static boolean isNotification(MimeMessage message) throws MessagingException {

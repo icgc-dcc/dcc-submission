@@ -13,6 +13,13 @@ Build
 Development
 ---
 
+Before starting development it is necessary to download and extract a reference genome FASTA file and index: 
+
+	wget http://seqwaremaven.oicr.on.ca/artifactory/simple/dcc-dependencies/org/icgc/dcc/dcc-reference-genome/GRCh37/dcc-reference-genome-GRCh37.tar.gz
+	tar zxf dcc-reference-genome-GRCh37.tar.gz -C /tmp
+
+Ensure the FASTA file is correctly referenced from `application.conf`'s `reference.fasta` configuration element.
+
 To start the server in an IDE:
 
 	java -Dlogback.configurationFile=src/main/conf/logback.xml -Dlog.dir=target/logs org.icgc.dcc.submission.server.Main external src/test/conf/application.conf
@@ -27,7 +34,7 @@ To start the server from the command line:
 
 Start the server using an IDE by running:
 
-  org.icgc.dcc.submission.Main external src/test/conf/application.conf
+	org.icgc.dcc.submission.Main external src/test/conf/application.conf
 
 To see the client interface, point your browser to [http://localhost:5380/](http://localhost:5380/)
 

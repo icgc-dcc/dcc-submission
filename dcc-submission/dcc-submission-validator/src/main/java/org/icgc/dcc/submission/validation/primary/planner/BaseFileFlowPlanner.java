@@ -17,7 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
+import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static java.lang.String.format;
+import static org.icgc.dcc.submission.validation.primary.core.Plan.MAX_CONCURRENT_FLOW_STEPS;
 
 import java.util.List;
 import java.util.Map;
@@ -128,11 +130,15 @@ public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
 
     // Make a flow only if there's something to do
     val hasSourcesAndSinks = flowDef.getSinks().size() > 0 && flowDef.getSources().size() > 0;
-    return hasSourcesAndSinks ?
-        platform
-            .getFlowConnector()
-            .connect(flowDef) :
-        null;
+    return hasSourcesAndSinks ? connect(platform, flowDef) : null;
+  }
+
+  private Flow<?> connect(PlatformStrategy platform, FlowDef flowDef) {
+    val propertyOverrides = Maps.<Object, Object> newHashMap();
+    setMaxConcurrentSteps(propertyOverrides, MAX_CONCURRENT_FLOW_STEPS);
+    val flowConnector = platform.getFlowConnector(propertyOverrides);
+
+    return flowConnector.connect(flowDef);
   }
 
   @Override
@@ -147,4 +153,5 @@ public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
   protected abstract Pipe getStructurallyInvalidTail();
 
   protected abstract FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy);
+
 }

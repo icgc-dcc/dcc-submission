@@ -69,7 +69,7 @@ public class ValidationService extends AbstractScheduledService {
   /**
    * Period at which the service polls for an open release and for an enqueued project if there is one.
    */
-  private static final int POLLING_PERIOD_SECONDS = 1;
+  private static final int POLLING_PERIOD_SECONDS = 5;
 
   /**
    * Dependencies.
@@ -112,12 +112,9 @@ public class ValidationService extends AbstractScheduledService {
    * @throws InvalidStateException
    */
   public void cancelValidation(@NonNull String projectKey) throws InvalidStateException {
-    val cancelled = executor.cancel(projectKey);
-    if (!cancelled) {
-      // TODO: Determine when this should / needs to be called
-      log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
-      releaseService.removeQueuedSubmissions(projectKey);
-    }
+    executor.cancel(projectKey);
+    log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
+    releaseService.removeQueuedSubmissions(projectKey);
   }
 
   /**

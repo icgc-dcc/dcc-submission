@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,57 +15,50 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.validation.key.core;
 
-import java.util.Date;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 
-import lombok.NonNull;
+import java.util.List;
+
 import lombok.Value;
+import lombok.val;
+import lombok.experimental.Builder;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
-import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
-import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
-import org.mongodb.morphia.annotations.Converters;
+import org.icgc.dcc.submission.validation.key.data.KVKey;
+import org.icgc.dcc.submission.validation.key.data.KVRow;
 
 /**
- * For serializing file data through the REST interface
+ * Represents the indices for the keys that are relevant to a particular {@link KVFileType}.
  */
 @Value
-@Converters(FileTypeConverter.class)
-public class SubmissionFile {
+@Builder
+public class KVFileTypeKeysIndices {
 
-  private final String name;
-  private final Date lastUpdate;
-  private final long size;
-  private final FileType fileType;
+  private final List<Integer> pk;
+  private final List<Integer> fk1;
+  private final List<Integer> fk2;
+  private final List<Integer> optionalFk;
 
-  @JsonCreator
-  public SubmissionFile(
-      @NonNull//
-      @JsonProperty("name")//
-      String name,
+  public KVRow getRow(List<String> row) {
+    if (ROW_CHECKS_ENABLED) checkState(
+        pk != null || fk1 != null, "Invalid row: '%s'", row);
+    val builder = KVRow.builder();
 
-      @NonNull//
-      @JsonProperty("lastUpdate")//
-      Date lastUpdate,
+    if (pk != null) {
+      builder.pk(KVKey.from(row, pk));
+    }
+    if (fk1 != null) {
+      builder.fk1(KVKey.from(row, fk1));
+    }
+    if (fk2 != null) {
+      builder.fk2(KVKey.from(row, fk2));
+    }
+    if (optionalFk != null) {
+      builder.optionalFk(KVKey.from(row, optionalFk));
+    }
 
-      @JsonProperty("size")//
-      long size,
-
-      @JsonProperty("fileType")//
-      @JsonSerialize(using = FileTypeSerializer.class)//
-      @JsonDeserialize(using = FileTypeDeserializer.class)//
-      FileType fileType)
-  {
-    this.name = name;
-    this.lastUpdate = lastUpdate;
-    this.size = size;
-    this.fileType = fileType;
+    return builder.build();
   }
-
 }

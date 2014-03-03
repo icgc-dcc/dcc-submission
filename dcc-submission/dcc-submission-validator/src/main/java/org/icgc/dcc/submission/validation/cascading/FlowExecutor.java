@@ -28,7 +28,6 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.NonNull;
@@ -37,41 +36,58 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TaskLog;
 import org.icgc.dcc.hadoop.io.NullInputFormat;
 import org.icgc.dcc.hadoop.io.NullOutputFormat;
 
 import cascading.flow.Flow;
+import cascading.flow.FlowException;
 import cascading.flow.FlowStep;
 import cascading.flow.hadoop.MapReduceFlow;
 import cascading.flow.hadoop.util.JavaObjectSerializer;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.pipe.Each;
+import cascading.stats.CascadingStats.Status;
+import cascading.stats.hadoop.HadoopStepStats;
 import cascading.tap.Tap;
 
 import com.google.common.collect.ImmutableMap;
 
+@Slf4j
 @RequiredArgsConstructor
-public class FlowExecutor implements Executor {
+public class FlowExecutor {
+
+  /**
+   * Constants.
+   */
+  private static final String JOB_NAME_PROPERTY = "org.icgc.dcc.class.name";
+  private static final String CASCADING_FLOW_STEP_PROPERTY = "cascading.flow.step";
 
   @NonNull
   private final Map<Object, Object> properties;
 
-  @Override
-  public void execute(Runnable runnable) {
-    val flow = createFlow(runnable);
-    flow.complete();
+  public void execute(@NonNull FlowExecutorJob job) {
+    val flow = createFlow(job);
+    try {
+      flow.complete();
+    } catch (FlowException e) {
+      handleFlowException(flow);
+
+      throw e;
+    }
   }
 
-  private Flow<?> createFlow(Runnable runnable) {
+  private Flow<?> createFlow(FlowExecutorJob job) {
     if (isLocal()) {
-      return createLocalFlow(runnable);
+      return createLocalFlow(job);
     } else {
-      return createHadoopFlow(runnable);
+      return createHadoopFlow(job);
     }
   }
 
@@ -85,8 +101,15 @@ public class FlowExecutor implements Executor {
     return new URI(fsUrl.toString()).getScheme().equals("file");
   }
 
-  private Flow<?> createLocalFlow(Runnable runnable) {
-    val pipe = new Each("flow-executor", new ExecuteFunction(runnable));
+  private Flow<?> createLocalFlow(final FlowExecutorJob job) {
+    val pipe = new Each("flow-executor", new ExecuteFunction(new Runnable() {
+
+      @Override
+      public void run() {
+        job.execute(new Configuration());
+
+      }
+    }));
 
     return new LocalFlowConnector(properties)
         .connect(flowDef()
@@ -95,8 +118,8 @@ public class FlowExecutor implements Executor {
   }
 
   @SneakyThrows
-  private Flow<?> createHadoopFlow(Runnable runnable) {
-    val jobConf = createJobConf(runnable);
+  private Flow<?> createHadoopFlow(FlowExecutorJob job) {
+    val jobConf = createJobConf(job);
     val flow = new MapReduceFlow(jobConf, false) {
 
       @Override
@@ -116,9 +139,9 @@ public class FlowExecutor implements Executor {
     return flow;
   }
 
-  private JobConf createJobConf(Runnable runnable) throws IOException {
+  private JobConf createJobConf(FlowExecutorJob job) throws IOException {
     val jobConf = new JobConf();
-    jobConf.setJarByClass(runnable.getClass());
+    jobConf.setJarByClass(job.getClass());
     jobConf.setInputFormat(NullInputFormat.class);
     jobConf.setOutputFormat(NullOutputFormat.class);
     jobConf.setOutputKeyClass(NullWritable.class);
@@ -130,19 +153,19 @@ public class FlowExecutor implements Executor {
     jobConf.setNumReduceTasks(0);
 
     addProperties(jobConf);
-    writeRunnable(runnable, jobConf);
+    writeJob(job, jobConf);
 
     return jobConf;
   }
 
-  private void writeRunnable(Runnable runnable, JobConf jobConf) throws IOException {
+  private void writeJob(FlowExecutorJob job, JobConf jobConf) throws IOException {
     // Hadoop 20.2 doesn't like dist cache when using local mode
-    val executorState = serializeBase64(runnable, jobConf, true);
+    val executorState = serializeBase64(job, jobConf, true);
     val maxSize = Short.MAX_VALUE;
 
     // TODO: Constants
     jobConf.set("cascading.util.serializer", JavaObjectSerializer.class.getName());
-    jobConf.set("org.icgc.dcc.class.name", runnable.getClass().getName());
+    jobConf.set(JOB_NAME_PROPERTY, job.getClass().getName());
     if (isHadoopLocalMode(jobConf) || executorState.length() < maxSize) {
       jobConf.set("cascading.flow.step", executorState);
     } else {
@@ -163,6 +186,33 @@ public class FlowExecutor implements Executor {
 
   private String getId() {
     return createUniqueID();
+  }
+
+  private static void handleFlowException(Flow<?> flow) {
+    try {
+      for (val stepStats : flow.getFlowStats().getFlowStepStats()) {
+        if (stepStats instanceof HadoopStepStats) {
+          val hadoopStepStats = (HadoopStepStats) stepStats;
+          for (val taskStats : hadoopStepStats.getTaskStats().values()) {
+            for (val hadoopAttempt : taskStats.getAttempts().values()) {
+              if (hadoopAttempt.getStatusFor() == Status.FAILED) {
+                val logUrl = new StringBuilder(hadoopAttempt.getTaskTrackerHttp());
+                logUrl
+                    .append("/tasklog?attemptid=")
+                    .append(taskStats.getTaskID())
+                    .append("&plaintext=true")
+                    .append("&filter=")
+                    .append(TaskLog.LogName.STDOUT);
+
+                log.info("Log url: ", logUrl);
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error handling flow excpetion:", e);
+    }
   }
 
   @Slf4j
@@ -186,7 +236,7 @@ public class FlowExecutor implements Executor {
     public void map(NullWritable key, NullWritable value, OutputCollector<NullWritable, NullWritable> output,
         Reporter reporter) throws IOException {
       log.info("Starting...");
-      Runnable runnable = readRunnable();
+      FlowExecutorJob job = readJob();
       FlowExecutorHeartbeat beat = new FlowExecutorHeartbeat(reporter) {
 
         @Override
@@ -198,23 +248,21 @@ public class FlowExecutor implements Executor {
 
       try {
         beat.start();
-        runnable.run();
+        job.execute(jobConf);
       } finally {
         beat.stop();
       }
+
       log.info("Finished");
     }
 
-    private Runnable readRunnable() throws IOException, ClassNotFoundException {
+    private FlowExecutorJob readJob() throws IOException, ClassNotFoundException {
       val executorState = readExecutorState();
-      val runnable =
-          (Runnable) deserializeBase64(executorState, jobConf, Class.forName(jobConf.get("org.icgc.dcc.class.name")));
-
-      return runnable;
+      return (FlowExecutorJob) deserializeBase64(executorState, jobConf, Class.forName(jobConf.get(JOB_NAME_PROPERTY)));
     }
 
     private String readExecutorState() throws IOException {
-      String executorState = jobConf.getRaw("cascading.flow.step");
+      String executorState = jobConf.getRaw(CASCADING_FLOW_STEP_PROPERTY);
       if (executorState == null) {
         executorState = readStateFromDistCache(jobConf, jobConf.get(FlowStep.CASCADING_FLOW_STEP_ID));
       }
@@ -243,10 +291,10 @@ public class FlowExecutor implements Executor {
                   interrupted = true;
                 }
 
-                // keep the task alive
+                // Keep the task alive
                 reporter.progress();
 
-                // call the optional custom progress method
+                // Call the optional custom progress method
                 progress();
               }
             }
@@ -267,6 +315,7 @@ public class FlowExecutor implements Executor {
     }
 
     protected void progress() {
+      // No-op
     }
 
   }

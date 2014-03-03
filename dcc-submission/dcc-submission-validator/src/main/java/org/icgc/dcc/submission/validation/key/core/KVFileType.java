@@ -15,12 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.enumeration;
+package org.icgc.dcc.submission.validation.key.core;
 
+import static java.util.Arrays.asList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 @RequiredArgsConstructor
 public enum KVFileType {
@@ -28,12 +32,6 @@ public enum KVFileType {
   DONOR(FileType.DONOR_TYPE),
   SPECIMEN(FileType.SPECIMEN_TYPE),
   SAMPLE(FileType.SAMPLE_TYPE),
-
-  BIOMARKER(FileType.BIOMARKER_TYPE),
-  EXPOSURE(FileType.EXPOSURE_TYPE),
-  FAMILY(FileType.FAMILY_TYPE),
-  SURGERY(FileType.SURGERY_TYPE),
-  THERAPY(FileType.THERAPY_TYPE),
 
   SSM_M(FileType.SSM_M_TYPE),
   SSM_P(FileType.SSM_P_TYPE),
@@ -94,6 +92,17 @@ public enum KVFileType {
 
   public boolean isReplaceAll() {
     return this == DONOR || this == SPECIMEN || this == SAMPLE;
+  }
+
+  public static KVFileType from(final FileType fileType) {
+    return Iterables.find(asList(values()), new Predicate<KVFileType>() {
+
+      @Override
+      public boolean apply(KVFileType input) {
+        return input.fileType == fileType;
+      }
+
+    });
   }
 
 }

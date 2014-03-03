@@ -17,14 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 import lombok.Value;
+import lombok.experimental.Builder;
 
-import org.icgc.dcc.submission.validation.key.enumeration.KeysType;
+import org.icgc.dcc.submission.validation.key.core.KVKeyType;
 
 /**
  * Data relevant to the key validation for a given row.
  */
 @Value
+@Builder
 public class KVRow {
 
   /**
@@ -43,7 +48,7 @@ public class KVRow {
   private final KVKey fk2;
 
   /**
-   * Only applicable for some meta files. See {@link KeysType#OPTIONAL_FK}.
+   * Only applicable for some meta files. See {@link KVKeyType#OPTIONAL_FK}.
    */
   private final KVKey optionalFk;
 
@@ -61,6 +66,18 @@ public class KVRow {
 
   public boolean hasOptionalFk() {
     return optionalFk != null;
+  }
+
+  /**
+   * Only applicable for existing non-composite keys.
+   */
+  public boolean hasCheckeableOptionalFk() {
+    if (ROW_CHECKS_ENABLED) {
+      checkState(!checkNotNull(optionalFk,
+          "Expecting an optional FK to exist")
+          .isSingleEmptyValue(), "Expecting optional FK to be a single value, instead: '{}'", optionalFk);
+    }
+    return !optionalFk.isSingleMissingCode();
   }
 
 }

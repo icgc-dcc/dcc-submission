@@ -18,9 +18,8 @@
 package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.collect.ComparisonChain.start;
-import static com.google.common.collect.Lists.newLinkedList;
 
-import java.util.List;
+import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,6 +28,8 @@ import lombok.NonNull;
 import lombok.val;
 
 import org.mongodb.morphia.annotations.Embedded;
+
+import com.google.common.collect.Sets;
 
 /**
  * Reports on a file validation error.
@@ -58,12 +59,15 @@ import org.mongodb.morphia.annotations.Embedded;
 @EqualsAndHashCode(of = { "errorType", "number" })
 public class ErrorReport implements ReportElement, Comparable<ErrorReport> {
 
+  /**
+   * Key.
+   */
   private ErrorType errorType;
-  private int number;
+  private int number; // FIXME: https://jira.oicr.on.ca/browse/DCC-2087
 
   private String description;
 
-  private final List<FieldErrorReport> fieldErrorReports = newLinkedList();
+  private final Set<FieldErrorReport> fieldErrorReports = Sets.newLinkedHashSet();
 
   /**
    * Temporary band-aid to fix the issue of bite offsets being converted twice (see DCC-1908).
@@ -92,13 +96,12 @@ public class ErrorReport implements ReportElement, Comparable<ErrorReport> {
     visitor.visit(this);
   }
 
-  public void addColumn(@NonNull Error error) {
-    val column = new FieldErrorReport(error);
-
-    fieldErrorReports.add(column);
+  public void addError(@NonNull Error error) {
+    val fieldErrorReport = resolveFieldErrorReport(error);
+    fieldErrorReport.addError(error);
   }
 
-  public boolean isReported(@NonNull Error error) {
+  public boolean reportsOn(@NonNull Error error) {
     return errorType == error.getType() && number == error.getNumber();
   }
 
@@ -108,6 +111,27 @@ public class ErrorReport implements ReportElement, Comparable<ErrorReport> {
         .compare(this.errorType, other.errorType)
         .compare(this.number, other.number)
         .result();
+  }
+
+  private FieldErrorReport resolveFieldErrorReport(Error error) {
+    FieldErrorReport fieldErrorReport = getFieldErrorReport(error);
+    if (fieldErrorReport == null) {
+      fieldErrorReport = new FieldErrorReport(error.getFieldNames(), error.getType().build(error.getParams()));
+
+      fieldErrorReports.add(fieldErrorReport);
+    }
+
+    return fieldErrorReport;
+  }
+
+  private FieldErrorReport getFieldErrorReport(@NonNull Error error) {
+    for (val fieldErrorReport : fieldErrorReports) {
+      if (fieldErrorReport.reportsOn(error)) {
+        return fieldErrorReport;
+      }
+    }
+
+    return null;
   }
 
 }

@@ -21,19 +21,16 @@ import java.security.Principal;
 
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.Value;
+
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.security.BasicPrincipal;
 
+@Value
 public class ShiroSecurityContext implements SecurityContext {
 
   private final Subject subject;
-
-  private final boolean isSecure;
-
-  public ShiroSecurityContext(Subject subject, boolean isSecure) {
-    this.subject = subject;
-    this.isSecure = isSecure;
-  }
+  private final boolean secure;
 
   public Subject getSubject() {
     return subject;
@@ -46,13 +43,7 @@ public class ShiroSecurityContext implements SecurityContext {
 
   @Override
   public boolean isUserInRole(String role) {
-    // TODO Auto-generated method stub
     return false;
-  }
-
-  @Override
-  public boolean isSecure() {
-    return isSecure;
   }
 
   @Override

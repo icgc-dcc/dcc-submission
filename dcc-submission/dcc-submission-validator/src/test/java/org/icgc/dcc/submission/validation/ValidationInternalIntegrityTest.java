@@ -59,7 +59,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 
-@Ignore
 public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest {
 
   /**

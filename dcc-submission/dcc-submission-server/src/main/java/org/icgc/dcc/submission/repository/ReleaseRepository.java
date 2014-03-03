@@ -62,15 +62,31 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public List<Release> findReleaseSummaries() {
-    return query().list(_.name, _.dictionaryVersion, _.releaseDate, _.state, _.submissions.any().projectKey);
+    return list(_.name, _.dictionaryVersion, _.releaseDate, _.state, _.submissions.any().projectKey);
   }
 
   public Release findNextRelease() {
     return singleResult(_.state.eq(OPENED));
   }
 
+  public Release findNextReleaseQueue() {
+    return singleResult(_.state.eq(OPENED), _.queue);
+  }
+
+  public String findNextReleaseDictionaryVersion() {
+    return singleResult(_.state.eq(OPENED), _.dictionaryVersion).getDictionaryVersion();
+  }
+
   public Release findReleaseByName(@NonNull String releaseName) {
     return uniqueResult(_.name.eq(releaseName));
+  }
+
+  public Release findReleaseSummaryByName(@NonNull String releaseName) {
+    return uniqueResult(_.name.eq(releaseName),
+        _.name, _.dictionaryVersion, _.releaseDate, _.state,
+        _.submissions.any().projectKey, _.submissions.any().projectName, _.submissions.any().state,
+        _.submissions.any().report.dataTypeReports.any().dataType,
+        _.submissions.any().report.dataTypeReports.any().dataTypeState);
   }
 
   public Release findCompletedRelease(@NonNull String releaseName) {

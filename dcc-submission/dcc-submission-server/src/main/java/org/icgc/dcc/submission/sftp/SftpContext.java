@@ -18,8 +18,12 @@
 package org.icgc.dcc.submission.sftp;
 
 import static com.google.common.base.Optional.fromNullable;
+import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_CREATED;
+import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_REMOVED;
+import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_RENAMED;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -33,13 +37,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.SubmissionFile;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
+import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ProjectService;
@@ -119,7 +124,10 @@ public class SftpContext {
     return getReleaseFileSystem().isAdminUser();
   }
 
-  // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
+  public SubmissionFile getSubmissionFile(@NonNull Path path) throws IOException {
+    return getSubmissionFile(releaseService.getNextDictionary(), path);
+  }
+
   public SubmissionDirectory getSubmissionDirectory(String projectKey) {
     return getReleaseFileSystem().getSubmissionDirectory(projectKey);
   }
@@ -129,34 +137,27 @@ public class SftpContext {
     return new Path(releasePath);
   }
 
-  // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
-  public void notifySubmissionChange(@NonNull Submission submission, @NonNull Optional<Path> path) {
-    log.info("Resetting submission '{}'...", submission.getProjectKey());
-
-    val submissionFile =
-        fromNullable(path.isPresent() ?
-            getSubmissionFile(releaseService.getNextDictionary(), path.get()) : null);
-
-    releaseService.modifySubmission(getNextReleaseName(), submission.getProjectKey(), submissionFile);
+  public void registerReferenceChange() {
+    releaseService.resetSubmissions();
   }
 
-  public void notifyReferenceChange() {
-    for (Submission submission : getNextRelease().getSubmissions()) {
-      // TODO: DCC-903 (only if open release uses it)
-      notifySubmissionChange(submission, Optional.<Path> absent());
+  public void registerSubmissionEvent(@NonNull String projectKey, @NonNull SubmissionFileEvent event) {
+    val user = (String) getCurrentUser().getPrincipal();
+    val fileName = event.getFile().getName();
+
+    if (event.getType() == FILE_CREATED) {
+      log.info("'{}' finished transferring file '{}'", user, fileName);
+      mailService.sendFileTransferred(user, event.getFile().getName());
+    } else if (event.getType() == FILE_RENAMED) {
+      val newFileName = ((SubmissionFileRenamedEvent) event).getNewFile().getName();
+      log.info("'{}' renamed  file '{}' to '{}'", new Object[] { user, fileName, newFileName });
+      mailService.sendFileRenamed(user, fileName, newFileName);
+    } else if (event.getType() == FILE_REMOVED) {
+      log.info("'{}' removed  file '{}'", user, fileName);
+      mailService.sendFileRemoved(user, event.getFile().getName());
     }
-  }
 
-  public void notifyFileTransferred(Path path) {
-    val user = (String) getCurrentUser().getPrincipal();
-    log.info("'{}' finished transferring file '{}'", user, path);
-    mailService.sendFileTransferred(user, path.toUri().toString());
-  }
-
-  public void notifyFileRemoved(Path path) {
-    val user = (String) getCurrentUser().getPrincipal();
-    log.info("'{}' removed  file '{}'", user, path);
-    mailService.sendFileRemoved(user, path.toUri().toString());
+    releaseService.modifySubmission(getNextReleaseName(), projectKey, event);
   }
 
   private Subject getCurrentUser() {
@@ -164,7 +165,7 @@ public class SftpContext {
   }
 
   // TODO: Duplicated code with ReleaseService
-  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) {
+  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) throws IOException {
     val fileName = filePath.getName();
     val fileStatus = HadoopUtils.getFileStatus(fs.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());

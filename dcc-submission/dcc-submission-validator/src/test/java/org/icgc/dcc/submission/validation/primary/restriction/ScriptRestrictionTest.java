@@ -41,7 +41,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
 
   @Test
   public void test_ScriptRestriction_describe() {
-    ScriptRestriction restriction = new ScriptRestriction("x", NUMBER, "x > 0", "Positive values for x");
+    ScriptRestriction restriction = new ScriptRestriction("x", NUMBER, "x > 0");
 
     assertThat(restriction.describe()).isEqualTo("script[x:x > 0]");
   }
@@ -147,7 +147,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     // Simulate a singleton tuple stream
     val tupleEntry = new TupleEntry(fields, tuple);
     val tuples = new TupleEntry[] { tupleEntry };
-    val function = new ScriptFunction("fieldName", NUMBER, script, description);
+    val function = new ScriptFunction("fieldName", NUMBER, script);
     val results = invokeFunction(function, tuples, fields);
 
     return newArrayList(results.iterator());

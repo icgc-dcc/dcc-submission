@@ -63,8 +63,7 @@ public class UserResource {
   @Path("self")
   public Response getResource(
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -80,8 +79,9 @@ public class UserResource {
   @Consumes("application/json")
   public Response feedback(Feedback feedback) {
     // No authorization check necessary
-    log.debug("Sending feedback email: {}", feedback);
+    log.info("Sending feedback email: {}", feedback);
     mailService.sendSupportFeedback(feedback);
+    log.info("Finished feedback email: {}", feedback);
 
     return Response.ok().build();
   }
@@ -90,11 +90,9 @@ public class UserResource {
   @Path("unlock/{username}")
   public Response unlock(
 
-      @PathParam("username")
-      String username,
+      @PathParam("username") String username,
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {

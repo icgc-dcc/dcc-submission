@@ -54,7 +54,7 @@ public class ValidatingState extends AbstractCancellableState {
     switch (outcome) {
     case CANCELLED:
       // Need to reset all the validating data types
-      newReport.reset(dataTypes);
+      newReport.resetDataTypes(dataTypes);
 
       // The missing "break" is deliberate!
     case SUCCEEDED:

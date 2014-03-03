@@ -22,8 +22,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 

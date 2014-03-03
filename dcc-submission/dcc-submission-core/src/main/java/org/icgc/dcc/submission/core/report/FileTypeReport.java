@@ -58,6 +58,9 @@ import org.mongodb.morphia.annotations.Embedded;
 @EqualsAndHashCode(of = "fileType")
 public class FileTypeReport implements ReportElement, Comparable<FileTypeReport> {
 
+  /**
+   * Key.
+   */
   @JsonSerialize(using = FileTypeSerializer.class)
   @JsonDeserialize(using = FileTypeDeserializer.class)
   private FileType fileType;

@@ -22,33 +22,28 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 
 // TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
+@NoArgsConstructor
+@Getter
 public class DetailedSubmission extends Submission {
 
-  @NotBlank
   private String projectName;
-
   private String projectAlias;
-
-  @Valid
   private List<SubmissionFile> submissionFiles;
 
-  public DetailedSubmission() {
-    super();
-  }
-
-  public DetailedSubmission(Submission submission, LiteProject liteProject) {
+  public DetailedSubmission(Submission submission, Project project) {
     super();
     checkArgument(submission.projectKey != null && //
-        submission.projectKey.equals(liteProject.getKey())); // By design
-    this.projectKey = liteProject.getKey();
-    this.projectName = liteProject.getName();
-    this.projectAlias = liteProject.getAlias();
+        submission.projectKey.equals(project.getKey())); // By design
+    this.projectKey = project.getKey();
+    this.projectName = project.getName();
+    this.projectAlias = project.getAlias();
 
     this.state = submission.state;
     this.report = submission.report;
@@ -57,24 +52,12 @@ public class DetailedSubmission extends Submission {
   }
 
   @Override
-  public String getProjectName() {
-    return projectName;
-  }
-
-  public String getProjectAlias() {
-    return projectAlias;
-  }
-
-  @Override
   public void setState(SubmissionState nextState) {
     this.state = nextState;
-  }
-
-  public List<SubmissionFile> getSubmissionFiles() {
-    return submissionFiles;
   }
 
   public void setSubmissionFiles(List<SubmissionFile> submissionFiles) {
     this.submissionFiles = submissionFiles;
   }
+
 }

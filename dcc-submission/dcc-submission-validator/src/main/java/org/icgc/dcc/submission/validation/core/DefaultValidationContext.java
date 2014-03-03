@@ -26,6 +26,7 @@ import java.util.List;
 import lombok.Delegate;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +52,7 @@ import com.google.common.collect.ImmutableSet;
  */
 @Slf4j
 @RequiredArgsConstructor
+@ToString
 public class DefaultValidationContext implements ValidationContext {
 
   /**

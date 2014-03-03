@@ -35,7 +35,6 @@ import lombok.val;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.visitor.AddErrorVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFieldVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFileVisitor;
@@ -50,6 +49,7 @@ import org.icgc.dcc.submission.core.report.visitor.RemoveFileVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ResetVisitor;
 import org.icgc.dcc.submission.core.util.TypeConverters.DataTypeConverter;
 import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
@@ -183,10 +183,10 @@ public class Report implements ReportElement {
   }
 
   public void resetDataTypes(DataType... dataTypes) {
-    reset(copyOf(dataTypes));
+    resetDataTypes(copyOf(dataTypes));
   }
 
-  public void reset(@NonNull Iterable<DataType> dataTypes) {
+  public void resetDataTypes(@NonNull Iterable<DataType> dataTypes) {
     executeVisitor(new ResetVisitor(dataTypes));
   }
 

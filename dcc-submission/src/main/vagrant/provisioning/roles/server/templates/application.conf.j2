@@ -48,6 +48,7 @@ hadoop {
 validator {
   max_simultaneous: 3
 }
+# validators: ["fpv", "pv", "kv", "rgv", "nv"]
 normalizer { # Configuration section for the normalizer component
   error_threshold: 1.0 # Threshold above which the ratio of controlled to total number of observations is likely due to data errors
   masks {

@@ -18,7 +18,6 @@
 package org.icgc.dcc.hadoop.fs;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.io.ByteStreams.copy;
 
 import java.io.BufferedReader;
@@ -90,19 +89,19 @@ public class HadoopUtils {
     }
   }
 
-  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) {
+  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) throws IOException {
     return isFile(fileSystem, new Path(stringPath));
   }
 
-  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) {
+  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) throws IOException {
     return getFileStatus(fileSystem, path).isFile();
   }
 
-  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) {
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) throws IOException {
     return isDirectory(fileSystem, new Path(stringPath));
   }
 
-  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) {
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) throws IOException {
     return getFileStatus(fileSystem, path).isDirectory();
   }
 
@@ -271,14 +270,10 @@ public class HadoopUtils {
 
   /**
    * Returns the {@link FileStatus} for the given {@link Path}.
+   * @throws IOException
    */
-  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) {
-    FileStatus status = null;
-    try {
-      status = fileSystem.getFileStatus(path);
-    } catch (IOException e) {
-      propagate(e);
-    }
+  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) throws IOException {
+    val status = fileSystem.getFileStatus(path);
     return checkNotNull(status, "Expecting a non-null reference for '%s'", path);
   }
 

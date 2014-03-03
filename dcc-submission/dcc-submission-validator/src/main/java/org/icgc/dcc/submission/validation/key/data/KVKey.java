@@ -18,6 +18,10 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Charsets.US_ASCII;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.MISSING_CODE1;
+import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.MISSING_CODE2;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -39,6 +43,12 @@ public class KVKey implements Comparable<KVKey> {
 
   // TODO: Move to another class? Clean up?
   private static final Interner<ByteBuffer> VALUE_INTERNER = Interners.newWeakInterner();
+
+  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.wrap("".getBytes(US_ASCII));
+  private static final ByteBuffer MISSING_CODE1_BYTE_BUFFER = ByteBuffer.wrap(MISSING_CODE1.getBytes(US_ASCII));
+  private static final ByteBuffer MISSING_CODE2_BYTE_BUFFER = ByteBuffer.wrap(MISSING_CODE2.getBytes(US_ASCII));
+  private static final List<ByteBuffer> MISSING_CODE_BYTE_BUFFERS = newArrayList(
+      MISSING_CODE1_BYTE_BUFFER, MISSING_CODE2_BYTE_BUFFER);
 
   /**
    * Values for the key.
@@ -110,6 +120,25 @@ public class KVKey implements Comparable<KVKey> {
     }
 
     return result;
+  }
+
+  /**
+   * Only applicable for non-composite keys.
+   */
+  public boolean isSingleEmptyValue() {
+    return checkIsNonComposite().equals(EMPTY_BYTE_BUFFER);
+  }
+
+  /**
+   * Only applicable for non-composite keys.
+   */
+  public boolean isSingleMissingCode() {
+    return MISSING_CODE_BYTE_BUFFERS.contains(checkIsNonComposite());
+  }
+
+  private ByteBuffer checkIsNonComposite() {
+    checkState(size == 1, "TODO");
+    return values[0];
   }
 
 }

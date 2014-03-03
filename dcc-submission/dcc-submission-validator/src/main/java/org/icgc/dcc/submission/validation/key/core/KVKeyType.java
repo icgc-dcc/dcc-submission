@@ -15,26 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.core;
+package org.icgc.dcc.submission.validation.key.core;
 
 /**
- * Describe set of keys used of error parameters.
- * <p>
- * Field name(s) and current value(s) are systematically recorded, so these keys only reflect extra parameters needed to
- * describe the error
+ * The types of keys encountered in the submission files.
  */
-public enum ErrorParameterKey {
+public enum KVKeyType {
 
-  EXPECTED,
-  MIN,
-  MAX,
-  SCHEMA,
-  OTHER_SCHEMA,
-  FILES,
-  FIELDS,
-  OTHER_FIELDS,
-  VALUE,
-  VALUE2,
-  DESCRIPTION;
+  PK,
+
+  /**
+   * For most schema, there is only one FK.
+   */
+  FK1,
+
+  /**
+   * We only have a maximum of 2 FKs maximum per file, not generalizing for now.
+   */
+  FK2,
+
+  /**
+   * An "optional FK" is one that may actually be null, unlike a regular FK.
+   */
+  OPTIONAL_FK;
 
 }

@@ -1,11 +1,17 @@
 package org.icgc.dcc.submission.core.state;
 
+import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_RENAMED;
+
+import java.util.List;
+
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
+import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
 
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 /**
  * A state that allows file system modifications of the associated submission.
@@ -19,7 +25,7 @@ public abstract class AbstractModifiableState extends AbstractClosePreservingSta
   }
 
   @Override
-  public void modifyFile(@NonNull StateContext context, @NonNull Optional<SubmissionFile> submissionFile) {
+  public void modifyFile(@NonNull StateContext context, @NonNull SubmissionFileEvent event) {
     // Current submission data state
     val report = context.getReport();
     val submissionFiles = context.getSubmissionFiles();
@@ -27,21 +33,37 @@ public abstract class AbstractModifiableState extends AbstractClosePreservingSta
     // Refresh
     report.refreshFiles(submissionFiles);
 
-    if (submissionFile.isPresent()) {
-      // Reset this data type's reports if its is managed
-      val fileType = submissionFile.get().getFileType();
-      val managed = fileType != null;
-      if (managed) {
-        report.resetDataTypes(fileType.getDataType());
-      }
-    } else {
-      // Reset all internal reports
-      report.resetDataTypes();
+    // Reset modified data type's reports
+    val dataTypes = resolveModifiedDataTypes(event);
+    if (!dataTypes.isEmpty()) {
+      report.resetDataTypes(dataTypes);
     }
 
     // Transition based on report
     val nextState = getReportedNextState(report);
     context.setState(nextState);
+  }
+
+  private List<DataType> resolveModifiedDataTypes(@NonNull SubmissionFileEvent event) {
+    val dataTypes = ImmutableList.<DataType> builder();
+
+    // Add if managed by dictionary
+    val fileDataType = event.getFile().getDataType();
+    if (fileDataType.isPresent()) {
+      dataTypes.add(fileDataType.get());
+    }
+
+    // Two files involved. Add if managed by dictionary
+    if (event.getType() == FILE_RENAMED) {
+      val newFile = ((SubmissionFileRenamedEvent) event).getNewFile();
+
+      val newFileDataType = newFile.getDataType();
+      if (newFileDataType.isPresent()) {
+        dataTypes.add(newFileDataType.get());
+      }
+    }
+
+    return dataTypes.build();
   }
 
 }

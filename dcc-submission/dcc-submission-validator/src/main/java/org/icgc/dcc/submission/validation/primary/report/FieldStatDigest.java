@@ -30,12 +30,10 @@ public class FieldStatDigest {
 
   private final String name;
   private final SummaryType summaryType;
-  private final String label;
 
   public static FieldStatDigest from(Field field) {
     return new FieldStatDigest(
         field.getName(),
-        field.getSummaryType(),
-        field.getLabel());
+        field.getSummaryType());
   }
 }

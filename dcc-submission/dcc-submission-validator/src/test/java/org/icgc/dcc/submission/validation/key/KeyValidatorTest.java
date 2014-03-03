@@ -22,17 +22,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.io.Files.readLines;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.model.FileTypes.FileType.DONOR_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
 import static org.icgc.dcc.submission.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.submission.core.util.Joiners.PATH;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addOldModels;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getDraftDictionary;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
@@ -57,7 +52,6 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.core.util.Joiners;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -165,19 +159,8 @@ public class KeyValidatorTest {
   }
 
   private Dictionary getDictionary() {
-    val dictionary = readDccResourcesDictionary();
-    dictionary
-        .getFileSchema(DONOR_TYPE)
-        .setPattern("^donor\\.[0-9]+\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary
-        .getFileSchema(SAMPLE_TYPE)
-        .setPattern("^sample\\.[0-9]+\\.txt(?:\\.gz|\\.bz2)?$");
-    dictionary.addFile(readFileSchema(METH_M_TYPE));
-    dictionary.addFile(readFileSchema(METH_P_TYPE));
-    dictionary.addFile(readFileSchema(METH_S_TYPE));
-
-    Dictionaries.addNewModels(dictionary);
-
+    val dictionary = getDraftDictionary();
+    addOldModels(dictionary);
     return dictionary;
   }
 

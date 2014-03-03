@@ -186,6 +186,27 @@ found on host #{host}"
     else
       Chaplin.mediator.publish '!startupController', 'session', 'login'
 
+
+
+  getStateDisplay: (state) ->
+    state = state.replace("_", " ")
+    return switch state
+      when "INVALID"
+        "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
+      when "VALID"
+        "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
+      when "VALIDATING"
+        "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
+      when "QUEUED"
+        "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
+      when "ERROR"
+        "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
+      when "NOT VALIDATED"
+        "<span><i class='icon-question-sign'></i> " + state + "</span>"
+      else
+        state
+
+
   translateDataType: (dataType) ->
     switch dataType
       when "CLINICAL_CORE_TYPE"
@@ -215,21 +236,25 @@ found on host #{host}"
 
       # TODO, confirm display names
       when "METH_ARRAY_TYPE"
-        dataType
+        "METH Array"
       when "METH_SEQ_TYPE"
-        dataTYpe
-      when "GEXP_ARRAY_TYPE"
-        dataTYpe
-      when "GEXP_SEQ_TYPE"
-        dataTYpe
-      when "PEXP_ARRAY_TYPE"
-        dataTYpe
-      when "PEXP_SEQ_TYPE"
-        dataTYpe
-      when "MIRNA_ARRAY_TYPE"
-        dataTYpe
+        "METH Seq"
+      #when "GEXP_ARRAY_TYPE"
+      #  dataType
+      #when "GEXP_SEQ_TYPE"
+      #  dataType
+      #when "PEXP_ARRAY_TYPE"
+      #  dataTYpe
+      #when "PEXP_SEQ_TYPE"
+      #  dataType
+      #when "MIRNA_ARRAY_TYPE"
+      #  dataType
       when "MIRNA_SEQ_TYPE"
-        dataTYpe
+        "miRNA Seq"
+      when "EXP_ARRAY_TYPE"
+        "EXP Array"
+      when "EXP_SEQ_TYPE"
+        "EXP Seq"
       else
         dataType
 
