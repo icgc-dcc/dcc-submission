@@ -193,7 +193,9 @@ module.exports = class ValidateSubmissionView extends View
 
      
   validateSubmission: (e) ->
-    #console.debug "ValidateSubmissionView#completeRelease", @model
+    #console.debug "ValidateSubmissionView#completeRelease", @model, e
+
+    @.$("#validate-submission-button").prop("disabled", true)
     emails = @.$("#emails")
     alert = @.$('#email-error')
     val = @.$("#emails").val()
@@ -223,6 +225,7 @@ module.exports = class ValidateSubmissionView extends View
       dataTypes: dataTypeParams
     }],
     success: =>
+      @.$("#validate-submission-button").prop("disabled", false)
       @$el.modal 'hide'
       mediator.publish "validateSubmission"
       mediator.publish "notify", "Submission for Project "+

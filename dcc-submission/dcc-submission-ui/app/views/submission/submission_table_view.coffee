@@ -236,7 +236,7 @@ module.exports = class SubmissionTableView extends DataTableView
       oLanguage:
         "sLengthMenu": "_MENU_ submissions per page"
         "sEmptyTable": "You have no submissions for this release"
-      aaSorting: [[ 3, "desc" ]]
+      aaSorting: [[ 0, "asc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""
