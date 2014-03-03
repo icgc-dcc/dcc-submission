@@ -45,10 +45,30 @@ module.exports = class FeedbackFormView extends View
 
     @delegate 'click', '#feedback-submit-button', @sendFeedback
 
+
   sendFeedback: (e) ->
     #console.debug "FeedbackFormView#initialize", e
 
+    @.$(".feedback-error").remove()
+
     data = @.$('form').serializeObject()
+
+    # Validate form
+    errors = []
+    for key, val of data
+      if val == ""
+        errors.push key
+
+    if errors.length > 0
+      @.$('form')
+        .before("<div class='feedback-error alert alert-error'>Please fill out all fields.</div>")
+      return
+
+    if data.email and not data.email.match /.+@.+\..+/i
+      @.$('form')
+        .before("<div class='feedback-error alert alert-error'>Please enter valid email address.</div>")
+      return
+
 
     feedback = new Feedback data
 
