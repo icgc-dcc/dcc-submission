@@ -179,7 +179,6 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
           val fieldName = fieldReport.getName();
 
           val fieldStatDigest = fieldStatDigests.get(fieldName);
-          fieldReport.setLabel(fieldStatDigest.getLabel());
           fieldReport.setType(fieldStatDigest.getSummaryType()); // May be null
 
           context.reportField(fileName, fieldReport);

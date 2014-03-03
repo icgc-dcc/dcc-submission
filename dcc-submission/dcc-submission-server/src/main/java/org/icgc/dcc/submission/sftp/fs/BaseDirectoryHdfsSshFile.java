@@ -76,6 +76,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
     try {
       if (isWritable()) {
         fileSystem.create(path);
+
         return true;
       }
       return false;
@@ -138,7 +139,5 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
       return handleException(Boolean.class, e);
     }
   }
-
-  protected abstract void notifyModified(Path path);
 
 }

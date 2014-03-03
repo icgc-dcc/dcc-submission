@@ -21,11 +21,10 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
-import static org.icgc.dcc.submission.validation.key.core.KVDictionary.getRow;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION2;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.OPTIONAL_RELATION;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION1;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVErrorType.RELATION2;
 
 import java.util.List;
 
@@ -36,9 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
+import org.icgc.dcc.submission.validation.key.core.KVDictionary;
+import org.icgc.dcc.submission.validation.key.core.KVErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVFileParser;
-import org.icgc.dcc.submission.validation.key.enumeration.KVErrorType;
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import com.google.common.base.Optional;
@@ -69,6 +69,7 @@ public final class KVFileProcessor {
 
   @SneakyThrows
   public void processFile(
+      final KVDictionary dictionary, // TODO: necessary?
       final KVFileParser fileParser,
       final KVReporter reporter, // To report all but surjection errors at this point
       final KVPrimaryKeys primaryKeys,
@@ -89,7 +90,7 @@ public final class KVFileProcessor {
       @Override
       public void process(long lineNumber, List<String> record) {
         // Update the context
-        val row = getRow(fileType, record);
+        val row = dictionary.getKeysIndices(fileType).getRow(record);
         context.nextRow(row, lineNumber);
 
         // Process the row
@@ -124,8 +125,8 @@ public final class KVFileProcessor {
     
     // CORE:
     case DONOR:             processDonor(context); break;
-    case SPECIMEN:          processGenericPrimaryWithSecondary(context); break;
-    case SAMPLE:            processGenericPrimaryWithSecondary(context); break;
+    case SPECIMEN:          processGenericClinical(context); break;
+    case SAMPLE:            processGenericClinical(context); break;
     
     // TODO: OPTIONAL?
     
@@ -250,7 +251,18 @@ public final class KVFileProcessor {
     addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
   }
 
+  private void processGenericClinical(KVRowContext context) {
+    processMostGeneric(context);
+  }
+
   private void processGenericPrimaryWithSecondary(KVRowContext context) {
+    processMostGeneric(context);
+  }
+
+  /**
+   * Avoid calling directly, instead use aliases as shown above.
+   */
+  private void processMostGeneric(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
 
@@ -262,7 +274,7 @@ public final class KVFileProcessor {
   }
 
   private void processGenericSecondary(KVRowContext context) {
-    ; // No uniqueness check for METH_SEQ_P
+    ; // No uniqueness check
     valid.validateForeignKey1(context);
 
     sanity.ensureNoPK(context.getRow());

@@ -19,11 +19,11 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_P;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
-import static org.icgc.dcc.submission.validation.key.enumeration.KVFileType.MIRNA_P;
 
 import java.util.Iterator;
 import java.util.List;
@@ -33,17 +33,20 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
 
 import com.google.common.collect.Sets;
 
 /**
  * Keeps track of primary keys for each file.
+ * <p>
+ * There's trade off here, we accept to potentially store the same PK under different files (if there's a uniqueness
+ * violation). It's a bit wasteful but keeps the code complexity lower in {@link KVFileProcessor}.
  */
 @RequiredArgsConstructor
 public final class KVPrimaryKeys {
 
-  private final Map<String, Set<KVKey>> pks = newHashMap();
+  private final Map<String, Set<KVKey>> pks = newLinkedHashMap();
 
   /**
    * Re-using the PK mechanism even though the keys in {@link KVFileType#MIRNA_P} aren't actually unique (they are
@@ -58,6 +61,23 @@ public final class KVPrimaryKeys {
     updatePks(fileName, row);
   }
 
+  public List<String> getFilePaths() {
+    return newArrayList(pks.keySet());
+  }
+
+  public Iterator<KVKey> getPrimaryKeys(String fileName) {
+    return pks.get(fileName).iterator();
+  }
+
+  public boolean containsPk(KVKey pk) {
+    for (val filePks : pks.values()) {
+      if (filePks.contains(pk)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public void updatePks(String fileName, KVRow row) {
     if (ROW_CHECKS_ENABLED) {
       checkState(row.hasPk(), "Expected to have a PK: '%s' ('%s')", row, fileName);
@@ -68,23 +88,6 @@ public final class KVPrimaryKeys {
     }
 
     pks.get(fileName).add(row.getPk());
-  }
-
-  public List<String> getFilePaths() {
-    return newArrayList(pks.keySet());
-  }
-
-  public Iterator<KVKey> getPrimaryKeys(String fileName) {
-    return pks.get(fileName).iterator();
-  }
-
-  public boolean containsPk(KVKey key) {
-    for (val filePks : pks.values()) {
-      if (filePks.contains(key)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public long getSize() {

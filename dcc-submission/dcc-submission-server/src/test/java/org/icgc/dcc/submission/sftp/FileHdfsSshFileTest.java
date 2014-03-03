@@ -1,16 +1,19 @@
 package org.icgc.dcc.submission.sftp;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.sftp.fs.FileHdfsSshFile;
@@ -59,6 +62,7 @@ public class FileHdfsSshFileTest {
     when(submissionDirectory.getSubmission()).thenReturn(submission);
     when(context.getFileSystem()).thenReturn(createFileSystem());
     when(context.getReleasePath()).thenReturn(new Path(root.getAbsolutePath()));
+    when(context.getSubmissionFile(any(Path.class))).thenReturn(new SubmissionFile("", new Date(), 0, null));
     when(context.getSubmissionDirectory(PROJECT_KEY)).thenReturn(submissionDirectory);
 
     RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context);

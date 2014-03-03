@@ -6,7 +6,7 @@ Setup
 
 Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are using a package manager such as `apt`, `brew` or `macports` please ensure the correct version has been installed.
 
-Install brunch and required modules:
+Install [brunch](http://brunch.io/), [cake](http://coffeescript.org/documentation/docs/cake.html) and required modules:
 
 	sudo npm install -g brunch@1.6.7 
    	sudo npm install -g coffee-script 
@@ -17,6 +17,10 @@ Install brunch and required modules:
 Ensure that `brunch` has been added to your `PATH` by typing:
 
 	brunch
+	
+Ensure that `cacke` has been added to your `PATH` by typing:
+
+	cake
 	
 Development
 ---

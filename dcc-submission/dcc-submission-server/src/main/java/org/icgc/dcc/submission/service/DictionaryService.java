@@ -46,7 +46,7 @@ import com.google.inject.Inject;
 public class DictionaryService {
 
   @NonNull
-  private final ReleaseService releases;
+  private final ReleaseService releaseService;
   @NonNull
   private final DictionaryRepository dictionaryRepository;
   @NonNull
@@ -57,7 +57,7 @@ public class DictionaryService {
   }
 
   public Dictionary getCurrentDictionary() {
-    val release = releases.getNextRelease();
+    val release = releaseService.getNextRelease();
     return getCurrentDictionary(release);
   }
 
@@ -88,9 +88,9 @@ public class DictionaryService {
     dictionaryRepository.updateDictionary(dictionary);
 
     // Reset submissions if applicable
-    val release = releases.getNextRelease();
+    val release = releaseService.getNextRelease();
     if (version.equals(release.getDictionaryVersion())) {
-      releases.resetSubmissions(release.getName(), release.getProjectKeys());
+      releaseService.resetSubmissions();
     }
   }
 
@@ -205,15 +205,14 @@ public class DictionaryService {
     codeListRepository.addCodeListTerm(codeListName, term);
 
     // Reset INVALID submissions if applicable
-    val release = releases.getNextRelease();
+    val release = releaseService.getNextRelease();
     val currentDictionary = getCurrentDictionary(release);
     if (currentDictionary.usesCodeList(codeListName)) {
       log.info("Resetting submission due to active dictionary code list term addition...");
-      releases.resetSubmissions(release.getName(), release.getInvalidProjectKeys());
+      releaseService.resetInvalidSubmissions();
     } else {
       log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
-
   }
 
 }

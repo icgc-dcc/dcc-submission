@@ -153,7 +153,7 @@ module.exports = class ReportDatatypeView extends View
     else if state in ["VALID", "INVALID", "NOT_VALIDATED"]
       """
       <a data-toggle="modal"
-         class="m-btn mini green"
+         class="m-btn mini blue"
          style="height:auto; margin-top:0"
          href="#validate-submission-popup"
          id="validate-submission-popup-button">
@@ -167,8 +167,7 @@ module.exports = class ReportDatatypeView extends View
     ui_state = dataType.dataTypeState.replace("_", " ")
 
     """
-    <span>#{title} - </span>
-    <span class="#{lc_state}">#{ui_state}</span>
+    <span>#{title}&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;</span> #{utils.getStateDisplay dataType.dataTypeState}
     """
 
   # Since we chop and dice the collection, we need to use a different update
@@ -234,23 +233,7 @@ module.exports = class ReportDatatypeView extends View
           bVisible: true
           mData: (source, type) =>
             #state = @dataStateMap[source.dataType]
-            state = source.fileState.replace("_", " ")
-
-            if type == "display"
-              return switch state
-                when "INVALID"
-                  "<span class='error'><i class='icon-remove-sign'></i> " + state + "</span>"
-                when "VALID"
-                  "<span class='valid'><i class='icon-ok-sign'></i> " + state + "</span>"
-                when "VALIDATING"
-                  "<span class='validating'><i class='icon-cogs'></i> " + state + "</span>"
-                when "QUEUED"
-                  "<span class='queued'><i class='icon-time'></i> " + state + "</span>"
-                when "ERROR"
-                  "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
-                when "NOT VALIDATED"
-                  "<span><i class='icon-question-sign'></i> " + state + "</span>"
-            state
+            return utils.getStateDisplay source.fileState
         }
         {
           sTitle: "Report"
@@ -296,7 +279,7 @@ module.exports = class ReportDatatypeView extends View
       iDisplayLength: 10
       sPaginationType: "full_numbers"
       bPaginate: true
-      aaSorting: [[ 1, "asc" ]]
+      aaSorting: [[ 0, "asc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""

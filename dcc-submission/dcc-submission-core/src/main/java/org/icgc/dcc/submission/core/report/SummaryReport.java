@@ -45,6 +45,8 @@ import org.mongodb.morphia.annotations.Embedded;
 public class SummaryReport implements Comparable<SummaryReport> {
 
   /**
+   * Key.
+   * <p>
    * The short name of the summary metric.
    */
   private String name;

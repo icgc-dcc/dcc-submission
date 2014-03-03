@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation;
 
 import static com.google.common.base.Throwables.getRootCause;
 import static java.lang.String.format;
+import static java.lang.Thread.currentThread;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,6 +27,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.Validation;
+import org.icgc.dcc.submission.validation.util.ThreadNamingRunnable;
 
 /**
  * An executing validation job.
@@ -47,6 +49,16 @@ public class ValidationJob implements Runnable {
   @SneakyThrows
   public void run() {
     try {
+      execute();
+    } catch (Throwable t) {
+      log.error("Unknown exception executing validation " + validation, t);
+    }
+
+    log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
+  }
+
+  private void execute() {
+    try {
 
       //
       // Event: Started
@@ -67,33 +79,60 @@ public class ValidationJob implements Runnable {
       // Event: Completion
       //
 
-      log.info("job: Completing validation '{}'...", jobId);
-      listener.onCompletion(validation);
-    } catch (Throwable t) {
-      // Extract the root cause since Cascading can wrap it in a FlowException.
-      val rootCause = getRootCause(t);
+      // New thread to ensure this cannot be interrupted
+      finalize(new Runnable() {
 
-      val cancelled = rootCause instanceof InterruptedException;
-      if (cancelled) {
+        @Override
+        public void run() {
+          log.info("job: Completing validation '{}'...", jobId);
+          listener.onCompletion(validation);
+        }
 
-        //
-        // Event: Cancelled
-        //
+      });
+    } catch (final Throwable t) {
+      // New thread to ensure this cannot be interrupted
+      finalize(new Runnable() {
 
-        log.info("job: Cancelling validation '{}'...", jobId);
-        listener.onCancelled(validation);
-      } else {
+        @Override
+        public void run() {
+          // Extract the root cause since Cascading can wrap it in a FlowException.
+          val rootCause = getRootCause(t);
 
-        //
-        // Event: Failure
-        //
+          val cancelled = rootCause instanceof InterruptedException;
+          if (cancelled) {
 
-        log.error(format("job: Failing validation '%s'...", jobId), t);
-        listener.onFailure(validation, t);
-      }
+            //
+            // Event: Cancelled
+            //
+
+            log.info("job: Cancelling validation '{}'...", jobId);
+            listener.onCancelled(validation);
+          } else {
+
+            //
+            // Event: Failure
+            //
+
+            log.error(format("job: Failing validation '%s'...", jobId), t);
+            listener.onFailure(validation, t);
+          }
+        }
+      });
+
     }
+  }
 
-    log.info("job: Exiting validation. '{}' duration: {} ms", jobId, validation.getDuration());
+  public void finalize(Runnable runnable) {
+    // New thread to ensure this cannot be interrupted
+    val thread = new Thread(getThreadNamedRunnable(runnable));
+
+    thread.start();
+  }
+
+  private ThreadNamingRunnable getThreadNamedRunnable(Runnable runnable) {
+    val threadName = currentThread().getName() + "-finalize";
+
+    return new ThreadNamingRunnable(threadName, runnable);
   }
 
 }

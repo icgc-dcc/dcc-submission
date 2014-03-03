@@ -31,7 +31,7 @@ import lombok.ToString;
 import lombok.val;
 
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.core.model.SubmissionFile;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.ReleaseException;
 
 @NoArgsConstructor

@@ -41,12 +41,23 @@ module.exports = class SchemaReport extends Model
       errors = []
       for e in @get "errorReports"
         for c in e.fieldErrorReports
+
+          # Make datatable happy, ensure there are no nulls
+          c.fieldNames = [] if c.fieldNames == null
+          c.lineNumbers = [] if c.lineNumbers == null
+         
           c.errorType = e.errorType
           c.lineValueMap = {}
           for i in [0 .. c.lineNumbers.length - 1]
             c.lineValueMap[c.lineNumbers[i]] = c.values[i]
           c.lineNumbers = c.lineNumbers.sort((a,b)-> a - b)
+
+
+
           errors.push c
+
+
+ 
 
     @set "errorReports", new SchemaReportErrors errors
     @set "fieldReports", new SchemaReportFieldReports @get "fieldReports"
@@ -59,6 +70,10 @@ module.exports = class SchemaReport extends Model
     errors = []
     for e in response.errorReports
       for c in e.fieldErrorReports
+        # Make datatable happy, ensure there are no nulls
+        c.fieldNames = [] if c.fieldNames == null
+        c.lineNumbers = [] if c.lineNumbers == null
+
         c.errorType = e.errorType
         c.lineValueMap = {}
         for i in [0 .. c.lineNumbers.length - 1]

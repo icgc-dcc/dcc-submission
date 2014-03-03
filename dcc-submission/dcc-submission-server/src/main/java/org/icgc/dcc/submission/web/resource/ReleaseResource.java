@@ -42,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.icgc.dcc.submission.core.model.Views.Digest;
-import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -51,7 +50,6 @@ import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 @Slf4j
@@ -183,7 +181,7 @@ public class ReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    val fileReport = getFileReport(releaseName, projectKey, fileName);
+    val fileReport = releaseService.getFileReport(releaseName, projectKey, fileName);
     if (fileReport.isPresent() == false) {
       return noSuchEntityResponse(releaseName, projectKey, fileName);
     }
@@ -209,19 +207,6 @@ public class ReleaseResource {
 
     val submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
     return Response.ok(submissionFiles).build();
-  }
-
-  private Optional<FileReport> getFileReport(String releaseName, String projectKey, String fileName) {
-    Optional<FileReport> optional = Optional.absent();
-    val submission = releaseService.getSubmission(releaseName, projectKey);
-    if (submission != null) {
-      val report = submission.getReport();
-      if (report != null) {
-        optional = report.getFileReport(fileName);
-      }
-    }
-
-    return optional;
   }
 
 }

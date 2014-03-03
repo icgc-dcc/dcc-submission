@@ -21,6 +21,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.submission.core.report.ErrorReport;
 
@@ -41,7 +42,12 @@ public class ErrorCountVisitor extends NoOpVisitor {
   //
 
   private static int getErrorReportCount(ErrorReport errorReport) {
-    return errorReport.getFieldErrorReports().size();
+    int count = 0;
+    for (val fieldErrorReport : errorReport.getFieldErrorReports()) {
+      count += fieldErrorReport.getCount();
+    }
+
+    return count;
   }
 
 }

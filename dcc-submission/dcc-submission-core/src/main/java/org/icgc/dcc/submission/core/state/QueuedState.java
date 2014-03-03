@@ -34,7 +34,7 @@ public class QueuedState extends AbstractCancellableState {
       @NonNull Report nextReport) {
     // Ensure the latest files are accounted for
     nextReport.refreshFiles(context.getSubmissionFiles());
-    nextReport.reset(dataTypes);
+    nextReport.resetDataTypes(dataTypes);
     nextReport.notifyState(SubmissionState.VALIDATING, dataTypes);
 
     // Set to validating and clobber the report
@@ -47,7 +47,7 @@ public class QueuedState extends AbstractCancellableState {
     // Reset reports related to the validating data types
     val report = context.getReport();
     report.refreshFiles(context.getSubmissionFiles());
-    report.reset(dataTypes);
+    report.resetDataTypes(dataTypes);
 
     // Transition based on report
     val nextState = getReportedNextState(report);

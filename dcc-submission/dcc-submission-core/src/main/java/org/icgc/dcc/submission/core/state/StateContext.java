@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.core.state;
 
-import org.icgc.dcc.submission.core.model.SubmissionFile;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**

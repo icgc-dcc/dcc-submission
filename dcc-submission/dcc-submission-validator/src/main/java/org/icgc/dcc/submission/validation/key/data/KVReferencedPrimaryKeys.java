@@ -21,7 +21,7 @@ import static java.lang.String.format;
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import lombok.Value;
 
-import org.icgc.dcc.submission.validation.key.enumeration.KVFileType;
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
 
 @Value
 public class KVReferencedPrimaryKeys {

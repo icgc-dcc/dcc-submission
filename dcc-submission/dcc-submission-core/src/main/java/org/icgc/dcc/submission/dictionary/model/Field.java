@@ -128,6 +128,9 @@ public class Field implements DictionaryElement, Serializable {
     this.restrictions.add(restriction);
   }
 
+  /**
+   * FIXME: https://jira.oicr.on.ca/browse/DCC-2087
+   */
   public Optional<Restriction> getRestriction(final RestrictionType type) {
     return Iterables.tryFind(this.restrictions, new Predicate<Restriction>() {
 

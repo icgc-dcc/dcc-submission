@@ -25,6 +25,7 @@ mediator = require 'mediator'
 View = require 'views/base/view'
 Model = require 'models/base/model'
 NextRelease = require 'models/next_release'
+Queue = require 'models/queue'
 template = require 'views/templates/submission/validate_submission'
 utils = require 'lib/utils'
 
@@ -80,9 +81,13 @@ module.exports = class ValidateSubmissionView extends View
     # Only need shallow copy
     @dataTypes = _.clone( @report.dataTypeReports )
 
-    # Default to all selected
+
+    # Default, preselect NOT_VALIDATED and CLINICAL
     @dataTypes.forEach (d)->
-      d.selected = true
+      if d.dataType == "CLINICAL_CORE_TYPE" or d.dataTypeState in ["INVALID", "NOT_VALIDATED"]
+        d.selected = true
+      else
+        d.selected = false
 
 
     # Make clinical related files go first
@@ -98,12 +103,16 @@ module.exports = class ValidateSubmissionView extends View
     # Pre-filter if datatype is provided
     if datatype
       @dataTypes.forEach (f)->
-        f.selected = false unless (f.dataType == "CLINICAL_CORE_TYPE" or f.dataType == datatype)
+        if f.dataType == "CLINICAL_CORE_TYPE" or f.dataType == datatype
+          f.selected = true
+        else
+          f.selected = false
 
-    release = new NextRelease()
-    release.fetch
+    # Grab queue length
+    queue = new Queue()
+    queue.fetch
       success: (data) =>
-        @model.set 'queue', data.get('queue').length
+        @model.set 'queue', data.get 'queue'
 
     super
 
@@ -114,6 +123,8 @@ module.exports = class ValidateSubmissionView extends View
     @delegate 'click', '#feature-clear', @selectNone
     @delegate 'input propertychange', '#emails', @checkEmail
 
+    @render()
+
   render: ->
     super
 
@@ -123,7 +134,7 @@ module.exports = class ValidateSubmissionView extends View
     # Create a feature type selection table
     aoColumns = [
       {
-         sTitle: "Data Types To Valdiate"
+         sTitle: "Data Type"
          mData: (source) ->
            displayName = utils.translateDataType(source.dataType)
            if source.dataType != "CLINICAL_CORE_TYPE"
@@ -153,18 +164,7 @@ module.exports = class ValidateSubmissionView extends View
       {
         sTitle: "State"
         mData: (source) =>
-          state = source.dataTypeState
-          if state
-            ui_state = state.replace("_", " ")
-            switch state
-              when "INVALID"
-                return "<span class='invalid'><i class='icon-remove-sign'>"+ui_state+"</span>"
-              when "VALID"
-                return "<span class='valid'><i class='icon-ok-sign'>"+ui_state+"</span>"
-              else
-                return "<span>#{state}</span>"
-          else
-            return "<span>Not Validated</span>"
+          return utils.getStateDisplay source.dataTypeState
       }
     ]
 

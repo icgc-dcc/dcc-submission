@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.submission.core.report.ErrorParameterKey.DESCRIPTION;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.EXPECTED;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.FIELDS;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.FILES;
@@ -235,10 +234,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params, String.class, String.class);
-      return ImmutableMap.of(
-          EXPECTED, params[0],
-          DESCRIPTION, params[1]);
+      return ImmutableMap.of();
     }
   },
 
