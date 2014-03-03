@@ -108,9 +108,9 @@ public class HttpServerService extends AbstractService {
     notifyStopped();
   }
 
-  private void addHandlers(final com.google.common.collect.ImmutableSet<java.lang.String> resources) {
+  private void addHandlers(Set<String> resources) {
     val serverConfig = server.getServerConfiguration();
-    for (HttpHandlerProvider provider : handlerProviders) {
+    for (val provider : handlerProviders) {
       serverConfig.addHttpHandler(provider.get(), provider.path());
     }
 

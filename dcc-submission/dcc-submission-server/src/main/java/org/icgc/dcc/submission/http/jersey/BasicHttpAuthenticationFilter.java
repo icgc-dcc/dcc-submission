@@ -48,7 +48,6 @@ import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 /**
  * Basic HTTTP authentication filter that binds Shiro's {@link Subject} to the current thread for the life cycle of the
@@ -88,9 +87,6 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
    * Request property that carries the previous thread name within the request for later restoration.
    */
   private static final String THREAD_NAME_PROPERTY = BasicHttpAuthenticationFilter.class.getName() + ".thread.name";
-
-  @NonNull
-  private final Config config;
 
   /**
    * Delegate that performs the actual authentication.
