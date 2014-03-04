@@ -72,7 +72,7 @@ public abstract class ResourceTest extends JerseyTest {
         (Module) new SftpModule(),
 
         // Business modules
-        (Module) new ValidationModule(TEST_CONFIG));
+        (Module) new ValidationModule());
 
     // modules.addAll(configureModules());
 
