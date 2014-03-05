@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
+import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
+import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
@@ -24,21 +27,20 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Properties;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator.Feature;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
-import org.codehaus.jackson.map.SerializationConfig;
-
 import cascading.flow.FlowProcess;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
 import cascading.scheme.local.TextLine;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 public class LocalJsonScheme extends TextLine {
 
-  private final ObjectMapper mapper = new ObjectMapper(new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
-      .disable(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS);
+  private final ObjectMapper mapper = new ObjectMapper(
+      new JsonFactory().disable(AUTO_CLOSE_TARGET))
+      .disable(FAIL_ON_EMPTY_BEANS);
 
   private final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 

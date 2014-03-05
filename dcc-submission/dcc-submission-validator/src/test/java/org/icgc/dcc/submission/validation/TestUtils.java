@@ -28,11 +28,12 @@ import java.util.List;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class TestUtils {

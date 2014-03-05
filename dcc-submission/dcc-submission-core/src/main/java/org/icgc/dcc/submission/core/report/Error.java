@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.core.report;
 
 import static java.util.Collections.emptyList;
-import static org.icgc.dcc.submission.core.util.JacksonFaster.DEFAULT;
+import static org.icgc.dcc.submission.core.util.Jackson.DEFAULT;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,9 +30,8 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.experimental.Accessors;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 /**

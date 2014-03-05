@@ -40,7 +40,6 @@ import javax.ws.rs.core.SecurityContext;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.codehaus.jackson.map.annotate.JsonView;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
@@ -49,6 +48,7 @@ import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 

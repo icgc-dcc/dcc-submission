@@ -32,13 +32,13 @@ import javax.ws.rs.core.SecurityContext;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.http.jersey.PATCH;
 import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 
 /**
@@ -48,7 +48,8 @@ import com.google.inject.Inject;
  * @see http://stackoverflow.com/questions/8660003/restful-design-of-a-resource-with-binary-states
  * @see http://stackoverflow.com/questions/8914852/rest-interface-design-for-machine-control
  * @see http://stackoverflow.com/questions/6776198/rest-model-state-transitions
- * @see http://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
+ * @see http
+ * ://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
  */
 @Slf4j
 @Path("/")
@@ -62,8 +63,7 @@ public class SystemResource {
   @Path("/systems/sftp")
   public Response getStatus(
 
-      @Context
-      SecurityContext securityContext
+      @Context SecurityContext securityContext
 
       )
   {
@@ -81,8 +81,7 @@ public class SystemResource {
   @Path("/systems/sftp")
   public Response patch(
 
-      @Context
-      SecurityContext securityContext,
+      @Context SecurityContext securityContext,
 
       JsonNode state
 

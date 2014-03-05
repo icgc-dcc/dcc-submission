@@ -36,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
@@ -48,6 +47,7 @@ import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Function;
 
 @Slf4j

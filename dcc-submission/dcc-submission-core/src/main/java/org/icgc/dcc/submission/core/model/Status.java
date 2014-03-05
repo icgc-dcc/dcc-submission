@@ -22,9 +22,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.util.concurrent.Service.State;
 
@@ -43,17 +42,13 @@ public class Status {
 
   @JsonCreator
   public Status(
-      @JsonProperty("sftpEnabled")
-      Boolean sftpEnabled,
+      @JsonProperty("sftpEnabled") Boolean sftpEnabled,
 
-      @JsonProperty("sftpState")
-      State sftpState,
+      @JsonProperty("sftpState") State sftpState,
 
-      @JsonProperty("activeSftpSessions")
-      int activeSftpSessions,
+      @JsonProperty("activeSftpSessions") int activeSftpSessions,
 
-      @JsonProperty("userSessions")
-      List<UserSession> userSessions)
+      @JsonProperty("userSessions") List<UserSession> userSessions)
 
   {
     super();
@@ -70,7 +65,7 @@ public class Status {
     this.userSessions = newArrayList();
   }
 
-  public void addUserSession(UserSession userSession) { 
+  public void addUserSession(UserSession userSession) {
     // TODO: builder
     userSessions.add(userSession);
     activeSftpSessions++;

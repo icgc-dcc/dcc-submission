@@ -42,9 +42,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FileTypes.FileType;
@@ -58,6 +55,9 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import com.mongodb.BasicDBObject;
 import com.typesafe.config.Config;

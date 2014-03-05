@@ -40,13 +40,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.codehaus.jackson.map.MappingIterator;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
+
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @NoArgsConstructor
 @Slf4j

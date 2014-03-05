@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.web.provider;
 
+import static com.fasterxml.jackson.databind.MapperFeature.DEFAULT_VIEW_INCLUSION;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -50,10 +51,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.SerializationConfig;
-
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.inject.Inject;
@@ -80,7 +80,7 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
     this.validator = validator;
 
     // Do not serialize properties without a view when views are specified
-    delegate.configure(SerializationConfig.Feature.DEFAULT_VIEW_INCLUSION, false);
+    delegate.setMapper(new ObjectMapper().disable(DEFAULT_VIEW_INCLUSION));
   }
 
   @Override
