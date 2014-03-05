@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Maps.difference;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
-import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.NONE;
 
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +32,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.visitor.AddErrorVisitor;
@@ -54,6 +53,7 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 

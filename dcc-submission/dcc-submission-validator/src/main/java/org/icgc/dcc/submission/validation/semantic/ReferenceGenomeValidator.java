@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.semantic;
 
+import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.google.common.primitives.Ints.tryParse;
 import static java.lang.String.format;
-import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
@@ -46,13 +46,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
 import org.icgc.dcc.submission.core.parser.FileParser;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input.

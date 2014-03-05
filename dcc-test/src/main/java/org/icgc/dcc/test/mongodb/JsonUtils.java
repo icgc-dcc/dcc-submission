@@ -46,11 +46,11 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.MappingIterator;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.util.MapUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.code.externalsorting.ExternalSort;
 import com.google.common.collect.ImmutableList;
 
@@ -117,7 +117,7 @@ public final class JsonUtils {
 
   private static void filterTreeRecursive(JsonNode tree, List<String> includedProperties,
       List<String> excludedProperties, int maxDepth, String key) {
-    Iterator<Entry<String, JsonNode>> fieldsIter = tree.getFields();
+    Iterator<Entry<String, JsonNode>> fieldsIter = tree.fields();
     while (fieldsIter.hasNext()) {
       Entry<String, JsonNode> field = fieldsIter.next();
       String fullName = key == null ? field.getKey() : key + "." + field.getKey();

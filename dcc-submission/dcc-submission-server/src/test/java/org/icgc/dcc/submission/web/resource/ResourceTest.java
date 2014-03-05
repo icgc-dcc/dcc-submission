@@ -16,7 +16,6 @@ import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.Application;
 
 import org.apache.shiro.util.ThreadContext;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -33,6 +32,7 @@ import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.web.WebModule;
 import org.junit.After;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;

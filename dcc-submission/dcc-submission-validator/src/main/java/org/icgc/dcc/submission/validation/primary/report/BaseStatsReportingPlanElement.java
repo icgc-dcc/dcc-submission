@@ -32,7 +32,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
@@ -46,6 +45,7 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;

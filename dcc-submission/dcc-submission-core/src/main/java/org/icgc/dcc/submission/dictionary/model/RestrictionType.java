@@ -21,11 +21,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonValue;
 import org.mongodb.morphia.converters.TypeConverter;
 import org.mongodb.morphia.mapping.MappedField;
 import org.mongodb.morphia.mapping.MappingException;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 @RequiredArgsConstructor
 public enum RestrictionType {
@@ -46,13 +47,11 @@ public enum RestrictionType {
   private final boolean multi;
 
   @JsonValue
-  @com.fasterxml.jackson.annotation.JsonValue
   public String getId() {
     return id;
   }
 
   @JsonCreator
-  @com.fasterxml.jackson.annotation.JsonCreator
   public static RestrictionType byId(String id) {
     if (id == null) return null;
     for (val restriction : values()) {

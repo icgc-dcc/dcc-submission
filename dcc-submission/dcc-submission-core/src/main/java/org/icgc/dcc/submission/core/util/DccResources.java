@@ -30,4 +30,5 @@ public final class DccResources {
   public static URL getDccResource(String resourceName) {
     return getResource("org/icgc/dcc/resources/" + resourceName);
   }
+
 }
