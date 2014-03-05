@@ -15,21 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.submission.core.report.visitor;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static com.google.common.collect.Iterables.contains;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileState;
 
 /**
- * Common object mappers.
+ * Propagates state changes internally based on outside influence.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class JacksonFaster {
+@RequiredArgsConstructor
+public class ErrorVisitor extends UpdateStateVisitor {
 
-  public static final ObjectMapper DEFAULT = new ObjectMapper();
-  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
+  @NonNull
+  private final Iterable<DataType> dataTypes;
+
+  @Override
+  public void visit(FileReport fileReport) {
+    // Inherit state change
+    if (isTarget(fileReport)) {
+      fileReport.setFileState(FileState.ERROR);
+    }
+
+    super.visit(fileReport);
+  }
+
+  //
+  // Helpers
+  //
+
+  private boolean isTarget(@NonNull FileReport fileReport) {
+    return contains(dataTypes, fileReport.getFileType().getDataType());
+  }
 
 }

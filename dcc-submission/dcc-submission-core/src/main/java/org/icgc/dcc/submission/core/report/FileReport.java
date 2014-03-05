@@ -31,12 +31,13 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
 import org.mongodb.morphia.annotations.Embedded;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Reports on a submission file.

@@ -19,8 +19,9 @@ package org.icgc.dcc.submission.core;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+
+import java.util.Set;
+
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +33,6 @@ import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
-import org.icgc.dcc.submission.validation.norm.NormalizationConfig;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
@@ -41,26 +41,18 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.planner.Planner;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
-import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
 import com.google.common.base.Optional;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.common.collect.Sets;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
 import com.typesafe.config.Config;
 
 /**
  * Module that wires together components of the validation subsystem.
  */
 @Slf4j
-@RequiredArgsConstructor
 public class ValidationModule extends AbstractDccModule {
 
   /**
@@ -79,185 +71,45 @@ public class ValidationModule extends AbstractDccModule {
    */
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
   private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
+  private static final String NORMALIZER_CONFIG_PARAM = NormalizationValidator.COMPONENT_NAME;
 
   /**
    * Default value for maximum number of concurrent validations.
    */
   private static final int DEFAULT_MAX_VALIDATING = 1;
 
-  @NonNull
-  private final Config config;
-
   @Override
   protected void configure() {
-    bindService();
-    bindValidators();
-  }
-
-  /**
-   * Binds service level components.
-   */
-  private void bindService() {
-    // Execution facility
-    bind(ValidationExecutor.class).toProvider(new Provider<ValidationExecutor>() {
-
-      @Inject
-      private Config config;
-
-      @Override
-      public ValidationExecutor get() {
-        return new ValidationExecutor(getMaxValidating());
-      }
-
-      private int getMaxValidating() {
-        val path = MAX_VALIDATING_CONFIG_PARAM;
-        return config.hasPath(path) ? config.getInt(path) : DEFAULT_MAX_VALIDATING;
-      }
-
-    }).in(Singleton.class);
-  }
-
-  private void bindValidators() {
-    // Bind common components
-    bindNewTemporaryFileSystemAbstraction(); // TODO: Shouldn't be bound here, see DCC-1876
+    requestStaticInjection(ByteOffsetToLineNumber.class);
     bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
+    bind(Planner.class).in(Singleton.class);
 
     // Set binder will preserve bind order as iteration order for injectees
-    val validators = newSetBinder(binder(), Validator.class);
-
-    // Bind validators and their execution ordering
-    if (config.hasPath("validators")) {
-      val values = config.getList("validators").unwrapped();
-      log.info("Binding validators in the following order: {}", values);
-
-      // Externally configured validators and validator ordering
-      for (val value : values) {
-        if (value.equals(FIRST_PASS_VALIDATOR_CONFIG_VALUE)) {
-          bindFirstPassValidator(validators);
-        } else if (value.equals(PRIMARY_VALIDATOR_CONFIG_VALUE)) {
-          bindKeyValidator(validators);
-        } else if (value.equals(KEY_VALIDATOR_CONFIG_VALUE)) {
-          bindKeyValidator(validators);
-        } else if (value.equals(REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE)) {
-          bindReferenceGenomeValidator(validators);
-        } else if (value.equals(NORMALIZATION_VALIDATOR_CONFIG_VALUE)) {
-          bindNormalizationValidator(validators);
-        } else {
-          checkState(false, "Invalid validator specification '%s'", value);
-        }
-      }
-    } else {
-      // Default validators and validator ordering
-      bindFirstPassValidator(validators);
-      bindPrimaryValidator(validators);
-      bindKeyValidator(validators);
-      bindReferenceGenomeValidator(validators);
-      bindNormalizationValidator(validators);
+    val types = newSetBinder(binder(), RestrictionType.class);
+    for (val type : RestrictionType.TYPES) {
+      types.addBinding().to(type).in(Singleton.class);
     }
   }
 
-  private void bindFirstPassValidator(Multibinder<Validator> validators) {
-    bindValidator(validators, FirstPassValidator.class);
+  @Provides
+  @Singleton
+  public ValidationExecutor validationExecutor(Config config) {
+    val path = MAX_VALIDATING_CONFIG_PARAM;
+    val maxValidating = config.hasPath(path) ? config.getInt(path) : DEFAULT_MAX_VALIDATING;
+
+    return new ValidationExecutor(maxValidating);
   }
 
-  private void bindKeyValidator(Multibinder<Validator> validators) {
-    bindValidator(validators, KeyValidator.class);
-  }
-
-  private void bindPrimaryValidator(Multibinder<Validator> validators) {
-    bindValidator(validators, PrimaryValidator.class);
-
-    // Builder of plans
-    bind(Planner.class).in(Singleton.class);
-
-    // Bind static
-    requestStaticInjection(ByteOffsetToLineNumber.class);
-
-    // Primary restrictions
-    bindRestrictionTypes();
-
-    // Helper
-    bind(RestrictionContext.class).toInstance(new RestrictionContext() {
-
-      @Inject
-      DictionaryService dictionaryService;
+  @Provides
+  public RestrictionContext restrictionContext(final DictionaryService dictionaryService) {
+    return new RestrictionContext() {
 
       @Override
       public Optional<CodeList> getCodeList(String codeListName) {
         return dictionaryService.getCodeList(codeListName);
       }
 
-    });
-
-  }
-
-  private void bindReferenceGenomeValidator(Multibinder<Validator> validators) {
-    bindValidator(validators, new Provider<ReferenceGenomeValidator>() {
-
-      @Inject
-      private Config config;
-
-      @Override
-      public ReferenceGenomeValidator get() {
-        return new ReferenceGenomeValidator(getFastaFilePath());
-      }
-
-      private String getFastaFilePath() {
-        val path = FASTA_FILE_PATH_CONFIG_PARAM;
-        checkState(config.hasPath(path), "'%s' is should be present in the config", path);
-
-        return config.getString(path);
-      }
-
-    });
-  }
-
-  private void bindNormalizationValidator(Multibinder<Validator> validators) {
-    bindValidator(validators, new Provider<NormalizationValidator>() {
-
-      @Inject
-      private Config config;
-
-      @Inject
-      private DccFileSystem2 dccFileSystem2;
-
-      @Override
-      public NormalizationValidator get() {
-        return NormalizationValidator.getDefaultInstance(dccFileSystem2, getNormalizationConfig());
-      }
-
-      private Config getNormalizationConfig() {
-        return config.getConfig(NormalizationConfig.NORMALIZER_CONFIG_PARAM);
-      }
-
-    });
-  }
-
-  /**
-   * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
-   */
-  private void bindRestrictionTypes() {
-    // Set binder will preserve bind order as iteration order for injectees
-    val types = Multibinder.newSetBinder(binder(), RestrictionType.class);
-
-    bindRestriction(types, DiscreteValuesRestriction.Type.class);
-    bindRestriction(types, RangeFieldRestriction.Type.class);
-    bindRestriction(types, RequiredRestriction.Type.class);
-    bindRestriction(types, CodeListRestriction.Type.class);
-    bindRestriction(types, RegexRestriction.Type.class);
-    bindRestriction(types, ScriptRestriction.Type.class);
-  }
-
-  private static void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
-    types.addBinding().to(type).in(Singleton.class);
-  }
-
-  private static void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {
-    validators.addBinding().to(validator).in(Singleton.class);
-  }
-
-  private static void bindValidator(Multibinder<Validator> validators, Provider<? extends Validator> provider) {
-    validators.addBinding().toProvider(provider).in(Singleton.class);
+    };
   }
 
   /**
@@ -267,35 +119,84 @@ public class ValidationModule extends AbstractDccModule {
    * <p>
    * TODO: address hard-codings
    */
-  private void bindNewTemporaryFileSystemAbstraction() {
-    bind(DccFileSystem2.class).toProvider(new Provider<DccFileSystem2>() {
+  @Provides
+  @Singleton
+  public DccFileSystem2 dccFileSystem2(Config config, FileSystem fileSystem) {
+    val rootDir = get(config, "fs.root");
+    val hdfs = get(config, "fs.url").startsWith("hdfs");
 
-      @Inject
-      private FileSystem fileSystem;
+    return new DccFileSystem2(fileSystem, rootDir, hdfs);
+  }
 
-      @Inject
-      private Config config;
+  @Provides
+  @Singleton
+  public Set<Validator> validators(Config config, DccFileSystem2 dccFileSystem2, Planner planner) {
+    // Bind common components
 
-      @Override
-      public DccFileSystem2 get() {
-        return new DccFileSystem2(fileSystem, getRootDir(), isHdfs());
+    // Set binder will preserve bind order as iteration order for injectees
+    val validators = Sets.<Validator> newLinkedHashSet();
+
+    // Bind validators and their execution ordering
+    if (config.hasPath("validators")) {
+      val values = config.getList("validators").unwrapped();
+      log.info("Binding validators in the following order: {}", values);
+
+      // Externally configured validators and validator ordering
+      for (val value : values) {
+        if (value.equals(FIRST_PASS_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(firstPassValidator());
+        } else if (value.equals(PRIMARY_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(primaryValidator(planner));
+        } else if (value.equals(KEY_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(keyValidator());
+        } else if (value.equals(REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(referenceGenomeValidator(config));
+        } else if (value.equals(NORMALIZATION_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(normalizationValidator(config, dccFileSystem2));
+        } else {
+          checkState(false, "Invalid validator specification '%s'", value);
+        }
       }
+    } else {
+      // Default validators and validator ordering
+      validators.add(firstPassValidator());
+      validators.add(primaryValidator(planner));
+      validators.add(keyValidator());
+      validators.add(referenceGenomeValidator(config));
+      validators.add(normalizationValidator(config, dccFileSystem2));
+    }
 
-      private String getRootDir() {
-        val path = "fs.root";
-        checkState(config.hasPath(path), "'%s' should be present in the config", path);
+    return validators;
+  }
 
-        return config.getString(path);
-      }
+  private static Validator firstPassValidator() {
+    return new FirstPassValidator();
+  }
 
-      private boolean isHdfs() {
-        val path = "fs.url";
-        checkState(config.hasPath(path), "'%s' should be present in the config", path);
+  private static Validator keyValidator() {
+    return new KeyValidator();
+  }
 
-        return config.getString(path).startsWith("hdfs");
-      }
+  private static Validator primaryValidator(Planner planner) {
+    return new PrimaryValidator(planner);
+  }
 
-    });
+  private static Validator referenceGenomeValidator(Config config) {
+    val fastaFilePath = get(config, FASTA_FILE_PATH_CONFIG_PARAM);
+
+    return new ReferenceGenomeValidator(fastaFilePath);
+  }
+
+  private static Validator normalizationValidator(Config config, DccFileSystem2 dccFileSystem2) {
+    val normConfig = config.getConfig(NORMALIZER_CONFIG_PARAM);
+
+    return NormalizationValidator.getDefaultInstance(dccFileSystem2, normConfig);
+  }
+
+  private static String get(Config config, String name) {
+    checkState(config.hasPath(name), "'%s' should be present in the config", name);
+
+    return config.getString(name);
   }
 
 }

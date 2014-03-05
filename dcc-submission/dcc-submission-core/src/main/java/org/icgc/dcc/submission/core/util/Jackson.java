@@ -17,18 +17,19 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PRIVATE;
-
-import java.net.URL;
-
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class DccResources {
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
-  public static URL getDccResource(String resourceName) {
-    return getResource("org/icgc/dcc/resources/" + resourceName);
-  }
+/**
+ * Common object mappers.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class Jackson {
+
+  public static final ObjectMapper DEFAULT = new ObjectMapper();
+  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
 
 }

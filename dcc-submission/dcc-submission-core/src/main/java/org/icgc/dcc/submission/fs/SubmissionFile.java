@@ -24,11 +24,6 @@ import java.util.Date;
 import lombok.NonNull;
 import lombok.Value;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
@@ -36,6 +31,11 @@ import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
 import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;
 import org.mongodb.morphia.annotations.Converters;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
 
 /**

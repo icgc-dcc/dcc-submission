@@ -21,15 +21,16 @@ import java.io.IOException;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator.Feature;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
-import org.codehaus.jackson.map.SerializationConfig;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.SinkCall;
 import cascading.scheme.hadoop.TextLine;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class HadoopJsonScheme extends TextLine {
 
@@ -51,17 +52,17 @@ public class HadoopJsonScheme extends TextLine {
   }
 
   private final ObjectMapper mapper() {
-    if(mapper == null) {
+    if (mapper == null) {
       mapper =
           new ObjectMapper(new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET)).configure(
-              SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
+              SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     return mapper;
   }
 
   private final ObjectWriter writer() {
-    if(writer == null) {
+    if (writer == null) {
       writer = mapper().writer();
     }
 

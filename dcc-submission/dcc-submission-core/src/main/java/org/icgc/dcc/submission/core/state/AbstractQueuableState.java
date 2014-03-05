@@ -40,7 +40,7 @@ public class AbstractQueuableState extends AbstractModifiableState {
     val report = context.getReport();
     report.refreshFiles(context.getSubmissionFiles());
     report.resetDataTypes(dataTypes);
-    report.notifyState(nextState, dataTypes);
+    report.inheritState(nextState, dataTypes);
 
     // Enter state
     context.setState(nextState);

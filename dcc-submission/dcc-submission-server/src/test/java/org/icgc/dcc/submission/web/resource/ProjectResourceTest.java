@@ -319,12 +319,17 @@ public class ProjectResourceTest extends ResourceTest {
 
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class))
-        .isEqualTo(
-            "[{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"releaseName\":\"REL1\",\"lastUpdated\":"
-                + submissionTwo.getLastUpdated().getTime()
-                + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}},"
-                + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"releaseName\":\"REL1\",\"lastUpdated\":"
-                + submissionOne.getLastUpdated().getTime()
-                + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}}]");
+        .isEqualTo(""
+            + "["
+            + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"releaseName\":\"REL1\",\"lastUpdated\":"
+            + submissionOne.getLastUpdated().getTime()
+            + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}"
+            + "}"
+            + ","
+            + "{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"releaseName\":\"REL1\",\"lastUpdated\":"
+            + submissionTwo.getLastUpdated().getTime()
+            + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}"
+            + "}"
+            + "]");
   }
 }

@@ -86,7 +86,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.core.model.FileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.PersistenceModule;
@@ -105,6 +104,7 @@ import org.junit.runner.RunWith;
 import org.mongodb.morphia.Datastore;
 
 import com.dumbster.smtp.SimpleSmtpServer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.jcraft.jsch.SftpException;

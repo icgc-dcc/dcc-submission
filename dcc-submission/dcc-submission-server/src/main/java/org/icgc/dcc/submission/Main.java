@@ -173,7 +173,7 @@ public class Main {
 
         // Business modules
         new ServiceModule(),
-        new ValidationModule(config));
+        new ValidationModule());
 
     injector.injectMembers(this);
   }

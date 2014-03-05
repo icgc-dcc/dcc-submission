@@ -25,9 +25,14 @@ import javax.validation.Validation;
 public enum Outcome {
 
   /**
-   * Validation succeeded. Does not imply validity.
+   * Validation did not complete all validators but there was no exception.
    */
-  SUCCEEDED,
+  ABORTED,
+
+  /**
+   * Validation completed all validators without exception.
+   */
+  COMPLETED,
 
   /**
    * Validation failed due to an unexpected exception.

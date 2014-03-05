@@ -31,8 +31,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.codehaus.jackson.map.MappingIterator;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ReportContext;
@@ -45,6 +43,9 @@ import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
+
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 

@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key.report;
 
-import static org.codehaus.jackson.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
-import static org.codehaus.jackson.map.SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS;
+import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
+import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
@@ -38,14 +38,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.key.core.KVDictionary;
 import org.icgc.dcc.submission.validation.key.core.KVErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * Reports key validation errors in the context of the submission system.
@@ -59,8 +60,7 @@ public class KVReporter implements Closeable {
   public static final String REPORT_FILE_NAME = "all.keys--errors.json";
 
   private final static ObjectWriter WRITER = new ObjectMapper(new JsonFactory().disable(AUTO_CLOSE_TARGET))
-      .configure(FAIL_ON_EMPTY_BEANS, false)
-      .writer();
+      .disable(FAIL_ON_EMPTY_BEANS).writer();
 
   @NonNull
   private final KVDictionary dictionary;

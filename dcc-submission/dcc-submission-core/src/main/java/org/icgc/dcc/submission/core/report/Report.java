@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Maps.difference;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
-import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.NONE;
 
 import java.util.Map;
 import java.util.Set;
@@ -32,9 +32,9 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.visitor.AbortVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddErrorVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFieldVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFileVisitor;
@@ -42,8 +42,8 @@ import org.icgc.dcc.submission.core.report.visitor.AddSummaryVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ErrorCountVisitor;
 import org.icgc.dcc.submission.core.report.visitor.GetFileReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.GetFilesVisitor;
+import org.icgc.dcc.submission.core.report.visitor.InheritStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.IsValidVisitor;
-import org.icgc.dcc.submission.core.report.visitor.NotifyStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RefreshStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RemoveFileVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ResetVisitor;
@@ -54,6 +54,7 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
@@ -190,8 +191,12 @@ public class Report implements ReportElement {
     executeVisitor(new ResetVisitor(dataTypes));
   }
 
-  public void notifyState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
-    executeVisitor(new NotifyStateVisitor(state, dataTypes));
+  public void inheritState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
+    executeVisitor(new InheritStateVisitor(state, dataTypes));
+  }
+
+  public void abort(@NonNull Iterable<DataType> dataTypes) {
+    executeVisitor(new AbortVisitor(dataTypes));
   }
 
   public void refreshState() {

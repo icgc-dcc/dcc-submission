@@ -37,7 +37,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.val;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
@@ -50,6 +49,7 @@ import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Indexed;
 import org.mongodb.morphia.annotations.PrePersist;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;

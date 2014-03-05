@@ -38,8 +38,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.val;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
@@ -47,6 +45,8 @@ import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.mongodb.morphia.annotations.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;

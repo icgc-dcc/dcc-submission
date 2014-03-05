@@ -30,10 +30,10 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.ToString;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.submission.core.report.ErrorParameterKey;
 import org.icgc.dcc.submission.core.report.ErrorType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
