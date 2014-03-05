@@ -15,35 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.state;
+package org.icgc.dcc.submission.core.report.visitor;
 
-import static lombok.AccessLevel.PACKAGE;
-import lombok.NoArgsConstructor;
+import static com.google.common.collect.Iterables.contains;
 import lombok.NonNull;
-import lombok.val;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.core.report.FileReport;
+import org.icgc.dcc.submission.core.report.FileState;
 
 /**
- * A state that allows queuing of the associated submission.
+ * Propagates state changes internally based on outside influence.
  */
-@NoArgsConstructor(access = PACKAGE)
-public class AbstractQueuableState extends AbstractModifiableState {
+@RequiredArgsConstructor
+public class ErrorVisitor extends UpdateStateVisitor {
+
+  @NonNull
+  private final Iterable<DataType> dataTypes;
 
   @Override
-  public void queueRequest(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
-    // The transition endpoint
-    val nextState = SubmissionState.QUEUED;
+  public void visit(FileReport fileReport) {
+    // Inherit state change
+    if (isTarget(fileReport)) {
+      fileReport.setFileState(FileState.ERROR);
+    }
 
-    // Specified data-types need resetting
-    val report = context.getReport();
-    report.refreshFiles(context.getSubmissionFiles());
-    report.resetDataTypes(dataTypes);
-    report.inheritState(nextState, dataTypes);
+    super.visit(fileReport);
+  }
 
-    // Enter state
-    context.setState(nextState);
+  //
+  // Helpers
+  //
+
+  private boolean isTarget(@NonNull FileReport fileReport) {
+    return contains(dataTypes, fileReport.getFileType().getDataType());
   }
 
 }

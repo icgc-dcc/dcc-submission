@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import static com.google.common.collect.Iterables.contains;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -29,13 +30,11 @@ import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
-import com.google.common.collect.Iterables;
-
 /**
  * Propagates state changes internally based on outside influence.
  */
 @RequiredArgsConstructor
-public class NotifyStateVisitor extends NoOpVisitor {
+public class InheritStateVisitor extends NoOpVisitor {
 
   @NonNull
   private final SubmissionState nextState;
@@ -122,7 +121,7 @@ public class NotifyStateVisitor extends NoOpVisitor {
   }
 
   private boolean isTarget(@NonNull DataType dataType) {
-    return Iterables.contains(dataTypes, dataType);
+    return contains(dataTypes, dataType);
   }
 
 }

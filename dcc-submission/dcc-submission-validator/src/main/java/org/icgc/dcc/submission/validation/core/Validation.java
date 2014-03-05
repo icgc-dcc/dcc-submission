@@ -19,9 +19,11 @@ package org.icgc.dcc.submission.validation.core;
 
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -59,10 +61,22 @@ public class Validation {
   private final Stopwatch duration = createUnstarted();
 
   /**
+   * Have all the validators completed?
+   */
+  private final AtomicBoolean completed = new AtomicBoolean(false);
+
+  /**
    * The identifier used to {@code submit} and {@code cancel} with the {@link ValidationExecutor}.
    */
   public String getId() {
     return context.getProjectKey();
+  }
+
+  /**
+   * Have all the validators completed?
+   */
+  public boolean isCompleted() {
+    return completed.get();
   }
 
   /**
@@ -105,8 +119,8 @@ public class Validation {
 
         val failure = context.hasErrors();
         if (failure) {
-          log.warn("Execution of '{}' for '{}' has '{}' errors",
-              new Object[] { name, getId(), context.getErrorCount() });
+          log.warn("Execution of '{}' for '{}' has {} errors",
+              new Object[] { name, getId(), formatCount(context.getErrorCount()) });
 
           // Abort validation pipeline
           break;
@@ -117,6 +131,9 @@ public class Validation {
 
         i++;
       }
+
+      // Indicate that validation has completed all steps
+      completed.set(i - 1 == n);
     } catch (Throwable t) {
       log.error(banner());
       log.error("[" + i + "/" + n + "] < Finished with Exception '{}' for '{}' in {}",

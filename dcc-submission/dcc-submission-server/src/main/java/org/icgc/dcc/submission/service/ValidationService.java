@@ -24,9 +24,10 @@ import static com.google.common.util.concurrent.AbstractScheduledService.Schedul
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.icgc.dcc.submission.core.model.Outcome.ABORTED;
 import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
+import static org.icgc.dcc.submission.core.model.Outcome.COMPLETED;
 import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
-import static org.icgc.dcc.submission.core.model.Outcome.SUCCEEDED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.Set;
@@ -222,7 +223,7 @@ public class ValidationService extends AbstractScheduledService {
       @Override
       public void onCompletion(Validation validation) {
         val report = context.getReport();
-        val outcome = SUCCEEDED;
+        val outcome = validation.isCompleted() ? COMPLETED : ABORTED;
 
         log.info("onCompletion - Validation '{}' completed with outcome '{}'", project, outcome);
         releaseService.resolveSubmission(project, outcome, report);

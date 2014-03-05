@@ -19,9 +19,10 @@ package org.icgc.dcc.submission.service;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.icgc.dcc.submission.core.model.Outcome.ABORTED;
 import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
+import static org.icgc.dcc.submission.core.model.Outcome.COMPLETED;
 import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
-import static org.icgc.dcc.submission.core.model.Outcome.SUCCEEDED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -121,7 +122,27 @@ public class ValidationServiceTest {
 
   @Test
   @SneakyThrows
-  public void test_pollValidation_succeeded() {
+  public void test_pollValidation_completed() {
+    // Setup: Add a no-op validator
+    validators.add(validator);
+
+    // Setup: Create returned future with context that has no errors
+    val validation = createValidation(context, validator);
+    validation.execute();
+
+    // Setup: When submitted we will call the onSuccess callback
+    mockExecutorCallback(onCompletion(validation));
+
+    // Exercise
+    service.pollValidation();
+
+    // Verify: Ensure "aborted"
+    verifyOutcome(COMPLETED);
+  }
+
+  @Test
+  @SneakyThrows
+  public void test_pollValidation_aborted() {
     // Setup: Add a no-op validator
     validators.add(validator);
 
@@ -134,8 +155,8 @@ public class ValidationServiceTest {
     // Exercise
     service.pollValidation();
 
-    // Verify: Ensure "succeeded"
-    verifyOutcome(SUCCEEDED);
+    // Verify: Ensure "aborted"
+    verifyOutcome(ABORTED);
   }
 
   @Test

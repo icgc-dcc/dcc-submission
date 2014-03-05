@@ -37,7 +37,7 @@ public class ValidState extends AbstractQueuableState {
 
     // Set all to report elements to "signed-off"
     val report = context.getReport();
-    report.notifyState(nextState, DataTypes.values());
+    report.inheritState(nextState, DataTypes.values());
 
     // Only state that allows this
     context.setState(nextState);

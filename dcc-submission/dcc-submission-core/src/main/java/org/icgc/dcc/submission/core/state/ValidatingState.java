@@ -48,35 +48,66 @@ public class ValidatingState extends AbstractCancellableState {
       @NonNull Outcome outcome, @NonNull Report newReport) {
     val oldReport = context.getReport();
 
-    // Valid status needs to be refreshed since there are no natural events that do this (unlike with Errors)
-    newReport.refreshState();
-
     switch (outcome) {
+    case ABORTED:
+      handleAborted(context, dataTypes, newReport);
+      break;
     case CANCELLED:
-      // Need to reset all the validating data types
-      newReport.resetDataTypes(dataTypes);
-
-      // The missing "break" is deliberate!
-    case SUCCEEDED:
-      // Transition
-      val nextState = getReportedNextState(newReport);
-      context.setState(nextState);
-
-      // Commit the report that was collected during validation
-      context.setReport(newReport);
-
-      // Done
+      handleCancelled(context, dataTypes, newReport);
+      break;
+    case COMPLETED:
+      handleCompleted(context, dataTypes, newReport);
       break;
     case FAILED:
-      // Use the old report and force a state
-      oldReport.notifyState(SubmissionState.ERROR, dataTypes);
-
-      // Need to call DCC...
-      context.setState(SubmissionState.ERROR);
+      handleFailed(context, dataTypes, oldReport);
       break;
     default:
       checkState(false, "Unexpected outcome '%s'", outcome);
     }
+  }
+
+  private void handleAborted(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
+    // Reset any data type that is VALIDATING to NOT_VALIDATED
+    newReport.abort(dataTypes);
+
+    // Transition
+    val nextState = getReportedNextState(newReport);
+    context.setState(nextState);
+
+    // Commit the report that was collected during validation
+    context.setReport(newReport);
+  }
+
+  private void handleCancelled(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
+    // Need to reset all the validating data types
+    newReport.resetDataTypes(dataTypes);
+
+    // Transition
+    val nextState = getReportedNextState(newReport);
+    context.setState(nextState);
+
+    // Commit the report that was collected during validation
+    context.setReport(newReport);
+  }
+
+  private void handleCompleted(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
+    // Valid status needs to be refreshed since there are no natural events that do this (unlike with Errors)
+    newReport.refreshState();
+
+    // Transition
+    val nextState = getReportedNextState(newReport);
+    context.setState(nextState);
+
+    // Commit the report that was collected during validation
+    context.setReport(newReport);
+  }
+
+  private void handleFailed(StateContext context, Iterable<DataType> dataTypes, Report oldReport) {
+    // Use the old report and force a state
+    oldReport.inheritState(SubmissionState.ERROR, dataTypes);
+
+    // Need to call DCC...
+    context.setState(SubmissionState.ERROR);
   }
 
 }
