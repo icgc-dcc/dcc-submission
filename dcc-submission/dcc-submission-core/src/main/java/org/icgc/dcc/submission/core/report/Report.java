@@ -34,6 +34,7 @@ import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.visitor.AbortVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddErrorVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFieldVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFileVisitor;
@@ -41,8 +42,8 @@ import org.icgc.dcc.submission.core.report.visitor.AddSummaryVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ErrorCountVisitor;
 import org.icgc.dcc.submission.core.report.visitor.GetFileReportVisitor;
 import org.icgc.dcc.submission.core.report.visitor.GetFilesVisitor;
+import org.icgc.dcc.submission.core.report.visitor.InheritStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.IsValidVisitor;
-import org.icgc.dcc.submission.core.report.visitor.NotifyStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RefreshStateVisitor;
 import org.icgc.dcc.submission.core.report.visitor.RemoveFileVisitor;
 import org.icgc.dcc.submission.core.report.visitor.ResetVisitor;
@@ -190,8 +191,12 @@ public class Report implements ReportElement {
     executeVisitor(new ResetVisitor(dataTypes));
   }
 
-  public void notifyState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
-    executeVisitor(new NotifyStateVisitor(state, dataTypes));
+  public void inheritState(@NonNull SubmissionState state, @NonNull Iterable<DataType> dataTypes) {
+    executeVisitor(new InheritStateVisitor(state, dataTypes));
+  }
+
+  public void abort(@NonNull Iterable<DataType> dataTypes) {
+    executeVisitor(new AbortVisitor(dataTypes));
   }
 
   public void refreshState() {
