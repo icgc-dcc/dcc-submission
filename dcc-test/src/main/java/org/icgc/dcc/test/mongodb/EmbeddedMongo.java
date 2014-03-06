@@ -37,11 +37,13 @@ import com.mongodb.ServerAddress;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.ArtifactStoreBuilder;
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.RuntimeConfigBuilder;
 import de.flapdoodle.embed.mongo.distribution.Version.Main;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.NullProcessor;
+import de.flapdoodle.embed.process.store.IArtifactStore;
 
 @Slf4j
 public class EmbeddedMongo implements TestRule {
@@ -130,14 +132,22 @@ public class EmbeddedMongo implements TestRule {
   private static MongodStarter createStarter() {
     val config = new RuntimeConfigBuilder()
         .defaults(MongoD)
+        .artifactStore(createArtifactStore())
         .processOutput(createProcessOutput())
         .build();
 
     return MongodStarter.getInstance(config);
   }
 
+  private static IArtifactStore createArtifactStore() {
+    // See https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo/issues/71
+    val cache = false;
+    return new ArtifactStoreBuilder().defaults(MongoD).useCache(cache).build();
+  }
+
   private static ProcessOutput createProcessOutput() {
-    return new ProcessOutput(new NullProcessor(), new NullProcessor(), new NullProcessor());
+    val noop = new NullProcessor();
+    return new ProcessOutput(noop, noop, noop);
   }
 
   private static MongoClient createClient(MongodProcess mongodProcess) throws UnknownHostException {
