@@ -106,8 +106,7 @@ class SftpBanner {
         "Hello '" + username + "', welcome to the ICGC DCC Submission SFTP Server!\n" +
         "\n" +
         "  - Accepting submissions for release: '" + releaseName + "'\n" +
-        "  - Downloading is disabled (ex. 'get', 'mget')\n" +
-        "  - You may 'cd', 'put' 'rm' 'ls' in the following project directories:\n" +
+        "  - You may 'cd', 'put', 'mput', 'get', mget', 'rm' 'ls' in the following project directories:\n" +
         formatDirectories(projectKeys) +
         "  - Submission instructions may be found at: '" + DOCS_URL + "'\n" +
         "  - For support contact: '" + SUPPORT_EMAIL + "'\n" +
