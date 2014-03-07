@@ -24,7 +24,7 @@
 module.exports = (match) ->
 
   # Releases
-  match '', 'release#list'
+  #match '', 'release#list'
   match 'releases', 'release#list'
   match 'releases/', 'release#list'
   match 'releases/:release', 'release#show'
