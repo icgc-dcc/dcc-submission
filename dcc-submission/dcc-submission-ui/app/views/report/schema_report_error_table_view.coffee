@@ -51,14 +51,14 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Values do not match any of the following allowed values for
-        this field: <em>#{source.parameters?.EXPECTED}</em>
+        this field: <code>#{source.parameters?.EXPECTED}</code>
         """
     REGEX_ERROR:
       name: "Invalid value"
       description: (source) ->
         """
         Values do not match the regular expression set for
-        this field: <em>#{source.parameters?.EXPECTED}</em>
+        this field: <code>#{source.parameters?.EXPECTED}</code>
         """
     SCRIPT_ERROR:
       name: "Failed script-based validation"
@@ -75,45 +75,40 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         <br><br><pre><code>#{errorPretty}</code></pre>
         """
 
-        ##{source.parameters?.DESCRIPTION}.
-        #Values do not pass the script expression associated with this
-        #this field: <br><br>
-        #<pre><code>#{errorPretty}</code></pre>
-        #"""
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
       description: (source) ->
         """
         Duplicate field names found in the file header
-        <em>#{source.parameters?.FIELDS}</em>
+        <code>#{source.parameters?.FIELDS}</code>
         """
     RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
         """
-        <em>#{source.parameters?.SCHEMA}</em> file is missing
+        <code>#{source.parameters?.SCHEMA}</code> file is missing
         """
     REVERSE_RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
         """
-        <em>#{source.parameters?.SCHEMA}</em> file is missing
+        <code>#{source.parameters?.SCHEMA}</code> file is missing
         """
     RELATION_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
         The following values have no match in the reference schema
-        <em>#{source.parameters?.OTHER_SCHEMA}</em>
-        (fields <em>#{source.parameters?.OTHER_FIELDS}</em>)
+        <code>#{source.parameters?.OTHER_SCHEMA}</code>
+        (fields <code>#{source.parameters?.OTHER_FIELDS}</code>)
         """
     RELATION_PARENT_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
         The following values in referenced schema
-        <em>#{source.parameters?.OTHER_SCHEMA}</em>
-        (fields <em>#{source.parameters?.OTHER_FIELDS.join ', '}</em>)
+        <code>#{source.parameters?.OTHER_SCHEMA}</code>
+        (fields <code>#{source.parameters?.OTHER_FIELDS.join ', '}</code>)
         have no corresponding records in the current file,
         yet they are expected to have at least one match each.
         """
@@ -141,7 +136,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Invalid value types, expected type for this field is
-        <em>#{source.parameters?.EXPECTED}</em>
+        <code>#{source.parameters?.EXPECTED}</code>
         """
     UNIQUE_VALUE_ERROR:
       name: "Value uniqueness error"
@@ -156,22 +151,18 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         Field counts in all lines are expected to be
         #{source.parameters?.EXPECTED}
         """
-        #"""
-        #Field counts in all lines are expected to match that of the file
-        #header. Offending lines
-        #"""
     FORBIDDEN_VALUE_ERROR:
       name: "Invalid value"
       description: (source) ->
         """
-        Using forbidden value: <em>#{source.parameters?.VALUE}</em>
+        Using forbidden value: <code>#{source.parameters?.VALUE}</code>
         """
     TOO_MANY_FILES_ERROR:
       name: "Filename collision"
       description: (source) ->
         """
         The following files are found matching
-        <em>#{source.parameters?.SCHEMA}</em> filename pattern, only
+        <code>#{source.parameters?.SCHEMA}</code> filename pattern, only
         one file is allowed. <br>
         #{source.parameters?.FILES.join '<br>'}
         """
@@ -180,14 +171,14 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         File name extension does not match file compression type. Please use
-        <em>.gz</em> for gzip, <em>.bz2</em> for bzip2.
+        <code>.gz</code> for gzip, <code>.bz2</code> for bzip2.
         """
     INVALID_CHARSET_ROW_ERROR:
       name: "Row contains invalid charset"
       description: (source) ->
         """
-        Expected charset is <em>#{source.parameters?.EXPECTED}</em>
-        with no control characters except for <em>Tab</em> as field
+        Expected charset is <code>#{source.parameters?.EXPECTED}</code>
+        with no control characters except for <code>tab</code> as field
         delimiter. Offending lines:
         """
     FILE_HEADER_ERROR:
@@ -195,14 +186,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Invalid header line. It is expected to contain the following fields
-        in the specified order separated by <em>tab</em>: <br>
+        in the specified order separated by <code>tab</code>: <br>
         """
-        #"""
-        #Different from the expected header
-        #<em>#{source.parameters?.EXPECTED}</em>
-        #<br><br>
-        #<em>#{source.parameters?.VALUE}</em>
-        #"""
     REFERENCE_GENOME_MISMATCH_ERROR:
       name: "Reference genome error"
       description: (source) ->
@@ -211,20 +196,16 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         the corresponding sequence in the reference genome at:
         chromosome_start - chromosome_end
         """
-        #"""
-        #Submitted reference genome allele does not match allele in
-        # <em>#{source.parameters?.EXPECTED}</em>
-        #"""
+
     REFERENCE_GENOME_INSERTION_ERROR:
       name: "Reference genome error"
       description: (source) ->
         """
         For an insertion, there is no corresponding sequence in the
-        reference genome, the only allowed value is a dash: <em>-</em>
+        reference genome, the only allowed value is a dash: <code>-</code>
         """
     TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR:
       name: "Excessive amount of SSMs need to be masked"
-      #name: "Excessive amount of sensitive data error"
       description: (source) ->
         val1 = source.parameters.VALUE
         val2 = source.parameters.VALUE2
@@ -236,13 +217,6 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         More details about SSM masking can be found
         <a href="http://docs.icgc.org/" target="_blank">here</a>.
         """
-        #"""
-        #An abnormal ratio (<em>#{source.parameters?.VALUE}</em> out of
-        #<em>#{source.parameters?.VALUE2}</em>) of CONTROLLED to OPEN
-        #observations has been dectected and most likely indicates an error
-        #in the data. The maximum threshold allowed is
-        #<em>#{parseFloat(100*source.parameters?.EXPECTED).toFixed(2)}%</em>.
-        #"""
   details: (source) ->
 
     # There are generally two types of errors: file level errors
@@ -292,8 +266,6 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       return ""
 
     out = ""
-    #for key, value of source.parameters
-    #  out += "<strong>#{key}</strong> : #{value}<br>"
 
     out += "<br><table class='table table-condensed'>
       <th style='border:none'>Line</th>
@@ -354,6 +326,5 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""
-
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @collection.toJSON()

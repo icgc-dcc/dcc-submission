@@ -586,9 +586,10 @@ function showDictionary(version) {
 d3.json("/ws/dictionaries", function(dictionaryList) {
 
    var sortedDictionaryList = _.sortBy(dictionaryList, function(obj) {
-      return -obj.lastUpdate;
+      //return -obj.lastUpdate;
+      return obj.version;
    });
-
+   sortedDictionaryList = sortedDictionaryList.reverse();
 
    var versionList = _.pluck(sortedDictionaryList, "version");
    var latest = sortedDictionaryList[0].version;
