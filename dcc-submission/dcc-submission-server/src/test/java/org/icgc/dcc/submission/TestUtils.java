@@ -25,7 +25,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addOldModels;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getDraftDictionary;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 
 import java.io.File;
 import java.net.URL;
@@ -131,22 +131,22 @@ public final class TestUtils {
     throw new IllegalStateException("Code list '" + targetCodeListName + "' is not available");
   }
 
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return addOldModels(readDccResourcesDictionary());
+  }
+
   public static List<CodeList> codeLists() {
-    return Dictionaries.getDraftCodeLists();
+    return Dictionaries.readDccResourcesCodeLists();
+  }
+
+  public static List<String> getFieldNames(FileType type) {
+    return dictionary().getFileSchema(type).getFieldNames();
   }
 
   @SneakyThrows
   public static String codeListsToString() {
     return MAPPER.writeValueAsString(codeLists());
-  }
-
-  @SneakyThrows
-  public static Dictionary dictionary() {
-    return addOldModels(getDraftDictionary());
-  }
-
-  public static List<String> getFieldNames(FileType type) {
-    return dictionary().getFileSchema(type).getFieldNames();
   }
 
   @SneakyThrows
