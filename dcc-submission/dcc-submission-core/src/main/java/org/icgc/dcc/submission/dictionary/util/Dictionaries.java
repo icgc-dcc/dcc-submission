@@ -76,13 +76,8 @@ public class Dictionaries {
   }
 
   @SneakyThrows
-  public static Dictionary getDraftDictionary() {
-    return readDictionary(getResource("dictionary/dictionary_1.0_draft.json"));
-  }
-
-  @SneakyThrows
-  public static List<CodeList> getDraftCodeLists() {
-    return readCodeList(getResource("dictionary/CodeList.140224.json"));
+  public static List<CodeList> readDccResourcesCodeLists() {
+    return readCodeList(getDccResource("CodeList.json"));
   }
 
   @SneakyThrows
