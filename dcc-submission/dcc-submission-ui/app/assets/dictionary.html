@@ -158,6 +158,11 @@ var sortOrder = [
    "mirna_m", "mirna_p", "mirna_s",
    "jcn_m", "jcn_p",
    "meth_m", "meth_p", "meth_s",
+   "meth_seq_m", "meth_seq_p",
+   "mirna_seq_m", "mirna_seq_p",
+   "exp_seq_m", "exp_seq_p",
+   "exp_array_m", "exp_array_p",
+   "meth_array_m", "meth_array_p", "meth_array_probes"
 ];
 
 var currentSelection = 'all';
@@ -166,6 +171,8 @@ var codelistMap = {};
 
 var entryNew = 0;
 var entryChanged = 0;
+
+var changeSummary = {};
 
 
 function getSelect(elem) {
@@ -386,18 +393,26 @@ function buildRow( row, idx ) {
    d3.select(this).append("td").style("max-width", "250px").each(function() {
       if (regex) {
          d3.select(this).append("p").classed("regex", true).text(regex.config.pattern);
+
          if (regex.config.examples) {
             d3.select(this).append("pre")
               .style("width", "100%")
               .style("font-size", "9px")
               .style("cursor", "pointer")
               .on("click", function() {
+                 var examples = [];
                  var baseURL = "http://www.regexplanet.com/advanced/java/index.html?";
                  baseURL = baseURL + "regex=" + encodeURIComponent(regex.config.pattern);
 
-                 regex.config.examples.split(", ").forEach(function(ex) {
+                 if (Array.isArray( regex.config.examples)) {
+                    examples = regex.config.examples;
+                 } else {
+                    examples = regex.config.examples.split(", ");
+                 }
+                 examples.forEach(function(ex) {
                     baseURL += "&input=" + encodeURIComponent(ex);
                  });
+
                  window.open(baseURL, "_blank");
               })
               .append("code")
