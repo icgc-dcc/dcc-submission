@@ -85,6 +85,7 @@ public final class HadoopConstants {
   public static final String GZIP_CODEC_PROPERTY_VALUE =    "org.apache.hadoop.io.compress.GzipCodec";  
   public static final String BZIP2_CODEC_PROPERTY_VALUE =   "org.apache.hadoop.io.compress.BZip2Codec";
   public static final String SNAPPY_CODEC_PROPERTY_VALUE =  "org.apache.hadoop.io.compress.SnappyCodec";
+  public static final String LZO_CODEC_PROPERTY_VALUE =    "com.hadoop.compression.lzo.LzoCodec";
   public static final String LZOP_CODEC_PROPERTY_VALUE =    "com.hadoop.compression.lzo.LzopCodec";
   public static final String DEFLATE_CODEC_PROPERTY_VALUE = DEFAULT_CODEC_PROPERTY_VALUE;
   

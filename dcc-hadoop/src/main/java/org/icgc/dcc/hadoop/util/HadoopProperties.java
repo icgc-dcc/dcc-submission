@@ -28,6 +28,7 @@ import static org.icgc.dcc.hadoop.util.HadoopConstants.ENABLED_COMPRESSION;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.IO_COMPRESSION_CODECS_PROPERTY_NAME;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.LZOP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.LZO_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME;
@@ -58,7 +59,10 @@ public class HadoopProperties {
         IO_COMPRESSION_CODECS_PROPERTY_NAME,
         AppUtils.isTestEnvironment() ?
             codecs :
-            on(PROPERTY_VALUES_SEPARATOR).join(codecs, LZOP_CODEC_PROPERTY_VALUE));
+            on(PROPERTY_VALUES_SEPARATOR).join(
+                codecs,
+                LZO_CODEC_PROPERTY_VALUE,
+                LZOP_CODEC_PROPERTY_VALUE));
 
     return properties;
   }
@@ -69,7 +73,9 @@ public class HadoopProperties {
         ENABLED_COMPRESSION);
     properties.put(
         MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
-        SNAPPY_CODEC_PROPERTY_VALUE);
+        AppUtils.isTestEnvironment() ?
+            SNAPPY_CODEC_PROPERTY_VALUE :
+            LZO_CODEC_PROPERTY_VALUE);
 
     return properties;
   }
@@ -85,7 +91,7 @@ public class HadoopProperties {
         MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
         AppUtils.isTestEnvironment() ?
             SNAPPY_CODEC_PROPERTY_VALUE :
-            LZOP_CODEC_PROPERTY_VALUE);
+            LZO_CODEC_PROPERTY_VALUE);
 
     return properties;
   }
