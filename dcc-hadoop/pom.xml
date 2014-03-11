@@ -23,6 +23,13 @@
   </repositories>
   <dependencies>
 
+    <!-- DCC -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
     <!-- Utilities -->
     <dependency>
       <groupId>org.projectlombok</groupId>
