@@ -22,7 +22,6 @@
    border-bottom-width: 1px;
 }
 
-
 .data-type-list {
    padding-left:1em;
    padding-right:1em;
@@ -50,6 +49,28 @@
 
 .tiny {
    font-size: 9px;
+}
+
+
+// Bostock example css
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 10px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 2.5px;
 }
 
 
@@ -103,18 +124,30 @@ a {
       <li style="display:inline-block; margin-right:1em"><input style="margin-bottom:0" id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input></li>
       <li style="display:inline-block; margin-right:1em">From <select id="version_b" onChange="switchDictionary()"></select></li>
       <li style="display:inline-block; margin-right:1em">To  <select id="version_a" onChange="switchDictionary()"></select></li>
-      <li style="display:inline-block; margin-right:1em">
+      <li id="datatypeSelector" style="display:inline-block; margin-right:1em">
           Data Type
           <button id="minimapLabel"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
           <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
              <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
           </div>
       </li>
+      <li style="display:inline-block; margin-right:1em;" class="pull-right">
+         <input id="viewToggle" type="checkbox"/> Graph View
+      </li>
    </ul>
 </div>
 <!-- main body -->
 <div id="datatypeRemoved" class="removed" style="margin:0.5em"></div>
 <div id="datatypeTable" style="margin:0.5em"></div>
+
+<div id="datatypeGraph" style="margin:0.5em">
+   <div id="graph" style="float:left">
+   </div>
+   <div id="graphSubtree" style="float:right">
+   subtree<br>goes<br>in<br>here
+   </div>
+</div>
+
 </body>
 <script>
 
@@ -162,7 +195,8 @@ var sortOrder = [
    "mirna_seq_m", "mirna_seq_p",
    "exp_seq_m", "exp_seq_p",
    "exp_array_m", "exp_array_p",
-   "meth_array_m", "meth_array_p", "meth_array_probes"
+   "meth_array_m", "meth_array_p", 
+   "meth_array_probes"
 ];
 
 var currentSelection = 'all';
@@ -173,6 +207,7 @@ var entryNew = 0;
 var entryChanged = 0;
 
 var changeSummary = {};
+var viewMode = "table";
 
 
 function getSelect(elem) {
@@ -181,12 +216,52 @@ function getSelect(elem) {
 }
 
 
+
+// Build an edge list: 
+//   a -> [b, c, d]
+//   b -> [x, y, z]
+function getRelation(dict) {
+   var edgeList = {};
+   var files = dict.files;
+   var root = "";
+   files.forEach(function(file) {
+      if (! file.relations) return;
+
+      if (file.relations.length == 0) {
+         return; // Ignore for now
+      } else {
+         file.relations.forEach(function(r) {
+            if ( !edgeList[r.other]) edgeList[r.other] = [];
+            edgeList[r.other].push(file.name);
+         });
+      }
+   });
+   return edgeList;
+}
+
+// Get relation graph (assumes acyclic)
+function buildTree(node, edgeList, dict) {
+   node.data = _.find(dict.files, function(f) { return f.name === node.name });
+   var children = edgeList[node.name];
+   if (!children) return;
+
+   node.children = [];
+   _.uniq(children).forEach(function(child) {
+      var c = {name:child};
+      node.children.push(c);
+      buildTree(c, edgeList, dict);
+   });
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Recalculate dictionary
 ////////////////////////////////////////////////////////////////////////////////
 function switchDictionary() {
    var val = getSelect("#version_a");
-   showDictionary(val);
+   render(val);
+   //showDictionaryTable(val);
 }
 
 
@@ -222,6 +297,31 @@ function selectDataType(label) {
 // Text search, filter out data type table rows and highlight minimap rows
 ////////////////////////////////////////////////////////////////////////////////
 function doFilter() {
+   if (viewMode === "graph") {
+      doFilterGraph();
+   } else {
+      doFilterTable();
+   }
+}
+
+
+function doFilterGraph() {
+   var txt = d3.select("#filter").node().value;
+   var re = new RegExp(txt, "i");
+
+   d3.select("#graph").selectAll("circle").style("fill", null);
+   d3.select("#graph").selectAll("circle").filter(function(node) {
+      if (!txt || txt === '') return false;
+
+      var matches = _.filter(node.data.fields, function(field) {
+         return isMatch(field, re);
+      });
+      return matches.length > 0;
+   }).style("fill", cBarHighlight);
+}
+
+
+function doFilterTable() {
    var txt = d3.select("#filter").node().value;
    var re = new RegExp(txt, "i");
    var datatypeMap = {};
@@ -256,9 +356,6 @@ function doFilter() {
          }
       });
    }
-
-   //console.log(datatypeMap);
-
 
    // Highlight corresponding entires in the minimap
    d3.select("#minimap")
@@ -460,14 +557,191 @@ function buildFilterRow(grp, name, label, height) {
 }
 
 
+function render(version) {
+   if (viewMode === "graph") {
+      d3.select("#datatypeTable").style("display", "none");
+      d3.select("#datatypeGraph").style("display", "block");
+      d3.select("#datatypeSelector").style("visibility", "hidden");
+      showDictionaryGraph(version);
+   } else {
+      d3.select("#datatypeTable").style("display", "block");
+      d3.select("#datatypeGraph").style("display", "none");
+      d3.select("#datatypeSelector").style("visibility", "visible");
+      selectDataType("all");
+      showDictionaryTable(version);
+   }
+}
+
+
+function showDictionaryGraph(version) {
+   window.scrollTo(0, 0);
+   data = dictionaryMap[version];
+
+   // Clear
+   d3.select("#graph").selectAll("*").remove();
+
+   var edgeList = getRelation(data);
+   var root = {name:"donor"};
+   buildTree(root, edgeList, data);
+   
+
+   var svg = d3.select("#graph")
+      .append("svg")
+      .attr("width", 900)
+      .attr("height", 700)
+      .append("g")
+      .attr("transform", "translate(40, 0)");
+
+   
+   var i = 0, duration = 750, root;
+   var tree = d3.layout.tree().size([600, 900]);
+   var diagonal = d3.svg.diagonal().projection(function(d) { return [d.y, d.x]; });
+
+   
+
+   root.x0 = 200;
+   root.y0 = 0;
+
+   // Toggle children on click.
+   function click(d) {
+     /*
+     if (d.children) {
+       d._children = d.children;
+       d.children = null;
+     } else {
+       d.children = d._children;
+       d._children = null;
+     }
+     */
+     update(d);
+   }
+
+
+   function update(source) {
+     // Compute the new tree layout.
+     var nodes = tree.nodes(root).reverse();
+     var links = tree.links(nodes);
+   
+     // Normalize for fixed-depth.
+     nodes.forEach(function(d) { d.y = d.depth * 150; });
+   
+     // Update the nodes…
+     var node = svg.selectAll("g.node")
+         .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+     console.log("Nodes ", node);
+   
+     // Enter any new nodes at the parent's previous position.
+     var nodeEnter = node.enter().append("g")
+         .attr("class", "node")
+         .attr("transform", function(d) { return "translate(" + source.y0 + "," + (10+source.x0) + ")"; })
+         .on("click", click);
+   
+     nodeEnter.append("circle")
+         .attr("r", 1e-6)
+         .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+   
+     nodeEnter.append("text")
+         //.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+         .attr("x", "10")
+         .attr("dy", ".35em")
+         //.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+         .text(function(d) { return d.name; })
+         .style("fill-opacity", 1e-6);
+
+
+     nodeEnter.each(function(n) {
+        var ref = d3.select(this);
+        n.data.fields.forEach(function(x, i) {
+          ref.append("rect")
+             .attr("x", 10+2*i)
+             .attr("y", "7")
+             .attr("height", 5)
+             .attr("width", 1)
+             .style("fill", "#FF0000");
+        }); 
+     });
+
+
+
+   
+     // Transition nodes to their new position.
+     var nodeUpdate = node.transition()
+         .duration(duration)
+         .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+   
+     nodeUpdate.select("circle")
+         .attr("r", 6.5)
+         .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+   
+     nodeUpdate.select("text")
+         .style("fill-opacity", 1);
+   
+     // Transition exiting nodes to the parent's new position.
+     var nodeExit = node.exit().transition()
+         .duration(duration)
+         .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+         .remove();
+   
+     nodeExit.select("circle")
+         .attr("r", 1e-6);
+   
+     nodeExit.select("text")
+         .style("fill-opacity", 1e-6);
+   
+     // Update the links…
+     var link = svg.selectAll("path.link")
+         .data(links, function(d) { return d.target.id; });
+   
+     // Enter any new links at the parent's previous position.
+     link.enter().insert("path", "g")
+         .attr("class", "link")
+         .attr("d", function(d) {
+           var o = {x: source.x0, y: source.y0};
+           return diagonal({source: o, target: o});
+         });
+   
+     // Transition links to their new position.
+     link.transition()
+         .duration(duration)
+         .attr("d", diagonal);
+   
+     // Transition exiting nodes to the parent's new position.
+     link.exit().transition()
+         .duration(duration)
+         .attr("d", function(d) {
+           var o = {x: source.x, y: source.y};
+           return diagonal({source: o, target: o});
+         })
+         .remove();
+   
+     // Stash the old positions for transition.
+     nodes.forEach(function(d) {
+       d.x0 = d.x;
+       d.y0 = d.y;
+     });
+   }
+   
+   function collapse(d) {
+       if (d.children) {
+         d._children = d.children;
+         d._children.forEach(collapse);
+         d.children = null;
+       }
+   }
+   
+   //root.children.forEach(collapse);
+   update(root);
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main dictionary function
 ////////////////////////////////////////////////////////////////////////////////
-function showDictionary(version) {
-   data = dictionaryMap[version];
+function showDictionaryTable(version) {
 
+   data = dictionaryMap[version];
    entryNew = 0;
    entryChanged = 0;
 
@@ -521,6 +795,7 @@ function showDictionary(version) {
 
    if (deleteTableList.length > 0) {
       d3.select("#datatypeRemoved").text("Data types removed in " + vTo + ": " + deleteTableList.join(", "));
+      changeSummary["datatype_removed"] = deleteTableList;
    } else {
       d3.select("#datatypeRemoved").text("");
    }
@@ -632,6 +907,17 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
       d3.event.stopPropagation();
    });
 
+   d3.select("#viewToggle").on("click", function() {
+      if (d3.select(this).node().checked) {
+         viewMode = "graph";
+      } else {
+         viewMode = "table";
+      }
+      var ver = getSelect("#version_a");
+      d3.select("#filter").node().value = "";
+      render(ver);
+   });
+
 
    for (var i=0; i < sortedDictionaryList.length; i++)
       dictionaryMap[ sortedDictionaryList[i].version ] = sortedDictionaryList[i];
@@ -657,7 +943,10 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
        .attr("value", function(d) { return d; })
        .text(function(d) { return d;});
 
-     showDictionary(latest);
+
+     //showDictionaryTable(latest);
+     //showDictionaryGraph(latest);
+     render(latest);
    });
 });
 </script>
