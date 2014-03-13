@@ -45,7 +45,7 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 @RequiredArgsConstructor
 public abstract class AbstractValidationContext implements ValidationContext {
 
-  protected static final String DICTIONARY_VERSION = "0.7e";
+  protected static final String DICTIONARY_VERSION = "0.8a";
 
   @Override
   public PlatformStrategy getPlatformStrategy() {

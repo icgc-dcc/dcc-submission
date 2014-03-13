@@ -27,7 +27,7 @@ import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
 import static org.icgc.dcc.submission.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.submission.core.util.Joiners.PATH;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addOldModels;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.getDraftDictionary;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
@@ -159,7 +159,7 @@ public class KeyValidatorTest {
   }
 
   private Dictionary getDictionary() {
-    val dictionary = getDraftDictionary();
+    val dictionary = readDccResourcesDictionary();
     addOldModels(dictionary);
     return dictionary;
   }
