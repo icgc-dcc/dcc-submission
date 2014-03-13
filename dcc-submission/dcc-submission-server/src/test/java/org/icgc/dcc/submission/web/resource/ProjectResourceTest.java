@@ -18,11 +18,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
+import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.ws.rs.core.Response;
+
+import lombok.SneakyThrows;
 import lombok.val;
 
 import org.elasticsearch.common.collect.Lists;
@@ -125,7 +130,7 @@ public class ProjectResourceTest extends ResourceTest {
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
     verify(projectService).getProjectsByUser(any(String.class));
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("[{\"key\":\"PRJ1\",\"name\":\"Project One\"}]");
+    assertEntity(reponse, "[{\"key\":\"PRJ1\",\"name\":\"Project One\"}]");
   }
 
   @Test
@@ -133,8 +138,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse = target().path("projects").request(MIME_TYPE).get();
     verify(projectService, atLeast(1)).getProjects();
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertThat(reponse.readEntity(String.class))
-        .isEqualTo("[{\"key\":\"PRJ1\",\"name\":\"Project One\"},{\"key\":\"PRJ2\",\"name\":\"Project Two\"}]");
+    assertEntity(reponse, "[{\"key\":\"PRJ1\",\"name\":\"Project One\"},{\"key\":\"PRJ2\",\"name\":\"Project Two\"}]");
   }
 
   @Test
@@ -155,7 +159,7 @@ public class ProjectResourceTest extends ResourceTest {
             .get();
     verify(projectService, never()).getProject(any(String.class));
     assertThat(reponse.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"NoSuchEntity\",\"parameters\":[\"PRJ1\"]}");
+    assertEntity(reponse, "{\"code\":\"NoSuchEntity\",\"parameters\":[\"PRJ1\"]}");
   }
 
   @Test
@@ -165,7 +169,7 @@ public class ProjectResourceTest extends ResourceTest {
             .header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
     verify(projectService).getProject(projectOne.getKey());
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
+    assertEntity(reponse, "{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
   }
 
   @Test
@@ -173,7 +177,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects/DNE").request(MIME_TYPE).get();
     assertThat(reponse.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"NoSuchEntity\",\"parameters\":[\"DNE\"]}");
+    assertEntity(reponse, "{\"code\":\"NoSuchEntity\",\"parameters\":[\"DNE\"]}");
   }
 
   @Test
@@ -222,7 +226,7 @@ public class ProjectResourceTest extends ResourceTest {
     verify(projectService, never()).addProject(any(Project.class));
 
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"Unauthorized\",\"parameters\":[]}");
+    assertEntity(reponse, "{\"code\":\"Unauthorized\",\"parameters\":[]}");
   }
 
   @Test
@@ -248,7 +252,7 @@ public class ProjectResourceTest extends ResourceTest {
     verifyZeroInteractions(releaseService);
 
     assertThat(reponse.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"AlreadyExists\",\"parameters\":[\"PRJ1\"]}");
+    assertEntity(reponse, "{\"code\":\"AlreadyExists\",\"parameters\":[\"PRJ1\"]}");
   }
 
   @Test
@@ -261,7 +265,7 @@ public class ProjectResourceTest extends ResourceTest {
     verify(projectService, never()).updateProject(any(Project.class));
 
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"Unauthorized\",\"parameters\":[]}");
+    assertEntity(reponse, "{\"code\":\"Unauthorized\",\"parameters\":[]}");
   }
 
   @Test
@@ -307,7 +311,7 @@ public class ProjectResourceTest extends ResourceTest {
     verify(projectService, never()).getProject(any(String.class));
 
     assertThat(reponse.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
-    assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"NoSuchEntity\",\"parameters\":[\"PRJ1\"]}");
+    assertEntity(reponse, "{\"code\":\"NoSuchEntity\",\"parameters\":[\"PRJ1\"]}");
   }
 
   @Test
@@ -318,8 +322,8 @@ public class ProjectResourceTest extends ResourceTest {
     verify(projectService).getSubmissions(releases, projectOne.getKey());
 
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertThat(reponse.readEntity(String.class))
-        .isEqualTo(""
+    assertEntity(reponse,
+        ""
             + "["
             + "{\"projectKey\":\"PRJ1\",\"projectName\":\"Project One\",\"releaseName\":\"REL1\",\"lastUpdated\":"
             + submissionOne.getLastUpdated().getTime()
@@ -332,4 +336,11 @@ public class ProjectResourceTest extends ResourceTest {
             + "}"
             + "]");
   }
+
+  @SneakyThrows
+  private static void assertEntity(Response response, String expected) {
+    val actual = response.readEntity(String.class);
+    assertEquals(expected, actual, NON_EXTENSIBLE);
+  }
+
 }
