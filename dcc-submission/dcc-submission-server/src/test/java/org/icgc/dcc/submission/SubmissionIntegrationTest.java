@@ -87,6 +87,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes;
+import org.icgc.dcc.core.util.AppUtils;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.PersistenceModule;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -249,7 +250,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       System.setProperty("fs.url", jobConf.get("fs.defaultFS"));
       System.setProperty("hadoop.fs.defaultFS", jobConf.get("fs.defaultFS"));
       System.setProperty("hadoop.mapred.job.tracker", jobConf.get("mapred.job.tracker"));
-      System.setProperty("dcc.hadoop.test", "true"); // See HadoopPlatformStrategy#isProduction
+      AppUtils.setTestEnvironment();
     }
 
     status("init", "Dropping database...");
