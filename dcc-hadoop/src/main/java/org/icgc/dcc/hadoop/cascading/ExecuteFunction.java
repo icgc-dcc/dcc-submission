@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,20 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.hadoop.cascading;
 
-import org.apache.hadoop.conf.Configuration;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.operation.OperationCall;
 
-/**
- * A job that can be executed by a {@code FlowExecutor}.
- */
-public interface FlowExecutorJob {
+@RequiredArgsConstructor
+@SuppressWarnings("rawtypes")
+class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
 
-  /**
-   * Main execution contract called by the executor.
-   * 
-   * @param configuration the runtime configuration of the executing job
-   */
-  void execute(Configuration configuration);
+  @NonNull
+  private final Runnable runnable;
+
+  @Override
+  public void operate(FlowProcess flowProcess, FunctionCall<Void> functionCall) {
+    // No-op
+  }
+
+  @Override
+  public void prepare(FlowProcess flowProcess, OperationCall<Void> operationCall) {
+    runnable.run();
+  }
 
 }

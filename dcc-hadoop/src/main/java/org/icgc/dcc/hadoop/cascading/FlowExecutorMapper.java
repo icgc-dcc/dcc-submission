@@ -1,0 +1,91 @@
+/*
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ *                                                                                                               
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with                                  
+ * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
+ *                                                                                                               
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED                          
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;                               
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package org.icgc.dcc.hadoop.cascading;
+
+import static cascading.flow.hadoop.util.HadoopUtil.deserializeBase64;
+import static cascading.flow.hadoop.util.HadoopUtil.readStateFromDistCache;
+
+import java.io.IOException;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Mapper;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reporter;
+
+import cascading.flow.FlowStep;
+
+@Slf4j
+public class FlowExecutorMapper implements Mapper<NullWritable, NullWritable, NullWritable, NullWritable> {
+
+  private JobConf jobConf;
+
+  @Override
+  public void configure(JobConf jobConf) {
+    log.info("Configuring...");
+    this.jobConf = jobConf;
+  }
+
+  @Override
+  public void close() throws IOException {
+  }
+
+  @Override
+  @SneakyThrows
+  public void map(NullWritable key, NullWritable value, OutputCollector<NullWritable, NullWritable> output,
+      Reporter reporter) throws IOException {
+    log.info("Starting...");
+    FlowExecutorJob job = readJob();
+    FlowExecutorHeartbeat beat = new FlowExecutorHeartbeat(reporter) {
+
+      @Override
+      protected void progress() {
+        log.info("Sending heartbeat");
+      }
+
+    };
+
+    try {
+      beat.start();
+      job.execute(jobConf);
+    } finally {
+      beat.stop();
+    }
+
+    log.info("Finished");
+  }
+
+  private FlowExecutorJob readJob() throws IOException, ClassNotFoundException {
+    val executorState = readExecutorState();
+    return (FlowExecutorJob) deserializeBase64(executorState, jobConf, Class.forName(jobConf.get(FlowExecutor.JOB_NAME_PROPERTY)));
+  }
+
+  private String readExecutorState() throws IOException {
+    String executorState = jobConf.getRaw(FlowExecutor.CASCADING_FLOW_STEP_PROPERTY);
+    if (executorState == null) {
+      executorState = readStateFromDistCache(jobConf, jobConf.get(FlowStep.CASCADING_FLOW_STEP_ID));
+    }
+
+    return executorState;
+  }
+
+}

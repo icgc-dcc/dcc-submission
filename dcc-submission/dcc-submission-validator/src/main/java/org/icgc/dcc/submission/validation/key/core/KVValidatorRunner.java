@@ -34,9 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.hadoop.cascading.FlowExecutorJob;
 import org.icgc.dcc.submission.core.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.cascading.FlowExecutorJob;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import cascading.flow.hadoop.HadoopFlowStep;
