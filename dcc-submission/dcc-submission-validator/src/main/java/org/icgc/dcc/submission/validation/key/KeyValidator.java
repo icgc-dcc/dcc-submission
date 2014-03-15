@@ -101,6 +101,7 @@ public class KeyValidator implements Validator {
     return new Path(validationDir, REPORT_FILE_NAME);
   }
 
+  @SneakyThrows
   private static void execute(ValidationContext context, KVValidatorRunner runner) {
     // Change this switch to false to aid in step debugging
     val distributable = true;

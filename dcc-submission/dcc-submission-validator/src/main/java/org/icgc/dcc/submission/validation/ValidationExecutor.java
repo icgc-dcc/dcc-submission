@@ -38,8 +38,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.util.ThreadNamingRunnable;
 import org.icgc.dcc.submission.validation.core.Validation;
-import org.icgc.dcc.submission.validation.util.ThreadNamingRunnable;
 
 import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;

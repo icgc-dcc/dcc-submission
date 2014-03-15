@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,10 +40,11 @@ public class FlowExecutorTest {
   }
 
   @Test(expected = FlowException.class)
-  public void testExecuteLocalFailure() throws IOException {
+  public void testExecuteLocalFailure() throws Exception {
     executeLocal(new FailureTask());
   }
 
+  @SneakyThrows
   private static void executeHadoop(FlowExecutorJob job) throws IOException {
     val hadoop = createHadoop();
     val jobConf = hadoop.createJobConf();
@@ -55,6 +57,7 @@ public class FlowExecutorTest {
     executor.execute(job);
   }
 
+  @SneakyThrows
   private static void executeLocal(FlowExecutorJob job) throws IOException {
     val properties = ImmutableMap.<Object, Object> of();
 

@@ -21,15 +21,22 @@ import static cascading.flow.FlowDef.flowDef;
 import static cascading.flow.hadoop.util.HadoopUtil.serializeBase64;
 import static cascading.flow.hadoop.util.HadoopUtil.writeStateToDistCache;
 import static cascading.util.Util.createUniqueID;
+import static java.lang.Integer.MAX_VALUE;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -54,8 +61,7 @@ import cascading.tap.Tap;
 import com.google.common.collect.ImmutableMap;
 
 @Slf4j
-@RequiredArgsConstructor
-public class FlowExecutor implements Executor {
+public class FlowExecutor extends ThreadPoolExecutor {
 
   /**
    * Constants.
@@ -65,30 +71,89 @@ public class FlowExecutor implements Executor {
   public static final String CASCADING_FLOW_STEP_PATH_PROPERTY = "cascading.flow.step.path";
   public static final String CASCADING_SERIALIZER_PROPERTY = "cascading.util.serializer";
 
-  @NonNull
+  /**
+   * Configuration.
+   */
   private final Map<Object, Object> properties;
 
+  public FlowExecutor(@NonNull Map<Object, Object> properties) {
+    super(0, MAX_VALUE, 60L, SECONDS, new SynchronousQueue<Runnable>());
+    this.properties = properties;
+  }
+
+  public FlowExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, @NonNull TimeUnit unit,
+      @NonNull BlockingQueue<Runnable> workQueue, @NonNull Map<Object, Object> properties) {
+    super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+    this.properties = properties;
+  }
+
+  public Flow<?> execute(@NonNull FlowExecutorJob job) {
+    val flow = createFlow(job);
+    return complete(flow);
+  }
+
   @Override
-  public void execute(final Runnable command) {
-    execute(new FlowExecutorJob() {
+  protected <T> RunnableFuture<T> newTaskFor(final Callable<T> callable) {
+    return new FutureTask<T>(new Callable<T>() {
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T call() throws Exception {
+        val flow = createFlow(convert(callable));
+        return (T) complete(flow);
+      }
+
+    });
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
+    val flow = createFlow(convert(runnable));
+    return new FutureTask<T>(new Runnable() {
+
+      @Override
+      @SneakyThrows
+      public void run() {
+        complete(flow);
+      }
+
+    }, (T) flow);
+  }
+
+  protected Flow<?> complete(Flow<?> flow) {
+    try {
+      flow.complete();
+
+      return flow;
+    } catch (FlowException e) {
+      handleFlowException(flow);
+
+      throw e;
+    }
+  }
+
+  private FlowExecutorJob convert(final Runnable command) {
+    return new FlowExecutorJob() {
 
       @Override
       public void execute(Configuration configuration) {
         command.run();
       }
 
-    });
+    };
   }
 
-  public void execute(@NonNull FlowExecutorJob job) {
-    val flow = createFlow(job);
-    try {
-      flow.complete();
-    } catch (FlowException e) {
-      handleFlowException(flow);
+  private <T> FlowExecutorJob convert(final Callable<T> command) {
+    return new FlowExecutorJob() {
 
-      throw e;
-    }
+      @Override
+      @SneakyThrows
+      public void execute(Configuration configuration) {
+        command.call();
+      }
+
+    };
   }
 
   private Flow<?> createFlow(FlowExecutorJob job) {
