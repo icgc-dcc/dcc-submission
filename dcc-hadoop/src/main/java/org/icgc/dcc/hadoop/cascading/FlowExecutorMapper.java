@@ -19,6 +19,9 @@ package org.icgc.dcc.hadoop.cascading;
 
 import static cascading.flow.hadoop.util.HadoopUtil.deserializeBase64;
 import static cascading.flow.hadoop.util.HadoopUtil.readStateFromDistCache;
+import static org.apache.commons.lang.StringUtils.repeat;
+import static org.apache.hadoop.mapred.JobConf.MAPRED_MAP_TASK_JAVA_OPTS;
+import static org.icgc.dcc.core.util.FormatUtils.formatBytes;
 
 import java.io.IOException;
 
@@ -53,30 +56,27 @@ public class FlowExecutorMapper implements Mapper<NullWritable, NullWritable, Nu
   @SneakyThrows
   public void map(NullWritable key, NullWritable value, OutputCollector<NullWritable, NullWritable> output,
       Reporter reporter) throws IOException {
-    log.info("Starting...");
-    FlowExecutorJob job = readJob();
-    FlowExecutorHeartbeat beat = new FlowExecutorHeartbeat(reporter) {
+    log.info("{}", repeat("-", 90));
+    log.info("Flow Execution");
+    log.info("{}", repeat("-", 90));
+    log.info("{}: {}", MAPRED_MAP_TASK_JAVA_OPTS, formatBytes(jobConf.getInt(MAPRED_MAP_TASK_JAVA_OPTS, -1)));
+    log.info("Starting with memory: {}...", formatMemory());
 
-      @Override
-      protected void progress() {
-        log.info("Sending heartbeat");
-      }
-
-    };
-
+    val job = readJob();
+    val heartbeat = createHeartbeat(reporter);
     try {
-      beat.start();
+      heartbeat.start();
       job.execute(jobConf);
     } finally {
-      beat.stop();
+      heartbeat.stop();
+      log.info("Finished with memory: {}...", formatMemory());
     }
-
-    log.info("Finished");
   }
 
   private FlowExecutorJob readJob() throws IOException, ClassNotFoundException {
     val executorState = readExecutorState();
-    return (FlowExecutorJob) deserializeBase64(executorState, jobConf, Class.forName(jobConf.get(FlowExecutor.JOB_NAME_PROPERTY)));
+    return (FlowExecutorJob) deserializeBase64(executorState, jobConf,
+        Class.forName(jobConf.get(FlowExecutor.JOB_NAME_PROPERTY)));
   }
 
   private String readExecutorState() throws IOException {
@@ -86,6 +86,30 @@ public class FlowExecutorMapper implements Mapper<NullWritable, NullWritable, Nu
     }
 
     return executorState;
+  }
+
+  private FlowExecutorHeartbeat createHeartbeat(Reporter reporter) {
+    return new FlowExecutorHeartbeat(reporter) {
+
+      @Override
+      protected void progress() {
+        log.info("Sending heartbeat: {}", formatMemory());
+      }
+
+    };
+  }
+
+  private static String formatMemory() {
+    val runtime = Runtime.getRuntime();
+
+    return new StringBuilder()
+        .append("max memory: ")
+        .append(formatBytes(runtime.maxMemory()))
+        .append(", total memory: ")
+        .append(formatBytes(runtime.totalMemory()))
+        .append(", free memory: ")
+        .append(formatBytes(runtime.freeMemory()))
+        .toString();
   }
 
 }
