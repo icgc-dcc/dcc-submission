@@ -94,34 +94,17 @@ public class FlowExecutor extends ThreadPoolExecutor {
 
   @Override
   protected <T> RunnableFuture<T> newTaskFor(final Callable<T> callable) {
-    return new FutureTask<T>(new Callable<T>() {
-
-      @SuppressWarnings("unchecked")
-      @Override
-      public T call() throws Exception {
-        val flow = createFlow(convert(callable));
-        return (T) complete(flow);
-      }
-
-    });
+    val flow = createFlow(convert(callable));
+    return convert(callable, flow);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
     val flow = createFlow(convert(runnable));
-    return new FutureTask<T>(new Runnable() {
-
-      @Override
-      @SneakyThrows
-      public void run() {
-        complete(flow);
-      }
-
-    }, (T) flow);
+    return convert(flow);
   }
 
-  protected Flow<?> complete(Flow<?> flow) {
+  protected static Flow<?> complete(Flow<?> flow) {
     try {
       flow.complete();
 
@@ -133,7 +116,32 @@ public class FlowExecutor extends ThreadPoolExecutor {
     }
   }
 
-  private FlowExecutorJob convert(final Runnable command) {
+  private static <T> FutureTask<T> convert(final Callable<T> callable, final Flow<?> flow) {
+    return new FutureTask<T>(new Callable<T>() {
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T call() throws Exception {
+        return (T) complete(flow);
+      }
+
+    });
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> FutureTask<T> convert(final Flow<?> flow) {
+    return new FutureTask<T>(new Runnable() {
+
+      @Override
+      @SneakyThrows
+      public void run() {
+        complete(flow);
+      }
+
+    }, (T) flow);
+  }
+
+  private static FlowExecutorJob convert(final Runnable command) {
     return new FlowExecutorJob() {
 
       @Override
@@ -144,7 +152,7 @@ public class FlowExecutor extends ThreadPoolExecutor {
     };
   }
 
-  private <T> FlowExecutorJob convert(final Callable<T> command) {
+  private static <T> FlowExecutorJob convert(final Callable<T> command) {
     return new FlowExecutorJob() {
 
       @Override

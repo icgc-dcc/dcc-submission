@@ -17,12 +17,14 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import java.io.Serializable;
+
 import org.apache.hadoop.conf.Configuration;
 
 /**
  * A job that can be executed by a {@code FlowExecutor}.
  */
-public interface FlowExecutorJob {
+public interface FlowExecutorJob extends Serializable {
 
   /**
    * Main execution contract called by the executor.
