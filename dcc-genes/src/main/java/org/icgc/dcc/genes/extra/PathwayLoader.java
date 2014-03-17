@@ -76,12 +76,15 @@ public class PathwayLoader {
           String id = map.get("UniProtID");
           String pathwayID = map.get("PathwayID");
           String pathwayName = map.get("PathwayName");
+          String pathwayURL = map.get("URL");
 
           System.out.println("id " + id);
 
-          geneCollection.update("{external_db_ids.uniprotkb_swissprot:'" + id + "'}")
+          geneCollection
+              .update("{external_db_ids.uniprotkb_swissprot:'" + id + "'}")
               .multi()
-              .with("{$push: { reactome_pathways:{_pathway_id:#, pathway_name:#}}}", pathwayID, pathwayName);
+              .with("{$push: { reactome_pathways:{_pathway_id:#, pathway_name:#, url:#}}}",
+                  pathwayID, pathwayName, pathwayURL);
 
         }
       }
