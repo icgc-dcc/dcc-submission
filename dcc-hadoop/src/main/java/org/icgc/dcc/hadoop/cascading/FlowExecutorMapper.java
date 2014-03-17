@@ -59,7 +59,7 @@ public class FlowExecutorMapper implements Mapper<NullWritable, NullWritable, Nu
     log.info("{}", repeat("-", 90));
     log.info("Flow Execution");
     log.info("{}", repeat("-", 90));
-    log.info("{}: {}", MAPRED_MAP_TASK_JAVA_OPTS, formatBytes(jobConf.getInt(MAPRED_MAP_TASK_JAVA_OPTS, -1)));
+    log.info("{}: {}", MAPRED_MAP_TASK_JAVA_OPTS, jobConf.get(MAPRED_MAP_TASK_JAVA_OPTS));
     log.info("Starting with memory: {}...", formatMemory());
 
     val job = readJob();

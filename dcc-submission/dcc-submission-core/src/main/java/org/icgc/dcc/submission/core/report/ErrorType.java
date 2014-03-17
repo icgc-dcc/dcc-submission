@@ -366,28 +366,31 @@ public enum ErrorType {
   public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable Object... params);
 
   protected void checkParams(Object[] params, Class<?>... paramTypes) {
-    // Verify param existence
-    checkArgument(
-        params != null,
-        "'%s' expects params when build() is invoked but '%s' was supplied instead",
-        this, Arrays.toString(params));
-
-    // Verify param lengths
-    checkArgument(
-        params.length == paramTypes.length,
-        "'%s' expects %s params of types '%s' when build() is invoked but %s params ('%s') of types '%s' was supplied instead",
-        this, paramTypes.length, Arrays.toString(paramTypes), params.length, Arrays.toString(params),
-        Arrays.toString(getParamTypes(params)));
-
-    // Verify param types
-    for (int i = 0; i < paramTypes.length; i++) {
-      val param = params[i];
-      val paramType = paramTypes[i];
-
+    val check = false;
+    if (check) {
+      // Verify param existence
       checkArgument(
-          paramType.isAssignableFrom(param.getClass()),
-          "'%s' expects param '%s' to be of type '%s' when build() is invoked but '%s' was supplied instead",
-          this, param, paramType, param.getClass());
+          params != null,
+          "'%s' expects params when build() is invoked but '%s' was supplied instead",
+          this, Arrays.toString(params));
+
+      // Verify param lengths
+      checkArgument(
+          params.length == paramTypes.length,
+          "'%s' expects %s params of types '%s' when build() is invoked but %s params ('%s') of types '%s' was supplied instead",
+          this, paramTypes.length, Arrays.toString(paramTypes), params.length, Arrays.toString(params),
+          Arrays.toString(getParamTypes(params)));
+
+      // Verify param types
+      for (int i = 0; i < paramTypes.length; i++) {
+        val param = params[i];
+        val paramType = paramTypes[i];
+
+        checkArgument(
+            paramType.isAssignableFrom(param.getClass()),
+            "'%s' expects param '%s' to be of type '%s' when build() is invoked but '%s' was supplied instead",
+            this, param, paramType, param.getClass());
+      }
     }
   }
 
