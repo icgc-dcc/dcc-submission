@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.validation.first.step;
 
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.LINE_TERMINATOR_MISSING_ERROR;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.BufferedInputStream;
@@ -120,15 +122,16 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     }
 
     // Check buffer to be empty, otherwise we have a file with no trailing new line
-    // TODO: Enable when the test data is fixed
-    // if (line.length() > 0) {
-    // getReportContext().reportError(
-    // error()
-    // .fileName(fileName)
-    // .lineNumber(lineNumber)
-    // .type(LINE_TERMINATOR_MISSING_ERROR)
-    // .build());
-    // }
+    if (line.length() > 0) {
+      log.info("Missing new line at end of file '{}'", fileName);
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .lineNumber(lineNumber)
+              .type(LINE_TERMINATOR_MISSING_ERROR)
+              .build());
+    }
 
     log.info("End performing '{}' validation on '{}' in {}. Number of errors found: {}",
         new Object[] { name, fileName, watch, formatCount(checkErrorCount) });

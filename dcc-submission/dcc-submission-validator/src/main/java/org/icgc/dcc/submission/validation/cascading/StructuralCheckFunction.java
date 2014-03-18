@@ -58,10 +58,9 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
    */
   private static final String LEGACY_CODE = "-9999";
 
-  public static final String MISSING_CODE1 = "-777";  
+  public static final String MISSING_CODE1 = "-777";
   public static final String MISSING_CODE2 = "-888";
-  
-  
+
   /**
    * Values representing absent values.
    * <p>
@@ -93,7 +92,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     TupleState tupleState = new TupleState(offset);
 
     String line = arguments.getString(LINE_FIELD_NAME);
-    List<String> values = newArrayList(Splitter.on(FIELD_SEPARATOR).split(line));
+    List<String> values = parseValues(line);
     List<String> adjustedValues = adjustValues(values, tupleState);
 
     List<Object> tupleValues = Lists.<Object> newArrayList(adjustedValues);
@@ -101,6 +100,10 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     checkState(fieldDeclaration.size() == tupleValues.size());
 
     functionCall.getOutputCollector().add(new Tuple(tupleValues.toArray()));
+  }
+
+  public static List<String> parseValues(String line) {
+    return newArrayList(Splitter.on(FIELD_SEPARATOR).split(line));
   }
 
   private List<String> adjustValues(List<String> values, TupleState tupleState) {
