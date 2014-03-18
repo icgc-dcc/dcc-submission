@@ -24,6 +24,7 @@ import java.util.Map;
 
 import lombok.AllArgsConstructor;
 
+import org.icgc.dcc.core.model.FieldNames;
 import org.icgc.dcc.genes.cli.MongoClientURIConverter;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -38,7 +39,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
 /**
- * Recreates the Pathway collection in mongodb
+ * Create Pathway collection in mongodb, and subsequently embed pathway information into the gene-collection
+ * 
+ * Reactome pathway file: http://www.reactome.org/download/current/UniProt2PathwayBrowser.txt
  */
 @AllArgsConstructor
 public class PathwayLoader {
@@ -47,7 +50,8 @@ public class PathwayLoader {
   private static final String HOMO_SAPIEN = "Homo sapiens";
   private final MongoClientURI mongoUri;
   private final String[] header =
-      new String[] { "UniProtID", "PathwayID", "URL", "PathwayName", "EvidenceCode", "Species" };
+      new String[] { FieldNames.PATHWAY_UNIPROT_ID, FieldNames.PATHWAY_REACTOME_ID, FieldNames.PATHWAY_URL,
+          FieldNames.PATHWAY_NAME, FieldNames.PATHWAY_EVIDENCE_CODE, FieldNames.PATHWAY_SPECIES };
 
   public void load(Reader reader) {
     try {
@@ -67,23 +71,23 @@ public class PathwayLoader {
 
       long c = 0;
       while (null != (map = csvReader.read(header))) {
-        if (map.get("Species").equals(HOMO_SAPIEN)) {
+        if (map.get(FieldNames.PATHWAY_SPECIES).equals(HOMO_SAPIEN)) {
           ++c;
           ObjectMapper mapper = new ObjectMapper();
           JsonNode pathway = mapper.valueToTree(map);
           pathwayCollection.save(pathway);
 
-          String id = map.get("UniProtID");
-          String pathwayID = map.get("PathwayID");
-          String pathwayName = map.get("PathwayName");
-          String pathwayURL = map.get("URL");
+          String id = map.get(FieldNames.PATHWAY_UNIPROT_ID);
+          String pathwayID = map.get(FieldNames.PATHWAY_REACTOME_ID);
+          String pathwayName = map.get(FieldNames.PATHWAY_NAME);
+          String pathwayURL = map.get(FieldNames.PATHWAY_URL);
 
           System.out.println("id " + id);
 
           geneCollection
               .update("{external_db_ids.uniprotkb_swissprot:'" + id + "'}")
               .multi()
-              .with("{$push: { reactome_pathways:{_pathway_id:#, pathway_name:#, url:#}}}",
+              .with("{$push: { reactome_pathways:{_reactome_id:#, name:#, url:#}}}",
                   pathwayID, pathwayName, pathwayURL);
 
         }

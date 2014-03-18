@@ -63,7 +63,12 @@ public enum IndexType {
   /**
    * Mutation type(s).
    */
-  MUTATION_CENTRIC_TYPE(Entity.OBSERVATION, "mutation-centric", Classifier.CENTRIC);
+  MUTATION_CENTRIC_TYPE(Entity.OBSERVATION, "mutation-centric", Classifier.CENTRIC),
+
+  /**
+   * Pathway types
+   */
+  PATHWAY_TYPE(Entity.PATHWAY, "pathway", Classifier.BASIC);
 
   /**
    * The corresponding entity of the index type.
