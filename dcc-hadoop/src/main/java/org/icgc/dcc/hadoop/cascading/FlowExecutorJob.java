@@ -15,14 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.hadoop.cascading;
+
+import java.io.Serializable;
 
 import org.apache.hadoop.conf.Configuration;
 
 /**
  * A job that can be executed by a {@code FlowExecutor}.
  */
-public interface FlowExecutorJob {
+public interface FlowExecutorJob extends Serializable {
 
   /**
    * Main execution contract called by the executor.

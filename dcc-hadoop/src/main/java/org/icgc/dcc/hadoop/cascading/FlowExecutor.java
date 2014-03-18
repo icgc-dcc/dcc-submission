@@ -15,23 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.hadoop.cascading;
 
 import static cascading.flow.FlowDef.flowDef;
-import static cascading.flow.hadoop.util.HadoopUtil.deserializeBase64;
-import static cascading.flow.hadoop.util.HadoopUtil.readStateFromDistCache;
 import static cascading.flow.hadoop.util.HadoopUtil.serializeBase64;
 import static cascading.flow.hadoop.util.HadoopUtil.writeStateToDistCache;
 import static cascading.util.Util.createUniqueID;
+import static java.lang.Integer.MAX_VALUE;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -39,16 +44,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Mapper;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskLog;
 import org.icgc.dcc.hadoop.io.NullInputFormat;
 import org.icgc.dcc.hadoop.io.NullOutputFormat;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowException;
-import cascading.flow.FlowStep;
 import cascading.flow.hadoop.MapReduceFlow;
 import cascading.flow.hadoop.util.JavaObjectSerializer;
 import cascading.flow.local.LocalFlowConnector;
@@ -60,27 +61,107 @@ import cascading.tap.Tap;
 import com.google.common.collect.ImmutableMap;
 
 @Slf4j
-@RequiredArgsConstructor
-public class FlowExecutor {
+public class FlowExecutor extends ThreadPoolExecutor {
 
   /**
    * Constants.
    */
-  private static final String JOB_NAME_PROPERTY = "org.icgc.dcc.class.name";
-  private static final String CASCADING_FLOW_STEP_PROPERTY = "cascading.flow.step";
+  public static final String JOB_NAME_PROPERTY = "org.icgc.dcc.class.name";
+  public static final String CASCADING_FLOW_STEP_PROPERTY = "cascading.flow.step";
+  public static final String CASCADING_FLOW_STEP_PATH_PROPERTY = "cascading.flow.step.path";
+  public static final String CASCADING_SERIALIZER_PROPERTY = "cascading.util.serializer";
 
-  @NonNull
+  /**
+   * Configuration.
+   */
   private final Map<Object, Object> properties;
 
-  public void execute(@NonNull FlowExecutorJob job) {
+  public FlowExecutor(@NonNull Map<Object, Object> properties) {
+    super(0, MAX_VALUE, 60L, SECONDS, new SynchronousQueue<Runnable>());
+    this.properties = properties;
+  }
+
+  public FlowExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, @NonNull TimeUnit unit,
+      @NonNull BlockingQueue<Runnable> workQueue, @NonNull Map<Object, Object> properties) {
+    super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+    this.properties = properties;
+  }
+
+  public Flow<?> execute(@NonNull FlowExecutorJob job) {
     val flow = createFlow(job);
+    return complete(flow);
+  }
+
+  @Override
+  protected <T> RunnableFuture<T> newTaskFor(final Callable<T> callable) {
+    val flow = createFlow(convert(callable));
+    return convert(callable, flow);
+  }
+
+  @Override
+  protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
+    val flow = createFlow(convert(runnable));
+    return convert(flow);
+  }
+
+  protected static Flow<?> complete(Flow<?> flow) {
     try {
       flow.complete();
+
+      return flow;
     } catch (FlowException e) {
       handleFlowException(flow);
 
       throw e;
     }
+  }
+
+  private static <T> FutureTask<T> convert(final Callable<T> callable, final Flow<?> flow) {
+    return new FutureTask<T>(new Callable<T>() {
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T call() throws Exception {
+        return (T) complete(flow);
+      }
+
+    });
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> FutureTask<T> convert(final Flow<?> flow) {
+    return new FutureTask<T>(new Runnable() {
+
+      @Override
+      @SneakyThrows
+      public void run() {
+        complete(flow);
+      }
+
+    }, (T) flow);
+  }
+
+  private static FlowExecutorJob convert(final Runnable command) {
+    return new FlowExecutorJob() {
+
+      @Override
+      public void execute(Configuration configuration) {
+        command.run();
+      }
+
+    };
+  }
+
+  private static <T> FlowExecutorJob convert(final Callable<T> command) {
+    return new FlowExecutorJob() {
+
+      @Override
+      @SneakyThrows
+      public void execute(Configuration configuration) {
+        command.call();
+      }
+
+    };
   }
 
   private Flow<?> createFlow(FlowExecutorJob job) {
@@ -163,13 +244,12 @@ public class FlowExecutor {
     val executorState = serializeBase64(job, jobConf, true);
     val maxSize = Short.MAX_VALUE;
 
-    // TODO: Constants
-    jobConf.set("cascading.util.serializer", JavaObjectSerializer.class.getName());
+    jobConf.set(CASCADING_SERIALIZER_PROPERTY, JavaObjectSerializer.class.getName());
     jobConf.set(JOB_NAME_PROPERTY, job.getClass().getName());
     if (isHadoopLocalMode(jobConf) || executorState.length() < maxSize) {
-      jobConf.set("cascading.flow.step", executorState);
+      jobConf.set(CASCADING_FLOW_STEP_PROPERTY, executorState);
     } else {
-      jobConf.set("cascading.flow.step.path", writeStateToDistCache(jobConf, getId(), executorState));
+      jobConf.set(CASCADING_FLOW_STEP_PATH_PROPERTY, writeStateToDistCache(jobConf, getId(), executorState));
     }
   }
 
@@ -204,7 +284,7 @@ public class FlowExecutor {
                     .append("&filter=")
                     .append(TaskLog.LogName.STDOUT);
 
-                log.info("Log url: ", logUrl);
+                log.info("Log url: {}", logUrl);
               }
             }
           }
@@ -213,111 +293,6 @@ public class FlowExecutor {
     } catch (Exception e) {
       log.error("Error handling flow excpetion:", e);
     }
-  }
-
-  @Slf4j
-  private static final class FlowExecutorMapper implements
-      Mapper<NullWritable, NullWritable, NullWritable, NullWritable> {
-
-    private JobConf jobConf;
-
-    @Override
-    public void configure(JobConf jobConf) {
-      log.info("Configuring...");
-      this.jobConf = jobConf;
-    }
-
-    @Override
-    public void close() throws IOException {
-    }
-
-    @Override
-    @SneakyThrows
-    public void map(NullWritable key, NullWritable value, OutputCollector<NullWritable, NullWritable> output,
-        Reporter reporter) throws IOException {
-      log.info("Starting...");
-      FlowExecutorJob job = readJob();
-      FlowExecutorHeartbeat beat = new FlowExecutorHeartbeat(reporter) {
-
-        @Override
-        protected void progress() {
-          log.info("Sending heartbeat");
-        }
-
-      };
-
-      try {
-        beat.start();
-        job.execute(jobConf);
-      } finally {
-        beat.stop();
-      }
-
-      log.info("Finished");
-    }
-
-    private FlowExecutorJob readJob() throws IOException, ClassNotFoundException {
-      val executorState = readExecutorState();
-      return (FlowExecutorJob) deserializeBase64(executorState, jobConf, Class.forName(jobConf.get(JOB_NAME_PROPERTY)));
-    }
-
-    private String readExecutorState() throws IOException {
-      String executorState = jobConf.getRaw(CASCADING_FLOW_STEP_PROPERTY);
-      if (executorState == null) {
-        executorState = readStateFromDistCache(jobConf, jobConf.get(FlowStep.CASCADING_FLOW_STEP_ID));
-      }
-
-      return executorState;
-    }
-
-  }
-
-  private static class FlowExecutorHeartbeat {
-
-    private final AtomicInteger latch = new AtomicInteger();
-    private final Thread beat;
-
-    public FlowExecutorHeartbeat(final Reporter reporter, final long periodMillis) {
-      beat = new Thread(
-          new Runnable() {
-
-            @Override
-            public void run() {
-              boolean interrupted = false;
-              while (latch.get() == 0 && !interrupted) {
-                try {
-                  Thread.sleep(periodMillis);
-                } catch (InterruptedException e) {
-                  interrupted = true;
-                }
-
-                // Keep the task alive
-                reporter.progress();
-
-                // Call the optional custom progress method
-                progress();
-              }
-            }
-          });
-    }
-
-    public FlowExecutorHeartbeat(Reporter reporter) {
-      this(reporter, 60 * 1000);
-    }
-
-    public void start() {
-      beat.start();
-    }
-
-    public void stop() {
-      latch.incrementAndGet();
-      beat.interrupt();
-    }
-
-    protected void progress() {
-      // No-op
-    }
-
   }
 
 }
