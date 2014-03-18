@@ -67,7 +67,7 @@ public enum ErrorType {
   },
 
   /**
-   * Number of columns does not match that of header.
+   * Last line is missing new line.
    */
   LINE_TERMINATOR_MISSING_ERROR(ROW_LEVEL, "Row is missing line terminator. Expected \\n", true) {
 
