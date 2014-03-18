@@ -284,6 +284,18 @@ public enum ErrorType {
   },
 
   /**
+   * concatentating bzip2 files is not supported
+   */
+  UNSUPPORTED_COMPRESSED_FILE(FILE_LEVEL, "The compressed file should not be concatenated or the block header is corrupted") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class);
+      return ImmutableMap.of(SCHEMA, params[0]);
+    }
+  },
+
+  /**
    * Compression codec doesn't match file extension
    */
   COMPRESSION_CODEC_ERROR(FILE_LEVEL, "File compression type does not match file extension") {
