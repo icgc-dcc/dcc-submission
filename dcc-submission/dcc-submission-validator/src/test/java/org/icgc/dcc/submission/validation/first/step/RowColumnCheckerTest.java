@@ -90,6 +90,16 @@ public class RowColumnCheckerTest {
   }
 
   @Test
+  public void missingNewLine() throws Exception {
+    DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\n\t\n\t\t".getBytes()));
+    when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
+
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
+    checker.check(anyString());
+    TestUtils.checkRowColumnErrorReported(validationContext, 1);
+  }
+
+  @Test
   public void invalidColumnsContent() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\nf2\n".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);

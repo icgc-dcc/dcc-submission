@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.first.step;
 
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.COMPRESSION_CODEC_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.UNSUPPORTED_COMPRESSED_FILE;
 
 import java.io.IOException;
 
@@ -100,16 +101,27 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       getFs().attemptBzip2Read(fileName);
     } catch (IOException e) {
       e.printStackTrace();
-      log.info("Exception caught in decoding bzip2 file '{}': '{}'", fileName, e.getMessage());
-
+      String errMsg = e.getMessage();
+      log.info("Exception caught in decoding bzip2 file '{}': '{}'", fileName, errMsg);
       incrementCheckErrorCount();
 
-      getReportContext().reportError(
-          error()
-              .fileName(fileName)
-              .type(COMPRESSION_CODEC_ERROR)
-              .params(getFileSchema(fileName).getName())
-              .build());
+      // TODO: remove this after upgrade hadoop
+      if (errMsg != null && errMsg.equals("bad block header")) {
+        log.info("found possibly, concatenated bzip2 files!", fileName);
+        getReportContext().reportError(
+            error()
+                .fileName(fileName)
+                .type(UNSUPPORTED_COMPRESSED_FILE)
+                .params(getFileSchema(fileName).getName())
+                .build());
+      } else {
+        getReportContext().reportError(
+            error()
+                .fileName(fileName)
+                .type(COMPRESSION_CODEC_ERROR)
+                .params(getFileSchema(fileName).getName())
+                .build());
+      }
     }
   }
 

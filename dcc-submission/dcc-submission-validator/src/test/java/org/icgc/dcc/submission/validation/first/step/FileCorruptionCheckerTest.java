@@ -6,9 +6,11 @@ import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.P
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType;
@@ -47,7 +50,10 @@ public class FileCorruptionCheckerTest {
 
   @Mock
   ValidationContext validationContext;
+
   @Mock
+  SubmissionDirectory submissionDirectory;
+
   FPVFileSystem fs;
 
   @Before
@@ -61,6 +67,8 @@ public class FileCorruptionCheckerTest {
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(testSchema));
 
     when(validationContext.getDictionary()).thenReturn(dict);
+
+    fs = spy(new FPVFileSystem(submissionDirectory));
   }
 
   @Test
@@ -68,9 +76,9 @@ public class FileCorruptionCheckerTest {
     // TODO: should close those...
     DataInputStream textInputStream = getTestInputStream(PLAIN_TEXT);
 
-    when(fs.getDecompressingInputStream(anyString())).thenReturn(textInputStream);
-    when(fs.determineCodecFromFilename(anyString())).thenReturn(PLAIN_TEXT);
-    when(fs.determineCodecFromContent(anyString())).thenReturn(PLAIN_TEXT);
+    doReturn(textInputStream).when(fs).getDecompressingInputStream(anyString());
+    doReturn(PLAIN_TEXT).when(fs).determineCodecFromContent(anyString());
+    doReturn(PLAIN_TEXT).when(fs).determineCodecFromFilename(anyString());
 
     FileCorruptionChecker checker =
         new FileCorruptionChecker(
@@ -82,9 +90,11 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testGZipInputValid() throws Exception {
-    when(fs.getDecompressingInputStream(anyString())).thenReturn(getTestInputStream(GZIP));
-    when(fs.determineCodecFromFilename(anyString())).thenReturn(GZIP);
-    when(fs.determineCodecFromContent(anyString())).thenReturn(GZIP);
+    DataInputStream testInputStream = getTestInputStream(GZIP);
+    doReturn(testInputStream).when(fs).getDecompressingInputStream(anyString());
+    doReturn(GZIP).when(fs).determineCodecFromContent(anyString());
+    doReturn(GZIP).when(fs).determineCodecFromFilename(anyString());
+    when(submissionDirectory.open(anyString())).thenReturn(testInputStream);
 
     FileCorruptionChecker checker =
         new FileCorruptionChecker(
@@ -96,9 +106,11 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testBZip2InputValid() throws Exception {
-    when(fs.getDecompressingInputStream(anyString())).thenReturn(getTestInputStream(BZIP2));
-    when(fs.determineCodecFromFilename(anyString())).thenReturn(BZIP2);
-    when(fs.determineCodecFromContent(anyString())).thenReturn(BZIP2);
+    DataInputStream testInputStream = getTestInputStream(BZIP2);
+    doReturn(testInputStream).when(fs).getDecompressingInputStream(anyString());
+    doReturn(BZIP2).when(fs).determineCodecFromContent(anyString());
+    doReturn(BZIP2).when(fs).determineCodecFromFilename(anyString());
+    when(submissionDirectory.open(anyString())).thenReturn(testInputStream);
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.bz2");
@@ -107,9 +119,22 @@ public class FileCorruptionCheckerTest {
   }
 
   @Test
+  public void testConcatenatedBZip2InputValid() throws Exception {
+    DataInputStream testInputStream = getConcatenatedBZipTestInputStream(TEST_TEXT);
+    doReturn(testInputStream).when(fs).getDecompressingInputStream(anyString());
+    doReturn(BZIP2).when(fs).determineCodecFromContent(anyString());
+    doReturn(BZIP2).when(fs).determineCodecFromFilename(anyString());
+    when(submissionDirectory.open(anyString())).thenReturn(testInputStream);
+
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
+    checker.check("file.bz2");
+    checkErrorReported();
+  }
+
+  @Test
   public void testGZipInputNotValid() throws Exception {
-    when(fs.determineCodecFromFilename(anyString())).thenReturn(GZIP);
-    when(fs.determineCodecFromContent(anyString())).thenReturn(GZIP);
+    doReturn(GZIP).when(fs).determineCodecFromContent(anyString());
+    doReturn(GZIP).when(fs).determineCodecFromFilename(anyString());
     doThrow(new IOException()).when(fs).attemptGzipRead(anyString());
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
@@ -123,8 +148,8 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testBZip2InputNotValid() throws Exception {
-    when(fs.determineCodecFromFilename(anyString())).thenReturn(BZIP2);
-    when(fs.determineCodecFromContent(anyString())).thenReturn(BZIP2);
+    doReturn(BZIP2).when(fs).determineCodecFromContent(anyString());
+    doReturn(BZIP2).when(fs).determineCodecFromFilename(anyString());
     doThrow(new IOException()).when(fs).attemptBzip2Read(anyString());
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
@@ -138,9 +163,12 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testFilenameBzCodecMismatch() throws Exception {
-    when(fs.getDecompressingInputStream(anyString())).thenReturn(getTestInputStream(BZIP2));
-    when(fs.determineCodecFromFilename(anyString())).thenReturn(PLAIN_TEXT);
-    when(fs.determineCodecFromContent(anyString())).thenReturn(BZIP2);
+
+    DataInputStream testInputStream = getTestInputStream(BZIP2);
+    doReturn(testInputStream).when(fs).getDecompressingInputStream(anyString());
+    doReturn(BZIP2).when(fs).determineCodecFromContent(anyString());
+    doReturn(PLAIN_TEXT).when(fs).determineCodecFromFilename(anyString());
+    when(submissionDirectory.open(anyString())).thenReturn(testInputStream);
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.gz");
@@ -155,8 +183,10 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testFilenameTextCodecMismatch() throws Exception {
-    when(fs.determineCodecFromFilename(anyString())).thenReturn(PLAIN_TEXT);
-    when(fs.determineCodecFromContent(anyString())).thenReturn(GZIP);
+    DataInputStream testInputStream = getTestInputStream(BZIP2);
+    doReturn(testInputStream).when(fs).getDecompressingInputStream(anyString());
+    doReturn(GZIP).when(fs).determineCodecFromContent(anyString());
+    doReturn(PLAIN_TEXT).when(fs).determineCodecFromFilename(anyString());
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
     checker.check("file.gz");
@@ -210,6 +240,17 @@ public class FileCorruptionCheckerTest {
       // Do nothing
       break;
     }
+    IOUtils.write(content.getBytes(), out);
+    IOUtils.closeQuietly(out);
+    return new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
+  }
+
+  public static DataInputStream getConcatenatedBZipTestInputStream(String content) throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    BZip2CompressorOutputStream out = new BZip2CompressorOutputStream(bytes);
+    IOUtils.write(content.getBytes(), out);
+    IOUtils.closeQuietly(out);
+    out = new BZip2CompressorOutputStream(bytes);
     IOUtils.write(content.getBytes(), out);
     IOUtils.closeQuietly(out);
     return new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
