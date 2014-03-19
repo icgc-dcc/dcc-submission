@@ -31,6 +31,10 @@ import com.google.common.base.Stopwatch;
 @NoArgsConstructor(access = PRIVATE)
 public final class FormatUtils {
 
+  public static String _(String format, Object... args) {
+    return String.format(format, args);
+  }
+
   public static String formatBytes(long bytes) {
     return formatBytes(bytes, true);
   }
