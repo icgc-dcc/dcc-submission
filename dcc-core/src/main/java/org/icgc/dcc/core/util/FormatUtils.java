@@ -21,7 +21,11 @@ import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static lombok.AccessLevel.PRIVATE;
 import static org.joda.time.Duration.standardSeconds;
+
+import java.util.concurrent.TimeUnit;
+
 import lombok.NoArgsConstructor;
+import lombok.val;
 
 import org.joda.time.Duration;
 import org.joda.time.Period;
@@ -57,8 +61,12 @@ public final class FormatUtils {
     return format("%,d", count);
   }
 
-  public static String formatRate(float count) {
-    return format("%,.2f", count);
+  public static String formatRate(float rate) {
+    return format("%,.2f", rate);
+  }
+
+  public static String formatRate(int count, Stopwatch watch) {
+    return formatRate(rate(watch, count));
   }
 
   public static String formatPercent(float percent) {
@@ -84,6 +92,28 @@ public final class FormatUtils {
 
     return format("%02d:%02d:%02d:%02d (dd:hh:mm:ss)",
         period.getDays(), period.getHours(), period.getMinutes(), period.getSeconds());
+  }
+
+  public static String formatMemory() {
+    val runtime = Runtime.getRuntime();
+
+    return new StringBuilder()
+        .append("max memory: ")
+        .append(formatBytes(runtime.maxMemory()))
+        .append(", total memory: ")
+        .append(formatBytes(runtime.totalMemory()))
+        .append(", free memory: ")
+        .append(formatBytes(runtime.freeMemory()))
+        .toString();
+  }
+
+  private static float rate(Stopwatch watch, int count) {
+    float seconds = watch.elapsed(TimeUnit.MILLISECONDS) / 1000.0f;
+    if (seconds == 0.0f) {
+      return 0.0f;
+    }
+
+    return count / seconds;
   }
 
 }
