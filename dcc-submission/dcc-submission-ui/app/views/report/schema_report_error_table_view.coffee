@@ -43,9 +43,9 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     UNSUPPORTED_COMPRESSED_FILE:
       name: "Unsupported compressed file"
       description: (source) ->
-      """
-      The compressed file should not be concatenated or the block header is corrupted
-      """
+        """
+        The compressed file should not be concatenated or the block header is corrupted
+        """
     CODELIST_ERROR:
       name: "Invalid value"
       description: (source) ->
