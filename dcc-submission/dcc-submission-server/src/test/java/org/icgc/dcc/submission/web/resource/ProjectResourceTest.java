@@ -130,7 +130,8 @@ public class ProjectResourceTest extends ResourceTest {
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
     verify(projectService).getProjectsByUser(any(String.class));
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertEntity(reponse, "[{\"key\":\"PRJ1\",\"name\":\"Project One\"}]");
+    assertEntity(reponse, "[{\"key\":\"PRJ1\",\"name\":\"Project One\""
+        + ",\"users\": [\"" + AUTH_ALLOWED_USER + "\"], \"groups\": []}]");
   }
 
   @Test
@@ -138,7 +139,8 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse = target().path("projects").request(MIME_TYPE).get();
     verify(projectService, atLeast(1)).getProjects();
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertEntity(reponse, "[{\"key\":\"PRJ1\",\"name\":\"Project One\"},{\"key\":\"PRJ2\",\"name\":\"Project Two\"}]");
+    assertEntity(reponse, "[{\"key\":\"PRJ1\",\"name\":\"Project One\",\"users\": [\"" + AUTH_ALLOWED_USER
+        + "\"], \"groups\": []},{\"key\":\"PRJ2\",\"name\":\"Project Two\", \"users\": [], \"groups\": []}]");
   }
 
   @Test
@@ -169,7 +171,8 @@ public class ProjectResourceTest extends ResourceTest {
             .header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
     verify(projectService).getProject(projectOne.getKey());
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
-    assertEntity(reponse, "{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
+    assertEntity(reponse, "{\"key\":\"PRJ1\",\"name\":\"Project One\""
+        + ",\"users\": [\"" + AUTH_ALLOWED_USER + "\"], \"groups\": []}");
   }
 
   @Test
@@ -231,7 +234,7 @@ public class ProjectResourceTest extends ResourceTest {
 
   @Test
   public void testAddProjectWhenAdmin() throws Exception {
-    val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
+    val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\", \"users\": [\"myuser\"]}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
 
     verify(projectService).addProject(any(Project.class));
