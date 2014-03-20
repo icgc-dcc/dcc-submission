@@ -45,7 +45,7 @@ import lombok.val;
 import org.icgc.dcc.core.util.AppUtils;
 
 /**
- * 
+ * Helper class to set common hadoop properties.
  */
 public class HadoopProperties {
 
@@ -67,7 +67,7 @@ public class HadoopProperties {
     return properties;
   }
 
-  public static Map<Object, Object> enableIntermediateMapOutputCompression(Map<Object, Object> properties) {
+  public static Map<Object, Object> enableIntermediateMapOutputCompression(Map<Object, Object> properties, String codec) {
     properties.put(
         MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
         ENABLED_COMPRESSION);
@@ -75,12 +75,12 @@ public class HadoopProperties {
         MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
         AppUtils.isTestEnvironment() ?
             SNAPPY_CODEC_PROPERTY_VALUE :
-            LZO_CODEC_PROPERTY_VALUE);
+            codec);
 
     return properties;
   }
 
-  public static Map<Object, Object> enableJobOutputCompression(Map<Object, Object> properties) {
+  public static Map<Object, Object> enableJobOutputCompression(Map<Object, Object> properties, String codec) {
     properties.put(
         MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
         ENABLED_COMPRESSION);
@@ -91,7 +91,7 @@ public class HadoopProperties {
         MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
         AppUtils.isTestEnvironment() ?
             SNAPPY_CODEC_PROPERTY_VALUE :
-            LZO_CODEC_PROPERTY_VALUE);
+            codec);
 
     return properties;
   }

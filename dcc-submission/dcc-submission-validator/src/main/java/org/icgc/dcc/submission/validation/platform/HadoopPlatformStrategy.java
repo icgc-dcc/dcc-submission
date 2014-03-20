@@ -18,21 +18,12 @@
 package org.icgc.dcc.submission.validation.platform;
 
 import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
-import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.ENABLED_COMPRESSION;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.IO_COMPRESSION_CODECS_PROPERTY_NAME;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.PROPERTY_VALUES_SEPARATOR;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopProperties.enableIntermediateMapOutputCompression;
+import static org.icgc.dcc.hadoop.util.HadoopProperties.enableJobOutputCompression;
+import static org.icgc.dcc.hadoop.util.HadoopProperties.setAvailableCodecs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +38,6 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.icgc.dcc.core.util.AppUtils;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
@@ -83,30 +73,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     this.hadoopConfig = hadoopConfig;
   }
 
-  // @Override
-  // public FlowConnector getFlowConnector(Map<Object, Object> properties) {
-  // Map<Object, Object> flowProperties = newHashMap();
-  //
-  // // Custom serialization
-  // TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
-  //
-  // // From external application configuration file
-  // for (val configEntry : hadoopConfig.entrySet()) {
-  // flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
-  // }
-  //
-  // // M/R job entry point
-  // AppProps.setApplicationJarClass(flowProperties, this.getClass());
-  //
-  // flowProperties =
-  // enableJobOutputCompression(
-  // enableIntermediateMapOutputCompression(
-  // setAvailableCodecs(flowProperties)));
-  //
-  // flowProperties.putAll(properties);
-  // return new HadoopFlowConnector(flowProperties);
-  // }
-
   @Override
   public FlowConnector getFlowConnector(Map<Object, Object> properties) {
     Map<Object, Object> flowProperties = newHashMap();
@@ -122,35 +88,12 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, this.getClass());
 
-    if (!AppUtils.isTestEnvironment()) {
-      // Specify available compression codecs
-      flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
-          on(PROPERTY_VALUES_SEPARATOR)
-              .join(
-                  DEFAULT_CODEC_PROPERTY_VALUE,
-                  GZIP_CODEC_PROPERTY_VALUE,
-                  BZIP2_CODEC_PROPERTY_VALUE));
-
-      // Enable compression on intermediate map outputs
-      flowProperties.put(
-          MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
-          ENABLED_COMPRESSION);
-      flowProperties.put(
-          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
-          MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
-
-      flowProperties.put(
-          MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
-          SNAPPY_CODEC_PROPERTY_VALUE);
-
-      // Enable compression on job outputs
-      flowProperties.put(
-          MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
-          ENABLED_COMPRESSION);
-      flowProperties.put(
-          MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
-          GZIP_CODEC_PROPERTY_VALUE);
-    }
+    flowProperties =
+        enableJobOutputCompression(
+            enableIntermediateMapOutputCompression(
+                setAvailableCodecs(flowProperties),
+                SNAPPY_CODEC_PROPERTY_VALUE),
+            GZIP_CODEC_PROPERTY_VALUE);
 
     flowProperties.putAll(properties);
     return new HadoopFlowConnector(flowProperties);
