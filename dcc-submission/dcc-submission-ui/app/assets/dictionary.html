@@ -70,7 +70,7 @@
 .link {
   fill: none;
   stroke: #eee;
-  stroke-width: 2.5px;
+  stroke-width: 1.5px;
 }
 
 
@@ -141,11 +141,8 @@ a {
 <div id="datatypeTable" style="margin:0.5em"></div>
 
 <div id="datatypeGraph" style="margin:0.5em">
-   <div id="graph" style="float:left">
-   </div>
-   <div id="graphSubtree" style="float:right">
-   subtree<br>goes<br>in<br>here
-   </div>
+   <div id="graph" style="float:left; width:75%"></div>
+   <div id="graphSubtree" style="height:700px; float:right; overflow-y:scroll; width:25%"></div>
 </div>
 
 </body>
@@ -215,43 +212,106 @@ function getSelect(elem) {
    return d3.select(elem).node()[index].value;
 }
 
-
-
-// Build an edge list: 
-//   a -> [b, c, d]
-//   b -> [x, y, z]
-function getRelation(dict) {
-   var edgeList = {};
+function getParentRelation(dict) {
+   var list = [];
+   var roleMap = {}
    var files = dict.files;
-   var root = "";
-   files.forEach(function(file) {
-      if (! file.relations) return;
 
-      if (file.relations.length == 0) {
-         return; // Ignore for now
+   files.forEach(function(f) {
+      roleMap[f.name] = f.role;
+   });
+
+   files.forEach(function(f) {
+      if (f.relations.length === 0) {
+         list.push({
+            node: f.name,
+            parentNode: null
+         });
       } else {
-         file.relations.forEach(function(r) {
-            if ( !edgeList[r.other]) edgeList[r.other] = [];
-            edgeList[r.other].push(file.name);
+         f.relations.forEach(function(r) {
+            if (roleMap[r.other] === "SYSTEM") {
+               list.push({
+                  node:r.other,
+                  parentNode: f.name
+               });
+            } else {
+               list.push({
+                  node:f.name,
+                  parentNode: r.other
+               });
+            }
          });
       }
    });
-   return edgeList;
+   return list;
 }
 
-// Get relation graph (assumes acyclic)
-function buildTree(node, edgeList, dict) {
+
+function buildTree2(node, relations, visited, dict) {
+   console.log("building ", node.name);
    node.data = _.find(dict.files, function(f) { return f.name === node.name });
-   var children = edgeList[node.name];
-   if (!children) return;
+   var children = _.filter(relations, function(r) {
+      return r.parentNode === node.name;
+   });
 
    node.children = [];
-   _.uniq(children).forEach(function(child) {
-      var c = {name:child};
+
+   children.forEach(function(child) {
+      if (visited[child.node]) return;
+      var c = {name:child.node};
       node.children.push(c);
-      buildTree(c, edgeList, dict);
+      visited[child.node] = 1;
+   });
+
+   node.children = _.sortBy(node.children, function(child) {
+      return child.name;
+   });
+
+   node.children.forEach(function(child) {
+      buildTree2(child, relations, visited, dict);
    });
 }
+
+function updateSubview(data) {
+   var root = d3.select("#graphSubtree");
+   var fields;
+   root.selectAll("*").remove();
+
+   root.append("div").append("ul")
+      .classed("list-unstyled", true)
+      .selectAll("li")
+      .data(data.fields)
+      .enter()
+      .append("li")
+      .text(function(d) {
+         return d.name + " (" + d.valueType + ")";
+      })
+      .each(function(d) {
+         var table = d3.select(this).append("table")
+            .classed("table-bordered", true)
+            .style("margin-bottom", "1rem")
+            .append("tbody");
+         var row; 
+
+         row = table.append("tr").style("color", "#999");
+         row.append("td").text("Desc");
+         row.append("td").text(d.label);
+
+         row = table.append("tr").style("color", "#999");
+         row.append("td").text("RegExp");
+         row.append("td").text("123");
+
+         row = table.append("tr").style("color", "#999");
+         row.append("td").text("Script");
+         row.append("td").text("123");
+
+         row = table.append("tr").style("color", "#999");
+         row.append("td").text("Code List");
+         row.append("td").text("123");
+
+      });
+}
+
 
 
 
@@ -261,7 +321,6 @@ function buildTree(node, edgeList, dict) {
 function switchDictionary() {
    var val = getSelect("#version_a");
    render(val);
-   //showDictionaryTable(val);
 }
 
 
@@ -575,45 +634,61 @@ function render(version) {
 
 function showDictionaryGraph(version) {
    window.scrollTo(0, 0);
-   data = dictionaryMap[version];
+   var dict = dictionaryMap[version];
 
    // Clear
    d3.select("#graph").selectAll("*").remove();
 
-   var edgeList = getRelation(data);
-   var root = {name:"donor"};
-   buildTree(root, edgeList, data);
-   
 
    var svg = d3.select("#graph")
       .append("svg")
-      .attr("width", 900)
+      .attr("width", 1100)
       .attr("height", 700)
       .append("g")
       .attr("transform", "translate(40, 0)");
 
    
    var i = 0, duration = 750, root;
-   var tree = d3.layout.tree().size([600, 900]);
+   var tree = d3.layout.tree().size([600, 1100]);
    var diagonal = d3.svg.diagonal().projection(function(d) { return [d.y, d.x]; });
 
+    
+
+   var list = getParentRelation(dict);
+   var queue = [];
+   var level = 0;
+
+   console.log("List", list);
+
+   var root = {name:"donor"};
+   var visited = {};
+   visited["donor"] = 1;
+   buildTree2(root, list, visited, data, dict);
    
+
+
+   /* Interest idea but can produce crossings :(
+   var start, children, visited = {};
+   start = _.filter(list, function(d) {
+      return d.node === "donor";
+   });
+   
+   while(start.length > 0) {
+      console.log("start", _.pluck(start, "node"));
+      children = _.filter(list, function(d) {
+         return _.pluck(start, "node").indexOf( d.parentNode ) >= 0;
+      });
+      console.log("children", _.pluck(children, "node"));
+      start = children;
+   }
+   */
 
    root.x0 = 200;
    root.y0 = 0;
 
    // Toggle children on click.
    function click(d) {
-     /*
-     if (d.children) {
-       d._children = d.children;
-       d.children = null;
-     } else {
-       d.children = d._children;
-       d._children = null;
-     }
-     */
-     update(d);
+     updateSubview(d.data);
    }
 
 
@@ -623,98 +698,69 @@ function showDictionaryGraph(version) {
      var links = tree.links(nodes);
    
      // Normalize for fixed-depth.
-     nodes.forEach(function(d) { d.y = d.depth * 150; });
+     nodes.forEach(function(d) { d.y = d.depth * 170; });
    
      // Update the nodes…
      var node = svg.selectAll("g.node")
          .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
-     console.log("Nodes ", node);
    
      // Enter any new nodes at the parent's previous position.
      var nodeEnter = node.enter().append("g")
+         .attr("id", function(d) { return d.name; })
          .attr("class", "node")
-         .attr("transform", function(d) { return "translate(" + source.y0 + "," + (10+source.x0) + ")"; })
+         .attr("transform", function(d) { 
+            if (d.children) {
+               d.y += 55;
+            } 
+            return "translate(" + d.y + "," + d.x + ")"; 
+         })
          .on("click", click);
    
      nodeEnter.append("circle")
-         .attr("r", 1e-6)
+         .attr("r", 6.5)
          .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
    
      nodeEnter.append("text")
-         //.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
          .attr("x", "10")
          .attr("dy", ".35em")
-         //.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
          .text(function(d) { return d.name; })
-         .style("fill-opacity", 1e-6);
+         .style("fill-opacity", 1);
 
 
      nodeEnter.each(function(n) {
         var ref = d3.select(this);
         n.data.fields.forEach(function(x, i) {
           ref.append("rect")
-             .attr("x", 10+2*i)
+             .attr("x", 10+3*i)
              .attr("y", "7")
-             .attr("height", 5)
+             .attr("height", 8)
              .attr("width", 1)
-             .style("fill", "#FF0000");
+             .style("fill", "#887777");
         }); 
      });
 
 
+     var links = [];
+     list.forEach(function(rel) {
+        if (rel.parentNode === null) return;
+        var a = svg.select("#"+rel.node).datum();
+        var b = svg.select("#"+rel.parentNode).datum();
+        links.push({
+           source: { x: a.x, y: a.y },
+           target: { x: b.x, y: b.y },
+        });
+     });
 
-   
-     // Transition nodes to their new position.
-     var nodeUpdate = node.transition()
-         .duration(duration)
-         .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-   
-     nodeUpdate.select("circle")
-         .attr("r", 6.5)
-         .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
-   
-     nodeUpdate.select("text")
-         .style("fill-opacity", 1);
-   
-     // Transition exiting nodes to the parent's new position.
-     var nodeExit = node.exit().transition()
-         .duration(duration)
-         .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-         .remove();
-   
-     nodeExit.select("circle")
-         .attr("r", 1e-6);
-   
-     nodeExit.select("text")
-         .style("fill-opacity", 1e-6);
-   
-     // Update the links…
-     var link = svg.selectAll("path.link")
-         .data(links, function(d) { return d.target.id; });
-   
-     // Enter any new links at the parent's previous position.
-     link.enter().insert("path", "g")
-         .attr("class", "link")
-         .attr("d", function(d) {
-           var o = {x: source.x0, y: source.y0};
-           return diagonal({source: o, target: o});
-         });
-   
-     // Transition links to their new position.
-     link.transition()
-         .duration(duration)
-         .attr("d", diagonal);
-   
-     // Transition exiting nodes to the parent's new position.
-     link.exit().transition()
-         .duration(duration)
-         .attr("d", function(d) {
-           var o = {x: source.x, y: source.y};
-           return diagonal({source: o, target: o});
-         })
-         .remove();
-   
+
+     svg.insert("g", ":first-child").selectAll("path.link")
+        .data(links)
+        .enter()
+        .append("path")
+        .attr("class", "link")
+        .attr("d", diagonal);
+
+
      // Stash the old positions for transition.
      nodes.forEach(function(d) {
        d.x0 = d.x;
@@ -722,16 +768,56 @@ function showDictionaryGraph(version) {
      });
    }
    
-   function collapse(d) {
-       if (d.children) {
-         d._children = d.children;
-         d._children.forEach(collapse);
-         d.children = null;
-       }
-   }
-   
-   //root.children.forEach(collapse);
    update(root);
+
+
+
+
+   var legend = svg.insert("g", ":first-child")
+      .attr("class", "node")
+      .attr("transform", "translate(30, 30)");
+
+   legend.append("rect")
+      .attr("x", -10)
+      .attr("y", -10)
+      .attr("width", 200)
+      .attr("height", 50)
+      .attr("stroke", "#FF0000")
+      .attr("fill", "#FFFFFF");
+
+
+
+   legend.append("circle")
+      .attr("r", 6.5)
+      .attr("fill", "#FFFFFF")
+      .attr("stroke", "steelblue");
+      
+   legend.append("text")
+      .attr("x", 10)
+      .attr("dy", ".35em")
+      .text("meth_array_m");
+         
+   for(var i=0; i < 6; i++) {
+      legend.append("rect")
+         .attr("x", 10+3*i)
+         .attr("y", "7")
+         .attr("height", 8)
+         .attr("width", 1)
+         .style("fill", "#887777");
+   }
+
+   legend.append("text")
+      .attr("x", 90)
+      .attr("y", 4)
+      .attr("fill", "#0000FF") 
+      .text("<--- FileType Name");
+
+   legend.append("text")
+      .attr("x", 40)
+      .attr("y", 14)
+      .attr("fill", "#0000FF") 
+      .text("<--- Fields");
+
 
 }
 
@@ -943,9 +1029,6 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
        .attr("value", function(d) { return d; })
        .text(function(d) { return d;});
 
-
-     //showDictionaryTable(latest);
-     //showDictionaryGraph(latest);
      render(latest);
    });
 });
