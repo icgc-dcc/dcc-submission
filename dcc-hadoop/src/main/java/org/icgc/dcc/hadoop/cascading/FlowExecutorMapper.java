@@ -21,7 +21,7 @@ import static cascading.flow.hadoop.util.HadoopUtil.deserializeBase64;
 import static cascading.flow.hadoop.util.HadoopUtil.readStateFromDistCache;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.apache.hadoop.mapred.JobConf.MAPRED_MAP_TASK_JAVA_OPTS;
-import static org.icgc.dcc.core.util.FormatUtils.formatBytes;
+import static org.icgc.dcc.core.util.FormatUtils.formatMemory;
 
 import java.io.IOException;
 
@@ -97,19 +97,6 @@ public class FlowExecutorMapper implements Mapper<NullWritable, NullWritable, Nu
       }
 
     };
-  }
-
-  private static String formatMemory() {
-    val runtime = Runtime.getRuntime();
-
-    return new StringBuilder()
-        .append("max memory: ")
-        .append(formatBytes(runtime.maxMemory()))
-        .append(", total memory: ")
-        .append(formatBytes(runtime.totalMemory()))
-        .append(", free memory: ")
-        .append(formatBytes(runtime.freeMemory()))
-        .toString();
   }
 
 }
