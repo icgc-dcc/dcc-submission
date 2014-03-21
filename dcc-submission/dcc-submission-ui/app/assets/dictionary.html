@@ -61,16 +61,18 @@
   fill: #fff;
   stroke: steelblue;
   stroke-width: 1.5px;
+  cursor: pointer;
 }
 
 .node text {
   font: 10px sans-serif;
+  cursor: pointer;
 }
 
 .link {
   fill: none;
-  stroke: #eee;
-  stroke-width: 1.5px;
+  stroke: #f1f1f1;
+  stroke-width: 2.0px;
 }
 
 
@@ -248,7 +250,7 @@ function getParentRelation(dict) {
 
 
 function buildTree2(node, relations, visited, dict) {
-   console.log("building ", node.name);
+   //console.log("building ", node.name);
    node.data = _.find(dict.files, function(f) { return f.name === node.name });
    var children = _.filter(relations, function(r) {
       return r.parentNode === node.name;
@@ -371,6 +373,7 @@ function doFilterGraph() {
    d3.select("#graph").selectAll("circle").style("fill", null);
    d3.select("#graph").selectAll("circle").filter(function(node) {
       if (!txt || txt === '') return false;
+      if (!node) return false;
 
       var matches = _.filter(node.data.fields, function(field) {
          return isMatch(field, re);
@@ -698,7 +701,7 @@ function showDictionaryGraph(version) {
      var links = tree.links(nodes);
    
      // Normalize for fixed-depth.
-     nodes.forEach(function(d) { d.y = d.depth * 170; });
+     nodes.forEach(function(d) { d.y = d.depth * 165; });
    
      // Update the nodes…
      var node = svg.selectAll("g.node")
@@ -723,8 +726,8 @@ function showDictionaryGraph(version) {
    
      nodeEnter.append("text")
          .attr("x", "10")
-         .attr("dy", ".35em")
-         .text(function(d) { return d.name; })
+         .attr("dy", ".10em")
+         .text(function(d) { return d.name + " (" + d.data.fields.length + ")"; })
          .style("fill-opacity", 1);
 
 
@@ -732,12 +735,16 @@ function showDictionaryGraph(version) {
         var ref = d3.select(this);
         n.data.fields.forEach(function(x, i) {
           ref.append("rect")
-             .attr("x", 10+3*i)
-             .attr("y", "7")
-             .attr("height", 8)
-             .attr("width", 1)
-             .style("fill", "#887777");
+             .attr("x", 10+3.0*i)
+             .attr("y", "6")
+             .attr("height", 11)
+             .attr("width", 1.5)
+             .style("fill", function() {
+                if (['donor_id', 'chromosome_start', 'chromosome_end', 'sample_id'].indexOf(x.name) > -1) return "#FF00FF";
+                return "#CCDDEE";
+             });
         }); 
+        //ref.append("rect").attr("x", 10).attr("y", 18).attr("height", 1).attr("width", n.data.fields.length*3).style("fill", "#888888");
      });
 
 
@@ -775,17 +782,15 @@ function showDictionaryGraph(version) {
 
    var legend = svg.insert("g", ":first-child")
       .attr("class", "node")
-      .attr("transform", "translate(30, 30)");
+      .attr("transform", "translate(20, 20)");
 
    legend.append("rect")
-      .attr("x", -10)
-      .attr("y", -10)
+      .attr("x", -15)
+      .attr("y", -15)
       .attr("width", 200)
-      .attr("height", 50)
-      .attr("stroke", "#FF0000")
+      .attr("height", 40)
+      .attr("stroke", "#668822")
       .attr("fill", "#FFFFFF");
-
-
 
    legend.append("circle")
       .attr("r", 6.5)
@@ -794,29 +799,29 @@ function showDictionaryGraph(version) {
       
    legend.append("text")
       .attr("x", 10)
-      .attr("dy", ".35em")
+      .attr("dy", ".10em")
       .text("meth_array_m");
          
    for(var i=0; i < 6; i++) {
       legend.append("rect")
          .attr("x", 10+3*i)
-         .attr("y", "7")
-         .attr("height", 8)
+         .attr("y", "6")
+         .attr("height", 11)
          .attr("width", 1)
-         .style("fill", "#887777");
+         .style("fill", "#CCDDEE");
    }
 
    legend.append("text")
       .attr("x", 90)
-      .attr("y", 4)
-      .attr("fill", "#0000FF") 
+      .attr("y", 0)
+      .attr("fill", "#668822") 
       .text("<--- FileType Name");
 
    legend.append("text")
-      .attr("x", 40)
+      .attr("x", 90)
       .attr("y", 14)
-      .attr("fill", "#0000FF") 
-      .text("<--- Fields");
+      .attr("fill", "#668822") 
+      .text("<--- # fields");
 
 
 }
