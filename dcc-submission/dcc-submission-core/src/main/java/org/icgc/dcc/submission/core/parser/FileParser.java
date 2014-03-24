@@ -39,20 +39,20 @@ public class FileParser<T> {
   private final FileLineParser<T> lineParser;
   private final boolean processHeader;
 
-  public long parse(Path filePath, FileRecordProcessor<T> recordProcessor) throws Exception {
+  public long parse(Path filePath, FileRecordProcessor<T> recordProcessor) throws IOException {
     @Cleanup
     val inputStream = createInputStream(filePath);
 
     return parse(inputStream, recordProcessor);
   }
 
-  public long parse(InputStream inputStream, FileRecordProcessor<T> recordProcessor) throws Exception {
+  public long parse(InputStream inputStream, FileRecordProcessor<T> recordProcessor) throws IOException {
     val reader = new LineReader(new InputStreamReader(inputStream));
 
     return parse(reader, recordProcessor);
   }
 
-  public long parse(LineReader reader, FileRecordProcessor<T> recordProcessor) throws Exception {
+  public long parse(LineReader reader, FileRecordProcessor<T> recordProcessor) throws IOException {
     // Line state (one-based)
     long lineNumber = 1;
     String line;
