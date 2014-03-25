@@ -64,11 +64,9 @@ public class Project {
   private String alias;
 
   @NonNull
-  @JsonIgnore
   private Set<String> users = Sets.newHashSet();
 
   @NonNull
-  @JsonIgnore
   private Set<String> groups = Sets.newHashSet();
 
   public Project(String key, String name) {

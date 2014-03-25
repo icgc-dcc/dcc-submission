@@ -17,8 +17,10 @@
  */
 package org.icgc.dcc.submission.core.parser;
 
+import java.io.IOException;
+
 public interface FileRecordProcessor<T> {
 
-  void process(long lineNumber, T record) throws Exception;
+  void process(long lineNumber, T record) throws IOException;
 
 }
