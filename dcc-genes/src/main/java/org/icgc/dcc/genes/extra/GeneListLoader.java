@@ -23,6 +23,7 @@ import java.io.Reader;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.genes.cli.MongoClientURIConverter;
 import org.jongo.Jongo;
@@ -40,6 +41,7 @@ import com.mongodb.MongoClientURI;
 /**
  * Recreates the GeneList collection in mongodb
  */
+@Slf4j
 @AllArgsConstructor
 public class GeneListLoader {
 
@@ -84,7 +86,8 @@ public class GeneListLoader {
         geneCollection.update("{symbol:'" + map.get("symbol") + "'}")
             .multi()
             .with("{$addToSet: {list:#}}", "Cancer Gene Census");
-        System.out.println(c + " " + map.get("symbol"));
+
+        log.info("Prcessing {}", map.get("symbol"));
       }
       reader.close();
     } catch (Exception e) {
@@ -100,6 +103,5 @@ public class GeneListLoader {
     GeneListLoader pathwayLoader =
         new GeneListLoader(converter.convert(uri));
     pathwayLoader.load(new FileReader(file));
-
   }
 }

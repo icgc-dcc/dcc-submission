@@ -23,6 +23,7 @@ import java.io.Reader;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FieldNames;
 import org.icgc.dcc.genes.cli.MongoClientURIConverter;
@@ -43,6 +44,7 @@ import com.mongodb.MongoClientURI;
  * 
  * Reactome pathway file: http://www.reactome.org/download/current/UniProt2PathwayBrowser.txt
  */
+@Slf4j
 @AllArgsConstructor
 public class PathwayLoader {
 
@@ -82,8 +84,7 @@ public class PathwayLoader {
           String pathwayName = map.get(FieldNames.PATHWAY_NAME);
           String pathwayURL = map.get(FieldNames.PATHWAY_URL);
 
-          System.out.println("id " + id);
-
+          log.info("Processing reactome {}", id);
           geneCollection
               .update("{external_db_ids.uniprotkb_swissprot:'" + id + "'}")
               .multi()
@@ -92,7 +93,7 @@ public class PathwayLoader {
 
         }
       }
-      System.out.println(c);
+      log.info("Finished loading reactome {} pathways", c);
     } catch (Exception e) {
       e.printStackTrace();
     }
