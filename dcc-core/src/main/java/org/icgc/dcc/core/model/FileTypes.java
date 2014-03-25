@@ -43,6 +43,8 @@ import com.google.common.collect.ImmutableSet;
 @NoArgsConstructor(access = PRIVATE)
 public final class FileTypes {
 
+  public static final String FILE_EXTENSION = ".txt";
+
   /**
    * Used as placeholder in the loader for imported fields.
    */
