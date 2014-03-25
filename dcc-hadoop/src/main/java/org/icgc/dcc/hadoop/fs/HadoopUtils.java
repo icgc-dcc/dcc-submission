@@ -185,13 +185,13 @@ public class HadoopUtils {
   }
 
   /**
-   * non-recursively
+   * non-recursively.
    */
   private static List<Path> ls(FileSystem fileSystem, Path path, Pattern pattern, boolean file, boolean dir,
       boolean symLink) {
     FileStatus[] listStatus;
     try {
-      listStatus = fileSystem.listStatus(path);
+      listStatus = fileSystem.listStatus(path); // This returns full paths, not just file names.
     } catch (IOException e) {
       throw new HdfsException(e);
     }
