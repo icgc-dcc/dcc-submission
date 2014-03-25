@@ -23,6 +23,7 @@ import java.io.Reader;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FieldNames;
@@ -55,54 +56,56 @@ public class PathwayLoader {
       new String[] { FieldNames.PATHWAY_UNIPROT_ID, FieldNames.PATHWAY_REACTOME_ID, FieldNames.PATHWAY_URL,
           FieldNames.PATHWAY_NAME, FieldNames.PATHWAY_EVIDENCE_CODE, FieldNames.PATHWAY_SPECIES };
 
+  @SneakyThrows
   public void load(Reader reader) {
-    try {
-      String database = mongoUri.getDatabase();
-      Mongo mongo = new MongoClient(mongoUri);
-      DB db = mongo.getDB(database);
-      Jongo jongo = new Jongo(db);
-      MongoCollection pathwayCollection = jongo.getCollection(collection);
-      MongoCollection geneCollection = jongo.getCollection("Gene");
+    String database = mongoUri.getDatabase();
+    Mongo mongo = new MongoClient(mongoUri);
+    DB db = mongo.getDB(database);
+    Jongo jongo = new Jongo(db);
+    MongoCollection pathwayCollection = jongo.getCollection(collection);
+    MongoCollection geneCollection = jongo.getCollection("Gene");
 
-      pathwayCollection.drop();
-      CsvMapReader csvReader = new CsvMapReader(reader, CsvPreference.TAB_PREFERENCE);
-      Map<String, String> map = null;
+    pathwayCollection.drop();
+    CsvMapReader csvReader = new CsvMapReader(reader, CsvPreference.TAB_PREFERENCE);
+    Map<String, String> map = null;
 
-      geneCollection.ensureIndex("{external_db_ids.uniprotkb_swissprot:1}");
-      geneCollection.update("{}").multi().with("{$unset: {reactome_pathways:''}}");
+    geneCollection.ensureIndex("{external_db_ids.uniprotkb_swissprot:1}");
+    geneCollection.update("{}").multi().with("{$unset: {reactome_pathways:''}}");
 
-      long c = 0;
-      while (null != (map = csvReader.read(header))) {
-        if (map.get(FieldNames.PATHWAY_SPECIES).equals(HOMO_SAPIEN)) {
-          ++c;
-          ObjectMapper mapper = new ObjectMapper();
-          JsonNode pathway = mapper.valueToTree(map);
-          pathwayCollection.save(pathway);
+    long c = 0;
+    while (null != (map = csvReader.read(header))) {
+      if (map.get(FieldNames.PATHWAY_SPECIES).equals(HOMO_SAPIEN)) {
+        ++c;
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode pathway = mapper.valueToTree(map);
+        pathwayCollection.save(pathway);
 
-          String id = map.get(FieldNames.PATHWAY_UNIPROT_ID);
-          String pathwayID = map.get(FieldNames.PATHWAY_REACTOME_ID);
-          String pathwayName = map.get(FieldNames.PATHWAY_NAME);
-          String pathwayURL = map.get(FieldNames.PATHWAY_URL);
+        String id = map.get(FieldNames.PATHWAY_UNIPROT_ID);
+        String pathwayID = map.get(FieldNames.PATHWAY_REACTOME_ID);
+        String pathwayName = map.get(FieldNames.PATHWAY_NAME);
+        String pathwayURL = map.get(FieldNames.PATHWAY_URL);
 
-          log.info("Processing reactome {}", id);
-          geneCollection
-              .update("{external_db_ids.uniprotkb_swissprot:'" + id + "'}")
-              .multi()
-              .with("{$push: { reactome_pathways:{_reactome_id:#, name:#, url:#}}}",
-                  pathwayID, pathwayName, pathwayURL);
+        log.info("Processing reactome {}", id);
+        geneCollection
+            .update("{external_db_ids.uniprotkb_swissprot:'" + id + "'}")
+            .multi()
+            .with("{$push: { reactome_pathways:{_reactome_id:#, name:#, url:#}}}",
+                pathwayID, pathwayName, pathwayURL);
 
-        }
       }
-      log.info("Finished loading reactome {} pathways", c);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
+    csvReader.close();
+    log.info("Finished loading reactome {} pathways", c);
   }
 
   public static void main(String args[]) throws FileNotFoundException {
     MongoClientURIConverter converter = new MongoClientURIConverter();
-    String uri = "mongodb://localhost/dcc-genome";
-    String file = "/Users/dchang/Downloads/UniProt2PathwayBrowser.txt";
+
+    String uri = args[0];
+    String file = args[1];
+
+    // String uri = "mongodb://localhost/dcc-genome";
+    // String file = "/Users/dchang/Downloads/UniProt2PathwayBrowser.txt";
 
     PathwayLoader pathwayLoader =
         new PathwayLoader(converter.convert(uri));

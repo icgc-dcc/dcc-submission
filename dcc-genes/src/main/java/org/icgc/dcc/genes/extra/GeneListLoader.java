@@ -23,6 +23,7 @@ import java.io.Reader;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.genes.cli.MongoClientURIConverter;
@@ -57,48 +58,48 @@ public class GeneListLoader {
           null, null, null, null, null
       };
 
+  @SneakyThrows
   public void load(Reader reader) {
-    try {
-      String database = mongoUri.getDatabase();
-      Mongo mongo = new MongoClient(mongoUri);
-      DB db = mongo.getDB(database);
-      Jongo jongo = new Jongo(db);
+    String database = mongoUri.getDatabase();
+    Mongo mongo = new MongoClient(mongoUri);
+    DB db = mongo.getDB(database);
+    Jongo jongo = new Jongo(db);
 
-      final MongoCollection geneListCollection = jongo.getCollection(collection);
-      final MongoCollection geneCollection = jongo.getCollection("Gene");
+    final MongoCollection geneListCollection = jongo.getCollection(collection);
+    final MongoCollection geneCollection = jongo.getCollection("Gene");
 
-      geneListCollection.drop();
+    geneListCollection.drop();
 
-      CsvMapReader csvReader = new CsvMapReader(reader, CsvPreference.TAB_PREFERENCE);
-      Map<String, String> map = null;
+    CsvMapReader csvReader = new CsvMapReader(reader, CsvPreference.TAB_PREFERENCE);
+    Map<String, String> map = null;
 
-      geneCollection.ensureIndex("{symbol:1}");
-      geneCollection.update("{}").multi().with("{$unset: {list:''}}");
+    geneCollection.ensureIndex("{symbol:1}");
+    geneCollection.update("{}").multi().with("{$unset: {list:''}}");
 
-      long c = 0;
-      csvReader.getHeader(true);
-      while (null != (map = csvReader.read(header))) {
-        ++c;
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode geneList = mapper.valueToTree(map);
-        geneListCollection.save(geneList);
+    long c = 0;
+    csvReader.getHeader(true);
+    while (null != (map = csvReader.read(header))) {
+      ++c;
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode geneList = mapper.valueToTree(map);
+      geneListCollection.save(geneList);
 
-        geneCollection.update("{symbol:'" + map.get("symbol") + "'}")
-            .multi()
-            .with("{$addToSet: {list:#}}", "Cancer Gene Census");
+      geneCollection.update("{symbol:'" + map.get("symbol") + "'}")
+          .multi()
+          .with("{$addToSet: {list:#}}", "Cancer Gene Census");
 
-        log.info("Prcessing {}", map.get("symbol"));
-      }
-      reader.close();
-    } catch (Exception e) {
-      e.printStackTrace();
+      log.info("Prcessing {}", map.get("symbol"));
     }
+    csvReader.close();
   }
 
   public static void main(String args[]) throws FileNotFoundException {
     MongoClientURIConverter converter = new MongoClientURIConverter();
-    String uri = "mongodb://localhost/dcc-genome";
-    String file = "/Users/dchang/Downloads/cancer_gene_census.tsv";
+    String uri = args[0];
+    String file = args[1];
+
+    // String uri = "mongodb://localhost/dcc-genome";
+    // String file = "/Users/dchang/Downloads/cancer_gene_census.tsv";
 
     GeneListLoader pathwayLoader =
         new GeneListLoader(converter.convert(uri));
