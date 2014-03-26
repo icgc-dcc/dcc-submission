@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static org.icgc.dcc.core.util.FormatUtils.formatBytes;
+import static org.icgc.dcc.core.util.FormatUtils.formatMemory;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,9 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.hadoop.cascading.FlowExecutorJob;
 import org.icgc.dcc.submission.core.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.cascading.FlowExecutorJob;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import cascading.flow.hadoop.HadoopFlowStep;
@@ -112,19 +112,6 @@ public class KVValidatorRunner implements FlowExecutorJob, Serializable {
     // Can't use the new API here because Hadoop doesn't know about it cluster side. Trying to use it will result in
     // errors.
     return new Stopwatch().start();
-  }
-
-  private static String formatMemory() {
-    val runtime = Runtime.getRuntime();
-
-    return new StringBuilder()
-        .append("max memory: ")
-        .append(formatBytes(runtime.maxMemory()))
-        .append(", total memory: ")
-        .append(formatBytes(runtime.totalMemory()))
-        .append(", free memory: ")
-        .append(formatBytes(runtime.freeMemory()))
-        .toString();
   }
 
 }

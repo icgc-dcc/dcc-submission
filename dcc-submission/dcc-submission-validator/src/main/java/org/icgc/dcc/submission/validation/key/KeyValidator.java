@@ -40,8 +40,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.icgc.dcc.hadoop.cascading.FlowExecutor;
 import org.icgc.dcc.submission.core.report.Error;
-import org.icgc.dcc.submission.validation.cascading.FlowExecutor;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
@@ -101,6 +101,7 @@ public class KeyValidator implements Validator {
     return new Path(validationDir, REPORT_FILE_NAME);
   }
 
+  @SneakyThrows
   private static void execute(ValidationContext context, KVValidatorRunner runner) {
     // Change this switch to false to aid in step debugging
     val distributable = true;

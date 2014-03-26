@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,12 +15,44 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.core.util;
 
-import java.io.IOException;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.val;
 
-public interface FileRecordProcessor<T> {
+/**
+ * {@link Runnable} that allows changing the name of the executing thread and will always restore the previous upon
+ * completion.
+ */
+@Value
+public class ThreadNamingRunnable implements Runnable {
 
-  void process(long lineNumber, T record) throws IOException;
+  @NonNull
+  String name;
+  @NonNull
+  Runnable delegate;
+
+  @Override
+  public void run() {
+    val originalName = getName();
+    try {
+      setName(name);
+
+      // Delegate
+      delegate.run();
+    } finally {
+      // Always called
+      setName(originalName);
+    }
+  }
+
+  private String getName() {
+    return Thread.currentThread().getName();
+  }
+
+  private void setName(String name) {
+    Thread.currentThread().setName(name);
+  }
 
 }

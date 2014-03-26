@@ -58,7 +58,7 @@ public class FPVSubmissionProcessorClientTest {
 
   private final static List<String> HEADERS = newArrayList("H1", "H2", "H3");
   private final static String HEADER_LINE = Joiner.on('\t').join(HEADERS) + "\n";
-  private final static String VALID_CONTENT = HEADER_LINE + "f1\tf2\tf3";
+  private final static String VALID_CONTENT = HEADER_LINE + "f1\tf2\tf3\n";
 
   enum Schema {
     TESTFILE3("testfile3.txt"), TESTFILE2("testfile2.gz", TESTFILE3, false), TESTFILE1("testfile1.bz2", TESTFILE2, true);

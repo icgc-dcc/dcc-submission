@@ -17,11 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.Assert;
+import lombok.val;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -35,7 +38,6 @@ import cascading.tuple.TupleListCollector;
 /**
  * Completely obsolete now... FIXME
  */
-@Ignore
 public class StructuralCheckFunctionTest {
 
   private final Fields LINE_FIELDS = new Fields("line");
@@ -61,6 +63,19 @@ public class StructuralCheckFunctionTest {
                                                                                    // it does not have to be)
 
   @Test
+  public void test_parseValues() {
+    val line = "1\t\t\t";
+    val values = StructuralCheckFunction.parseValues(line);
+    
+    assertThat(values).hasSize(4);
+    assertThat(values.get(0)).isEqualTo("1");
+    assertThat(values.get(1)).isEmpty();
+    assertThat(values.get(2)).isEmpty();
+    assertThat(values.get(3)).isEmpty();
+  }
+
+  @Test
+  @Ignore
   public void test_operate_valid() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
@@ -72,6 +87,7 @@ public class StructuralCheckFunctionTest {
   }
 
   @Test
+  @Ignore
   public void test_operate_missingColumns() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
@@ -83,6 +99,7 @@ public class StructuralCheckFunctionTest {
   }
 
   @Test
+  @Ignore
   public void test_operate_extraColumns() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
@@ -94,6 +111,7 @@ public class StructuralCheckFunctionTest {
   }
 
   @Test
+  @Ignore
   public void test_operate_missingHeaders() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
@@ -105,6 +123,7 @@ public class StructuralCheckFunctionTest {
   }
 
   @Test
+  @Ignore
   public void test_operate_extraHeaders() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
@@ -116,6 +135,7 @@ public class StructuralCheckFunctionTest {
   }
 
   @Test
+  @Ignore
   public void test_operate_missingData() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
@@ -127,6 +147,7 @@ public class StructuralCheckFunctionTest {
   }
 
   @Test
+  @Ignore
   public void test_operate_extraData() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
@@ -138,6 +159,7 @@ public class StructuralCheckFunctionTest {
   }
 
   @Test
+  @Ignore
   public void test_operate_chaos() { // missing and extra headers, missing and extra data!
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
     TupleEntry[] tuples = new TupleEntry[] {//

@@ -174,7 +174,7 @@ public class ReferenceGenomeValidator implements Validator {
     fileParser.parse(filePath, new FileRecordProcessor<Map<String, String>>() {
 
       @Override
-      public void process(long lineNumber, Map<String, String> record) throws Exception {
+      public void process(long lineNumber, Map<String, String> record) throws IOException {
         val mutationType = record.get(SUBMISSION_OBSERVATION_MUTATION_TYPE);
         val chromosomeCode = record.get(SUBMISSION_OBSERVATION_CHROMOSOME);
         val start = record.get(SUBMISSION_OBSERVATION_CHROMOSOME_START);
