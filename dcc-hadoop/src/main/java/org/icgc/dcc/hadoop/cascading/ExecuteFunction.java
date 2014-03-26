@@ -15,44 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.util;
+package org.icgc.dcc.hadoop.cascading;
 
 import lombok.NonNull;
-import lombok.Value;
-import lombok.val;
+import lombok.RequiredArgsConstructor;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.operation.OperationCall;
 
-/**
- * {@link Runnable} that allows changing the name of the executing thread and will always restore the previous upon
- * completion.
- */
-@Value
-public class ThreadNamingRunnable implements Runnable {
+@RequiredArgsConstructor
+@SuppressWarnings("rawtypes")
+class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
 
   @NonNull
-  String name;
-  @NonNull
-  Runnable delegate;
+  private final Runnable runnable;
 
   @Override
-  public void run() {
-    val originalName = getName();
-    try {
-      setName(name);
-
-      // Delegate
-      delegate.run();
-    } finally {
-      // Always called
-      setName(originalName);
-    }
+  public void operate(FlowProcess flowProcess, FunctionCall<Void> functionCall) {
+    // No-op
   }
 
-  private String getName() {
-    return Thread.currentThread().getName();
-  }
-
-  private void setName(String name) {
-    Thread.currentThread().setName(name);
+  @Override
+  public void prepare(FlowProcess flowProcess, OperationCall<Void> operationCall) {
+    runnable.run();
   }
 
 }

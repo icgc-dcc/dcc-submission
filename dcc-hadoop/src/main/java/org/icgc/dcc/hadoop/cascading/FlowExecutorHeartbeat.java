@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,31 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.hadoop.cascading;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.operation.OperationCall;
+import java.util.concurrent.atomic.AtomicInteger;
 
-@RequiredArgsConstructor
-@SuppressWarnings("rawtypes")
-class ExecuteFunction extends BaseOperation<Void> implements Function<Void> {
+import org.apache.hadoop.mapred.Reporter;
 
-  @NonNull
-  private final Runnable runnable;
+public class FlowExecutorHeartbeat {
 
-  @Override
-  public void operate(FlowProcess flowProcess, FunctionCall<Void> functionCall) {
-    // No-op
+  private final AtomicInteger latch = new AtomicInteger();
+  private final Thread beat;
+
+  public FlowExecutorHeartbeat(final Reporter reporter, final long periodMillis) {
+    beat = new Thread(
+        new Runnable() {
+
+          @Override
+          public void run() {
+            boolean interrupted = false;
+            while (latch.get() == 0 && !interrupted) {
+              try {
+                Thread.sleep(periodMillis);
+              } catch (InterruptedException e) {
+                interrupted = true;
+              }
+
+              // Keep the task alive
+              reporter.progress();
+
+              // Call the optional custom progress method
+              progress();
+            }
+          }
+        });
   }
 
-  @Override
-  public void prepare(FlowProcess flowProcess, OperationCall<Void> operationCall) {
-    runnable.run();
+  public FlowExecutorHeartbeat(Reporter reporter) {
+    this(reporter, 60 * 1000);
+  }
+
+  public void start() {
+    beat.start();
+  }
+
+  public void stop() {
+    latch.incrementAndGet();
+    beat.interrupt();
+  }
+
+  protected void progress() {
+    // No-op
   }
 
 }

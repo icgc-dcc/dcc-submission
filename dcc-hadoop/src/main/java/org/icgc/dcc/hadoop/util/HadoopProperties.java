@@ -20,6 +20,7 @@ package org.icgc.dcc.hadoop.util;
 import static cascading.flow.stream.StreamGraph.DOT_FILE_PATH;
 import static cascading.flow.stream.StreamGraph.ERROR_DOT_FILE_NAME;
 import static com.google.common.base.Joiner.on;
+import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.CASCADING_DOT_FILE_PATH;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.CASCADING_ERROR_DOT_FILE_NAME;
@@ -41,12 +42,14 @@ import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VAL
 import java.util.Map;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.util.AppUtils;
 
 /**
- * 
+ * Helper class to set common hadoop properties.
  */
+@Slf4j
 public class HadoopProperties {
 
   public static Map<Object, Object> setAvailableCodecs(Map<Object, Object> properties) {
@@ -63,35 +66,44 @@ public class HadoopProperties {
                 codecs,
                 LZO_CODEC_PROPERTY_VALUE,
                 LZOP_CODEC_PROPERTY_VALUE));
+    log.info(getLogMessage(properties, IO_COMPRESSION_CODECS_PROPERTY_NAME));
 
     return properties;
   }
 
-  public static Map<Object, Object> enableIntermediateMapOutputCompression(Map<Object, Object> properties) {
+  public static Map<Object, Object> enableIntermediateMapOutputCompression(Map<Object, Object> properties, String codec) {
     properties.put(
         MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
         ENABLED_COMPRESSION);
+    log.info(getLogMessage(properties, MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME));
+
     properties.put(
         MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
         AppUtils.isTestEnvironment() ?
             SNAPPY_CODEC_PROPERTY_VALUE :
-            LZO_CODEC_PROPERTY_VALUE);
+            codec);
+    log.info(getLogMessage(properties, MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME));
 
     return properties;
   }
 
-  public static Map<Object, Object> enableJobOutputCompression(Map<Object, Object> properties) {
+  public static Map<Object, Object> enableJobOutputCompression(Map<Object, Object> properties, String codec) {
     properties.put(
         MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
         ENABLED_COMPRESSION);
+    log.info(getLogMessage(properties, MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME));
+
     properties.put(
         MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
         MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+    log.info(getLogMessage(properties, MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME));
+
     properties.put(
         MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
         AppUtils.isTestEnvironment() ?
             SNAPPY_CODEC_PROPERTY_VALUE :
-            LZO_CODEC_PROPERTY_VALUE);
+            codec);
+    log.info(getLogMessage(properties, MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME));
 
     return properties;
   }
@@ -103,11 +115,18 @@ public class HadoopProperties {
     properties.put(
         DOT_FILE_PATH,
         CASCADING_DOT_FILE_PATH);
+    log.info(getLogMessage(properties, DOT_FILE_PATH));
+
     properties.put(
         ERROR_DOT_FILE_NAME,
         CASCADING_ERROR_DOT_FILE_NAME);
+    log.info(getLogMessage(properties, ERROR_DOT_FILE_NAME));
 
     return properties;
+  }
+
+  private static String getLogMessage(Map<Object, Object> properties, String property) {
+    return format("Setting '%s' to '%s'", property, properties.get(property));
   }
 
 }

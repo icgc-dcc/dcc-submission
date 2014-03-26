@@ -31,6 +31,7 @@ import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
@@ -52,6 +53,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 
+@Slf4j
 public abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -184,6 +186,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
           context.reportField(fileName, fieldReport);
         }
       } catch (Exception e) {
+        log.error("Error processing file '{}'", fileName);
         throw new PlanExecutionException(e);
       }
     }

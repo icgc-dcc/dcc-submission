@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.validation.platform;
 
 import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopProperties.enableIntermediateMapOutputCompression;
 import static org.icgc.dcc.hadoop.util.HadoopProperties.enableJobOutputCompression;
 import static org.icgc.dcc.hadoop.util.HadoopProperties.setAvailableCodecs;
@@ -88,8 +90,10 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
     flowProperties =
         enableJobOutputCompression(
-        enableIntermediateMapOutputCompression(
-        setAvailableCodecs(flowProperties)));
+            enableIntermediateMapOutputCompression(
+                setAvailableCodecs(flowProperties),
+                SNAPPY_CODEC_PROPERTY_VALUE),
+            GZIP_CODEC_PROPERTY_VALUE);
 
     flowProperties.putAll(properties);
     return new HadoopFlowConnector(flowProperties);
@@ -178,6 +182,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   @SneakyThrows
   private InputStream getInputStream(Path path) {
     val factory = new CompressionCodecFactory(fileSystem.getConf());
+
     val resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
     val codec = factory.getCodec(path);
     val inputStream = fileSystem.open(resolvedPath);

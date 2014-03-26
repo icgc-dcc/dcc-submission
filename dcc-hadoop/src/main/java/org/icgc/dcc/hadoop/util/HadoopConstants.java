@@ -37,6 +37,7 @@ public final class HadoopConstants {
 
   public static final String JAVA_LIBRARY_PATH_PROPERTY_NAME = "java.library.path";
   public static final String HADOOP_USER_NAME_PROPERTY_NAME = "HADOOP_USER_NAME";
+  public static final String FS_DEFAULT_FS = "fs.defaultFS";
   
   /**
    * "A comma-separated list of the compression codec classes that can be used for compression/decompression. In addition to any classes specified with this property (which take precedence), codec classes on the classpath are discovered using a Java ServiceLoader." (http://archive.cloudera.com/cdh4/cdh/4/hadoop/hadoop-project-dist/hadoop-common/core-default.xml)

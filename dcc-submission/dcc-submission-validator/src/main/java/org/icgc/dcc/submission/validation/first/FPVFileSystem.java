@@ -33,7 +33,8 @@ import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.hadoop.io.compress.BZip2Codec;
+import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.tika.Tika;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
@@ -112,8 +113,11 @@ public class FPVFileSystem {
 
   public void attemptBzip2Read(String fileName) throws IOException {
     // check the bzip2 header
+
+    BZip2Codec codec = new BZip2Codec();
+
     @Cleanup
-    BZip2CompressorInputStream in = new BZip2CompressorInputStream(submissionDirectory.open(fileName));
+    CompressionInputStream in = codec.createInputStream(submissionDirectory.open(fileName));
 
     // see if it can be read through
     byte[] buf = new byte[BUFFER_SIZE];
