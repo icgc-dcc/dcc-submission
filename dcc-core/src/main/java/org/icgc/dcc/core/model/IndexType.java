@@ -47,6 +47,7 @@ public enum IndexType {
    * Donor type(s).
    */
   DONOR_TYPE(Entity.DONOR, "donor", Classifier.BASIC),
+  DONOR_TEXT_TYPE(Entity.DONOR, "donor-text", Classifier.BASIC),
   DONOR_CENTRIC_TYPE(Entity.DONOR, "donor-centric", Classifier.BASIC),
 
   /**
