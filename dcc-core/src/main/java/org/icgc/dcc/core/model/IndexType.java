@@ -19,7 +19,6 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.Entity.GENE;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -42,6 +41,7 @@ public enum IndexType {
    * Project type(s).
    */
   PROJECT_TYPE(Entity.PROJECT, "project", Classifier.BASIC),
+  PROJECT_TEXT_TYPE(Entity.PROJECT, "project-text", Classifier.BASIC),
 
   /**
    * Donor type(s).
@@ -53,8 +53,9 @@ public enum IndexType {
   /**
    * Gene type(s).
    */
-  GENE_TYPE(GENE, "gene", Classifier.BASIC),
-  GENE_CENTRIC_TYPE(GENE, "gene-centric", Classifier.CENTRIC),
+  GENE_TYPE(Entity.GENE, "gene", Classifier.BASIC),
+  GENE_TEXT_TYPE(Entity.GENE, "gene-text", Classifier.BASIC),
+  GENE_CENTRIC_TYPE(Entity.GENE, "gene-centric", Classifier.CENTRIC),
 
   /**
    * Observation type(s).
@@ -64,6 +65,7 @@ public enum IndexType {
   /**
    * Mutation type(s).
    */
+  MUTATION_TEXT_TYPE(Entity.MUTATION, "mutation-text", Classifier.CENTRIC),
   MUTATION_CENTRIC_TYPE(Entity.OBSERVATION, "mutation-centric", Classifier.CENTRIC);
 
   /**
