@@ -23,6 +23,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
 
 import java.util.ArrayList;
@@ -323,6 +324,23 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       }
 
     }));
+  }
+
+  /**
+   * Returns the list of unique {@link DataType}s present in the dictionary (ordered by declaration).
+   */
+  @JsonIgnore
+  public List<DataType> getDataTypes() {
+    return newArrayList(newLinkedHashSet(transform(
+        getFileTypes(),
+        new Function<FileType, DataType>() {
+
+          @Override
+          public DataType apply(FileType fileType) {
+            return fileType.getDataType();
+          }
+
+        })));
   }
 
   /**

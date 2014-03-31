@@ -51,7 +51,6 @@ import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -129,8 +128,6 @@ public class StandAloneKeyValidationContext extends AbstractValidationContext {
     dictionary.addFile(readFileSchema(METH_M_TYPE));
     dictionary.addFile(readFileSchema(METH_P_TYPE));
     dictionary.addFile(readFileSchema(METH_S_TYPE));
-
-    Dictionaries.addNewModels(dictionary);
 
     // TODO: Remove patching
     patchDictionary(dictionary);
