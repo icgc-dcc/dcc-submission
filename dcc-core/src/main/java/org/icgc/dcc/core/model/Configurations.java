@@ -45,5 +45,6 @@ public final class Configurations {
   public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
   public static final String IDENTIFIER_KEY = "identifier";
   public static final String FILTER_ALL_CONTROLLED = "filter_all_controlled";
+  public static final String LOADER_MAX_CONCURRENT_FLOWS = "loader_max_concurrent_flows";
 
 }
