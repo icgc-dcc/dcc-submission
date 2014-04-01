@@ -401,6 +401,7 @@ public class ReleaseService extends AbstractService {
    * 
    * @return Current Open Release
    */
+  @Synchronized
   public void addSubmission(String projectKey, String projectName) {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
     val release = releaseRepository.findOpenRelease();
