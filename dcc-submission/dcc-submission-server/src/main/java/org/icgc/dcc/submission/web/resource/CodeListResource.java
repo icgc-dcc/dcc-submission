@@ -88,10 +88,9 @@ public class CodeListResource {
       return unauthorizedResponse();
     }
 
-    val codes = Sets.<String> newHashSet();
-    val values = Sets.<String> newHashSet();
-
     for (val codeList : codeLists) {
+      val codes = Sets.<String> newHashSet();
+      val values = Sets.<String> newHashSet();
       for (val term : codeList.getTerms()) {
         if (codes.contains(term.getCode()) || values.contains(term.getValue())) {
           log.warn("Code or value of {} is duplicated in {}", term, codeList);
