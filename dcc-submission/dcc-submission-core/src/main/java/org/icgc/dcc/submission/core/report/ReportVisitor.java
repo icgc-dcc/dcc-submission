@@ -28,9 +28,9 @@ package org.icgc.dcc.submission.core.report;
  *  |                                        /        \
  *  +- dataTypeReport ----------->         7           14   
  *   |                                   /   \        /   \
- *   +- fileTypeReport----------->      3     5     10     13  
+ *   +- fileTypeReport----------->      3     6     10     13  
  *    |                                / \   / \    / \   / \ 
- *    + fileReport -------------->    1   2 4   6  8   9 11  12
+ *    + fileReport -------------->    1   2 4   5  8   9 11  12
  * </pre>
  * 
  */
