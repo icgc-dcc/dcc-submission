@@ -70,36 +70,30 @@ public class ValidatingState extends AbstractCancellableState {
     // Reset any data type that is VALIDATING to NOT_VALIDATED
     newReport.abort(dataTypes);
 
-    // Transition
-    val nextState = getReportedNextState(newReport);
-    context.setState(nextState);
-
-    // Commit the report that was collected during validation
-    newReport.mergeInOriginalReport(context.getReport(), dataTypes);
-    context.setReport(newReport);
+    updateContext(context, dataTypes, newReport);
   }
 
   private void handleCancelled(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
     // Need to reset all the validating data types
     newReport.resetDataTypes(dataTypes);
 
-    // Transition
-    val nextState = getReportedNextState(newReport);
-    context.setState(nextState);
-
-    // Commit the report that was collected during validation
-    context.setReport(newReport);
+    updateContext(context, dataTypes, newReport);
   }
 
   private void handleCompleted(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
     // Valid status needs to be refreshed since there are no natural events that do this (unlike with Errors)
     newReport.refreshState();
 
+    updateContext(context, dataTypes, newReport);
+  }
+
+  private void updateContext(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
     // Transition
     val nextState = getReportedNextState(newReport);
     context.setState(nextState);
 
     // Commit the report that was collected during validation
+    newReport.mergeInOriginalReport(context.getReport(), dataTypes);
     context.setReport(newReport);
   }
 
