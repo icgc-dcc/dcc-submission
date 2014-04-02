@@ -18,12 +18,16 @@
 package org.icgc.dcc.submission.release.model;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.Delegate;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.submission.core.model.Outcome;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.state.State;
+import org.icgc.dcc.submission.core.state.StateContext;
 import org.icgc.dcc.submission.core.state.States;
+import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 
 /**
  * Canonical set of allowed behavioral states for a submission.
@@ -55,11 +59,65 @@ public enum SubmissionState implements State {
    * Delegate
    */
   @NonNull
-  @Delegate
   private final State delegate;
 
   public static SubmissionState getDefaultState() {
     return NOT_VALIDATED;
+  }
+
+  @Override
+  public String getName() {
+    return delegate.getName();
+  }
+
+  @Override
+  public boolean isReadOnly() {
+    return delegate.isReadOnly();
+  }
+
+  @Override
+  public void initialize(StateContext context) {
+    delegate.initialize(context);
+  }
+
+  @Override
+  public void modifyFile(StateContext context, SubmissionFileEvent event) {
+    delegate.modifyFile(context, event);
+  }
+
+  @Override
+  public void queueRequest(StateContext context, Iterable<DataType> dataTypes) {
+    delegate.queueRequest(context, dataTypes);
+  }
+
+  @Override
+  public void startValidation(StateContext context, Iterable<DataType> dataTypes, Report nextReport) {
+    delegate.startValidation(context, dataTypes, nextReport);
+  }
+
+  @Override
+  public void cancelValidation(StateContext context, Iterable<DataType> dataTypes) {
+    delegate.cancelValidation(context, dataTypes);
+  }
+
+  @Override
+  public void finishValidation(StateContext context, Iterable<DataType> dataTypes, Outcome outcome, Report nextReport) {
+    delegate.finishValidation(context, dataTypes, outcome, nextReport);
+  }
+
+  @Override
+  public void signOff(StateContext context) {
+    delegate.signOff(context);
+  }
+
+  @Override
+  public Submission closeRelease(StateContext context, Release nextRelease) {
+    return delegate.closeRelease(context, nextRelease);
+  }
+
+  @Override
+  public void reset(StateContext context) {
+    delegate.reset(context);
   }
 
 }
