@@ -38,6 +38,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -281,10 +282,9 @@ public class ValidationService extends AbstractScheduledService {
    */
   private ValidationContext createValidationContext(Release release, QueuedProject project) {
     val dictionary = releaseService.getNextDictionary();
-    val reportContext = createReportContext(release, project);
 
     val context = new DefaultValidationContext(
-        reportContext,
+        createReportContext(),
         project.getKey(),
         project.getEmails(),
         project.getDataTypes(),
@@ -298,16 +298,9 @@ public class ValidationService extends AbstractScheduledService {
 
   /**
    * Internal {@code ReportContext} factory method.
-   * 
-   * @param release the current release
-   * @param project the project to create the report context for
-   * @return
    */
-  private static ReportContext createReportContext(Release release, QueuedProject project) {
-    val submission = release.getSubmission(project.getKey()).get();
-    val report = submission.getReport();
-
-    return new DefaultReportContext(report);
+  private static ReportContext createReportContext() {
+    return new DefaultReportContext(new Report()); // Empty report will be updated then merged with existing one
   }
 
 }

@@ -17,7 +17,12 @@
  */
 package org.icgc.dcc.submission.core.state;
 
-import lombok.SneakyThrows;
+import static com.google.common.collect.Iterables.find;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.core.report.DataTypeState.INVALID;
+import static org.icgc.dcc.submission.core.report.DataTypeState.VALID;
+import static org.icgc.dcc.submission.core.util.Jackson.toJsonPrettyString;
+import static org.mockito.Mockito.when;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,35 +46,67 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
-/**
- * 
- */
 @RunWith(MockitoJUnitRunner.class)
 @Slf4j
 public class ValidatingStateTest {
+
+  private static final Predicate<DataTypeReport> IS_CLINICAL = new Predicate<DataTypeReport>() {
+
+    @Override
+    public boolean apply(DataTypeReport input) {
+      return input.getDataType() == ClinicalType.CLINICAL_CORE_TYPE;
+    }
+  };
+
+  private static final Predicate<DataTypeReport> IS_SSM = new Predicate<DataTypeReport>() {
+
+    @Override
+    public boolean apply(DataTypeReport input) {
+      return input.getDataType() == FeatureType.SSM_TYPE;
+    }
+  };
 
   @Mock
   StateContext mockStateContext;
 
   @Test
   public void testFinishValidationCornerCase() {
+    val originalReport = getOriginalReport();
+    log.info(toJsonPrettyString(originalReport));
+    when(mockStateContext.getReport()).thenReturn(originalReport);
+
+    val newReport = getNewReport();
+    log.info(toJsonPrettyString(newReport));
+    SubmissionState.VALIDATING.finishValidation(
+        mockStateContext,
+        Lists.<DataType> newArrayList(
+            ClinicalType.CLINICAL_CORE_TYPE),
+        Outcome.ABORTED,
+        newReport);
+    log.info(toJsonPrettyString(newReport));
+
+    assertThat(find(newReport.getDataTypeReports(), IS_CLINICAL).getDataTypeState()).isEqualTo(VALID);
+    assertThat(find(newReport.getDataTypeReports(), IS_SSM).getDataTypeState()).isEqualTo(INVALID);
+  }
+
+  private Report getOriginalReport() {
     val ssmMError = new Error.Builder()
         .type(ErrorType.CODELIST_ERROR)
         .number(0)
         .build();
 
     val donorFileReport = new FileReport("donor.1.txt", FileType.DONOR_TYPE);
-    donorFileReport.setFileState(FileState.VALIDATING);
+    donorFileReport.setFileState(FileState.NOT_VALIDATED);
 
     val ssmMFileReport = new FileReport("ssm_m.1.txt", FileType.SSM_M_TYPE);
     ssmMFileReport.setFileState(FileState.INVALID);
     ssmMFileReport.addError(ssmMError);
 
     val donorFileTypeReport = new FileTypeReport(FileType.DONOR_TYPE);
-    donorFileTypeReport.setFileTypeState(FileTypeState.VALIDATING);
+    donorFileTypeReport.setFileTypeState(FileTypeState.NOT_VALIDATED);
     donorFileTypeReport.addFileReport(donorFileReport);
 
     val ssmMFileTypeReport = new FileTypeReport(FileType.SSM_M_TYPE);
@@ -77,32 +114,35 @@ public class ValidatingStateTest {
     ssmMFileTypeReport.addFileReport(ssmMFileReport);
 
     val clinicalDataTypeReport = new DataTypeReport(ClinicalType.CLINICAL_CORE_TYPE);
-    clinicalDataTypeReport.setDataTypeState(DataTypeState.VALIDATING);
+    clinicalDataTypeReport.setDataTypeState(DataTypeState.NOT_VALIDATED);
     clinicalDataTypeReport.addFileTypeReport(donorFileTypeReport);
 
     val ssmDataTypeReport = new DataTypeReport(FeatureType.SSM_TYPE);
     ssmDataTypeReport.setDataTypeState(DataTypeState.INVALID);
     ssmDataTypeReport.addFileTypeReport(ssmMFileTypeReport);
 
-    val report = new Report();
-    report.addDataTypeReport(clinicalDataTypeReport);
-    report.addDataTypeReport(ssmDataTypeReport);
+    val originalReport = new Report();
+    originalReport.addDataTypeReport(clinicalDataTypeReport);
+    originalReport.addDataTypeReport(ssmDataTypeReport);
 
-    log.info(toJsonSummaryString(report));
-    SubmissionState.VALIDATING.finishValidation(
-        mockStateContext,
-        Lists.<DataType> newArrayList(
-            ClinicalType.CLINICAL_CORE_TYPE),
-        Outcome.ABORTED,
-        report);
-    log.info(toJsonSummaryString(report));
+    return originalReport;
   }
 
-  @SneakyThrows
-  public static String toJsonSummaryString(Object object) {
-    return "\n" + new ObjectMapper()
-        .writerWithDefaultPrettyPrinter()
-        .writeValueAsString(object);
+  private Report getNewReport() {
+    val donorFileReport = new FileReport("donor.2.txt", FileType.DONOR_TYPE);
+    donorFileReport.setFileState(FileState.VALID);
+
+    val donorFileTypeReport = new FileTypeReport(FileType.DONOR_TYPE);
+    donorFileTypeReport.setFileTypeState(FileTypeState.VALID);
+    donorFileTypeReport.addFileReport(donorFileReport);
+
+    val clinicalDataTypeReport = new DataTypeReport(ClinicalType.CLINICAL_CORE_TYPE);
+    clinicalDataTypeReport.setDataTypeState(DataTypeState.VALID);
+    clinicalDataTypeReport.addFileTypeReport(donorFileTypeReport);
+
+    val newReport = new Report();
+    newReport.addDataTypeReport(clinicalDataTypeReport);
+    return newReport;
   }
 
 }

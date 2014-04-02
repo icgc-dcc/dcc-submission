@@ -75,6 +75,7 @@ public class ValidatingState extends AbstractCancellableState {
     context.setState(nextState);
 
     // Commit the report that was collected during validation
+    newReport.mergeInOriginalReport(context.getReport(), dataTypes);
     context.setReport(newReport);
   }
 

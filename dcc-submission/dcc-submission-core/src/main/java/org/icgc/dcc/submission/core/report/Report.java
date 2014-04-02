@@ -19,9 +19,12 @@ package org.icgc.dcc.submission.core.report;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Maps.difference;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
+import static org.icgc.dcc.core.model.DataType.DataTypes.getSortedSet;
 
 import java.util.Map;
 import java.util.Set;
@@ -55,8 +58,10 @@ import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 
 /**
  * Represents a validation report for a submission within a release. This is an "Aggregate Root" in the DDD sense.
@@ -203,6 +208,22 @@ public class Report implements ReportElement {
     executeVisitor(new RefreshStateVisitor());
   }
 
+  public void mergeInOriginalReport(@NonNull Report originalReport, @NonNull Iterable<DataType> dataTypes) {
+    val processedDataTypes = getProcessedDataTypes();
+    checkState(getSortedSet(dataTypes).equals(getSortedSet(processedDataTypes)),
+        "'{}' should match '{}' by design", dataTypes, processedDataTypes);
+
+    for (val originalDataTypeReport : originalReport.getDataTypeReports()) {
+      if (!isProcessedType(originalDataTypeReport, processedDataTypes)) {
+        addDataTypeReport(originalDataTypeReport);
+      }
+    }
+  }
+
+  private boolean isProcessedType(DataTypeReport dataTypeReport, Set<DataType> processedDataTypes) {
+    return processedDataTypes.contains(dataTypeReport.getDataType());
+  }
+
   private static Map<String, FileType> transformFiles(Iterable<SubmissionFile> submissionFiles) {
     val files = ImmutableMap.<String, FileType> builder();
     for (val submissionFile : submissionFiles) {
@@ -213,6 +234,19 @@ public class Report implements ReportElement {
     }
 
     return files.build();
+  }
+
+  private Set<DataType> getProcessedDataTypes() {
+    return newLinkedHashSet(Iterables.transform(
+        dataTypeReports,
+        new Function<DataTypeReport, DataType>() {
+
+          @Override
+          public DataType apply(DataTypeReport input) {
+            return input.getDataType();
+          }
+
+        }));
   }
 
   /**

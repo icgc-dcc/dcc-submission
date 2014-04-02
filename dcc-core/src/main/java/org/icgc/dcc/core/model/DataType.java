@@ -21,6 +21,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +35,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
@@ -143,6 +146,25 @@ public interface DataType {
       }
 
       return builder.build();
+    }
+
+    /**
+     * Returns the corresponding sorted set of {@link DataType}s (by name).
+     * <p>
+     * @param dataTypes A list of {@link DataType} which cannot not contain null.
+     */
+    public static Set<DataType> getSortedSet(Iterable<DataType> dataTypes) {
+      val list = newArrayList(dataTypes);
+      checkArgument(!list.contains(null), "'null' is not allowed in: '{}'", dataTypes);
+      Collections.sort(list, new Comparator<DataType>() {
+
+        @Override
+        public int compare(DataType dataType1, DataType dataType2) {
+          return dataType1.name().compareTo(dataType2.name());
+        }
+      });
+
+      return Sets.<DataType> newLinkedHashSet(list);
     }
 
     /**
