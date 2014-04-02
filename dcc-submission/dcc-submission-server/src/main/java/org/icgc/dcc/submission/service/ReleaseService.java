@@ -301,9 +301,9 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void signOffRelease(Release release, Iterable<String> projectKeys, String user) throws InvalidStateException,
+  public void signOffRelease(Iterable<String> projectKeys, String user) throws InvalidStateException,
       DccModelOptimisticLockException {
-
+    val release = getNextRelease();
     String releaseName = release.getName();
     log.info("signing off {} for {}", projectKeys, releaseName);
 
@@ -401,6 +401,7 @@ public class ReleaseService extends AbstractService {
    * 
    * @return Current Open Release
    */
+  @Synchronized
   public void addSubmission(String projectKey, String projectName) {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
     val release = releaseRepository.findOpenRelease();
@@ -489,10 +490,11 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void queueSubmissions(@NonNull Release release, @NonNull List<QueuedProject> queuedProjects)
-      throws InvalidStateException, DccModelOptimisticLockException {
+  public void queueSubmissions(@NonNull List<QueuedProject> queuedProjects) throws InvalidStateException,
+      DccModelOptimisticLockException {
+    val release = getNextRelease();
     val releaseName = release.getName();
-    log.info("enqueuing {} for {}", queuedProjects, releaseName);
+    log.info("Enqueuing {} for {}", queuedProjects, releaseName);
 
     // Update release object
     release.enqueue(queuedProjects);
@@ -510,7 +512,7 @@ public class ReleaseService extends AbstractService {
     }
 
     releaseRepository.updateRelease(releaseName, release);
-    log.info("enqueued {} for {}", queuedProjects, releaseName);
+    log.info("Enqueued {} for {}", queuedProjects, releaseName);
   }
 
   /**
