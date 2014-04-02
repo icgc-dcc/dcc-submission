@@ -209,19 +209,7 @@ public class Report implements ReportElement {
   }
 
   public void mergeInOriginalReport(@NonNull Report originalReport, @NonNull Iterable<DataType> dataTypes) {
-    val processedDataTypes = getProcessedDataTypes();
-    checkState(getSortedSet(dataTypes).equals(getSortedSet(processedDataTypes)),
-        "'{}' should match '{}' by design", dataTypes, processedDataTypes);
-
-    for (val originalDataTypeReport : originalReport.getDataTypeReports()) {
-      if (!isProcessedType(originalDataTypeReport, processedDataTypes)) {
-        addDataTypeReport(originalDataTypeReport);
-      }
-    }
-  }
-
-  private boolean isProcessedType(DataTypeReport dataTypeReport, Set<DataType> processedDataTypes) {
-    return processedDataTypes.contains(dataTypeReport.getDataType());
+    new Merger().mergeInOriginalReport(originalReport, dataTypes);
   }
 
   private static Map<String, FileType> transformFiles(Iterable<SubmissionFile> submissionFiles) {
@@ -259,6 +247,26 @@ public class Report implements ReportElement {
     accept(visitor);
 
     return visitor;
+  }
+
+  private class Merger {
+
+    public void mergeInOriginalReport(@NonNull Report originalReport, @NonNull Iterable<DataType> dataTypes) {
+      val processedDataTypes = getProcessedDataTypes();
+      checkState(getSortedSet(dataTypes).containsAll(getSortedSet(processedDataTypes)),
+          "'%s' should contain all '%s' by design", dataTypes, processedDataTypes);
+
+      for (val originalDataTypeReport : originalReport.getDataTypeReports()) {
+        if (!isProcessedType(originalDataTypeReport, processedDataTypes)) {
+          addDataTypeReport(originalDataTypeReport);
+        }
+      }
+    }
+
+    private boolean isProcessedType(DataTypeReport dataTypeReport, Set<DataType> processedDataTypes) {
+      return processedDataTypes.contains(dataTypeReport.getDataType());
+    }
+
   }
 
 }
