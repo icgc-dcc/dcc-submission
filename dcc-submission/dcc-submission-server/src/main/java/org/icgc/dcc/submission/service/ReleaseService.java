@@ -647,7 +647,7 @@ public class ReleaseService extends AbstractService {
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
   @Synchronized
-  public void resolveSubmission(@NonNull QueuedProject project, @NonNull Outcome outcome, @NonNull Report report) {
+  public void resolveSubmission(@NonNull QueuedProject project, @NonNull Outcome outcome, @NonNull Report newReport) {
     // Update the in-memory submission state
     val projectKey = project.getKey();
     val emails = project.getEmails();
@@ -659,12 +659,12 @@ public class ReleaseService extends AbstractService {
     // Transition
     //
 
-    submission.finishValidation(submissionFiles, project.getDataTypes(), outcome, report);
+    submission.finishValidation(submissionFiles, project.getDataTypes(), outcome, newReport);
     releaseRepository.updateReleaseSubmission(release.getName(), submission);
 
     if (!emails.isEmpty()) {
       log.info("Sending notification emails for project '{}'...", projectKey);
-      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState(), report);
+      mailService.sendValidationResult(release.getName(), projectKey, emails, submission.getState(), newReport);
     }
 
     log.info("Resolved project '{}'", projectKey);

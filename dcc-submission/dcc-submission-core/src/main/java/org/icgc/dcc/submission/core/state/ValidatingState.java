@@ -19,14 +19,23 @@ package org.icgc.dcc.submission.core.state;
 
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PACKAGE;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.util.Jackson;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import com.google.common.io.Files;
 
 @NoArgsConstructor(access = PACKAGE)
 public class ValidatingState extends AbstractCancellableState {
@@ -67,7 +76,7 @@ public class ValidatingState extends AbstractCancellableState {
   }
 
   private void handleAborted(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
-    // Reset any data type that is VALIDATING to NOT_VALIDATED
+    // Reset any data type that is VALIDATING to NOT_VALIDATED (even if partially VALID in terms of validators)
     newReport.abort(dataTypes);
 
     updateContext(context, dataTypes, newReport);
@@ -94,7 +103,15 @@ public class ValidatingState extends AbstractCancellableState {
 
     // Commit the report that was collected during validation
     newReport.mergeInOriginalReport(context.getReport(), dataTypes);
+
     context.setReport(newReport);
+  }
+
+  @SneakyThrows
+  public static void dumpReport(Report report, String desc) {
+    new File("/tmp/report").mkdirs();
+    Files.write(Jackson.toJsonPrettyString(report).getBytes(), new File("/tmp/report/"
+        + new SimpleDateFormat("yyMMddHHmmss").format(new Date()) + "_" + desc));
   }
 
   private void handleFailed(StateContext context, Iterable<DataType> dataTypes, Report oldReport) {

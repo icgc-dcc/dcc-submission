@@ -45,7 +45,7 @@ public interface ValidationListener {
    * 
    * @param validation the validation that successfully executed
    */
-  void onCompletion(Validation validation);
+  void onEnded(Validation validation);
 
   /**
    * Called when a job fails.
@@ -68,7 +68,7 @@ public interface ValidationListener {
     }
 
     @Override
-    public void onCompletion(Validation validation) {
+    public void onEnded(Validation validation) {
       // No-op
     }
 

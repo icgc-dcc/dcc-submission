@@ -19,12 +19,14 @@ package org.icgc.dcc.submission.core.report;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.difference;
-import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.core.model.DataType.DataTypes.getSortedSet;
+import static org.icgc.dcc.submission.core.util.Jackson.toJsonPrettyString;
 
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +36,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
@@ -58,10 +61,9 @@ import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 
 /**
  * Represents a validation report for a submission within a release. This is an "Aggregate Root" in the DDD sense.
@@ -84,6 +86,7 @@ import com.google.common.collect.Iterables;
 @AllArgsConstructor
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
 @Converters({ FileTypeConverter.class, DataTypeConverter.class })
+@Slf4j
 public class Report implements ReportElement {
 
   private Set<DataTypeReport> dataTypeReports = newTreeSet();
@@ -118,7 +121,8 @@ public class Report implements ReportElement {
   }
 
   public void removeDataTypeReport(@NonNull DataTypeReport dataTypeReport) {
-    dataTypeReports.remove(dataTypeReport);
+    checkState(dataTypeReports.remove(dataTypeReport), "Could not find a match for '%s' in '%s'",
+        toJsonPrettyString(dataTypeReport), toJsonPrettyString(this));
   }
 
   public void addSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
@@ -224,19 +228,6 @@ public class Report implements ReportElement {
     return files.build();
   }
 
-  private Set<DataType> getProcessedDataTypes() {
-    return newLinkedHashSet(Iterables.transform(
-        dataTypeReports,
-        new Function<DataTypeReport, DataType>() {
-
-          @Override
-          public DataType apply(DataTypeReport input) {
-            return input.getDataType();
-          }
-
-        }));
-  }
-
   /**
    * Allows chaining for client ease of use.
    * 
@@ -251,20 +242,33 @@ public class Report implements ReportElement {
 
   private class Merger {
 
-    public void mergeInOriginalReport(@NonNull Report originalReport, @NonNull Iterable<DataType> dataTypes) {
-      val processedDataTypes = getProcessedDataTypes();
-      checkState(getSortedSet(dataTypes).containsAll(getSortedSet(processedDataTypes)),
-          "'%s' should contain all '%s' by design", dataTypes, processedDataTypes);
-
+    public void mergeInOriginalReport(@NonNull Report originalReport, @NonNull Iterable<DataType> selectedDataTypes) {
       for (val originalDataTypeReport : originalReport.getDataTypeReports()) {
-        if (!isProcessedType(originalDataTypeReport, processedDataTypes)) {
-          addDataTypeReport(originalDataTypeReport);
+        if (!isProcessedType(originalDataTypeReport, selectedDataTypes)) {
+          log.info("Merging in original data type report for: '{}'", originalDataTypeReport.getDataType());
+          replaceDataTypeReport(originalDataTypeReport);
+        } else {
+          log.info("Keeping new report for '{}'", originalDataTypeReport.getDataType());
         }
       }
     }
 
-    private boolean isProcessedType(DataTypeReport dataTypeReport, Set<DataType> processedDataTypes) {
-      return processedDataTypes.contains(dataTypeReport.getDataType());
+    private void replaceDataTypeReport(final DataTypeReport originalDataTypeReport) {
+      val staleDataTypeReport = checkNotNull(find(dataTypeReports, new Predicate<DataTypeReport>() {
+
+        @Override
+        public boolean apply(DataTypeReport input) {
+          return input.getDataType() == originalDataTypeReport.getDataType();
+        }
+      }),
+          "Expecting a match for '%s' in '%s'",
+          originalDataTypeReport.getDataType(), toJsonPrettyString(Report.this));
+      removeDataTypeReport(staleDataTypeReport);
+      addDataTypeReport(originalDataTypeReport);
+    }
+
+    private boolean isProcessedType(DataTypeReport dataTypeReport, @NonNull Iterable<DataType> selectedDataTypes) {
+      return newArrayList(selectedDataTypes).contains(dataTypeReport.getDataType());
     }
 
   }

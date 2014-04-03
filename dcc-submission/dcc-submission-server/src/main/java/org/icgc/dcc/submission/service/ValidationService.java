@@ -200,8 +200,8 @@ public class ValidationService extends AbstractScheduledService {
    */
   private void tryValidation(@NonNull final Release release, @NonNull final QueuedProject project) {
     // Prepare validation
-    val context = createValidationContext(release, project);
-    val validation = createValidation(context);
+    val validationContext = createValidationContext(release, project);
+    val validation = createValidation(validationContext);
 
     // Submit validation asynchronously for execution
     executor.execute(validation, new ValidationListener() {
@@ -211,23 +211,23 @@ public class ValidationService extends AbstractScheduledService {
        */
       @Override
       public void onStarted(Validation validation) {
-        val report = context.getReport();
+        val newReport = validationContext.getReport();
 
         log.info("onStarted - Validation started for '{}'", project);
-        releaseService.dequeueSubmission(project, report);
+        releaseService.dequeueSubmission(project, newReport);
         log.info("onStarted - Started '{}'", project);
       }
 
       /**
-       * Called when validation has completed without exception.
+       * Called when validation has ended without exception.
        */
       @Override
-      public void onCompletion(Validation validation) {
-        val report = context.getReport();
+      public void onEnded(Validation validation) {
+        val newReport = validationContext.getReport();
         val outcome = validation.isCompleted() ? COMPLETED : ABORTED;
 
         log.info("onCompletion - Validation '{}' completed with outcome '{}'", project, outcome);
-        releaseService.resolveSubmission(project, outcome, report);
+        releaseService.resolveSubmission(project, outcome, newReport);
         log.info("onCompletion - Completed '{}'", project.getKey());
       }
 
@@ -236,11 +236,11 @@ public class ValidationService extends AbstractScheduledService {
        */
       @Override
       public void onCancelled(Validation validation) {
-        val report = context.getReport();
+        val newReport = validationContext.getReport();
         val outcome = CANCELLED;
 
         log.warn("onCancelled - Validation '{}' completed with outcome '{}'", project, outcome);
-        releaseService.resolveSubmission(project, outcome, report);
+        releaseService.resolveSubmission(project, outcome, newReport);
         log.warn("onCancelled - Completed '{}'.", project.getKey());
       }
 
@@ -249,11 +249,11 @@ public class ValidationService extends AbstractScheduledService {
        */
       @Override
       public void onFailure(Validation validation, Throwable t) {
-        val report = context.getReport();
+        val nextReport = validationContext.getReport();
         val outcome = FAILED;
 
         log.error("onFailure - Throwable occurred in '{}' validation: {}", project.getKey(), t);
-        releaseService.resolveSubmission(project, outcome, report);
+        releaseService.resolveSubmission(project, outcome, nextReport);
         log.error("onFailure - Completed '{}'.", project.getKey());
       }
 

@@ -91,8 +91,8 @@ public enum SubmissionState implements State {
   }
 
   @Override
-  public void startValidation(StateContext context, Iterable<DataType> dataTypes, Report nextReport) {
-    delegate.startValidation(context, dataTypes, nextReport);
+  public void startValidation(StateContext stateContext, Iterable<DataType> dataTypes, Report nextReport) {
+    delegate.startValidation(stateContext, dataTypes, nextReport);
   }
 
   @Override
