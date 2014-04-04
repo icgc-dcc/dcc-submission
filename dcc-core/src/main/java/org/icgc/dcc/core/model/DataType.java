@@ -155,7 +155,7 @@ public interface DataType {
      */
     public static Set<DataType> getSortedSet(Iterable<DataType> dataTypes) {
       val list = newArrayList(dataTypes);
-      checkArgument(!list.contains(null), "'null' is not allowed in: '{}'", dataTypes);
+      checkArgument(!list.contains(null), "'null' is not allowed in: '%s'", dataTypes);
       Collections.sort(list, new Comparator<DataType>() {
 
         @Override
