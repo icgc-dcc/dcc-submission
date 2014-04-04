@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.core.report;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.difference;
 import static com.google.common.collect.Sets.newTreeSet;
 
@@ -31,6 +32,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
@@ -56,7 +58,9 @@ import org.mongodb.morphia.annotations.Embedded;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 
 /**
  * Represents a validation report for a submission within a release. This is an "Aggregate Root" in the DDD sense.
@@ -79,6 +83,7 @@ import com.google.common.collect.ImmutableMap;
 @AllArgsConstructor
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, isGetterVisibility = NONE, setterVisibility = NONE)
 @Converters({ FileTypeConverter.class, DataTypeConverter.class })
+@Slf4j
 public class Report implements ReportElement {
 
   private Set<DataTypeReport> dataTypeReports = newTreeSet();
@@ -203,6 +208,10 @@ public class Report implements ReportElement {
     executeVisitor(new RefreshStateVisitor());
   }
 
+  public void mergeReport(@NonNull Report originalReport, @NonNull Iterable<DataType> dataTypes) {
+    new Merger().mergeInOriginalReport(originalReport, dataTypes);
+  }
+
   private static Map<String, FileType> transformFiles(Iterable<SubmissionFile> submissionFiles) {
     val files = ImmutableMap.<String, FileType> builder();
     for (val submissionFile : submissionFiles) {
@@ -225,6 +234,40 @@ public class Report implements ReportElement {
     accept(visitor);
 
     return visitor;
+  }
+
+  private class Merger {
+
+    public void mergeInOriginalReport(@NonNull Report originalReport, @NonNull Iterable<DataType> selectedDataTypes) {
+      for (val originalDataTypeReport : originalReport.getDataTypeReports()) {
+        if (!isProcessedType(originalDataTypeReport, selectedDataTypes)) {
+          log.info("Merging in original data type report for: '{}'", originalDataTypeReport.getDataType());
+          replaceDataTypeReport(originalDataTypeReport);
+        } else {
+          log.info("Keeping new report for '{}'", originalDataTypeReport.getDataType());
+        }
+      }
+    }
+
+    private void replaceDataTypeReport(final DataTypeReport originalDataTypeReport) {
+      val optionalStaleDataTypeReport = Iterables.tryFind(dataTypeReports, new Predicate<DataTypeReport>() {
+
+        @Override
+        public boolean apply(DataTypeReport input) {
+          return input.getDataType() == originalDataTypeReport.getDataType();
+        }
+
+      });
+      if (optionalStaleDataTypeReport.isPresent()) {
+        removeDataTypeReport(optionalStaleDataTypeReport.get());
+      }
+      addDataTypeReport(originalDataTypeReport);
+    }
+
+    private boolean isProcessedType(DataTypeReport dataTypeReport, @NonNull Iterable<DataType> selectedDataTypes) {
+      return newArrayList(selectedDataTypes).contains(dataTypeReport.getDataType());
+    }
+
   }
 
 }

@@ -30,28 +30,34 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 public class QueuedState extends AbstractCancellableState {
 
   @Override
-  public void startValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes,
-      @NonNull Report nextReport) {
+  public void startValidation(@NonNull StateContext stateContext, @NonNull Iterable<DataType> dataTypes,
+      @NonNull Report newReport) {
+    val originalReport = stateContext.getReport();
+
     // Ensure the latest files are accounted for
-    nextReport.refreshFiles(context.getSubmissionFiles());
-    nextReport.resetDataTypes(dataTypes);
-    nextReport.inheritState(SubmissionState.VALIDATING, dataTypes);
+    originalReport.refreshFiles(stateContext.getSubmissionFiles());
+    originalReport.resetDataTypes(dataTypes);
+    originalReport.inheritState(SubmissionState.VALIDATING, dataTypes);
+
+    newReport.refreshFiles(stateContext.getSubmissionFiles());
+    newReport.resetDataTypes(dataTypes);
+    newReport.inheritState(SubmissionState.VALIDATING, dataTypes);
 
     // Set to validating and clobber the report
-    context.setState(SubmissionState.VALIDATING);
-    context.setReport(nextReport);
+    stateContext.setState(SubmissionState.VALIDATING);
+    stateContext.setReport(originalReport);
   }
 
   @Override
-  public void cancelValidation(@NonNull StateContext context, @NonNull Iterable<DataType> dataTypes) {
+  public void cancelValidation(@NonNull StateContext stateContext, @NonNull Iterable<DataType> dataTypes) {
     // Reset reports related to the validating data types
-    val report = context.getReport();
-    report.refreshFiles(context.getSubmissionFiles());
-    report.resetDataTypes(dataTypes);
+    val originalReport = stateContext.getReport();
+    originalReport.refreshFiles(stateContext.getSubmissionFiles());
+    originalReport.resetDataTypes(dataTypes);
 
     // Transition based on report
-    val nextState = getReportedNextState(report);
-    context.setState(nextState);
+    val nextState = getReportedNextState(originalReport);
+    stateContext.setState(nextState);
   }
 
 }

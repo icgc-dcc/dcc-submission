@@ -187,8 +187,8 @@ public class Submission implements Serializable {
     executeTransition(submissionFiles, new Transition<Void>("startValidation") {
 
       @Override
-      public Void execute(@NonNull StateContext context) {
-        state.startValidation(context, dataTypes, nextReport);
+      public Void execute(@NonNull StateContext stateContext) {
+        state.startValidation(stateContext, dataTypes, nextReport);
         return null;
       }
 
@@ -260,7 +260,7 @@ public class Submission implements Serializable {
   // Helpers
   //
 
-  private StateContext createContext(Iterable<SubmissionFile> submissionFiles) {
+  private StateContext createStateContext(Iterable<SubmissionFile> submissionFiles) {
     return new DefaultStateContext(this, submissionFiles);
   }
 
@@ -278,11 +278,11 @@ public class Submission implements Serializable {
   private <Result> Result executeTransition(@NonNull Iterable<SubmissionFile> submissionFiles,
       @NonNull Transition<Result> transition) {
     val action = transition.getAction();
-    val context = createContext(submissionFiles);
+    val stateContext = createStateContext(submissionFiles);
 
     try {
       log.info("Action '{}' requested starting from state '{}'", action, state);
-      val result = transition.execute(context);
+      val result = transition.execute(stateContext);
       log.info("Finished action '{}' resulting in state '{}'", action, state);
 
       return result;
