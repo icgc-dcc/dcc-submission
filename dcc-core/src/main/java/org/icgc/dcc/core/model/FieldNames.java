@@ -215,6 +215,9 @@ public final class FieldNames {
    * Mutation field names.
    */
   public static final String MUTATION_ID = "_mutation_id";
+  public static final String MUTATION_CHROMOSOME = "chromosome";
+  public static final String MUTATION_CHROMOSOME_START = "chromosome_start";
+  public static final String MUTATION_CHROMOSOME_END = "chromosome_end";
   public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";
