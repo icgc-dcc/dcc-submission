@@ -208,7 +208,7 @@ public class Report implements ReportElement {
     executeVisitor(new RefreshStateVisitor());
   }
 
-  public void mergeInOriginalReport(@NonNull Report originalReport, @NonNull Iterable<DataType> dataTypes) {
+  public void mergeReport(@NonNull Report originalReport, @NonNull Iterable<DataType> dataTypes) {
     new Merger().mergeInOriginalReport(originalReport, dataTypes);
   }
 
