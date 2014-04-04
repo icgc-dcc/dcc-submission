@@ -19,14 +19,10 @@ package org.icgc.dcc.submission.core.report;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.difference;
 import static com.google.common.collect.Sets.newTreeSet;
-import static org.icgc.dcc.submission.core.util.Jackson.toJsonPrettyString;
 
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +60,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 
 /**
  * Represents a validation report for a submission within a release. This is an "Aggregate Root" in the DDD sense.
@@ -121,8 +118,7 @@ public class Report implements ReportElement {
   }
 
   public void removeDataTypeReport(@NonNull DataTypeReport dataTypeReport) {
-    checkState(dataTypeReports.remove(dataTypeReport), "Could not find a match for '%s' in '%s'",
-        toJsonPrettyString(dataTypeReport), toJsonPrettyString(this));
+    dataTypeReports.remove(dataTypeReport);
   }
 
   public void addSummary(@NonNull String fileName, @NonNull String name, @NonNull String value) {
@@ -254,16 +250,17 @@ public class Report implements ReportElement {
     }
 
     private void replaceDataTypeReport(final DataTypeReport originalDataTypeReport) {
-      val staleDataTypeReport = checkNotNull(find(dataTypeReports, new Predicate<DataTypeReport>() {
+      val optionalStaleDataTypeReport = Iterables.tryFind(dataTypeReports, new Predicate<DataTypeReport>() {
 
         @Override
         public boolean apply(DataTypeReport input) {
           return input.getDataType() == originalDataTypeReport.getDataType();
         }
-      }),
-          "Expecting a match for '%s' in '%s'",
-          originalDataTypeReport.getDataType(), toJsonPrettyString(Report.this));
-      removeDataTypeReport(staleDataTypeReport);
+
+      });
+      if (optionalStaleDataTypeReport.isPresent()) {
+        removeDataTypeReport(optionalStaleDataTypeReport.get());
+      }
       addDataTypeReport(originalDataTypeReport);
     }
 
