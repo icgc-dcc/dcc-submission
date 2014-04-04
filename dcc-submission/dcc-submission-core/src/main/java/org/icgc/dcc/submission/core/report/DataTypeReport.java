@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
 import static org.icgc.dcc.submission.core.report.DataTypeState.getDefaultState;
 
@@ -36,6 +37,8 @@ import org.mongodb.morphia.annotations.Embedded;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 /**
  * Represents a validation report for a data type within submission within a release.
@@ -105,6 +108,19 @@ public class DataTypeReport implements ReportElement, Comparable<DataTypeReport>
   @Override
   public int compareTo(@NonNull DataTypeReport other) {
     return dataType.getTypeName().compareTo(other.dataType.getTypeName());
+  }
+
+  public static Set<DataType> getDataTypes(Iterable<DataTypeReport> dataTypeReports) {
+    return newLinkedHashSet(Iterables.transform(
+        dataTypeReports,
+        new Function<DataTypeReport, DataType>() {
+
+          @Override
+          public DataType apply(DataTypeReport input) {
+            return input.getDataType();
+          }
+
+        }));
   }
 
 }
