@@ -339,7 +339,7 @@ public final class NormalizationValidator implements Validator {
 
   private List<String> getSsmPrimaryFiles(ValidationContext context) {
     return newArrayList(transform(
-        context.getSsmPrimaryFiles(),
+        context.getFiles(SSM_P_TYPE),
         new Function<Path, String>() {
 
           @Override

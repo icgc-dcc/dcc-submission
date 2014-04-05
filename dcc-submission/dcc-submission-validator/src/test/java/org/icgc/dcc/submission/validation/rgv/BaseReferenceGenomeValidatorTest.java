@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.semantic;
+package org.icgc.dcc.submission.validation.rgv;
 
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
@@ -43,6 +43,7 @@ import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.rgv.reference.PicardReferenceGenome;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -71,7 +72,7 @@ public class BaseReferenceGenomeValidatorTest {
 
   @Before
   public void setup() {
-    validator = new ReferenceGenomeValidator("/tmp/GRCh37.fasta");
+    validator = new ReferenceGenomeValidator(new PicardReferenceGenome("/tmp/GRCh37.fasta"));
   }
 
   @SneakyThrows
@@ -92,8 +93,8 @@ public class BaseReferenceGenomeValidatorTest {
     when(context.getProjectKey()).thenReturn("project.test");
     when(context.getDataTypes()).thenReturn(DataTypes.values());
     when(context.getFileSystem()).thenReturn(fileSystem);
-    when(context.getSsmPrimaryFiles()).thenReturn(ImmutableList.<Path> of(ssmPrimaryFile));
-    when(context.getSsmPrimaryFileSchema()).thenReturn(ssmPrimaryFileSchema);
+    when(context.getFiles(SSM_P_TYPE)).thenReturn(ImmutableList.<Path> of(ssmPrimaryFile));
+    when(context.getFileSchema(SSM_P_TYPE)).thenReturn(ssmPrimaryFileSchema);
     when(context.getSubmissionDirectory()).thenReturn(submissionDirectory);
     when(submissionDirectory.getValidationDirPath()).thenReturn(validationDir);
 

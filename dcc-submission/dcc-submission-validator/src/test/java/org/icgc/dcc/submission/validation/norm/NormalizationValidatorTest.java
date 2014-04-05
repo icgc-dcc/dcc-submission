@@ -23,6 +23,7 @@ import static com.google.common.io.Files.readLines;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.FOCUS_TYPE;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
@@ -210,7 +211,7 @@ public class NormalizationValidatorTest {
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(new LocalFlowConnector());
-    when(mockValidationContext.getSsmPrimaryFiles())
+    when(mockValidationContext.getFiles(SSM_P_TYPE))
         .thenReturn(newArrayList(new Path(inputFile)));
 
     new File(OUTPUT_FILE).delete();

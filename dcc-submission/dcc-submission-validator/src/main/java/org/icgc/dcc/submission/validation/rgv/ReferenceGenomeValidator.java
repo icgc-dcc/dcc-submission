@@ -15,42 +15,49 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.semantic;
+package org.icgc.dcc.submission.validation.rgv;
 
 import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
+import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.io.Files.getNameWithoutExtension;
-import static com.google.common.primitives.Ints.tryParse;
 import static java.lang.String.format;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.util.FormatUtils._;
 import static org.icgc.dcc.submission.core.parser.FileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
 import static org.icgc.dcc.submission.core.report.ErrorType.REFERENCE_GENOME_MISMATCH_ERROR;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
+import static org.icgc.dcc.submission.validation.rgv.util.ChromosomeConverter.convert;
+import static org.icgc.dcc.submission.validation.rgv.util.ReferenceUtils.REFERENCE_INSERTION_VALUE;
+import static org.icgc.dcc.submission.validation.rgv.util.ReferenceUtils.isInsertionType;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 import lombok.Cleanup;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.picard.reference.IndexedFastaSequenceFile;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.parser.FileParser;
 import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.rgv.reference.ReferenceGenome;
+import org.icgc.dcc.submission.validation.rgv.resolver.PrimaryFieldResolver;
+import org.icgc.dcc.submission.validation.rgv.resolver.SgvPrimaryFieldResolver;
+import org.icgc.dcc.submission.validation.rgv.resolver.SsmPrimaryFieldResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -66,46 +73,21 @@ import com.fasterxml.jackson.databind.ObjectWriter;
  * SSMdatamodelsupportingcontrolledfieldsandotherimprovements-SSMvalidationinReferenceGenomesequenceValidationRGV
  */
 @Slf4j
+@RequiredArgsConstructor
 public class ReferenceGenomeValidator implements Validator {
 
   /**
-   * The value of {@code ssm_p.0.mutation_type.v1} that corresponds to {@code insertion of <=200bp}.
-   * 
-   * @see http://legacy-portal.dcc.icgc.org/pages/docs/dictionaries/latest/#ssm_p.0.mutation_type.v1
+   * File types that are the target of validation.
    */
-  private static final String INSERTION_MUTATION_TYPE = "2";
+  private static final List<ReferenceGenomeFileType> REFERENCE_GENOME_FILE_TYPES = of(
+      new ReferenceGenomeFileType(SSM_P_TYPE, new SsmPrimaryFieldResolver()),
+      new ReferenceGenomeFileType(SGV_P_TYPE, new SgvPrimaryFieldResolver()));
 
   /**
-   * Value that is used to convey an insertion for the reference allele.
-   */
-  private static final String REFERENCE_INSERTION_VALUE = "-";
-
-  /**
-   * The reference assembly version that corresponds to the configured {@link #sequenceFile}.
+   * The reference genome used to validate.
    */
   @NonNull
-  private final String assemblyVersion;
-
-  /**
-   * The FASTA file used for validation.
-   */
-  @NonNull
-  private final IndexedFastaSequenceFile sequenceFile;
-
-  /**
-   * Creates a {@code ReferenceGenomeValidator} configured with the supplied {@code fastaFilePath}.
-   * 
-   * @param fastaFilePath the fully qualified path to the the {@code .fasta} file. Expected to be placed next to
-   * {@code .fai} file with the same prefix.
-   */
-  @SneakyThrows
-  public ReferenceGenomeValidator(@NonNull String fastaFilePath) {
-    val fastaFile = new File(fastaFilePath).getAbsoluteFile();
-    this.assemblyVersion = getAssemblyVersion(fastaFile);
-    this.sequenceFile = new IndexedFastaSequenceFile(fastaFile);
-
-    log.info("Using '{}' assembly versioned FASTA file: '{}'", assemblyVersion, fastaFile);
-  }
+  private final ReferenceGenome reference;
 
   @Override
   public String getName() {
@@ -116,58 +98,55 @@ public class ReferenceGenomeValidator implements Validator {
    * Validate genome reference aligns with reference genome of submitted primary file. We assume at this stage the file
    * is well-formed, and that each individual field is sane.
    */
-  @SneakyThrows
   @Override
   public void validate(ValidationContext context) {
     log.info("Starting...");
 
     // Selective validation filtering
-    val requested = context.getDataTypes().contains(SSM_TYPE);
-    if (!requested) {
-      log.info("SSM validation not requested for '{}'. Skipping...", context.getProjectKey());
+    if (!isValidatable(context.getDataTypes())) {
+      log.info("SSM / SGV validation not required for '{}'. Skipping...", context.getProjectKey());
 
       return;
     }
 
-    // This validation is only applicable if ssm_p is available
-    val ssmPrimaryFiles = context.getSsmPrimaryFiles();
-    val skip = ssmPrimaryFiles.isEmpty();
-    if (skip) {
-      log.info("No ssm_p(s) file for '{}'. Skipping...", context.getProjectKey());
+    validateFileTypes(context);
+  }
 
-      return;
+  private void validateFileTypes(ValidationContext context) {
+    for (val referringFileType : REFERENCE_GENOME_FILE_TYPES) {
+      val fileType = referringFileType.getType();
+      val fieldResolver = referringFileType.getFieldResolver();
+      val files = context.getFiles(fileType);
+      val skip = files.isEmpty();
+      if (skip) {
+        log.info("No '{}' file(s) for '{}'. Skipping...", fileType, context.getProjectKey());
+
+        continue;
+      }
+
+      validateFileType(context, fileType, files, fieldResolver);
     }
+  }
 
-    val fileParser = newMapFileParser(context.getFileSystem(), context.getSsmPrimaryFileSchema());
-
-    for (val ssmPrimaryFile : ssmPrimaryFiles) {
+  @SneakyThrows
+  private void validateFileType(ValidationContext context, FileType fileType, List<Path> files,
+      PrimaryFieldResolver fieldResolver) {
+    val fileParser = newMapFileParser(context.getFileSystem(), context.getFileSchema(fileType));
+    for (val file : files) {
       @Cleanup
-      val outputStream = getOutputStream(context, ssmPrimaryFile);
+      val outputStream = getOutputStream(context, file);
 
       // Get to work
-      log.info("Performing reference genome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
-      validate(context, ssmPrimaryFile, fileParser, outputStream);
+      log.info("Performing reference genome validation on file '{}' for '{}'", file, context.getProjectKey());
+      validateFile(context, file, fileParser, fieldResolver, outputStream);
       log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
     }
   }
 
-  public String getReferenceGenomeSequence(String chromosome, String start, String end) {
-    val startPosition = Long.valueOf(start);
-    val endPosition = Long.valueOf(end);
-
-    return getReferenceGenomeSequence(chromosome, startPosition, endPosition);
-  }
-
-  public String getReferenceGenomeSequence(String chromosome, long start, long end) {
-    val sequence = sequenceFile.getSubsequenceAt(chromosome, start, end);
-    val text = new String(sequence.getBases());
-
-    return text;
-  }
-
   @SneakyThrows
-  private void validate(final ValidationContext context, final Path filePath,
-      final FileParser<Map<String, String>> fileParser, final OutputStream outputStream) {
+  private void validateFile(final ValidationContext context, final Path filePath,
+      final FileParser<Map<String, String>> fileParser, final PrimaryFieldResolver fieldResolver,
+      final OutputStream outputStream) {
     val fileName = filePath.getName();
     val writer = createReportWriter();
 
@@ -175,20 +154,21 @@ public class ReferenceGenomeValidator implements Validator {
 
       @Override
       public void process(long lineNumber, Map<String, String> record) throws IOException {
-        val mutationType = record.get(SUBMISSION_OBSERVATION_MUTATION_TYPE);
-        val chromosomeCode = record.get(SUBMISSION_OBSERVATION_CHROMOSOME);
-        val start = record.get(SUBMISSION_OBSERVATION_CHROMOSOME_START);
-        val end = record.get(SUBMISSION_OBSERVATION_CHROMOSOME_END);
-        val referenceAllele = record.get(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
+        // Resolve fields
+        val mutationType = fieldResolver.resolveMutationType(record);
+        val chromosomeCode = fieldResolver.resolveChromosomeCode(record);
+        val start = fieldResolver.resolveStart(record);
+        val end = fieldResolver.resolveEnd(record);
+        val actualReference = fieldResolver.resolveReferenceAllele(record);
 
         if (isInsertionType(mutationType)) {
           // Insertion
-          val mismatch = !referenceAllele.equals(REFERENCE_INSERTION_VALUE);
+          val mismatch = !actualReference.equals(REFERENCE_INSERTION_VALUE);
           if (mismatch) {
             val type = REFERENCE_GENOME_INSERTION_ERROR;
-            val value = formatValue(REFERENCE_INSERTION_VALUE, referenceAllele);
+            val value = formatValue(REFERENCE_INSERTION_VALUE, actualReference);
             val columnName = SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-            val param = assemblyVersion;
+            val param = reference.getVersion();
 
             // Database
             context.reportError(
@@ -201,22 +181,22 @@ public class ReferenceGenomeValidator implements Validator {
                     .params(param)
                     .build());
 
-            // Report file
+            // File
             val tupleState = new TupleState(lineNumber);
             tupleState.reportError(type, columnName, value, param);
             writer.writeValue(outputStream, tupleState);
           }
         } else {
           // Deletion or substitution
-          val chromosome = getChromosome(context, chromosomeCode);
-          val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
+          val chromosome = convert(chromosomeCode);
+          val expectedReference = reference.getSequence(chromosome, start, end);
 
-          val mismatch = !isMatch(referenceAllele, referenceSequence);
+          val mismatch = !isMatch(actualReference, expectedReference);
           if (mismatch) {
             val type = REFERENCE_GENOME_MISMATCH_ERROR;
-            val value = formatValue(referenceSequence, referenceAllele);
+            val value = formatValue(expectedReference, actualReference);
             val columnName = SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-            val param = assemblyVersion;
+            val param = reference.getVersion();
 
             // Database
             context.reportError(
@@ -229,7 +209,7 @@ public class ReferenceGenomeValidator implements Validator {
                     .params(param)
                     .build());
 
-            // Report file
+            // File
             val tupleState = new TupleState(lineNumber);
             tupleState.reportError(type, columnName, value, param);
             writer.writeValue(outputStream, tupleState);
@@ -243,45 +223,16 @@ public class ReferenceGenomeValidator implements Validator {
     });
   }
 
-  /**
-   * Extracts the assembly version from the file name.
-   * 
-   * @param fastaFile the FASTA file
-   * @return the assembly version
-   */
-  private static String getAssemblyVersion(File fastaFile) {
-    return getNameWithoutExtension(fastaFile.getName());
-  }
-
-  private static String getChromosome(ValidationContext context, String chromosomeCode) {
-    val value = tryParse(chromosomeCode);
-
-    val alpha = value == null;
-    if (alpha) {
-      // CodeList value was passed
-      return chromosomeCode;
+  private static boolean isValidatable(Iterable<DataType> dataTypes) {
+    for (val dataType : dataTypes) {
+      for (val resolver : REFERENCE_GENOME_FILE_TYPES) {
+        if (resolver.getType().getDataType() == dataType) {
+          return true;
+        }
+      }
     }
 
-    if (value >= 1 && value <= 22) {
-      // CodeList value and terms are the same
-      return chromosomeCode;
-    }
-
-    if (value == 23) {
-      return "X";
-    }
-    if (value == 24) {
-      return "Y";
-    }
-    if (value == 25) {
-      return "MT";
-    }
-
-    throw new IllegalStateException("Could not convert term for code '" + chromosomeCode + "'");
-  }
-
-  private static boolean isInsertionType(String mutationType) {
-    return mutationType.equals(INSERTION_MUTATION_TYPE);
+    return false;
   }
 
   private static boolean isMatch(String controlAllele, String refSequence) {
@@ -289,7 +240,7 @@ public class ReferenceGenomeValidator implements Validator {
   }
 
   private static String formatValue(String expected, String actual) {
-    return String.format("Expected: %s, Actual: %s", expected, actual);
+    return _("Expected: %s, Actual: %s", expected, actual);
   }
 
   /**
@@ -304,9 +255,9 @@ public class ReferenceGenomeValidator implements Validator {
   }
 
   /**
-   * Returns a {@code TupleState} json report writer.
+   * Returns a {@code TupleState} JSON report writer.
    */
-  private ObjectWriter createReportWriter() {
+  private static ObjectWriter createReportWriter() {
     return new ObjectMapper()
         .configure(AUTO_CLOSE_TARGET, false)
         .writer()
