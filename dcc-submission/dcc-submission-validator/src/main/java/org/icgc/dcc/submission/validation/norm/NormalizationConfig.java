@@ -26,6 +26,7 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
+import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
 

@@ -17,10 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.rgv;
 
-import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static com.google.common.collect.ImmutableList.of;
-import static com.google.common.io.Files.getNameWithoutExtension;
-import static java.lang.String.format;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
@@ -35,7 +32,6 @@ import static org.icgc.dcc.submission.validation.rgv.util.ReferenceUtils.REFEREN
 import static org.icgc.dcc.submission.validation.rgv.util.ReferenceUtils.isInsertionType;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -54,13 +50,12 @@ import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.rgv.core.PrimaryFieldResolver;
+import org.icgc.dcc.submission.validation.rgv.core.ReferenceGenomeFileType;
 import org.icgc.dcc.submission.validation.rgv.reference.ReferenceGenome;
-import org.icgc.dcc.submission.validation.rgv.resolver.PrimaryFieldResolver;
+import org.icgc.dcc.submission.validation.rgv.report.TupleStateWriter;
 import org.icgc.dcc.submission.validation.rgv.resolver.SgvPrimaryFieldResolver;
 import org.icgc.dcc.submission.validation.rgv.resolver.SsmPrimaryFieldResolver;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input.
@@ -134,11 +129,11 @@ public class ReferenceGenomeValidator implements Validator {
     val fileParser = newMapFileParser(context.getFileSystem(), context.getFileSchema(fileType));
     for (val file : files) {
       @Cleanup
-      val outputStream = getOutputStream(context, file);
+      val writer = createTupleStateWriter(context, file);
 
       // Get to work
       log.info("Performing reference genome validation on file '{}' for '{}'", file, context.getProjectKey());
-      validateFile(context, file, fileParser, fieldResolver, outputStream);
+      validateFile(context, file, fileParser, fieldResolver, writer);
       log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
     }
   }
@@ -146,9 +141,8 @@ public class ReferenceGenomeValidator implements Validator {
   @SneakyThrows
   private void validateFile(final ValidationContext context, final Path filePath,
       final FileParser<Map<String, String>> fileParser, final PrimaryFieldResolver fieldResolver,
-      final OutputStream outputStream) {
+      final TupleStateWriter writer) {
     val fileName = filePath.getName();
-    val writer = createReportWriter();
 
     fileParser.parse(filePath, new FileRecordProcessor<Map<String, String>>() {
 
@@ -184,7 +178,7 @@ public class ReferenceGenomeValidator implements Validator {
             // File
             val tupleState = new TupleState(lineNumber);
             tupleState.reportError(type, columnName, value, param);
-            writer.writeValue(outputStream, tupleState);
+            writer.write(tupleState);
           }
         } else {
           // Deletion or substitution
@@ -212,7 +206,7 @@ public class ReferenceGenomeValidator implements Validator {
             // File
             val tupleState = new TupleState(lineNumber);
             tupleState.reportError(type, columnName, value, param);
-            writer.writeValue(outputStream, tupleState);
+            writer.write(tupleState);
           }
         }
 
@@ -243,25 +237,9 @@ public class ReferenceGenomeValidator implements Validator {
     return _("Expected: %s, Actual: %s", expected, actual);
   }
 
-  /**
-   * Returns a {@code OutputStream} to capture all reported errors.
-   */
-  private static OutputStream getOutputStream(ValidationContext context, Path ssmPrimaryFile) throws IOException {
-    val directory = context.getSubmissionDirectory().getValidationDirPath();
-    val fileName = format("%s.rgv--errors.json", getNameWithoutExtension(ssmPrimaryFile.getName()));
-    val path = new Path(directory, fileName);
-
-    return context.getFileSystem().create(path);
-  }
-
-  /**
-   * Returns a {@code TupleState} JSON report writer.
-   */
-  private static ObjectWriter createReportWriter() {
-    return new ObjectMapper()
-        .configure(AUTO_CLOSE_TARGET, false)
-        .writer()
-        .withDefaultPrettyPrinter();
+  private static TupleStateWriter createTupleStateWriter(ValidationContext context, Path file) throws IOException {
+    return new TupleStateWriter(
+        context.getFileSystem(), new Path(context.getSubmissionDirectory().getValidationDirPath()), file);
   }
 
 }

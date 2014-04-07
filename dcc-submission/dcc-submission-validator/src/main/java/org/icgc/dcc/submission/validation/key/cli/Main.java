@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.cli;
 
 import java.util.logging.LogManager;
 
@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.icgc.dcc.submission.validation.key.KeyValidator;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
@@ -46,13 +47,13 @@ public class Main {
     val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
     val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
     val jobTracker = args.length >= ++i ? args[i - 1] : "localhost";
-    val context = new StandAloneKeyValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
+    val context = new KeyValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
 
     // Validate
     validate(context);
   }
 
-  private static void validate(StandAloneKeyValidationContext context) throws InterruptedException {
+  private static void validate(KeyValidationContext context) throws InterruptedException {
     val validator = new KeyValidator();
 
     validator.validate(context);

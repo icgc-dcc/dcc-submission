@@ -28,10 +28,10 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_END;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_START;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_END;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.UNIQUE_START;
 import static org.icgc.dcc.submission.validation.norm.steps.DonorIdAddition.DONOR_ID_FIELD;
 
 import java.util.List;
@@ -48,10 +48,15 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.norm.NormalizationContext.DefaultNormalizationContext;
-import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationContext.DefaultNormalizationContext;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReport;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 import org.icgc.dcc.submission.validation.norm.steps.Counting;
 import org.icgc.dcc.submission.validation.norm.steps.DonorIdAddition;
+import org.icgc.dcc.submission.validation.norm.steps.FieldDiscarding;
 import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
 import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
@@ -397,7 +402,7 @@ public final class NormalizationValidator implements Validator {
    * Placeholder for the connected cascade.
    */
   @Value
-  static final class ConnectedCascade {
+  public static final class ConnectedCascade {
 
     private final String releaseName;
     private final String projectKey;

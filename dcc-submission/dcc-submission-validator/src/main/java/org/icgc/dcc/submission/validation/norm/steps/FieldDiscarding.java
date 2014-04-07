@@ -15,9 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm;
+package org.icgc.dcc.submission.validation.norm.steps;
 
 import static java.lang.String.format;
+
+import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
+
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Discard;
 import cascading.tuple.Fields;

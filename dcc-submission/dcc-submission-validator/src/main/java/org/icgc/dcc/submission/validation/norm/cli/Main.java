@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm;
+package org.icgc.dcc.submission.validation.norm.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import lombok.val;
@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
@@ -73,7 +74,7 @@ public class Main {
     log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation/normalization");
     // @formatter:on
 
-    return new StandAloneNomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
+    return new NomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
   }
 
   private static NormalizationValidator getValidator(ValidationContext context) {

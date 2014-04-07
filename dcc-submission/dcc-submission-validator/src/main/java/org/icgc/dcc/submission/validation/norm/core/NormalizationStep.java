@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,17 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.rgv;
+package org.icgc.dcc.submission.validation.norm.core;
 
-import lombok.Value;
+import java.io.Serializable;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.validation.rgv.resolver.PrimaryFieldResolver;
+import cascading.pipe.Pipe;
 
-@Value
-public class ReferenceGenomeFileType {
+/**
+ * Step in the normalization process. It is in charge of extending the main cascading {@link Pipe}.
+ */
+public interface NormalizationStep extends Serializable {
 
-  FileType type;
-  PrimaryFieldResolver fieldResolver;
+  /**
+   * Returns a short name for the step.
+   */
+  String shortName();
 
+  /**
+   * 
+   */
+  Pipe extend(Pipe pipe, NormalizationContext context);
 }

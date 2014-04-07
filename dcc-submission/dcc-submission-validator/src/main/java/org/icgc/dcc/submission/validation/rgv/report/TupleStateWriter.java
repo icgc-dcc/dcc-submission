@@ -15,37 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.rgv.resolver;
+package org.icgc.dcc.submission.validation.rgv.report;
 
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
+import static com.google.common.io.Files.getNameWithoutExtension;
+import static java.lang.String.format;
 
-import java.util.Map;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import org.icgc.dcc.submission.validation.rgv.core.PrimaryFieldResolver;
+import lombok.val;
 
-public abstract class AbstractPrimaryFieldResolver implements PrimaryFieldResolver {
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.validation.cascading.TupleState;
 
-  @Override
-  public String resolveChromosomeCode(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_CHROMOSOME);
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+public class TupleStateWriter implements Closeable {
+
+  private static final ObjectWriter OBJECT_WRITER = new ObjectMapper()
+      .configure(AUTO_CLOSE_TARGET, false)
+      .writer()
+      .withDefaultPrettyPrinter();
+
+  private final OutputStream outputStream;
+
+  public TupleStateWriter(FileSystem fileSystem, Path outputDirectory, Path file) throws IOException {
+    this.outputStream = getOutputStream(fileSystem, outputDirectory, file);
+  }
+
+  public void write(TupleState tupleState) throws IOException {
+    OBJECT_WRITER.writeValue(outputStream, tupleState);
   }
 
   @Override
-  public String resolveStart(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_CHROMOSOME_START);
+  public void close() throws IOException {
+    outputStream.close();
   }
 
-  @Override
-  public String resolveEnd(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_CHROMOSOME_END);
-  }
+  /**
+   * Returns a {@code OutputStream} to capture all reported errors.
+   */
+  private static OutputStream getOutputStream(FileSystem fileSystem, Path outputDirectory, Path file)
+      throws IOException {
+    val fileName = format("%s.rgv--errors.json", getNameWithoutExtension(file.getName()));
+    val reportPath = new Path(outputDirectory, fileName);
 
-  @Override
-  public String resolveReferenceAllele(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
+    return fileSystem.create(reportPath);
   }
 
 }

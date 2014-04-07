@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,47 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm.steps;
+package org.icgc.dcc.submission.validation.rgv.cli;
 
-import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.submission.validation.key.cli.KeyValidationContext;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
-import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
-import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
-import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
+public class ReferenceGenomeValidationContext extends KeyValidationContext {
 
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-
-/**
- * Performs final count of observations.
- * <p>
- * TODO: merge with {@link InitialCounting} by passing the counter to use.
- */
-@RequiredArgsConstructor
-public final class Counting implements NormalizationStep {
-
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "count";
-
-  private final NormalizationCounter counter;
-
-  @Override
-  public String shortName() {
-    return SHORT_NAME;
+  public ReferenceGenomeValidationContext(String releaseName, String projectKey, String fsRoot, String fsUrl) {
+    super(releaseName, projectKey, fsRoot, fsUrl, "");
   }
 
-  @Override
-  public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Each(
-        pipe,
-        ALL,
-        new Counter(counter, COUNT_INCREMENT),
-        RESULTS);
-  }
 }

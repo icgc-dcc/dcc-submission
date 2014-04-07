@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.key.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
@@ -67,7 +67,7 @@ import com.typesafe.config.Config;
 @Slf4j
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class StandAloneKeyValidationContext extends AbstractValidationContext {
+public class KeyValidationContext extends AbstractValidationContext {
 
   @NonNull
   @Getter
