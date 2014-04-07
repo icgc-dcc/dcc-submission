@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm;
+package org.icgc.dcc.submission.validation.norm.core;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 
@@ -49,7 +49,7 @@ public interface NormalizationContext {
 
   @Value
   @Builder
-  static final class DefaultNormalizationContext implements NormalizationContext {
+  public static final class DefaultNormalizationContext implements NormalizationContext {
 
     /**
      * See {@link NormalizationContext#getControlledFields()}.
@@ -64,7 +64,7 @@ public interface NormalizationContext {
     /**
      * Creates the default {@link NormalizationContext}.
      */
-    static NormalizationContext getContext(SubmissionDirectory submissionDirectory, Dictionary dictionary) {
+    public static NormalizationContext getContext(SubmissionDirectory submissionDirectory, Dictionary dictionary) {
       return DefaultNormalizationContext
           .builder()
           .controlledFields(getControlledFields(dictionary))

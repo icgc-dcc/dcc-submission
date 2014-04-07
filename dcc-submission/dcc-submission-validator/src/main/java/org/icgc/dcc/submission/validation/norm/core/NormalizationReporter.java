@@ -15,19 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm;
+package org.icgc.dcc.submission.validation.norm.core;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.DROPPED;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MASKED;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_END;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.UNIQUE_START;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.DROPPED;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MASKED;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_END;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.UNIQUE_REMAINING;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.UNIQUE_START;
 
 import java.util.List;
 
@@ -37,8 +37,9 @@ import lombok.val;
 import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.NormalizationConfig;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
 
 import com.typesafe.config.Config;
 
@@ -53,7 +54,7 @@ public class NormalizationReporter {
   private static final String TAB = "\t";
   private static final String NEWLINE = System.getProperty("line.separator");
 
-  static final String INTERNAL_REPORT_MESSAGE = "Statistics for normalization:";
+  public static final String INTERNAL_REPORT_MESSAGE = "Statistics for normalization:";
 
   /**
    * Returns the {@link NormalizationCounter}s to be shows in the internal report.
@@ -145,7 +146,7 @@ public class NormalizationReporter {
    */
   @Value
   @Builder
-  static final class NormalizationChecker {
+  public static final class NormalizationChecker {
 
     @NonNull
     private final String fileName;

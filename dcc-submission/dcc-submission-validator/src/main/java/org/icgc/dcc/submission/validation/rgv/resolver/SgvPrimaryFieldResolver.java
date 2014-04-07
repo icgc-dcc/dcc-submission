@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,47 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.validation.rgv.resolver;
 
-import java.util.logging.LogManager;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_VARIANT_TYPE;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+public class SgvPrimaryFieldResolver extends AbstractPrimaryFieldResolver {
 
-/**
- * Command-line utility to initiate key validation on a specified project stored locally or in HDFS. Will use Cascading
- * local or Hadoop depending on the {@code fsUrl} argument's scheme.
- */
-@Slf4j
-public class Main {
-
-  public static void main(String... args) throws InterruptedException {
-    LogManager.getLogManager().reset();
-    SLF4JBridgeHandler.install();
-    Logger.getRootLogger().setLevel(Level.INFO);
-    log.info("Starting...");
-
-    // Resolve configuration
-    int i = 0;
-    val releaseName = args.length >= ++i ? args[i - 1] : "release2";
-    val projectKey = args.length >= ++i ? args[i - 1] : "project1";
-    val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
-    val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
-    val jobTracker = args.length >= ++i ? args[i - 1] : "localhost";
-    val context = new StandAloneKeyValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
-
-    // Validate
-    validate(context);
-  }
-
-  private static void validate(StandAloneKeyValidationContext context) throws InterruptedException {
-    val validator = new KeyValidator();
-
-    validator.validate(context);
+  @Override
+  public String resolveMutationType(Map<String, String> record) {
+    return record.get(SUBMISSION_OBSERVATION_VARIANT_TYPE);
   }
 
 }

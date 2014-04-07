@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm;
+package org.icgc.dcc.submission.validation.norm.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static java.lang.String.format;
@@ -52,7 +52,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
-public class StandAloneNomalizationValidationContext extends AbstractValidationContext {
+public class NomalizationValidationContext extends AbstractValidationContext {
 
   @NonNull
   private final String releaseName;
@@ -86,7 +86,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
   private final SubmissionDirectory submissionDirectory;
 
   @SneakyThrows
-  public StandAloneNomalizationValidationContext(
+  public NomalizationValidationContext(
       String releaseName, String projectKey, String fsRoot, String fsUrl, String jobTracker) {
     this.releaseName = releaseName;
     this.projectKey = projectKey;

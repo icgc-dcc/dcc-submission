@@ -15,12 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm;
+package org.icgc.dcc.submission.validation.norm.core;
 
 import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.TOTAL_START;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_START;
 import static org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
 import lombok.Getter;
 import lombok.NonNull;
@@ -114,12 +114,12 @@ public final class NormalizationReport {
     /**
      * Returns a map of counter to count.
      */
-    static ImmutableMap<NormalizationCounter, Long> report(ConnectedCascade connected) {
+    public static ImmutableMap<NormalizationCounter, Long> report(ConnectedCascade connected) {
       val counters = new ImmutableMap.Builder<NormalizationCounter, Long>();
       for (val counter : values()) {
         counters.put(
             counter,
-            connected.getCounterValue(counter));        
+            connected.getCounterValue(counter));
       }
       return counters.build();
     }

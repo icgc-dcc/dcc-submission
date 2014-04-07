@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,32 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm;
+package org.icgc.dcc.submission.validation.norm.core;
 
-import static java.lang.String.format;
+import java.io.Serializable;
+
 import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Discard;
-import cascading.tuple.Fields;
 
 /**
- * Discards specified field.
+ * Step in the normalization process. It is in charge of extending the main cascading {@link Pipe}.
  */
-public class FieldDiscarding implements NormalizationStep {
+public interface NormalizationStep extends Serializable {
 
-  private final Fields field;
+  /**
+   * Returns a short name for the step.
+   */
+  String shortName();
 
-  @Override
-  public String shortName() {
-    return format("%s-discarding", field.toString().replace("'", ""));
-  }
-
-  public FieldDiscarding(Fields field) {
-    this.field = field;
-  }
-
-  @Override
-  public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Discard(pipe, field);
-  }
-
+  /**
+   * 
+   */
+  Pipe extend(Pipe pipe, NormalizationContext context);
 }

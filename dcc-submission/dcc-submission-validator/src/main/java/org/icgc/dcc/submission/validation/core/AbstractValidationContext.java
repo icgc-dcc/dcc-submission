@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.Report;
@@ -98,12 +99,12 @@ public abstract class AbstractValidationContext implements ValidationContext {
   }
 
   @Override
-  public List<Path> getSsmPrimaryFiles() {
+  public List<Path> getFiles(FileType fileType) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public FileSchema getSsmPrimaryFileSchema() {
+  public FileSchema getFileSchema(FileType fileType) {
     throw new UnsupportedOperationException();
   }
 
