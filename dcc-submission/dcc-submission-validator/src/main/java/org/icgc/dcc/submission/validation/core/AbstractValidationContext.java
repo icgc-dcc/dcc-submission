@@ -18,7 +18,10 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.lang.String.format;
+import static java.util.regex.Pattern.matches;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -41,6 +44,8 @@ import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+
+import com.google.common.collect.ImmutableList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -100,12 +105,26 @@ public abstract class AbstractValidationContext implements ValidationContext {
 
   @Override
   public List<Path> getFiles(FileType fileType) {
-    throw new UnsupportedOperationException();
+    val submissionDirectory = getSubmissionDirectory();
+    val fileSchema = getFileSchema(fileType);
+    val fileNamePattern = fileSchema.getPattern();
+
+    val builder = ImmutableList.<Path> builder();
+    for (val submissionFileName : submissionDirectory.listFile()) {
+      val match = matches(fileNamePattern, submissionFileName);
+      if (match) {
+        Path file = new Path(submissionDirectory.getDataFilePath(submissionFileName));
+
+        builder.add(file);
+      }
+    }
+
+    return builder.build();
   }
 
   @Override
   public FileSchema getFileSchema(FileType fileType) {
-    throw new UnsupportedOperationException();
+    return getDictionary().getFileSchema(fileType);
   }
 
   @Override
@@ -146,6 +165,14 @@ public abstract class AbstractValidationContext implements ValidationContext {
   @Override
   public void reportLineNumbers(Path path) {
     new UnsupportedOperationException();
+  }
+
+  protected static URL getDictionaryUrl(String version) throws MalformedURLException {
+    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
+    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
+    URL url = new URL(format(template, basePath, version, version));
+
+    return url;
   }
 
 }

@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.first.step;
 import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.RowChecker;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
 public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
 
