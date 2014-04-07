@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first;
+package org.icgc.dcc.submission.validation.first.io;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.any;
@@ -34,6 +34,8 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
 import org.icgc.dcc.submission.validation.first.step.CompositeFileChecker;
 import org.icgc.dcc.submission.validation.first.step.TestUtils;
 import org.junit.Before;

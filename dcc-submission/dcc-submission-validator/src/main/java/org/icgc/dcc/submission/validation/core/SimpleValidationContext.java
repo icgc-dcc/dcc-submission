@@ -18,12 +18,10 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
-import static java.lang.String.format;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.apache.hadoop.fs.Path.SEPARATOR;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -135,14 +133,6 @@ public class SimpleValidationContext extends AbstractValidationContext {
   @Override
   public Report getReport() {
     throw new UnsupportedOperationException();
-  }
-
-  private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {
-    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
-    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
-    URL url = new URL(format(template, basePath, version, version));
-
-    return url;
   }
 
   private Config getConfig() {

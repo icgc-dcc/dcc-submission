@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first;
+package org.icgc.dcc.submission.validation.first.io;
 
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Iterables.transform;
@@ -32,8 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.FileChecker.FileCheckers;
-import org.icgc.dcc.submission.validation.first.RowChecker.RowCheckers;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
+import org.icgc.dcc.submission.validation.first.core.FileChecker.FileCheckers;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
+import org.icgc.dcc.submission.validation.first.core.RowChecker.RowCheckers;
 
 import com.google.common.base.Function;
 

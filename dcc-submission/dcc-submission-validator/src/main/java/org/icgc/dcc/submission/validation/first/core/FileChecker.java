@@ -15,39 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first;
+package org.icgc.dcc.submission.validation.first.core;
 
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.step.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.step.RowCharsetChecker;
-import org.icgc.dcc.submission.validation.first.step.RowColumnChecker;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
+import org.icgc.dcc.submission.validation.first.step.FileCollisionChecker;
+import org.icgc.dcc.submission.validation.first.step.FileCorruptionChecker;
+import org.icgc.dcc.submission.validation.first.step.FileHeaderChecker;
+import org.icgc.dcc.submission.validation.first.step.NoOpFileChecker;
+import org.icgc.dcc.submission.validation.first.step.ReferentialFileChecker;
 
-public interface RowChecker extends FileChecker {
+public interface FileChecker extends Checker {
 
-  void checkRow(
-      String filename,
-      FileSchema fileSchema,
-      CharSequence row,
-      long lineNumber);
+  void check(String filename);
+
+  FPVFileSystem getFs();
+
+  Dictionary getDictionary();
+
+  ReportContext getReportContext();
+
+  boolean canContinue();
 
   /**
    * Made non-final for power mock.
    */
   @NoArgsConstructor(access = PRIVATE)
-  class RowCheckers {
+  public class FileCheckers {
 
-    static RowChecker getDefaultRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
+    public static FileChecker getDefaultFileChecker(ValidationContext validationContext, FPVFileSystem fs) {
 
-      // Chaining multiple row checkers
-      return new RowColumnChecker(
-          new RowCharsetChecker(
-              // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
-              new NoOpRowChecker(validationContext, fs)));
+      // Chaining multiple file checker
+      return new FileHeaderChecker(
+          new FileCorruptionChecker(
+              new FileCollisionChecker(
+                  new ReferentialFileChecker(
+                      // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)?
+                      new NoOpFileChecker(validationContext, fs)))));
     }
   }
-
 }

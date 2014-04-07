@@ -24,7 +24,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.first.RowChecker;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
 
 @Slf4j
 public class RowColumnChecker extends CompositeRowChecker {

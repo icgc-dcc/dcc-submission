@@ -18,17 +18,14 @@
 package org.icgc.dcc.submission.validation.key.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
-import static java.lang.String.format;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -41,16 +38,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -64,7 +58,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
-@Slf4j
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class KeyValidationContext extends AbstractValidationContext {
@@ -91,8 +84,6 @@ public class KeyValidationContext extends AbstractValidationContext {
   private final List<DataType> dataTypes = DataTypes.values();
   @Getter(lazy = true)
   private final Dictionary dictionary = createDictionary();
-  @Getter(lazy = true)
-  private final FileSchema ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
   @Getter(lazy = true)
   private final Release release = new Release(releaseName);
   @Getter(lazy = true)
@@ -128,9 +119,6 @@ public class KeyValidationContext extends AbstractValidationContext {
     dictionary.addFile(readFileSchema(METH_M_TYPE));
     dictionary.addFile(readFileSchema(METH_P_TYPE));
     dictionary.addFile(readFileSchema(METH_S_TYPE));
-
-    // TODO: Remove patching
-    patchDictionary(dictionary);
 
     return dictionary;
   }
@@ -170,42 +158,6 @@ public class KeyValidationContext extends AbstractValidationContext {
         getRelease(),
         getProjectKey(),
         new Submission(projectKey, projectKey, releaseName));
-  }
-
-  private static URL getDictionaryUrl(final java.lang.String version) throws MalformedURLException {
-    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
-    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
-    URL url = new URL(format(template, basePath, version, version));
-
-    return url;
-  }
-
-  private static void patchDictionary(Dictionary dictionary) {
-    // Patch file name patterns to support multiple files per file type
-    for (val fileSchema : dictionary.getFiles()) {
-      patchFileSchema(fileSchema);
-    }
-  }
-
-  private static void patchFileSchema(FileSchema fileSchema) {
-    val regex = fileSchema.getPattern();
-    val patchedRegex = regex.replaceFirst("\\.", "\\.(?:[^.]+\\\\.)?");
-    fileSchema.setPattern(patchedRegex);
-
-    log.warn("Patched '{}' file schema regex from '{}' to '{}'!",
-        new Object[] { fileSchema.getName(), regex, patchedRegex });
-  }
-
-  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
-    for (val fileSchema : dictionary.getFiles()) {
-      val fileType = FileType.from(fileSchema.getName());
-      val ssmPrimary = fileType == SSM_P_TYPE;
-      if (ssmPrimary) {
-        return fileSchema;
-      }
-    }
-
-    throw new IllegalStateException("'ssm_p' file schema missing");
   }
 
 }
