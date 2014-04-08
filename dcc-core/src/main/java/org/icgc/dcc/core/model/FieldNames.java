@@ -52,6 +52,7 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_START = "chromosome_start";
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_END = "chromosome_end";
     public static final String SUBMISSION_OBSERVATION_MUTATION_TYPE = "mutation_type";
+    public static final String SUBMISSION_OBSERVATION_VARIANT_TYPE = "variant_type";
 
     public static final String SUBMISSION_OBSERVATION_CONTROL_GENOTYPE = "control_genotype";
     public static final String SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE = "tumour_genotype";
@@ -215,6 +216,9 @@ public final class FieldNames {
    * Mutation field names.
    */
   public static final String MUTATION_ID = "_mutation_id";
+  public static final String MUTATION_CHROMOSOME = "chromosome";
+  public static final String MUTATION_CHROMOSOME_START = "chromosome_start";
+  public static final String MUTATION_CHROMOSOME_END = "chromosome_end";
   public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";

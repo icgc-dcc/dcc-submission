@@ -23,6 +23,7 @@ import static com.google.common.io.Files.readLines;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.FOCUS_TYPE;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
@@ -43,7 +44,8 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGenerationTest;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -210,7 +212,7 @@ public class NormalizationValidatorTest {
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(new LocalFlowConnector());
-    when(mockValidationContext.getSsmPrimaryFiles())
+    when(mockValidationContext.getFiles(SSM_P_TYPE))
         .thenReturn(newArrayList(new Path(inputFile)));
 
     new File(OUTPUT_FILE).delete();

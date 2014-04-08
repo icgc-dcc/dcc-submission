@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.util.regex.Pattern.matches;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 
 import java.util.Collection;
 import java.util.List;
@@ -156,18 +155,18 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public List<Path> getSsmPrimaryFiles() {
+  public List<Path> getFiles(FileType fileType) {
     val submissionDirectory = getSubmissionDirectory();
-    val ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
-    val ssmPrimaryFileNamePattern = ssmPrimaryFileSchema.getPattern();
+    val fileSchema = getFileSchema(fileType);
+    val fileNamePattern = fileSchema.getPattern();
 
     val builder = ImmutableList.<Path> builder();
     for (val submissionFileName : submissionDirectory.listFile()) {
-      val ssmPrimary = matches(ssmPrimaryFileNamePattern, submissionFileName);
-      if (ssmPrimary) {
-        Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(submissionFileName));
+      val match = matches(fileNamePattern, submissionFileName);
+      if (match) {
+        Path file = new Path(submissionDirectory.getDataFilePath(submissionFileName));
 
-        builder.add(ssmPrimaryFile);
+        builder.add(file);
       }
     }
 
@@ -175,20 +174,8 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public FileSchema getSsmPrimaryFileSchema() {
-    return getSsmPrimaryFileSchema(getDictionary());
-  }
-
-  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
-    for (val fileSchema : dictionary.getFiles()) {
-      val fileType = FileType.from(fileSchema.getName());
-      val ssmPrimary = fileType == SSM_P_TYPE;
-      if (ssmPrimary) {
-        return fileSchema;
-      }
-    }
-
-    throw new IllegalStateException("'ssm_p' file schema missing");
+  public FileSchema getFileSchema(FileType fileType) {
+    return getDictionary().getFileSchema(fileType);
   }
 
 }

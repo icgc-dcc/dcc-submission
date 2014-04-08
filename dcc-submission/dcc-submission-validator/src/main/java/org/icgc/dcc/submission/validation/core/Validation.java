@@ -47,10 +47,10 @@ public class Validation {
    * The per-instance context of the validation.
    */
   @NonNull
-  private final ValidationContext context;
+  private final ValidationContext validationContext;
 
   /**
-   * Sequence of validators to apply to the {@link #context}.
+   * Sequence of validators to apply to the {@link #validationContext}.
    */
   @NonNull
   private final List<Validator> validators;
@@ -69,7 +69,7 @@ public class Validation {
    * The identifier used to {@code submit} and {@code cancel} with the {@link ValidationExecutor}.
    */
   public String getId() {
-    return context.getProjectKey();
+    return validationContext.getProjectKey();
   }
 
   /**
@@ -110,17 +110,17 @@ public class Validation {
 
         // Execute synchronously
         watch.reset().start();
-        validator.validate(context);
+        validator.validate(validationContext);
         watch.stop();
 
         log.info(banner());
         log.info("[" + i + "/" + n + "] < Finished '{}' for '{}' in {}", new Object[] { name, getId(), watch });
         log.info(banner());
 
-        val failure = context.hasErrors();
+        val failure = validationContext.hasErrors();
         if (failure) {
           log.warn("Execution of '{}' for '{}' has {} errors",
-              new Object[] { name, getId(), formatCount(context.getErrorCount()) });
+              new Object[] { name, getId(), formatCount(validationContext.getErrorCount()) });
 
           // Abort validation pipeline
           break;

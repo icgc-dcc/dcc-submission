@@ -24,8 +24,8 @@ import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.FileChecker;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
 public class NoOpFileChecker implements FileChecker {
 

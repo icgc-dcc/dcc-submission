@@ -19,13 +19,13 @@ package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
-import org.icgc.dcc.submission.validation.norm.NormalizationContext;
-import org.icgc.dcc.submission.validation.norm.NormalizationStep;
-import org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;

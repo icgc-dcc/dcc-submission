@@ -28,8 +28,8 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
 import static org.icgc.dcc.submission.normalization.Marking.CONTROLLED;
 import static org.icgc.dcc.submission.normalization.Marking.OPEN;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.validation.norm.steps.PreMarking.MARKING_FIELD;
 
 import java.util.Set;
@@ -39,8 +39,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.Marking;
-import org.icgc.dcc.submission.validation.norm.NormalizationContext;
-import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

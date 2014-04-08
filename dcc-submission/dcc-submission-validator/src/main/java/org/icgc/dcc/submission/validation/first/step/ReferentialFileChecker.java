@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.dictionary.model.Relation;
-import org.icgc.dcc.submission.validation.first.FileChecker;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
