@@ -254,6 +254,16 @@ public final class FieldNames {
   public static final String RELEASE_MUTATED_GENE_COUNT = "mutated_gene_count";
 
   /**
+   * Reactome pathway names
+   */
+  public static final String PATHWAY_REACTOME_ID = "_reactome_id";
+  public static final String PATHWAY_NAME = "name";
+  public static final String PATHWAY_EVIDENCE_CODE = "evidence_code";
+  public static final String PATHWAY_UNIPROT_ID = "uniprot_id";
+  public static final String PATHWAY_URL = "url";
+  public static final String PATHWAY_SPECIES = "species";
+
+  /**
    * Aggregate field names.
    */
   public static final String SYNTHETIC_PREFIX = "_";
