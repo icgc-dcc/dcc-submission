@@ -17,12 +17,15 @@
  */
 package org.icgc.dcc.submission.validation.norm.cli;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.apache.hadoop.fs.Path.SEPARATOR;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -35,6 +38,7 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -158,6 +162,16 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   @Override
   public Report getReport() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Collection<DataType> getDataTypes() {
+    return newArrayList((DataType) SSM_TYPE);
+  }
+
+  @Override
+  public String getProjectKey() {
+    return projectKey;
   }
 
 }
