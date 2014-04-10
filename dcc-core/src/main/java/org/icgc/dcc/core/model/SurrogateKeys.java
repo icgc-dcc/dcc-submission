@@ -23,6 +23,7 @@ import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
 import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
 import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
+import static org.icgc.dcc.core.model.FieldNames.PATHWAY_REACTOME_ID;
 import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
 import lombok.NoArgsConstructor;
 
@@ -38,5 +39,6 @@ public final class SurrogateKeys {
   public static final String SPECIMEN = DONOR_SPECIMEN_ID;
   public static final String SAMPLE = DONOR_SAMPLE_ID;
   public static final String MUTATION = OBSERVATION_MUTATION_ID;
+  public static final String PATHWAY = PATHWAY_REACTOME_ID;
 
 }
