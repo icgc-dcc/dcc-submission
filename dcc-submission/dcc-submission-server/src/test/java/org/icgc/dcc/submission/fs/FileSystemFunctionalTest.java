@@ -114,8 +114,6 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
 
-    myReleaseFilesystem.emptyValidationFolders();
-
     boolean releaseReadOnly = myReleaseFilesystem.isReadOnly();
     Assert.assertFalse(releaseReadOnly);
     log.info("release read only = " + releaseReadOnly);
