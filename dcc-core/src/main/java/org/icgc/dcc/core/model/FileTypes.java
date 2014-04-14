@@ -181,6 +181,7 @@ public final class FileTypes {
 
     SGV_M_TYPE(FeatureType.SGV_TYPE, FileSubType.META_SUBTYPE),
     SGV_P_TYPE(FeatureType.SGV_TYPE, FileSubType.PRIMARY_SUBTYPE),
+    SGV_S_TYPE(FeatureType.SGV_TYPE, FileSubType.SECONDARY_SUBTYPE),
 
     CNGV_M_TYPE(FeatureType.CNGV_TYPE, FileSubType.META_SUBTYPE),
     CNGV_P_TYPE(FeatureType.CNGV_TYPE, FileSubType.PRIMARY_SUBTYPE),
