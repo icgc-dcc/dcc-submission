@@ -5,8 +5,11 @@
 # Description:
 #   Builds the reference genome based on https://wiki.oicr.on.ca/display/DCCSOFT/Unify+genome+assembly+build+throughout+the+system
 #
+# Notes:
+#   Requires ncurses-dev zlib1g-dev
+# 
 # Usage:
-#  ./build-reference-genome.sh
+#   ./build-reference-genome.sh
 #
 
 # Ensembl: 1-22,X,MT
@@ -37,7 +40,19 @@ if [ ! -d fasta ]; then
     mkdir fasta
 fi
 
-for i in {{1..22},{X,Y,MT}}; do echo "$i>"; tail -n+2 downloads/$sequence_file_base.$i.fa ; done > fasta/GRCh37.fasta
+for i in {{1..22},{X,Y,MT}}; do 
+	# Normalize header
+	echo ">$i"
+	
+	if [ "$i" == "Y" ]
+	then
+		# Reformat line length
+		tail -n+2 downloads/$sequence_file_base.$i.fa | perl -nae 's/\n//; print' | perl -nae 's/(.{60})/$1\n/g; print'
+		echo
+	else
+		tail -n+2 downloads/$sequence_file_base.$i.fa
+	fi
+done > fasta/GRCh37.fasta
 
 # Index
 samtools/samtools faidx fasta/GRCh37.fasta
