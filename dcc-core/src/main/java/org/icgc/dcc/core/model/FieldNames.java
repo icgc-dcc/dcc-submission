@@ -52,6 +52,7 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_START = "chromosome_start";
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_END = "chromosome_end";
     public static final String SUBMISSION_OBSERVATION_MUTATION_TYPE = "mutation_type";
+    public static final String SUBMISSION_OBSERVATION_VARIANT_TYPE = "variant_type";
 
     public static final String SUBMISSION_OBSERVATION_CONTROL_GENOTYPE = "control_genotype";
     public static final String SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE = "tumour_genotype";
@@ -215,6 +216,9 @@ public final class FieldNames {
    * Mutation field names.
    */
   public static final String MUTATION_ID = "_mutation_id";
+  public static final String MUTATION_CHROMOSOME = "chromosome";
+  public static final String MUTATION_CHROMOSOME_START = "chromosome_start";
+  public static final String MUTATION_CHROMOSOME_END = "chromosome_end";
   public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";
@@ -248,6 +252,16 @@ public final class FieldNames {
   public static final String RELEASE_SAMPLE_COUNT = "sample_count";
   public static final String RELEASE_SSM_COUNT = "ssm_count";
   public static final String RELEASE_MUTATED_GENE_COUNT = "mutated_gene_count";
+
+  /**
+   * Reactome pathway names
+   */
+  public static final String PATHWAY_REACTOME_ID = "_reactome_id";
+  public static final String PATHWAY_NAME = "name";
+  public static final String PATHWAY_EVIDENCE_CODE = "evidence_code";
+  public static final String PATHWAY_UNIPROT_ID = "uniprot_id";
+  public static final String PATHWAY_URL = "url";
+  public static final String PATHWAY_SPECIES = "species";
 
   /**
    * Aggregate field names.

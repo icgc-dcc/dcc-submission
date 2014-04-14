@@ -175,11 +175,8 @@ public class NextReleaseResource {
       projectKeys.add(projectKey);
     }
 
-    Release nextRelease = releaseService.getNextRelease();
-    ResponseTimestamper.evaluate(request, nextRelease);
-
     try {
-      releaseService.queueSubmissions(nextRelease, queuedProjects);
+      releaseService.queueSubmissions(queuedProjects);
     } catch (ReleaseException e) {
       log.error("Error trying to queue submission(s)", e);
 
@@ -287,12 +284,9 @@ public class NextReleaseResource {
       return unauthorizedResponse();
     }
 
-    Release nextRelease = releaseService.getNextRelease();
-    ResponseTimestamper.evaluate(request, nextRelease);
-
     try {
       String username = Authorizations.getUsername(securityContext);
-      releaseService.signOffRelease(nextRelease, projectKeys, username);
+      releaseService.signOffRelease(projectKeys, username);
     } catch (ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
       log.error(code.getFrontEndString(), e);

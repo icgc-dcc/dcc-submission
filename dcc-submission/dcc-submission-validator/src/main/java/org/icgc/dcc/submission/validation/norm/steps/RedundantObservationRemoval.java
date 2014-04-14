@@ -24,8 +24,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import static org.icgc.dcc.submission.validation.norm.NormalizationReport.NormalizationCounter.DROPPED;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
+import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.validation.norm.steps.DonorIdAddition.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.validation.norm.steps.PreMarking.MARKING_FIELD;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +38,8 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
-import org.icgc.dcc.submission.validation.norm.NormalizationContext;
-import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -160,7 +160,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
       if (duplicates) {
         while (tuples.hasNext()) {
           val duplicate = tuples.next().getTuple();
-          log.info("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
+          log.debug("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
               new Object[] { first, group, duplicate });
 
           flowProcess.increment(DROPPED, COUNT_INCREMENT);

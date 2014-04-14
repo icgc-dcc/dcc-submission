@@ -81,6 +81,10 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+    	<groupId>net.sf.supercsv</groupId>
+    	<artifactId>super-csv</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

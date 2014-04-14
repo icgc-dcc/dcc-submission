@@ -123,7 +123,7 @@ public class ValidationExecutorTest {
       }
 
       @Override
-      public void onCompletion(Validation validation) {
+      public void onEnded(Validation validation) {
         try {
           // Nope
           fail("Validation should not have succeeded after it has been cancelled");
@@ -178,7 +178,7 @@ public class ValidationExecutorTest {
       }
 
       @Override
-      public void onCompletion(Validation validation) {
+      public void onEnded(Validation validation) {
         completed.countDown();
       }
 

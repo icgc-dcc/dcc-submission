@@ -213,7 +213,7 @@ public class ValidationServiceTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         val listener = (ValidationListener) invocation.getArguments()[1];
-        listener.onCompletion(validation);
+        listener.onEnded(validation);
 
         return null;
       }

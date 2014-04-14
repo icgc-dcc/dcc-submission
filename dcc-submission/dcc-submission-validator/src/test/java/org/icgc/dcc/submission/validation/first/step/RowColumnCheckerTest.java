@@ -29,7 +29,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.FPVFileSystem;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

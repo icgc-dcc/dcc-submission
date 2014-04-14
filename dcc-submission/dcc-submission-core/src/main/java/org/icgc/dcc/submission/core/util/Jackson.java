@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -31,5 +32,10 @@ public final class Jackson {
 
   public static final ObjectMapper DEFAULT = new ObjectMapper();
   public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
+
+  @SneakyThrows
+  public static String toJsonPrettyString(Object object) {
+    return PRETTY_WRITTER.writeValueAsString(object);
+  }
 
 }

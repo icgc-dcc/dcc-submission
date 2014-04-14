@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.validation.norm.steps;
 
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
-import org.icgc.dcc.submission.validation.norm.NormalizationContext;
-import org.icgc.dcc.submission.validation.norm.NormalizationStep;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Discard;
