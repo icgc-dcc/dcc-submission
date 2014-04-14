@@ -25,7 +25,7 @@ see https://jira.oicr.on.ca/browse/DCC-2177 for details
 
 OPTIONS:
    -h      Show this message
-   -v      Artifactory version number (e.g. 1)
+   -v      Artifactory version number (e.g. 75.v1)
    -u      Artifactory username
    -p      Artifactory password
 EOF
@@ -37,8 +37,7 @@ log(){
 
 version=
 username=
-password=
-while getopts “h:v:u:p:” OPTION
+while getopts “hpv:u:” OPTION
 do
   case $OPTION in
          h)
@@ -72,8 +71,24 @@ artifact_server=http://seqwaremaven.oicr.on.ca/artifactory
 artifact_repository=dcc-dependencies
 artifact_name=dcc-reference-genome
 artifact_path=org/icgc/dcc/$artifact_name
-artifact_version=GRCh37v$version
+artifact_version=GRCh37.$version
 archive_file=$artifact_name-$artifact_version.tar.gz
+
+# FASTA files
+fasta_dir=fasta
+fasta_readme=README.${artifact_version}.txt
+fasta_file=${artifact_version}.fasta
+fasta_fai_file=${fasta_file}.fai
+fasta_dict_file=${artifact_version}.dict
+
+# Picard tools
+picard_version=1.111
+picard_dist="http://softlayer-dal.dl.sourceforge.net/project/picard/picard-tools/$picard_version/picard-tools-$picard_version.zip"
+picard_jar="picard/picard-tools-$picard_version/CreateSequenceDictionary.jar"
+
+# Deploy
+source=fasta/$archive_file
+target=$artifact_server/$artifact_repository/$artifact_path/$artifact_version/$archive_file
 
 # Ensembl: 1-22,X,MT
 ensemble_url=ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna
@@ -84,13 +99,25 @@ ncbi_sequence_file=ftp://ftp.ncbi.nlm.nih.gov/genbank/genomes/Eukaryotes/vertebr
 
 # Build samtools
 if [ ! -d samtools ]; then
+	echo "Building samtools..."
     mkdir samtools
     git clone -b master https://github.com/samtools/samtools.git;
     cd samtools; make; cd -
 fi
 
+# Download picard
+if [ ! -d picard ]; then
+	echo "Downloading picard..."
+	mkdir picard
+	cd picard
+    wget -O picard.zip "http://sourceforge.net/projects/picard/files/latest/download?source=files"
+    unzip picard.zip
+    cd -
+fi
+
 if [ ! -d downloads ]; then
     # Download
+	echo "Downloading sequences..."
     mkdir downloads
     wget -P downloads $ensemble_url/$sequence_file_base.{{1..22},{X,MT}}.fa.gz 
     wget $ncbi_sequence_file -O downloads/$sequence_file_base.Y.fa.gz
@@ -103,6 +130,7 @@ if [ ! -d fasta ]; then
     mkdir fasta
 fi
 
+echo -e "\nBuilding FASTA file..."
 for i in {{1..22},{X,Y,MT}}; do 
 	# Normalize header
 	echo ">$i"
@@ -115,13 +143,26 @@ for i in {{1..22},{X,Y,MT}}; do
 	else
 		tail -n+2 downloads/$sequence_file_base.$i.fa
 	fi
-done > fasta/GRCh37.fasta
+done > $fasta_dir/$fasta_file
 
 # Index
-samtools/samtools faidx fasta/GRCh37.fasta
+echo "Indexing FASTA file..."
+samtools/samtools faidx $fasta_dir/$fasta_file
+
+# Dictionary
+echo "Creating FASTA dictionary..."
+java -Xmx1g -jar $picard_jar R= $fasta_dir/$fasta_file O= $fasta_dir/$fasta_dict_file
 
 # Archive
-cd fasta; tar zcvf $archive_file *.fasta*; cd -
+echo "Archiving FASTA / FAI files..."
+cd $fasta_dir
+echo -e "FASTA / FAI created by http://goo.gl/p9QvyN and can be downloaded by:\n\n   curl -g '$target' | tar zvx" > $fasta_readme
+tar zcvf $archive_file $fasta_file $fasta_fai_file $fasta_dict_file $fasta_readme
+cd -
 
 # Deploy
-curl -X PUT -u$username:$password $artifact_server/$artifact_repository/$artifact_path/$artifact_version/$archive_file --data-binary @fasta/$archive_file
+source=$fasta_dir/$archive_file
+target=$artifact_server/$artifact_repository/$artifact_path/$artifact_version/$archive_file
+
+echo "Deploying $source to $target"
+curl -v --user $username:$password --upload-file $source $target
