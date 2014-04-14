@@ -27,7 +27,7 @@ if [ ! -d downloads ]; then
     # Download
     mkdir downloads
     wget -P downloads $ensemble_url/$sequence_file_base.{{1..22},{X,MT}}.fa.gz 
-    wget -P downloads $ncbi_sequence_file $sequence_file_base.Y.fa.gz
+    wget $ncbi_sequence_file -O downloads/$sequence_file_base.Y.fa.gz
    
     # Extract
     cd downloads; gunzip *.fa.gz; cd -
