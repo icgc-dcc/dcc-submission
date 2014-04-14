@@ -160,7 +160,7 @@ public final class RedundantObservationRemoval implements NormalizationStep, Opt
       if (duplicates) {
         while (tuples.hasNext()) {
           val duplicate = tuples.next().getTuple();
-          log.info("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
+          log.debug("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
               new Object[] { first, group, duplicate });
 
           flowProcess.increment(DROPPED, COUNT_INCREMENT);

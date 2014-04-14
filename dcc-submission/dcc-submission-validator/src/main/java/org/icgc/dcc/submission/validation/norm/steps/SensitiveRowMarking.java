@@ -134,7 +134,7 @@ public final class SensitiveRowMarking implements NormalizationStep {
       if (!matchesAllControlAlleles(referenceGenomeAllele, controlGenotype)
           || !matchesAllTumourAllelesButTo(referenceGenomeAllele, tumourGenotype, mutatedToAllele)) {
 
-        log.info("Marking sensitive row: '{}'", entry); // Should be rare enough
+        log.debug("Marking sensitive row: '{}'", entry); // Should be rare enough
         masking = CONTROLLED;
 
         // Increment counter
