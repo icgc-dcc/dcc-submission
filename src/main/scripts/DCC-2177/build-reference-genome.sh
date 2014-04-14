@@ -37,7 +37,7 @@ if [ ! -d fasta ]; then
     mkdir fasta
 fi
 
-for i in {{1..22},{X,MT}}; do echo "$i>"; tail -n+2 downloads/$sequence_file_base.$i.fa ; done > fasta/GRCh37.fasta
+for i in {{1..22},{X,Y,MT}}; do echo "$i>"; tail -n+2 downloads/$sequence_file_base.$i.fa ; done > fasta/GRCh37.fasta
 
 # Index
 samtools/samtools faidx fasta/GRCh37.fasta
