@@ -31,12 +31,7 @@ OPTIONS:
 EOF
 }
 
-log(){
-  echo `date` -  $1 | tee -a $logdir/install.log
-}
-
-version=
-username=
+# CLI
 while getopts “hpv:u:” OPTION
 do
   case $OPTION in
@@ -60,11 +55,16 @@ do
      esac
 done
 
+# CLI
 if [[ -z $version ]] || [[ -z $username ]] || [[ -z $password ]]
 then
   usage
   exit 1
 fi
+
+#
+# Output
+#
 
 # Maven artifact location
 artifact_server=http://seqwaremaven.oicr.on.ca/artifactory
@@ -81,14 +81,29 @@ fasta_file=${artifact_version}.fasta
 fasta_fai_file=${fasta_file}.fai
 fasta_dict_file=${artifact_version}.dict
 
+#
+# Tools
+#
+
 # Picard tools
 picard_version=1.111
 picard_dist="http://softlayer-dal.dl.sourceforge.net/project/picard/picard-tools/$picard_version/picard-tools-$picard_version.zip"
 picard_jar="picard/picard-tools-$picard_version/CreateSequenceDictionary.jar"
 
+# Samtools
+samtools_git=https://github.com/samtools/samtools.git
+
+#
+# Deployment
+# 
+
 # Deploy
 source=fasta/$archive_file
 target=$artifact_server/$artifact_repository/$artifact_path/$artifact_version/$archive_file
+
+#
+# Sources
+#
 
 # Ensembl: 1-22,X,MT
 ensemble_url=ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna
@@ -97,40 +112,45 @@ sequence_file_base=Homo_sapiens.GRCh37.75.dna.chromosome
 # NCBI: Y
 ncbi_sequence_file=ftp://ftp.ncbi.nlm.nih.gov/genbank/genomes/Eukaryotes/vertebrates_mammals/Homo_sapiens/GRCh37.p13/Primary_Assembly/assembled_chromosomes/FASTA/chrY.fa.gz
 
-# Build samtools
+#
+# Execute
+#
+
+# Checkout and build Samtools
 if [ ! -d samtools ]; then
 	echo "Building samtools..."
-    mkdir samtools
-    git clone -b master https://github.com/samtools/samtools.git;
-    cd samtools; make; cd -
+	mkdir samtools
+	git clone -b master $samtools_git
+	cd samtools; make; cd -
 fi
 
-# Download picard
+# Download and extract Picard
 if [ ! -d picard ]; then
 	echo "Downloading picard..."
 	mkdir picard
 	cd picard
-    wget -O picard.zip "http://sourceforge.net/projects/picard/files/latest/download?source=files"
-    unzip picard.zip
-    cd -
+	wget -O picard.zip $picard_dist
+	unzip picard.zip
+	cd -
 fi
 
+# Download and extract sequences
 if [ ! -d downloads ]; then
-    # Download
 	echo "Downloading sequences..."
-    mkdir downloads
-    wget -P downloads $ensemble_url/$sequence_file_base.{{1..22},{X,MT}}.fa.gz 
-    wget $ncbi_sequence_file -O downloads/$sequence_file_base.Y.fa.gz
+	mkdir downloads
+	wget -P downloads $ensemble_url/$sequence_file_base.{{1..22},{X,MT}}.fa.gz 
+	wget $ncbi_sequence_file -O downloads/$sequence_file_base.Y.fa.gz
    
-    # Extract
-    cd downloads; gunzip *.fa.gz; cd -
+	# Extract
+	cd downloads; gunzip *.fa.gz; cd -
 fi
 
+# Combine sequences into FASTA file
+echo -e "\nBuilding FASTA file..."
 if [ ! -d fasta ]; then
     mkdir fasta
 fi
 
-echo -e "\nBuilding FASTA file..."
 for i in {{1..22},{X,Y,MT}}; do 
 	# Normalize header
 	echo ">$i"
@@ -161,8 +181,5 @@ tar zcvf $archive_file $fasta_file $fasta_fai_file $fasta_dict_file $fasta_readm
 cd -
 
 # Deploy
-source=$fasta_dir/$archive_file
-target=$artifact_server/$artifact_repository/$artifact_path/$artifact_version/$archive_file
-
 echo "Deploying $source to $target"
 curl -v --user $username:$password --upload-file $source $target
