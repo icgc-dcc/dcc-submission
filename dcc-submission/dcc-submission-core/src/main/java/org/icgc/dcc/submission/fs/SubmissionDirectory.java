@@ -238,7 +238,7 @@ public class SubmissionDirectory {
         first = false;
       }
     }
-    log.info("Sample to specimen mapping: {}", sampleToSpecimen);
+    log.debug("Sample to specimen mapping: {}", sampleToSpecimen);
 
     val specimenToDonor = Maps.<String, String> newTreeMap();
     val specimenFileSchema = dictionary.getFileSchema(SPECIMEN_TYPE);
@@ -258,7 +258,7 @@ public class SubmissionDirectory {
         first = false;
       }
     }
-    log.info("Specimen to donor mapping: {}", specimenToDonor);
+    log.debug("Specimen to donor mapping: {}", specimenToDonor);
 
     val sampleToDonor = Maps.<String, String> newTreeMap();
     for (val entry : sampleToSpecimen.entrySet()) {
@@ -266,7 +266,7 @@ public class SubmissionDirectory {
           entry.getKey(),
           specimenToDonor.get(entry.getValue()));
     }
-    log.info("Sample to donor mapping: {}", sampleToDonor);
+    log.debug("Sample to donor mapping: {}", sampleToDonor);
 
     return sampleToDonor;
   }
