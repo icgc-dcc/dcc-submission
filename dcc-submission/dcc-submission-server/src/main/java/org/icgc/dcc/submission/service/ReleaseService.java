@@ -464,13 +464,13 @@ public class ReleaseService extends AbstractService {
   }
 
   private List<SubmissionFile> getSubmissionFiles(
-      @NonNull String releaseName, @NonNull String projectKey, @NonNull Map<String, FileType> patternToType) {
+      @NonNull String releaseName, @NonNull String projectKey, @NonNull Map<String, FileType> filePatternToTypeMap) {
     val submissionFiles = new ArrayList<SubmissionFile>();
     val projectStringPath = new Path(dccFileSystem.buildProjectStringPath(releaseName, projectKey));
 
     for (val path : lsFile(dccFileSystem.getFileSystem(), projectStringPath)) {
       try {
-        submissionFiles.add(getSubmissionFile(patternToType, path));
+        submissionFiles.add(getSubmissionFile(filePatternToTypeMap, path));
       } catch (Exception e) {
         // This could happen if the file was renamed or removed in the meantime
         log.warn("Could not get submission file '{}': {}", path, e.getMessage());
@@ -787,12 +787,13 @@ public class ReleaseService extends AbstractService {
     throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, release.getName());
   }
 
-  private SubmissionFile getSubmissionFile(Map<String, FileType> patternToType, Path filePath) throws IOException {
+  private SubmissionFile getSubmissionFile(Map<String, FileType> filePatternToTypeMap, Path filePath)
+      throws IOException {
     val fileName = filePath.getName();
     val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
-    val fileType = getFileType(patternToType, fileName).orNull();
+    val fileType = getFileType(filePatternToTypeMap, fileName).orNull();
 
     return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
   }
@@ -836,10 +837,10 @@ public class ReleaseService extends AbstractService {
     mailService.sendSupportProblem("Automatic email - Failure update", message);
   }
 
-  private Optional<FileType> getFileType(Map<String, FileType> patternToType, String fileName) {
-    for (val pattern : patternToType.keySet()) {
+  private Optional<FileType> getFileType(Map<String, FileType> filePatternToTypeMap, String fileName) {
+    for (val pattern : filePatternToTypeMap.keySet()) {
       if (Pattern.compile(pattern).matcher(fileName).matches()) {
-        return Optional.of(patternToType.get(pattern));
+        return Optional.of(filePatternToTypeMap.get(pattern));
       }
     }
     return Optional.<FileType> absent();
