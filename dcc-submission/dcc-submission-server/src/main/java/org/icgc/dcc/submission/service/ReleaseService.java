@@ -18,12 +18,10 @@
 package org.icgc.dcc.submission.service;
 
 import static com.google.common.base.Joiner.on;
-import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
@@ -309,13 +307,10 @@ public class ReleaseService extends AbstractService {
     String releaseName = release.getName();
     log.info("signing off {} for {}", projectKeys, releaseName);
 
-    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
-        "No dictionary with version '%s' found for release '%s'",
-        release.getDictionaryVersion(), release.getName());
-
     release.removeFromQueue(projectKeys);
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     for (val projectKey : projectKeys) {
-      val submissionFiles = getSubmissionFiles(release.getName(), projectKey, dictionary);
+      val submissionFiles = getSubmissionFiles(release.getName(), projectKey, filePatternToTypeMap);
       val submission = release.getSubmission(projectKey).get();
 
       //
@@ -465,22 +460,17 @@ public class ReleaseService extends AbstractService {
 
   private List<SubmissionFile> getSubmissionFiles(
       @NonNull String releaseName, @NonNull String dictionaryVersion, @NonNull String projectKey) {
-    return getSubmissionFiles(
-        releaseName,
-        projectKey,
-        checkNotNull(dictionaryRepository.findDictionaryByVersion(dictionaryVersion),
-            "No dictionary with version '%s' found for release '%s'",
-            dictionaryVersion, releaseName));
+    return getSubmissionFiles(releaseName, projectKey, dictionaryRepository.getFilePatternToTypeMap(dictionaryVersion));
   }
 
   private List<SubmissionFile> getSubmissionFiles(
-      @NonNull String releaseName, @NonNull String projectKey, @NonNull Dictionary dictionary) {
+      @NonNull String releaseName, @NonNull String projectKey, @NonNull Map<String, FileType> patternToType) {
     val submissionFiles = new ArrayList<SubmissionFile>();
     val projectStringPath = new Path(dccFileSystem.buildProjectStringPath(releaseName, projectKey));
 
     for (val path : lsFile(dccFileSystem.getFileSystem(), projectStringPath)) {
       try {
-        submissionFiles.add(getSubmissionFile(dictionary, path));
+        submissionFiles.add(getSubmissionFile(patternToType, path));
       } catch (Exception e) {
         // This could happen if the file was renamed or removed in the meantime
         log.warn("Could not get submission file '{}': {}", path, e.getMessage());
@@ -515,14 +505,11 @@ public class ReleaseService extends AbstractService {
     // Update release object
     release.enqueue(queuedProjects);
 
-    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
-        "No dictionary with version '%s' found for release '%s'",
-        release.getDictionaryVersion(), release.getName());
-
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     for (val queuedProject : queuedProjects) {
       val projectKey = queuedProject.getKey();
       val submission = release.getSubmission(projectKey).get();
-      val submissionFiles = getSubmissionFiles(release.getName(), projectKey, dictionary);
+      val submissionFiles = getSubmissionFiles(release.getName(), projectKey, filePatternToTypeMap);
 
       //
       // Transition
@@ -593,12 +580,9 @@ public class ReleaseService extends AbstractService {
     val releaseName = release.getName();
     val projectKeys = targets.length > 0 ? release.getQueuedProjectKeys() : ImmutableList.<String> copyOf(targets);
 
-    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
-        "No dictionary with version '%s' found for release '%s'",
-        release.getDictionaryVersion(), release.getName());
-
     log.info("Deleting queued request for project(s) '{}'", projectKeys);
     val queue = ImmutableList.<QueuedProject> copyOf(release.getQueue());
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     for (val queuedProject : queue) {
       val projectKey = queuedProject.getKey();
       val dataTypes = queuedProject.getDataTypes();
@@ -606,7 +590,7 @@ public class ReleaseService extends AbstractService {
       val remove = projectKeys.contains(projectKey);
       if (remove) {
         val submission = release.getSubmission(projectKey).get();
-        val submissionFiles = getSubmissionFiles(releaseName, projectKey, dictionary);
+        val submissionFiles = getSubmissionFiles(releaseName, projectKey, filePatternToTypeMap);
 
         //
         // Transition
@@ -624,34 +608,28 @@ public class ReleaseService extends AbstractService {
   @Synchronized
   public void resetSubmissions() {
     val release = getNextRelease();
-    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
-        "No dictionary with version '%s' found for release '%s'",
-        release.getDictionaryVersion(), release.getName());
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
 
     for (val projectKey : release.getProjectKeys()) {
-      resetSubmission(release, projectKey, dictionary);
+      resetSubmission(release, projectKey, filePatternToTypeMap);
     }
   }
 
   @Synchronized
   public void resetInvalidSubmissions() {
     val release = getNextRelease();
-    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
-        "No dictionary with version '%s' found for release '%s'",
-        release.getDictionaryVersion(), release.getName());
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     for (val projectKey : release.getInvalidProjectKeys()) {
-      resetSubmission(release, projectKey, dictionary);
+      resetSubmission(release, projectKey, filePatternToTypeMap);
     }
   }
 
   @Synchronized
   public void resetSubmissions(String... projectKeys) {
     val release = getNextRelease();
-    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
-        "No dictionary with version '%s' found for release '%s'",
-        release.getDictionaryVersion(), release.getName());
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     for (val projectKey : projectKeys) {
-      resetSubmission(release, projectKey, dictionary);
+      resetSubmission(release, projectKey, filePatternToTypeMap);
     }
   }
 
@@ -710,12 +688,9 @@ public class ReleaseService extends AbstractService {
 
     // Create new release entity
     val newRelease = new Release(nextReleaseName, dictionaryVersion);
-    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(oldRelease.getDictionaryVersion()),
-        "No dictionary with version '%s' found for release '%s'",
-        oldRelease.getDictionaryVersion(), oldRelease.getName());
-
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(oldRelease.getDictionaryVersion());
     for (val submission : oldRelease.getSubmissions()) {
-      val submissionFiles = getSubmissionFiles(oldRelease.getName(), submission.getProjectKey(), dictionary);
+      val submissionFiles = getSubmissionFiles(oldRelease.getName(), submission.getProjectKey(), filePatternToTypeMap);
 
       //
       // Transition
@@ -775,9 +750,9 @@ public class ReleaseService extends AbstractService {
   }
 
   private Submission resetSubmission(
-      @NonNull Release release, @NonNull String projectKey, @NonNull Dictionary dictionary) {
+      @NonNull Release release, @NonNull String projectKey, @NonNull Map<String, FileType> filePatternToTypeMap) {
     val submission = release.getSubmission(projectKey).get();
-    val submissionFiles = getSubmissionFiles(release.getName(), projectKey, dictionary);
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey, filePatternToTypeMap);
 
     //
     // Transition
@@ -812,51 +787,21 @@ public class ReleaseService extends AbstractService {
     throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, release.getName());
   }
 
-  private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) throws IOException {
+  private SubmissionFile getSubmissionFile(Map<String, FileType> patternToType, Path filePath) throws IOException {
     val fileName = filePath.getName();
     val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
-
-    Map<String, FileType> m = newHashMap();
-    for (val dd : dictionary.getFiles()) {
-      m.put(dd.getPattern(), dd.getFileType());
-    }
-    val fileType = dodo(m, filePath.getName()).orNull();
+    val fileType = getFileType(patternToType, fileName).orNull();
 
     return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
   }
 
-  /**
-   * @param filePath
-   * @param m
-   */
-  private Optional<FileType> dodo(Map<String, FileType> m, String s) {
-    for (val d : m.keySet()) {
-      if (Pattern.compile(d).matcher(s).matches()) {
-        return Optional.of(m.get(d));
-      }
-    }
-    return Optional.<FileType> absent();
-  }
-
-  private Optional<FileType> getSubmissionFileType(Dictionary dictionary, Path filePath) {
-    val fileName = filePath.getName();
-    val fileSchema = dictionary.getFileSchemaByFileName(fileName);
-
-    return fromNullable(fileSchema.isPresent() ? fileSchema.get().getFileType() : null);
-  }
-
   private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {
-    val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
-    if (dictionary == null) {
-      throw new ReleaseException("No dictionary with version '%s' found for release '%s'",
-          release.getDictionaryVersion(), release.getName());
-    }
-
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     val builder = ImmutableMap.<String, List<SubmissionFile>> builder();
     for (val projectKey : release.getProjectKeys()) {
-      val submissionFiles = getSubmissionFiles(releaseName, projectKey, dictionary);
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey, filePatternToTypeMap);
 
       builder.put(projectKey, submissionFiles);
     }
@@ -889,6 +834,15 @@ public class ReleaseService extends AbstractService {
 
     String message = format("filter: %s, set values: %s, unset values: %s, id: %s", filter, setValues, unsetValues, id);
     mailService.sendSupportProblem("Automatic email - Failure update", message);
+  }
+
+  private Optional<FileType> getFileType(Map<String, FileType> patternToType, String fileName) {
+    for (val pattern : patternToType.keySet()) {
+      if (Pattern.compile(pattern).matcher(fileName).matches()) {
+        return Optional.of(patternToType.get(pattern));
+      }
+    }
+    return Optional.<FileType> absent();
   }
 
 }
