@@ -307,10 +307,14 @@ public class ReleaseService extends AbstractService {
     String releaseName = release.getName();
     log.info("signing off {} for {}", projectKeys, releaseName);
 
+    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+        "No dictionary with version '%s' found for release '%s'",
+        release.getDictionaryVersion(), release.getName());
+
     release.removeFromQueue(projectKeys);
     for (val projectKey : projectKeys) {
+      val submissionFiles = getSubmissionFiles(release.getName(), projectKey, dictionary);
       val submission = release.getSubmission(projectKey).get();
-      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
 
       //
       // Transition
@@ -406,8 +410,8 @@ public class ReleaseService extends AbstractService {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
     val release = releaseRepository.findOpenRelease();
     val submissionPath = dccFileSystem.createNewProjectDirectoryStructure(release.getName(), projectKey);
+    val submissionFiles = getSubmissionFiles(release, projectKey);
     val submission = new Submission(projectKey, projectName, release.getName(), NOT_VALIDATED);
-    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
 
     //
     // Transition
@@ -425,6 +429,10 @@ public class ReleaseService extends AbstractService {
     return getSubmission(release, projectKey);
   }
 
+  public boolean submissionExists(String releaseName, String projectKey) {
+    return getSubmission(releaseName, projectKey) != null;
+  }
+
   public Submission getSubmission(String releaseName, String projectKey) {
     val release = releaseRepository.findReleaseByName(releaseName);
     val missing = release == null;
@@ -438,9 +446,9 @@ public class ReleaseService extends AbstractService {
   }
 
   public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
-    val submission = getSubmission(releaseName, projectKey);
     val submissionFiles = getSubmissionFiles(releaseName, projectKey);
     val project = projectRepository.findProject(projectKey);
+    val submission = getSubmission(releaseName, projectKey);
     val detailedSubmission = new DetailedSubmission(submission, project);
     detailedSubmission.setSubmissionFiles(submissionFiles);
 
@@ -448,38 +456,26 @@ public class ReleaseService extends AbstractService {
   }
 
   public List<SubmissionFile> getSubmissionFiles(@NonNull String releaseName, @NonNull String projectKey) {
-    val release = releaseRepository.findReleaseByName(releaseName);
-    if (release == null) {
-      throw new ReleaseException("No release with name '%s'", releaseName);
-    }
-
-    val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
-    if (dictionary == null) {
-      throw new ReleaseException("No dictionary with version '%s' found for release '%s'",
-          release.getDictionaryVersion(), release.getName());
-    }
-
-    val submissionFiles = new ArrayList<SubmissionFile>();
-    val buildProjectStringPath = new Path(dccFileSystem.buildProjectStringPath(release.getName(), projectKey));
-
-    for (val path : lsFile(dccFileSystem.getFileSystem(), buildProjectStringPath)) {
-      try {
-        submissionFiles.add(getSubmissionFile(dictionary, path));
-      } catch (Exception e) {
-        // This could happen if the file was renamed or removed in the meantime
-        log.warn("Could not get submission file '{}': {}", path, e.getMessage());
-      }
-    }
-
-    return submissionFiles;
+    return getSubmissionFiles(
+        checkNotNull(releaseRepository.findReleaseByName(releaseName), "No release with name '%s'", releaseName),
+        projectKey);
   }
 
-  public List<SubmissionFile> getSubmissionFiles2(
+  public List<SubmissionFile> getSubmissionFiles(@NonNull Release release, @NonNull String projectKey) {
+    return getSubmissionFiles(
+        release.getName(),
+        projectKey,
+        checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+            "No dictionary with version '%s' found for release '%s'",
+            release.getDictionaryVersion(), release.getName()));
+  }
+
+  public List<SubmissionFile> getSubmissionFiles(
       @NonNull String releaseName, @NonNull String projectKey, @NonNull Dictionary dictionary) {
     val submissionFiles = new ArrayList<SubmissionFile>();
-    val buildProjectStringPath = new Path(dccFileSystem.buildProjectStringPath(releaseName, projectKey));
+    val projectStringPath = new Path(dccFileSystem.buildProjectStringPath(releaseName, projectKey));
 
-    for (val path : lsFile(dccFileSystem.getFileSystem(), buildProjectStringPath)) {
+    for (val path : lsFile(dccFileSystem.getFileSystem(), projectStringPath)) {
       try {
         submissionFiles.add(getSubmissionFile(dictionary, path));
       } catch (Exception e) {
@@ -516,10 +512,14 @@ public class ReleaseService extends AbstractService {
     // Update release object
     release.enqueue(queuedProjects);
 
+    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+        "No dictionary with version '%s' found for release '%s'",
+        release.getDictionaryVersion(), release.getName());
+
     for (val queuedProject : queuedProjects) {
       val projectKey = queuedProject.getKey();
       val submission = release.getSubmission(projectKey).get();
-      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+      val submissionFiles = getSubmissionFiles(release.getName(), projectKey, dictionary);
 
       //
       // Transition
@@ -563,8 +563,8 @@ public class ReleaseService extends AbstractService {
           throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, projectKey);
         }
 
+        val submissionFiles = getSubmissionFiles(release, queuedProject.getKey());
         val submission = release.getSubmission(projectKey).get();
-        val submissionFiles = getSubmissionFiles(releaseName, queuedProject.getKey());
 
         //
         // Transition
@@ -589,6 +589,10 @@ public class ReleaseService extends AbstractService {
     val releaseName = release.getName();
     val projectKeys = targets.length > 0 ? release.getQueuedProjectKeys() : ImmutableList.<String> copyOf(targets);
 
+    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+        "No dictionary with version '%s' found for release '%s'",
+        release.getDictionaryVersion(), release.getName());
+
     log.info("Deleting queued request for project(s) '{}'", projectKeys);
     val queue = ImmutableList.<QueuedProject> copyOf(release.getQueue());
     for (val queuedProject : queue) {
@@ -598,7 +602,7 @@ public class ReleaseService extends AbstractService {
       val remove = projectKeys.contains(projectKey);
       if (remove) {
         val submission = release.getSubmission(projectKey).get();
-        val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+        val submissionFiles = getSubmissionFiles(releaseName, projectKey, dictionary);
 
         //
         // Transition
@@ -616,24 +620,34 @@ public class ReleaseService extends AbstractService {
   @Synchronized
   public void resetSubmissions() {
     val release = getNextRelease();
+    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+        "No dictionary with version '%s' found for release '%s'",
+        release.getDictionaryVersion(), release.getName());
+
     for (val projectKey : release.getProjectKeys()) {
-      resetSubmission(release, projectKey);
+      resetSubmission(release, projectKey, dictionary);
     }
   }
 
   @Synchronized
   public void resetInvalidSubmissions() {
     val release = getNextRelease();
+    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+        "No dictionary with version '%s' found for release '%s'",
+        release.getDictionaryVersion(), release.getName());
     for (val projectKey : release.getInvalidProjectKeys()) {
-      resetSubmission(release, projectKey);
+      resetSubmission(release, projectKey, dictionary);
     }
   }
 
   @Synchronized
   public void resetSubmissions(String... projectKeys) {
     val release = getNextRelease();
+    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+        "No dictionary with version '%s' found for release '%s'",
+        release.getDictionaryVersion(), release.getName());
     for (val projectKey : projectKeys) {
-      resetSubmission(release, projectKey);
+      resetSubmission(release, projectKey, dictionary);
     }
   }
 
@@ -642,8 +656,8 @@ public class ReleaseService extends AbstractService {
       @NonNull SubmissionFileEvent event) {
 
     val release = releaseRepository.findReleaseByName(releaseName);
+    val submissionFiles = getSubmissionFiles(release, projectKey);
     val submission = release.getSubmission(projectKey).get();
-    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
 
     //
     // Transition
@@ -669,8 +683,8 @@ public class ReleaseService extends AbstractService {
     val projectKey = project.getKey();
     val emails = project.getEmails();
     val release = getNextRelease();
+    val submissionFiles = getSubmissionFiles(release, projectKey);
     val submission = getSubmission(release, projectKey);
-    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
 
     //
     // Transition
@@ -692,9 +706,12 @@ public class ReleaseService extends AbstractService {
 
     // Create new release entity
     val newRelease = new Release(nextReleaseName, dictionaryVersion);
+    val dictionary = checkNotNull(dictionaryRepository.findDictionaryByVersion(oldRelease.getDictionaryVersion()),
+        "No dictionary with version '%s' found for release '%s'",
+        oldRelease.getDictionaryVersion(), oldRelease.getName());
 
     for (val submission : oldRelease.getSubmissions()) {
-      val submissionFiles = getSubmissionFiles(oldRelease.getName(), submission.getProjectKey());
+      val submissionFiles = getSubmissionFiles(oldRelease.getName(), submission.getProjectKey(), dictionary);
 
       //
       // Transition
@@ -753,9 +770,10 @@ public class ReleaseService extends AbstractService {
     dccFileSystem.getReleaseFilesystem(release).resetValidationFolder(projectKey);
   }
 
-  private Submission resetSubmission(@NonNull Release release, @NonNull String projectKey) {
+  private Submission resetSubmission(
+      @NonNull Release release, @NonNull String projectKey, @NonNull Dictionary dictionary) {
     val submission = release.getSubmission(projectKey).get();
-    val submissionFiles = getSubmissionFiles(release.getName(), projectKey);
+    val submissionFiles = getSubmissionFiles(release.getName(), projectKey, dictionary);
 
     //
     // Transition
@@ -816,7 +834,7 @@ public class ReleaseService extends AbstractService {
 
     val builder = ImmutableMap.<String, List<SubmissionFile>> builder();
     for (val projectKey : release.getProjectKeys()) {
-      val submissionFiles = getSubmissionFiles2(releaseName, projectKey, dictionary);
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey, dictionary);
 
       builder.put(projectKey, submissionFiles);
     }
