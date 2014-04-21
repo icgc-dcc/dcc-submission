@@ -474,6 +474,23 @@ public class ReleaseService extends AbstractService {
     return submissionFiles;
   }
 
+  public List<SubmissionFile> getSubmissionFiles2(
+      @NonNull String releaseName, @NonNull String projectKey, @NonNull Dictionary dictionary) {
+    val submissionFiles = new ArrayList<SubmissionFile>();
+    val buildProjectStringPath = new Path(dccFileSystem.buildProjectStringPath(releaseName, projectKey));
+
+    for (val path : lsFile(dccFileSystem.getFileSystem(), buildProjectStringPath)) {
+      try {
+        submissionFiles.add(getSubmissionFile(dictionary, path));
+      } catch (Exception e) {
+        // This could happen if the file was renamed or removed in the meantime
+        log.warn("Could not get submission file '{}': {}", path, e.getMessage());
+      }
+    }
+
+    return submissionFiles;
+  }
+
   public Optional<FileReport> getFileReport(String releaseName, String projectKey, String fileName) {
     Optional<FileReport> optional = Optional.absent();
     val submission = getSubmission(releaseName, projectKey);
@@ -791,9 +808,15 @@ public class ReleaseService extends AbstractService {
   }
 
   private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {
+    val dictionary = dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion());
+    if (dictionary == null) {
+      throw new ReleaseException("No dictionary with version '%s' found for release '%s'",
+          release.getDictionaryVersion(), release.getName());
+    }
+
     val builder = ImmutableMap.<String, List<SubmissionFile>> builder();
     for (val projectKey : release.getProjectKeys()) {
-      val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+      val submissionFiles = getSubmissionFiles2(releaseName, projectKey, dictionary);
 
       builder.put(projectKey, submissionFiles);
     }
