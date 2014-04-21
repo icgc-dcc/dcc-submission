@@ -23,6 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
@@ -44,6 +45,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.regex.Pattern;
 
 import lombok.NonNull;
 import lombok.Synchronized;
@@ -410,7 +412,7 @@ public class ReleaseService extends AbstractService {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
     val release = releaseRepository.findOpenRelease();
     val submissionPath = dccFileSystem.createNewProjectDirectoryStructure(release.getName(), projectKey);
-    val submissionFiles = getSubmissionFiles(release, projectKey);
+    val submissionFiles = getSubmissionFiles(release.getName(), release.getDictionaryVersion(), projectKey);
     val submission = new Submission(projectKey, projectName, release.getName(), NOT_VALIDATED);
 
     //
@@ -456,21 +458,22 @@ public class ReleaseService extends AbstractService {
   }
 
   public List<SubmissionFile> getSubmissionFiles(@NonNull String releaseName, @NonNull String projectKey) {
-    return getSubmissionFiles(
-        checkNotNull(releaseRepository.findReleaseByName(releaseName), "No release with name '%s'", releaseName),
-        projectKey);
+    val release =
+        checkNotNull(releaseRepository.findReleaseByName(releaseName), "No release with name '%s'", releaseName);
+    return getSubmissionFiles(release.getName(), release.getDictionaryVersion(), projectKey);
   }
 
-  public List<SubmissionFile> getSubmissionFiles(@NonNull Release release, @NonNull String projectKey) {
+  private List<SubmissionFile> getSubmissionFiles(
+      @NonNull String releaseName, @NonNull String dictionaryVersion, @NonNull String projectKey) {
     return getSubmissionFiles(
-        release.getName(),
+        releaseName,
         projectKey,
-        checkNotNull(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()),
+        checkNotNull(dictionaryRepository.findDictionaryByVersion(dictionaryVersion),
             "No dictionary with version '%s' found for release '%s'",
-            release.getDictionaryVersion(), release.getName()));
+            dictionaryVersion, releaseName));
   }
 
-  public List<SubmissionFile> getSubmissionFiles(
+  private List<SubmissionFile> getSubmissionFiles(
       @NonNull String releaseName, @NonNull String projectKey, @NonNull Dictionary dictionary) {
     val submissionFiles = new ArrayList<SubmissionFile>();
     val projectStringPath = new Path(dccFileSystem.buildProjectStringPath(releaseName, projectKey));
@@ -563,7 +566,8 @@ public class ReleaseService extends AbstractService {
           throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, projectKey);
         }
 
-        val submissionFiles = getSubmissionFiles(release, queuedProject.getKey());
+        val submissionFiles =
+            getSubmissionFiles(release.getName(), release.getDictionaryVersion(), queuedProject.getKey());
         val submission = release.getSubmission(projectKey).get();
 
         //
@@ -656,7 +660,7 @@ public class ReleaseService extends AbstractService {
       @NonNull SubmissionFileEvent event) {
 
     val release = releaseRepository.findReleaseByName(releaseName);
-    val submissionFiles = getSubmissionFiles(release, projectKey);
+    val submissionFiles = getSubmissionFiles(release.getName(), release.getDictionaryVersion(), projectKey);
     val submission = release.getSubmission(projectKey).get();
 
     //
@@ -683,7 +687,7 @@ public class ReleaseService extends AbstractService {
     val projectKey = project.getKey();
     val emails = project.getEmails();
     val release = getNextRelease();
-    val submissionFiles = getSubmissionFiles(release, projectKey);
+    val submissionFiles = getSubmissionFiles(release.getName(), release.getDictionaryVersion(), projectKey);
     val submission = getSubmission(release, projectKey);
 
     //
@@ -813,9 +817,27 @@ public class ReleaseService extends AbstractService {
     val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
-    val fileType = getSubmissionFileType(dictionary, filePath).orNull();
+
+    Map<String, FileType> m = newHashMap();
+    for (val dd : dictionary.getFiles()) {
+      m.put(dd.getPattern(), dd.getFileType());
+    }
+    val fileType = dodo(m, filePath.getName()).orNull();
 
     return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
+  }
+
+  /**
+   * @param filePath
+   * @param m
+   */
+  private Optional<FileType> dodo(Map<String, FileType> m, String s) {
+    for (val d : m.keySet()) {
+      if (Pattern.compile(d).matcher(s).matches()) {
+        return Optional.of(m.get(d));
+      }
+    }
+    return Optional.<FileType> absent();
   }
 
   private Optional<FileType> getSubmissionFileType(Dictionary dictionary, Path filePath) {
