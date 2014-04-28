@@ -18,18 +18,23 @@
 
 package org.icgc.dcc.submission.repository;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.icgc.dcc.submission.dictionary.model.DictionaryState.CLOSED;
 import static org.icgc.dcc.submission.dictionary.model.QDictionary.dictionary;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.NonNull;
+import lombok.val;
 
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
 public class DictionaryRepository extends AbstractRepository<Dictionary, QDictionary> {
@@ -68,6 +73,19 @@ public class DictionaryRepository extends AbstractRepository<Dictionary, QDictio
             .filter("version", version),
         createUpdateOperations()
             .set("state", CLOSED));
+  }
+
+  /**
+   * Return a map of file pattern to {@link FileType} for the dictionary version provided, which is expected to exist.
+   */
+  public Map<String, FileType> getFilePatternToTypeMap(@NonNull String version) {
+    val dictionary = checkNotNull(findDictionaryByVersion(version), "No dictionary with version '%s' found", version);
+
+    val patternToType = new ImmutableMap.Builder<String, FileType>();
+    for (val fileSchema : dictionary.getFiles()) {
+      patternToType.put(fileSchema.getPattern(), fileSchema.getFileType());
+    }
+    return patternToType.build();
   }
 
 }
