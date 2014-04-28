@@ -200,8 +200,7 @@ public class ReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    val submission = releaseService.getSubmission(releaseName, projectKey);
-    if (submission == null) {
+    if (!releaseService.submissionExists(releaseName, projectKey)) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
 

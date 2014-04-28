@@ -137,10 +137,7 @@ public class HadoopUtils {
 
   /**
    * This does not work on HDFS as of yet (see DCC-835).
-   * 
-   * @deprecated
    */
-  @Deprecated
   public static void createSymlink(FileSystem fileSystem, Path origin, Path destination) {
     try {
       FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
