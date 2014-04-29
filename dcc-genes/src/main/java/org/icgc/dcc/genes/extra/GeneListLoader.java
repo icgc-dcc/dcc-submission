@@ -76,10 +76,8 @@ public class GeneListLoader {
     geneCollection.ensureIndex("{symbol:1}");
     geneCollection.update("{}").multi().with("{$unset: {list:''}}");
 
-    long c = 0;
     csvReader.getHeader(true);
     while (null != (map = csvReader.read(header))) {
-      ++c;
       ObjectMapper mapper = new ObjectMapper();
       JsonNode geneList = mapper.valueToTree(map);
       geneListCollection.save(geneList);
