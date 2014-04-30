@@ -71,7 +71,8 @@ public enum IndexType {
   /**
    * Pathway types
    */
-  PATHWAY_TYPE(Entity.PATHWAY, "pathway", Classifier.BASIC);
+  PATHWAY_TYPE(Entity.PATHWAY, "pathway", Classifier.BASIC),
+  PATHWAY_TEXT_TYPE(Entity.PATHWAY, "pathway-text", Classifier.BASIC);
 
   /**
    * The corresponding entity of the index type.
