@@ -22,6 +22,8 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import lombok.NoArgsConstructor;
 
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+
 @NoArgsConstructor(access = PRIVATE)
 public final class FieldNames {
 
@@ -282,16 +284,16 @@ public final class FieldNames {
   public static final String AVAILABLE_EXPERIMENTAL_ANALYSIS_PERFORMED =
       "available_experimental_analysis_performed";
 
-  public static String getTypeExistsFieldName(String type) {
-    return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
+  public static String getTypeExistsFieldName(FeatureType type) {
+    return SYNTHETIC_PREFIX + type.getTypeName() + TYPE_EXISTS_SUFFIX;
   }
 
-  public static String getTypeCountFieldName(String type) {
-    return SYNTHETIC_PREFIX + type + TYPE_COUNT_SUFFIX;
+  public static String getTypeCountFieldName(FeatureType type) {
+    return SYNTHETIC_PREFIX + type.getTypeName() + TYPE_COUNT_SUFFIX;
   }
 
-  public static String getTestedTypeCountFieldName(String type) {
-    return SYNTHETIC_PREFIX + type + TESTED_DONOR_COUNT_SUFFIX;
+  public static String getTestedTypeCountFieldName(FeatureType type) {
+    return SYNTHETIC_PREFIX + type.getTypeName() + TESTED_DONOR_COUNT_SUFFIX;
   }
 
 }
