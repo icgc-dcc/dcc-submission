@@ -107,9 +107,11 @@ public class KVKey implements Comparable<KVKey> {
       if (compared2 != 0) {
         return compared2;
       }
+    } else {
+      // TODO: general case!!!!
+      checkState(false, "Not implemented yet");
     }
 
-    // TODO: general case!!!!
     return 0;
   }
 
@@ -137,7 +139,7 @@ public class KVKey implements Comparable<KVKey> {
   }
 
   private ByteBuffer checkIsNonComposite() {
-    checkState(size == 1, "TODO");
+    checkState(size == 1, "Expecting a single field key, instead got: '{}'", size);
     return values[0];
   }
 
