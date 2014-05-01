@@ -29,9 +29,14 @@ import com.google.common.base.Joiner;
 @NoArgsConstructor(access = PRIVATE)
 public final class Joiners {
 
-  public static final Joiner PATH = on('/');
+  public static final Joiner SLASH = on('/');
   public static final Joiner TAB = on('\t');
   public static final Joiner NEWLINE = on('\n');
+  public static final Joiner DOT = on(".");
+  public static final Joiner DASH = on("-");
+  public static final Joiner UNDERSCORE = on("_");
+
+  public static final Joiner PATH = SLASH;
   public static final Joiner INDENT = on("\n\t");
 
 }
