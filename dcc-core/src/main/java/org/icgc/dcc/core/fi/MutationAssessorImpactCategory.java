@@ -49,7 +49,7 @@ public enum MutationAssessorImpactCategory implements ImpactPredictorCategory {
   }
 
   @Override
-  public ImpactPredictorType getType() {
+  public ImpactPredictorType getPredictorType() {
     return ImpactPredictorType.MUTATION_ASSESSOR;
   }
 
