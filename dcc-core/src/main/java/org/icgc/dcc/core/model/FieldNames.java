@@ -198,6 +198,10 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
+  public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY =
+      "functional_impact_prediction_summary";
+  public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_FUNCTIONAL_IMPACT_PREDICTION =
+      "functional_impact_prediction";
   public static final String OBSERVATION_CONSEQUENCES_AA_MUTATION = CONSEQUENCE_AA_MUTATION;
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_CANONICAL = "_is_canonical_transcript";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
@@ -230,6 +234,10 @@ public final class FieldNames {
 
   // TODO: Move to summary
   public static final String MUTATION_CONSEQUENCE_TYPES = "consequence_type";
+  public static final String MUTATION_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY = "functional_impact_prediction_summary";
+  public static final String MUTATION_TRANSCRIPTS_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY =
+      "functional_impact_prediction_summary";
+  public static final String MUTATION_TRANSCRIPTS_FUNCTIONAL_IMPACT_PREDICTION = "functional_impact_prediction";
   public static final String MUTATION_PLATFORM = "platform";
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
