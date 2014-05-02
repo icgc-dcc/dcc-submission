@@ -43,12 +43,15 @@ import org.icgc.dcc.core.model.ConsequenceType;
  */
 @Getter
 @RequiredArgsConstructor(access = PRIVATE)
-public enum CompositeImpactCategory implements ImpactPredictorCategory {
+public enum CompositeImpactCategory implements ImpactPredictorCategory, Comparable<CompositeImpactCategory> {
 
-  HIGH("High"),
-  MEDIUM("Medium"),
+  /**
+   * In order of increasing priority.
+   */
+  UNKNOWN("Unknown"),
   LOW("Low"),
-  UNKNOWN("Unknown");
+  MEDIUM("Medium"),
+  HIGH("High");
 
   private static final List<ConsequenceType> NON_MISSENSE_HIGH_IMPACT_CONSEQUENCE_TYPES = of(
       FRAMESHIFT_VARIANT,
@@ -101,7 +104,12 @@ public enum CompositeImpactCategory implements ImpactPredictorCategory {
 
   @Override
   public int getPriority() {
-    return values().length - ordinal();
+    return ordinal();
+  }
+
+  @Override
+  public String toString() {
+    return id;
   }
 
   @Override

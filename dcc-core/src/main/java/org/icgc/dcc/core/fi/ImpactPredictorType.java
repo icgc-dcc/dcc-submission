@@ -43,8 +43,9 @@ public enum ImpactPredictorType {
     throw new IllegalArgumentException("Unknown id '" + id + "'  for " + ImpactPredictorType.class);
   }
 
-  public int getPriority() {
-    return values().length - ordinal();
+  @Override
+  public String toString() {
+    return id;
   }
 
 }
