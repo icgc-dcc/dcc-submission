@@ -46,11 +46,11 @@ public class DataTypeTest {
     assertThat(isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
 
     assertThat(isAggregatedType(FeatureType.SSM_TYPE)).isTrue();
-    assertThat(isAggregatedType(FeatureType.METH_TYPE)).isFalse();
+    assertThat(isAggregatedType(FeatureType.METH_ARRAY_TYPE)).isFalse();
     assertThat(isAggregatedType(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
 
     assertThat(hasControlSampleId(FeatureType.SSM_TYPE)).isTrue();
-    assertThat(hasControlSampleId(FeatureType.MIRNA_TYPE)).isFalse();
+    assertThat(hasControlSampleId(FeatureType.MIRNA_SEQ_TYPE)).isFalse();
     assertThat(hasControlSampleId(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
   }
 

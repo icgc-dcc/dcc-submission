@@ -22,7 +22,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_P;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 
 import java.util.Iterator;
@@ -32,8 +31,6 @@ import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-
-import org.icgc.dcc.submission.validation.key.core.KVFileType;
 
 import com.google.common.collect.Sets;
 
@@ -47,19 +44,6 @@ import com.google.common.collect.Sets;
 public final class KVPrimaryKeys {
 
   private final Map<String, Set<KVKey>> pks = newLinkedHashMap();
-
-  /**
-   * Re-using the PK mechanism even though the keys in {@link KVFileType#MIRNA_P} aren't actually unique (they are
-   * however referenced).
-   */
-  public void updateMirnaPKeys(KVFileType fileType, String fileName, KVRow row) {
-    if (ROW_CHECKS_ENABLED) {
-      checkState(fileType == MIRNA_P,
-          "Only applicable for '%s', instead got: '%s'", MIRNA_P, fileType);
-    }
-
-    updatePks(fileName, row);
-  }
 
   public List<String> getFilePaths() {
     return newArrayList(pks.keySet());

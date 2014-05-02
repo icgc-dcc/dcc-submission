@@ -19,9 +19,6 @@ package org.icgc.dcc.submission.validation.key.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
@@ -116,9 +113,6 @@ public class KeyValidationContext extends AbstractValidationContext {
 
     // Add file schemata
     dictionary.addFile(readFileSchema(SSM_S_TYPE));
-    dictionary.addFile(readFileSchema(METH_M_TYPE));
-    dictionary.addFile(readFileSchema(METH_P_TYPE));
-    dictionary.addFile(readFileSchema(METH_S_TYPE));
 
     return dictionary;
   }
