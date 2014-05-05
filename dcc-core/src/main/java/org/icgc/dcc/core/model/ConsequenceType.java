@@ -28,36 +28,36 @@ import lombok.val;
 public enum ConsequenceType {
 
   /**
-   * In order of decreasing priority
+   * In order of increasing priority.
    */
-  FRAMESHIFT_VARIANT("frameshift_variant"),
-  MISSENSE("missense"),
-  NON_CONSERVATIVE_MISSENSE_VARIANT("non_conservative_missense_variant"),
-  INITIATOR_CODON_VARIANT("initiator_codon_variant"),
-  STOP_GAINED("stop_gained"),
-  STOP_LOST("stop_lost"),
-  START_GAINED("start_gained"),
-  EXON_LOST("exon_lost"),
-  CODING_SEQUENCE_VARIANT("coding_sequence_variant"),
-  INFRAME_DELETION("inframe_deletion"),
-  INFRAME_INSERTION("inframe_insertion"),
-  SPLICE_REGION_VARIANT("splice_region_variant"),
-  REGULATORY_REGION_VARIANT("regulatory_region_variant"),
-  MICRO_RNA("micro-rna"),
-  NON_CODING_EXON_VARIANT("non_coding_exon_variant"),
-  NC_TRANSCRIPT_VARIANT("nc_transcript_variant"),
-  FIVE_PRIME_UTR_VARIANT("5_prime_UTR_variant"),
-  FIVE_PRIME_UTR("five_prime_UTR"),
-  UPSTREAM_GENE_VARIANT("upstream_gene_variant"),
-  SYNONYMOUS_VARIANT("synonymous_variant"),
-  STOP_RETAINED_VARIANT("stop_retained_variant"),
-  THREE_PRIME_UTR_VARIANT("3_prime_UTR_variant"),
-  DOWNSTREAM_GENE_VARIANT("downstream_gene_variant"),
-  INTRON_VARIANT("intron_variant"),
-  INTERGENIC("intergenic"),
-  INTERGENIC_VARIANT("intergenic_variant"),
+  CUSTOM("custom"),
   INTERGENIC_REGION("intergenic_region"),
-  CUSTOM("custom");
+  INTERGENIC_VARIANT("intergenic_variant"),
+  INTERGENIC("intergenic"),
+  INTRON_VARIANT("intron_variant"),
+  DOWNSTREAM_GENE_VARIANT("downstream_gene_variant"),
+  THREE_PRIME_UTR_VARIANT("3_prime_UTR_variant"),
+  STOP_RETAINED_VARIANT("stop_retained_variant"),
+  SYNONYMOUS_VARIANT("synonymous_variant"),
+  UPSTREAM_GENE_VARIANT("upstream_gene_variant"),
+  FIVE_PRIME_UTR("five_prime_UTR"),
+  FIVE_PRIME_UTR_VARIANT("5_prime_UTR_variant"),
+  NC_TRANSCRIPT_VARIANT("nc_transcript_variant"),
+  NON_CODING_EXON_VARIANT("non_coding_exon_variant"),
+  MICRO_RNA("micro-rna"),
+  REGULATORY_REGION_VARIANT("regulatory_region_variant"),
+  SPLICE_REGION_VARIANT("splice_region_variant"),
+  INFRAME_INSERTION("inframe_insertion"),
+  INFRAME_DELETION("inframe_deletion"),
+  CODING_SEQUENCE_VARIANT("coding_sequence_variant"),
+  EXON_LOST("exon_lost"),
+  START_GAINED("start_gained"),
+  STOP_LOST("stop_lost"),
+  STOP_GAINED("stop_gained"),
+  INITIATOR_CODON_VARIANT("initiator_codon_variant"),
+  NON_CONSERVATIVE_MISSENSE_VARIANT("non_conservative_missense_variant"),
+  MISSENSE("missense"),
+  FRAMESHIFT_VARIANT("frameshift_variant");
 
   private final String id;
 
@@ -72,7 +72,12 @@ public enum ConsequenceType {
   }
 
   public int getPriority() {
-    return values().length - ordinal();
+    return ordinal();
+  }
+
+  @Override
+  public String toString() {
+    return id;
   }
 
 }

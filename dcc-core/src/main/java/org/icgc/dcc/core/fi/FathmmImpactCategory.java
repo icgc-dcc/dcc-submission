@@ -27,8 +27,11 @@ import lombok.val;
 @RequiredArgsConstructor(access = PRIVATE)
 public enum FathmmImpactCategory implements ImpactPredictorCategory {
 
-  DAMAGING("DAMAGING"),
-  TOLERATED("TOLERATED");
+  /**
+   * In order of increasing priority.
+   */
+  TOLERATED("TOLERATED"),
+  DAMAGING("DAMAGING");
 
   private final String id;
 
@@ -44,12 +47,17 @@ public enum FathmmImpactCategory implements ImpactPredictorCategory {
 
   @Override
   public int getPriority() {
-    return values().length - ordinal();
+    return ordinal();
   }
 
   @Override
   public ImpactPredictorType getPredictorType() {
     return ImpactPredictorType.FATHMM;
+  }
+
+  @Override
+  public String toString() {
+    return id;
   }
 
 }

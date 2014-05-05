@@ -27,9 +27,12 @@ import lombok.val;
 @RequiredArgsConstructor(access = PRIVATE)
 public enum MutationAssessorImpactCategory implements ImpactPredictorCategory {
 
-  HIGH("High"),
+  /**
+   * In order of increasing priority.
+   */
+  LOW("Low"),
   MEDIUM("Medium"),
-  LOW("Low");
+  HIGH("High");
 
   private final String id;
 
@@ -45,12 +48,17 @@ public enum MutationAssessorImpactCategory implements ImpactPredictorCategory {
 
   @Override
   public int getPriority() {
-    return values().length - ordinal();
+    return ordinal();
   }
 
   @Override
   public ImpactPredictorType getPredictorType() {
     return ImpactPredictorType.MUTATION_ASSESSOR;
+  }
+
+  @Override
+  public String toString() {
+    return id;
   }
 
 }
