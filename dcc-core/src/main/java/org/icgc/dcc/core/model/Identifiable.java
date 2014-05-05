@@ -15,55 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.fi;
+package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
+public interface Identifiable {
 
-import org.icgc.dcc.core.util.IdentifiableSerializer;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-@Getter
-@RequiredArgsConstructor(access = PRIVATE)
-@JsonSerialize(using = IdentifiableSerializer.class)
-public enum MutationAssessorImpactCategory implements ImpactPredictorCategory {
-
-  /**
-   * In order of increasing priority.
-   */
-  LOW("Low"),
-  MEDIUM("Medium"),
-  HIGH("High");
-
-  private final String id;
-
-  public static MutationAssessorImpactCategory byId(@NonNull String id) {
-    for (val value : values()) {
-      if (value.getId().equals(id)) {
-        return value;
-      }
-    }
-
-    throw new IllegalArgumentException("Unknown id '" + id + "'  for " + MutationAssessorImpactCategory.class);
-  }
-
-  @Override
-  public int getPriority() {
-    return ordinal();
-  }
-
-  @Override
-  public ImpactPredictorType getPredictorType() {
-    return ImpactPredictorType.MUTATION_ASSESSOR;
-  }
-
-  @Override
-  public String toString() {
-    return id;
-  }
+  String getId();
 
 }
