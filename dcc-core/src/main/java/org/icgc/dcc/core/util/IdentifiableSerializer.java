@@ -15,55 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.fi;
+package org.icgc.dcc.core.util;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
+import java.io.IOException;
 
-import org.icgc.dcc.core.util.IdentifiableSerializer;
+import org.icgc.dcc.core.model.Identifiable;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-@Getter
-@RequiredArgsConstructor(access = PRIVATE)
-@JsonSerialize(using = IdentifiableSerializer.class)
-public enum MutationAssessorImpactCategory implements ImpactPredictorCategory {
-
-  /**
-   * In order of increasing priority.
-   */
-  LOW("Low"),
-  MEDIUM("Medium"),
-  HIGH("High");
-
-  private final String id;
-
-  public static MutationAssessorImpactCategory byId(@NonNull String id) {
-    for (val value : values()) {
-      if (value.getId().equals(id)) {
-        return value;
-      }
-    }
-
-    throw new IllegalArgumentException("Unknown id '" + id + "'  for " + MutationAssessorImpactCategory.class);
-  }
+public class IdentifiableSerializer extends JsonSerializer<Identifiable> {
 
   @Override
-  public int getPriority() {
-    return ordinal();
-  }
-
-  @Override
-  public ImpactPredictorType getPredictorType() {
-    return ImpactPredictorType.MUTATION_ASSESSOR;
-  }
-
-  @Override
-  public String toString() {
-    return id;
+  public void serialize(Identifiable value, JsonGenerator generator, SerializerProvider provider)
+      throws IOException, JsonProcessingException {
+    generator.writeObject(value.getId());
   }
 
 }
