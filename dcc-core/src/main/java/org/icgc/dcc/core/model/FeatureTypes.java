@@ -24,7 +24,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
@@ -61,12 +60,9 @@ public final class FeatureTypes {
     CNGV_TYPE("cngv", "_cngv_exists"),
     STSM_TYPE("stsm", "_stsm_exists"),
     STGV_TYPE("stgv", "_stgv_exists"),
-    METH_TYPE("meth", "_meth_exists"), // Old meth
     METH_ARRAY_TYPE("meth_array", "_meth_array_exists"),
     METH_SEQ_TYPE("meth_seq", "_meth_seq_exists"),
-    MIRNA_TYPE("mirna", "_mirna_exists"),
     MIRNA_SEQ_TYPE("mirna_seq", "_mirna_seq_exists"),
-    EXP_TYPE("exp", "_exp_exists"), // Old exp
     EXP_ARRAY_TYPE("exp_array", "_exp_array_exists"),
     EXP_SEQ_TYPE("exp_seq", "_exp_seq_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),
@@ -163,7 +159,7 @@ public final class FeatureTypes {
     }
 
     /**
-     * Returns an enum matching the type like "ssm", "meth", ...
+     * Returns an enum matching the type like "ssm", "meth_seq", ...
      */
     public static FeatureType from(String typeName) {
       return valueOf(format(typeName));
@@ -189,8 +185,7 @@ public final class FeatureTypes {
   /**
    * Feature types for which there is a control sample ID.
    */
-  private static final Set<FeatureType> CONTROL_SAMPLE_FEATURE_TYPES = of(
-      SSM_TYPE, CNSM_TYPE, STSM_TYPE, METH_TYPE);
+  private static final Set<FeatureType> CONTROL_SAMPLE_FEATURE_TYPES = of(SSM_TYPE, CNSM_TYPE, STSM_TYPE);
 
   /**
    * Features types for which mutations will be aggregated.

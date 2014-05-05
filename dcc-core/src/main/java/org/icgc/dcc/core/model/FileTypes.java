@@ -194,11 +194,6 @@ public final class FileTypes {
     PEXP_M_TYPE(FeatureType.PEXP_TYPE, FileSubType.META_SUBTYPE),
     PEXP_P_TYPE(FeatureType.PEXP_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
-    // Old meth
-    METH_M_TYPE(FeatureType.METH_TYPE, FileSubType.META_SUBTYPE),
-    METH_P_TYPE(FeatureType.METH_TYPE, FileSubType.PRIMARY_SUBTYPE),
-    METH_S_TYPE(FeatureType.METH_TYPE, FileSubType.SECONDARY_SUBTYPE),
-
     METH_ARRAY_M_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.META_SUBTYPE),
     METH_ARRAY_PROBES_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.SYSTEM_SUBTYPE),
     METH_ARRAY_P_TYPE(FeatureType.METH_ARRAY_TYPE, FileSubType.PRIMARY_SUBTYPE),
@@ -206,20 +201,11 @@ public final class FileTypes {
     METH_SEQ_M_TYPE(FeatureType.METH_SEQ_TYPE, FileSubType.META_SUBTYPE),
     METH_SEQ_P_TYPE(FeatureType.METH_SEQ_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
-    // Old mirna
-    MIRNA_M_TYPE(FeatureType.MIRNA_TYPE, FileSubType.META_SUBTYPE),
-    MIRNA_P_TYPE(FeatureType.MIRNA_TYPE, FileSubType.PRIMARY_SUBTYPE),
-    MIRNA_S_TYPE(FeatureType.MIRNA_TYPE, FileSubType.SECONDARY_SUBTYPE),
-
     MIRNA_SEQ_M_TYPE(FeatureType.MIRNA_SEQ_TYPE, FileSubType.META_SUBTYPE),
     MIRNA_SEQ_P_TYPE(FeatureType.MIRNA_SEQ_TYPE, FileSubType.PRIMARY_SUBTYPE),
 
     JCN_M_TYPE(FeatureType.JCN_TYPE, FileSubType.META_SUBTYPE),
     JCN_P_TYPE(FeatureType.JCN_TYPE, FileSubType.PRIMARY_SUBTYPE),
-
-    // Old exp
-    EXP_M_TYPE(FeatureType.EXP_TYPE, FileSubType.META_SUBTYPE),
-    EXP_G_TYPE(FeatureType.EXP_TYPE, FileSubType.GENE_SUBTYPE),
 
     EXP_ARRAY_M_TYPE(FeatureType.EXP_ARRAY_TYPE, FileSubType.META_SUBTYPE),
     EXP_ARRAY_P_TYPE(FeatureType.EXP_ARRAY_TYPE, FileSubType.PRIMARY_SUBTYPE),
@@ -271,7 +257,7 @@ public final class FileTypes {
     }
 
     /**
-     * Returns an enum matching the type like "ssm_p", "meth_s", ...
+     * Returns an enum matching the type like "ssm_p", "cnsm_s", ...
      * <p>
      * TODO: phase out as Strings are replaced with enums.
      */
