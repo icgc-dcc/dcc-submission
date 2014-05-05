@@ -35,6 +35,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.icgc.dcc.core.model.ConsequenceType;
+import org.icgc.dcc.core.util.IdentifiableSerializer;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Composite functional impacts.
@@ -43,7 +46,8 @@ import org.icgc.dcc.core.model.ConsequenceType;
  */
 @Getter
 @RequiredArgsConstructor(access = PRIVATE)
-public enum CompositeImpactCategory implements ImpactPredictorCategory, Comparable<CompositeImpactCategory> {
+@JsonSerialize(using = IdentifiableSerializer.class)
+public enum CompositeImpactCategory implements ImpactPredictorCategory {
 
   /**
    * In order of increasing priority.

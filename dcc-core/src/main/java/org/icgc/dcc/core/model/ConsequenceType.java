@@ -23,9 +23,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+import org.icgc.dcc.core.util.IdentifiableSerializer;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 @Getter
 @RequiredArgsConstructor(access = PRIVATE)
-public enum ConsequenceType {
+@JsonSerialize(using = IdentifiableSerializer.class)
+public enum ConsequenceType implements Identifiable {
 
   /**
    * In order of increasing priority.

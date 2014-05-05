@@ -17,10 +17,9 @@
  */
 package org.icgc.dcc.core.fi;
 
-/**
- * Marker interface
- */
-public interface ImpactPredictorCategory {
+import org.icgc.dcc.core.model.Identifiable;
+
+public interface ImpactPredictorCategory extends Identifiable {
 
   int getPriority();
 
