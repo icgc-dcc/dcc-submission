@@ -267,7 +267,7 @@ public final class FieldNames {
   /**
    * Reactome pathway names
    */
-  public static final String PATHWAY_REACTOME_ID = "_reactome_id";
+  public static final String PATHWAY_REACTOME_ID = "pathway_id";
   public static final String PATHWAY_NAME = "name";
   public static final String PATHWAY_EVIDENCE_CODE = "evidence_code";
   public static final String PATHWAY_UNIPROT_ID = "uniprot_id";
