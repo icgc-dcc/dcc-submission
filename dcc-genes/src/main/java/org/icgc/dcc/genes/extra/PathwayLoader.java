@@ -372,10 +372,10 @@ public class PathwayLoader {
       pathwayNode.put("pathway_id", reactomeId);
       pathwayNode.put("source", "Reactome");
       pathwayNode.put("parent_pathways", parentPathways);
-      pathwayNode.put("name", pathwayMeta.getName());
+      pathwayNode.put("pathway_name", pathwayMeta.getName());
       pathwayNode.put("summation", pathwayMeta.getSummation());
       pathwayNode.put("species", HOMO_SAPIEN);
-      pathwayNode.put("evidience_code", pathwayMeta.getEvidenceCode());
+      pathwayNode.put("evidence_code", pathwayMeta.getEvidenceCode());
       pathwayNode.put("gene_count", geneCount);
       pathwayNode.put("has_diagram", reactome2hasDiagram.get(reactomeName));
 
