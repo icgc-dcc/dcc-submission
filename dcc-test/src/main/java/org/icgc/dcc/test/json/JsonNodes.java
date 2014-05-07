@@ -20,6 +20,9 @@ package org.icgc.dcc.test.json;
 import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS;
 import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES;
 import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES;
+
+import java.io.File;
+
 import lombok.SneakyThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,6 +49,19 @@ public class JsonNodes {
   @SneakyThrows
   public static JsonNode $(String json) {
     return MAPPER.readTree(json);
+  }
+
+  /**
+   * Utility method that returns a {@code JsonNode} given a JSON String.
+   * <p>
+   * The name and use is inspired by jQuery's {@code $} function.
+   * 
+   * @param json
+   * @return
+   */
+  @SneakyThrows
+  public static JsonNode $(File jsonFile) {
+    return MAPPER.readTree(jsonFile);
   }
 
   @SneakyThrows

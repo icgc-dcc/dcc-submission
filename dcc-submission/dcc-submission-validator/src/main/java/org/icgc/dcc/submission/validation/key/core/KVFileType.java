@@ -44,18 +44,8 @@ public enum KVFileType {
   STSM_P(FileType.STSM_P_TYPE),
   STSM_S(FileType.STSM_S_TYPE),
 
-  // Old mirna
-  MIRNA_M(FileType.MIRNA_M_TYPE),
-  MIRNA_P(FileType.MIRNA_P_TYPE), // Does NOT have a PK (unusual)
-  MIRNA_S(FileType.MIRNA_S_TYPE), // Does have a PK (unusual)
-
   MIRNA_SEQ_M(FileType.MIRNA_SEQ_M_TYPE),
   MIRNA_SEQ_P(FileType.MIRNA_SEQ_P_TYPE),
-
-  // Old meth
-  METH_M(FileType.METH_M_TYPE),
-  METH_P(FileType.METH_P_TYPE),
-  METH_S(FileType.METH_S_TYPE),
 
   METH_ARRAY_M(FileType.METH_ARRAY_M_TYPE),
   METH_ARRAY_P(FileType.METH_ARRAY_P_TYPE),
@@ -63,10 +53,6 @@ public enum KVFileType {
 
   METH_SEQ_M(FileType.METH_SEQ_M_TYPE),
   METH_SEQ_P(FileType.METH_SEQ_P_TYPE),
-
-  // Old exp
-  EXP_M(FileType.EXP_M_TYPE),
-  EXP_G(FileType.EXP_G_TYPE), // Naming exception ('g' instead of 'p')
 
   EXP_ARRAY_M(FileType.EXP_ARRAY_M_TYPE),
   EXP_ARRAY_P(FileType.EXP_ARRAY_P_TYPE),

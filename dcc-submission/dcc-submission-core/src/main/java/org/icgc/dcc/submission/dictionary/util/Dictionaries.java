@@ -21,17 +21,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_G_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_P_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_S_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_P_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_S_TYPE;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
 import java.io.File;
@@ -101,32 +90,6 @@ public class Dictionaries {
   @SneakyThrows
   public static void writeDictionary(Dictionary dictionary, File file) {
     Jackson.PRETTY_WRITTER.writeValue(file, dictionary);
-  }
-
-  /**
-   * Temporary method to support old models until the transition is over.
-   */
-  public static Dictionary addOldModels(Dictionary dictionary) {
-    val dataTypes = dictionary.getDataTypes();
-
-    if (!dataTypes.contains(METH_TYPE)) {
-      dictionary.addFile(readFileSchema(METH_M_TYPE));
-      dictionary.addFile(readFileSchema(METH_P_TYPE));
-      dictionary.addFile(readFileSchema(METH_S_TYPE));
-    }
-
-    if (!dataTypes.contains(EXP_TYPE)) {
-      dictionary.addFile(readFileSchema(EXP_M_TYPE));
-      dictionary.addFile(readFileSchema(EXP_G_TYPE));
-    }
-
-    if (!dataTypes.contains(MIRNA_TYPE)) {
-      dictionary.addFile(readFileSchema(MIRNA_M_TYPE));
-      dictionary.addFile(readFileSchema(MIRNA_P_TYPE));
-      dictionary.addFile(readFileSchema(MIRNA_S_TYPE));
-    }
-
-    return dictionary;
   }
 
 }

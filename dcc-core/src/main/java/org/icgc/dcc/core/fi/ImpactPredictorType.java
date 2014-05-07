@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,31 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.core.fi;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.difference;
-import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newLinkedHashSet;
-import static java.util.Collections.singleton;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.junit.Test;
+import org.icgc.dcc.core.util.IdentifiableSerializer;
 
-public class FeatureTypesTest {
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-  @Test
-  public void test_FeatureType() {
-    assertThat(FeatureType.from("ssm")).isEqualTo(FeatureType.SSM_TYPE);
-    assertThat(FeatureType.from("pexp")).isEqualTo(FeatureType.PEXP_TYPE);
+@Getter
+@RequiredArgsConstructor(access = PRIVATE)
+@JsonSerialize(using = IdentifiableSerializer.class)
+public enum ImpactPredictorType {
 
-    val featureType = FeatureType.SSM_TYPE;
-    val actual = FeatureType.complement(newLinkedHashSet(newArrayList(featureType)));
-    val expected = difference(newHashSet(FeatureType.values()), singleton(featureType));
+  FATHMM("fathmm"),
+  MUTATION_ASSESSOR("mutation_assessor"),
+  COMPOSITE("composite");
 
-    assertThat(actual).isEqualTo(expected);
+  private final String id;
+
+  public static ImpactPredictorType byId(@NonNull String id) {
+    for (val value : values()) {
+      if (value.getId().equals(id)) {
+        return value;
+      }
+    }
+
+    throw new IllegalArgumentException("Unknown id '" + id + "'  for " + ImpactPredictorType.class);
+  }
+
+  @Override
+  public String toString() {
+    return id;
   }
 
 }

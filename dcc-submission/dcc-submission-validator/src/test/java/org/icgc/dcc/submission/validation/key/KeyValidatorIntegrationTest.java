@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.key;
 
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addOldModels;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
@@ -103,7 +102,7 @@ public class KeyValidatorIntegrationTest {
 
       @Override
       protected Dictionary createDictionary() {
-        return addOldModels(readDccResourcesDictionary());
+        return readDccResourcesDictionary();
       }
 
     };

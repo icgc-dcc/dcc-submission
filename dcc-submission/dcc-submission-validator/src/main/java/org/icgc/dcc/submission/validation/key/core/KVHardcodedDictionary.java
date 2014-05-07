@@ -21,14 +21,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.of;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.CNSM;
-import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP_ARRAY;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.EXP_SEQ;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.JCN;
-import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.METH;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.METH_ARRAY;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.METH_SEQ;
-import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.MIRNA;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.MIRNA_SEQ;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.PEXP;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.SGV;
@@ -40,8 +37,6 @@ import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_G;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_M;
@@ -49,14 +44,8 @@ import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_PROBES;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_S;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_SEQ_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_SEQ_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_M;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_P;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_S;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_SEQ_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.MIRNA_SEQ_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.PEXP_M;
@@ -95,10 +84,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<Integer> CNSM_P_PKS = of(0, 1, 2);
   private static final List<Integer> CNSM_S_FKS = of(0, 1, 2);
 
-  private static final List<Integer> EXP_G_FKS = of(0, 1);
-  private static final List<Integer> EXP_M_FKS = of(1);
-  private static final List<Integer> EXP_M_PKS = of(0, 1);
-
   private static final List<Integer> JCN_M_FKS = of(1);
   private static final List<Integer> JCN_M_PKS = of(0, 1);
   private static final List<Integer> JCN_P_FKS = of(0, 1);
@@ -128,23 +113,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<Integer> STSM_P_FKS = of(0, 1);
   private static final List<Integer> STSM_P_PKS = of(0, 1, 2, 3);
   private static final List<Integer> STSM_S_FKS = of(0, 1, 2, 3);
-
-  // Old METH
-  private static final List<Integer> METH_M_PKS = of(0, 1);
-  private static final List<Integer> METH_M_FKS = of(1);
-  private static final List<Integer> METH_M_OPTIONAL_FKS = of(2);
-  private static final List<Integer> METH_P_FKS = of(0, 1);
-  private static final List<Integer> METH_P_PKS = of(0, 1, 2);
-  private static final List<Integer> METH_S_FKS = of(0, 1, 2);
-
-  // Old MIRNA
-  private static final List<Integer> MIRNA_M_PKS = of(0, 1);
-  private static final List<Integer> MIRNA_M_FKS = of(1);
-  // Special case: not a true PK (not unique), but referenced by MIRNA_S...
-  private static final List<Integer> MIRNA_P_PSEUDO_PKS = of(2);
-  private static final List<Integer> MIRNA_P_FKS = of(0, 1);
-  private static final List<Integer> MIRNA_S_PKS = of(0, 1, 2, 3, 4);
-  private static final List<Integer> MIRNA_S_FKS = of(0);
 
   // METH ARRAY
   private static final List<Integer> METH_ARRAY_M_PKS = of(0, 1);
@@ -183,10 +151,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> CNSM_S_FK_NAMES = of("analysis_id", "analyzed_sample_id", "mutation_id");
   private static final List<String> DONOR_PK_NAMES = of("donor_id");
 
-  private static final List<String> EXP_G_FK_NAMES = of("analysis_id", "analyzed_sample_id");
-  private static final List<String> EXP_M_FK_NAMES = of("analyzed_sample_id");
-  private static final List<String> EXP_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
-
   private static final List<String> EXP_ARRAY_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> EXP_ARRAY_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
   private static final List<String> EXP_ARRAY_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
@@ -202,16 +166,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> JCN_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> JCN_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
   private static final List<String> JCN_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
-
-  // MIRNA
-  private static final List<String> MIRNA_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
-  private static final List<String> MIRNA_M_FK_NAMES = of("analyzed_sample_id");
-  // Special case: not a true PK (not unique), but referenced by MIRNA_S...
-  private static final List<String> MIRNA_P_PSEUDO_PK_NAMES = of("mirna_seq");
-  private static final List<String> MIRNA_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
-  private static final List<String> MIRNA_S_PK_NAMES = of("mirna_seq", "chromosome", "chromosome_start",
-      "chromosome_end", "chromosome_strand");
-  private static final List<String> MIRNA_S_FK_NAMES = of("mirna_seq");
 
   private static final List<String> MIRNA_SEQ_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> MIRNA_SEQ_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
@@ -237,14 +191,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> STSM_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
   private static final List<String> STSM_P_PK_NAMES = of("analysis_id", "analyzed_sample_id", "placement", "sv_id");
   private static final List<String> STSM_S_FK_NAMES = of("analysis_id", "analyzed_sample_id", "sv_id", "placement");
-
-  // OLD ARRAY
-  private static final List<String> METH_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
-  private static final List<String> METH_M_FK_NAMES = of("analyzed_sample_id");
-  private static final List<String> METH_M_OPTIONAL_FK_NAMES = of("matched_sample_id");
-  private static final List<String> METH_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
-  private static final List<String> METH_P_PK_NAMES = of("analysis_id", "analyzed_sample_id", "methylated_fragment_id");
-  private static final List<String> METH_S_FK_NAMES = of("analysis_id", "analyzed_sample_id", "methylated_fragment_id");
 
   // METH ARRAY
   private static final List<String> METH_ARRAY_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
@@ -275,14 +221,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(STSM_P, STSM_M)
           .put(STSM_S, STSM_P)
 
-          .put(MIRNA_M, SAMPLE)
-          .put(MIRNA_P, MIRNA_M)
-          .put(MIRNA_S, MIRNA_P)
-
-          .put(METH_M, SAMPLE)
-          .put(METH_P, METH_M)
-          .put(METH_S, METH_P)
-
           .put(METH_ARRAY_M, SAMPLE)
           .put(METH_ARRAY_P, METH_ARRAY_M)
 
@@ -297,9 +235,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
 
           .put(MIRNA_SEQ_M, SAMPLE)
           .put(MIRNA_SEQ_P, MIRNA_SEQ_M)
-
-          .put(EXP_M, SAMPLE)
-          .put(EXP_G, EXP_M)
 
           .put(PEXP_M, SAMPLE)
           .put(PEXP_P, PEXP_M)
@@ -334,19 +269,14 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(JCN_M, JCN_M_PK_NAMES)
           .put(SGV_M, SGV_M_PK_NAMES)
           .put(PEXP_M, PEXP_M_PK_NAMES)
-          .put(METH_M, METH_M_PK_NAMES)
           .put(METH_ARRAY_M, METH_ARRAY_M_PK_NAMES)
           .put(METH_SEQ_M, METH_SEQ_M_PK_NAMES)
-          .put(EXP_M, EXP_M_PK_NAMES)
           .put(EXP_ARRAY_M, EXP_ARRAY_M_PK_NAMES)
           .put(EXP_SEQ_M, EXP_SEQ_M_PK_NAMES)
-          .put(MIRNA_M, MIRNA_M_PK_NAMES)
           .put(MIRNA_SEQ_M, MIRNA_SEQ_M_PK_NAMES)
 
           .put(CNSM_P, CNSM_P_PK_NAMES)
           .put(STSM_P, STSM_P_PK_NAMES)
-          .put(MIRNA_P, MIRNA_P_PSEUDO_PK_NAMES)
-          .put(METH_P, METH_P_PK_NAMES)
           .put(EXP_ARRAY_P, EXP_ARRAY_P_PK_NAMES)
           .put(EXP_SEQ_P, EXP_SEQ_P_PK_NAMES)
 
@@ -368,19 +298,14 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(JCN_P, JCN_P_FK_NAMES)
           .put(SGV_P, SGV_P_FK_NAMES)
           .put(PEXP_P, PEXP_P_FK_NAMES)
-          .put(METH_P, METH_P_FK_NAMES)
           .put(METH_ARRAY_P, METH_ARRAY_P_FK1_NAMES)
           .put(METH_SEQ_P, METH_SEQ_P_FK_NAMES)
-          .put(EXP_G, EXP_G_FK_NAMES)
           .put(EXP_ARRAY_P, EXP_ARRAY_P_FK_NAMES)
           .put(EXP_SEQ_P, EXP_SEQ_P_FK_NAMES)
-          .put(MIRNA_P, MIRNA_P_FK_NAMES)
           .put(MIRNA_SEQ_P, MIRNA_SEQ_P_FK_NAMES)
 
           .put(CNSM_S, CNSM_S_FK_NAMES)
           .put(STSM_S, STSM_S_FK_NAMES)
-          .put(MIRNA_S, MIRNA_S_FK_NAMES)
-          .put(METH_S, METH_S_FK_NAMES)
 
           .build();
 
@@ -395,13 +320,10 @@ public final class KVHardcodedDictionary implements KVDictionary {
           || fileType == CNSM_P
           || fileType == STSM_P
           || fileType == JCN_P
-          || fileType == METH_P
           || fileType == METH_ARRAY_P
           || fileType == METH_SEQ_P
-          || fileType == EXP_G
           || fileType == EXP_ARRAY_P
           || fileType == EXP_SEQ_P
-          || fileType == MIRNA_P
           || fileType == MIRNA_SEQ_P
           || fileType == PEXP_P
           || fileType == SGV_P
@@ -485,25 +407,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(STSM_S_FK_NAMES)
                   .build())
 
-          // MIRNA
-          .put(
-              MIRNA_M,
-              new KVFileTypeErrorFields.Builder(MIRNA_M)
-                  .pkFieldNames(MIRNA_M_PK_NAMES)
-                  .fk1FieldNames(MIRNA_M_FK_NAMES)
-                  .build())
-          .put(
-              MIRNA_P,
-              new KVFileTypeErrorFields.Builder(MIRNA_P)
-                  .fk1FieldNames(MIRNA_P_FK_NAMES)
-                  .build())
-          .put(
-              MIRNA_S,
-              new KVFileTypeErrorFields.Builder(MIRNA_S)
-                  .pkFieldNames(MIRNA_S_PK_NAMES)
-                  .fk1FieldNames(MIRNA_S_FK_NAMES)
-                  .build())
-
           // MIRNA SEQ
           .put(
               MIRNA_SEQ_M,
@@ -515,26 +418,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
               MIRNA_SEQ_P,
               new KVFileTypeErrorFields.Builder(MIRNA_SEQ_P)
                   .fk1FieldNames(MIRNA_SEQ_P_FK_NAMES)
-                  .build())
-
-          // OLD METH
-          .put(
-              METH_M,
-              new KVFileTypeErrorFields.Builder(METH_M)
-                  .pkFieldNames(METH_M_PK_NAMES)
-                  .fk1FieldNames(METH_M_FK_NAMES)
-                  .optionalFkFieldNames(METH_M_OPTIONAL_FK_NAMES)
-                  .build())
-          .put(
-              METH_P,
-              new KVFileTypeErrorFields.Builder(METH_P)
-                  .pkFieldNames(METH_P_PK_NAMES)
-                  .fk1FieldNames(METH_P_FK_NAMES)
-                  .build())
-          .put(
-              METH_S,
-              new KVFileTypeErrorFields.Builder(METH_S)
-                  .fk1FieldNames(METH_S_FK_NAMES)
                   .build())
 
           // METH ARRAY
@@ -562,19 +445,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
               METH_SEQ_P,
               new KVFileTypeErrorFields.Builder(METH_SEQ_P)
                   .fk1FieldNames(METH_SEQ_P_FK_NAMES)
-                  .build())
-
-          // EXP
-          .put(
-              EXP_M,
-              new KVFileTypeErrorFields.Builder(EXP_M)
-                  .pkFieldNames(EXP_M_PK_NAMES)
-                  .fk1FieldNames(EXP_M_FK_NAMES)
-                  .build())
-          .put(
-              EXP_G,
-              new KVFileTypeErrorFields.Builder(EXP_G)
-                  .fk1FieldNames(EXP_G_FK_NAMES)
                   .build())
 
           // EXP ARRAY
@@ -654,12 +524,9 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(SSM, of(SSM_M, SSM_P))
           .put(CNSM, of(CNSM_M, CNSM_P, CNSM_S))
           .put(STSM, of(STSM_M, STSM_P, STSM_S))
-          .put(MIRNA, of(MIRNA_M, MIRNA_P, MIRNA_S))
           .put(MIRNA_SEQ, of(MIRNA_SEQ_M, MIRNA_SEQ_P))
-          .put(METH, of(METH_M, METH_P, METH_S))
           .put(METH_ARRAY, of(METH_ARRAY_M, METH_ARRAY_PROBES, METH_ARRAY_P))
           .put(METH_SEQ, of(METH_SEQ_M, METH_SEQ_P))
-          .put(EXP, of(EXP_M, EXP_G))
           .put(EXP_ARRAY, of(EXP_ARRAY_M, EXP_ARRAY_P))
           .put(EXP_SEQ, of(EXP_SEQ_M, EXP_SEQ_P))
           .put(PEXP, of(PEXP_M, PEXP_P))
@@ -755,24 +622,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .build();
     }
 
-    // MIRNA
-    else if (fileType == MIRNA_M) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .pk(MIRNA_M_PKS)
-          .fk1(MIRNA_M_FKS)
-          .build();
-    } else if (fileType == MIRNA_P) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .pk(MIRNA_P_PSEUDO_PKS) // Special case: uniqueness is not actually enforced
-          .fk1(MIRNA_P_FKS)
-          .build();
-    } else if (fileType == MIRNA_S) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .pk(MIRNA_S_PKS) // Special case: we don't usually have a PK on secondary
-          .fk1(MIRNA_S_FKS)
-          .build();
-    }
-
     // MIRNA SEQ
     else if (fileType == MIRNA_SEQ_M) {
       keysIndices = KVFileTypeKeysIndices.builder()
@@ -782,24 +631,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
     } else if (fileType == MIRNA_SEQ_P) {
       keysIndices = KVFileTypeKeysIndices.builder()
           .fk1(MIRNA_SEQ_P_FKS)
-          .build();
-    }
-
-    // METH
-    else if (fileType == METH_M) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .pk(METH_M_PKS)
-          .fk1(METH_M_FKS)
-          .optionalFk(METH_M_OPTIONAL_FKS)
-          .build();
-    } else if (fileType == METH_P) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .pk(METH_P_PKS)
-          .fk1(METH_P_FKS)
-          .build();
-    } else if (fileType == METH_S) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .fk1(METH_S_FKS)
           .build();
     }
 
@@ -830,18 +661,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
     } else if (fileType == METH_SEQ_P) {
       keysIndices = KVFileTypeKeysIndices.builder()
           .fk1(METH_SEQ_P_FKS)
-          .build();
-    }
-
-    // EXP
-    else if (fileType == EXP_M) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .pk(EXP_M_PKS)
-          .fk1(EXP_M_FKS)
-          .build();
-    } else if (fileType == EXP_G) {
-      keysIndices = KVFileTypeKeysIndices.builder()
-          .fk1(EXP_G_FKS)
           .build();
     }
 

@@ -69,6 +69,10 @@ public final class FormatUtils {
     return formatRate(rate(watch, count));
   }
 
+  public static String formatRate(long count, Stopwatch watch) {
+    return formatRate(rate(watch, count));
+  }
+
   public static String formatPercent(float percent) {
     return format("%.2f", percent);
   }
@@ -107,7 +111,7 @@ public final class FormatUtils {
         .toString();
   }
 
-  private static float rate(Stopwatch watch, int count) {
+  private static float rate(Stopwatch watch, long count) {
     float seconds = watch.elapsed(TimeUnit.MILLISECONDS) / 1000.0f;
     if (seconds == 0.0f) {
       return 0.0f;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,31 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.core.fi;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.difference;
-import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newLinkedHashSet;
-import static java.util.Collections.singleton;
-import static org.fest.assertions.api.Assertions.assertThat;
-import lombok.val;
+import org.icgc.dcc.core.model.Identifiable;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.junit.Test;
+public interface ImpactPredictorCategory extends Identifiable {
 
-public class FeatureTypesTest {
+  int getPriority();
 
-  @Test
-  public void test_FeatureType() {
-    assertThat(FeatureType.from("ssm")).isEqualTo(FeatureType.SSM_TYPE);
-    assertThat(FeatureType.from("pexp")).isEqualTo(FeatureType.PEXP_TYPE);
-
-    val featureType = FeatureType.SSM_TYPE;
-    val actual = FeatureType.complement(newLinkedHashSet(newArrayList(featureType)));
-    val expected = difference(newHashSet(FeatureType.values()), singleton(featureType));
-
-    assertThat(actual).isEqualTo(expected);
-  }
+  ImpactPredictorType getPredictorType();
 
 }
