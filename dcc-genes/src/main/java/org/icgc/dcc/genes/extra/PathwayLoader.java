@@ -128,6 +128,8 @@ public class PathwayLoader {
       String tokens[] = line.split("\t");
       String reactomeId = tokens[0];
       String reactomeName = tokens[1];
+      reactomeName = StringEscapeUtils.unescapeHtml4(reactomeName);
+      log.info(reactomeName);
       result.put(reactomeName, reactomeId);
     }
     return result;
@@ -185,7 +187,7 @@ public class PathwayLoader {
   private static void parsePathwaySummation(URL file, Map<String, PathwayMeta> meta) {
 
     @Cleanup
-    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(file.openStream()));
+    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(file.openStream(), "UTF-8"));
     String line = null;
     int counter = 0;
     while ((line = bufferedReader.readLine()) != null) {
@@ -207,7 +209,7 @@ public class PathwayLoader {
   @SneakyThrows
   private static void parseUniprot2Reactome(URL file, Map<String, PathwayMeta> meta) {
     @Cleanup
-    val csvReader = new CsvMapReader(new InputStreamReader(file.openStream()), CsvPreference.TAB_PREFERENCE);
+    val csvReader = new CsvMapReader(new InputStreamReader(file.openStream(), "UTF-8"), CsvPreference.TAB_PREFERENCE);
     Map<String, String> map = null;
     long count = 0;
     while (null != (map = csvReader.read(CSV_HEADER))) {
@@ -273,7 +275,7 @@ public class PathwayLoader {
     parseUniprot2Reactome(uniprotFile, meta);
 
     val converter = new MongoClientURIConverter();
-    val reactomeName2reactomeId = reactomeName2reactomeId(new InputStreamReader(summationFile.openStream()));
+    val reactomeName2reactomeId = reactomeName2reactomeId(new InputStreamReader(summationFile.openStream(), "UTF-8"));
     val hierParser = new PathwayHierarchyParser();
     val hier = hierParser.parse(hierarchyFile);
     val reactome2hasDiagram = reactome2hasDiagram(hierarchyFile);
@@ -405,15 +407,20 @@ public class PathwayLoader {
   }
 
   public static void main(String[] args) throws MalformedURLException {
-    String uri = "mongodb://localhost/dcc-danieltest";
-    String summationFile = "file:///Users/dchang/Downloads/Pathway_2_summation_mod.txt";
-    String uniprotFile = "file:///Users/dchang/Downloads/UniProt2Reactome_v48.txt";
-    String hierFileURL = "file:///Users/dchang/Downloads/pathway_hier.txt";
+    // String mongoURI = "mongodb://localhost/dcc-danieltest";
+    // String summationURI = "file:///Users/dchang/Downloads/Pathway_2_summation_mod.txt";
+    // String uniprotURI = "file:///Users/dchang/Downloads/UniProt2Reactome_v48.txt";
+    // String hierFileURI = "file:///Users/dchang/Downloads/pathway_hier.txt";
+
+    String mongoURI = args[0];
+    String summationURI = args[1];
+    String uniprotURI = args[2];
+    String hierFileURI = args[3];
 
     val converter = new MongoClientURIConverter();
     PathwayLoader pathwayLoader = new
-        PathwayLoader(converter.convert(uri));
-    pathwayLoader.run(new URL(uniprotFile), new URL(summationFile), new URL(hierFileURL));
+        PathwayLoader(converter.convert(mongoURI));
+    pathwayLoader.run(new URL(uniprotURI), new URL(summationURI), new URL(hierFileURI));
   }
 
 }
