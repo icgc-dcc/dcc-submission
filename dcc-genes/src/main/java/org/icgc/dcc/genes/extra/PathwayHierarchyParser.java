@@ -47,6 +47,7 @@ public class PathwayHierarchyParser {
   private static final String REACTOME_PATHWAY_ELEMENT_NAME = "Pathway";
   private static final String REACTOME_DB_ID_ATTRIBUTE_NAME = "dbId";
   private static final String REACTOME_DISPLAY_NAME_ATTRIBUTE_NAME = "displayName";
+  private static final String REACTOME_HAS_DIAGRAM_ATTRIBUTE_NAME = "hasDiagram";
 
   /**
    * Default Reactome web service URl.
@@ -102,8 +103,12 @@ public class PathwayHierarchyParser {
     val attributes = currentNode.getAttributes();
     val id = attributes.getNamedItem(REACTOME_DB_ID_ATTRIBUTE_NAME).getNodeValue();
     val name = attributes.getNamedItem(REACTOME_DISPLAY_NAME_ATTRIBUTE_NAME).getNodeValue();
+    val hasDiagram = attributes.getNamedItem(REACTOME_HAS_DIAGRAM_ATTRIBUTE_NAME);
 
-    return new PathwaySegment(id, name);
+    if (hasDiagram != null) {
+      return new PathwaySegment(id, name, null, hasDiagram.getNodeValue());
+    }
+    return new PathwaySegment(id, name, null, "false");
   }
 
   private static boolean isPathwayElement(Node currentNode) {
@@ -128,6 +133,8 @@ public class PathwayHierarchyParser {
 
     private String id;
     private String name;
+    private String reactomeId;
+    private String hasDiagram;
 
   }
 
