@@ -47,19 +47,16 @@ import org.supercsv.prefs.CsvPreference;
 import org.w3c.dom.Node;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
 /**
  * Create Pathway collection in mongodb, and subsequently embed pathway information into the gene-collection
- * 
- * Reactome pathway file: http://www.reactome.org/download/current/UniProt2PathwayBrowser.txt
  */
 @Slf4j
 @AllArgsConstructor
@@ -80,9 +77,7 @@ public class PathwayLoader {
       FieldNames.PATHWAY_EVIDENCE_CODE,
       FieldNames.PATHWAY_SPECIES };
 
-  private static final String[] SUMMATION_HEADER = {
-      "reactome_id", "short_name", "summation"
-  };
+  private final Splitter TAB_SPLITTER = Splitter.on('\t');
 
   /**
    * Configuration.
@@ -125,93 +120,45 @@ public class PathwayLoader {
     BufferedReader bufferedReader = new BufferedReader(summationReader);
     String line = null;
     while ((line = bufferedReader.readLine()) != null) {
-      String tokens[] = line.split("\t");
-      String reactomeId = tokens[0];
-      String reactomeName = tokens[1];
+      List<String> tokens = TAB_SPLITTER.splitToList(line);
+      String reactomeId = tokens.get(0);
+      String reactomeName = tokens.get(1);
       reactomeName = StringEscapeUtils.unescapeHtml4(reactomeName);
-      log.info(reactomeName);
       result.put(reactomeName, reactomeId);
     }
     return result;
   }
 
   @SneakyThrows
-  public void load(Reader reader) {
-    @Cleanup
-    val mongo = new MongoClient(mongoUri);
-    val db = mongo.getDB(mongoUri.getDatabase());
-    val jongo = new Jongo(db);
-
-    // Start fresh
-    val pathwayCollection = jongo.getCollection(PATHWAY_COLLECTION_NAME);
-    pathwayCollection.drop();
-
-    val geneCollection = jongo.getCollection(GENE_COLLECTION_NAME);
-    geneCollection.ensureIndex("{external_db_ids.uniprotkb_swissprot:1}");
-    geneCollection.update("{}").multi().with("{$unset: {reactome_pathways:''}}");
-
-    @Cleanup
-    val csvReader = new CsvMapReader(reader, CsvPreference.TAB_PREFERENCE);
-    Map<String, String> map = null;
-
-    long count = 0;
-    while (null != (map = csvReader.read(CSV_HEADER))) {
-      if (map.get(FieldNames.PATHWAY_SPECIES).equals(HOMO_SAPIEN)) {
-        ++count;
-
-        // Convert from Map to JsonNode
-        val pathway = MAPPER.valueToTree(map);
-
-        // Insert Pathway document
-        pathwayCollection.save(pathway);
-
-        val id = map.get(FieldNames.PATHWAY_UNIPROT_ID);
-        val pathwayID = map.get(FieldNames.PATHWAY_REACTOME_ID);
-        val pathwayName = map.get(FieldNames.PATHWAY_NAME);
-        val pathwayURL = map.get(FieldNames.PATHWAY_URL);
-
-        // Update Gene document
-        log.info("Processing reactome {}", id);
-        geneCollection
-            .update("{external_db_ids.uniprotkb_swissprot:'" + id + "'}")
-            .multi()
-            .with("{$push: { reactome_pathways:{_reactome_id:#, name:#, url:#}}}",
-                pathwayID, pathwayName, pathwayURL);
-
-      }
-    }
-    log.info("Finished loading reactome {} pathways", count);
-  }
-
-  @SneakyThrows
-  private static void parsePathwaySummation(URL file, Map<String, PathwayMeta> meta) {
+  private void parsePathwaySummation(URL file, Map<String, PathwayMeta> meta) {
+    log.info("Parsing reactome summations");
 
     @Cleanup
     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(file.openStream(), "UTF-8"));
     String line = null;
     int counter = 0;
     while ((line = bufferedReader.readLine()) != null) {
-      String terms[] = line.split("\t");
-      PathwayMeta m = meta.get(terms[0]);
+      List<String> tokens = TAB_SPLITTER.splitToList(line);
+      PathwayMeta m = meta.get(tokens.get(0));
       if (m == null) {
         m = new PathwayMeta();
       }
-      m.setPathwayId(terms[0]);
-      m.setName(terms[1]);
-      m.setSummation(terms[2]);
-      meta.put(terms[0], m);
+
+      m.setPathwayId(tokens.get(0));
+      m.setName(tokens.get(1));
+      m.setSummation(tokens.get(2));
+      meta.put(tokens.get(0), m);
       counter++;
     }
     log.info("Processed {} summation entries", counter);
-    log.info("Size {}", meta.size());
   }
 
   @SneakyThrows
   private static void parseUniprot2Reactome(URL file, Map<String, PathwayMeta> meta) {
+    log.info("Parsing uniprot2reactome");
     @Cleanup
     val csvReader = new CsvMapReader(new InputStreamReader(file.openStream(), "UTF-8"), CsvPreference.TAB_PREFERENCE);
     Map<String, String> map = null;
-    long count = 0;
     while (null != (map = csvReader.read(CSV_HEADER))) {
       if (!map.get(FieldNames.PATHWAY_SPECIES).equals(HOMO_SAPIEN)) continue;
 
@@ -230,12 +177,7 @@ public class PathwayLoader {
       m.setUrl(pathwayURL);
       meta.put(pathwayID, m);
     }
-  }
-
-  @SneakyThrows
-  private static void parsePathwayHierarchy(String file, Map<String, PathwayMeta> meta) {
-    val inputStream = (new URL(file).openStream());
-    val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+    log.info("Done uniprot2reactome");
   }
 
   @Data
@@ -243,7 +185,6 @@ public class PathwayLoader {
 
     public PathwayMeta() {
       uniProts = newHashSet();
-      parentPathways = HashMultimap.<String, List<PathwaySegment>> create();
     }
 
     String pathwayId;
@@ -253,17 +194,6 @@ public class PathwayLoader {
     String name;
     String summation;
     Set<String> uniProts;
-    HashMultimap<String, List<PathwaySegment>> parentPathways;
-  }
-
-  @Data
-  @AllArgsConstructor
-  public static class PathwaySegment {
-
-    private String id;
-    private String name;
-    private String reactomeId;
-    private String hasDiagram;
   }
 
   @SneakyThrows
@@ -274,7 +204,6 @@ public class PathwayLoader {
     parsePathwaySummation(summationFile, meta);
     parseUniprot2Reactome(uniprotFile, meta);
 
-    val converter = new MongoClientURIConverter();
     val reactomeName2reactomeId = reactomeName2reactomeId(new InputStreamReader(summationFile.openStream(), "UTF-8"));
     val hierParser = new PathwayHierarchyParser();
     val hier = hierParser.parse(hierarchyFile);
@@ -292,7 +221,6 @@ public class PathwayLoader {
           }
           list.get(i).setReactomeId(reactomeName2reactomeId.get(lookupStr));
         }
-        log.info("    {}", list);
       }
     }
 
@@ -300,20 +228,17 @@ public class PathwayLoader {
     // 2) Get hierarchy by name
     // 3) Reverse hierarchy list to aggregate genes (reactomeId->uniprot)
     // 4) Annotate additional gene information for hierarchies
-    // for (val reactomeId : reactome2summation.keySet()) {
     for (val reactomeId : meta.keySet()) {
       val pathwayMeta = meta.get(reactomeId);
 
       val reactomeName = pathwayMeta.getName();
       val reactomeHierList = hier.get(reactomeName);
 
-      log.info("Reactome {}, list {}", reactomeId, reactomeHierList.size());
       for (val list : reactomeHierList) {
         // Base leaf node
         Set<String> aggregatedUniprot = newHashSet();
         aggregatedUniprot.addAll(pathwayMeta.getUniProts());
 
-        // log.info("-> {}", reactome2uniprot.get(reactomeId));
         for (int i = list.size() - 1; i >= 0; i--) {
           val segment = list.get(i);
           val segmentId = segment.getReactomeId();
@@ -344,7 +269,7 @@ public class PathwayLoader {
     geneCollection.update("{}").multi().with("{$unset: {reactome_pathways:''}}"); // Clean up old versions
 
     // Save genes
-    log.info("Saving pathway to genes");
+    log.info("Adding pathway to gene collection");
     for (val reactomeId : meta.keySet()) {
       val reactomeName = reactomeName2reactomeId.inverse().get(reactomeId);
       val pathwayMeta = meta.get(reactomeId);
@@ -360,6 +285,7 @@ public class PathwayLoader {
     }
 
     // Save reactome document
+    log.info("Saving pathway documents");
     for (val reactomeId : meta.keySet()) {
       val pathwayMeta = meta.get(reactomeId);
 
@@ -369,57 +295,47 @@ public class PathwayLoader {
       ObjectNode pathwayNode = JsonNodeFactory.instance.objectNode();
       val parentPathways = PathwayLoader.MAPPER.valueToTree(reactomeHier);
 
-      long geneCount = geneCollection.count("{pathways.pathway_id:'" + reactomeId + "'}");
+      long geneCount = geneCollection.count("{pathways.pathway_id:#}", reactomeId);
 
-      pathwayNode.put("pathway_id", reactomeId);
-      pathwayNode.put("source", "Reactome");
-      pathwayNode.put("parent_pathways", parentPathways);
-      pathwayNode.put("pathway_name", pathwayMeta.getName());
-      pathwayNode.put("summation", pathwayMeta.getSummation());
-      pathwayNode.put("species", HOMO_SAPIEN);
-      pathwayNode.put("evidence_code", pathwayMeta.getEvidenceCode());
-      pathwayNode.put("gene_count", geneCount);
-      pathwayNode.put("has_diagram", reactome2hasDiagram.get(reactomeName));
-
-      log.info("Saving {} genecount is {} hasDiagram {}", reactomeId, geneCount, reactome2hasDiagram.get(reactomeName));
+      pathwayNode.put(FieldNames.PATHWAY_REACTOME_ID, reactomeId);
+      pathwayNode.put(FieldNames.PATHWAY_SOURCE, "Reactome");
+      pathwayNode.put(FieldNames.PATHWAY_PARENT_PATHWAYS, parentPathways);
+      pathwayNode.put(FieldNames.PATHWAY_NAME, pathwayMeta.getName());
+      pathwayNode.put(FieldNames.PATHWAY_SUMMATION, pathwayMeta.getSummation());
+      pathwayNode.put(FieldNames.PATHWAY_SPECIES, HOMO_SAPIEN);
+      pathwayNode.put(FieldNames.PATHWAY_EVIDENCE_CODE, pathwayMeta.getEvidenceCode());
+      pathwayNode.put(FieldNames.PATHWAY_GENE_COUNT, geneCount);
+      pathwayNode.put(FieldNames.PATHWAY_HAS_DIAGRAM, reactome2hasDiagram.get(reactomeName));
 
       // Construct link_out array
-      ArrayNode linkNode = JsonNodeFactory.instance.arrayNode();
+      // Get the first node up the hierarchy chain that has a working diagram
       val reactomeHierList = hier.get(reactomeName);
       for (val list : reactomeHierList) {
         if (reactome2hasDiagram.get(reactomeName).equals("true")) {
-          linkNode.add("#DIAGRAM=" + reactomeId + "&ID=" + reactomeId);
+          pathwayNode.withArray("link_out").add("#DIAGRAM=" + reactomeId + "&ID=" + reactomeId);
         } else {
           for (int i = list.size() - 1; i >= 0; i--) {
             val segment = list.get(i);
             if (segment.getHasDiagram().equals("true")) {
-              linkNode.add("#DIAGRAM=" + segment.getReactomeId() + "&ID=" + reactomeId);
+              pathwayNode.withArray("link_out").add("#DIAGRAM=" + segment.getReactomeId() + "&ID=" + reactomeId);
               break;
             }
           }
         }
       }
 
-      log.info("Link out {}", linkNode);
-      pathwayNode.put("link_out", linkNode);
       pathwayCollection.save(pathwayNode);
     }
   }
 
   public static void main(String[] args) throws MalformedURLException {
-    // String mongoURI = "mongodb://localhost/dcc-danieltest";
-    // String summationURI = "file:///Users/dchang/Downloads/Pathway_2_summation_mod.txt";
-    // String uniprotURI = "file:///Users/dchang/Downloads/UniProt2Reactome_v48.txt";
-    // String hierFileURI = "file:///Users/dchang/Downloads/pathway_hier.txt";
-
     String mongoURI = args[0];
     String summationURI = args[1];
     String uniprotURI = args[2];
     String hierFileURI = args[3];
 
     val converter = new MongoClientURIConverter();
-    PathwayLoader pathwayLoader = new
-        PathwayLoader(converter.convert(mongoURI));
+    val pathwayLoader = new PathwayLoader(converter.convert(mongoURI));
     pathwayLoader.run(new URL(uniprotURI), new URL(summationURI), new URL(hierFileURI));
   }
 
