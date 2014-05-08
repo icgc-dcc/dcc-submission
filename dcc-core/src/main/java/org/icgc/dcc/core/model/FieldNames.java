@@ -267,12 +267,17 @@ public final class FieldNames {
   /**
    * Reactome pathway names
    */
-  public static final String PATHWAY_REACTOME_ID = "_reactome_id";
-  public static final String PATHWAY_NAME = "name";
+  public static final String PATHWAY_REACTOME_ID = "pathway_id";
+  public static final String PATHWAY_NAME = "pathway_name";
   public static final String PATHWAY_EVIDENCE_CODE = "evidence_code";
   public static final String PATHWAY_UNIPROT_ID = "uniprot_id";
   public static final String PATHWAY_URL = "url";
   public static final String PATHWAY_SPECIES = "species";
+  public static final String PATHWAY_GENE_COUNT = "gene_count";
+  public static final String PATHWAY_PARENT_PATHWAYS = "parent_pathways";
+  public static final String PATHWAY_HAS_DIAGRAM = "has_diagram";
+  public static final String PATHWAY_SUMMATION = "summation";
+  public static final String PATHWAY_SOURCE = "source";
 
   /**
    * Aggregate field names.
