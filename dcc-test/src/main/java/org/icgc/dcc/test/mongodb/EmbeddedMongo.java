@@ -40,6 +40,7 @@ import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.ArtifactStoreBuilder;
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.RuntimeConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Timeout;
 import de.flapdoodle.embed.mongo.distribution.Version.Main;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.NullProcessor;
@@ -118,8 +119,10 @@ public class EmbeddedMongo implements TestRule {
   }
 
   private static MongodExecutable createExecutable(Main version) throws UnknownHostException, IOException {
+    // See https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo/issues/71
     val config = new MongodConfigBuilder()
         .version(version)
+        .timeout(new Timeout(60000))
         .build();
 
     return createStarter().prepare(config);
