@@ -21,18 +21,18 @@ public class PathwayHierarchyParserTest {
     val parser = new PathwayHierarchyParser();
     val results = parser.parse();
 
-    for (val name : results.keySet()) {
+    for (val dbId : results.keySet()) {
       log.info("{}", repeat("-", 80));
-      log.info("Pathway name: '{}'", name);
+      log.info("Pathway dbId: '{}'", dbId);
       log.info("{}", repeat("-", 80));
-      val set = results.get(name);
+      val set = results.get(dbId);
 
       int index = 1;
       for (val list : set) {
         log.info("{}.", index);
         for (int i = 0; i < list.size(); i++) {
           val segment = list.get(i);
-          log.info("  {}{}", repeat("  ", i), segment.getName());
+          log.info("  {}{} - {}", repeat("  ", i), segment.getName(), segment.getHasDiagram());
         }
 
         index++;
