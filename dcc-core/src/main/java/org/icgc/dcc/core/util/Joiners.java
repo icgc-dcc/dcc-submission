@@ -15,39 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
+import static com.google.common.base.Joiner.on;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import java.io.File;
-import java.io.IOException;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import com.google.common.base.Joiner;
 
 /**
- * TODO
+ * Common joiners.
  */
-@Slf4j
-public class KVTestUtils {
+@NoArgsConstructor(access = PRIVATE)
+public final class Joiners {
 
-  /**
-   * Test data.
-   */
-  public static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
-  public static final String FS_DIR = PATH.join(TEST_DIR, "fs");
-  public static final String REFERENCE_FILE_NAME = "reference.jsons";
+  public static final Joiner WHITESPACE = on(Separators.WHITESPACE);
+  public static final Joiner EMPTY_STRING = on(Separators.EMPTY_STRING);
+  public static final Joiner SLASH = on('/');
+  public static final Joiner TAB = on(Separators.TAB);
+  public static final Joiner NEWLINE = on(Separators.NEWLINE);
+  public static final Joiner DOT = on(".");
+  public static final Joiner DASH = on("-");
+  public static final Joiner UNDERSCORE = on("_");
+  public static final Joiner COMMA = on(Separators.COMMA);
 
-  public static void copyDirectory(FileSystem fileSystem, File sourceDir, Path targetDir) throws IOException {
-    for (val file : sourceDir.listFiles()) {
-      val source = new Path(file.toURI());
-      val target = new Path(targetDir, file.getName());
+  public static final Joiner PATH = SLASH;
+  public static final Joiner EXTENSION = DOT;
+  public static final Joiner INDENT = on(Separators.NEWLINE + Separators.TAB);
 
-      log.info("Copying file: from '{}' to '{}'", source, target);
-      fileSystem.copyFromLocalFile(source, target);
-    }
-  }
 }

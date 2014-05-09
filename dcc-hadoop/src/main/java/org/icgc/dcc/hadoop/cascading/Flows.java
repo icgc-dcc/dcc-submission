@@ -15,19 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.hadoop.cascading;
 
-import static com.google.common.base.Splitter.on;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.DASH;
+import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
+import lombok.NoArgsConstructor;
 
-import com.google.common.base.Splitter;
+import org.icgc.dcc.core.util.Named;
+
+import cascading.flow.Flow;
 
 /**
- * Common splitters.
+ * Utils methods for {@link Flow}.
  */
-public class Splitters {
+@NoArgsConstructor(access = PRIVATE)
+public class Flows implements Named {
 
-  public static final Splitter PATH = on('/');
-  public static final Splitter TAB = on('\t');
-  public static final Splitter NEWLINE = on('\n');
+  private static final Flows INTERNAL = new Flows();
+  private static final String CLASS_NAME = removeTrailingS(Flows.class.getSimpleName());
+
+  @Override
+  public String getName() {
+    return CLASS_NAME;
+  }
+
+  public static String getName(Object... qualifiers) {
+    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
+  }
+
+  public static String getName(Class<?> clazz, Object... qualifiers) {
+    return getName(clazz.getSimpleName(), getName(qualifiers));
+  }
 
 }

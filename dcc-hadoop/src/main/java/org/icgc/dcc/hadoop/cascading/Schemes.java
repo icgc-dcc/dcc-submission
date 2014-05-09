@@ -20,11 +20,25 @@ package org.icgc.dcc.hadoop.cascading;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
+import org.icgc.dcc.core.util.Separators;
+
+import cascading.scheme.local.TextDelimited;
+
 /**
- * TODO: use org.icgc.dcc.etl.loader.cascading.Schemes instead until DCC-993 is done. This class is just created so we
- * don't "forget about it!".
+ * Common schemes.
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class Schemes {
+
+  /**
+   * Do <b>not<b/> recycle {@link Schemes} as they are actually mutated.
+   */
+  public static final TextDelimited getTsvWithHeader() {
+    return new TextDelimited(hasHeader(), Separators.TAB);
+  }
+
+  private static boolean hasHeader() {
+    return true;
+  }
 
 }

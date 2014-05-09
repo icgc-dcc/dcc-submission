@@ -15,39 +15,11 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
 
-import java.io.File;
-import java.io.IOException;
+public interface Named {
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+  String getName();
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
-/**
- * TODO
- */
-@Slf4j
-public class KVTestUtils {
-
-  /**
-   * Test data.
-   */
-  public static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
-  public static final String FS_DIR = PATH.join(TEST_DIR, "fs");
-  public static final String REFERENCE_FILE_NAME = "reference.jsons";
-
-  public static void copyDirectory(FileSystem fileSystem, File sourceDir, Path targetDir) throws IOException {
-    for (val file : sourceDir.listFiles()) {
-      val source = new Path(file.toURI());
-      val target = new Path(targetDir, file.getName());
-
-      log.info("Copying file: from '{}' to '{}'", source, target);
-      fileSystem.copyFromLocalFile(source, target);
-    }
-  }
 }

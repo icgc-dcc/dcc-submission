@@ -15,39 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.hadoop.cascading;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
+import static com.google.common.collect.Iterables.transform;
+import static java.util.Arrays.asList;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.DASH;
+import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
+import lombok.NoArgsConstructor;
 
-import java.io.File;
-import java.io.IOException;
+import org.icgc.dcc.core.util.Named;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import cascading.pipe.Pipe;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import com.google.common.base.Function;
 
 /**
- * TODO
+ * Utils methods for {@link Pipe}.
  */
-@Slf4j
-public class KVTestUtils {
+@NoArgsConstructor(access = PRIVATE)
+public class Pipes implements Named {
 
-  /**
-   * Test data.
-   */
-  public static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
-  public static final String FS_DIR = PATH.join(TEST_DIR, "fs");
-  public static final String REFERENCE_FILE_NAME = "reference.jsons";
+  private static final Pipes INTERNAL = new Pipes();
+  private static final String CLASS_NAME = removeTrailingS(Pipes.class.getSimpleName());
 
-  public static void copyDirectory(FileSystem fileSystem, File sourceDir, Path targetDir) throws IOException {
-    for (val file : sourceDir.listFiles()) {
-      val source = new Path(file.toURI());
-      val target = new Path(targetDir, file.getName());
-
-      log.info("Copying file: from '{}' to '{}'", source, target);
-      fileSystem.copyFromLocalFile(source, target);
-    }
+  @Override
+  public String getName() {
+    return CLASS_NAME;
   }
+
+  public static String getName(Object... qualifiers) {
+    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
+  }
+
+  public static String getName(Class<?> clazz, Object... qualifiers) {
+    return getName(clazz.getSimpleName(), getName(qualifiers));
+  }
+
+  public static Iterable<String> getTailNames(final Pipe[] tails) {
+    return getPipeNames(tails);
+  }
+
+  public static Iterable<String> getPipeNames(final Pipe[] pipes) {
+    return transform(asList(pipes),
+        new Function<Pipe, String>() {
+
+          @Override
+          public String apply(Pipe tail) {
+            return tail.getName();
+          }
+
+        });
+  }
+
 }

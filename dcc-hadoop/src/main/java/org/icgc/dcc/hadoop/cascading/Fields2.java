@@ -22,16 +22,19 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
 import lombok.val;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -94,6 +97,23 @@ public final class Fields2 {
 
   public static Fields sortFields(String... fieldNames) {
     return new Fields(fieldNames);
+  }
+
+  public static Entry<Fields, Object> keyValuePair(String fieldName, Object value) {
+    return new SimpleEntry<Fields, Object>(
+        new Function<String, Fields>() {
+
+          @Override
+          public Fields apply(String fieldName) {
+            return new Fields(fieldName);
+          }
+
+        }.apply(fieldName),
+        value);
+  }
+
+  public static Entry<Fields, Object> keyValuePair(Fields field, Object value) {
+    return new SimpleEntry<Fields, Object>(field, value);
   }
 
   private static String[] toStringArray(Collection<String> fieldNames) {

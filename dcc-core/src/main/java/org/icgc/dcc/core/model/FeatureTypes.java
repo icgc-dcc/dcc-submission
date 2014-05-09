@@ -20,6 +20,8 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableSet.of;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
@@ -27,6 +29,7 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileSubType.PRIMARY_SUBTYPE;
 
 import java.util.List;
 import java.util.Set;
@@ -35,10 +38,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
+import org.icgc.dcc.core.model.FileTypes.FileSubType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 
 /**
  * Utilities for working with ICGC feature types.
@@ -116,7 +119,7 @@ public final class FeatureTypes {
      */
     public Set<FileType> getCorrespondingFileTypes() {
       val dataType = this;
-      return newLinkedHashSet(Iterables.filter(
+      return newLinkedHashSet(filter(
           newArrayList(FileType.values()),
           new Predicate<FileType>() {
 
@@ -134,28 +137,30 @@ public final class FeatureTypes {
      * TODO: move to {@link FileTypes} rather
      */
     public FileType getDataTypePresenceIndicator() {
-      FileType fileTypeFlagship = null;
-      for (val fileType : getCorrespondingFileTypes()) {
-        checkState(fileType.getDataType() == this, "'%s' != '%s'", fileType, this); // By design
-        if (fileType.getSubType() == META_SUBTYPE) {
-          fileTypeFlagship = fileType;
-          break;
-        }
-      }
-      return checkNotNull(fileTypeFlagship,
+      return checkNotNull(
+          getMetaFileType(),
           "There should be at least one file type that acts as type presence flagship for the feature type '%s'", this);
     }
 
-    /**
-     * TODO
-     */
-    public static boolean hasMatch(String typeName) {
-      for (val featureType : values()) {
-        if (featureType.name().equals(format(typeName))) {
-          return true;
-        }
-      }
-      return false;
+    public FileType getMetaFileType() {
+      return getFileType(META_SUBTYPE);
+    }
+
+    public FileType getPrimaryFileType() {
+      return getFileType(PRIMARY_SUBTYPE);
+    }
+
+    private FileType getFileType(final FileSubType fileSubType) {
+      return find( // MUST have a match (by design)
+          getCorrespondingFileTypes(),
+          new Predicate<FileType>() {
+
+            @Override
+            public boolean apply(FileType fileType) {
+              return fileType.getSubType() == fileSubType;
+            }
+
+          });
     }
 
     /**

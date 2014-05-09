@@ -55,6 +55,14 @@ public enum ClinicalType implements DataType {
     return this;
   }
 
+  public boolean isCoreClinicalType() {
+    return this == CLINICAL_CORE_TYPE;
+  }
+
+  public boolean isOptionalClinicalType() {
+    return this == CLINICAL_OPTIONAL_TYPE;
+  }
+
   @Override
   public FeatureType asFeatureType() {
     checkState(false, "Not a '%s': '%s'",
