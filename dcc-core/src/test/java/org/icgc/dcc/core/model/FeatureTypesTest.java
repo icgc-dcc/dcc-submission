@@ -33,7 +33,6 @@ public class FeatureTypesTest {
   @Test
   public void test_FeatureType() {
     assertThat(FeatureType.from("ssm")).isEqualTo(FeatureType.SSM_TYPE);
-    assertThat(FeatureType.from("exp")).isEqualTo(FeatureType.EXP_TYPE);
     assertThat(FeatureType.from("pexp")).isEqualTo(FeatureType.PEXP_TYPE);
 
     val featureType = FeatureType.SSM_TYPE;

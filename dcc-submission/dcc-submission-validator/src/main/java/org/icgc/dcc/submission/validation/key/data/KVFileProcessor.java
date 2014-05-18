@@ -180,24 +180,6 @@ public final class KVFileProcessor {
     // SGV:
     case SGV_M:             processGenericMetaWithoutOptionalFK(context); break;
     case SGV_P:             processGenericPrimaryWithoutSecondary(context); break;
-
-    //
-    // Legacy Feature Types
-    // 
-    
-    // OLD MIRNA:
-    case MIRNA_M:           processGenericMetaWithoutOptionalFK(context); break;
-    case MIRNA_P:           processMirnaPrimary(context); break;
-    case MIRNA_S:           processMirnaSecondary(context); break;
-    
-    // OLD METH:
-    case METH_M:            processGenericMetaWithOptionalFK(context); break;
-    case METH_P:            processGenericPrimaryWithSecondary(context); break;
-    case METH_S:            processGenericSecondary(context); break;
-    
-    // OLD EXP:
-    case EXP_M:             processGenericMetaWithoutOptionalFK(context); break;
-    case EXP_G:             processGenericPrimaryWithoutSecondary(context); break;
     
     default:                throw new UnsupportedOperationException(fileType + " is not supported");
     }
@@ -278,30 +260,6 @@ public final class KVFileProcessor {
     valid.validateForeignKey1(context);
 
     sanity.ensureNoPK(context.getRow());
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    ; // No surjection check for secondary files
-  }
-
-  private void processMirnaPrimary(KVRowContext context) {
-    ; // No uniqueness check for MIRNA_P (unlike for other types, the PK is on the secondary file for MIRNA)
-    valid.validateForeignKey1(context);
-
-    // sanity.ensureNoPK(row);
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    // Special case (not a PK per se)
-    context.getPrimaryKeys().updateMirnaPKeys(fileType, context.getFileName(), context.getRow());
-
-    addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
-  }
-
-  private void processMirnaSecondary(KVRowContext context) {
-    valid.validateUniqueness(context); // Exceptional
-    valid.validateForeignKey1(context);
-
     sanity.ensureNoFK2(context.getRow());
     sanity.ensureNoOptionalFK(context.getRow());
 

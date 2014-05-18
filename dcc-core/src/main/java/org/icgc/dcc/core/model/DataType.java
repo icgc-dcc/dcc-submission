@@ -21,6 +21,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -33,15 +35,13 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
- * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
+ * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth_seq", ...
  * <p>
- * <<<<<<< HEAD:dcc-core/src/main/java/org/icgc/dcc/core/model/DataType.java Careful not to confuse this with
- * {@link FileType} which represents the ICGC file types, such as "donor", "specimen", "ssm_m", "meth_m", ... They have
- * the clinical ones in common. ======= Careful not to confuse this with {@link FileType} which represents the ICGC file
- * types, such as "donor", "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common. >>>>>>>
- * feature/submission-incremental:dcc-core/src/main/java/org/icgc/dcc/core/model/DataType.java
+ * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor", "specimen",
+ * "ssm_m", "meth_seq_m", ... They have the clinical ones in common.
  */
 public interface DataType {
 
@@ -91,7 +91,7 @@ public interface DataType {
             .build();
 
     /**
-     * Returns an enum matching the type like "donor", "ssm", "meth", ...
+     * Returns an enum matching the type like "donor", "ssm", "meth_seq", ...
      */
     public static DataType from(String typeName) {
       DataType type = null;
@@ -143,6 +143,25 @@ public interface DataType {
       }
 
       return builder.build();
+    }
+
+    /**
+     * Returns the corresponding sorted set of {@link DataType}s (by name).
+     * <p>
+     * @param dataTypes A list of {@link DataType} which cannot not contain null.
+     */
+    public static Set<DataType> getSortedSet(Iterable<DataType> dataTypes) {
+      val list = newArrayList(dataTypes);
+      checkArgument(!list.contains(null), "'null' is not allowed in: '%s'", dataTypes);
+      Collections.sort(list, new Comparator<DataType>() {
+
+        @Override
+        public int compare(DataType dataType1, DataType dataType2) {
+          return dataType1.name().compareTo(dataType2.name());
+        }
+      });
+
+      return Sets.<DataType> newLinkedHashSet(list);
     }
 
     /**

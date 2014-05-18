@@ -24,7 +24,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.addOldModels;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 
 import java.io.File;
@@ -133,7 +132,7 @@ public final class TestUtils {
 
   @SneakyThrows
   public static Dictionary dictionary() {
-    return addOldModels(readDccResourcesDictionary());
+    return readDccResourcesDictionary();
   }
 
   public static List<CodeList> codeLists() {

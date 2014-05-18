@@ -26,6 +26,7 @@ public enum Entity {
   OBSERVATION,
   MUTATION,
   TRANSCRIPT,
-  CONSEQUENCE
+  CONSEQUENCE,
+  PATHWAY
 
 }

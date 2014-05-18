@@ -62,30 +62,47 @@ public class FlowExecutorMapper implements Mapper<NullWritable, NullWritable, Nu
     log.info("{}: {}", MAPRED_MAP_TASK_JAVA_OPTS, jobConf.get(MAPRED_MAP_TASK_JAVA_OPTS));
     log.info("Starting with memory: {}...", formatMemory());
 
+    log.info("Reading job...");
     val job = readJob();
+    log.info("Creating heatbeat...");
     val heartbeat = createHeartbeat(reporter);
     try {
+      log.info("Starting heartbeat...");
       heartbeat.start();
+      log.info("Executing job...");
       job.execute(jobConf);
+    } catch (Exception e) {
+      log.error("Error executing job:", e);
+      throw e;
     } finally {
-      heartbeat.stop();
       log.info("Finished with memory: {}...", formatMemory());
+      heartbeat.stop();
     }
   }
 
-  private FlowExecutorJob readJob() throws IOException, ClassNotFoundException {
-    val executorState = readExecutorState();
-    return (FlowExecutorJob) deserializeBase64(executorState, jobConf,
-        Class.forName(jobConf.get(FlowExecutor.JOB_NAME_PROPERTY)));
+  private FlowExecutorJob readJob() throws Exception {
+    try {
+      val executorState = readExecutorState();
+      return (FlowExecutorJob) deserializeBase64(executorState, jobConf,
+          Class.forName(jobConf.get(FlowExecutor.JOB_NAME_PROPERTY)));
+    } catch (Exception e) {
+      log.error("Error reading job:", e);
+      throw e;
+    }
   }
 
-  private String readExecutorState() throws IOException {
-    String executorState = jobConf.getRaw(FlowExecutor.CASCADING_FLOW_STEP_PROPERTY);
-    if (executorState == null) {
-      executorState = readStateFromDistCache(jobConf, jobConf.get(FlowStep.CASCADING_FLOW_STEP_ID));
-    }
+  private String readExecutorState() throws Exception {
+    try {
+      String executorState = jobConf.getRaw(FlowExecutor.CASCADING_FLOW_STEP_PROPERTY);
+      if (executorState == null) {
+        executorState = readStateFromDistCache(jobConf, jobConf.get(FlowStep.CASCADING_FLOW_STEP_ID));
+      }
 
-    return executorState;
+      return executorState;
+    } catch (Exception e) {
+      log.error("Error reading executor state:", e);
+      throw e;
+    }
   }
 
   private FlowExecutorHeartbeat createHeartbeat(Reporter reporter) {

@@ -1,8 +1,8 @@
 package org.icgc.dcc.submission.validation.first.step;
 
-import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.BZIP2;
-import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.GZIP;
-import static org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType.PLAIN_TEXT;
+import static org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType.BZIP2;
+import static org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType.GZIP;
+import static org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType.PLAIN_TEXT;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -32,8 +32,8 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.FPVFileSystem.CodecType;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

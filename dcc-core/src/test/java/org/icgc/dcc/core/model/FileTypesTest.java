@@ -26,8 +26,8 @@ import static org.icgc.dcc.core.model.FileTypes.FileSubType.GENE_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.SAMPLE_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.BIOMARKER_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.CNSM_S_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.DONOR_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_S_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -45,9 +45,9 @@ public class FileTypesTest {
     assertThat(SSM_M_TYPE.getDataType()).isEqualTo(FeatureType.SSM_TYPE);
     assertThat(from("ssm_m")).isEqualTo(SSM_M_TYPE);
 
-    assertThat(MIRNA_S_TYPE.getTypeName()).isEqualTo("mirna_s");
-    assertThat(MIRNA_S_TYPE.getDataType()).isEqualTo(FeatureType.MIRNA_TYPE);
-    assertThat(from("mirna_s")).isEqualTo(MIRNA_S_TYPE);
+    assertThat(CNSM_S_TYPE.getTypeName()).isEqualTo("cnsm_s");
+    assertThat(CNSM_S_TYPE.getDataType()).isEqualTo(FeatureType.CNSM_TYPE);
+    assertThat(from("cnsm_s")).isEqualTo(CNSM_S_TYPE);
 
     assertThat(DONOR_TYPE.getTypeName()).isEqualTo("donor");
     assertThat(from("donor")).isEqualTo(DONOR_TYPE);

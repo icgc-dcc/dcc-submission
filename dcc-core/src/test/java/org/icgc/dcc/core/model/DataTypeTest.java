@@ -38,7 +38,7 @@ public class DataTypeTest {
     assertThat(from("ssm")).isEqualTo(SSM_TYPE);
     assertThat(from("donor")).isEqualTo(CLINICAL_CORE_TYPE);
 
-    assertThat(values().size()).isEqualTo(18); // 16 feature types + 1 clinical type + 1 optional clinical type
+    assertThat(values().size()).isEqualTo(15); // 13 feature types + 1 clinical type + 1 optional clinical type
     assertThat(values().size()).isEqualTo( // Check no duplicates
         new HashSet<DataType>(values()).size());
 
@@ -46,11 +46,11 @@ public class DataTypeTest {
     assertThat(isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
 
     assertThat(isAggregatedType(FeatureType.SSM_TYPE)).isTrue();
-    assertThat(isAggregatedType(FeatureType.METH_TYPE)).isFalse();
+    assertThat(isAggregatedType(FeatureType.METH_ARRAY_TYPE)).isFalse();
     assertThat(isAggregatedType(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
 
     assertThat(hasControlSampleId(FeatureType.SSM_TYPE)).isTrue();
-    assertThat(hasControlSampleId(FeatureType.MIRNA_TYPE)).isFalse();
+    assertThat(hasControlSampleId(FeatureType.MIRNA_SEQ_TYPE)).isFalse();
     assertThat(hasControlSampleId(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
   }
 

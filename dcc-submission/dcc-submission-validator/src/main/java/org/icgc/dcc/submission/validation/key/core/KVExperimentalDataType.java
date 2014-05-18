@@ -23,13 +23,10 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_ARRAY_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_SEQ_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.JCN_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_ARRAY_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_SEQ_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_SEQ_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
@@ -47,12 +44,9 @@ public enum KVExperimentalDataType {
   SSM(SSM_TYPE),
   CNSM(CNSM_TYPE),
   STSM(STSM_TYPE),
-  MIRNA(MIRNA_TYPE),
   MIRNA_SEQ(MIRNA_SEQ_TYPE),
-  METH(METH_TYPE),
   METH_ARRAY(METH_ARRAY_TYPE),
   METH_SEQ(METH_SEQ_TYPE),
-  EXP(EXP_TYPE),
   EXP_ARRAY(EXP_ARRAY_TYPE),
   EXP_SEQ(EXP_SEQ_TYPE),
   PEXP(PEXP_TYPE),

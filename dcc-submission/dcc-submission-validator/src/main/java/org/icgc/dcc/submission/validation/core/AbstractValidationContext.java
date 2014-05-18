@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.lang.String.format;
+import static java.util.regex.Pattern.matches;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.Report;
@@ -40,6 +42,8 @@ import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+
+import com.google.common.collect.ImmutableList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -98,13 +102,27 @@ public abstract class AbstractValidationContext implements ValidationContext {
   }
 
   @Override
-  public List<Path> getSsmPrimaryFiles() {
-    throw new UnsupportedOperationException();
+  public List<Path> getFiles(FileType fileType) {
+    val submissionDirectory = getSubmissionDirectory();
+    val fileSchema = getFileSchema(fileType);
+    val fileNamePattern = fileSchema.getPattern();
+
+    val builder = ImmutableList.<Path> builder();
+    for (val submissionFileName : submissionDirectory.listFile()) {
+      val match = matches(fileNamePattern, submissionFileName);
+      if (match) {
+        Path file = new Path(submissionDirectory.getDataFilePath(submissionFileName));
+
+        builder.add(file);
+      }
+    }
+
+    return builder.build();
   }
 
   @Override
-  public FileSchema getSsmPrimaryFileSchema() {
-    throw new UnsupportedOperationException();
+  public FileSchema getFileSchema(FileType fileType) {
+    return getDictionary().getFileSchema(fileType);
   }
 
   @Override

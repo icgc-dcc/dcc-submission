@@ -85,7 +85,7 @@ public class ValidationJob implements Runnable {
         @Override
         public void run() {
           log.info("job: Completing validation '{}'...", jobId);
-          listener.onCompletion(validation);
+          listener.onEnded(validation);
         }
 
       });

@@ -43,7 +43,8 @@ public enum ReleaseCollection {
       SurrogateKeys.SAMPLE,
       SurrogateKeys.MUTATION,
       SUBMISSION_OBSERVATION_ANALYSIS_ID)),
-  MUTATION_COLLECTION("Mutation", newArrayList(SurrogateKeys.MUTATION));
+  MUTATION_COLLECTION("Mutation", newArrayList(SurrogateKeys.MUTATION)),
+  PATHWAY_COLLECTION("Pathway", newArrayList(SurrogateKeys.PATHWAY));
 
   /**
    * The name of the collection.

@@ -22,6 +22,8 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import lombok.NoArgsConstructor;
 
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+
 @NoArgsConstructor(access = PRIVATE)
 public final class FieldNames {
 
@@ -52,6 +54,7 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_START = "chromosome_start";
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_END = "chromosome_end";
     public static final String SUBMISSION_OBSERVATION_MUTATION_TYPE = "mutation_type";
+    public static final String SUBMISSION_OBSERVATION_VARIANT_TYPE = "variant_type";
 
     public static final String SUBMISSION_OBSERVATION_CONTROL_GENOTYPE = "control_genotype";
     public static final String SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE = "tumour_genotype";
@@ -193,8 +196,13 @@ public final class FieldNames {
   public static final String OBSERVATION_DONOR_ID = "_donor_id";
   public static final String OBSERVATION_PROJECT = "project";
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
+  public static final String OBSERVATION_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY = "functional_impact_prediction_summary";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
+  public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY =
+      "functional_impact_prediction_summary";
+  public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_FUNCTIONAL_IMPACT_PREDICTION =
+      "functional_impact_prediction";
   public static final String OBSERVATION_CONSEQUENCES_AA_MUTATION = CONSEQUENCE_AA_MUTATION;
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_CANONICAL = "_is_canonical_transcript";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
@@ -215,6 +223,9 @@ public final class FieldNames {
    * Mutation field names.
    */
   public static final String MUTATION_ID = "_mutation_id";
+  public static final String MUTATION_CHROMOSOME = "chromosome";
+  public static final String MUTATION_CHROMOSOME_START = "chromosome_start";
+  public static final String MUTATION_CHROMOSOME_END = "chromosome_end";
   public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";
@@ -224,6 +235,10 @@ public final class FieldNames {
 
   // TODO: Move to summary
   public static final String MUTATION_CONSEQUENCE_TYPES = "consequence_type";
+  public static final String MUTATION_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY = "functional_impact_prediction_summary";
+  public static final String MUTATION_TRANSCRIPTS_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY =
+      "functional_impact_prediction_summary";
+  public static final String MUTATION_TRANSCRIPTS_FUNCTIONAL_IMPACT_PREDICTION = "functional_impact_prediction";
   public static final String MUTATION_PLATFORM = "platform";
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
@@ -250,6 +265,21 @@ public final class FieldNames {
   public static final String RELEASE_MUTATED_GENE_COUNT = "mutated_gene_count";
 
   /**
+   * Reactome pathway names
+   */
+  public static final String PATHWAY_REACTOME_ID = "pathway_id";
+  public static final String PATHWAY_NAME = "pathway_name";
+  public static final String PATHWAY_EVIDENCE_CODE = "evidence_code";
+  public static final String PATHWAY_UNIPROT_ID = "uniprot_id";
+  public static final String PATHWAY_URL = "url";
+  public static final String PATHWAY_SPECIES = "species";
+  public static final String PATHWAY_GENE_COUNT = "gene_count";
+  public static final String PATHWAY_PARENT_PATHWAYS = "parent_pathways";
+  public static final String PATHWAY_HAS_DIAGRAM = "has_diagram";
+  public static final String PATHWAY_SUMMATION = "summation";
+  public static final String PATHWAY_SOURCE = "source";
+
+  /**
    * Aggregate field names.
    */
   public static final String SYNTHETIC_PREFIX = "_";
@@ -268,16 +298,16 @@ public final class FieldNames {
   public static final String AVAILABLE_EXPERIMENTAL_ANALYSIS_PERFORMED =
       "available_experimental_analysis_performed";
 
-  public static String getTypeExistsFieldName(String type) {
-    return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
+  public static String getTypeExistsFieldName(FeatureType type) {
+    return SYNTHETIC_PREFIX + type.getTypeName() + TYPE_EXISTS_SUFFIX;
   }
 
-  public static String getTypeCountFieldName(String type) {
-    return SYNTHETIC_PREFIX + type + TYPE_COUNT_SUFFIX;
+  public static String getTypeCountFieldName(FeatureType type) {
+    return SYNTHETIC_PREFIX + type.getTypeName() + TYPE_COUNT_SUFFIX;
   }
 
-  public static String getTestedTypeCountFieldName(String type) {
-    return SYNTHETIC_PREFIX + type + TESTED_DONOR_COUNT_SUFFIX;
+  public static String getTestedTypeCountFieldName(FeatureType type) {
+    return SYNTHETIC_PREFIX + type.getTypeName() + TESTED_DONOR_COUNT_SUFFIX;
   }
 
 }

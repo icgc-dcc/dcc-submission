@@ -203,7 +203,7 @@ public class ReleaseServiceTest {
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
-    releaseService.signOffRelease(nextReleaseRelease, projectKeys, user);
+    releaseService.signOffRelease(projectKeys, user);
 
     assertTrue(nextReleaseRelease.isSignOffAllowed());
   }
@@ -224,7 +224,7 @@ public class ReleaseServiceTest {
     projectKeys.add("p1");
     String user = "admin";
     try {
-      releaseService.signOffRelease(newRelease, projectKeys, user);
+      releaseService.signOffRelease(projectKeys, user);
     } catch (InvalidStateException e) {
       throw new RuntimeException(e);
     } catch (DccModelOptimisticLockException e) {

@@ -8,10 +8,11 @@
 #   repository 'wrench.res.oicr.on.ca'.
 #
 # Usage:
-#  ./package
+#  ./deploy
 
 # Configuration
-basedir=$(dirname $(readlink -m $(dirname $0i)))
+#basedir=$(dirname $(readlink -m $(dirname $0i)))
+basedir=./
 
 server="http://seqwaremaven.oicr.on.ca/artifactory"
 repo="dcc-dependencies"
@@ -23,24 +24,39 @@ version=`expr $version + 1`
 
 # Output
 datadir=$basedir/$version
-datafile=genes.bson
+genefile=genes.bson
+reactomefile=UniProt2Reactome_v48.txt
+reactomeHierFile=pathway_hier.txt
+reactomeSummationFile=Pathway_2_summation.txt
+genelistfile=cancer_gene_census.tsv
 jarfile=$name.jar
 rm -rf $datadir
 mkdir $datadir
 
-# Copy
-echo "scp dcc-qa:/nfs/dcc_secure/dcc/data/gene_model/ensembl_69/genes.bson $datadir/$datafile"
-scp dcc-qa:/nfs/dcc_secure/dcc/data/gene_model/ensembl_69/genes.bson $datadir/$datafile
+# Copy gene datafile
+echo "scp hproxy-dev.res.oicr.on.ca:/nfs/dcc_secure/dcc/data/gene_model/ensembl_75/genes.bson $datadir/$genefile"
+scp hproxy-dev.res.oicr.on.ca:/nfs/dcc_secure/dcc/data/gene_model/ensembl_75/genes.bson $datadir/$genefile
+
+echo "scp hproxy-dev.res.oicr.on.ca:/u/dcc_dev/dcc-import/data/UniProt2Reactome_v48.txt $datadir/UniProt2Reactome_v48.txt"
+scp hproxy-dev.res.oicr.on.ca:/u/dcc_dev/dcc-import/data/$reactomefile $datadir/$reactomefile
+
+scp hproxy-dev.res.oicr.on.ca:/u/dcc_dev/dcc-import/data/$reactomeHierFile $datadir/$reactomeHierFile
+
+scp hproxy-dev.res.oicr.on.ca:/u/dcc_dev/dcc-import/data/$reactomeSummationFile $datadir/$reactomeSummationFile
+
+echo "scp hproxy-dev.res.oicr.on.ca:/u/dcc_dev/dcc-import/data/cancer_gene_census.tsv $datadir/cancer_gene_census.tsv"
+scp hproxy-dev.res.oicr.on.ca:/u/dcc_dev/dcc-import/data/$genelistfile $datadir/$genelistfile
+
 
 # Jar
-echo "jar -cvf $datadir/$jarfile -C $datadir $datafile"
-jar -cvf $datadir/$jarfile -C $datadir $datafile
+echo "jar -cvf $datadir/$jarfile -C $datadir $genefile -C $datadir $reactomefile -C $datadir $reactomeHierFile -C $datadir $reactomeSummationFile -C $datadir $genelistfile"
+jar -cvf $datadir/$jarfile -C $datadir $genefile -C $datadir $reactomefile -C $datadir $reactomeHierFile -C $datadir $reactomeSummationFile -C $datadir $genelistfile
 
 # Echo
 jar -tvf $datadir/$jarfile
 
 # Cleanup
-rm $datadir/$datafile
+# rm $datadir/$datafile
 
 # Deploy
 mvn deploy:deploy-file \
