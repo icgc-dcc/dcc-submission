@@ -18,27 +18,29 @@
 package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
 import static org.icgc.dcc.core.model.FieldNames.PATHWAY_REACTOME_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
+import static org.icgc.dcc.core.model.FieldNames.IdentifierFieldNames.SURROGATE_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.IdentifierFieldNames.SURROGATE_MUTATION_ID;
+import static org.icgc.dcc.core.model.FieldNames.IdentifierFieldNames.SURROGATE_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.IdentifierFieldNames.SURROGATE_SPECIMEN_ID;
 import lombok.NoArgsConstructor;
+
+import org.icgc.dcc.core.model.FieldNames.LoaderFieldNames;
 
 /**
  * Contains surrogate keys for the ICGC DCC portal.
+ * <p>
+ * TODO: still needed?
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class SurrogateKeys {
 
-  public static final String PROJECT = PROJECT_ID;
-  public static final String GENE = GENE_ID;
-  public static final String DONOR = DONOR_ID;
-  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
-  public static final String SAMPLE = DONOR_SAMPLE_ID;
-  public static final String MUTATION = OBSERVATION_MUTATION_ID;
+  public static final String PROJECT = LoaderFieldNames.PROJECT_ID;
+  public static final String GENE = LoaderFieldNames.GENE_ID;
+  public static final String DONOR = SURROGATE_DONOR_ID;
+  public static final String SPECIMEN = SURROGATE_SPECIMEN_ID;
+  public static final String SAMPLE = SURROGATE_SAMPLE_ID;
+  public static final String MUTATION = SURROGATE_MUTATION_ID;
   public static final String PATHWAY = PATHWAY_REACTOME_ID;
 
 }
