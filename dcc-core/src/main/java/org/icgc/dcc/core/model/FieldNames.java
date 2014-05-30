@@ -93,6 +93,7 @@ public final class FieldNames {
     public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
     public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
+    public static final String OBSERVATION_ARRAY_NAME = "observation";
 
   }
 
