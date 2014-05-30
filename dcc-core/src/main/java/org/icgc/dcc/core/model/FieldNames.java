@@ -63,7 +63,7 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE = "mutated_from_allele";
     public static final String SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE = "mutated_to_allele";
 
-    public static final String SUBMISSION_OBSERVATION_CHROMOSOME_STAND = "chromosome_stand";
+    public static final String SUBMISSION_OBSERVATION_CHROMOSOME_STRAND = "chromosome_strand";
   }
 
   /**
