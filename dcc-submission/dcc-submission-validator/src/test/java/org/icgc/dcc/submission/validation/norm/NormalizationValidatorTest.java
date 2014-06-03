@@ -184,9 +184,9 @@ public class NormalizationValidatorTest {
                 "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
                 "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
                 "3\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
-                "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
-                "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
-                "10\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
+                "0\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
+                "9\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
+                "14\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
             ));
   }
 
