@@ -38,8 +38,10 @@ public final class FieldNames {
   /**
    * Field names in the original submission format.
    */
-  @NoArgsConstructor(access = PRIVATE)
   public static class SubmissionFieldNames {
+
+    private SubmissionFieldNames() {
+    }
 
     public static final String SUBMISSION_DONOR_ID = "donor_id";
     public static final String SUBMISSION_SPECIMEN_ID = "specimen_id";
@@ -72,8 +74,10 @@ public final class FieldNames {
   /**
    * Field names used in the normalizer component.
    */
-  @NoArgsConstructor(access = PRIVATE)
   public static class NormalizerFieldNames {
+
+    private NormalizerFieldNames() {
+    }
 
     /**
      * Field to act as primary key between primary and secondary files.
@@ -90,8 +94,10 @@ public final class FieldNames {
   /**
    * Field names used in the identifier component.
    */
-  @NoArgsConstructor(access = PRIVATE)
   public static class IdentifierFieldNames {
+
+    private IdentifierFieldNames() {
+    }
 
     public static final String SURROGATE_DONOR_ID = _("_%s", SUBMISSION_DONOR_ID);
     public static final String SURROGATE_SPECIMEN_ID = _("_%s", SUBMISSION_SPECIMEN_ID);
@@ -101,24 +107,19 @@ public final class FieldNames {
   }
 
   /**
-   * Names for the array fields in the loader.
+   * Names for the fields in the loader.
    */
-  @NoArgsConstructor(access = PRIVATE)
   public static class LoaderFieldNames {
+
+    private LoaderFieldNames() {
+    }
 
     public static final String OBSERVATION_TYPE = "_type";
     public static final String PROJECT_ID = "_project_id";
     public static final String GENE_ID = "_gene_id";
     public static final String TRANSCRIPT_ID = "_transcript_id";
 
-  }
-
-  /**
-   * Names for the array fields in the loader.
-   */
-  @NoArgsConstructor(access = PRIVATE)
-  public static class LoaderArrayNames {
-
+    // Arrays
     public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
     public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
