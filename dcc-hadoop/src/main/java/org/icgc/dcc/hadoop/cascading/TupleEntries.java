@@ -24,6 +24,7 @@ import static lombok.AccessLevel.PRIVATE;
 import java.util.List;
 
 import lombok.NoArgsConstructor;
+import lombok.val;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -41,6 +42,22 @@ public final class TupleEntries {
     return new TupleEntry(
         entry.getFields(),
         entry.getTupleCopy());
+  }
+
+  /**
+   * Removes fields from a {@link TupleEntry} (somehow cascading only offers it at the {@link Fields} and {@link Tuple}
+   * levels).
+   */
+  public static TupleEntry remove(TupleEntry entry, Fields targetFields) {
+    val fields = entry.getFields();
+    val tuple = entry.getTuple();
+    tuple.remove( // Modifies the tuple directly
+        fields,
+        targetFields);
+    return new TupleEntry(
+        fields
+            .subtract(targetFields),
+        tuple);
   }
 
   /**
@@ -102,7 +119,7 @@ public final class TupleEntries {
   public static String toJson(TupleEntry tupleEntry) {
     Fields fields = tupleEntry.getFields();
     Tuple tuple = tupleEntry.getTuple();
-  
+
     StringBuilder sb = new StringBuilder();
     sb.append("{");
     for (int i = 0; i < fields.size(); i++) {
@@ -127,7 +144,7 @@ public final class TupleEntries {
       }
       sb.append((i == 0 ? "" : ", ") + "\"" + field + "\"" + ":" + value);
     }
-  
+
     sb.append("}");
     return sb.toString();
   }
