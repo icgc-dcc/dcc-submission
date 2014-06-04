@@ -15,19 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.hadoop.cascading;
 
-import static com.google.common.base.Splitter.on;
-
-import com.google.common.base.Splitter;
+import cascading.pipe.joiner.InnerJoin;
+import cascading.pipe.joiner.Joiner;
+import cascading.pipe.joiner.LeftJoin;
+import cascading.pipe.joiner.OuterJoin;
+import cascading.pipe.joiner.RightJoin;
 
 /**
- * Common splitters.
+ * Cascading joiners.
  */
-public class Splitters {
+public class Joiners {
 
-  public static final Splitter PATH = on('/');
-  public static final Splitter TAB = on('\t');
-  public static final Splitter NEWLINE = on('\n');
+  public static Joiner INNER_JOIN = new InnerJoin();
+  public static Joiner LEFT_JOIN = new LeftJoin();
+  public static Joiner RIGHT_JOIN = new RightJoin();
+  public static Joiner OUTER_JOIN = new OuterJoin();
 
 }

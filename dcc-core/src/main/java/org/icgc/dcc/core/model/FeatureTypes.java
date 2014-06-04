@@ -20,13 +20,18 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableSet.of;
+import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_ARRAY_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_ARRAY_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
+import static org.icgc.dcc.core.util.Joiners.UNDERSCORE;
 
 import java.util.List;
 import java.util.Set;
@@ -35,9 +40,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
+import org.icgc.dcc.core.model.FileTypes.FileSubType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -147,22 +154,27 @@ public final class FeatureTypes {
     }
 
     /**
-     * TODO
+     * Returns the {@link FileType} with a {@link FileSubType#META_SUBTYPE} for this {@link FeatureType} (they all have
+     * one).
      */
-    public static boolean hasMatch(String typeName) {
-      for (val featureType : values()) {
-        if (featureType.name().equals(format(typeName))) {
-          return true;
-        }
-      }
-      return false;
+    public FileType getMetaFileType() {
+      return find(
+          getCorrespondingFileTypes(),
+          new Predicate<FileType>() {
+
+            @Override
+            public boolean apply(FileType fileType) {
+              return fileType.getSubType() == META_SUBTYPE;
+            }
+
+          });
     }
 
     /**
      * Returns an enum matching the type like "ssm", "meth_seq", ...
      */
     public static FeatureType from(String typeName) {
-      return valueOf(format(typeName));
+      return valueOf(UNDERSCORE.join(typeName.toUpperCase(), TYPE_SUFFIX));
     }
 
     /**
@@ -174,12 +186,6 @@ public final class FeatureTypes {
       return newLinkedHashSet(complement);
     }
 
-    /**
-     * TODO
-     */
-    private static String format(String typeName) {
-      return String.format("%s_%s", typeName.toUpperCase(), TYPE_SUFFIX);
-    }
   }
 
   /**
@@ -199,5 +205,18 @@ public final class FeatureTypes {
   public static boolean hasControlSampleId(FeatureType type) {
     return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
+
+  public static Predicate<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = new Predicate<FeatureType>() {
+
+    private final Set<FeatureType> TYPES = ImmutableSet.<FeatureType> of(
+        METH_ARRAY_TYPE,
+        EXP_ARRAY_TYPE,
+        PEXP_TYPE);
+
+    @Override
+    public boolean apply(FeatureType featureType) {
+      return !TYPES.contains(featureType);
+    }
+  };
 
 }
