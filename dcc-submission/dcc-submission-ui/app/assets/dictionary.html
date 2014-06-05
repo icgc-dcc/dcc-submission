@@ -3,8 +3,9 @@
 <link rel="stylesheet" href="/stylesheets/app.css">
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 <script src="/javascripts/vendor.js"></script>
+<script src="dictionaryUtil.js"></script>
+<script src="dictionaryViewer.js"></script>
 <style type="text/css">
-
 .toolbar {
    position:fixed;
    display:block;
@@ -19,8 +20,9 @@
 
    border-bottom-color: rgb(200, 200, 200);
    border-bottom-style: solid;
-   border-bottom-width: 1px;
+   border-bottom-width: 2px;
 }
+
 
 .data-type-list {
    padding-left:1em;
@@ -31,16 +33,9 @@
 
 .legend {
    border-left-style: solid;
-   border-left-width: 18px;
+   border-left-width: 22px;
    padding-left:2px;
-}
-
-.new {
-   color: rgb(31, 120, 180);
-}
-
-.changed {
-   color: rgb(124, 156, 97);
+   font-size:1.0em;
 }
 
 .removed {
@@ -48,7 +43,8 @@
 }
 
 .tiny {
-   font-size: 9px;
+   padding-left: 0.15em;
+   font-size: 0.75em;
 }
 
 
@@ -112,47 +108,69 @@ a {
 <!-- toolbar -->
 <div class="toolbar">
    <ul class="list-unstyled">
-      <li style="display:inline-block; margin-right:1em"><strong>Legend</strong></li>
+      <li style="display:inline-block; margin-right:1em">
+          <img src="https://dcc.icgc.org/styles/images/icgc-logo.png" width="25px"></img> 
+          <span style="font-size:1.7rem; vertical-align:middle">
+              <span style="color:#777777">ICGC</span>
+              <span> Dictionary Viewer</span>
+          <span>
+      </li>
+      <li style="display:inline-block; margin-right:1em">|</li>
+      <li style="display:inline-block; margin-right:1em"><input style="margin-bottom:0" id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input></li>
+      <li style="display:inline-block; margin-right:1em">From <select id="version_from" onChange="switchDictionary()"></select></li>
+      <li style="display:inline-block; margin-right:1em">To  <select id="version_to" onChange="switchDictionary()"></select></li>
+      <li style="display:inline-block; margin-right:1em">|</li>
       <li style="display:inline-block; margin-right:1em">
          <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterNew"></span></span>
-         <span class="legend new">New</span>
+         <span id="labelNew" class="legend">New</span>
       </li>
       <li style="display:inline-block; margin-right:1em">
          <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterChanged"></span></span>
-         <span class="legend changed">Changed</span>
+         <span id="labelChanged" class="legend">Changed</span>
       </li>
-      <li style="display:inline-block; margin-right:8em">|</li>
-      <li style="display:inline-block; margin-right:1em"><strong>Tools</strong></li>
-      <li style="display:inline-block; margin-right:1em"><input style="margin-bottom:0" id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input></li>
-      <li style="display:inline-block; margin-right:1em">From <select id="version_b" onChange="switchDictionary()"></select></li>
-      <li style="display:inline-block; margin-right:1em">To  <select id="version_a" onChange="switchDictionary()"></select></li>
-      <li id="datatypeSelector" style="display:inline-block; margin-right:1em">
-          Data Type
-          <button id="minimapLabel"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-          <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
-             <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
-          </div>
+      <li style="display:inline-block; margin-right:1em;"> 
+        <button><div id="viewReport">View Report</div></button>
       </li>
-      <li style="display:inline-block; margin-right:1em;" class="pull-right">
-         <input id="viewToggle" type="checkbox"/> Graph View
+      <li style="display:inline-block; margin-right:2em">|</li>
+      <li style="display:inline-block"> 
+         <!--<button><div id="viewToggle"></div></button>-->
+         <button id="viewToggle"></button>
       </li>
    </ul>
 </div>
-<!-- main body -->
-<div id="datatypeRemoved" class="removed" style="margin:0.5em"></div>
-<div id="datatypeTable" style="margin:0.5em"></div>
+<!---->
 
-<div id="datatypeGraph" style="margin:0.5em">
-   <div id="graph" style="float:left; width:75%"></div>
-   <div id="graphSubtree" style="height:700px; float:right; overflow-y:scroll; width:25%"></div>
+<div id="visWrapper">
+   <!-- template for table viewer-->
+   <span id="datatypeSelector" style="display:inline-block; margin-right:10em; float:right">
+       <button id="minimapLabel"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+       <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
+          <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+       </div>
+   </span>
+   <div id="datatypeRemoved" class="removed" style="margin:0.5em"></div>
+   <div id="datatypeTable" style="margin:0.5em"></div>
+
+   <!-- template for graph viewer -->
+   <div id="datatypeGraph" style="margin:0.5em">
+      <div id="graph" style="float:left; width:75%"></div>
+   </div>
 </div>
+
+
+
+<!-- template for report -->
+<div id="reportWrapper" style="margin:0.5em; display:none">
+   <div id="changeReport"></div>
+</div>
+<!---->
 
 </body>
 <script>
 
 ////////////////////////////////////////////////////////////////////////////////
 // DCC Dictionary viewer
-// Browse and compare DCC dictionaries and codelists.
+// Browse and compare ICGC data dictionaries
 //
 // Note:
 // - The viewer does not support dictionary versions before 0.6c, this also means
@@ -167,46 +185,14 @@ a {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// Colours
-var cRowNormal  = d3.rgb(240, 240, 240);
-var cRowNew     = d3.rgb(31, 120, 180);
-var cRowChanged = d3.rgb(124, 156, 97);
-var cBar = d3.rgb(230,230,230);
-var cBarSelect    = d3.rgb(166, 206, 227);
-var cBarHighlight = d3.rgb(242, 155, 4);
+var dictUtil = null;
+var tableViewer = null;
+
+var isReport = false;
+
 
 // Other constants
-var barHeight = 25;
-
-var sortOrder = [
-   "donor", "specimen", "sample",
-   "biomarker", "surgery", "therapy", "family", "exposure",
-   "ssm_m", "ssm_p", "ssm_s",
-   "sgv_m", "sgv_p",
-   "cnsm_m", "cnsm_p", "cnsm_s",
-   "stsm_m", "stsm_p", "stsm_s",
-   "exp_g", "exp_m",
-   "pexp_m", "pexp_p",
-   "mirna_m", "mirna_p", "mirna_s",
-   "jcn_m", "jcn_p",
-   "meth_m", "meth_p", "meth_s",
-   "meth_seq_m", "meth_seq_p",
-   "mirna_seq_m", "mirna_seq_p",
-   "exp_seq_m", "exp_seq_p",
-   "exp_array_m", "exp_array_p",
-   "meth_array_m", "meth_array_p", 
-   "meth_array_probes"
-];
-
-var currentSelection = 'all';
-var dictionaryMap = {};
 var codelistMap = {};
-
-var entryNew = 0;
-var entryChanged = 0;
-
-var changeSummary = {};
-var viewMode = "table";
 
 
 function getSelect(elem) {
@@ -214,768 +200,66 @@ function getSelect(elem) {
    return d3.select(elem).node()[index].value;
 }
 
-function getParentRelation(dict) {
-   var list = [];
-   var roleMap = {}
-   var files = dict.files;
 
-   files.forEach(function(f) {
-      roleMap[f.name] = f.role;
-   });
-
-   files.forEach(function(f) {
-      if (f.relations.length === 0) {
-         list.push({
-            node: f.name,
-            parentNode: null
-         });
-      } else {
-         f.relations.forEach(function(r) {
-            if (roleMap[r.other] === "SYSTEM") {
-               list.push({
-                  node:r.other,
-                  parentNode: f.name
-               });
-            } else {
-               list.push({
-                  node:f.name,
-                  parentNode: r.other
-               });
-            }
-         });
-      }
-   });
-   return list;
-}
-
-
-function buildTree2(node, relations, visited, dict) {
-   //console.log("building ", node.name);
-   node.data = _.find(dict.files, function(f) { return f.name === node.name });
-   var children = _.filter(relations, function(r) {
-      return r.parentNode === node.name;
-   });
-
-   node.children = [];
-
-   children.forEach(function(child) {
-      if (visited[child.node]) return;
-      var c = {name:child.node};
-      node.children.push(c);
-      visited[child.node] = 1;
-   });
-
-   node.children = _.sortBy(node.children, function(child) {
-      return child.name;
-   });
-
-   node.children.forEach(function(child) {
-      buildTree2(child, relations, visited, dict);
-   });
-}
-
-function updateSubview(data) {
-   var root = d3.select("#graphSubtree");
-   var fields;
-   root.selectAll("*").remove();
-
-   root.append("div").append("ul")
-      .classed("list-unstyled", true)
-      .selectAll("li")
-      .data(data.fields)
-      .enter()
-      .append("li")
-      .text(function(d) {
-         return d.name + " (" + d.valueType + ")";
-      })
-      .each(function(d) {
-         var table = d3.select(this).append("table")
-            .classed("table-bordered", true)
-            .style("margin-bottom", "1rem")
-            .append("tbody");
-         var row; 
-
-         row = table.append("tr").style("color", "#999");
-         row.append("td").text("Desc");
-         row.append("td").text(d.label);
-
-         row = table.append("tr").style("color", "#999");
-         row.append("td").text("RegExp");
-         row.append("td").text("123");
-
-         row = table.append("tr").style("color", "#999");
-         row.append("td").text("Script");
-         row.append("td").text("123");
-
-         row = table.append("tr").style("color", "#999");
-         row.append("td").text("Code List");
-         row.append("td").text("123");
-
-      });
-}
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Recalculate dictionary
-////////////////////////////////////////////////////////////////////////////////
 function switchDictionary() {
-   var val = getSelect("#version_a");
-   render(val);
+   render();
+   generateChangeList(); 
 }
 
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Data type filter, hide unmatched datatype tables
-////////////////////////////////////////////////////////////////////////////////
-function selectDataType(label) {
-
-   var val = currentSelection;
-   d3.select("#minimapLabel").select("span").text(label+" ");
-   d3.select("#minimapWrapper").style("display", "none");
-
-   window.scrollTo(0, 0);
-
-   d3.selectAll(".selection_wrapper").style("display", "block");
-
-   if (val === "all") {
-      d3.selectAll(".selection_wrapper").style("display", "block");
-   } else {
-      d3.selectAll(".selection_wrapper").filter(function(section) {
-         if (section.name === val) return 0;
-         return 1;
-      }).style("display", "none");
-   }
-}
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Text search, filter out data type table rows and highlight minimap rows
-////////////////////////////////////////////////////////////////////////////////
 function doFilter() {
-   if (viewMode === "graph") {
-      doFilterGraph();
-   } else {
-      doFilterTable();
-   }
-}
-
-
-function doFilterGraph() {
    var txt = d3.select("#filter").node().value;
-   var re = new RegExp(txt, "i");
-
-   d3.select("#graph").selectAll("circle").style("fill", null);
-   d3.select("#graph").selectAll("circle").filter(function(node) {
-      if (!txt || txt === '') return false;
-      if (!node) return false;
-
-      var matches = _.filter(node.data.fields, function(field) {
-         return isMatch(field, re);
-      });
-      return matches.length > 0;
-   }).style("fill", cBarHighlight);
-}
-
-
-function doFilterTable() {
-   var txt = d3.select("#filter").node().value;
-   var re = new RegExp(txt, "i");
-   var datatypeMap = {};
-
-   window.scrollTo(0, 0);
-
-   d3.selectAll(".dictionary_table").selectAll("tr").style("display", "table-row");
-   if (!txt || txt === '') {
-      d3.selectAll(".dictionary_table").selectAll("tr").style("display", "table-row");
-      d3.selectAll(".filter_wrapper").style("display", "block");
-   } else {
-      d3.selectAll(".dictionary_table").selectAll("tbody").selectAll("tr").filter(function(d) {
-
-         if (isMatch(d, re) === true) {
-           var parentName = d3.select(d3.select(this).node().parentNode).datum().name;
-
-           if (! datatypeMap[parentName]) {
-              datatypeMap[parentName] = 1;
-           } else {
-              datatypeMap[parentName] ++;
-           }
-           return 0;
-         }
-         return 1;
-      }).style("display", "none");
-
-      d3.selectAll(".filter_wrapper").each(function(d) {
-         d3.select(this).style("display", "block");
-         //if (! datatypeMap[d.name] || datatypeMap[d.name] > d.fields.length) {
-         if (! datatypeMap[d.name]) {
-            d3.select(this).style("display", "none");
-         }
-      });
-   }
-
-   // Highlight corresponding entires in the minimap
-   d3.select("#minimap")
-     .selectAll("g")
-     .each(function(d) {
-        var datatype = d3.select(this).attr("id").split("-")[1];
-        if (datatype in datatypeMap) {
-           d3.select(this).select("rect").style("fill", function(d) {
-              d.cCurrent = cBarHighlight;
-              return d.cCurrent;
-           });
-        } else {
-           d3.select(this).select("rect").style("fill", function(d) {
-              d.cCurrent = cBar;
-              return d.cCurrent;
-           });
-        }
-     });
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Determines whether if there are significant changes
-////////////////////////////////////////////////////////////////////////////////
-function isDifferent(row1, row2) {
-   if (! _.isEqual(row1.restrictions, row2.restrictions)) return true;
-   return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Determines whether if row matches
-////////////////////////////////////////////////////////////////////////////////
-function isMatch(row, regex) {
-   var restrictionList = row.restrictions;
-   var codelist = _.find(restrictionList, function(obj) { return obj.type == 'codelist'; });
-
-   if (row.name.match(regex) || (codelist && codelist.config.name.match(regex))) {
-      return true;
-   }
-   return false;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Build a data type table row
-////////////////////////////////////////////////////////////////////////////////
-function buildRow( row, idx ) {
-   var restrictionList = row.restrictions;
-   var codelist = _.find(restrictionList, function(obj) { return obj.type == 'codelist'; });
-   var regex    = _.find(restrictionList, function(obj) { return obj.type == 'regex'; });
-   var script   = _.find(restrictionList, function(obj) { return obj.type == 'script'; });
-   var required = _.find(restrictionList, function(obj) { return obj.type == 'required'; });
-
-   var tableName = d3.select(d3.select(this).node().parentNode).datum().name;
-   var comparedVer  = getSelect("#version_b");
-   var compareDict  = dictionaryMap[comparedVer];
-   var compareTable = _.find(compareDict.files, function(obj) { return obj.name === tableName; });
-   var compareRow = null;
-
-   if (compareTable)
-      compareRow = _.find(compareTable.fields, function(obj) { return obj.name === row.name; });
-
-   d3.select(this).append("td").style("background-color", function() {
-      if (!compareRow) return cRowNew;
-      if (isDifferent(row, compareRow)) return cRowChanged;
-      return null;
-   });
-
-
-   // Updates the datatype minimap
-   var minimap = d3.select("#minimap").select("#minimap-"+tableName).append("rect").attr("x", 2).attr("y", 2+idx).attr("height", 1).attr("width", 20);
-   if (!compareRow)  {
-      minimap.style("fill", cRowNew);
-      entryNew ++;
-   } else if (isDifferent(row, compareRow)) {
-      minimap.style("fill", cRowChanged);
-      entryChanged ++;
-   } else {
-      minimap.style("fill", cRowNormal);
-   }
-
-
-   d3.select(this).append("td").text(row.name);
-   var attrBox = d3.select(this).append("td");
-   if (row.controlled === true) {
-      attrBox.append("div").text("Controlled");
-   }
-   if (required) {
-      attrBox.append("div").text("Required");
-      if (required.config.acceptMissingCode == true) {
-         attrBox.append("div").text("NA-Code");
-      }
-   }
-
-   d3.select(this).append("td").text(row.valueType);
-   d3.select(this).append("td").style("max-width", "300px").text(row.label);
-
-   d3.select(this).append("td").each(function(d) {
-      d.expanded = false;
-      var cell = d3.select(this);
-      if (codelist) {
-         d3.select(this).append("a")
-           .text( codelist.config.name + " ")
-           .on("click", function(d) {
-              d.expanded = !d.expanded;
-              if (d.expanded) {
-                 d3.select(this).select("i").classed("glyphicon-chevron-down", false);
-                 d3.select(this).select("i").classed("glyphicon-chevron-up", true);
-                 cell.select("ul").style("display", "block");
-              } else {
-                 d3.select(this).select("i").classed("glyphicon-chevron-down", true);
-                 d3.select(this).select("i").classed("glyphicon-chevron-up", false);
-                 cell.select("ul").style("display", "none");
-              }
-           })
-           .append("i")
-           .classed("glyphicon", true)
-           .classed("glyphicon-chevron-down", true)
-           .style("position", "inherit"); // Not sure why this works, otherwise it overlap with svg
-
-         var list = d3.select(this).append("ul").style("display", "none").classed("list-unstyled", true);
-         var c = codelistMap[ codelist.config.name ];
-         c.terms.forEach(function(term) {
-            list.append("li").classed("data-type-list", true).text(term.code + "  " + term.value);
-         });
-      } else {
-      }
-   });
-
-   d3.select(this).append("td").style("max-width", "250px").each(function() {
-      if (regex) {
-         d3.select(this).append("p").classed("regex", true).text(regex.config.pattern);
-
-         if (regex.config.examples) {
-            d3.select(this).append("pre")
-              .style("width", "100%")
-              .style("font-size", "9px")
-              .style("cursor", "pointer")
-              .on("click", function() {
-                 var examples = [];
-                 var baseURL = "http://www.regexplanet.com/advanced/java/index.html?";
-                 baseURL = baseURL + "regex=" + encodeURIComponent(regex.config.pattern);
-
-                 if (Array.isArray( regex.config.examples)) {
-                    examples = regex.config.examples;
-                 } else {
-                    examples = regex.config.examples.split(", ");
-                 }
-                 examples.forEach(function(ex) {
-                    baseURL += "&input=" + encodeURIComponent(ex);
-                 });
-
-                 window.open(baseURL, "_blank");
-              })
-              .append("code")
-              .text(regex.config.examples);
-         }
-      }
-   });
-
-   d3.select(this).append("td").style("max-width",  "250px").each(function() {
-      if (script) {
-         d3.select(this).append("p").text(script.config.description);
-
-         var beautifiedScript = hljs.highlight("java", js_beautify( script.config.script )).value;
-         d3.select(this).append("pre").style("width", "100%").style("font-size", "9px").append("code").html(beautifiedScript);
-         //d3.select(this).append("pre").style("width", "100%").style("font-size", "9px").append("code").text(script.config.script);
-      }
-   });
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Builds a mini-map row (one row per table)
-////////////////////////////////////////////////////////////////////////////////
-function buildFilterRow(grp, name, label, height) {
-   grp.selectAll("rect")
-      .data([{ cCurrent: cBar }])
-      .enter()
-      .append("rect")
-      .attr("width", 350).attr("height", (height-1)).style("fill", cBar)
-      .on("mouseover", function(d) { d3.select(this).style("fill", cBarSelect); })
-      .on("mouseout", function(d) { d3.select(this).style("fill", d.cCurrent); })
-      .on("click", function(d) {
-         currentSelection = name;
-         //selectDataType(label);
-         selectDataType(name);
-         d3.event.stopPropagation();
-      });
-
-   grp.append("text")
-      .attr("x", 30)
-      .attr("y", 15)
-      .attr("font-size", "11px")
-      .style("pointer-events", "none")
-      .text(name);
+   tableViewer.filter(txt);
 }
 
 
 function render(version) {
-   if (viewMode === "graph") {
-      d3.select("#datatypeTable").style("display", "none");
-      d3.select("#datatypeGraph").style("display", "block");
-      d3.select("#datatypeSelector").style("visibility", "hidden");
-      showDictionaryGraph(version);
+   var versionFrom = getSelect("#version_from");
+   var versionTo = getSelect("#version_to");
+
+   if (tableViewer.isTable) {
+      tableViewer.selectDataType("all");
+      tableViewer.showDictionaryTable(versionFrom, versionTo);
    } else {
-      d3.select("#datatypeTable").style("display", "block");
-      d3.select("#datatypeGraph").style("display", "none");
-      d3.select("#datatypeSelector").style("visibility", "visible");
-      selectDataType("all");
-      showDictionaryTable(version);
+      tableViewer.showDictionaryGraph(versionFrom, versionTo);
    }
+   doFilter();
+
+ 
 }
 
 
-function showDictionaryGraph(version) {
-   window.scrollTo(0, 0);
-   var dict = dictionaryMap[version];
-
-   // Clear
-   d3.select("#graph").selectAll("*").remove();
+function generateChangeList() {
 
 
-   var svg = d3.select("#graph")
-      .append("svg")
-      .attr("width", 1100)
-      .attr("height", 700)
-      .append("g")
-      .attr("transform", "translate(40, 0)");
-
-   
-   var i = 0, duration = 750, root;
-   var tree = d3.layout.tree().size([600, 1100]);
-   var diagonal = d3.svg.diagonal().projection(function(d) { return [d.y, d.x]; });
-
-    
-
-   var list = getParentRelation(dict);
-   var queue = [];
-   var level = 0;
-
-   console.log("List", list);
-
-   var root = {name:"donor"};
-   var visited = {};
-   visited["donor"] = 1;
-   buildTree2(root, list, visited, data, dict);
-   
-
-
-   /* Interest idea but can produce crossings :(
-   var start, children, visited = {};
-   start = _.filter(list, function(d) {
-      return d.node === "donor";
-   });
-   
-   while(start.length > 0) {
-      console.log("start", _.pluck(start, "node"));
-      children = _.filter(list, function(d) {
-         return _.pluck(start, "node").indexOf( d.parentNode ) >= 0;
+   var versionFrom = getSelect("#version_from");
+   var versionTo = getSelect("#version_to");
+   var changeReport = dictUtil.createDiffListing(versionFrom, versionTo);
+   //d3.select("#changeReport").text(JSON.stringify(changeReport));
+   d3.select("#changeReport").html("");
+   d3.select("#changeReport").append("pre").text(function() {
+      var text = "";
+      text += "\nAdded:\n";
+      changeReport.fieldsAdded.forEach(function(field) {
+         text += field.fileType + "|" + field.fieldName + "\n";
       });
-      console.log("children", _.pluck(children, "node"));
-      start = children;
-   }
-   */
+      text += "\nChanged:\n";
+      changeReport.fieldsChanged.forEach(function(field) {
+         text += field.fileType + "|" + field.fieldName + "|" + field.changes + "\n";
+      });
+      text += "\nRemoved:\n";
+      changeReport.fieldsRemoved.forEach(function(field) {
+         text += field.fileType + "|" + field.fieldName + "\n";
+      });
 
-   root.x0 = 200;
-   root.y0 = 0;
-
-   // Toggle children on click.
-   function click(d) {
-     updateSubview(d.data);
-   }
-
-
-   function update(source) {
-     // Compute the new tree layout.
-     var nodes = tree.nodes(root).reverse();
-     var links = tree.links(nodes);
-   
-     // Normalize for fixed-depth.
-     nodes.forEach(function(d) { d.y = d.depth * 165; });
-   
-     // Update the nodes…
-     var node = svg.selectAll("g.node")
-         .data(nodes, function(d) { return d.id || (d.id = ++i); });
-
-   
-     // Enter any new nodes at the parent's previous position.
-     var nodeEnter = node.enter().append("g")
-         .attr("id", function(d) { return d.name; })
-         .attr("class", "node")
-         .attr("transform", function(d) { 
-            if (d.children) {
-               d.y += 55;
-            } 
-            return "translate(" + d.y + "," + d.x + ")"; 
-         })
-         .on("click", click);
-   
-     nodeEnter.append("circle")
-         .attr("r", 6.5)
-         .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
-   
-     nodeEnter.append("text")
-         .attr("x", "10")
-         .attr("dy", ".10em")
-         .text(function(d) { return d.name + " (" + d.data.fields.length + ")"; })
-         .style("fill-opacity", 1);
-
-
-     nodeEnter.each(function(n) {
-        var ref = d3.select(this);
-        n.data.fields.forEach(function(x, i) {
-          ref.append("rect")
-             .attr("x", 10+3.0*i)
-             .attr("y", "6")
-             .attr("height", 11)
-             .attr("width", 1.5)
-             .style("fill", function() {
-                if (['donor_id', 'chromosome_start', 'chromosome_end', 'sample_id'].indexOf(x.name) > -1) return "#FF00FF";
-                return "#CCDDEE";
-             });
-        }); 
-        //ref.append("rect").attr("x", 10).attr("y", 18).attr("height", 1).attr("width", n.data.fields.length*3).style("fill", "#888888");
-     });
-
-
-     var links = [];
-     list.forEach(function(rel) {
-        if (rel.parentNode === null) return;
-        var a = svg.select("#"+rel.node).datum();
-        var b = svg.select("#"+rel.parentNode).datum();
-        links.push({
-           source: { x: a.x, y: a.y },
-           target: { x: b.x, y: b.y },
-        });
-     });
-
-
-     svg.insert("g", ":first-child").selectAll("path.link")
-        .data(links)
-        .enter()
-        .append("path")
-        .attr("class", "link")
-        .attr("d", diagonal);
-
-
-     // Stash the old positions for transition.
-     nodes.forEach(function(d) {
-       d.x0 = d.x;
-       d.y0 = d.y;
-     });
-   }
-   
-   update(root);
-
-
-
-
-   var legend = svg.insert("g", ":first-child")
-      .attr("class", "node")
-      .attr("transform", "translate(20, 20)");
-
-   legend.append("rect")
-      .attr("x", -15)
-      .attr("y", -15)
-      .attr("width", 200)
-      .attr("height", 40)
-      .attr("stroke", "#668822")
-      .attr("fill", "#FFFFFF");
-
-   legend.append("circle")
-      .attr("r", 6.5)
-      .attr("fill", "#FFFFFF")
-      .attr("stroke", "steelblue");
-      
-   legend.append("text")
-      .attr("x", 10)
-      .attr("dy", ".10em")
-      .text("meth_array_m");
-         
-   for(var i=0; i < 6; i++) {
-      legend.append("rect")
-         .attr("x", 10+3*i)
-         .attr("y", "6")
-         .attr("height", 11)
-         .attr("width", 1)
-         .style("fill", "#CCDDEE");
-   }
-
-   legend.append("text")
-      .attr("x", 90)
-      .attr("y", 0)
-      .attr("fill", "#668822") 
-      .text("<--- FileType Name");
-
-   legend.append("text")
-      .attr("x", 90)
-      .attr("y", 14)
-      .attr("fill", "#668822") 
-      .text("<--- # fields");
-
-
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Main dictionary function
-////////////////////////////////////////////////////////////////////////////////
-function showDictionaryTable(version) {
-
-   data = dictionaryMap[version];
-   entryNew = 0;
-   entryChanged = 0;
-
-   // Re-order according to importance and data type
-   data.files  = _.sortBy(data.files, function(d) {
-     return sortOrder.indexOf(d.name);
+      return text;
    });
 
-   // Clean up DOM
-   d3.select("#minimap").selectAll("*").remove();
-   d3.select("#datatypeTable").selectAll("*").remove();
-
-
-   // Ensure basic visiblity interactions are in place
-   d3.select("body").on("click", function() {
-      d3.select("#minimapWrapper").style("display", "none");
+   d3.select("#counterNew").text(function() {
+      return changeReport.fieldsAdded.length;
    });
-
-   d3.select("#minimapLabel")
-     .classed("data-type-list", true)
-     .on("click", function() {
-        if (d3.select("#minimapWrapper").style("display") === "none") {
-           d3.select("#minimapWrapper").style("display", "block");
-        } else {
-           d3.select("#minimapWrapper").style("display", "none");
-        }
-        d3.event.stopPropagation();
-     });
-
-
-   // Hardwire "all data type" minimap option, note minimap height is dynamically
-   // computed.
-   var currentY = 1;
-   var grp = d3.select("#minimap").append("g").attr("id", "minimap-all").attr("transform", "translate(" + 0 + "," + (currentY) + ")");
-   buildFilterRow(grp, "all", "All Data Types", barHeight);
-   currentY += barHeight;
-
-
-
-   // Calculate data type removals
-   var vTo = getSelect("#version_a");
-   var dTo = dictionaryMap[vTo];
-   var vFrom = getSelect("#version_b");
-   var dFrom = dictionaryMap[vFrom];
-   var deleteTableList = [];
-   dFrom.files.forEach(function(f) {
-      if (!_.find(dTo.files, function(obj) { return obj.name === f.name; })) {
-         deleteTableList.push(f.name);
-      }
+   d3.select("#counterChanged").text(function() {
+      return changeReport.fieldsChanged.length;
    });
-
-   if (deleteTableList.length > 0) {
-      d3.select("#datatypeRemoved").text("Data types removed in " + vTo + ": " + deleteTableList.join(", "));
-      changeSummary["datatype_removed"] = deleteTableList;
-   } else {
-      d3.select("#datatypeRemoved").text("");
-   }
-
-   // Main building block
-   d3.select("#datatypeTable")
-     .selectAll("div")
-     .data( data.files )
-     .enter()
-     .append("div")
-     .classed("selection_wrapper", true)
-     .append("div")
-     .classed("filter_wrapper", true)
-     .each(function(table, i) {
-
-        // Section title
-        d3.select(this).append("br");
-        d3.select(this).append("em").text(table.label);
-        d3.select(this).append("br");
-
-        // Generate a deleted columns list, or show table wiped
-        var tableName = table.name;
-        var comparedVer  = getSelect("#version_b");
-        var compareDict  = dictionaryMap[comparedVer];
-        var compareTable = _.find(compareDict.files, function(obj) { return obj.name === tableName; });
-        var deleteFieldList = [];
-        if (compareTable) {
-           compareTable.fields.forEach(function(f) {
-              if ( ! _.find(table.fields, function(o) { return o.name == f.name; }) ) {
-                 deleteFieldList.push(f.name);
-              }
-           });
-        }
-        if (deleteFieldList.length > 0) {
-           var ver = getSelect("#version_a");
-           d3.select(this).append("small").classed("removed", true).text("Fields removed in " + ver + ": " + deleteFieldList.join(", "));
-        }
-
-
-        // Create the minimap things
-        var realH = Math.max(barHeight, 5+table.fields.length);
-        var grp = d3.select("#minimap").append("g").attr("id", "minimap-"+table.name).attr("transform", "translate(" + 0 + "," + (currentY) + ")");
-        buildFilterRow(grp, table.name, table.label, realH);
-        currentY += realH;
-
-
-        // Table - definition
-        var dtable = d3.select(this)
-          .append("table")
-          .classed("table", true)
-          .classed("table-bordered", true)
-          .classed("table-hover", true)
-          .classed("table-condensed", true)
-          .classed("dictionary_table", true);
-
-        // Table - columns
-        var thead = dtable.append("thead").append("tr");
-        thead.append("th").style("width", "5px").text("");
-        thead.append("th").text("Field");
-        thead.append("th").text("Attribute");
-        thead.append("th").text("Type");
-        thead.append("th").text("Description");
-        thead.append("th").text("CodeList");
-        thead.append("th").text("RegExp");
-        thead.append("th").text("Script");
-
-        // Table - build
-        var tbody = dtable.append("tbody");
-        tbody.selectAll("tr")
-          .data(table.fields)
-          .enter()
-          .append("tr")
-          .style("font-size", "12px")
-          .each(buildRow);
-     });
-
-     // Update toolbar counters
-     d3.select("#counterNew").text(function() {
-        return entryNew > 0? entryNew : "";
-     });
-     d3.select("#counterChanged").text(function() {
-        return entryChanged > 0? entryChanged : "";
-     });
-
-     // Auto adjust the svg height
-     d3.select("#minimap").attr("height", (currentY+5) + "px");
-
-     // Turn on regexp highlighter
-     RegexColorizer.colorizeAll();
 }
 
 
@@ -985,33 +269,74 @@ function showDictionaryTable(version) {
 ////////////////////////////////////////////////////////////////////////////////
 d3.json("/ws/dictionaries", function(dictionaryList) {
 
-   var sortedDictionaryList = _.sortBy(dictionaryList, function(obj) {
-      //return -obj.lastUpdate;
-      return obj.version;
-   });
-   sortedDictionaryList = sortedDictionaryList.reverse();
+   dictUtil = new DictionaryUtil(dictionaryList);
+   tableViewer = new TableViewer(dictUtil, null);
 
-   var versionList = _.pluck(sortedDictionaryList, "version");
-   var latest = sortedDictionaryList[0].version;
+   // test
+   dictUtil.testRandom();
+
+
+   // Externalized function
+   tableViewer.toggleFunc = function() {
+      tableViewer.isTable = !tableViewer.isTable;
+      d3.select("#viewToggle").selectAll("*").remove();
+
+      if (tableViewer.isTable) {
+         d3.select("#viewToggle").append("i").classed("glyphicon glyphicon-picture", true);
+         d3.select("#viewToggle").append("span").text("  Graph View");
+      } else {
+         d3.select("#viewToggle").append("i").classed("glyphicon glyphicon-list-alt", true);
+         d3.select("#viewToggle").append("span").text("  Table View");
+      }
+      var ver = getSelect("#version_to");
+      render(ver);
+   };
 
    d3.select("#filter").on("click", function() {
       d3.event.stopPropagation();
    });
 
    d3.select("#viewToggle").on("click", function() {
-      if (d3.select(this).node().checked) {
-         viewMode = "graph";
+      tableViewer.toggleFunc();
+   });
+
+   d3.select("#viewReport").datum({isOpen:false}).on("click", function(d) {
+      d.isOpen = !d.isOpen;
+      d3.select("#viewReport").text(function() {
+         return d.isOpen? "Close Report" : "View Report";
+      });
+
+      if (d.isOpen) {
+         d3.select("#visWrapper").style("display", "none");
+         d3.select("#viewToggle").style("display", "none");
+         d3.select("#reportWrapper").style("display", "block");
+         generateChangeList();
       } else {
-         viewMode = "table";
+         d3.select("#visWrapper").style("display", "block");
+         d3.select("#viewToggle").style("display", "block");
+         d3.select("#reportWrapper").style("display", "none");
       }
-      var ver = getSelect("#version_a");
-      d3.select("#filter").node().value = "";
-      render(ver);
+
    });
 
 
-   for (var i=0; i < sortedDictionaryList.length; i++)
-      dictionaryMap[ sortedDictionaryList[i].version ] = sortedDictionaryList[i];
+   d3.select("#version_to").selectAll("option")
+     .data(dictUtil.versionList)
+     .enter()
+     .append("option")
+     .attr("value", function(d) { return d; })
+     .text(function(d) { return d;});
+
+   d3.select("#version_from").selectAll("option")
+     .data(dictUtil.versionList)
+     .enter()
+     .append("option")
+     .attr("value", function(d) { return d; })
+     .text(function(d) { return d;});
+
+   d3.select("#labelNew").style("color", tableViewer.colourNew);
+   d3.select("#labelChanged").style("color", tableViewer.colourChanged);
+
 
    // Grab the codelist
    d3.json("/ws/codeLists", function(codeLists) {
@@ -1020,22 +345,11 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
      });
 
      // Done preparing data, now start rendering
-     d3.select("#version_a").selectAll("option")
-       .data(versionList)
-       .enter()
-       .append("option")
-       .attr("value", function(d) { return d; })
-       .text(function(d) { return d;});
+     tableViewer.toggleFunc();
+     render(dictUtil.sortedDictionaryList[0].version);
 
-     d3.select("#version_b").selectAll("option")
-       .data(versionList)
-       .enter()
-       .append("option")
-       .attr("value", function(d) { return d; })
-       .text(function(d) { return d;});
-
-     render(latest);
    });
+
 });
 </script>
 </html>
