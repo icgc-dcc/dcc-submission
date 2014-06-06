@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,32 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.sftp.fs;
+package org.icgc.dcc.submission.sftp;
 
-import static org.icgc.dcc.submission.sftp.SftpSessions.getSessionSubject;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import java.io.IOException;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.Session;
-import org.apache.sshd.common.file.FileSystemFactory;
-import org.apache.sshd.common.file.FileSystemView;
-import org.icgc.dcc.submission.sftp.SftpContext;
+import org.apache.sshd.common.Session.AttributeKey;
 
-@RequiredArgsConstructor
-public class HdfsFileSystemFactory implements FileSystemFactory {
+@NoArgsConstructor(access = PRIVATE)
+public final class SftpSessions {
 
-  @NonNull
-  private final SftpContext context;
+  private static final AttributeKey<Subject> SESSION_KEY = new AttributeKey<Subject>();
 
-  @Override
-  public FileSystemView createFileSystemView(Session session) throws IOException {
-    val subject = getSessionSubject(session);
+  public static void setSessionSubject(Session session, Subject subject) {
+    session.setAttribute(SESSION_KEY, subject);
+  }
 
-    return new HdfsFileSystemView(context, subject);
+  public static Subject getSessionSubject(Session session) {
+    return session.getAttribute(SESSION_KEY);
   }
 
 }

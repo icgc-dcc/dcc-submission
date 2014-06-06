@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.FileSystemView;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
@@ -40,6 +41,8 @@ public class HdfsFileSystemView implements FileSystemView {
 
   @NonNull
   private final SftpContext context;
+  @NonNull
+  private final Subject subject;
 
   /**
    * Returns the appropriate file system abstraction for the specified {@code file} path.
@@ -51,7 +54,7 @@ public class HdfsFileSystemView implements FileSystemView {
   public SshFile getFile(String file) {
     try {
       Path filePath = getFilePath(file);
-      RootHdfsSshFile root = new RootHdfsSshFile(context);
+      RootHdfsSshFile root = new RootHdfsSshFile(context, subject);
 
       switch (filePath.depth()) {
       case 0:
@@ -123,7 +126,7 @@ public class HdfsFileSystemView implements FileSystemView {
 
   private BaseDirectoryHdfsSshFile getHdfsSshFile(RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
-    if (context.isSystemDirectory(path) && context.isAdminUser()) {
+    if (context.isSystemDirectory(path, subject) && context.isAdminUser(subject)) {
       result = new SystemFileHdfsSshFile(context, root, path.getName());
     } else { // FIXME? What happens if is-system-dir but not is-admin...?
       result = new SubmissionDirectoryHdfsSshFile(context, root, path.getName());
