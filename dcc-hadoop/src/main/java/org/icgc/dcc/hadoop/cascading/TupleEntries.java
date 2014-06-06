@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
@@ -24,9 +25,12 @@ import static lombok.AccessLevel.PRIVATE;
 import java.util.List;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+
+import com.google.common.base.Function;
 
 /**
  * Utility class to help with the {@link TupleEntry} object from cascading.
@@ -94,6 +98,24 @@ public final class TupleEntries {
   }
 
   /**
+   * Casts an {@link Object} into a {@link TupleEntry}. The object is expected to be a non-null tuple entry.
+   * 
+   * @throws IllegalArgumentException If the object isn't a tuple entry.
+   */
+  public static Function<Object, TupleEntry> OBJECT_TO_TUPLE_ENTRY_CAST = new Function<Object, TupleEntry>() {
+
+    @Override
+    public TupleEntry apply(@NonNull Object object) {
+      checkArgument(
+          object instanceof TupleEntry,
+          "Object is expected to be a '%s', instead: '%s'",
+          TupleEntry.class.getSimpleName(), object.getClass().getSimpleName());
+      return (TupleEntry) object;
+    }
+
+  };
+
+  /**
    * Gives a string containing the json representation of the tupleEntry (with possibly multiple levels of
    * tuple/tupleEntry nesting).
    * <p>
@@ -102,7 +124,7 @@ public final class TupleEntries {
   public static String toJson(TupleEntry tupleEntry) {
     Fields fields = tupleEntry.getFields();
     Tuple tuple = tupleEntry.getTuple();
-  
+
     StringBuilder sb = new StringBuilder();
     sb.append("{");
     for (int i = 0; i < fields.size(); i++) {
@@ -127,7 +149,7 @@ public final class TupleEntries {
       }
       sb.append((i == 0 ? "" : ", ") + "\"" + field + "\"" + ":" + value);
     }
-  
+
     sb.append("}");
     return sb.toString();
   }
