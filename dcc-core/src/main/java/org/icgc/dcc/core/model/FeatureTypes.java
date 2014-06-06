@@ -217,6 +217,7 @@ public final class FeatureTypes {
     public boolean apply(FeatureType featureType) {
       return !TYPES.contains(featureType);
     }
+
   };
 
 }

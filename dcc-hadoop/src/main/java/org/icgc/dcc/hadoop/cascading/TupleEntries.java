@@ -65,16 +65,10 @@ public final class TupleEntries {
     return getObject(arguments, SECOND_ITEM);
   }
 
-  /**
-   * 
-   */
   private static String getString(TupleEntry entry, int index) {
     return entry.getString(index);
   }
 
-  /**
-   * 
-   */
   private static Object getObject(TupleEntry entry, int index) {
     return entry.getObject(index);
   }
