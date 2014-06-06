@@ -26,6 +26,7 @@ import java.util.List;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
 import cascading.operation.BaseOperation;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
@@ -80,6 +81,22 @@ public final class TupleEntries {
     return new TupleEntry(
         entry.getFields(),
         entry.getTupleCopy());
+  }
+
+  /**
+   * Removes fields from a {@link TupleEntry} (somehow cascading only offers it at the {@link Fields} and {@link Tuple}
+   * levels).
+   */
+  public static TupleEntry remove(TupleEntry entry, Fields targetFields) {
+    val fields = entry.getFields();
+    val tuple = entry.getTuple();
+    tuple.remove( // Modifies the tuple directly
+        fields,
+        targetFields);
+    return new TupleEntry(
+        fields
+            .subtract(targetFields),
+        tuple);
   }
 
   /**
@@ -145,6 +162,7 @@ public final class TupleEntries {
           object instanceof TupleEntry,
           "Object is expected to be a '%s', instead: '%s'",
           TupleEntry.class.getSimpleName(), object.getClass().getSimpleName());
+
       return (TupleEntry) object;
     }
 
