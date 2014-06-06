@@ -26,6 +26,7 @@ import java.util.List;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import cascading.operation.BaseOperation;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -37,6 +38,21 @@ import com.google.common.base.Function;
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class TupleEntries {
+
+  /**
+   * Index of the first item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   */
+  public static final int FIRST_ITEM = 0;
+
+  /**
+   * Index of the second item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   */
+  public static final int SECOND_ITEM = FIRST_ITEM + 1;
+
+  /**
+   * Index of the third item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   */
+  public static final int THIRD_ITEM = SECOND_ITEM + 1;
 
   /**
    * Clones a {@link TupleEntry}.
