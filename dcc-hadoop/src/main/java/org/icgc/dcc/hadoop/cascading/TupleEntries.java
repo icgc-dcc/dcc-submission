@@ -42,17 +42,42 @@ public final class TupleEntries {
   /**
    * Index of the first item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
    */
-  public static final int FIRST_ITEM = 0;
+  private static final int FIRST_ITEM = 0;
 
   /**
    * Index of the second item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
    */
-  public static final int SECOND_ITEM = FIRST_ITEM + 1;
+  private static final int SECOND_ITEM = FIRST_ITEM + 1;
+
+  public static String getFirstString(TupleEntry arguments) {
+    return getString(arguments, FIRST_ITEM);
+  }
+
+  public static String getSecondString(TupleEntry arguments) {
+    return getString(arguments, SECOND_ITEM);
+  }
+
+  public static Object getFirstObject(TupleEntry arguments) {
+    return getObject(arguments, FIRST_ITEM);
+  }
+
+  public static Object getSecondObject(TupleEntry arguments) {
+    return getObject(arguments, SECOND_ITEM);
+  }
 
   /**
-   * Index of the third item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   * 
    */
-  public static final int THIRD_ITEM = SECOND_ITEM + 1;
+  private static String getString(TupleEntry entry, int index) {
+    return entry.getString(index);
+  }
+
+  /**
+   * 
+   */
+  private static Object getObject(TupleEntry entry, int index) {
+    return entry.getObject(index);
+  }
 
   /**
    * Clones a {@link TupleEntry}.
