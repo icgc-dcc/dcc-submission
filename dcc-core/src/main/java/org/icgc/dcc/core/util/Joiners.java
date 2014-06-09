@@ -5,7 +5,7 @@
  * You should have received a copy of the GNU General Public License along with                                  
  * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
  *                                                                                                               
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS' AND ANY                           
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
  * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
@@ -32,9 +32,11 @@ public final class Joiners {
   public static final Joiner SLASH = on('/');
   public static final Joiner TAB = on('\t');
   public static final Joiner NEWLINE = on('\n');
-  public static final Joiner DOT = on(".");
-  public static final Joiner DASH = on("-");
-  public static final Joiner UNDERSCORE = on("_");
+  public static final Joiner DOT = on('.');
+  public static final Joiner DASH = on('-');
+  public static final Joiner UNDERSCORE = on('_');
+  public static final Joiner COLON = on(':');
+  public static final Joiner SEMICOLON = on(';');
 
   public static final Joiner PATH = SLASH;
   public static final Joiner INDENT = on("\n\t");
