@@ -41,7 +41,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   protected final String directoryName;
 
   protected BaseDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
-    super(context, new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fileSystem);
+    super(context, new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fileSystem, root.subject);
     this.root = checkNotNull(root);
     this.directoryName = checkNotNull(directoryName);
   }
