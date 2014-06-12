@@ -62,6 +62,10 @@ public final class FieldNames {
 
     public static final String SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE = "mutated_from_allele";
     public static final String SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE = "mutated_to_allele";
+
+    public static final String SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY = "sequencing_strategy";
+    public static final String SUBMISSION_OBSERVATION_RAW_DATA_REPOSITORY = "raw_data_repository";
+    public static final String SUBMISSION_OBSERVATION_RAW_DATA_ACCESSION = "raw_data_accession";
   }
 
   /**
