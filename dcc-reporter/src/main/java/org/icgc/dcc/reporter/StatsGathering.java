@@ -1,18 +1,17 @@
 package org.icgc.dcc.reporter;
 
 import static com.google.common.collect.Iterables.toArray;
+import static org.icgc.dcc.reporter.OutputType.DONOR;
+import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
+import static org.icgc.dcc.reporter.OutputType.SAMPLE;
+import static org.icgc.dcc.reporter.OutputType.SPECIMEN;
 import static org.icgc.dcc.reporter.PreComputation.ANALYSIS_ID;
 import static org.icgc.dcc.reporter.PreComputation.ANALYSIS_OBSERVATION_COUNT;
 import static org.icgc.dcc.reporter.PreComputation.DONOR_ID;
 import static org.icgc.dcc.reporter.PreComputation.PROJECT_ID;
 import static org.icgc.dcc.reporter.PreComputation.SAMPLE_ID;
-import static org.icgc.dcc.reporter.PreComputation.SEQUENCING_STRATEGY;
 import static org.icgc.dcc.reporter.PreComputation.SPECIMEN_ID;
 import static org.icgc.dcc.reporter.PreComputation.TYPE;
-
-import java.util.Map;
-
-import lombok.Getter;
 import lombok.val;
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -29,7 +28,6 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 
 public class StatsGathering extends SubAssembly {
 
@@ -39,45 +37,24 @@ public class StatsGathering extends SubAssembly {
         Pipe.class));
   }
 
-  @Getter
-  // TODO: as immutable
-  private final Map<OutputType, Pipe> outputPipes = Maps.newLinkedHashMap();
-
   public Iterable<Pipe> process(Pipe preComputationTable) {
-    val donorCountPipe = new Pipe("donor", getUniqueCountPipe(preComputationTable, DONOR_ID, PROJECT_ID, TYPE));
-    outputPipes.put(OutputType.DONOR, donorCountPipe);
-
-    val specimenCountPipe =
-        new Pipe("specimen", getUniqueCountPipe(preComputationTable, SPECIMEN_ID, PROJECT_ID, TYPE));
-    outputPipes.put(OutputType.SPECIMEN, specimenCountPipe);
-
-    val sampleCountPipe = new Pipe("sample", getUniqueCountPipe(preComputationTable, SAMPLE_ID, PROJECT_ID, TYPE));
-    outputPipes.put(OutputType.SAMPLE, sampleCountPipe);
-
-    // Observation count has been precounted
-    val observationCountPipe =
-        new Pipe("observation", getPreCountedUniqueCountPipe(preComputationTable, ANALYSIS_ID,
-            ANALYSIS_OBSERVATION_COUNT, PROJECT_ID, TYPE));
-    outputPipes.put(OutputType.OBSERVATION, observationCountPipe);
-
-    // Does not include the type
-    val sequencingStrategyCountPipe =
-        new Pipe(SEQUENCING_STRATEGY, getCountPipe(preComputationTable, ANALYSIS_ID, PROJECT_ID, SEQUENCING_STRATEGY));
-    outputPipes.put(OutputType.SEQUENCING_STRATEGY, sequencingStrategyCountPipe);
-
     return ImmutableList.<Pipe> builder()
-        .add(donorCountPipe)
-        .add(specimenCountPipe)
-        .add(sampleCountPipe)
-        .add(observationCountPipe)
-        .add(sequencingStrategyCountPipe)
+        .add(new Pipe(DONOR.name(), getUniqueCountPipe(preComputationTable, DONOR_ID, PROJECT_ID, TYPE)))
+        .add(new Pipe(SPECIMEN.name(), getUniqueCountPipe(preComputationTable, SPECIMEN_ID, PROJECT_ID, TYPE)))
+        .add(new Pipe(SAMPLE.name(), getUniqueCountPipe(preComputationTable, SAMPLE_ID, PROJECT_ID, TYPE)))
+        .add(new Pipe(OBSERVATION.name(), getPreCountedUniqueCountPipe(preComputationTable, ANALYSIS_ID,
+            ANALYSIS_OBSERVATION_COUNT, PROJECT_ID, TYPE)))
+        .add(
+            new Pipe(
+                PreComputation.SEQUENCING_STRATEGY,
+                getCountPipe(preComputationTable, ANALYSIS_ID, PROJECT_ID, PreComputation.SEQUENCING_STRATEGY)))
         .build();
   }
 
-  private Pipe getCountPipe(Pipe projects, String targetFieldName, String... groupFieldNames) {
+  private Pipe getCountPipe(Pipe preComputationTable, String targetFieldName, String... groupFieldNames) {
     return new CountBy(
         new Retain(
-            projects,
+            preComputationTable,
             new Fields(groupFieldNames)
                 .append(new Fields(targetFieldName))),
         new Fields(groupFieldNames),
@@ -85,17 +62,17 @@ public class StatsGathering extends SubAssembly {
   }
 
   // see https://gist.github.com/ceteri/4459908
-  private Pipe getUniqueCountPipe(Pipe projects, String targetFieldName, String... groupFieldNames) {
+  private Pipe getUniqueCountPipe(Pipe preComputationTable, String targetFieldName, String... groupFieldNames) {
     return new CountBy(
         new Unique( // TODO: automatically retains?
-            projects,
+            preComputationTable,
             new Fields(groupFieldNames)
                 .append(new Fields(targetFieldName))),
         new Fields(groupFieldNames),
         new Fields(targetFieldName + "_count"));
   }
 
-  private Pipe getPreCountedUniqueCountPipe(Pipe projects, String targetFieldName, String preCountFieldName,
+  private Pipe getPreCountedUniqueCountPipe(Pipe preComputationTable, String targetFieldName, String preCountFieldName,
       String... groupFieldNames) {
 
     // @SuppressWarnings("rawtypes")
@@ -120,7 +97,7 @@ public class StatsGathering extends SubAssembly {
         new Every(
             new GroupBy(
                 new Unique(
-                    projects,
+                    preComputationTable,
                     new Fields(groupFieldNames)
                         .append(new Fields(targetFieldName, preCountFieldName))),
                 new Fields(groupFieldNames)),
