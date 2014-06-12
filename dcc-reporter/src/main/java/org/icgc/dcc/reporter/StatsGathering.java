@@ -1,5 +1,7 @@
 package org.icgc.dcc.reporter;
 
+import static cascading.tuple.Fields.ARGS;
+import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.reporter.OutputType.DONOR;
 import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
@@ -52,34 +54,55 @@ public class StatsGathering extends SubAssembly {
   }
 
   private Pipe getCountPipe(Pipe preComputationTable, String targetFieldName, String... groupFieldNames) {
-    return new CountBy(
+    return
+
+    //
+    new CountBy(
+
+        //
         new Retain(
             preComputationTable,
+
+            //
             new Fields(groupFieldNames)
                 .append(new Fields(targetFieldName))),
+
+        //
         new Fields(groupFieldNames),
+
+        //
         new Fields(targetFieldName + "_count"));
   }
 
   // see https://gist.github.com/ceteri/4459908
   private Pipe getUniqueCountPipe(Pipe preComputationTable, String targetFieldName, String... groupFieldNames) {
-    return new CountBy(
+    return
+
+    //
+    new CountBy(
+
+        //
         new Unique( // TODO: automatically retains?
             preComputationTable,
+
+            //
             new Fields(groupFieldNames)
                 .append(new Fields(targetFieldName))),
+
+        //
         new Fields(groupFieldNames),
+
+        //
         new Fields(targetFieldName + "_count"));
   }
 
-  private Pipe getPreCountedUniqueCountPipe(Pipe preComputationTable, String targetFieldName, String preCountFieldName,
-      String... groupFieldNames) {
+  private Pipe getPreCountedUniqueCountPipe(
+      Pipe preComputationTable, String targetFieldName, String preCountFieldName, String... groupFieldNames) {
 
-    // @SuppressWarnings("rawtypes")
-    class MyBuffer extends BaseOperation<Void> implements Buffer<Void> { // TODO: use aggregator rather?
+    class MyBuffer extends BaseOperation<Void> implements Buffer<Void> {
 
       public MyBuffer() {
-        super(3, new Fields("_observation_count"));
+        super(ARGS);
       }
 
       @Override
@@ -87,23 +110,44 @@ public class StatsGathering extends SubAssembly {
         long observationCount = 0;
         val entries = bufferCall.getArgumentsIterator();
         while (entries.hasNext()) {
-          observationCount += entries.next().getInteger(ANALYSIS_OBSERVATION_COUNT);
+          observationCount += entries.next().getInteger(0); // TODO: use TupleEntries utility when merged
         }
         bufferCall.getOutputCollector().add(new Tuple(observationCount));
       }
     }
 
-    return new Retain(
+    return
+
+    //
+    new Retain(
+
+        //
         new Every(
+
+            //
             new GroupBy(
+
+                //
                 new Unique(
                     preComputationTable,
+
+                    //
                     new Fields(groupFieldNames)
                         .append(new Fields(targetFieldName, preCountFieldName))),
-                new Fields(groupFieldNames)),
-            new MyBuffer()),
-        new Fields(groupFieldNames)
-            .append(new Fields("_observation_count")));
-  }
 
+                //
+                new Fields(groupFieldNames)),
+
+            //
+            new Fields(ANALYSIS_OBSERVATION_COUNT),
+
+            //
+            new MyBuffer(),
+
+            REPLACE),
+
+        //
+        new Fields(groupFieldNames)
+            .append(new Fields(ANALYSIS_OBSERVATION_COUNT)));
+  }
 }
