@@ -10,15 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
 
-import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
-import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.tuple.Fields;
@@ -44,6 +46,7 @@ public class PreComputation extends SubAssembly {
   static String REDUNDANT_ANALYSIS_ID = _("%s%s", REDUNDANT_PREFFIX, ANALYSIS_ID);
 
   static Fields CLINICAL_JOIN_FIELDS = new Fields(SPECIMEN_ID);
+  static Fields META_PK_FIELDS = new Fields(ANALYSIS_ID, SAMPLE_ID);
 
   PreComputation(InputData inputData) {
     setTails(process(inputData));
@@ -86,7 +89,7 @@ public class PreComputation extends SubAssembly {
                 .rightJoinFields(new Fields(SAMPLE_ID))
 
                 .resultFields(
-                    new Fields(ANALYSIS_ID, SAMPLE_ID)
+                    META_PK_FIELDS
                         .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
                         .append(new Fields(SEQUENCING_STRATEGY, TYPE, DONOR_ID, SPECIMEN_ID, REDUNDANT_SAMPLE_ID)))
                 .discardFields(new Fields(REDUNDANT_SAMPLE_ID))
@@ -148,15 +151,15 @@ public class PreComputation extends SubAssembly {
                 .joiner(new InnerJoin())
 
                 .leftPipe(processPrimaryFiles(inputData, projectKey, featureType))
-                .leftJoinFields(new Fields(ANALYSIS_ID, SAMPLE_ID))
+                .leftJoinFields(META_PK_FIELDS)
 
                 .rightPipe( // Meta files
                     processFiles(inputData, projectKey, featureType.getMetaFileType(),
                         ANALYSIS_ID, SAMPLE_ID, SEQUENCING_STRATEGY))
-                .rightJoinFields(new Fields(ANALYSIS_ID, SAMPLE_ID))
+                .rightJoinFields(META_PK_FIELDS)
 
                 .resultFields(
-                    new Fields(ANALYSIS_ID, SAMPLE_ID)
+                    META_PK_FIELDS
                         .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
                         .append(new Fields(REDUNDANT_ANALYSIS_ID, REDUNDANT_SAMPLE_ID, SEQUENCING_STRATEGY)))
                 .discardFields(new Fields(REDUNDANT_ANALYSIS_ID, REDUNDANT_SAMPLE_ID))
@@ -164,26 +167,29 @@ public class PreComputation extends SubAssembly {
                 .build()));
   }
 
-  private static CountBy processPrimaryFiles(
+  private static Pipe processPrimaryFiles(
       final InputData inputData, final String projectKey, final FeatureType featureType) {
     return
 
     // TODO: move that before the merge to maximum parallelization (optimization) - also, use AggregateBy
-    new CountBy(
+    new CountBy(CountByData.builder()
+        .pipe(
 
-        //
-        new GroupBy( // TODO: create fluent sub-assembly for GroupBy as well?
-            processFiles(inputData, projectKey, featureType.getPrimaryFileType(),
-                ANALYSIS_ID, SAMPLE_ID),
+            //
+            new GroupBy(GroupByData.builder()
 
-            // Group by fields (group by)
-            new Fields(ANALYSIS_ID, SAMPLE_ID)),
+                .pipe(processFiles(
+                    inputData, projectKey, featureType.getPrimaryFileType(),
+                    ANALYSIS_ID, SAMPLE_ID))
+                .groupByFields(META_PK_FIELDS)
 
-        // Group by fields (count by)
-        new Fields(ANALYSIS_ID, SAMPLE_ID),
+                .build()))
 
-        // Result field (count by)
-        ANALYSIS_OBSERVATION_COUNT_FIELD);
+        .countByFields(META_PK_FIELDS)
+        .resultField(ANALYSIS_OBSERVATION_COUNT_FIELD)
+
+        .build());
+
   }
 
   private static Pipe processFiles(InputData inputData,

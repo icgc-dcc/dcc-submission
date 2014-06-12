@@ -18,6 +18,7 @@
 package org.icgc.dcc.hadoop.cascading;
 
 import static cascading.tuple.Fields.ALL;
+import static com.google.common.base.Optional.absent;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
 import static lombok.AccessLevel.PRIVATE;
@@ -38,6 +39,7 @@ import cascading.pipe.joiner.Joiner;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 
 /**
  * Useful sub-assemblies.
@@ -92,6 +94,66 @@ public class SubAssemblies {
   }
 
   /**
+   * TODO
+   */
+  public static class GroupBy extends SubAssembly {
+
+    public GroupBy(GroupByData groupByData) {
+      // TODO: add checks on cardinalities
+      setTails(
+
+      //
+      groupByData.secondarySortFields.isPresent() ?
+          new cascading.pipe.GroupBy(
+              groupByData.pipe,
+              groupByData.groupByFields,
+              groupByData.secondarySortFields.get()) :
+          new cascading.pipe.GroupBy(
+              groupByData.pipe,
+              groupByData.groupByFields));
+    }
+
+    @Value
+    @Builder
+    public static class GroupByData {
+
+      Pipe pipe;
+      Fields groupByFields;
+      Optional<Fields> secondarySortFields = absent();
+
+    }
+
+  }
+
+  /**
+   * TODO
+   */
+  public static class CountBy extends SubAssembly {
+
+    public CountBy(CountByData countByData) {
+      // TODO: add checks on cardinalities
+      setTails(
+
+      //
+      new cascading.pipe.assembly.CountBy(
+          countByData.pipe,
+          countByData.countByFields,
+          countByData.resultField));
+    }
+
+    @Value
+    @Builder
+    public static class CountByData {
+
+      Pipe pipe;
+      Fields countByFields;
+      Fields resultField;
+
+    }
+
+  }
+
+  /**
    * TODO: generalize.
    */
   public static class ReadableHashJoin extends SubAssembly {
@@ -119,7 +181,7 @@ public class SubAssemblies {
      */
     @Value
     @Builder
-    public static class JoinData {
+    public static class JoinData { // TODO: add integrity check (cardinalities, ...)
 
       Joiner joiner;
 

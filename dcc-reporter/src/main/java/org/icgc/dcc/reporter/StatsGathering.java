@@ -18,15 +18,19 @@ import static org.icgc.dcc.reporter.PreComputation.SAMPLE_ID;
 import static org.icgc.dcc.reporter.PreComputation.SPECIMEN_ID;
 import static org.icgc.dcc.reporter.PreComputation.TYPE;
 import lombok.val;
+
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
 import cascading.pipe.Every;
-import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
-import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.Unique;
 import cascading.tuple.Fields;
@@ -60,21 +64,22 @@ public class StatsGathering extends SubAssembly {
     return
 
     //
-    new CountBy(
+    new CountBy(CountByData.builder()
 
-        //
-        new Retain(
-            preComputationTable,
+        .pipe(
 
             //
-            new Fields(groupFieldNames)
-                .append(new Fields(targetFieldName))),
+            new Retain(
+                preComputationTable,
 
-        //
-        new Fields(groupFieldNames),
+                // Retain fields
+                new Fields(groupFieldNames)
+                    .append(new Fields(targetFieldName))))
 
-        //
-        new Fields(targetFieldName + "_count"));
+        .countByFields(new Fields(groupFieldNames))
+        .resultField(getCountFieldCounterpart(targetFieldName))
+
+        .build());
   }
 
   // see https://gist.github.com/ceteri/4459908
@@ -82,30 +87,34 @@ public class StatsGathering extends SubAssembly {
     return
 
     //
-    new CountBy(
+    new CountBy(CountByData.builder()
 
-        //
-        new Unique( // TODO: automatically retains?
-            preComputationTable,
+        .pipe(
 
             //
-            new Fields(groupFieldNames)
-                .append(new Fields(targetFieldName))),
+            new Unique( // TODO: automatically retains?
+                preComputationTable,
 
-        //
-        new Fields(groupFieldNames),
+                // Unique fields
+                new Fields(groupFieldNames)
+                    .append(new Fields(targetFieldName))))
 
-        //
-        getCountFieldCounterpart(targetFieldName));
+        .countByFields(new Fields(groupFieldNames))
+        .resultField(getCountFieldCounterpart(targetFieldName))
+
+        .build());
   }
 
   private Pipe getPreCountedUniqueCountPipe(
       Pipe preComputationTable, String targetFieldName, Fields preCountField, String... groupFieldNames) {
     checkFieldsCardinalityOne(preCountField);
 
-    class Reduce extends BaseOperation<Void> implements Buffer<Void> {
+    /**
+     * TODO: cascading pre-defined buffer?
+     */
+    class Sum extends BaseOperation<Void> implements Buffer<Void> {
 
-      public Reduce() {
+      public Sum() {
         super(ARGS);
       }
 
@@ -118,7 +127,13 @@ public class StatsGathering extends SubAssembly {
         }
         bufferCall.getOutputCollector().add(new Tuple(observationCount));
       }
+
     }
+
+    val targetField = new Fields(targetFieldName);
+    val groupByFields = new Fields(groupFieldNames);
+    val retainFields = groupByFields.append(preCountField);
+    val allFields = retainFields.append(targetField);
 
     return
 
@@ -129,29 +144,30 @@ public class StatsGathering extends SubAssembly {
         new Every(
 
             //
-            new GroupBy(
+            new GroupBy(GroupByData.builder()
 
-                //
-                new Unique(
-                    preComputationTable,
+                .pipe(
 
                     //
-                    new Fields(groupFieldNames)
-                        .append(new Fields(targetFieldName).append(preCountField))),
+                    new Unique(
+                        preComputationTable,
 
-                //
-                new Fields(groupFieldNames)),
+                        //
+                        allFields))
+
+                .groupByFields(groupByFields)
+
+                .build()),
 
             //
             preCountField,
 
             //
-            new Reduce(),
+            new Sum(),
 
             REPLACE),
 
-        //
-        new Fields(groupFieldNames)
-            .append(preCountField));
+        // Retain fields
+        retainFields);
   }
 }
