@@ -80,8 +80,8 @@ public class PreComputation extends SubAssembly {
 
         //
         new ReadableHashJoin(
-            JoinData
-                .builder()
+            JoinData.builder()
+
                 .joiner(new InnerJoin())
 
                 .leftPipe(processFeatureTypes(inputData, projectKey))
@@ -165,8 +165,7 @@ public class PreComputation extends SubAssembly {
 
         //
         new ReadableHashJoin(
-            JoinData
-                .builder()
+            JoinData.builder()
 
                 .joiner(new InnerJoin())
 
@@ -199,6 +198,7 @@ public class PreComputation extends SubAssembly {
 
     // TODO: move that before the merge to maximum parallelization (optimization) - also, use AggregateBy
     new CountBy(CountByData.builder()
+
         .pipe(
 
             //
