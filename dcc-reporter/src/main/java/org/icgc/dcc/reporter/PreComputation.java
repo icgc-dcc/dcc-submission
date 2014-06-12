@@ -176,8 +176,7 @@ public class PreComputation extends SubAssembly {
                 .rightPipe( // Meta files
                     processFiles(
                         inputData, projectKey, featureType.getMetaFileType(),
-                        ANALYSIS_ID_FIELD
-                            .append(SAMPLE_ID_FIELD)
+                        META_PK_FIELDS
                             .append(SEQUENCING_STRATEGY_FIELD)))
                 .rightJoinFields(META_PK_FIELDS)
 
@@ -208,8 +207,8 @@ public class PreComputation extends SubAssembly {
                 .pipe(
                     processFiles(
                         inputData, projectKey, featureType.getPrimaryFileType(),
-                        ANALYSIS_ID_FIELD
-                            .append(SAMPLE_ID_FIELD)))
+                        META_PK_FIELDS))
+
                 .groupByFields(META_PK_FIELDS)
 
                 .build()))

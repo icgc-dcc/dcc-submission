@@ -108,7 +108,7 @@ public class StatsGathering extends SubAssembly {
             preComputationTable,
             ANALYSIS_ID_FIELD,
             PROJECT_ID_FIELD
-                .append(SEQUENCING_STRATEGY_FIELD)));
+                .append(SEQUENCING_STRATEGY_FIELD))); // TODO: correct?
   }
 
   private static Pipe getCountPipe(Pipe preComputationTable, Fields targetField, Fields groupFields) {
