@@ -71,7 +71,7 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
   private SubmissionDirectory getSubmissionDirectory(String directoryName) {
     try {
       try {
-        return context.getSubmissionDirectory(directoryName);
+        return context.getSubmissionDirectory(directoryName, subject);
       } catch (ReleaseException e) {
         throw new FileNotFoundException(directoryName);
       }

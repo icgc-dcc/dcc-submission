@@ -54,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
@@ -80,6 +81,8 @@ public abstract class HdfsSshFile implements SshFile {
   protected Path path;
   @NonNull
   protected final FileSystem fileSystem;
+  @NonNull
+  protected final Subject subject;
 
   @Override
   public Map<Attribute, Object> getAttributes(boolean followLinks) throws IOException {

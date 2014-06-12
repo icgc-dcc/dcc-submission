@@ -442,8 +442,8 @@ public class SftpServerServiceTest {
 
   private SftpServerService createService() {
     SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
-    SftpAuthenticator authenticator = new SftpAuthenticator(context);
-    SshServer sshd = new SshServerProvider(config, context, authenticator).get();
+    SftpAuthenticator sftpAuthenticator = new SftpAuthenticator(authenticator, context);
+    SshServer sshd = new SshServerProvider(config, context, sftpAuthenticator).get();
     EventBus eventBus = new EventBus();
     eventBus.register(authenticator);
 

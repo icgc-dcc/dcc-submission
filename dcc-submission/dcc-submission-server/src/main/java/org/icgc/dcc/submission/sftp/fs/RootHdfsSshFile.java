@@ -29,6 +29,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
@@ -37,8 +38,8 @@ import com.google.common.base.Optional;
 @Slf4j
 public class RootHdfsSshFile extends HdfsSshFile {
 
-  public RootHdfsSshFile(SftpContext context) {
-    super(context, context.getReleasePath(), context.getFileSystem());
+  public RootHdfsSshFile(SftpContext context, Subject subject) {
+    super(context, context.getReleasePath(), context.getFileSystem(), subject);
   }
 
   @Override
@@ -91,7 +92,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
     try {
       List<Path> paths = lsAll(fileSystem, path);
       List<SshFile> sshFiles = newArrayList();
-      val userProjectKeys = context.getUserProjectKeys();
+      val userProjectKeys = context.getUserProjectKeys(subject);
       for (Path path : paths) {
 
         val sshFile = listSshFile(path, userProjectKeys);
@@ -132,8 +133,8 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
   private Optional<SshFile> listSshFile(Path path, List<String> userProjectKeys) {
     try {
-      if (context.isSystemDirectory(path)) {
-        if (context.isAdminUser()) {
+      if (context.isSystemDirectory(path, subject)) {
+        if (context.isAdminUser(subject)) {
           // System file directory and admin user, add to file list
           return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName()));
         } else {
