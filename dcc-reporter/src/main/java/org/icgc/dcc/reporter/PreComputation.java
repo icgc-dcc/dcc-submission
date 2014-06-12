@@ -2,8 +2,8 @@ package org.icgc.dcc.reporter;
 
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.core.util.FormatUtils._;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
 import lombok.extern.slf4j.Slf4j;
@@ -30,23 +30,24 @@ import com.google.common.base.Function;
 @Slf4j
 public class PreComputation extends SubAssembly {
 
-  static String TYPE = "_type";
-  static String PROJECT_ID = "_project_id";
-  static String DONOR_ID = "donor_id";
-  static String SPECIMEN_ID = "specimen_id";
-  static String SAMPLE_ID = "analyzed_sample_id";
-  static String ANALYSIS_ID = "analysis_id";
-  static String ANALYSIS_OBSERVATION = "analysis_observation";
-  static String SEQUENCING_STRATEGY = "sequencing_strategy";
-  static String REDUNDANT_PREFFIX = "redundant_";
-  static Fields ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart(ANALYSIS_OBSERVATION);
+  static Fields TYPE_FIELD = new Fields("_type");
+  static Fields PROJECT_ID_FIELD = new Fields("_project_id");
+  static Fields DONOR_ID_FIELD = new Fields("donor_id");
+  static Fields SPECIMEN_ID_FIELD = new Fields("specimen_id");
+  static Fields SAMPLE_ID_FIELD = new Fields("analyzed_sample_id");
+  static Fields ANALYSIS_ID_FIELD = new Fields("analysis_id");
+  static Fields ANALYSIS_OBSERVATION_FIELD = new Fields("analysis_observation");
 
-  static String REDUNDANT_SPECIMEN_ID = _("%s%s", REDUNDANT_PREFFIX, SPECIMEN_ID);
-  static String REDUNDANT_SAMPLE_ID = _("%s%s", REDUNDANT_PREFFIX, SAMPLE_ID);
-  static String REDUNDANT_ANALYSIS_ID = _("%s%s", REDUNDANT_PREFFIX, ANALYSIS_ID);
+  static Fields SEQUENCING_STRATEGY_FIELD = new Fields("sequencing_strategy");
+  static Fields ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart(ANALYSIS_OBSERVATION_FIELD);
 
-  static Fields CLINICAL_JOIN_FIELDS = new Fields(SPECIMEN_ID);
-  static Fields META_PK_FIELDS = new Fields(ANALYSIS_ID, SAMPLE_ID);
+  static Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
+  static Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
+  static Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
+
+  static Fields META_PK_FIELDS =
+      ANALYSIS_ID_FIELD
+          .append(SAMPLE_ID_FIELD);
 
   PreComputation(InputData inputData) {
     setTails(process(inputData));
@@ -75,24 +76,29 @@ public class PreComputation extends SubAssembly {
     new Insert(
 
         // Field/value to be inserted
-        keyValuePair(PROJECT_ID, projectKey),
+        keyValuePair(PROJECT_ID_FIELD, projectKey),
 
         //
         new ReadableHashJoin(
-            JoinData.builder()
+            JoinData
+                .builder()
                 .joiner(new InnerJoin())
 
                 .leftPipe(processFeatureTypes(inputData, projectKey))
-                .leftJoinFields(new Fields(SAMPLE_ID))
+                .leftJoinFields(SAMPLE_ID_FIELD)
 
                 .rightPipe(processClinical(inputData, projectKey))
-                .rightJoinFields(new Fields(SAMPLE_ID))
+                .rightJoinFields(SAMPLE_ID_FIELD)
 
                 .resultFields(
                     META_PK_FIELDS
                         .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
-                        .append(new Fields(SEQUENCING_STRATEGY, TYPE, DONOR_ID, SPECIMEN_ID, REDUNDANT_SAMPLE_ID)))
-                .discardFields(new Fields(REDUNDANT_SAMPLE_ID))
+                        .append(SEQUENCING_STRATEGY_FIELD)
+                        .append(TYPE_FIELD)
+                        .append(DONOR_ID_FIELD)
+                        .append(SPECIMEN_ID_FIELD)
+                        .append(REDUNDANT_SAMPLE_ID_FIELD))
+                .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
 
                 .build()));
   }
@@ -105,14 +111,26 @@ public class PreComputation extends SubAssembly {
         JoinData.builder()
             .joiner(new InnerJoin())
 
-            .leftPipe(processFiles(inputData, projectKey, SPECIMEN_TYPE, DONOR_ID, SPECIMEN_ID))
-            .leftJoinFields(CLINICAL_JOIN_FIELDS)
+            .leftPipe(
+                processFiles(
+                    inputData, projectKey, SPECIMEN_TYPE,
+                    DONOR_ID_FIELD
+                        .append(SPECIMEN_ID_FIELD)))
+            .leftJoinFields(SPECIMEN_ID_FIELD)
 
-            .rightPipe(processFiles(inputData, projectKey, SAMPLE_TYPE, SPECIMEN_ID, SAMPLE_ID))
-            .rightJoinFields(CLINICAL_JOIN_FIELDS)
+            .rightPipe(
+                processFiles(
+                    inputData, projectKey, SAMPLE_TYPE,
+                    SPECIMEN_ID_FIELD
+                        .append(SAMPLE_ID_FIELD)))
+            .rightJoinFields(SPECIMEN_ID_FIELD)
 
-            .resultFields(new Fields(DONOR_ID, REDUNDANT_SPECIMEN_ID, SPECIMEN_ID, SAMPLE_ID))
-            .discardFields(new Fields(REDUNDANT_SPECIMEN_ID))
+            .resultFields(
+                DONOR_ID_FIELD
+                    .append(REDUNDANT_SPECIMEN_ID_FIELD)
+                    .append(SPECIMEN_ID_FIELD)
+                    .append(SAMPLE_ID_FIELD))
+            .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
 
             .build());
   }
@@ -136,17 +154,19 @@ public class PreComputation extends SubAssembly {
   private static Pipe processFeatureType(final InputData inputData, final String projectKey,
       final FeatureType featureType) {
     log.info("Processing '{}'", featureType);
+
     return
 
     // Insert feature type
     new Insert(
 
         // Fields to insert
-        keyValuePair(TYPE, featureType),
+        keyValuePair(TYPE_FIELD, featureType),
 
         //
         new ReadableHashJoin(
-            JoinData.builder()
+            JoinData
+                .builder()
 
                 .joiner(new InnerJoin())
 
@@ -154,15 +174,22 @@ public class PreComputation extends SubAssembly {
                 .leftJoinFields(META_PK_FIELDS)
 
                 .rightPipe( // Meta files
-                    processFiles(inputData, projectKey, featureType.getMetaFileType(),
-                        ANALYSIS_ID, SAMPLE_ID, SEQUENCING_STRATEGY))
+                    processFiles(
+                        inputData, projectKey, featureType.getMetaFileType(),
+                        ANALYSIS_ID_FIELD
+                            .append(SAMPLE_ID_FIELD)
+                            .append(SEQUENCING_STRATEGY_FIELD)))
                 .rightJoinFields(META_PK_FIELDS)
 
                 .resultFields(
                     META_PK_FIELDS
                         .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
-                        .append(new Fields(REDUNDANT_ANALYSIS_ID, REDUNDANT_SAMPLE_ID, SEQUENCING_STRATEGY)))
-                .discardFields(new Fields(REDUNDANT_ANALYSIS_ID, REDUNDANT_SAMPLE_ID))
+                        .append(REDUNDANT_ANALYSIS_ID_FIELD)
+                        .append(REDUNDANT_SAMPLE_ID_FIELD)
+                        .append(SEQUENCING_STRATEGY_FIELD))
+                .discardFields(
+                    REDUNDANT_ANALYSIS_ID_FIELD
+                        .append(REDUNDANT_SAMPLE_ID_FIELD))
 
                 .build()));
   }
@@ -178,9 +205,11 @@ public class PreComputation extends SubAssembly {
             //
             new GroupBy(GroupByData.builder()
 
-                .pipe(processFiles(
-                    inputData, projectKey, featureType.getPrimaryFileType(),
-                    ANALYSIS_ID, SAMPLE_ID))
+                .pipe(
+                    processFiles(
+                        inputData, projectKey, featureType.getPrimaryFileType(),
+                        ANALYSIS_ID_FIELD
+                            .append(SAMPLE_ID_FIELD)))
                 .groupByFields(META_PK_FIELDS)
 
                 .build()))
@@ -193,7 +222,7 @@ public class PreComputation extends SubAssembly {
   }
 
   private static Pipe processFiles(InputData inputData,
-      final String projectKey, final FileType fileType, final String... retainedFields) {
+      final String projectKey, final FileType fileType, final Fields retainedFields) {
     return
 
     new Transformerge<String>(
@@ -213,14 +242,14 @@ public class PreComputation extends SubAssembly {
 
   private static Pipe processFile(
       final String projectKey, final FileType fileType, final int fileNumber, final String matchingFilePath,
-      final String... retainedFields) {
+      final Fields retainedFields) {
     return new Retain(
 
         //
         getHeadPipe(projectKey, fileType, fileNumber),
 
         //
-        new Fields(retainedFields));
+        retainedFields);
   }
 
   private static Pipe getHeadPipe(final String projectKey, final FileType fileType, final int fileNumber) {

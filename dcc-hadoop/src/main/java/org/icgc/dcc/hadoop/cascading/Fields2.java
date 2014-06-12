@@ -48,6 +48,7 @@ public final class Fields2 {
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
   private static final String COUNT_SUFFIX = "count";
+  private static final String REDUNDANT_PREFIX = "redundant";
 
   public static void checkFieldsCardinalityOne(Fields fields) {
     checkFieldsCardinality(fields, 1);
@@ -147,6 +148,14 @@ public final class Fields2 {
 
   public static Fields getCountFieldCounterpart(String fieldName) {
     return new Fields(UNDERSCORE.join(fieldName, COUNT_SUFFIX));
+  }
+
+  public static Fields getRedundantFieldCounterpart(Fields fields) {
+    return getRedundantFieldCounterpart(getFieldName(fields));
+  }
+
+  public static Fields getRedundantFieldCounterpart(String fieldName) {
+    return new Fields(UNDERSCORE.join(REDUNDANT_PREFIX, fieldName));
   }
 
   /**
