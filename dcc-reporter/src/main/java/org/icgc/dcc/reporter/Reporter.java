@@ -5,8 +5,8 @@ import static org.icgc.dcc.core.util.Extensions.TSV;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Pipes.getTailNames;
-import static org.icgc.dcc.reporter.Connector.getInputTaps;
-import static org.icgc.dcc.reporter.Connector.getOutputTaps;
+import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
+import static org.icgc.dcc.reporter.Connector.getRawOutputTaps;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,8 +34,8 @@ public class Reporter {
     new LocalFlowConnector()
         .connect(
             flowDef()
-                .addSources(getInputTaps(inputData))
-                .addSinks(getOutputTaps(getTailNames(tails)))
+                .addSources(getRawInputTaps(inputData))
+                .addSinks(getRawOutputTaps(getTailNames(tails)))
                 .addTails(tails)
                 .setName(Flows.getName(getClass())))
         .complete();

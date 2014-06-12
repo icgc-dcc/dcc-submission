@@ -34,10 +34,10 @@ public final class Schemes {
    * Do <b>not<b/> recycle {@link Schemes} as they are actually mutated.
    */
   public static final TextDelimited getTsvWithHeader() {
-    return new TextDelimited(hasHeader(), Separators.TAB);
+    return new TextDelimited(withHeader(), Separators.TAB);
   }
 
-  private static boolean hasHeader() {
+  private static boolean withHeader() {
     return true;
   }
 

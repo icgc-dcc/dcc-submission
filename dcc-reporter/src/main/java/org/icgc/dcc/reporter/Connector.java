@@ -21,14 +21,14 @@ public class Connector {
    * See {@link Taps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  public static Map<String, Tap> getInputTaps(InputData inputData) {
+  public static Map<String, Tap> getRawInputTaps(InputData inputData) {
     return
 
     // Convert to raw taps
     transformValues(
 
         // Convert to pipe to tap map
-        getRawInputTaps(
+        getInputTaps(
 
         // get pipe to path map for the project/file type combination
         inputData.getPipeNameToFilePath()),
@@ -40,24 +40,21 @@ public class Connector {
    * See {@link Taps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  public static Map<String, Tap> getOutputTaps(Iterable<String> tailNames) {
+  public static Map<String, Tap> getRawOutputTaps(Iterable<String> tailNames) {
     return
 
     // Convert to raw taps
     transformValues(
 
         // Convert to pipe to tap map
-        getRawOutputTaps(tailNames),
+        getOutputTaps(tailNames),
 
         Taps.RAW_CASTER);
   }
 
-  private static Map<String, Tap<?, ?, ?>> getRawInputTaps(Map<String, String> m) {
-
-    System.out.println("@ " + m.toString().replace(",", "\n"));
-
-    val d = transformValues(
-        m,
+  private static Map<String, Tap<?, ?, ?>> getInputTaps(Map<String, String> pipeNameToFilePath) {
+    return transformValues(
+        pipeNameToFilePath,
         new Function<String, Tap<?, ?, ?>>() {
 
           @Override
@@ -66,22 +63,19 @@ public class Connector {
           }
 
         });
-
-    System.out.println("+ " + d.toString().replace(",", "\n"));
-    return d;
   }
 
-  private static Map<String, Tap<?, ?, ?>> getRawOutputTaps(Iterable<String> tailNames) {
-    val m = new ImmutableMap.Builder<String, Tap<?, ?, ?>>();
+  private static Map<String, Tap<?, ?, ?>> getOutputTaps(Iterable<String> tailNames) {
+    val rawOutputTaps = new ImmutableMap.Builder<String, Tap<?, ?, ?>>();
     val iterator = newArrayList(tailNames).iterator();
     for (val outputType : OutputType.values()) {
-      m.put(
+      rawOutputTaps.put(
           iterator.next(), // TODO: explain...
           Taps.getTsvFileWithHeader(
               getOutputFilePath(outputType)));
     }
-    System.out.println(m.build());
-    return m.build();
+
+    return rawOutputTaps.build();
   }
 
 }
