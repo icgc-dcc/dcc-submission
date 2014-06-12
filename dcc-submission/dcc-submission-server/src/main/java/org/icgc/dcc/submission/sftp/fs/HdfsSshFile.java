@@ -39,7 +39,6 @@ import static org.apache.sshd.common.file.SshFile.Permission.UserWrite;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +47,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
-import lombok.Delegate;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
@@ -82,6 +81,8 @@ public abstract class HdfsSshFile implements SshFile {
   protected Path path;
   @NonNull
   protected final FileSystem fileSystem;
+  @NonNull
+  protected final Subject subject;
 
   @Override
   public Map<Attribute, Object> getAttributes(boolean followLinks) throws IOException {
@@ -248,17 +249,7 @@ public abstract class HdfsSshFile implements SshFile {
       }
 
       log.info("Submission file opened: '{}'", path);
-      return new OutputStream() {
-
-        @Delegate(excludes = Closeable.class)
-        OutputStream delegate = fileSystem.create(path);
-
-        @Override
-        public void close() throws IOException {
-          delegate.close();
-        }
-
-      };
+      return fileSystem.create(path);
     } catch (Exception e) {
       return handleException(OutputStream.class, e);
     }

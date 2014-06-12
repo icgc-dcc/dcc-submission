@@ -15,39 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key;
+package org.icgc.dcc.submission.sftp;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import java.io.File;
-import java.io.IOException;
+import org.apache.shiro.subject.Subject;
+import org.apache.sshd.common.Session;
+import org.apache.sshd.common.Session.AttributeKey;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+@NoArgsConstructor(access = PRIVATE)
+public final class SftpSessions {
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+  private static final AttributeKey<Subject> SESSION_KEY = new AttributeKey<Subject>();
 
-/**
- * TODO
- */
-@Slf4j
-public class KVTestUtils {
-
-  /**
-   * Test data.
-   */
-  public static final String TEST_DIR = "src/test/resources/fixtures/validation/key";
-  public static final String FS_DIR = PATH.join(TEST_DIR, "fs");
-  public static final String REFERENCE_FILE_NAME = "reference.jsons";
-
-  public static void copyDirectory(FileSystem fileSystem, File sourceDir, Path targetDir) throws IOException {
-    for (val file : sourceDir.listFiles()) {
-      val source = new Path(file.toURI());
-      val target = new Path(targetDir, file.getName());
-
-      log.info("Copying file: from '{}' to '{}'", source, target);
-      fileSystem.copyFromLocalFile(source, target);
-    }
+  public static void setSessionSubject(Session session, Subject subject) {
+    session.setAttribute(SESSION_KEY, subject);
   }
+
+  public static Subject getSessionSubject(Session session) {
+    return session.getAttribute(SESSION_KEY);
+  }
+
 }

@@ -44,6 +44,13 @@ public final class Fields2 {
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
 
+  public static void checkFieldsCardinality(Fields fields, int expectedSize) {
+    checkState(
+        fields.size() == expectedSize,
+        "Expecting only '%s' field(s), instead got '%s' ('%s')",
+        fields.size(), fields);
+  }
+
   public static Fields fields(Iterable<String> fieldNames) {
     return fields(newArrayList(fieldNames));
   }

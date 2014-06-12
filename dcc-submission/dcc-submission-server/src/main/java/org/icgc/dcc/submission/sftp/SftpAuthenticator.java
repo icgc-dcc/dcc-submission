@@ -17,12 +17,18 @@
  */
 package org.icgc.dcc.submission.sftp;
 
+import static org.icgc.dcc.submission.sftp.SftpSessions.setSessionSubject;
+
 import java.io.IOException;
 
+import lombok.NonNull;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
+import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -44,14 +50,16 @@ class SftpAuthenticator implements PasswordAuthenticator {
   /**
    * Authenticator state.
    */
+  @NonNull
+  private final UsernamePasswordAuthenticator authenticator;
+  @NonNull
   private final SftpContext context;
-  private final SftpBanner banner;
   private volatile boolean enabled = true;
 
   @Inject
-  public SftpAuthenticator(SftpContext context) {
+  public SftpAuthenticator(UsernamePasswordAuthenticator authenticator, SftpContext context) {
+    this.authenticator = authenticator;
     this.context = context;
-    this.banner = new SftpBanner(context);
   }
 
   @Override
@@ -66,7 +74,12 @@ class SftpAuthenticator implements PasswordAuthenticator {
 
     boolean authenticated = authenticate(username, password);
     if (authenticated) {
-      sendBanner(username, session);
+      // Add principal to MINA SFTP session
+      val subject = authenticator.getSubject();
+      setSessionSubject(session, subject);
+
+      // Send an informative message
+      sendBanner(username, session, subject);
     }
 
     return authenticated;
@@ -100,11 +113,12 @@ class SftpAuthenticator implements PasswordAuthenticator {
 
   private boolean authenticate(String username, String password) {
     // Delegate to Shiro
-    return context.authenticate(username, password);
+    return authenticator.authenticate(username, password.toCharArray(), null) != null;
   }
 
-  private void sendBanner(String username, ServerSession session) {
+  private void sendBanner(String username, ServerSession session, Subject subject) {
     // Send a custom welcome message
+    val banner = new SftpBanner(context, subject);
     banner.send(username, session);
   }
 
