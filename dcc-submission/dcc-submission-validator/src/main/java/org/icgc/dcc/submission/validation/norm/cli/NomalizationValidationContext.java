@@ -24,12 +24,8 @@ import static org.apache.hadoop.fs.Path.SEPARATOR;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
-import java.net.URL;
 import java.util.Collection;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import lombok.Cleanup;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -39,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.util.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -141,20 +138,10 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   @Override
   @SneakyThrows
   public Dictionary getDictionary() {
-    // Resolve
-    val entryName = "org/icgc/dcc/resources/Dictionary.json";
-    URL url = getDictionaryUrl(DICTIONARY_VERSION);
-    @Cleanup
-    val zip = new ZipInputStream(url.openStream());
-    ZipEntry entry;
-
-    do {
-      entry = zip.getNextEntry();
-    } while (!entryName.equals(entry.getName()));
-
     // Deserialize
+    val objectNode = new ArtifactoryDictionaryResolver().getDictionary(DICTIONARY_VERSION);
     val reader = new ObjectMapper().reader(Dictionary.class);
-    Dictionary dictionary = reader.readValue(zip);
+    Dictionary dictionary = reader.readValue(objectNode);
 
     return dictionary;
   }

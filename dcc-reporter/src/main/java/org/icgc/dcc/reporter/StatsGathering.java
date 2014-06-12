@@ -3,7 +3,9 @@ package org.icgc.dcc.reporter;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.collect.Iterables.toArray;
+import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.reporter.OutputType.DONOR;
 import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.reporter.OutputType.SAMPLE;
@@ -99,10 +101,11 @@ public class StatsGathering extends SubAssembly {
 
   private Pipe getPreCountedUniqueCountPipe(
       Pipe preComputationTable, String targetFieldName, Fields preCountField, String... groupFieldNames) {
+    checkFieldsCardinalityOne(preCountField);
 
-    class MyBuffer extends BaseOperation<Void> implements Buffer<Void> {
+    class Reduce extends BaseOperation<Void> implements Buffer<Void> {
 
-      public MyBuffer() {
+      public Reduce() {
         super(ARGS);
       }
 
@@ -111,13 +114,11 @@ public class StatsGathering extends SubAssembly {
         long observationCount = 0;
         val entries = bufferCall.getArgumentsIterator();
         while (entries.hasNext()) {
-          observationCount += entries.next().getInteger(0); // TODO: use TupleEntries utility when merged
+          observationCount += getFirstInteger(entries.next());
         }
         bufferCall.getOutputCollector().add(new Tuple(observationCount));
       }
     }
-
-    // TODO: check cardinalities
 
     return
 
@@ -145,7 +146,7 @@ public class StatsGathering extends SubAssembly {
             preCountField,
 
             //
-            new MyBuffer(),
+            new Reduce(),
 
             REPLACE),
 

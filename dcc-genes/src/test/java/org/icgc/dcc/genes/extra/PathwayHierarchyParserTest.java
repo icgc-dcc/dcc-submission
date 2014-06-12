@@ -4,6 +4,7 @@ import static org.apache.commons.lang.StringUtils.repeat;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -13,13 +14,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import com.google.common.io.Resources;
+
 @Slf4j
 public class PathwayHierarchyParserTest {
 
   @Test
   public void testParse() throws MalformedURLException, IOException, SAXException, ParserConfigurationException {
+    URL pathwayHierURL = Resources.getResource("pathway_hier.txt");
+    log.info("Pathway URL {}", pathwayHierURL);
+
     val parser = new PathwayHierarchyParser();
-    val results = parser.parse();
+    val results = parser.parse(pathwayHierURL);
 
     for (val dbId : results.keySet()) {
       log.info("{}", repeat("-", 80));

@@ -21,6 +21,7 @@ import static cascading.tuple.Fields.ALL;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 
 import java.util.Map.Entry;
 
@@ -75,7 +76,8 @@ public class SubAssemblies {
   public static class Insert extends SubAssembly {
 
     public Insert(Entry<Fields, Object> keyValuePair, Pipe pipe) {
-      // TODO: add check field cardinality (from other branch)
+      checkFieldsCardinalityOne(keyValuePair.getKey());
+
       setTails(
 
       //
@@ -95,6 +97,7 @@ public class SubAssemblies {
   public static class ReadableHashJoin extends SubAssembly {
 
     public ReadableHashJoin(JoinData joinData) {
+      // TODO: add checks on cardinalities
       setTails(
 
       //

@@ -23,12 +23,8 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
-import java.net.URL;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import lombok.Cleanup;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -41,6 +37,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.core.util.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -96,20 +93,10 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   @SneakyThrows
   protected Dictionary createDictionary() {
-    // Resolve
-    val entryName = "org/icgc/dcc/resources/Dictionary.json";
-    URL url = getDictionaryUrl(DICTIONARY_VERSION);
-    @Cleanup
-    val zip = new ZipInputStream(url.openStream());
-    ZipEntry entry;
-
-    do {
-      entry = zip.getNextEntry();
-    } while (!entryName.equals(entry.getName()));
-
     // Deserialize
+    val objectNode = new ArtifactoryDictionaryResolver().getDictionary(DICTIONARY_VERSION);
     val reader = new ObjectMapper().reader(Dictionary.class);
-    Dictionary dictionary = reader.readValue(zip);
+    Dictionary dictionary = reader.readValue(objectNode);
 
     // Add file schemata
     dictionary.addFile(readFileSchema(SSM_S_TYPE));

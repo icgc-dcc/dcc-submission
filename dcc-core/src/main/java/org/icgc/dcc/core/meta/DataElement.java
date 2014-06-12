@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,32 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.sftp.fs;
+package org.icgc.dcc.core.meta;
 
-import static org.icgc.dcc.submission.sftp.SftpSessions.getSessionSubject;
+import lombok.Value;
 
-import java.io.IOException;
+@Value
+public class DataElement {
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
-import org.apache.sshd.common.Session;
-import org.apache.sshd.common.file.FileSystemFactory;
-import org.apache.sshd.common.file.FileSystemView;
-import org.icgc.dcc.submission.sftp.SftpContext;
-
-@RequiredArgsConstructor
-public class HdfsFileSystemFactory implements FileSystemFactory {
-
-  @NonNull
-  private final SftpContext context;
+  String source;
+  String schema;
+  String name;
+  String type;
+  String path;
 
   @Override
-  public FileSystemView createFileSystemView(Session session) throws IOException {
-    val subject = getSessionSubject(session);
-
-    return new HdfsFileSystemView(context, subject);
+  public String toString() {
+    return name;
   }
 
 }

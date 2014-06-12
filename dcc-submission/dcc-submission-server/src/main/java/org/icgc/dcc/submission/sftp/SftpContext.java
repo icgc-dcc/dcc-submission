@@ -82,15 +82,10 @@ public class SftpContext {
   @NonNull
   private final MailService mailService;
 
-  public boolean authenticate(String username, String password) {
-    return authenticator.authenticate(username, password.toCharArray(), null) != null;
-  }
-
-  public List<String> getUserProjectKeys() {
-    val user = getCurrentUser();
+  public List<String> getUserProjectKeys(Subject subject) {
     val projectKeys = Lists.<String> newArrayList();
     for (val project : projectService.getProjects()) {
-      if (user.isPermitted(projectViewPrivilege(project.getKey()))) {
+      if (subject.isPermitted(projectViewPrivilege(project.getKey()))) {
         projectKeys.add(project.getKey());
       }
     }
@@ -108,28 +103,28 @@ public class SftpContext {
   }
 
   // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
-  public ReleaseFileSystem getReleaseFileSystem() {
-    return fs.getReleaseFilesystem(getNextRelease(), getCurrentUser());
+  public ReleaseFileSystem getReleaseFileSystem(Subject subject) {
+    return fs.getReleaseFilesystem(getNextRelease(), subject);
   }
 
   public FileSystem getFileSystem() {
     return fs.getFileSystem();
   }
 
-  public boolean isSystemDirectory(Path path) {
-    return getReleaseFileSystem().isSystemDirectory(path);
+  public boolean isSystemDirectory(Path path, Subject subject) {
+    return getReleaseFileSystem(subject).isSystemDirectory(path);
   }
 
-  public boolean isAdminUser() {
-    return getReleaseFileSystem().isAdminUser();
+  public boolean isAdminUser(Subject subject) {
+    return getReleaseFileSystem(subject).isAdminUser();
   }
 
   public SubmissionFile getSubmissionFile(@NonNull Path path) throws IOException {
     return getSubmissionFile(releaseService.getNextDictionary(), path);
   }
 
-  public SubmissionDirectory getSubmissionDirectory(String projectKey) {
-    return getReleaseFileSystem().getSubmissionDirectory(projectKey);
+  public SubmissionDirectory getSubmissionDirectory(String projectKey, Subject subject) {
+    return getReleaseFileSystem(subject).getSubmissionDirectory(projectKey);
   }
 
   public Path getReleasePath() {
@@ -141,8 +136,8 @@ public class SftpContext {
     releaseService.resetSubmissions();
   }
 
-  public void registerSubmissionEvent(@NonNull String projectKey, @NonNull SubmissionFileEvent event) {
-    val user = (String) getCurrentUser().getPrincipal();
+  public void registerSubmissionEvent(@NonNull String projectKey, @NonNull SubmissionFileEvent event, Subject subject) {
+    val user = (String) subject.getPrincipal();
     val fileName = event.getFile().getName();
 
     if (event.getType() == FILE_CREATED) {
@@ -160,7 +155,7 @@ public class SftpContext {
     releaseService.modifySubmission(getNextReleaseName(), projectKey, event);
   }
 
-  private Subject getCurrentUser() {
+  public Subject getCurrentUser() {
     return authenticator.getSubject();
   }
 

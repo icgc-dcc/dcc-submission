@@ -49,6 +49,25 @@ public final class Fields2 {
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
   private static final String COUNT_SUFFIX = "count";
 
+  public static void checkFieldsCardinalityOne(Fields fields) {
+    checkFieldsCardinality(fields, 1);
+  }
+
+  public static void checkFieldsCardinalityTwo(Fields fields) {
+    checkFieldsCardinality(fields, 2);
+  }
+
+  public static void checkFieldsCardinalityThree(Fields fields) {
+    checkFieldsCardinality(fields, 3);
+  }
+
+  public static void checkFieldsCardinality(Fields fields, int expectedSize) {
+    checkState(
+        fields.size() == expectedSize,
+        "Expecting only '%s' field(s), instead got '%s' ('%s')",
+        fields.size(), fields);
+  }
+
   public static Fields fields(Iterable<String> fieldNames) {
     return fields(newArrayList(fieldNames));
   }

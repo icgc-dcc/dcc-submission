@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,32 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.sftp.fs;
+package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.submission.sftp.SftpSessions.getSessionSubject;
+import static com.google.common.net.HttpHeaders.ACCEPT;
 
-import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 
-import org.apache.sshd.common.Session;
-import org.apache.sshd.common.file.FileSystemFactory;
-import org.apache.sshd.common.file.FileSystemView;
-import org.icgc.dcc.submission.sftp.SftpContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-@RequiredArgsConstructor
-public class HdfsFileSystemFactory implements FileSystemFactory {
+@AllArgsConstructor
+@NoArgsConstructor
+public class RestfulDictionaryResolver implements DictionaryResolver {
 
-  @NonNull
-  private final SftpContext context;
+  private final String DEFAULT_DICTIONARY_URL = "http://***REMOVED***:5380/ws/nextRelease/dictionary";
+
+  private String url = DEFAULT_DICTIONARY_URL;
 
   @Override
-  public FileSystemView createFileSystemView(Session session) throws IOException {
-    val subject = getSessionSubject(session);
+  @SneakyThrows
+  public ObjectNode getDictionary() {
+    return getDictionary("");
+  }
 
-    return new HdfsFileSystemView(context, subject);
+  @Override
+  @SneakyThrows
+  public ObjectNode getDictionary(String version) {
+    val connection = new URL(url + "/" + version).openConnection();
+    connection.setRequestProperty(ACCEPT, "application/json");
+
+    return new ObjectMapper().readValue((InputStream) connection.getContent(), ObjectNode.class);
   }
 
 }
