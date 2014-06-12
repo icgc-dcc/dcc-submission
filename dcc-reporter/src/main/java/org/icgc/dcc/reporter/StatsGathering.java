@@ -3,12 +3,13 @@ package org.icgc.dcc.reporter;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.collect.Iterables.toArray;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.reporter.OutputType.DONOR;
 import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.reporter.OutputType.SAMPLE;
 import static org.icgc.dcc.reporter.OutputType.SPECIMEN;
 import static org.icgc.dcc.reporter.PreComputation.ANALYSIS_ID;
-import static org.icgc.dcc.reporter.PreComputation.ANALYSIS_OBSERVATION_COUNT;
+import static org.icgc.dcc.reporter.PreComputation.ANALYSIS_OBSERVATION_COUNT_FIELD;
 import static org.icgc.dcc.reporter.PreComputation.DONOR_ID;
 import static org.icgc.dcc.reporter.PreComputation.PROJECT_ID;
 import static org.icgc.dcc.reporter.PreComputation.SAMPLE_ID;
@@ -45,7 +46,7 @@ public class StatsGathering extends SubAssembly {
         .add(new Pipe(SPECIMEN.name(), getUniqueCountPipe(preComputationTable, SPECIMEN_ID, PROJECT_ID, TYPE)))
         .add(new Pipe(SAMPLE.name(), getUniqueCountPipe(preComputationTable, SAMPLE_ID, PROJECT_ID, TYPE)))
         .add(new Pipe(OBSERVATION.name(), getPreCountedUniqueCountPipe(preComputationTable, ANALYSIS_ID,
-            ANALYSIS_OBSERVATION_COUNT, PROJECT_ID, TYPE)))
+            ANALYSIS_OBSERVATION_COUNT_FIELD, PROJECT_ID, TYPE)))
         .add(
             new Pipe(
                 PreComputation.SEQUENCING_STRATEGY,
@@ -93,11 +94,11 @@ public class StatsGathering extends SubAssembly {
         new Fields(groupFieldNames),
 
         //
-        new Fields(targetFieldName + "_count"));
+        getCountFieldCounterpart(targetFieldName));
   }
 
   private Pipe getPreCountedUniqueCountPipe(
-      Pipe preComputationTable, String targetFieldName, String preCountFieldName, String... groupFieldNames) {
+      Pipe preComputationTable, String targetFieldName, Fields preCountField, String... groupFieldNames) {
 
     class MyBuffer extends BaseOperation<Void> implements Buffer<Void> {
 
@@ -116,6 +117,8 @@ public class StatsGathering extends SubAssembly {
       }
     }
 
+    // TODO: check cardinalities
+
     return
 
     //
@@ -133,13 +136,13 @@ public class StatsGathering extends SubAssembly {
 
                     //
                     new Fields(groupFieldNames)
-                        .append(new Fields(targetFieldName, preCountFieldName))),
+                        .append(new Fields(targetFieldName).append(preCountField))),
 
                 //
                 new Fields(groupFieldNames)),
 
             //
-            new Fields(ANALYSIS_OBSERVATION_COUNT),
+            preCountField,
 
             //
             new MyBuffer(),
@@ -148,6 +151,6 @@ public class StatsGathering extends SubAssembly {
 
         //
         new Fields(groupFieldNames)
-            .append(new Fields(ANALYSIS_OBSERVATION_COUNT)));
+            .append(preCountField));
   }
 }

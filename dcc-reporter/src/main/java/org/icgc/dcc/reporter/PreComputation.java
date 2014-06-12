@@ -3,6 +3,7 @@ package org.icgc.dcc.reporter;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.FormatUtils._;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,7 @@ public class PreComputation extends SubAssembly {
   static String ANALYSIS_OBSERVATION = "analysis_observation";
   static String SEQUENCING_STRATEGY = "sequencing_strategy";
   static String REDUNDANT_PREFFIX = "redundant_";
-  static String COUNT_SUFFIX = "_count";
-  static String ANALYSIS_OBSERVATION_COUNT = _("%s%s", ANALYSIS_OBSERVATION, COUNT_SUFFIX);
+  static Fields ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart(ANALYSIS_OBSERVATION);
 
   static String REDUNDANT_SPECIMEN_ID = _("%s%s", REDUNDANT_PREFFIX, SPECIMEN_ID);
   static String REDUNDANT_SAMPLE_ID = _("%s%s", REDUNDANT_PREFFIX, SAMPLE_ID);
@@ -86,9 +86,9 @@ public class PreComputation extends SubAssembly {
                 .rightJoinFields(new Fields(SAMPLE_ID))
 
                 .resultFields(
-                    new Fields(
-                        ANALYSIS_ID, SAMPLE_ID, ANALYSIS_OBSERVATION_COUNT, SEQUENCING_STRATEGY,
-                        TYPE, DONOR_ID, SPECIMEN_ID, REDUNDANT_SAMPLE_ID))
+                    new Fields(ANALYSIS_ID, SAMPLE_ID)
+                        .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
+                        .append(new Fields(SEQUENCING_STRATEGY, TYPE, DONOR_ID, SPECIMEN_ID, REDUNDANT_SAMPLE_ID)))
                 .discardFields(new Fields(REDUNDANT_SAMPLE_ID))
 
                 .build()));
@@ -156,9 +156,9 @@ public class PreComputation extends SubAssembly {
                 .rightJoinFields(new Fields(ANALYSIS_ID, SAMPLE_ID))
 
                 .resultFields(
-                    new Fields(
-                        ANALYSIS_ID, SAMPLE_ID, ANALYSIS_OBSERVATION_COUNT, REDUNDANT_ANALYSIS_ID,
-                        REDUNDANT_SAMPLE_ID, SEQUENCING_STRATEGY))
+                    new Fields(ANALYSIS_ID, SAMPLE_ID)
+                        .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
+                        .append(new Fields(REDUNDANT_ANALYSIS_ID, REDUNDANT_SAMPLE_ID, SEQUENCING_STRATEGY)))
                 .discardFields(new Fields(REDUNDANT_ANALYSIS_ID, REDUNDANT_SAMPLE_ID))
 
                 .build()));
@@ -183,7 +183,7 @@ public class PreComputation extends SubAssembly {
         new Fields(ANALYSIS_ID, SAMPLE_ID),
 
         // Result field (count by)
-        new Fields(ANALYSIS_OBSERVATION_COUNT));
+        ANALYSIS_OBSERVATION_COUNT_FIELD);
   }
 
   private static Pipe processFiles(InputData inputData,

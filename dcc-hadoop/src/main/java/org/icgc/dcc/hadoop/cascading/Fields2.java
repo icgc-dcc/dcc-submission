@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.UNDERSCORE;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import com.google.common.collect.ImmutableList;
 public final class Fields2 {
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
+  private static final String COUNT_SUFFIX = "count";
 
   public static Fields fields(Iterable<String> fieldNames) {
     return fields(newArrayList(fieldNames));
@@ -118,6 +120,14 @@ public final class Fields2 {
 
   private static String[] toStringArray(Collection<String> fieldNames) {
     return fieldNames.toArray(new String[] {});
+  }
+
+  public static Fields getCountFieldCounterpart(Fields fields) {
+    return getCountFieldCounterpart(getFieldName(fields));
+  }
+
+  public static Fields getCountFieldCounterpart(String fieldName) {
+    return new Fields(UNDERSCORE.join(fieldName, COUNT_SUFFIX));
   }
 
   /**
