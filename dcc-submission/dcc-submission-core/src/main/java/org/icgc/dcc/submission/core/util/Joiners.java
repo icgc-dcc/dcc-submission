@@ -38,5 +38,6 @@ public final class Joiners {
 
   public static final Joiner PATH = SLASH;
   public static final Joiner INDENT = on("\n\t");
+  public static final Joiner COMMA = on(',');
 
 }
