@@ -54,6 +54,8 @@ public class PreComputation extends SubAssembly {
   static Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
   static Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
 
+  static Fields NO_FIELDS = new Fields();
+
   static Fields META_PK_FIELDS =
       ANALYSIS_ID_FIELD
           .append(SAMPLE_ID_FIELD);
@@ -203,11 +205,21 @@ public class PreComputation extends SubAssembly {
                 .leftPipe(processPrimaryFiles(inputData, projectKey, featureType))
                 .leftJoinFields(META_PK_FIELDS)
 
-                .rightPipe( // Meta files
-                    processFiles(
-                        inputData, projectKey, featureType.getMetaFileType(),
-                        META_PK_FIELDS
-                            .append(SEQUENCING_STRATEGY_FIELD)))
+                .rightPipe(
+
+                    // Meta files
+                    normalizeSequencingStrategies(
+                        featureType.hasSequencingStrategy(),
+
+                        // Use feature type as replacement for a sequencing strategy if need be
+                        featureType.getTypeName(),
+
+                        processFiles(
+                            inputData, projectKey, featureType.getMetaFileType(),
+                            META_PK_FIELDS
+                                .append(featureType.hasSequencingStrategy() ?
+                                    SEQUENCING_STRATEGY_FIELD :
+                                    NO_FIELDS))))
                 .rightJoinFields(META_PK_FIELDS)
 
                 .resultFields(
@@ -221,6 +233,21 @@ public class PreComputation extends SubAssembly {
                         .append(REDUNDANT_SAMPLE_ID_FIELD))
 
                 .build()));
+  }
+
+  /**
+   * Some feature types don't have a sequencing strategy and require special processing.
+   */
+  private static Pipe normalizeSequencingStrategies(
+      final boolean hasSequencingStrategy, final String replacement, final Pipe pipe) {
+    return hasSequencingStrategy ?
+        pipe :
+
+        // Insert a "fake" sequencing strategy to make it look uniform
+        new Insert(
+            keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
+            pipe
+        );
   }
 
   private static Pipe processPrimaryFiles(

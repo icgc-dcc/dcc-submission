@@ -117,6 +117,10 @@ public final class FeatureTypes {
       return isSsm();
     }
 
+    public boolean hasSequencingStrategy() {
+      return TYPES_WITH_SEQUENCING_STRATEGY.apply(this);
+    }
+
     /**
      * Returns the file types corresponding to the feature type.
      * <p>
@@ -217,5 +221,7 @@ public final class FeatureTypes {
     }
 
   };
+
+  public static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
 
 }

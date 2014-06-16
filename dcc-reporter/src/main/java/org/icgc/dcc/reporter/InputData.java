@@ -111,20 +111,20 @@ public class InputData {
     data.addFile("project.1", FileType.CNSM_P_TYPE, new File(dir, "cnsm_p.txt").getPath());
     data.addFile("project.1", FileType.CNSM_S_TYPE, new File(dir, "cnsm_s.txt").getPath());
 
-    // data.addFile("project.1", FileType.EXP_ARRAY_M_TYPE, new File(dir, "exp_array_m.txt").getPath());
-    // data.addFile("project.1", FileType.EXP_ARRAY_P_TYPE, new File(dir, "exp_array_p.txt").getPath());
+    data.addFile("project.1", FileType.EXP_ARRAY_M_TYPE, new File(dir, "exp_array_m.txt").getPath());
+    data.addFile("project.1", FileType.EXP_ARRAY_P_TYPE, new File(dir, "exp_array_p.txt").getPath());
     data.addFile("project.1", FileType.EXP_SEQ_M_TYPE, new File(dir, "exp_seq_m.txt").getPath());
     data.addFile("project.1", FileType.EXP_SEQ_P_TYPE, new File(dir, "exp_seq_p.txt").getPath());
     data.addFile("project.1", FileType.JCN_M_TYPE, new File(dir, "jcn_m.txt").getPath());
     data.addFile("project.1", FileType.JCN_P_TYPE, new File(dir, "jcn_p.txt").getPath());
-    // data.addFile("project.1", FileType.METH_ARRAY_M_TYPE, new File(dir, "meth_array_m.txt").getPath());
-    // data.addFile("project.1", FileType.METH_ARRAY_P_TYPE, new File(dir, "meth_array_p.txt").getPath());
+    data.addFile("project.1", FileType.METH_ARRAY_M_TYPE, new File(dir, "meth_array_m.txt").getPath());
+    data.addFile("project.1", FileType.METH_ARRAY_P_TYPE, new File(dir, "meth_array_p.txt").getPath());
     data.addFile("project.1", FileType.METH_SEQ_M_TYPE, new File(dir, "meth_seq_m.txt").getPath());
     data.addFile("project.1", FileType.METH_SEQ_P_TYPE, new File(dir, "meth_seq_p.txt").getPath());
     data.addFile("project.1", FileType.MIRNA_SEQ_M_TYPE, new File(dir, "mirna_seq_m.txt").getPath());
     data.addFile("project.1", FileType.MIRNA_SEQ_P_TYPE, new File(dir, "mirna_seq_p.txt").getPath());
-    // data.addFile("project.1", FileType.PEXP_M_TYPE, new File(dir, "pexp_m.txt").getPath());
-    // data.addFile("project.1", FileType.PEXP_P_TYPE, new File(dir, "pexp_p.txt").getPath());
+    data.addFile("project.1", FileType.PEXP_M_TYPE, new File(dir, "pexp_m.txt").getPath());
+    data.addFile("project.1", FileType.PEXP_P_TYPE, new File(dir, "pexp_p.txt").getPath());
     data.addFile("project.1", FileType.SGV_M_TYPE, new File(dir, "sgv_m.txt").getPath());
     data.addFile("project.1", FileType.SGV_P_TYPE, new File(dir, "sgv_p.txt").getPath());
     data.addFile("project.1", FileType.SSM_M_TYPE, new File(dir, "ssm_m.1.txt").getPath());
