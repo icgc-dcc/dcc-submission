@@ -41,7 +41,7 @@ public class Gatherer {
       val fields = TAB.split(lines.get(i));
       val iterator = fields.iterator();
       val projectId = iterator.next();
-      val type = DataTypes.valueOf(iterator.next());
+      val type = DataTypes.from(iterator.next());
       val count = Long.valueOf(iterator.next());
 
       table.updateCount(output, projectId, type, count);

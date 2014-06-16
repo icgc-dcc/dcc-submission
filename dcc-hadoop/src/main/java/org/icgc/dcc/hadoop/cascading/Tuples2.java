@@ -22,6 +22,7 @@ import java.util.List;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 import cascading.tuple.Tuple;
 
@@ -49,13 +50,12 @@ public final class Tuples2 {
     return nestingTuple;
   }
 
-  public static boolean isNullTuple(Tuple tuple) {
-    for (int fieldIndex = 0; fieldIndex < tuple.size(); fieldIndex++) {
-      if (!isNullField(tuple, fieldIndex)) {
+  public static boolean isNullTuple(@NonNull Tuple tuple) {
+    for (val value : tuple) {
+      if (value != null) {
         return false;
       }
     }
-
     return true;
   }
 

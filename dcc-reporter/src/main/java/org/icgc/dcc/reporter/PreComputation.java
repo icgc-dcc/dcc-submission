@@ -1,5 +1,6 @@
 package org.icgc.dcc.reporter;
 
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
@@ -10,6 +11,7 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy;
@@ -95,7 +97,7 @@ public class PreComputation extends SubAssembly {
 
           @Override
           public Object get() {
-            return NOT_APPLICABLE;
+            return getValue(CLINICAL_CORE_TYPE);
           }
 
         },
@@ -190,7 +192,7 @@ public class PreComputation extends SubAssembly {
     new Insert(
 
         // Fields to insert
-        keyValuePair(TYPE_FIELD, featureType),
+        keyValuePair(TYPE_FIELD, getValue(featureType)),
 
         //
         new ReadableHashJoin(
@@ -282,6 +284,13 @@ public class PreComputation extends SubAssembly {
 
   private static Pipe getHeadPipe(final String projectKey, final FileType fileType, final int fileNumber) {
     return new Pipe(getHeadPipeName(projectKey, fileType, fileNumber));
+  }
+
+  /**
+   * TODO: explain!
+   */
+  private static String getValue(final DataType dataType) {
+    return dataType.getTypeName();
   }
 
 }
