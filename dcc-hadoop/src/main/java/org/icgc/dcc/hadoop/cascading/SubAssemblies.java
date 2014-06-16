@@ -138,7 +138,7 @@ public class SubAssemblies {
    */
   public static class NullReplacer extends SubAssembly {
 
-    public NullReplacer(Pipe pipe, Fields targetFields, NullReplacing nullReplacing) {
+    public NullReplacer(Fields targetFields, NullReplacing nullReplacing, Pipe pipe) {
       setTails(new Each(
           pipe,
           checkFieldsCardinalityOne(targetFields),
@@ -183,9 +183,8 @@ public class SubAssemblies {
      */
     public static class EmptyTupleNullReplacer extends SubAssembly {
 
-      public EmptyTupleNullReplacer(Pipe pipe, Fields targetFields) {
+      public EmptyTupleNullReplacer(Fields targetFields, Pipe pipe) {
         setTails(new NullReplacer(
-            pipe,
             checkFieldsCardinalityOne(targetFields),
             new NullReplacing() {
 
@@ -194,7 +193,8 @@ public class SubAssemblies {
                 return new Tuple();
               }
 
-            }));
+            },
+            pipe));
       }
 
     }

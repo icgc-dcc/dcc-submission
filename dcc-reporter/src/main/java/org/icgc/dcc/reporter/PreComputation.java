@@ -17,6 +17,8 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
@@ -54,6 +56,8 @@ public class PreComputation extends SubAssembly {
       ANALYSIS_ID_FIELD
           .append(SAMPLE_ID_FIELD);
 
+  static String NOT_APPLICABLE = "N/A";
+
   PreComputation(String releaseName, InputData inputData) {
     setTails(new TupleEntriesLogger(
         Optional.of(UNIX_NEW_LINE),
@@ -85,36 +89,47 @@ public class PreComputation extends SubAssembly {
   private static Pipe processProject(final InputData inputData, final String projectKey) {
     return
 
-    // Insert project ID
-    new Insert(
+    new NullReplacer(
+        TYPE_FIELD,
+        new NullReplacing() {
 
-        // Field/value to be inserted
-        keyValuePair(PROJECT_ID_FIELD, projectKey),
+          @Override
+          public Object get() {
+            return NOT_APPLICABLE;
+          }
 
-        //
-        new ReadableHashJoin(
-            JoinData.builder()
+        },
 
-                // Right-join in order to keep track of clinical data with no observations as well
-                .joiner(new RightJoin())
+        // Insert project ID
+        new Insert(
 
-                .leftPipe(processFeatureTypes(inputData, projectKey))
-                .leftJoinFields(SAMPLE_ID_FIELD)
+            // Field/value to be inserted
+            keyValuePair(PROJECT_ID_FIELD, projectKey),
 
-                .rightPipe(processClinical(inputData, projectKey))
-                .rightJoinFields(SAMPLE_ID_FIELD)
+            //
+            new ReadableHashJoin(
+                JoinData.builder()
 
-                .resultFields(
-                    META_PK_FIELDS
-                        .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
-                        .append(SEQUENCING_STRATEGY_FIELD)
-                        .append(TYPE_FIELD)
-                        .append(DONOR_ID_FIELD)
-                        .append(SPECIMEN_ID_FIELD)
-                        .append(REDUNDANT_SAMPLE_ID_FIELD))
-                .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
+                    // Right-join in order to keep track of clinical data with no observations as well
+                    .joiner(new RightJoin())
 
-                .build()));
+                    .leftPipe(processFeatureTypes(inputData, projectKey))
+                    .leftJoinFields(SAMPLE_ID_FIELD)
+
+                    .rightPipe(processClinical(inputData, projectKey))
+                    .rightJoinFields(SAMPLE_ID_FIELD)
+
+                    .resultFields(
+                        META_PK_FIELDS
+                            .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
+                            .append(SEQUENCING_STRATEGY_FIELD)
+                            .append(TYPE_FIELD)
+                            .append(DONOR_ID_FIELD)
+                            .append(SPECIMEN_ID_FIELD)
+                            .append(REDUNDANT_SAMPLE_ID_FIELD))
+                    .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
+
+                    .build())));
   }
 
   private static Pipe processClinical(final InputData inputData, String projectKey) {

@@ -29,6 +29,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -145,6 +146,8 @@ public final class CascadingFunctions {
   /**
    * Replaces the nulls resulting from a left join for summary data with the appropriate value (0 or false) based on the
    * feature type.
+   * <p>
+   * TODO: try and re-use {@link NullReplacer} (if possible at all)?
    */
   public static class ReplaceNulls extends BaseOperation<Void> implements cascading.operation.Function<Void> {
 
