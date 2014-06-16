@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.core.util;
 
 import static com.google.common.base.Splitter.on;
 
@@ -29,5 +29,11 @@ public class Splitters {
   public static final Splitter PATH = on('/');
   public static final Splitter TAB = on('\t');
   public static final Splitter NEWLINE = on('\n');
+  public static final Splitter SLASH = on('/');
+  public static final Splitter DOT = on(".");
+  public static final Splitter DASH = on("-");
+  public static final Splitter UNDERSCORE = on("_");
+  public static final Splitter COLON = on(':');
+  public static final Splitter SEMICOLON = on(';');
 
 }

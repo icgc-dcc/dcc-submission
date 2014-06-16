@@ -24,10 +24,10 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.util.Splitters.TAB;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.isFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.rm;
-import static org.icgc.dcc.submission.core.util.Splitters.TAB;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
