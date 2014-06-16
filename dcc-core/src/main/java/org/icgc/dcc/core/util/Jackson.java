@@ -34,6 +34,11 @@ public final class Jackson {
   public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
 
   @SneakyThrows
+  public static String toJsonPrettyString(String jsonString) {
+    return PRETTY_WRITTER.writeValueAsString(DEFAULT.readTree(jsonString));
+  }
+
+  @SneakyThrows
   public static String toJsonPrettyString(Object object) {
     return PRETTY_WRITTER.writeValueAsString(object);
   }

@@ -25,6 +25,7 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -61,18 +62,23 @@ public class StatsGathering extends SubAssembly {
   }
 
   private static Pipe processDonors(Pipe preComputationTable) {
-    return new Pipe(
-        DONOR.name(),
+    return new NamingPipe(
+        DONOR,
+
+        //
         getUniqueCountPipe(
             preComputationTable,
+
+            // Target field
             DONOR_ID_FIELD,
-            PROJECT_ID_FIELD
-                .append(TYPE_FIELD)));
+
+            // Group by fields
+            PROJECT_ID_FIELD.append(TYPE_FIELD)));
   }
 
   private static Pipe processSpecimens(Pipe preComputationTable) {
-    return new Pipe(
-        SPECIMEN.name(),
+    return new NamingPipe(
+        SPECIMEN,
         getUniqueCountPipe(
             preComputationTable,
             SPECIMEN_ID_FIELD,
@@ -81,8 +87,8 @@ public class StatsGathering extends SubAssembly {
   }
 
   private static Pipe processSamples(Pipe preComputationTable) {
-    return new Pipe(
-        SAMPLE.name(),
+    return new NamingPipe(
+        SAMPLE,
         getUniqueCountPipe(
             preComputationTable,
             SAMPLE_ID_FIELD,
@@ -91,8 +97,8 @@ public class StatsGathering extends SubAssembly {
   }
 
   private static Pipe processObservations(Pipe preComputationTable) {
-    return new Pipe(
-        OBSERVATION.name(),
+    return new NamingPipe(
+        OBSERVATION,
         getPreCountedUniqueCountPipe(
             preComputationTable,
             ANALYSIS_ID_FIELD,
@@ -102,8 +108,8 @@ public class StatsGathering extends SubAssembly {
   }
 
   private static Pipe processSequencingStrategies(Pipe preComputationTable) {
-    return new Pipe(
-        SEQUENCING_STRATEGY.name(),
+    return new NamingPipe(
+        SEQUENCING_STRATEGY,
         getCountPipe(
             preComputationTable,
             ANALYSIS_ID_FIELD,
@@ -151,8 +157,7 @@ public class StatsGathering extends SubAssembly {
                 preComputationTable,
 
                 // Unique fields
-                groupByFields
-                    .append(targetField)))
+                targetField.append(groupByFields)))
 
         .countByFields(groupByFields)
         .resultField(getCountFieldCounterpart(targetField))
@@ -175,7 +180,10 @@ public class StatsGathering extends SubAssembly {
       }
 
       @Override
-      public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
+      public void operate(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          BufferCall<Void> bufferCall) {
+
         long observationCount = 0;
         val entries = bufferCall.getArgumentsIterator();
         while (entries.hasNext()) {

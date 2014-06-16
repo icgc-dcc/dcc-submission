@@ -53,31 +53,6 @@ public final class CascadingFunctions {
   public static final Object NO_VALUE = null;
 
   /**
-   * Simple function that logs the incoming tuple entries (useful for debugging).
-   * <p>
-   * Example of call:
-   * <code>pipe = new Each(pipe, new CascadingFunctions.LogFunction("my_prefix"), Fields.RESULTS);</code>
-   */
-  @SuppressWarnings("rawtypes")
-  public static class LogFunction extends BaseOperation implements Function {
-
-    private final String prefix;
-
-    public LogFunction(String prefix) {
-      super(Fields.ARGS);
-      this.prefix = prefix;
-      System.out.println(prefix);
-    }
-
-    @Override
-    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      TupleEntry entry = functionCall.getArguments();
-      System.out.println(prefix + "\t" + org.icgc.dcc.hadoop.cascading.TupleEntries.toJson(entry));
-      functionCall.getOutputCollector().add(entry);
-    }
-  }
-
-  /**
    * {@link Function} that emits no {@link Tuple}s. It is different than {@link NoOp} because it still preserves the
    * schema (TODO: unusure why NoOp doesn't, figure it out..).
    */
@@ -164,30 +139,6 @@ public final class CascadingFunctions {
       String value = entry.getString(originalField);
       String newValue = transformable.tranform(value);
       functionCall.getOutputCollector().add(new Tuple(newValue));
-    }
-  }
-
-  /**
-   * Replaces a null value with an empty tuple.
-   */
-  @SuppressWarnings("rawtypes")
-  public static class AddEmptyTuple extends BaseOperation implements Function {
-
-    private static final int NEST_FIELD_INDEX = 0;
-
-    public AddEmptyTuple() {
-      super(ARGS);
-    }
-
-    @Override
-    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      Tuple copy = functionCall.getArguments().getTupleCopy();
-
-      if (copy.getObject(NEST_FIELD_INDEX) == null) { // If null, then replace it with an empty tuple
-        copy.set(NEST_FIELD_INDEX, new Tuple());
-      }
-
-      functionCall.getOutputCollector().add(copy);
     }
   }
 

@@ -1,7 +1,9 @@
 package org.icgc.dcc.reporter;
 
+import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.util.Strings2.UNIX_NEW_LINE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
@@ -18,14 +20,17 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.TupleEntriesLogger;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.joiner.InnerJoin;
+import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
@@ -49,24 +54,32 @@ public class PreComputation extends SubAssembly {
       ANALYSIS_ID_FIELD
           .append(SAMPLE_ID_FIELD);
 
-  PreComputation(InputData inputData) {
-    setTails(process(inputData));
+  PreComputation(String releaseName, InputData inputData) {
+    setTails(new TupleEntriesLogger(
+        Optional.of(UNIX_NEW_LINE),
+        process(releaseName, inputData))); // TODO: add if?
   }
 
-  private static Pipe process(final InputData inputData) {
+  private static Pipe process(final String releaseName, final InputData inputData) {
     return
 
-    //
-    new Transformerge<String>(
-        inputData.getProjectKeys(),
-        new Function<String, Pipe>() {
+    // Insert release name
+    new Insert(
 
-          @Override
-          public Pipe apply(String projectKey) {
-            return processProject(inputData, projectKey);
-          }
+        // Field/value to be inserted
+        keyValuePair(RELEASE_NAME, releaseName),
 
-        });
+        //
+        new Transformerge<String>(
+            inputData.getProjectKeys(),
+            new Function<String, Pipe>() {
+
+              @Override
+              public Pipe apply(String projectKey) {
+                return processProject(inputData, projectKey);
+              }
+
+            }));
   }
 
   private static Pipe processProject(final InputData inputData, final String projectKey) {
@@ -82,7 +95,8 @@ public class PreComputation extends SubAssembly {
         new ReadableHashJoin(
             JoinData.builder()
 
-                .joiner(new InnerJoin())
+                // Right-join in order to keep track of clinical data with no observations as well
+                .joiner(new RightJoin())
 
                 .leftPipe(processFeatureTypes(inputData, projectKey))
                 .leftJoinFields(SAMPLE_ID_FIELD)

@@ -18,17 +18,33 @@
 package org.icgc.dcc.hadoop.cascading;
 
 import static cascading.tuple.Fields.ALL;
+import static cascading.tuple.Fields.ARGS;
+import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
+import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
+import static org.icgc.dcc.hadoop.cascading.Tuples2.isNullTuple;
+import static org.icgc.dcc.hadoop.cascading.Tuples2.nestValue;
 
 import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
 import lombok.Value;
+import lombok.val;
 import lombok.experimental.Builder;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.core.util.ObjectProviding;
+
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
@@ -37,6 +53,7 @@ import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.joiner.Joiner;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -46,6 +63,143 @@ import com.google.common.base.Optional;
  */
 @NoArgsConstructor(access = PRIVATE)
 public class SubAssemblies {
+
+  /**
+   * TODO
+   */
+  public static class NamingPipe extends SubAssembly {
+
+    /**
+     * Preferred if predictable.
+     */
+    public NamingPipe(Enum<?> instance, Pipe pipe) {
+      this(instance.name(), pipe);
+    }
+
+    /**
+     * TODO
+     */
+    public NamingPipe(String name, Pipe pipe) {
+      setTails(new Pipe(name, pipe));
+    }
+
+  }
+
+  /**
+   * TODO
+   */
+  public static class TupleEntriesLogger extends SubAssembly {
+
+    public TupleEntriesLogger(Pipe pipe) {
+      this(Optional.<String> absent(), pipe);
+    }
+
+    /**
+     * TODO
+     */
+    public TupleEntriesLogger(Optional<String> prefix, Pipe pipe) {
+      setTails(new Each(pipe, new Nonce(prefix)));
+    }
+
+    @Slf4j
+    private static class Nonce extends BaseOperation<Void> implements cascading.operation.Function<Void> {
+
+      private final Optional<String> prefix;
+
+      public Nonce(Optional<String> prefix) {
+        super(ARGS);
+        this.prefix = prefix;
+      }
+
+      @Override
+      public void operate(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          FunctionCall<Void> functionCall) {
+        val entry = functionCall.getArguments();
+        log.info(
+
+            // Optionally prefix it
+            (prefix.isPresent() ? prefix.get() : EMPTY_STRING)
+
+                // Pretty json string
+                + toJsonPrettyString(toJson(entry)));
+
+        functionCall.getOutputCollector().add(entry);
+      }
+
+    }
+
+  }
+
+  /**
+   * TODO
+   * <p>
+   * Only applicable for one {@link Fields} for now.
+   */
+  public static class NullReplacer extends SubAssembly {
+
+    public NullReplacer(Pipe pipe, Fields targetFields, NullReplacing nullReplacing) {
+      setTails(new Each(
+          pipe,
+          checkFieldsCardinalityOne(targetFields),
+          new Nonce(nullReplacing),
+          REPLACE));
+    }
+
+    /**
+     * Returns a non-null replacement value for nulls. That the value is non-null will be checked for at runtime.
+     */
+    public static interface NullReplacing extends ObjectProviding {}
+
+    private static class Nonce extends BaseOperation<Void> implements cascading.operation.Function<Void> {
+
+      private final NullReplacing nullReplacing;
+
+      public Nonce(NullReplacing nullReplacing) {
+        super(ARGS);
+        this.nullReplacing = nullReplacing;
+      }
+
+      @Override
+      public void operate(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          FunctionCall<Void> functionCall) {
+        checkFieldsCardinalityOne(functionCall.getArgumentFields());
+        val tuple = functionCall.getArguments().getTuple();
+        functionCall
+            .getOutputCollector()
+            .add(isNullTuple(tuple) ?
+
+                // Use replacement value
+                nestValue(checkNotNull(nullReplacing.get())) :
+
+                // Leave it unchanged
+                tuple);
+      }
+    }
+
+    /**
+     * Specialized version of {@link NullReplacer} that replaces nulls with an empty {@link Tuple}.
+     */
+    public static class EmptyTupleNullReplacer extends SubAssembly {
+
+      public EmptyTupleNullReplacer(Pipe pipe, Fields targetFields) {
+        setTails(new NullReplacer(
+            pipe,
+            checkFieldsCardinalityOne(targetFields),
+            new NullReplacing() {
+
+              @Override
+              public Object get() {
+                return new Tuple();
+              }
+
+            }));
+      }
+
+    }
+
+  }
 
   /**
    * TODO: find better name?
@@ -78,15 +232,14 @@ public class SubAssemblies {
   public static class Insert extends SubAssembly {
 
     public Insert(Entry<Fields, Object> keyValuePair, Pipe pipe) {
-      checkFieldsCardinalityOne(keyValuePair.getKey());
-
       setTails(
 
       //
       new Each(
           pipe,
           new cascading.operation.Insert(
-              keyValuePair.getKey(),
+              checkFieldsCardinalityOne(
+              keyValuePair.getKey()),
               keyValuePair.getValue()),
           ALL));
     }

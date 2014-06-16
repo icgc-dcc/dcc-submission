@@ -22,6 +22,7 @@ import java.util.List;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.val;
 import cascading.tuple.Tuple;
 
 /**
@@ -32,12 +33,30 @@ public final class Tuples2 {
 
   /**
    * Nests a tuple within a tuple.
+   * <p>
+   * Necessary because new Tuple(new Tuple()) is the copy constructor, not the way to nest a tuple under a tuple.
    */
   public static Tuple nestTuple(Tuple tuple) {
-    Tuple nestedTuple = new Tuple();
-    nestedTuple.add(tuple);
+    return nestValue(tuple);
+  }
 
-    return nestedTuple;
+  /**
+   * See {@link #nestTuple(Tuple)} for rationale.
+   */
+  public static Tuple nestValue(Object value) {
+    val nestingTuple = new Tuple();
+    nestingTuple.add(value);
+    return nestingTuple;
+  }
+
+  public static boolean isNullTuple(Tuple tuple) {
+    for (int fieldIndex = 0; fieldIndex < tuple.size(); fieldIndex++) {
+      if (!isNullField(tuple, fieldIndex)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public static boolean isNullField(Tuple tuple, int fieldIndex) {

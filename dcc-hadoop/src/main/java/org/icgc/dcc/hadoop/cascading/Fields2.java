@@ -50,23 +50,24 @@ public final class Fields2 {
   private static final String COUNT_SUFFIX = "count";
   private static final String REDUNDANT_PREFIX = "redundant";
 
-  public static void checkFieldsCardinalityOne(Fields fields) {
-    checkFieldsCardinality(fields, 1);
+  public static Fields checkFieldsCardinalityOne(Fields fields) {
+    return checkFieldsCardinality(fields, 1);
   }
 
-  public static void checkFieldsCardinalityTwo(Fields fields) {
-    checkFieldsCardinality(fields, 2);
+  public static Fields checkFieldsCardinalityTwo(Fields fields) {
+    return checkFieldsCardinality(fields, 2);
   }
 
-  public static void checkFieldsCardinalityThree(Fields fields) {
-    checkFieldsCardinality(fields, 3);
+  public static Fields checkFieldsCardinalityThree(Fields fields) {
+    return checkFieldsCardinality(fields, 3);
   }
 
-  public static void checkFieldsCardinality(Fields fields, int expectedSize) {
+  public static Fields checkFieldsCardinality(Fields fields, int expectedSize) {
     checkState(
         fields.size() == expectedSize,
         "Expecting only '%s' field(s), instead got '%s' ('%s')",
         fields.size(), fields);
+    return fields;
   }
 
   public static Fields fields(Iterable<String> fieldNames) {

@@ -1,6 +1,7 @@
 package org.icgc.dcc.reporter;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static org.icgc.dcc.core.util.Joiners.INDENT;
 import static org.icgc.dcc.core.util.Splitters.TAB;
 import static org.icgc.dcc.reporter.Reporter.OUTPUT_FILE;
 
@@ -11,6 +12,7 @@ import java.util.Set;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.apache.commons.lang.StringUtils;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.reporter.presentation.DataTypeCountsReportTable;
 
@@ -30,6 +32,11 @@ public class Gatherer {
 
   private static void populateTable(DataTypeCountsReportTable table, OutputType output) {
     val lines = readLines(output);
+
+    System.out.println(StringUtils.repeat("=", 75));
+    System.out.println(INDENT.join(output, INDENT.join(lines)));
+    System.out.println();
+
     for (int i = 1; i < lines.size(); i++) { // Skip header
       val fields = TAB.split(lines.get(i));
       val iterator = fields.iterator();

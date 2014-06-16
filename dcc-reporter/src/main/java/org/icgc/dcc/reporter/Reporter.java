@@ -22,12 +22,12 @@ public class Reporter {
   static String OUTPUT_DIR = "/tmp/reports";
   static String OUTPUT_FILE = "/tmp/table1";
 
-  public void report(InputData inputData) {
+  public void report(String releaseName, InputData inputData) {
     log.info("Gathering reports: '{}'", inputData);
 
     // Main processing
     val tails = new StatsGathering(
-        new PreComputation(inputData))
+        new PreComputation(releaseName, inputData))
         .getTails();
 
     // Connect flow

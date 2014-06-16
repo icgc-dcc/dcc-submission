@@ -18,9 +18,7 @@ import lombok.val;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.reporter.OutputType;
-import org.icgc.dcc.reporter.Reporter;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -32,62 +30,65 @@ import com.google.common.collect.Table;
 public class DataTypeCountsReportTable implements CsvRepresentable {
 
   private static final String CLINICAL_TYPE_DISPLAY_NAME = "Clinical";
-  
-  private Table<String, DataType, DataTypeCountsReportRow> table = HashBasedTable.<String, DataType, DataTypeCountsReportRow>create();
-  
+
+  private final Table<String, DataType, DataTypeCountsReportRow> table = HashBasedTable
+      .<String, DataType, DataTypeCountsReportRow> create();
+
   public DataTypeCountsReportTable(Set<String> projectKeys) {
     for (val projectKey : projectKeys) {
-      for(val dataType : filter(
+      for (val dataType : filter(
           DataTypes.values(),
           new Predicate<DataType>() {
+
             @Override
             public boolean apply(DataType dataType) {
               return !isOptionalClinicalType(dataType);
             }
           })) {
-          table.put(projectKey, dataType, DataTypeCountsReportRow.getEmptyInstance());
+        table.put(projectKey, dataType, DataTypeCountsReportRow.getEmptyInstance());
       }
     }
   }
-  
+
   public void updateCount(OutputType output, String projectId, DataType dataType, long count) {
     val dataTypeCountsReportRow = table.get(projectId, dataType);
     switch (output) {
     case DONOR:
-      dataTypeCountsReportRow.setDonorCount(count);        
+      dataTypeCountsReportRow.setDonorCount(count);
       break;
     case SPECIMEN:
-      dataTypeCountsReportRow.setSpecimenCount(count);        
+      dataTypeCountsReportRow.setSpecimenCount(count);
       break;
     case SAMPLE:
-      dataTypeCountsReportRow.setSampleCount(count);        
+      dataTypeCountsReportRow.setSampleCount(count);
       break;
     case OBSERVATION:
-      val optionalObservationCount = dataType.isClinicalType() ? Optional.<Long>absent() : Optional.of(count);
-      dataTypeCountsReportRow.setObservationCount(optionalObservationCount);        
+      val optionalObservationCount = dataType.isClinicalType() ? Optional.<Long> absent() : Optional.of(count);
+      dataTypeCountsReportRow.setObservationCount(optionalObservationCount);
       break;
     default:
       checkState(false, "TODO");
       break;
     }
   }
-  
+
+  @Override
   public String getCsvRepresentation() {
     val lines = Lists.newArrayList();
-    
+
     // Add header line
     lines.add(DataTypeCountsReportRow.getCsvHeaderLine());
-    
+
     // Add data lines
     for (val projectId : newTreeSet(table.rowKeySet())) {
       val row = table.row(projectId);
-      
+
       Set<DataType> keySet = new TreeSet<DataType>(new Comparator<DataType>() {
 
         @Override
         public int compare(DataType dataType1, DataType dataType2) {
           checkState(!dataType1.isClinicalType() || !dataType1.asClinicalType().isOptionalClinicalType(), "TODO");
-          checkState(!dataType2.isClinicalType() || !dataType2.asClinicalType().isOptionalClinicalType(), "TODO");            
+          checkState(!dataType2.isClinicalType() || !dataType2.asClinicalType().isOptionalClinicalType(), "TODO");
           if (dataType1.isClinicalType()) {
             return -1;
           } else if (dataType2.isClinicalType()) {
@@ -96,11 +97,11 @@ public class DataTypeCountsReportTable implements CsvRepresentable {
             return dataType1.name().compareTo(dataType2.name());
           }
         }
-        
+
       });
-      
+
       keySet.addAll(row.keySet());
-      
+
       for (val dataType : keySet) {
         checkState(!isOptionalClinicalType(dataType), "TODO");
         lines.add(
@@ -110,32 +111,32 @@ public class DataTypeCountsReportTable implements CsvRepresentable {
                     CLINICAL_TYPE_DISPLAY_NAME :
                     dataType.getTypeName().toUpperCase(),
                 row.get(dataType)
-                  .getCsvRepresentation()));
+                    .getCsvRepresentation()));
       }
     }
     lines.add(""); // Add a trailing newline
-    
-    return NEWLINE.join(lines);        
+
+    return NEWLINE.join(lines);
   }
 
   private boolean isOptionalClinicalType(DataType dataType) {
-    return dataType.isClinicalType() 
+    return dataType.isClinicalType()
         && dataType.asClinicalType().isOptionalClinicalType();
   }
- 
+
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   @lombok.Data
   static class DataTypeCountsReportRow implements CsvRepresentable {
 
     private static final String NOT_APPLICABLE = "N/A";
-    
+
     enum HeaderField {
       PROJECT, DATA_TYPE, DONORS, SPECIMENS, SAMPLES, OBSERVATIONS;
-      
+
       private String getDisplayName() {
         return capitalize(name().replace('_', ' ').toLowerCase());
       }
-      
+
       public static List<String> getDisplayNames() {
         val displayNames = new ImmutableList.Builder<String>();
         for (val header : values()) {
@@ -143,31 +144,32 @@ public class DataTypeCountsReportTable implements CsvRepresentable {
         }
         return displayNames.build();
       }
-      
+
     }
-        
+
     private long donorCount;
     private long specimenCount;
     private long sampleCount;
     private Optional<Long> observationCount = Optional.absent(); // TODO: remove
-    
+
     public static DataTypeCountsReportRow getEmptyInstance() {
       return new DataTypeCountsReportRow();
     }
-    
+
     public static String getCsvHeaderLine() {
       return COMMA.join(HeaderField.getDisplayNames());
     }
-    
+
+    @Override
     public String getCsvRepresentation() {
       return COMMA.join(
           donorCount,
           specimenCount,
           sampleCount,
           observationCount.isPresent() ?
-               observationCount.get() :
-               NOT_APPLICABLE);
+              observationCount.get() :
+              NOT_APPLICABLE);
     }
-    
+
   }
 }

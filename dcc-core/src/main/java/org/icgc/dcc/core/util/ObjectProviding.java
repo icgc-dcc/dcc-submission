@@ -17,20 +17,14 @@
  */
 package org.icgc.dcc.core.util;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-
 /**
- * Utils methods for {@link String}.
+ * TODO: existing interface (more generic)?
  */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+public interface ObjectProviding {
 
-  public static final String EMPTY_STRING = "";
-  public static final String UNIX_NEW_LINE = "\n";
-
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
-  }
+  /**
+   * Returns an {@link Object}.
+   */
+  Object get();
 
 }

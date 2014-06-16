@@ -185,6 +185,8 @@ public final class TupleEntries {
    * tuple/tupleEntry nesting).
    * <p>
    * Very useful for debugging.
+   * <p>
+   * TODO: use ObjectNode directly rather than String.
    */
   public static String toJson(TupleEntry tupleEntry) {
     Fields fields = tupleEntry.getFields();
