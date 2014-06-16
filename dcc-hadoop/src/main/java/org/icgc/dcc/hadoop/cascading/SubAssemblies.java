@@ -20,7 +20,6 @@ package org.icgc.dcc.hadoop.cascading;
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
@@ -256,11 +255,13 @@ public class SubAssemblies {
       setTails(
 
       //
-      groupByData.secondarySortFields.isPresent() ?
-          new cascading.pipe.GroupBy(
-              groupByData.pipe,
-              groupByData.groupByFields,
-              groupByData.secondarySortFields.get()) :
+      groupByData.secondarySortFields != null && groupByData.secondarySortFields.isPresent() ? // TODO: how to assign
+                                                                                               // absent() with
+                                                                                               // @Value...
+      new cascading.pipe.GroupBy(
+          groupByData.pipe,
+          groupByData.groupByFields,
+          groupByData.secondarySortFields.get()) :
           new cascading.pipe.GroupBy(
               groupByData.pipe,
               groupByData.groupByFields));
@@ -272,7 +273,7 @@ public class SubAssemblies {
 
       Pipe pipe;
       Fields groupByFields;
-      Optional<Fields> secondarySortFields = absent();
+      Optional<Fields> secondarySortFields; // TODO: how to assign absent() with @Value...
 
     }
 

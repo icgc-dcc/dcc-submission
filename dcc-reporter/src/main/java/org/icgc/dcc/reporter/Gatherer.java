@@ -26,7 +26,14 @@ public class Gatherer {
     populateTable(table, OutputType.SPECIMEN);
     populateTable(table, OutputType.SAMPLE);
     populateTable(table, OutputType.OBSERVATION);
-    OutputType.SEQUENCING_STRATEGY.name(); // N/A for sequencing strategy
+
+    // OutputType.SEQUENCING_STRATEGY.name(); // N/A for sequencing strategy
+    val lines = readLines(OutputType.SEQUENCING_STRATEGY);
+
+    System.out.println(StringUtils.repeat("=", 75));
+    System.out.println(INDENT.join(OutputType.SEQUENCING_STRATEGY, INDENT.join(lines)));
+    System.out.println();
+
     return table;
   }
 

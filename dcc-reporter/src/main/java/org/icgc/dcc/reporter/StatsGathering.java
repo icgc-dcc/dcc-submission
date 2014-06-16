@@ -1,5 +1,6 @@
 package org.icgc.dcc.reporter;
 
+import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.collect.Iterables.toArray;
@@ -21,6 +22,7 @@ import static org.icgc.dcc.reporter.PreComputation.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.reporter.PreComputation.TYPE_FIELD;
 import lombok.val;
 
+import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
@@ -56,7 +58,10 @@ public class StatsGathering extends SubAssembly {
         .add(processSpecimens(preComputationTable))
         .add(processSamples(preComputationTable))
         .add(processObservations(preComputationTable))
-        .add(processSequencingStrategies(preComputationTable))
+        // .add(processSequencingStrategies(preComputationTable))
+
+        // For table 2
+        .add(foo(preComputationTable)) // TODO: encapsulate elsewhere?
 
         .build();
   }
@@ -115,6 +120,41 @@ public class StatsGathering extends SubAssembly {
             ANALYSIS_ID_FIELD,
             PROJECT_ID_FIELD
                 .append(SEQUENCING_STRATEGY_FIELD))); // TODO: correct?
+  }
+
+  /**
+   * TODO: promote unique count by to {@link SubAssemblies}?
+   */
+  private static Pipe foo(Pipe preComputationTable) {
+    val countByFields = PROJECT_ID_FIELD.append(SEQUENCING_STRATEGY_FIELD);
+
+    return
+
+    //
+    new NamingPipe(
+        SEQUENCING_STRATEGY,
+
+        //
+        new CountBy(CountByData.builder()
+
+            .pipe(
+
+                //
+                new Unique(
+
+                    //
+                    new Retain(
+                        preComputationTable,
+                        countByFields
+                            .append(DONOR_ID_FIELD)
+                    ),
+
+                    ALL))
+
+            .countByFields(countByFields)
+            .resultField(getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD))
+
+            .build()));
   }
 
   private static Pipe getCountPipe(Pipe preComputationTable, Fields targetField, Fields groupFields) {
