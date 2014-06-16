@@ -29,5 +29,11 @@ public class Splitters {
   public static final Splitter PATH = on('/');
   public static final Splitter TAB = on('\t');
   public static final Splitter NEWLINE = on('\n');
+  public static final Splitter SLASH = on('/');
+  public static final Splitter DOT = on(".");
+  public static final Splitter DASH = on("-");
+  public static final Splitter UNDERSCORE = on("_");
+  public static final Splitter COLON = on(':');
+  public static final Splitter SEMICOLON = on(';');
 
 }
