@@ -1,4 +1,5 @@
 package org.icgc.dcc.hadoop.dcc;
+
 /*
  * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
@@ -16,7 +17,6 @@ package org.icgc.dcc.hadoop.dcc;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -50,6 +50,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Table;
 
 /**
  * Parses a JSON file describing where the submission data can be found, in combination with a default parent directory
@@ -63,6 +64,9 @@ public class SubmissionInputData {
 
   private static final String PARENT_DIR_PARAMETER = "parent_dir";
 
+  /**
+   * TODO: use {@link Table} rather?
+   */
   public static Map<String, Map<FileType, List<Path>>> getMatchingFiles(
       FileSystem fileSystem,
       String defaultParentDataDir,

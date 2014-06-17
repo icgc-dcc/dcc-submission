@@ -10,12 +10,14 @@ import static org.icgc.dcc.core.util.Jackson.PRETTY_WRITTER;
 import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
@@ -29,6 +31,22 @@ public class InputData {
 
   private final Table<String, FileType, Set<String>> data = HashBasedTable.create();
 
+  /**
+   * TODO: necessary?
+   */
+  public static InputData from(Map<String, Map<FileType, List<Path>>> matchingFiles) {
+    val inputData = new InputData();
+    for (val projectKey : matchingFiles.keySet()) {
+      val projectFiles = matchingFiles.get(projectKey);
+      for (val fileType : projectFiles.keySet()) {
+        for (val path : projectFiles.get(fileType)) {
+          inputData.addFile(projectKey, fileType, path.toUri().getPath());
+        }
+      }
+    }
+    return null;
+  }
+
   public Set<String> getProjectKeys() {
     return ImmutableSet.copyOf(data.rowKeySet());
   }
@@ -37,15 +55,6 @@ public class InputData {
     return ImmutableSet.copyOf(firstNonNull(
         data.get(projectKey, fileType),
         ImmutableSet.<String> of()));
-  }
-
-  public void addFile(String projectKey, FileType fileType, String path) {
-    Set<String> paths = data.get(projectKey, fileType);
-    if (paths == null) {
-      paths = newLinkedHashSet();
-      data.put(projectKey, fileType, paths);
-    }
-    paths.add(path);
   }
 
   public boolean hasFeatureType(String projectKey, FeatureType featureType) {
@@ -96,6 +105,15 @@ public class InputData {
   @SneakyThrows
   public String toString() {
     return PRETTY_WRITTER.writeValueAsString(data);
+  }
+
+  private void addFile(String projectKey, FileType fileType, String path) {
+    Set<String> paths = data.get(projectKey, fileType);
+    if (paths == null) {
+      paths = newLinkedHashSet();
+      data.put(projectKey, fileType, paths);
+    }
+    paths.add(path);
   }
 
   public static InputData getDummy() {
