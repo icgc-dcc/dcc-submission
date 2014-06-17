@@ -58,8 +58,8 @@ public class Connector {
         new Function<String, Tap<?, ?, ?>>() {
 
           @Override
-          public Tap<?, ?, ?> apply(String filePath) {
-            return Taps.getTsvFileWithHeader(filePath);
+          public Tap<?, ?, ?> apply(final String path) {
+            return Taps.getDecompressingTsvFileWithHeader(path);
           }
 
         });

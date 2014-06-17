@@ -17,22 +17,62 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.Properties;
+import java.util.zip.GZIPInputStream;
+
 import lombok.NoArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.tika.Tika;
+
 import cascading.flow.FlowDef;
+import cascading.flow.FlowProcess;
+import cascading.scheme.Scheme;
 import cascading.tap.Tap;
-import cascading.tap.local.FileTap;
+import cascading.tuple.Fields;
+import cascading.tuple.TupleEntryIterator;
 
 import com.google.common.base.Function;
 
 /**
  * Utility class to help with the {@link Tap} object from cascading.
  */
+@Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public class Taps {
 
-  public static final FileTap getTsvFileWithHeader(String path) {
-    return new FileTap(Schemes.getTsvWithHeader(), path);
+  public static final cascading.tap.local.FileTap getTsvFileWithHeader(String path) {
+
+    return new cascading.tap.local.FileTap(
+        Schemes.getLocalTsvWithHeader(),
+        path);
+  }
+
+  public static final cascading.tap.local.FileTap getDecompressingTsvFileWithHeader(String path) {
+
+    return getDecompressingLocalFileTap(
+        Schemes.getDecompressingLocalTsvWithHeader(path),
+        path);
+  }
+
+  public static final cascading.tap.local.FileTap getDecompressingLinesFile(
+      String path, Fields numField, Fields lineField) {
+
+    return getDecompressingLocalFileTap(
+        Schemes.getLocalLinesWithOffset(
+            numField,
+            lineField),
+        path);
   }
 
   /**
@@ -48,4 +88,50 @@ public class Taps {
 
   };
 
+  public static cascading.tap.local.FileTap getDecompressingLocalFileTap(
+      Scheme<Properties, InputStream, OutputStream, ?, ?> scheme,
+      String path) {
+
+    return new cascading.tap.local.FileTap(scheme, path) {
+
+      static final String GZIP_MEDIA_TYPE = "application/x-gzip";
+      static final String BZIP2_MEDIA_TYPE = "application/x-bzip2";
+
+      @Override
+      public TupleEntryIterator openForRead(
+          FlowProcess<Properties> flowProcess,
+          InputStream input)
+          throws IOException {
+        checkState(input == null,
+            "Expecting input to be null here, instead: '{}'",
+            input == null ? null : input.getClass().getSimpleName());
+
+        return super.openForRead(
+            flowProcess,
+            getDecompressingInputStream(getIdentifier()));
+      }
+
+      private InputStream getDecompressingInputStream(String path) throws IOException {
+        val mediaType = new Tika().detect(path);
+
+        // Do not @Cleanup (cascading will close it)
+        InputStream in = new FileInputStream(path);
+
+        // Gzip
+        if (GZIP_MEDIA_TYPE.equals(mediaType)) {
+          log.info("'{}' compression detected for '{}'", GZIP_MEDIA_TYPE, path);
+          in = new GZIPInputStream(in);
+        }
+
+        // Bzip2
+        else if (BZIP2_MEDIA_TYPE.equals(mediaType)) {
+          log.info("'{}' compression detected for '{}'", BZIP2_MEDIA_TYPE, path);
+          in = new BZip2CompressorInputStream(in);
+        }
+
+        return in;
+      }
+
+    };
+  }
 }

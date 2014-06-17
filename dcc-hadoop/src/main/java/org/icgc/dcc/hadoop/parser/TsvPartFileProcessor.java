@@ -1,5 +1,6 @@
+package org.icgc.dcc.hadoop.parser;
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,24 +16,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.hadoop.parser.FileParsers.newStringFileParser;
 
 import java.util.List;
 
-import lombok.ToString;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-@ToString
-public class FileLineListParser extends AbstractFileLineParser<List<String>> {
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
-  @Override
-  public List<String> parse(String line) {
-    return split(line);
+@Slf4j
+public class TsvPartFileProcessor {
+
+  public static void parseFiles(
+      FileSystem fileSystem,
+      List<Path> inputFiles,
+      FileRecordProcessor<String> recordProcessor) {
+    int partNumber = 1;
+    int partTotalCount = inputFiles.size();
+
+    for (val partFile : inputFiles) {
+      val partFileParser = newStringFileParser(fileSystem, true);
+
+      log.info("    * [{}/{}] Parsing part file '{}'", new Object[] { partNumber, partTotalCount, partFile });
+      val lineCount = parseRecord(partFileParser, partFile, recordProcessor);
+      log.info("    * [{}/{}] Number of lines read: '{}'", new Object[] { partNumber, partTotalCount, lineCount });
+
+      partNumber++;
+    }
   }
 
-  protected static List<String> split(String line) {
-    return newArrayList(FIELD_SPLITTER.split(line));
+  @SneakyThrows
+  private static long parseRecord(
+      FileParser<String> partFileParser,
+      Path partFile,
+      FileRecordProcessor<String> recordProcessor) {
+    return partFileParser.parse(partFile, recordProcessor);
   }
 
 }

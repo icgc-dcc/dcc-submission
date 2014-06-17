@@ -15,10 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.core.util;
 
-public interface FileLineParser<T> {
+import static com.google.common.base.Charsets.UTF_8;
 
-  T parse(String line);
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.zip.GZIPInputStream;
+
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.val;
+
+import com.google.common.io.Files;
+
+/**
+ * FIXME!!
+ */
+public class Files2 {
+
+  @SneakyThrows
+  public static String getFirstLine(final String path) {
+    if (path.endsWith(".gz") || path.endsWith(".bz2")) {
+      @Cleanup
+      val bufferedReader = getBufferedReader(path);
+      return bufferedReader.readLine();
+    } else {
+      return Files.readFirstLine(
+          new File(path),
+          UTF_8);
+    }
+  }
+
+  @SneakyThrows
+  private static BufferedReader getBufferedReader(final String path) {
+    FileInputStream fileInputStream = new FileInputStream(path);
+    GZIPInputStream gZIPInputStream = new GZIPInputStream(fileInputStream);
+    InputStreamReader inputStreamReader = new InputStreamReader(gZIPInputStream);
+    val bufferedReader = new BufferedReader(inputStreamReader);
+    return bufferedReader;
+  }
 
 }

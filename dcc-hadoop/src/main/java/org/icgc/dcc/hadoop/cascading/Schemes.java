@@ -18,23 +18,118 @@
 package org.icgc.dcc.hadoop.cascading;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Files2.getFirstLine;
+import static org.icgc.dcc.core.util.Splitters.TAB;
+import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
+
 import lombok.NoArgsConstructor;
 
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.RecordReader;
 import org.icgc.dcc.core.util.Separators;
 
+import cascading.flow.FlowProcess;
+import cascading.scheme.Scheme;
 import cascading.scheme.local.TextDelimited;
+import cascading.tap.Tap;
+import cascading.tuple.Fields;
 
 /**
- * Common schemes.
+ * Utility class for working with cascading {@code Schemes} objects, such as {@code TextDelimited}.
+ * <p>
+ * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class Schemes {
+public class Schemes {
+
+  public static final String TSV_DELIMITER = "\t";
+
+  public static final cascading.scheme.local.TextDelimited getLocalTsvWithHeader() {
+    return new cascading.scheme.local.TextDelimited(withHeader(), Separators.TAB);
+  }
+
+  public static cascading.scheme.local.TextLine getLocalLinesWithOffset(Fields numField, Fields lineField) {
+    return new cascading.scheme.local.TextLine(
+        numField
+            .append(lineField));
+  }
+
+  public static TextDelimited getDecompressingLocalTsvWithHeader(final String path) {
+    return new cascading.scheme.local.TextDelimited(withHeader(), Separators.TAB) {
+
+      @Override
+      public Fields retrieveSourceFields(
+          FlowProcess<Properties> process,
+          @SuppressWarnings("rawtypes") Tap tap) { // as-is in cascading
+        setSourceFields(fields(TAB.split(getFirstLine(path))));
+        return getSourceFields();
+      }
+
+    };
+  }
 
   /**
-   * Do <b>not<b/> recycle {@link Schemes} as they are actually mutated.
+   * Allows empty lines and skip header.
    */
-  public static final TextDelimited getTsvWithHeader() {
-    return new TextDelimited(withHeader(), Separators.TAB);
+  public static Scheme<Properties, InputStream, OutputStream, ?, ?> newLocalLooseTsvScheme() {
+    return newLocalLooseTsvScheme(getTextDelimitedSourceFields(), skipHeader(), TSV_DELIMITER);
+  }
+
+  /**
+   * Built by looking at the 3 parameters argument from cascading's source code.
+   */
+  private static Scheme<Properties, InputStream, OutputStream, ?, ?> newLocalLooseTsvScheme(Fields fields,
+      boolean hasHeader, String delimiter) {
+    return new cascading.scheme.local.TextDelimited(fields, hasHeader, hasHeader, delimiter, looseMode(), null, null,
+        true);
+  }
+
+  /**
+   * Allows empty lines and skip header.
+   */
+  @SuppressWarnings("rawtypes")
+  // TODO: address warning
+  public static Scheme<JobConf, RecordReader, OutputCollector, ?, ?> newHadoopLooseTsvScheme() {
+    return newHadoopLooseTsvScheme(getTextDelimitedSourceFields(), skipHeader(), TSV_DELIMITER);
+  }
+
+  /**
+   * Built by looking at the 3 parameters argument from cascading's source code.
+   */
+  @SuppressWarnings("rawtypes")
+  // TODO: address warning
+  private static Scheme<JobConf, RecordReader, OutputCollector, ?, ?> newHadoopLooseTsvScheme(Fields fields,
+      boolean hasHeader, String delimiter) {
+    return new cascading.scheme.hadoop.TextDelimited(fields, null, hasHeader, hasHeader, delimiter, looseMode(), null,
+        null, true);
+  }
+
+  /**
+   * MUST explicitly set source fields to UNKNOWN for them to be set based on header... It otherwise defaults them to
+   * ALL, which according to TextDelimited.retrieveSourceFields() will not use the header to set the source fields and
+   * is in contradiction with the TextDelimited class documentation (at least as of version 2.1.3).
+   */
+  private static Fields getTextDelimitedSourceFields() {
+    return Fields.UNKNOWN;
+  }
+
+  /**
+   * Will allow skipping the first line.
+   */
+  private static boolean skipHeader() {
+    return true;
+  }
+
+  /**
+   * Will allow empty lines to be read without erroring out. "loose" as opposed to "strict".
+   */
+  private static boolean looseMode() {
+    return false;
   }
 
   private static boolean withHeader() {

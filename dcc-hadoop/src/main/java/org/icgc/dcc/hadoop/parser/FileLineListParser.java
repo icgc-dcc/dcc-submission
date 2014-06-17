@@ -15,20 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.hadoop.parser;
+
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
 
 import lombok.ToString;
 
 @ToString
-public class FileLineIterableParser extends AbstractFileLineParser<Iterable<String>> {
+public class FileLineListParser extends AbstractFileLineParser<List<String>> {
 
   @Override
-  public Iterable<String> parse(String line) {
+  public List<String> parse(String line) {
     return split(line);
   }
 
-  protected static Iterable<String> split(String line) {
-    return FIELD_SPLITTER.split(line);
+  protected static List<String> split(String line) {
+    return newArrayList(FIELD_SPLITTER.split(line));
   }
 
 }
