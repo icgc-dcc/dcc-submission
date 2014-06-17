@@ -65,7 +65,8 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
     </dependency>
-    
+
+        
     <!-- Cascading -->
     <dependency>
       <groupId>cascading</groupId>
@@ -81,5 +82,13 @@
     </dependency>
     
   </dependencies>
+
+  <build>   
+    <plugins>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
     
 </project>
