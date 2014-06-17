@@ -7,6 +7,7 @@ import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Pipes.getTailNames;
 import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
 import static org.icgc.dcc.reporter.Connector.getRawOutputTaps;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +23,7 @@ public class Reporter {
   static String OUTPUT_DIR = "/tmp/reports";
   static String OUTPUT_FILE = "/tmp/table1";
 
-  public void report(String releaseName, InputData inputData) {
+  public void report(@NonNull String releaseName, @NonNull InputData inputData) {
     log.info("Gathering reports: '{}'", inputData);
 
     // Main processing

@@ -14,18 +14,18 @@ import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 public class Main {
 
   public static void main(String[] args) {
-    FileSystem fileSystem = getLocalFileSystem();
+    val releaseName = "my_release";
     val defaultParentDataDir = "/home/tony/Desktop/reports";
     val projectsJsonFilePath = "/home/tony/Desktop/reports/projects.json";
     val dictionaryFilePath = "/home/tony/tmp/dcc/0.8c/Dictionary.json";
-    val inputData = InputData.from(SubmissionInputData.getMatchingFiles(
-        fileSystem,
-        defaultParentDataDir,
-        projectsJsonFilePath,
-        Dictionaries.getPatterns(
-            Jackson.getJsonRoot(dictionaryFilePath))));
-    System.out.println(inputData);
-    // new Reporter().report("my_release", InputData.getDummy());
+    val inputData = InputData.from(
+        SubmissionInputData.getMatchingFiles(
+            getLocalFileSystem(),
+            defaultParentDataDir,
+            projectsJsonFilePath,
+            Dictionaries.getPatterns(
+                Jackson.getJsonRoot(dictionaryFilePath))));
+    new Reporter().report(releaseName, inputData);
   }
 
   @SneakyThrows

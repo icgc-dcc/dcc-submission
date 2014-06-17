@@ -44,7 +44,7 @@ public class InputData {
         }
       }
     }
-    return null;
+    return inputData;
   }
 
   public Set<String> getProjectKeys() {
