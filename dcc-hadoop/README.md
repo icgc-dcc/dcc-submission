@@ -1,7 +1,7 @@
 ICGC DCC - Hadoop
 ===
 
-Common classes relating to Hadoop for DCC projects
+Common classes relating to Hadoop for DCC projects.
 
 Build
 ---
