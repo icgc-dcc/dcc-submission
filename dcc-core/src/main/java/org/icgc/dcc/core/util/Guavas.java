@@ -17,43 +17,47 @@
  */
 package org.icgc.dcc.core.util;
 
-import static lombok.AccessLevel.PRIVATE;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Maps.transformValues;
+import static com.google.common.collect.Maps.uniqueIndex;
 
-import java.io.File;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 /**
- * Common object mappers.
+ * 
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class Jackson {
+public class Guavas {
 
-  public static final ObjectMapper DEFAULT = new ObjectMapper();
-  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
+  /**
+   * The missing List&ltT&gt -> Map%&ltf1(T), f2(T)&gt conversion.
+   * <p>
+   * TODO: use {@link Maps#asMap(java.util.Set, Function)} to help.
+   */
+  public static <T, K, V> Map<K, V> transformListToMap(Iterable<T> iterable, Function<T, Entry<K, V>> function) {
 
-  @SneakyThrows
-  public static String toJsonPrettyString(String jsonString) {
-    return PRETTY_WRITTER.writeValueAsString(DEFAULT.readTree(jsonString));
-  }
+    return transformValues(
+        uniqueIndex(
+            transform(iterable, function),
+            new Function<Entry<K, V>, K>() {
 
-  @SneakyThrows
-  public static String toJsonPrettyString(Object object) {
-    return PRETTY_WRITTER.writeValueAsString(object);
-  }
+              @Override
+              public K apply(Entry<K, V> entry) {
+                return entry.getKey();
+              }
 
-  public static JsonNode getJsonRoot(String path) {
-    return getJsonRoot(new File(path));
-  }
+            }),
+        new Function<Entry<K, V>, V>() {
 
-  @SneakyThrows
-  public static JsonNode getJsonRoot(File file) {
-    return DEFAULT.readTree(file);
+          @Override
+          public V apply(Entry<K, V> entry) {
+            return entry.getValue();
+          }
+
+        });
   }
 
 }

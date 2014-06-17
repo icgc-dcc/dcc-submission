@@ -15,45 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import java.io.File;
-
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Guavas;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Function;
 
 /**
- * Common object mappers.
+ * 
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class Jackson {
+public class Dictionaries {
 
-  public static final ObjectMapper DEFAULT = new ObjectMapper();
-  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
+  /**
+   * Do not touch those without modifying their counterparts in the Dictionary/FileSchema object model (in sub-module).
+   */
+  public static final String FILE_SCHEMATA_KEY = "files";
+  public static final String FILE_SCHEMA_NAME_KEY = "name";
+  public static final String FILE_SCHEMA_PATTERN_KEY = "pattern";
 
-  @SneakyThrows
-  public static String toJsonPrettyString(String jsonString) {
-    return PRETTY_WRITTER.writeValueAsString(DEFAULT.readTree(jsonString));
-  }
+  public static Map<FileType, String> getPatterns(JsonNode root) {
+    return Guavas.<JsonNode, FileType, String> transformListToMap(
+        root.path(FILE_SCHEMATA_KEY),
+        new Function<JsonNode, Entry<FileType, String>>() {
 
-  @SneakyThrows
-  public static String toJsonPrettyString(Object object) {
-    return PRETTY_WRITTER.writeValueAsString(object);
-  }
+          @Override
+          public Entry<FileType, String> apply(JsonNode node) {
+            return new SimpleEntry<FileType, String>(
+                FileType.from(node.path(FILE_SCHEMA_NAME_KEY).asText()),
+                node.path(FILE_SCHEMA_PATTERN_KEY).asText());
+          }
 
-  public static JsonNode getJsonRoot(String path) {
-    return getJsonRoot(new File(path));
-  }
-
-  @SneakyThrows
-  public static JsonNode getJsonRoot(File file) {
-    return DEFAULT.readTree(file);
+        });
   }
 
 }
