@@ -1,7 +1,7 @@
-ICGC DCC - Core
+ICGC DCC - Hadoop
 ===
 
-Common classes for DCC projects
+Libary of common classes relating to Hadoop for DCC projects.
 
 Build
 ---
