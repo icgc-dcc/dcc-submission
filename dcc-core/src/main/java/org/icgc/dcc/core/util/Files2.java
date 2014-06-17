@@ -29,6 +29,8 @@ import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+
 import com.google.common.io.Files;
 
 /**
@@ -52,8 +54,10 @@ public class Files2 {
   @SneakyThrows
   private static BufferedReader getBufferedReader(final String path) {
     FileInputStream fileInputStream = new FileInputStream(path);
-    GZIPInputStream gZIPInputStream = new GZIPInputStream(fileInputStream);
-    InputStreamReader inputStreamReader = new InputStreamReader(gZIPInputStream);
+    InputStreamReader inputStreamReader =
+        new InputStreamReader(
+            path.endsWith(".gz") ? new GZIPInputStream(fileInputStream) : new BZip2CompressorInputStream(
+                fileInputStream));
     val bufferedReader = new BufferedReader(inputStreamReader);
     return bufferedReader;
   }
