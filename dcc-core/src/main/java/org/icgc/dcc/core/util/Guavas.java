@@ -17,15 +17,12 @@
  */
 package org.icgc.dcc.core.util;
 
-import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.transformValues;
 import static com.google.common.collect.Maps.uniqueIndex;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Maps;
 
 /**
  * 
@@ -33,31 +30,17 @@ import com.google.common.collect.Maps;
 public class Guavas {
 
   /**
-   * The missing List&ltT&gt -> Map%&ltf1(T), f2(T)&gt conversion.
-   * <p>
-   * TODO: use {@link Maps#asMap(java.util.Set, Function)} to help.
+   * The missing List&ltT&gt -> Map&ltk(T), v(T)&gt all-in-one conversion.
    */
-  public static <T, K, V> Map<K, V> transformListToMap(Iterable<T> iterable, Function<T, Entry<K, V>> function) {
-
+  public static <T, K, V> Map<K, V> transformListToMap(
+      Iterable<T> iterable,
+      Function<T, K> keyFunction,
+      Function<T, V> valueFunction) {
     return transformValues(
         uniqueIndex(
-            transform(iterable, function),
-            new Function<Entry<K, V>, K>() {
-
-              @Override
-              public K apply(Entry<K, V> entry) {
-                return entry.getKey();
-              }
-
-            }),
-        new Function<Entry<K, V>, V>() {
-
-          @Override
-          public V apply(Entry<K, V> entry) {
-            return entry.getValue();
-          }
-
-        });
+            iterable,
+            keyFunction),
+        valueFunction);
   }
 
 }

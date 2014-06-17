@@ -17,9 +17,7 @@
  */
 package org.icgc.dcc.core.model;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Guavas;
@@ -42,13 +40,23 @@ public class Dictionaries {
   public static Map<FileType, String> getPatterns(JsonNode root) {
     return Guavas.<JsonNode, FileType, String> transformListToMap(
         root.path(FILE_SCHEMATA_KEY),
-        new Function<JsonNode, Entry<FileType, String>>() {
+
+        // Key function
+        new Function<JsonNode, FileType>() {
 
           @Override
-          public Entry<FileType, String> apply(JsonNode node) {
-            return new SimpleEntry<FileType, String>(
-                FileType.from(node.path(FILE_SCHEMA_NAME_KEY).asText()),
-                node.path(FILE_SCHEMA_PATTERN_KEY).asText());
+          public FileType apply(JsonNode node) {
+            return FileType.from(node.path(FILE_SCHEMA_NAME_KEY).asText());
+          }
+
+        },
+
+        // Value function
+        new Function<JsonNode, String>() {
+
+          @Override
+          public String apply(JsonNode node) {
+            return node.path(FILE_SCHEMA_PATTERN_KEY).asText();
           }
 
         });
