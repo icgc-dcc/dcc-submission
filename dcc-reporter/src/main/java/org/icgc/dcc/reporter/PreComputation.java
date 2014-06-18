@@ -4,7 +4,6 @@ import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.core.util.Strings2.UNIX_NEW_LINE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
@@ -24,7 +23,6 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.TupleEntriesLogger;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
@@ -34,7 +32,6 @@ import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
@@ -63,9 +60,15 @@ public class PreComputation extends SubAssembly {
   static String NOT_APPLICABLE = "N/A";
 
   PreComputation(String releaseName, InputData inputData) {
-    setTails(new TupleEntriesLogger(
-        Optional.of(UNIX_NEW_LINE),
-        process(releaseName, inputData))); // TODO: add if?
+    setTails(
+
+    // new TupleEntriesLogger(
+    // Optional.of(UNIX_NEW_LINE),
+
+    process(releaseName, inputData)
+
+    // )
+    ); // TODO: add if?
   }
 
   private static Pipe process(final String releaseName, final InputData inputData) {

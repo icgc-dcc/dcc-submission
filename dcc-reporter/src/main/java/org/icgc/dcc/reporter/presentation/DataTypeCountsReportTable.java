@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
@@ -27,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
+@Slf4j
 public class DataTypeCountsReportTable implements CsvRepresentable {
 
   private static final String CLINICAL_TYPE_DISPLAY_NAME = "Clinical";
@@ -44,6 +46,7 @@ public class DataTypeCountsReportTable implements CsvRepresentable {
             public boolean apply(DataType dataType) {
               return !isOptionalClinicalType(dataType);
             }
+
           })) {
         table.put(projectKey, dataType, DataTypeCountsReportRow.getEmptyInstance());
       }
@@ -51,6 +54,7 @@ public class DataTypeCountsReportTable implements CsvRepresentable {
   }
 
   public void updateCount(OutputType output, String projectId, DataType dataType, long count) {
+    log.info("TODO: {}, {}, {}", new Object[] { projectId, dataType, table.rowKeySet() });
     val dataTypeCountsReportRow = table.get(projectId, dataType);
     switch (output) {
     case DONOR:

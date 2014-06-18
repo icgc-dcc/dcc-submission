@@ -10,7 +10,12 @@ import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.Taps;
 
+import cascading.scheme.hadoop.TextDelimited;
+import cascading.scheme.hadoop.TextLine;
+import cascading.scheme.hadoop.TextLine.Compress;
+import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tap.hadoop.Hfs;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -59,7 +64,14 @@ public class Connector {
 
           @Override
           public Tap<?, ?, ?> apply(final String path) {
-            return Taps.getDecompressingTsvFileWithHeader(path);
+            // return Taps.getDecompressingTsvFileWithHeader(path);
+            val scheme = new TextDelimited(
+                true, // headers
+                "\t");
+            scheme.setSinkCompression(Compress.ENABLE);
+            return new Hfs(
+                scheme,
+                path);
           }
 
         });
@@ -71,11 +83,14 @@ public class Connector {
     for (val outputType : OutputType.values()) {
       rawOutputTaps.put(
           iterator.next(), // TODO: explain...
-          Taps.getTsvFileWithHeader(
-              getOutputFilePath(outputType)));
+          // Taps.getTsvFileWithHeader(
+          // getOutputFilePath(outputType)));
+          new Hfs(
+              new TextLine(),
+              getOutputFilePath(outputType),
+              SinkMode.KEEP));
     }
 
     return rawOutputTaps.build();
   }
-
 }

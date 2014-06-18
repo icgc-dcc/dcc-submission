@@ -31,6 +31,7 @@ import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.isNullTuple;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.nestValue;
 
+import java.io.Serializable;
 import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
@@ -148,7 +149,7 @@ public class SubAssemblies {
     /**
      * Returns a non-null replacement value for nulls. That the value is non-null will be checked for at runtime.
      */
-    public static interface NullReplacing extends ObjectProviding {}
+    public static interface NullReplacing extends ObjectProviding, Serializable {}
 
     private static class Nonce extends BaseOperation<Void> implements cascading.operation.Function<Void> {
 
