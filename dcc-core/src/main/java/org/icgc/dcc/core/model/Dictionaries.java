@@ -169,7 +169,9 @@ public class Dictionaries {
   public static Map<String, String> getMapping(
       @NonNull final JsonNode codeListsRoot,
       @NonNull final String codeListName) {
-    checkArgument(codeListsRoot.isArray()); // By design
+    checkArgument(codeListsRoot.isArray(), // By design
+        "Codelist json file is expected to have an array as root node, instead got: '%s'",
+        codeListsRoot.getNodeType());
     val codeListTerms = getCodeListTerms(codeListsRoot, codeListName);
     checkState(codeListTerms.isArray()); // By design
 
