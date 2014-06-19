@@ -18,7 +18,7 @@
 package org.icgc.dcc.hadoop.cascading.taps;
 
 import static com.google.common.base.Preconditions.checkState;
-import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticInputStream;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 
@@ -41,62 +41,88 @@ import cascading.tuple.TupleEntryIterator;
 
 /**
  * Utility class to help with local {@link Tap}s from cascading.
+ * <p>
+ * TODO: create interface for local/hadoop
  */
-@NoArgsConstructor(access = PRIVATE)
-public class LocalTaps {
+@NoArgsConstructor(access = PUBLIC)
+public final class LocalTaps implements Taps {
 
-  public static final Tap<?, ?, ?> getNoCompressionLocalTsvWithHeader(
-      @NonNull final String path) {
-
-    return new FileTap(
-        GenericSchemes.getLocalTsvWithHeader(),
-        path);
+  @Override
+  public Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path) {
+    return Static.getNoCompressionTsvWithHeader(path);
   }
 
-  public static final Tap<?, ?, ?> getDecompressingLocalTsvWithHeader(@NonNull final String path) {
-
-    return getDecompressingLocalFileTap(
-        GenericSchemes.getDecompressingLocalTsvWithHeader(path),
-        path);
+  @Override
+  public Tap<?, ?, ?> getDecompressingTsvWithHeader(String path) {
+    return Static.getDecompressingTsvWithHeader(path);
   }
 
-  public static final Tap<?, ?, ?> getDecompressingLocalLinesNoHeader(
-      @NonNull final String path,
-      @NonNull final Fields numField,
-      @NonNull final Fields lineField) {
-
-    return getDecompressingLocalFileTap(
-        GenericSchemes.getLocalLinesWithOffset(
-            checkFieldsCardinalityOne(numField),
-            checkFieldsCardinalityOne(lineField)),
-        path);
+  @Override
+  public Tap<?, ?, ?> getDecompressingLinesNoHeader(String path, Fields numField, Fields lineField) {
+    return Static.getDecompressingLinesNoHeader(path, numField, lineField);
   }
 
-  public static FileTap getDecompressingLocalFileTap(
-      @NonNull final Scheme<Properties, InputStream, OutputStream, ?, ?> scheme,
-      @NonNull final String path) {
+  @Override
+  public Tap<?, ?, ?> getDecompressingFileTap(Scheme<Properties, InputStream, OutputStream, ?, ?> scheme, String path) {
+    return Static.getDecompressingFileTap(scheme, path);
+  }
 
-    return new FileTap(scheme, path) {
+  private static class Static {
 
-      @Override
-      public TupleEntryIterator openForRead(
-          FlowProcess<Properties> flowProcess,
-          InputStream input)
-          throws IOException {
-        checkState(input == null,
-            "Expecting input to be null here, instead: '{}'",
-            input == null ? null : input.getClass().getSimpleName());
+    public static final Tap<?, ?, ?> getNoCompressionTsvWithHeader(
+        @NonNull final String path) {
 
-        return super.openForRead(
-            flowProcess,
+      return new FileTap(
+          GenericSchemes.getLocalTsvWithHeader(),
+          path);
+    }
 
-            // Do not @Cleanup (cascading will close it)
-            getCompressionAgnosticInputStream(
-                path,
-                new Tika().detect(getIdentifier())));
-      }
+    public static final Tap<?, ?, ?> getDecompressingTsvWithHeader(@NonNull final String path) {
 
-    };
+      return getDecompressingFileTap(
+          GenericSchemes.getDecompressingLocalTsvWithHeader(path),
+          path);
+    }
+
+    public static final Tap<?, ?, ?> getDecompressingLinesNoHeader(
+        @NonNull final String path,
+        @NonNull final Fields numField,
+        @NonNull final Fields lineField) {
+
+      return getDecompressingFileTap(
+          GenericSchemes.getLocalLinesWithOffset(
+              checkFieldsCardinalityOne(numField),
+              checkFieldsCardinalityOne(lineField)),
+          path);
+    }
+
+    public static Tap<?, ?, ?> getDecompressingFileTap(
+        @NonNull final Scheme<Properties, InputStream, OutputStream, ?, ?> scheme,
+        @NonNull final String path) {
+
+      return new FileTap(scheme, path) {
+
+        @Override
+        public TupleEntryIterator openForRead(
+            FlowProcess<Properties> flowProcess,
+            InputStream input)
+            throws IOException {
+          checkState(input == null,
+              "Expecting input to be null here, instead: '{}'",
+              input == null ? null : input.getClass().getSimpleName());
+
+          return super.openForRead(
+              flowProcess,
+
+              // Do not @Cleanup (cascading will close it)
+              getCompressionAgnosticInputStream(
+                  path,
+                  new Tika().detect(getIdentifier())));
+        }
+
+      };
+    }
+
   }
 
 }

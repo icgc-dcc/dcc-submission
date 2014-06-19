@@ -8,9 +8,9 @@ import java.util.Map;
 
 import lombok.val;
 
-import org.icgc.dcc.hadoop.cascading.taps.HadoopTaps;
-import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
+import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
+import org.icgc.dcc.hadoop.cascading.taps.Taps;
 
 import cascading.tap.Tap;
 
@@ -18,6 +18,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
 public class Connector {
+
+  private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
 
   /**
    * See {@link LocalTaps#RAW_CASTER}.
@@ -61,9 +63,7 @@ public class Connector {
 
           @Override
           public Tap<?, ?, ?> apply(final String path) {
-            return Main.isLocal() ?
-                LocalTaps.getDecompressingLocalTsvWithHeader(path) :
-                HadoopTaps.getDecompressingHadoopTsvWithHeader(path);
+            return TAPS.getDecompressingTsvWithHeader(path);
           }
 
         });
@@ -76,12 +76,9 @@ public class Connector {
       val outputFilePath = getOutputFilePath(outputType);
       rawOutputTaps.put(
           iterator.next(), // TODO: explain...
-          Main.isLocal() ?
-              LocalTaps.getNoCompressionLocalTsvWithHeader(outputFilePath) :
-              HadoopTaps.getNoCompressionHadoopTsvFileWithHeader(outputFilePath));
+          TAPS.getNoCompressionTsvWithHeader(outputFilePath));
     }
 
     return rawOutputTaps.build();
   }
-
 }

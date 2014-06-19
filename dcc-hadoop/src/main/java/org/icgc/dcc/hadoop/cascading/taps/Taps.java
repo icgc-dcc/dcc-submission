@@ -17,64 +17,28 @@
  */
 package org.icgc.dcc.hadoop.cascading.taps;
 
-import static com.google.common.base.Preconditions.checkState;
-import static lombok.AccessLevel.PUBLIC;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import cascading.scheme.Scheme;
-import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 
 /**
- * Utility class to help with hadoop {@link Tap}s from cascading.
+ * Taps for cascading.
  */
-@NoArgsConstructor(access = PUBLIC)
-public class HadoopTaps implements Taps {
+public interface Taps {
 
-  @Override
-  public Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path) {
-    return Static.getNoCompressionTsvWithHeader(path);
-  }
+  static LocalTaps LOCAL = new LocalTaps();
+  static HadoopTaps HADOOP = new HadoopTaps();
 
-  @Override
-  public Tap<?, ?, ?> getDecompressingTsvWithHeader(String path) {
-    return Static.getDecompressingTsvWithHeader(path);
-  }
+  Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path);
 
-  @Override
-  public Tap<?, ?, ?> getDecompressingLinesNoHeader(String path, Fields numField, Fields lineField) {
-    checkState(false, "Not implemented yet.");
-    return null;
-  }
+  Tap<?, ?, ?> getDecompressingTsvWithHeader(String path);
 
-  @Override
-  public Tap<?, ?, ?> getDecompressingFileTap(Scheme<Properties, InputStream, OutputStream, ?, ?> scheme, String path) {
-    checkState(false, "Not implemented yet.");
-    return null;
-  }
+  Tap<?, ?, ?> getDecompressingLinesNoHeader(String path, Fields numField, Fields lineField);
 
-  private static class Static {
-
-    public static Tap<?, ?, ?> getDecompressingTsvWithHeader(@NonNull final String path) {
-      return new Hfs(
-          GenericSchemes.getDecompressingHadoopTsvWithHeader(),
-          path);
-    }
-
-    public static Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
-      return new Hfs(
-          GenericSchemes.getNoCompressionHadoopTsvWithHeader(),
-          path,
-          SinkMode.KEEP);
-    }
-
-  }
+  Tap<?, ?, ?> getDecompressingFileTap(Scheme<Properties, InputStream, OutputStream, ?, ?> scheme, String path);
 
 }
