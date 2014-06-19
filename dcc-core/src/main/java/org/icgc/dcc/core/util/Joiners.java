@@ -38,6 +38,8 @@ public final class Joiners {
   public static final Joiner DASH = on("-");
   public static final Joiner UNDERSCORE = on("_");
   public static final Joiner COMMA = on(Separators.COMMA);
+  public static final Joiner COLON = on(':');
+  public static final Joiner SEMICOLON = on(';');
 
   public static final Joiner PATH = SLASH;
   public static final Joiner EXTENSION = DOT;
