@@ -2,6 +2,7 @@ package org.icgc.dcc.reporter;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static org.icgc.dcc.core.util.Joiners.INDENT;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Splitters.TAB;
 import static org.icgc.dcc.reporter.Reporter.OUTPUT_FILE;
 
@@ -19,6 +20,9 @@ import org.icgc.dcc.reporter.presentation.DataTypeCountsReportTable;
 import com.google.common.io.Files;
 
 public class Gatherer {
+
+  private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
+  private static final String PART_FILE = "part-00000";
 
   public static DataTypeCountsReportTable getTable(Set<String> projectKeys) {
     val table = new DataTypeCountsReportTable(projectKeys);
@@ -57,8 +61,15 @@ public class Gatherer {
 
   @SneakyThrows
   private static List<String> readLines(OutputType output) {
+    String outputFilePath = Reporter.getOutputFilePath(output);
+    if (!Main.isLocal()) {
+      outputFilePath = PATH.join(
+          FUSE_MOUTPOINT_PREFIX,
+          outputFilePath,
+          PART_FILE);
+    }
     return Files.readLines(
-        new File(Reporter.getOutputFilePath(output)),
+        new File(outputFilePath),
         UTF_8);
   }
 

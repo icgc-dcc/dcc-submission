@@ -32,7 +32,11 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
+
+import org.icgc.dcc.core.util.Proposition;
+
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
@@ -45,6 +49,9 @@ import com.google.common.collect.ImmutableList;
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class Fields2 {
+
+  public static Fields NO_FIELDS = new Fields();
+  public static Fields EMPTY_FIELDS = NO_FIELDS;
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
   private static final String COUNT_SUFFIX = "count";
@@ -287,6 +294,17 @@ public final class Fields2 {
    */
   public static String getFieldName(Fields fields) {
     return fields.print().replace("['", "").replace("']", "");
+  }
+
+  public static Fields appendIfApplicable(
+      @NonNull final Fields fields, // TODO: decorator around that Fields rather
+      @NonNull final Proposition proposition,
+      @NonNull final Fields conditionedFields) {
+
+    return fields.append(
+        proposition.evaluate() ?
+            conditionedFields :
+            NO_FIELDS);
   }
 
 }

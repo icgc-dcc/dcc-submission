@@ -77,7 +77,7 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   public Tap<?, ?, ?> getSourceTap(String fileName) {
-    return Taps.getDecompressingLinesFile(
+    return Taps.getDecompressingLocalLinesNoHeader(
         getFilePath(fileName).toUri().toString(),
         new Fields(ValidationFields.OFFSET_FIELD_NAME),
         new Fields("line"));

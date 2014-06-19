@@ -8,6 +8,7 @@ import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Pipes.getTailNames;
 import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
 import static org.icgc.dcc.reporter.Connector.getRawOutputTaps;
+import static org.icgc.dcc.reporter.Main.isLocal;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,17 +29,23 @@ import org.icgc.dcc.hadoop.util.HadoopProperties;
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.flow.hadoop.util.HadoopUtil;
+import cascading.flow.local.LocalFlowConnector;
 import cascading.property.AppProps;
 
 @Slf4j
 public class Reporter {
 
+  private static final Class<Reporter> CLASS = Reporter.class;
+
   static String OUTPUT_DIR = "/tmp/reports";
   static String OUTPUT_FILE = "/tmp/table1";
   static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
 
-  public void report(@NonNull String releaseName, @NonNull InputData inputData) {
-    log.info("Gathering reports: '{}'", inputData);
+  public static void report(
+      @NonNull String releaseName,
+      @NonNull InputData inputData,
+      @NonNull Map<String, String> mapping) {
+    log.info("Gathering reports: '{}' ('{}')", inputData, mapping);
 
     // Main processing
     val tails = new StatsGathering(
@@ -46,19 +53,19 @@ public class Reporter {
         .getTails();
 
     // Connect flow
-    getFlowConnector(null)
+    getFlowConnector()
         .connect(
             flowDef()
                 .addSources(getRawInputTaps(inputData))
                 .addSinks(getRawOutputTaps(getTailNames(tails)))
                 .addTails(tails)
-                .setName(Flows.getName(getClass())))
+                .setName(Flows.getName(CLASS)))
         .complete();
 
     val table = Gatherer
         .getTable(inputData.getProjectKeys());
     log.info(table.getCsvRepresentation());
-    Gatherer.writeCsvFile(table);
+    // Gatherer.writeCsvFile(table);
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
@@ -76,7 +83,12 @@ public class Reporter {
         TSV);
   }
 
-  public FlowConnector getFlowConnector(Map<Object, Object> properties) {
+  public static FlowConnector getFlowConnector() {
+
+    if (isLocal()) {
+      return new LocalFlowConnector();
+    }
+
     Map<Object, Object> flowProperties = newHashMap();
 
     // From external application configuration file
@@ -85,7 +97,7 @@ public class Reporter {
     // }
 
     // M/R job entry point
-    AppProps.setApplicationJarClass(flowProperties, this.getClass());
+    AppProps.setApplicationJarClass(flowProperties, CLASS);
 
     // flowProperties =
     // enableJobOutputCompression(

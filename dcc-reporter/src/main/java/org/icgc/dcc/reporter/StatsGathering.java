@@ -12,14 +12,14 @@ import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.reporter.OutputType.SAMPLE;
 import static org.icgc.dcc.reporter.OutputType.SEQUENCING_STRATEGY;
 import static org.icgc.dcc.reporter.OutputType.SPECIMEN;
-import static org.icgc.dcc.reporter.PreComputation.ANALYSIS_ID_FIELD;
-import static org.icgc.dcc.reporter.PreComputation.ANALYSIS_OBSERVATION_COUNT_FIELD;
-import static org.icgc.dcc.reporter.PreComputation.DONOR_ID_FIELD;
-import static org.icgc.dcc.reporter.PreComputation.PROJECT_ID_FIELD;
-import static org.icgc.dcc.reporter.PreComputation.SAMPLE_ID_FIELD;
-import static org.icgc.dcc.reporter.PreComputation.SEQUENCING_STRATEGY_FIELD;
-import static org.icgc.dcc.reporter.PreComputation.SPECIMEN_ID_FIELD;
-import static org.icgc.dcc.reporter.PreComputation.TYPE_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.ANALYSIS_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SAMPLE_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies;
@@ -61,7 +61,7 @@ public class StatsGathering extends SubAssembly {
         // .add(processSequencingStrategies(preComputationTable))
 
         // For table 2
-        .add(foo(preComputationTable)) // TODO: encapsulate elsewhere?
+        .add(processSequencingStrategies(preComputationTable)) // TODO: encapsulate elsewhere?
 
         .build();
   }
@@ -107,25 +107,15 @@ public class StatsGathering extends SubAssembly {
         getPreCountedUniqueCountPipe(
             preComputationTable,
             ANALYSIS_ID_FIELD,
-            ANALYSIS_OBSERVATION_COUNT_FIELD,
+            _ANALYSIS_OBSERVATION_COUNT_FIELD,
             PROJECT_ID_FIELD
                 .append(TYPE_FIELD)));
-  }
-
-  private static Pipe processSequencingStrategies(Pipe preComputationTable) {
-    return new NamingPipe(
-        SEQUENCING_STRATEGY,
-        getCountPipe(
-            preComputationTable,
-            ANALYSIS_ID_FIELD,
-            PROJECT_ID_FIELD
-                .append(SEQUENCING_STRATEGY_FIELD))); // TODO: correct?
   }
 
   /**
    * TODO: promote unique count by to {@link SubAssemblies}?
    */
-  private static Pipe foo(Pipe preComputationTable) {
+  private static Pipe processSequencingStrategies(Pipe preComputationTable) {
     val countByFields = PROJECT_ID_FIELD.append(SEQUENCING_STRATEGY_FIELD);
 
     return
@@ -155,30 +145,6 @@ public class StatsGathering extends SubAssembly {
             .resultField(getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD))
 
             .build()));
-  }
-
-  private static Pipe getCountPipe(Pipe preComputationTable, Fields targetField, Fields groupFields) {
-    checkFieldsCardinalityOne(targetField);
-
-    return
-
-    //
-    new CountBy(CountByData.builder()
-
-        .pipe(
-
-            //
-            new Retain(
-                preComputationTable,
-
-                // Retain fields
-                groupFields
-                    .append(targetField)))
-
-        .countByFields(groupFields)
-        .resultField(getCountFieldCounterpart(targetField))
-
-        .build());
   }
 
   // see https://gist.github.com/ceteri/4459908

@@ -19,6 +19,7 @@ package org.icgc.dcc.hadoop.cascading;
 
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +40,9 @@ import org.apache.tika.Tika;
 import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
+import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryIterator;
 
@@ -51,28 +55,44 @@ import com.google.common.base.Function;
 @NoArgsConstructor(access = PRIVATE)
 public class Taps {
 
-  public static final cascading.tap.local.FileTap getTsvFileWithHeader(String path) {
+  public static final Tap<?, ?, ?> getNoCompressionLocalTsvWithHeader(
+      @NonNull final String path) {
 
     return new cascading.tap.local.FileTap(
         Schemes.getLocalTsvWithHeader(),
         path);
   }
 
-  public static final cascading.tap.local.FileTap getDecompressingTsvFileWithHeader(String path) {
+  public static final Tap<?, ?, ?> getDecompressingLocalTsvWithHeader(@NonNull final String path) {
 
     return getDecompressingLocalFileTap(
         Schemes.getDecompressingLocalTsvWithHeader(path),
         path);
   }
 
-  public static final cascading.tap.local.FileTap getDecompressingLinesFile(
-      String path, Fields numField, Fields lineField) {
+  public static final Tap<?, ?, ?> getDecompressingLocalLinesNoHeader(
+      @NonNull final String path,
+      @NonNull final Fields numField,
+      @NonNull final Fields lineField) {
 
     return getDecompressingLocalFileTap(
         Schemes.getLocalLinesWithOffset(
-            numField,
-            lineField),
+            checkFieldsCardinalityOne(numField),
+            checkFieldsCardinalityOne(lineField)),
         path);
+  }
+
+  public static Tap<?, ?, ?> getCompressingHadoopTsvWithHeader(@NonNull final String path) {
+    return new Hfs(
+        Schemes.getCompressingHadoopTsvWithHeader(),
+        path);
+  }
+
+  public static Tap<?, ?, ?> getNoCompressionHadoopTsvFileWithHeader(@NonNull final String path) {
+    return new Hfs(
+        Schemes.getNoCompressionHadoopTsvWithHeader(),
+        path,
+        SinkMode.KEEP);
   }
 
   /**

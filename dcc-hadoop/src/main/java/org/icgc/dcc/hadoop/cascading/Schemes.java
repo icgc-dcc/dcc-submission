@@ -20,13 +20,18 @@ package org.icgc.dcc.hadoop.cascading;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Files2.getFirstLine;
 import static org.icgc.dcc.core.util.Splitters.TAB;
+import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 
 import java.io.InputStream;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Properties;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -35,7 +40,7 @@ import org.icgc.dcc.core.util.Separators;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
-import cascading.scheme.local.TextDelimited;
+import cascading.scheme.hadoop.TextLine.Compress;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
@@ -43,24 +48,32 @@ import cascading.tuple.Fields;
  * Utility class for working with cascading {@code Schemes} objects, such as {@code TextDelimited}.
  * <p>
  * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
+ * <p>
+ * TODO: homogenize names and generalize return types when possible + do not expose other than to {@link Taps}.
  */
 @NoArgsConstructor(access = PRIVATE)
 public class Schemes {
 
-  public static final String TSV_DELIMITER = "\t";
+  private static final String TSV_DELIMITER = Separators.TAB;
 
-  public static final cascading.scheme.local.TextDelimited getLocalTsvWithHeader() {
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLocalTsvWithHeader() {
     return new cascading.scheme.local.TextDelimited(withHeader(), Separators.TAB);
   }
 
-  public static cascading.scheme.local.TextLine getLocalLinesWithOffset(Fields numField, Fields lineField) {
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLocalLinesWithOffset(
+      @NonNull final Fields numField,
+      @NonNull final Fields lineField) {
+
     return new cascading.scheme.local.TextLine(
-        numField
-            .append(lineField));
+        checkFieldsCardinalityOne(numField)
+            .append(checkFieldsCardinalityOne(lineField)));
   }
 
-  public static TextDelimited getDecompressingLocalTsvWithHeader(final String path) {
-    return new cascading.scheme.local.TextDelimited(withHeader(), Separators.TAB) {
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getDecompressingLocalTsvWithHeader(
+      @NonNull final String path) {
+    return new cascading.scheme.local.TextDelimited(
+        withHeader(),
+        TSV_DELIMITER) {
 
       @Override
       public Fields retrieveSourceFields(
@@ -71,6 +84,19 @@ public class Schemes {
       }
 
     };
+  }
+
+  @SuppressWarnings("rawtypes")
+  static Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getCompressingHadoopTsvWithHeader() {
+    val textLine = getNoCompressionHadoopTsvWithHeader();
+    textLine.setSinkCompression(Compress.ENABLE);
+    return textLine;
+  }
+
+  static cascading.scheme.hadoop.TextLine getNoCompressionHadoopTsvWithHeader() {
+    return new cascading.scheme.hadoop.TextDelimited(
+        withHeader(),
+        TSV_DELIMITER);
   }
 
   /**

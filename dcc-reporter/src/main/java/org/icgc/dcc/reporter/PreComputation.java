@@ -1,13 +1,22 @@
 package org.icgc.dcc.reporter;
 
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
+import static org.icgc.dcc.reporter.ReporterFields.ANALYSIS_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SAMPLE_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
@@ -36,28 +45,15 @@ import com.google.common.base.Function;
 @Slf4j
 public class PreComputation extends SubAssembly {
 
-  static Fields TYPE_FIELD = new Fields("_type");
-  static Fields PROJECT_ID_FIELD = new Fields("_project_id");
-  static Fields DONOR_ID_FIELD = new Fields("donor_id");
-  static Fields SPECIMEN_ID_FIELD = new Fields("specimen_id");
-  static Fields SAMPLE_ID_FIELD = new Fields("analyzed_sample_id");
-  static Fields ANALYSIS_ID_FIELD = new Fields("analysis_id");
-  static Fields ANALYSIS_OBSERVATION_FIELD = new Fields("analysis_observation");
+  private static Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
+  private static Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
+  private static Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
 
-  static Fields SEQUENCING_STRATEGY_FIELD = new Fields("sequencing_strategy");
-  static Fields ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart(ANALYSIS_OBSERVATION_FIELD);
-
-  static Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
-  static Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
-  static Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
-
-  static Fields NO_FIELDS = new Fields();
-
-  static Fields META_PK_FIELDS =
+  private static Fields META_PK_FIELDS =
       ANALYSIS_ID_FIELD
           .append(SAMPLE_ID_FIELD);
 
-  static String NOT_APPLICABLE = "N/A";
+  // private static String NOT_APPLICABLE = "N/A";
 
   PreComputation(String releaseName, InputData inputData) {
     setTails(
@@ -128,7 +124,7 @@ public class PreComputation extends SubAssembly {
 
                     .resultFields(
                         META_PK_FIELDS
-                            .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
+                            .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
                             .append(SEQUENCING_STRATEGY_FIELD)
                             .append(TYPE_FIELD)
                             .append(DONOR_ID_FIELD)
@@ -219,15 +215,15 @@ public class PreComputation extends SubAssembly {
 
                         processFiles(
                             inputData, projectKey, featureType.getMetaFileType(),
-                            META_PK_FIELDS
-                                .append(featureType.hasSequencingStrategy() ?
-                                    SEQUENCING_STRATEGY_FIELD :
-                                    NO_FIELDS))))
+                            appendIfApplicable(
+                                META_PK_FIELDS,
+                                hasSequencingStrategy(featureType),
+                                SEQUENCING_STRATEGY_FIELD))))
                 .rightJoinFields(META_PK_FIELDS)
 
                 .resultFields(
                     META_PK_FIELDS
-                        .append(ANALYSIS_OBSERVATION_COUNT_FIELD)
+                        .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
                         .append(REDUNDANT_ANALYSIS_ID_FIELD)
                         .append(REDUNDANT_SAMPLE_ID_FIELD)
                         .append(SEQUENCING_STRATEGY_FIELD))
@@ -275,7 +271,7 @@ public class PreComputation extends SubAssembly {
                 .build()))
 
         .countByFields(META_PK_FIELDS)
-        .resultField(ANALYSIS_OBSERVATION_COUNT_FIELD)
+        .resultField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
         .build());
 

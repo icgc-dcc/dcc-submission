@@ -40,10 +40,12 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.core.model.FileTypes.FileSubType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Proposition;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
@@ -52,6 +54,8 @@ import com.google.common.collect.ImmutableSet;
  * Utilities for working with ICGC feature types.
  * <p>
  * For clinical file types, see {@link FileTypes} instead.
+ * <p>
+ * Only expose with*() and {@link Proposition} methods, no {@link Predicate}s.
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class FeatureTypes {
@@ -208,7 +212,7 @@ public final class FeatureTypes {
     return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 
-  public static Predicate<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = new Predicate<FeatureType>() {
+  private static Predicate<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = new Predicate<FeatureType>() {
 
     private final Set<FeatureType> TYPES = ImmutableSet.<FeatureType> of(
         METH_ARRAY_TYPE,
@@ -222,6 +226,28 @@ public final class FeatureTypes {
 
   };
 
-  public static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
+  private static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
+
+  public static Proposition hasSequencingStrategy(
+      @NonNull final FeatureType featureType) {
+
+    return new Proposition() {
+
+      @Override
+      public boolean evaluate() {
+        return TYPES_WITH_SEQUENCING_STRATEGY.apply(featureType);
+      }
+
+    };
+
+  }
+
+  public static Iterable<FeatureType> withRawSequenceData(@NonNull final Iterable<FeatureType> items) {
+    return filter(items, TYPES_WITH_RAW_SEQUENCE_DATA);
+  }
+
+  public static Iterable<FeatureType> withSequencingStrategy(@NonNull final Iterable<FeatureType> items) {
+    return filter(items, TYPES_WITH_SEQUENCING_STRATEGY);
+  }
 
 }

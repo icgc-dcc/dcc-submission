@@ -10,12 +10,7 @@ import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.Taps;
 
-import cascading.scheme.hadoop.TextDelimited;
-import cascading.scheme.hadoop.TextLine;
-import cascading.scheme.hadoop.TextLine.Compress;
-import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -64,14 +59,9 @@ public class Connector {
 
           @Override
           public Tap<?, ?, ?> apply(final String path) {
-            // return Taps.getDecompressingTsvFileWithHeader(path);
-            val scheme = new TextDelimited(
-                true, // headers
-                "\t");
-            scheme.setSinkCompression(Compress.ENABLE);
-            return new Hfs(
-                scheme,
-                path);
+            return Main.isLocal() ?
+                Taps.getDecompressingLocalTsvWithHeader(path) :
+                Taps.getCompressingHadoopTsvWithHeader(path);
           }
 
         });
@@ -81,16 +71,15 @@ public class Connector {
     val rawOutputTaps = new ImmutableMap.Builder<String, Tap<?, ?, ?>>();
     val iterator = newArrayList(tailNames).iterator();
     for (val outputType : OutputType.values()) {
+      val outputFilePath = getOutputFilePath(outputType);
       rawOutputTaps.put(
           iterator.next(), // TODO: explain...
-          // Taps.getTsvFileWithHeader(
-          // getOutputFilePath(outputType)));
-          new Hfs(
-              new TextLine(),
-              getOutputFilePath(outputType),
-              SinkMode.KEEP));
+          Main.isLocal() ?
+              Taps.getNoCompressionLocalTsvWithHeader(outputFilePath) :
+              Taps.getNoCompressionHadoopTsvFileWithHeader(outputFilePath));
     }
 
     return rawOutputTaps.build();
   }
+
 }
