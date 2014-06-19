@@ -41,9 +41,12 @@ public class Files2 {
   public static final String GZIP_EXTENSION = Separators.EXTENSION + "gz";
   public static final String BZIP2_EXTENSION = Separators.EXTENSION + "bz2";
 
-  private static final String GZIP_MEDIA_TYPE = "application/x" + GZIP;
-  private static final String BZIP2_MEDIA_TYPE = "application/x" + BZIP2;
+  private static final String GZIP_MEDIA_TYPE = "application/x-" + GZIP;
+  private static final String BZIP2_MEDIA_TYPE = "application/x-" + BZIP2;
 
+  /**
+   * Compression formats supported: gzip and bzip2.
+   */
   @SneakyThrows
   public static String getCompressionAgnosticFirstLine(@NonNull final String path) {
     @Cleanup
