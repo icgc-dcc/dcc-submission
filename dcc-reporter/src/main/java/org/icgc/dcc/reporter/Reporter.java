@@ -24,6 +24,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.Pipes;
+import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
 
 import cascading.flow.FlowConnector;
@@ -110,7 +111,9 @@ public class Reporter {
     // SNAPPY_CODEC_PROPERTY_VALUE),
     // GZIP_CODEC_PROPERTY_VALUE);
 
-    flowProperties = HadoopProperties.setAvailableCodecs(flowProperties);
+    flowProperties = HadoopProperties.enableIntermediateMapOutputCompression(
+        HadoopProperties.setAvailableCodecs(flowProperties),
+        HadoopConstants.LZO_CODEC_PROPERTY_VALUE);
 
     // flowProperties.putAll(properties);
 
