@@ -89,6 +89,7 @@ public class Reporter {
       log.info("Using local mode");
       return new LocalFlowConnector();
     }
+    log.info("Using hadoop mode");
 
     Map<Object, Object> flowProperties = newHashMap();
 
@@ -96,6 +97,8 @@ public class Reporter {
     // for (val configEntry : hadoopConfig.entrySet()) {
     // flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     // }
+
+    HadoopProperties.setHadoopUserNameProperty();
 
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, CLASS);
