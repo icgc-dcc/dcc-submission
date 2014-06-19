@@ -36,7 +36,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 
 /**
- * 
+ * Generic utils method to traver dictionaries and codelist arrays.
  */
 public class Dictionaries {
 
@@ -59,16 +59,17 @@ public class Dictionaries {
   public static final String CODELIST_VALUE_KEY = "value";
   public static final String CODELIST_CODE_KEY = "code";
 
-  public static Map<FileType, String> getPatterns(@NonNull JsonNode root) {
+  public static Map<FileType, String> getPatterns(@NonNull final JsonNode dictionaryRoot) {
+
     return Guavas.<JsonNode, FileType, String> transformListToMap(
-        root.path(FILE_SCHEMATA_KEY),
+        dictionaryRoot.path(FILE_SCHEMATA_KEY),
 
         // Key function
         new Function<JsonNode, FileType>() {
 
           @Override
           public FileType apply(JsonNode node) {
-            return FileType.from(node.path(FILE_SCHEMA_NAME_KEY).asText());
+            return FileType.from(getString(node, FILE_SCHEMA_NAME_KEY));
           }
 
         },
@@ -78,17 +79,23 @@ public class Dictionaries {
 
           @Override
           public String apply(JsonNode node) {
-            return node.path(FILE_SCHEMA_PATTERN_KEY).asText();
+            return getString(node, FILE_SCHEMA_PATTERN_KEY);
           }
 
         });
   }
 
+  /**
+   * Returns the name of a codelist for a given field. Field is expected to have a codelist restriction defined on it.
+   */
   public static String getCodeListName(
-      @NonNull JsonNode root, @NonNull final FileType fileType, @NonNull final String fieldName) {
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final FileType fileType,
+      @NonNull final String fieldName) {
+    val codeListRestriction = getCodeListRestriction(dictionaryRoot, fileType, fieldName);
+    checkState(codeListRestriction.isPresent(),
+        "Expecting codelist to exists for: '{}.{}'", fileType, fieldName);
 
-    val codeListRestriction = getCodeListRestriction(root, fileType, fieldName);
-    checkState(codeListRestriction.isPresent(), "TODO");
     return codeListRestriction
         .get()
         .path(CONFIG_KEY)
@@ -96,60 +103,75 @@ public class Dictionaries {
         .asText();
   }
 
-  private static JsonNode getFileSchema(@NonNull JsonNode root, @NonNull final FileType fileType) {
+  private static JsonNode getFileSchema(
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final FileType fileType) {
+
     return find(
-        root.path(FILE_SCHEMATA_KEY),
+        dictionaryRoot.path(FILE_SCHEMATA_KEY),
         new Predicate<JsonNode>() {
 
           @Override
           public boolean apply(JsonNode fileSchema) {
-            return fileType == FileType.from(fileSchema.path(FILE_SCHEMA_NAME_KEY).asText());
+            return fileType == FileType.from(getString(fileSchema, FILE_SCHEMA_NAME_KEY));
           }
 
         });
   }
 
   private static JsonNode getField(
-      @NonNull JsonNode root, @NonNull final FileType fileType, @NonNull final String fieldName) {
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final FileType fileType,
+      @NonNull final String fieldName) {
+
     return find(
-        getFileSchema(root, fileType).path(FIELDS_KEY),
+        getFileSchema(dictionaryRoot, fileType)
+            .path(FIELDS_KEY),
         new Predicate<JsonNode>() {
 
           @Override
           public boolean apply(JsonNode field) {
-            return fieldName.equals(field.path(FIELD_NAME_KEY).asText());
+            return fieldName.equals(getString(field, FIELD_NAME_KEY));
           }
 
         });
   }
 
   private static JsonNode getRestrictions(
-      @NonNull JsonNode root, @NonNull final FileType fileType, @NonNull final String fieldName) {
-    return getField(root, fileType, fieldName).path(RESTRICTIONS_KEY);
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final FileType fileType,
+      @NonNull final String fieldName) {
+
+    return getField(dictionaryRoot, fileType, fieldName)
+        .path(RESTRICTIONS_KEY);
   }
 
   /**
    * There should be only 1 if any.
    */
   private static Optional<JsonNode> getCodeListRestriction(
-      @NonNull JsonNode root, @NonNull final FileType fileType, @NonNull final String fieldName) {
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final FileType fileType,
+      @NonNull final String fieldName) {
 
     return tryFind(
-        getRestrictions(root, fileType, fieldName),
+        getRestrictions(dictionaryRoot, fileType, fieldName),
         new Predicate<JsonNode>() {
 
           @Override
           public boolean apply(JsonNode restriction) {
-            return CODELIST_KEY.equals(restriction.path(TYPE_KEY).asText());
+            return CODELIST_KEY.equals(getString(restriction, TYPE_KEY));
           }
 
         });
   }
 
-  public static Map<String, String> getMapping(@NonNull JsonNode codeListsRoot, @NonNull String codeListName) {
-    checkArgument(codeListsRoot.isArray(), "TODO");
+  public static Map<String, String> getMapping(
+      @NonNull final JsonNode codeListsRoot,
+      @NonNull final String codeListName) {
+    checkArgument(codeListsRoot.isArray()); // By design
     val codeListTerms = getCodeListTerms(codeListsRoot, codeListName);
-    checkState(codeListTerms.isArray(), "TODO");
+    checkState(codeListTerms.isArray()); // By design
 
     return Guavas.transformListToMap(
         codeListTerms,
@@ -157,7 +179,7 @@ public class Dictionaries {
 
           @Override
           public String apply(JsonNode term) {
-            return term.path(CODELIST_CODE_KEY).asText();
+            return getString(term, CODELIST_CODE_KEY);
           }
 
         },
@@ -165,24 +187,31 @@ public class Dictionaries {
 
           @Override
           public String apply(JsonNode term) {
-            return term.path(CODELIST_VALUE_KEY).asText();
+            return getString(term, CODELIST_VALUE_KEY);
           }
 
         });
   }
 
-  private static JsonNode getCodeListTerms(@NonNull JsonNode codeListsRoot, @NonNull final String codeListName) {
-    return getCodeList(codeListsRoot, codeListName).path(TERMS_KEY);
+  private static JsonNode getCodeListTerms(
+      @NonNull final JsonNode codeListsRoot,
+      @NonNull final String codeListName) {
+
+    return getCodeList(codeListsRoot, codeListName)
+        .path(TERMS_KEY);
   }
 
-  private static JsonNode getCodeList(@NonNull JsonNode codeListsRoot, @NonNull final String codeListName) {
+  private static JsonNode getCodeList(
+      @NonNull final JsonNode codeListsRoot,
+      @NonNull final String codeListName) {
+
     return find(
         codeListsRoot,
         new Predicate<JsonNode>() {
 
           @Override
           public boolean apply(JsonNode codeList) {
-            return codeListName.equals(codeList.path(CODELIST_NAME_KEY).asText());
+            return codeListName.equals(getString(codeList, CODELIST_NAME_KEY));
           }
 
         });
@@ -192,8 +221,7 @@ public class Dictionaries {
       @NonNull final JsonNode dictionaryRoot,
       @NonNull final JsonNode codeListsRoot,
       @NonNull final FileType fileType,
-      @NonNull final String fieldName
-      ) {
+      @NonNull final String fieldName) {
 
     return getMapping(
         codeListsRoot,
@@ -201,6 +229,15 @@ public class Dictionaries {
             dictionaryRoot,
             fileType,
             fieldName));
+  }
+
+  private static String getString(
+      @NonNull final JsonNode node,
+      @NonNull final String key) {
+
+    return node
+        .path(FILE_SCHEMA_NAME_KEY)
+        .asText();
   }
 
 }

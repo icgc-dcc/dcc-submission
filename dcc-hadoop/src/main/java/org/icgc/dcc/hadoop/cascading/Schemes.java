@@ -18,7 +18,7 @@
 package org.icgc.dcc.hadoop.cascading;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.util.Files2.getFirstLine;
+import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticFirstLine;
 import static org.icgc.dcc.core.util.Splitters.TAB;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
@@ -79,7 +79,7 @@ public class Schemes {
       public Fields retrieveSourceFields(
           FlowProcess<Properties> process,
           @SuppressWarnings("rawtypes") Tap tap) { // as-is in cascading
-        setSourceFields(fields(TAB.split(getFirstLine(path))));
+        setSourceFields(fields(TAB.split(getCompressionAgnosticFirstLine(path))));
         return getSourceFields();
       }
 

@@ -19,22 +19,18 @@ package org.icgc.dcc.hadoop.cascading;
 
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticInputStream;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
-import java.util.zip.GZIPInputStream;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.tika.Tika;
 
 import cascading.flow.FlowDef;
@@ -51,7 +47,6 @@ import com.google.common.base.Function;
 /**
  * Utility class to help with the {@link Tap} object from cascading.
  */
-@Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public class Taps {
 
@@ -109,13 +104,10 @@ public class Taps {
   };
 
   public static cascading.tap.local.FileTap getDecompressingLocalFileTap(
-      Scheme<Properties, InputStream, OutputStream, ?, ?> scheme,
-      String path) {
+      @NonNull final Scheme<Properties, InputStream, OutputStream, ?, ?> scheme,
+      @NonNull final String path) {
 
     return new cascading.tap.local.FileTap(scheme, path) {
-
-      static final String GZIP_MEDIA_TYPE = "application/x-gzip";
-      static final String BZIP2_MEDIA_TYPE = "application/x-bzip2";
 
       @Override
       public TupleEntryIterator openForRead(
@@ -128,30 +120,14 @@ public class Taps {
 
         return super.openForRead(
             flowProcess,
-            getDecompressingInputStream(getIdentifier()));
-      }
 
-      private InputStream getDecompressingInputStream(String path) throws IOException {
-        val mediaType = new Tika().detect(path);
-
-        // Do not @Cleanup (cascading will close it)
-        InputStream in = new FileInputStream(path);
-
-        // Gzip
-        if (GZIP_MEDIA_TYPE.equals(mediaType)) {
-          log.info("'{}' compression detected for '{}'", GZIP_MEDIA_TYPE, path);
-          in = new GZIPInputStream(in);
-        }
-
-        // Bzip2
-        else if (BZIP2_MEDIA_TYPE.equals(mediaType)) {
-          log.info("'{}' compression detected for '{}'", BZIP2_MEDIA_TYPE, path);
-          in = new BZip2CompressorInputStream(in);
-        }
-
-        return in;
+            // Do not @Cleanup (cascading will close it)
+            getCompressionAgnosticInputStream(
+                path,
+                new Tika().detect(getIdentifier())));
       }
 
     };
   }
+
 }

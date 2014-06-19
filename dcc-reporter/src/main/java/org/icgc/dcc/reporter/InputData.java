@@ -31,8 +31,6 @@ public class InputData {
 
   private final Table<String, FileType, Set<String>> data = HashBasedTable.create();
 
-  // private final Map<String, Map<FileType, Set<String>>> d = newLinkedHashMap();
-
   /**
    * TODO: necessary?
    */
@@ -55,13 +53,11 @@ public class InputData {
 
   public Set<String> getProjectKeys() {
     return ImmutableSet.copyOf(data.rowKeySet());
-    // return ImmutableSet.copyOf(d.keySet());
   }
 
   public Set<String> getMatchingFilePaths(String projectKey, FileType fileType) {
     return ImmutableSet.copyOf(firstNonNull(
         data.get(projectKey, fileType),
-        // d.get(projectKey).get(fileType),
         ImmutableSet.<String> of()));
   }
 
@@ -113,7 +109,6 @@ public class InputData {
   @SneakyThrows
   public String toString() {
     return PRETTY_WRITTER.writeValueAsString(data);
-    // return PRETTY_WRITTER.writeValueAsString(d);
   }
 
   private void addFile(String projectKey, FileType fileType, String path) {
@@ -123,17 +118,6 @@ public class InputData {
       data.put(projectKey, fileType, paths);
     }
     paths.add(path);
-    // Map<FileType, Set<String>> m = d.get(projectKey);
-    // if (m == null) {
-    // m = new LinkedHashMap<FileType, Set<String>>();
-    // d.put(projectKey, m);
-    // }
-    // Set<String> paths = m.get(fileType);
-    // if (paths == null) {
-    // paths = newLinkedHashSet();
-    // m.put(fileType, paths);
-    // }
-    // paths.add(path);
   }
 
   public static InputData getDummy() {

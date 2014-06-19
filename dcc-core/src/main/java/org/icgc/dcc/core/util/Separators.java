@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.core.util;
 
-
 /**
  * Common separators.
  */
@@ -30,5 +29,6 @@ public class Separators {
   public static final String WHITESPACE = " ";
   public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
   public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  public static final String EXTENSION = Strings2.DOT;
 
 }

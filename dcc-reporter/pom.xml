@@ -39,10 +39,10 @@
       <version>1.4</version><!-- TODO: move up -->
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <version>1.5</version>
-    </dependency><!-- TODO: move up -->
+	  <groupId>org.apache.commons</groupId>
+	  <artifactId>commons-compress</artifactId>
+	  <version>${commons-compress.version}</version>
+	</dependency>
     
     <!-- DCC -->
     <dependency>

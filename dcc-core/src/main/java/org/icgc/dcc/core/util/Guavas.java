@@ -25,7 +25,7 @@ import java.util.Map;
 import com.google.common.base.Function;
 
 /**
- * 
+ * Util methods for guava.
  */
 public class Guavas {
 
