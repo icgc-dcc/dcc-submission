@@ -4,7 +4,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static org.icgc.dcc.core.util.Joiners.INDENT;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Splitters.TAB;
-import static org.icgc.dcc.reporter.Reporter.OUTPUT_FILE;
 
 import java.io.File;
 import java.util.List;
@@ -77,7 +76,7 @@ public class Gatherer {
   public static void writeCsvFile(DataTypeCountsReportTable table) {
     Files.write(
         table.getCsvRepresentation().getBytes(),
-        new File(OUTPUT_FILE));
+        new File("TODO"));
   }
 
 }

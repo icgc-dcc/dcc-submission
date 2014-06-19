@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -18,29 +18,39 @@
 package org.icgc.dcc.hadoop.cascading.taps;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.TSV_DELIMITER;
+import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.withHeader;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import cascading.tap.SinkMode;
-import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
+import lombok.val;
+
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.RecordReader;
+
+import cascading.scheme.Scheme;
+import cascading.scheme.hadoop.TextDelimited;
+import cascading.scheme.hadoop.TextLine;
+import cascading.scheme.hadoop.TextLine.Compress;
 
 /**
- * Utility class to help with hadoop {@link Tap}s from cascading.
+ * Utility class for working with cascading hadoop {@code Scheme} objects, such as {@code TextDelimited}.
+ * <p>
+ * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class HadoopTaps {
+public class HadoopSchemes {
 
-  public static Tap<?, ?, ?> getDecompressingHadoopTsvWithHeader(@NonNull final String path) {
-    return new Hfs(
-        GenericSchemes.getDecompressingHadoopTsvWithHeader(),
-        path);
+  @SuppressWarnings("rawtypes")
+  static Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getDecompressingHadoopTsvWithHeader() {
+    val textLine = getNoCompressionHadoopTsvWithHeader();
+    textLine.setSinkCompression(Compress.ENABLE);
+    return textLine;
   }
 
-  public static Tap<?, ?, ?> getNoCompressionHadoopTsvFileWithHeader(@NonNull final String path) {
-    return new Hfs(
-        GenericSchemes.getNoCompressionHadoopTsvWithHeader(),
-        path,
-        SinkMode.KEEP);
+  static TextLine getNoCompressionHadoopTsvWithHeader() {
+    return new TextDelimited(
+        withHeader(),
+        TSV_DELIMITER);
   }
 
 }

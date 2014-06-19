@@ -10,7 +10,7 @@ import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.taps.HadoopTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
-import org.icgc.dcc.hadoop.cascading.taps.Taps;
+import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 
 import cascading.tap.Tap;
 
@@ -35,7 +35,7 @@ public class Connector {
         // get pipe to path map for the project/file type combination
         inputData.getPipeNameToFilePath()),
 
-        Taps.RAW_CASTER);
+        GenericTaps.RAW_CASTER);
   }
 
   /**
@@ -51,7 +51,7 @@ public class Connector {
         // Convert to pipe to tap map
         getOutputTaps(tailNames),
 
-        Taps.RAW_CASTER);
+        GenericTaps.RAW_CASTER);
   }
 
   private static Map<String, Tap<?, ?, ?>> getInputTaps(Map<String, String> pipeNameToFilePath) {

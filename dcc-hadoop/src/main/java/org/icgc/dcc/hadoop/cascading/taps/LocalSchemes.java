@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,83 +17,65 @@
  */
 package org.icgc.dcc.hadoop.cascading.taps;
 
-import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticInputStream;
+import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticFirstLine;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
+import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.TSV_DELIMITER;
+import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.withHeader;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Properties;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-import org.apache.tika.Tika;
-
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
+import cascading.scheme.local.TextDelimited;
+import cascading.scheme.local.TextLine;
 import cascading.tap.Tap;
-import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
-import cascading.tuple.TupleEntryIterator;
+
+import com.google.common.base.Splitter;
 
 /**
- * Utility class to help with local {@link Tap}s from cascading.
+ * Utility class for working with cascading local {@code Scheme} objects, such as {@code TextDelimited}.
+ * <p>
+ * Do <b>not<b/> recycle {@link Scheme}s as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class LocalTaps {
+public class LocalSchemes {
 
-  public static final Tap<?, ?, ?> getNoCompressionLocalTsvWithHeader(
-      @NonNull final String path) {
-
-    return new FileTap(
-        GenericSchemes.getLocalTsvWithHeader(),
-        path);
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLocalTsvWithHeader() {
+    return new TextDelimited(withHeader(), TSV_DELIMITER);
   }
 
-  public static final Tap<?, ?, ?> getDecompressingLocalTsvWithHeader(@NonNull final String path) {
-
-    return getDecompressingLocalFileTap(
-        GenericSchemes.getDecompressingLocalTsvWithHeader(path),
-        path);
-  }
-
-  public static final Tap<?, ?, ?> getDecompressingLocalLinesNoHeader(
-      @NonNull final String path,
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLocalLinesWithOffset(
       @NonNull final Fields numField,
       @NonNull final Fields lineField) {
 
-    return getDecompressingLocalFileTap(
-        GenericSchemes.getLocalLinesWithOffset(
-            checkFieldsCardinalityOne(numField),
-            checkFieldsCardinalityOne(lineField)),
-        path);
+    return new TextLine(
+        checkFieldsCardinalityOne(numField)
+            .append(checkFieldsCardinalityOne(lineField)));
   }
 
-  public static FileTap getDecompressingLocalFileTap(
-      @NonNull final Scheme<Properties, InputStream, OutputStream, ?, ?> scheme,
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getDecompressingLocalTsvWithHeader(
       @NonNull final String path) {
+    return new TextDelimited(
+        withHeader(),
+        TSV_DELIMITER) {
 
-    return new FileTap(scheme, path) {
+      private final Splitter TSV_SPLITTER = Splitter.on(TSV_DELIMITER);
 
       @Override
-      public TupleEntryIterator openForRead(
-          FlowProcess<Properties> flowProcess,
-          InputStream input)
-          throws IOException {
-        checkState(input == null,
-            "Expecting input to be null here, instead: '{}'",
-            input == null ? null : input.getClass().getSimpleName());
-
-        return super.openForRead(
-            flowProcess,
-
-            // Do not @Cleanup (cascading will close it)
-            getCompressionAgnosticInputStream(
-                path,
-                new Tika().detect(getIdentifier())));
+      public Fields retrieveSourceFields(
+          FlowProcess<Properties> process,
+          @SuppressWarnings("rawtypes") Tap tap) { // as-is in cascading
+        setSourceFields(fields(TSV_SPLITTER.split(getCompressionAgnosticFirstLine(path))));
+        return getSourceFields();
       }
 
     };

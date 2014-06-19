@@ -39,7 +39,6 @@ public class Reporter {
   private static final Class<Reporter> CLASS = Reporter.class;
 
   static String OUTPUT_DIR = "/tmp/reports";
-  static String OUTPUT_FILE = "/tmp/table1";
   static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
 
   public static void report(

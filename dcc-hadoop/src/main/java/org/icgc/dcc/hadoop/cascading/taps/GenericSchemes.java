@@ -45,16 +45,16 @@ import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
 /**
- * Utility class for working with cascading {@code Schemes} objects, such as {@code TextDelimited}.
+ * Utility class for working with cascading {@code Schemes} (local/hadoop agnostic) objects.
  * <p>
  * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  * <p>
  * TODO: homogenize names and generalize return types when possible + do not expose other than to {@link LocalTaps}.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class Schemes {
+public class GenericSchemes {
 
-  private static final String TSV_DELIMITER = Separators.TAB;
+  static final String TSV_DELIMITER = Separators.TAB;
 
   static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLocalTsvWithHeader() {
     return new cascading.scheme.local.TextDelimited(withHeader(), Separators.TAB);
@@ -99,66 +99,7 @@ public class Schemes {
         TSV_DELIMITER);
   }
 
-  /**
-   * Allows empty lines and skip header.
-   */
-  public static Scheme<Properties, InputStream, OutputStream, ?, ?> newLocalLooseTsvScheme() {
-    return newLocalLooseTsvScheme(getTextDelimitedSourceFields(), skipHeader(), TSV_DELIMITER);
-  }
-
-  /**
-   * Built by looking at the 3 parameters argument from cascading's source code.
-   */
-  private static Scheme<Properties, InputStream, OutputStream, ?, ?> newLocalLooseTsvScheme(Fields fields,
-      boolean hasHeader, String delimiter) {
-    return new cascading.scheme.local.TextDelimited(fields, hasHeader, hasHeader, delimiter, looseMode(), null, null,
-        true);
-  }
-
-  /**
-   * Allows empty lines and skip header.
-   */
-  @SuppressWarnings("rawtypes")
-  // TODO: address warning
-  public static Scheme<JobConf, RecordReader, OutputCollector, ?, ?> newHadoopLooseTsvScheme() {
-    return newHadoopLooseTsvScheme(getTextDelimitedSourceFields(), skipHeader(), TSV_DELIMITER);
-  }
-
-  /**
-   * Built by looking at the 3 parameters argument from cascading's source code.
-   */
-  @SuppressWarnings("rawtypes")
-  // TODO: address warning
-  private static Scheme<JobConf, RecordReader, OutputCollector, ?, ?> newHadoopLooseTsvScheme(Fields fields,
-      boolean hasHeader, String delimiter) {
-    return new cascading.scheme.hadoop.TextDelimited(fields, null, hasHeader, hasHeader, delimiter, looseMode(), null,
-        null, true);
-  }
-
-  /**
-   * MUST explicitly set source fields to UNKNOWN for them to be set based on header... It otherwise defaults them to
-   * ALL, which according to TextDelimited.retrieveSourceFields() will not use the header to set the source fields and
-   * is in contradiction with the TextDelimited class documentation (at least as of version 2.1.3).
-   */
-  private static Fields getTextDelimitedSourceFields() {
-    return Fields.UNKNOWN;
-  }
-
-  /**
-   * Will allow skipping the first line.
-   */
-  private static boolean skipHeader() {
-    return true;
-  }
-
-  /**
-   * Will allow empty lines to be read without erroring out. "loose" as opposed to "strict".
-   */
-  private static boolean looseMode() {
-    return false;
-  }
-
-  private static boolean withHeader() {
+  static boolean withHeader() {
     return true;
   }
 

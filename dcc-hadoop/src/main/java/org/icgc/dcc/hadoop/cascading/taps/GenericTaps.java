@@ -31,7 +31,7 @@ import com.google.common.base.Function;
  * Utility class to help with {@link Tap} (local/hadoop agnostic) from cascading.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class Taps {
+public class GenericTaps {
 
   /**
    * Must suppress warning as cascading unfortunately uses raw types in {@link FlowDef#addSources(Map)}.
