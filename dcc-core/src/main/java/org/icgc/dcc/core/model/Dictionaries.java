@@ -94,7 +94,7 @@ public class Dictionaries {
       @NonNull final String fieldName) {
     val codeListRestriction = getCodeListRestriction(dictionaryRoot, fileType, fieldName);
     checkState(codeListRestriction.isPresent(),
-        "Expecting codelist to exists for: '{}.{}'", fileType, fieldName);
+        "Expecting codelist to exists for: '%s.%s'", fileType, fieldName);
 
     return codeListRestriction
         .get()
@@ -236,7 +236,7 @@ public class Dictionaries {
       @NonNull final String key) {
 
     return node
-        .path(FILE_SCHEMA_NAME_KEY)
+        .path(key)
         .asText();
   }
 
