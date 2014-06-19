@@ -8,7 +8,9 @@ import java.util.Map;
 
 import lombok.val;
 
-import org.icgc.dcc.hadoop.cascading.Taps;
+import org.icgc.dcc.hadoop.cascading.taps.HadoopTaps;
+import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
+import org.icgc.dcc.hadoop.cascading.taps.Taps;
 
 import cascading.tap.Tap;
 
@@ -18,7 +20,7 @@ import com.google.common.collect.ImmutableMap;
 public class Connector {
 
   /**
-   * See {@link Taps#RAW_CASTER}.
+   * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
   public static Map<String, Tap> getRawInputTaps(InputData inputData) {
@@ -37,7 +39,7 @@ public class Connector {
   }
 
   /**
-   * See {@link Taps#RAW_CASTER}.
+   * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
   public static Map<String, Tap> getRawOutputTaps(Iterable<String> tailNames) {
@@ -60,8 +62,8 @@ public class Connector {
           @Override
           public Tap<?, ?, ?> apply(final String path) {
             return Main.isLocal() ?
-                Taps.getDecompressingLocalTsvWithHeader(path) :
-                Taps.getCompressingHadoopTsvWithHeader(path);
+                LocalTaps.getDecompressingLocalTsvWithHeader(path) :
+                HadoopTaps.getDecompressingHadoopTsvWithHeader(path);
           }
 
         });
@@ -75,8 +77,8 @@ public class Connector {
       rawOutputTaps.put(
           iterator.next(), // TODO: explain...
           Main.isLocal() ?
-              Taps.getNoCompressionLocalTsvWithHeader(outputFilePath) :
-              Taps.getNoCompressionHadoopTsvFileWithHeader(outputFilePath));
+              LocalTaps.getNoCompressionLocalTsvWithHeader(outputFilePath) :
+              HadoopTaps.getNoCompressionHadoopTsvFileWithHeader(outputFilePath));
     }
 
     return rawOutputTaps.build();

@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading;
+package org.icgc.dcc.hadoop.cascading.taps;
 
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
@@ -25,7 +25,6 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.Properties;
 
 import lombok.NoArgsConstructor;
@@ -33,27 +32,23 @@ import lombok.NonNull;
 
 import org.apache.tika.Tika;
 
-import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
-import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
+import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryIterator;
 
-import com.google.common.base.Function;
-
 /**
- * Utility class to help with the {@link Tap} object from cascading.
+ * Utility class to help with local {@link Tap}s from cascading.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class Taps {
+public class LocalTaps {
 
   public static final Tap<?, ?, ?> getNoCompressionLocalTsvWithHeader(
       @NonNull final String path) {
 
-    return new cascading.tap.local.FileTap(
+    return new FileTap(
         Schemes.getLocalTsvWithHeader(),
         path);
   }
@@ -77,37 +72,11 @@ public class Taps {
         path);
   }
 
-  public static Tap<?, ?, ?> getCompressingHadoopTsvWithHeader(@NonNull final String path) {
-    return new Hfs(
-        Schemes.getCompressingHadoopTsvWithHeader(),
-        path);
-  }
-
-  public static Tap<?, ?, ?> getNoCompressionHadoopTsvFileWithHeader(@NonNull final String path) {
-    return new Hfs(
-        Schemes.getNoCompressionHadoopTsvWithHeader(),
-        path,
-        SinkMode.KEEP);
-  }
-
-  /**
-   * Must suppress warning as cascading unfortunately uses raw types in {@link FlowDef#addSources(Map)}.
-   */
-  @SuppressWarnings("rawtypes")
-  public static Function<Tap<?, ?, ?>, Tap> RAW_CASTER = new Function<Tap<?, ?, ?>, Tap>() {
-
-    @Override
-    public Tap apply(Tap<?, ?, ?> tap) {
-      return tap;
-    }
-
-  };
-
-  public static cascading.tap.local.FileTap getDecompressingLocalFileTap(
+  public static FileTap getDecompressingLocalFileTap(
       @NonNull final Scheme<Properties, InputStream, OutputStream, ?, ?> scheme,
       @NonNull final String path) {
 
-    return new cascading.tap.local.FileTap(scheme, path) {
+    return new FileTap(scheme, path) {
 
       @Override
       public TupleEntryIterator openForRead(

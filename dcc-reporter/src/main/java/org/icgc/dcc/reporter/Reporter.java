@@ -86,6 +86,7 @@ public class Reporter {
   public static FlowConnector getFlowConnector() {
 
     if (isLocal()) {
+      log.info("Using local mode");
       return new LocalFlowConnector();
     }
 
@@ -116,8 +117,8 @@ public class Reporter {
 
     // flowProperties.put("mapred.reduce.tasks", "20");
     // flowProperties.put("mapred.task.timeout", "1800000");
-    // flowProperties.put("io.sort.mb", "200");
-    // flowProperties.put("io.sort.factor", "20");
+    flowProperties.put("io.sort.mb", "2000");
+    flowProperties.put("io.sort.factor", "20");
     // flowProperties.put("mapred.output.compress", "true");
     // flowProperties.put("mapred.output.compression.type", "BLOCK");
     // flowProperties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");

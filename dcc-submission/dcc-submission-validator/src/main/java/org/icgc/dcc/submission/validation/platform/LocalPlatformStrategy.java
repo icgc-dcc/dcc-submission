@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.Taps;
+import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -77,7 +77,7 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   public Tap<?, ?, ?> getSourceTap(String fileName) {
-    return Taps.getDecompressingLocalLinesNoHeader(
+    return LocalTaps.getDecompressingLocalLinesNoHeader(
         getFilePath(fileName).toUri().toString(),
         new Fields(ValidationFields.OFFSET_FIELD_NAME),
         new Fields("line"));

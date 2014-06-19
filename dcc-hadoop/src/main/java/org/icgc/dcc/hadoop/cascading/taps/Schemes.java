@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading;
+package org.icgc.dcc.hadoop.cascading.taps;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticFirstLine;
@@ -49,7 +49,7 @@ import cascading.tuple.Fields;
  * <p>
  * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  * <p>
- * TODO: homogenize names and generalize return types when possible + do not expose other than to {@link Taps}.
+ * TODO: homogenize names and generalize return types when possible + do not expose other than to {@link LocalTaps}.
  */
 @NoArgsConstructor(access = PRIVATE)
 public class Schemes {
@@ -87,7 +87,7 @@ public class Schemes {
   }
 
   @SuppressWarnings("rawtypes")
-  static Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getCompressingHadoopTsvWithHeader() {
+  static Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getDecompressingHadoopTsvWithHeader() {
     val textLine = getNoCompressionHadoopTsvWithHeader();
     textLine.setSinkCompression(Compress.ENABLE);
     return textLine;
