@@ -27,8 +27,6 @@ import static com.google.inject.Guice.createInjector;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.core.util.VersionUtils.getScmInfo;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.HADOOP_USER_NAME_PROPERTY_NAME;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.HDFS_USERNAME_PROPERTY_VALUE;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -38,6 +36,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.hadoop.util.HadoopProperties;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.DccRuntime;
@@ -64,8 +63,7 @@ import com.typesafe.config.ConfigFactory;
 public class Main {
 
   static {
-    // DCC-572: Set systems properties
-    System.setProperty(HADOOP_USER_NAME_PROPERTY_NAME, HDFS_USERNAME_PROPERTY_VALUE);
+    HadoopProperties.setHadoopUserNameProperty();
   }
 
   /**

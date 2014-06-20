@@ -15,22 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.hadoop.cascading.taps;
 
-import lombok.ToString;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import com.google.common.collect.Iterables;
+import org.icgc.dcc.core.util.Separators;
 
-@ToString
-public class FileLineArrayParser extends AbstractFileLineParser<String[]> {
+/**
+ * Utility class for working with cascading {@code Schemes} (local/hadoop agnostic) objects.
+ * <p>
+ * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
+ * <p>
+ * TODO: homogenize names and generalize return types when possible + do not expose other than to {@link LocalTaps}.
+ */
+@NoArgsConstructor(access = PRIVATE)
+class GenericSchemes {
 
-  @Override
-  public String[] parse(String line) {
-    return split(line);
-  }
+  static final String TSV_DELIMITER = Separators.TAB;
 
-  protected static String[] split(String line) {
-    return Iterables.toArray(FIELD_SPLITTER.split(line), String.class);
+  static boolean withHeader() {
+    return true;
   }
 
 }

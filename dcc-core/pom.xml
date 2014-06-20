@@ -47,6 +47,12 @@
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
     </dependency>
+    <dependency>
+	  <groupId>org.apache.commons</groupId>
+	  <artifactId>commons-compress</artifactId>
+	  <version>${commons-compress.version}</version>
+	  <scope>provided</scope>
+	</dependency>
 
   </dependencies>
 </project>

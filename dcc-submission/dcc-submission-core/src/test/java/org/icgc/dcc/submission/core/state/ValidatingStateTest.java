@@ -19,9 +19,9 @@ package org.icgc.dcc.submission.core.state;
 
 import static com.google.common.collect.Iterables.find;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
 import static org.icgc.dcc.submission.core.report.DataTypeState.INVALID;
 import static org.icgc.dcc.submission.core.report.DataTypeState.VALID;
-import static org.icgc.dcc.submission.core.util.Jackson.toJsonPrettyString;
 import static org.mockito.Mockito.when;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
