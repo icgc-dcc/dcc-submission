@@ -73,14 +73,14 @@ public final class LocalTaps implements Taps {
         @NonNull final String path) {
 
       return new FileTap(
-          GenericSchemes.getLocalTsvWithHeader(),
+          LocalSchemes.getTsvWithHeader(),
           path);
     }
 
     public static final Tap<?, ?, ?> getDecompressingTsvWithHeader(@NonNull final String path) {
 
       return getDecompressingFileTap(
-          GenericSchemes.getDecompressingLocalTsvWithHeader(path),
+          LocalSchemes.getDecompressingTsvWithHeader(path),
           path);
     }
 
@@ -90,7 +90,7 @@ public final class LocalTaps implements Taps {
         @NonNull final Fields lineField) {
 
       return getDecompressingFileTap(
-          GenericSchemes.getLocalLinesWithOffset(
+          LocalSchemes.getLinesWithOffset(
               checkFieldsCardinalityOne(numField),
               checkFieldsCardinalityOne(lineField)),
           path);

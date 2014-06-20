@@ -47,13 +47,13 @@ import com.google.common.base.Splitter;
  * Do <b>not<b/> recycle {@link Scheme}s as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class LocalSchemes {
+class LocalSchemes {
 
-  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLocalTsvWithHeader() {
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getTsvWithHeader() {
     return new TextDelimited(withHeader(), TSV_DELIMITER);
   }
 
-  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLocalLinesWithOffset(
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getLinesWithOffset(
       @NonNull final Fields numField,
       @NonNull final Fields lineField) {
 
@@ -62,7 +62,7 @@ public class LocalSchemes {
             .append(checkFieldsCardinalityOne(lineField)));
   }
 
-  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getDecompressingLocalTsvWithHeader(
+  static Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getDecompressingTsvWithHeader(
       @NonNull final String path) {
     return new TextDelimited(
         withHeader(),

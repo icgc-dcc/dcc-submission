@@ -38,16 +38,16 @@ import cascading.scheme.hadoop.TextLine.Compress;
  * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class HadoopSchemes {
+class HadoopSchemes {
 
   @SuppressWarnings("rawtypes")
-  static Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getDecompressingHadoopTsvWithHeader() {
-    val textLine = getNoCompressionHadoopTsvWithHeader();
+  static Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getDecompressingTsvWithHeader() {
+    val textLine = getNoCompressionTsvWithHeader();
     textLine.setSinkCompression(Compress.ENABLE);
     return textLine;
   }
 
-  static TextLine getNoCompressionHadoopTsvWithHeader() {
+  static TextLine getNoCompressionTsvWithHeader() {
     return new TextDelimited(
         withHeader(),
         TSV_DELIMITER);

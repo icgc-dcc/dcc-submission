@@ -64,13 +64,13 @@ public class HadoopTaps implements Taps {
 
     public static Tap<?, ?, ?> getDecompressingTsvWithHeader(@NonNull final String path) {
       return new Hfs(
-          GenericSchemes.getDecompressingHadoopTsvWithHeader(),
+          HadoopSchemes.getDecompressingTsvWithHeader(),
           path);
     }
 
     public static Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
       return new Hfs(
-          GenericSchemes.getNoCompressionHadoopTsvWithHeader(),
+          HadoopSchemes.getNoCompressionTsvWithHeader(),
           path,
           SinkMode.KEEP);
     }
