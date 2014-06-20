@@ -5,6 +5,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.core.util.Extensions.TSV;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
 import static org.icgc.dcc.hadoop.cascading.Pipes.getTailNames;
 import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
 import static org.icgc.dcc.reporter.Connector.getRawOutputTaps;
@@ -102,6 +103,8 @@ public class Reporter {
 
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, CLASS);
+    AppProps.setApplicationName(flowProperties, "TODO");
+    AppProps.setApplicationVersion(flowProperties, getCommitId());
 
     // flowProperties =
     // enableJobOutputCompression(
@@ -117,7 +120,7 @@ public class Reporter {
     // flowProperties.putAll(properties);
 
     flowProperties.put("fs.defaultFS", "***REMOVED***");
-    flowProperties.put("mapred.job.tracker ", "***REMOVED***");
+    flowProperties.put("mapred.job.tracker", "***REMOVED***");
     flowProperties.put("mapred.child.java.opts", "-Xmx6g");
 
     // flowProperties.put("mapred.reduce.tasks", "20");

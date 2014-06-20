@@ -18,7 +18,7 @@
 package org.icgc.dcc.hadoop.cascading.taps;
 
 import static com.google.common.base.Preconditions.checkState;
-import static lombok.AccessLevel.PUBLIC;
+import static lombok.AccessLevel.PACKAGE;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,7 +35,7 @@ import cascading.tuple.Fields;
 /**
  * Utility class to help with hadoop {@link Tap}s from cascading.
  */
-@NoArgsConstructor(access = PUBLIC)
+@NoArgsConstructor(access = PACKAGE)
 public class HadoopTaps implements Taps {
 
   @Override

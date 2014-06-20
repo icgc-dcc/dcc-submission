@@ -18,7 +18,7 @@
 package org.icgc.dcc.hadoop.cascading.taps;
 
 import static com.google.common.base.Preconditions.checkState;
-import static lombok.AccessLevel.PUBLIC;
+import static lombok.AccessLevel.PACKAGE;
 import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticInputStream;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 
@@ -44,7 +44,7 @@ import cascading.tuple.TupleEntryIterator;
  * <p>
  * TODO: create interface for local/hadoop
  */
-@NoArgsConstructor(access = PUBLIC)
+@NoArgsConstructor(access = PACKAGE)
 public final class LocalTaps implements Taps {
 
   @Override
