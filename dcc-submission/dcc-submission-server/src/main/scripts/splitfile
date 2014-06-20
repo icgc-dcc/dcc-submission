@@ -28,10 +28,14 @@ size=`expr ${size?} + 1`  # ensure not 0
 
 echo "($lc) dividing into $chunk with $size lines per chunk"
 
+rm -rf /tmp/splitting
+mkdir /tmp/splitting
+cd /tmp/splitting
 tail -n +2 ${file?} | split -l ${size?} - temp_
+cd -
 
 c=0
-for f in `ls temp*`;  do
+for f in $(find /tmp/splitting -type f -name 'temp*');  do
    name=${base%.*}
    ext=${base##*.}
 

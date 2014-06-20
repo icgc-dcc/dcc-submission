@@ -29,6 +29,7 @@ import lombok.val;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
@@ -69,6 +70,8 @@ public class SftpPublicKeyAuthenticatorTest {
   @Mock
   UsernamePasswordAuthenticator authenticator;
   @Mock
+  SftpAuthenticator sftpAuthenticator;
+  @Mock
   DccFileSystem fs;
   @Mock
   ProjectService projectService;
@@ -76,6 +79,8 @@ public class SftpPublicKeyAuthenticatorTest {
   ReleaseService releaseService;
   @Mock
   MailService mailService;
+  @Mock
+  Subject subject;
 
   @Before
   public void setUp() throws IOException, JSchException {
@@ -140,8 +145,7 @@ public class SftpPublicKeyAuthenticatorTest {
 
   private SftpServerService createService() {
     val context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
-    val authenticator = new SftpAuthenticator(context);
-    val sshd = new SshServerProvider(config, context, authenticator).get();
+    val sshd = new SshServerProvider(config, context, sftpAuthenticator).get();
     val eventBus = new EventBus();
     eventBus.register(authenticator);
 

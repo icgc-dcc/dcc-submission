@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,20 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.hadoop.cascading;
 
-import lombok.ToString;
+import static com.google.common.collect.Iterables.transform;
+import static java.util.Arrays.asList;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.DASH;
+import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
+import lombok.NoArgsConstructor;
 
-@ToString
-public class FileLineStringParser extends AbstractFileLineParser<String> {
+import org.icgc.dcc.core.util.Named;
+
+import cascading.pipe.Pipe;
+
+import com.google.common.base.Function;
+
+/**
+ * Utils methods for {@link Pipe}.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class Pipes implements Named {
+
+  private static final Pipes INTERNAL = new Pipes();
+  private static final String CLASS_NAME = removeTrailingS(Pipes.class.getSimpleName());
 
   @Override
-  public String parse(String line) {
-    return split(line);
+  public String getName() {
+    return CLASS_NAME;
   }
 
-  protected static String split(String line) {
-    return line;
+  public static String getName(Object... qualifiers) {
+    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
+  }
+
+  public static String getName(Class<?> clazz, Object... qualifiers) {
+    return getName(clazz.getSimpleName(), getName(qualifiers));
+  }
+
+  public static Iterable<String> getTailNames(final Pipe[] tails) {
+    return getPipeNames(tails);
+  }
+
+  public static Iterable<String> getPipeNames(final Pipe[] pipes) {
+    return transform(asList(pipes),
+        new Function<Pipe, String>() {
+
+          @Override
+          public String apply(Pipe tail) {
+            return tail.getName();
+          }
+
+        });
   }
 
 }

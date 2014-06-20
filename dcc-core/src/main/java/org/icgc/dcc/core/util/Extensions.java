@@ -15,12 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.core.util;
 
-import java.io.IOException;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-public interface FileRecordProcessor<T> {
+/**
+ * Common extensions.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class Extensions {
 
-  void process(long lineNumber, T record) throws IOException;
+  public static final String TSV = "tsv";
 
 }

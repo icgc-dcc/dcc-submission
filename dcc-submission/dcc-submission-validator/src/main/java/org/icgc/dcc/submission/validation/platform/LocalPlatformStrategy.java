@@ -17,37 +17,28 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import static com.google.common.base.Preconditions.checkState;
-
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Properties;
-import java.util.zip.GZIPInputStream;
 
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.tika.Tika;
+import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
-import cascading.flow.FlowProcess;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.scheme.local.TextDelimited;
-import cascading.scheme.local.TextLine;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
-import cascading.tuple.TupleEntryIterator;
 
 @Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
@@ -86,37 +77,10 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   public Tap<?, ?, ?> getSourceTap(String fileName) {
-    return new FileTap(
-        new TextLine(
-            new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")),
-        getFilePath(fileName).toUri().toString()) {
-
-      public static final String GZIP_MEDIA_TYPE = "application/x-gzip";
-      public static final String BZIP2_MEDIA_TYPE = "application/x-bzip2";
-
-      @Override
-      public TupleEntryIterator openForRead(FlowProcess<Properties> flowProcess, InputStream input) throws IOException {
-        checkState(input == null,
-            "Expecting input to be null here, instead: '{}'",
-            input == null ? null : input.getClass().getSimpleName());
-        return super.openForRead(flowProcess, getDecompressingInputStream(getIdentifier()));
-      }
-
-      private InputStream getDecompressingInputStream(String filePath) throws IOException {
-        val mediaType = new Tika().detect(filePath);
-
-        InputStream in = new FileInputStream(filePath);
-        if (mediaType.equals(GZIP_MEDIA_TYPE)) {
-          log.info("'{}' compression detected for '{}'", GZIP_MEDIA_TYPE, filePath);
-          in = new GZIPInputStream(in);
-        }
-        else if (mediaType.equals(BZIP2_MEDIA_TYPE)) {
-          log.info("'{}' compression detected for '{}'", GZIP_MEDIA_TYPE, filePath);
-          in = new BZip2CompressorInputStream(in);
-        }
-        return in;
-      }
-    };
+    return Taps.LOCAL.getDecompressingLinesNoHeader(
+        getFilePath(fileName).toUri().toString(),
+        new Fields(ValidationFields.OFFSET_FIELD_NAME),
+        new Fields("line"));
   }
 
   /**

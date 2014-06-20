@@ -69,6 +69,10 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE = "mutated_to_allele";
 
     public static final String SUBMISSION_OBSERVATION_CHROMOSOME_STRAND = "chromosome_strand";
+    public static final String SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY = "sequencing_strategy";
+    public static final String SUBMISSION_OBSERVATION_RAW_DATA_REPOSITORY = "raw_data_repository";
+    public static final String SUBMISSION_OBSERVATION_RAW_DATA_ACCESSION = "raw_data_accession";
+
   }
 
   /**
@@ -124,6 +128,16 @@ public final class FieldNames {
     public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
     public static final String OBSERVATION_ARRAY_NAME = "observation";
+
+  }
+
+  /**
+   * Names for the fields in the reporter.
+   */
+  @NoArgsConstructor(access = PRIVATE)
+  public static class ReporterFieldNames {
+
+    public static final String RELEASE_NAME = "release_name";
 
   }
 

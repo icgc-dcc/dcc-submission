@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
@@ -24,16 +25,66 @@ import static lombok.AccessLevel.PRIVATE;
 import java.util.List;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
+import cascading.operation.BaseOperation;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+
+import com.google.common.base.Function;
 
 /**
  * Utility class to help with the {@link TupleEntry} object from cascading.
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class TupleEntries {
+
+  /**
+   * Index of the first item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   */
+  private static final int FIRST_ITEM = 0;
+
+  /**
+   * Index of the second item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   */
+  private static final int SECOND_ITEM = FIRST_ITEM + 1;
+
+  public static String getFirstString(TupleEntry arguments) {
+    return getString(arguments, FIRST_ITEM);
+  }
+
+  public static String getSecondString(TupleEntry arguments) {
+    return getString(arguments, SECOND_ITEM);
+  }
+
+  public static Object getFirstObject(TupleEntry arguments) {
+    return getObject(arguments, FIRST_ITEM);
+  }
+
+  public static Object getSecondObject(TupleEntry arguments) {
+    return getObject(arguments, SECOND_ITEM);
+  }
+
+  public static Integer getFirstInteger(TupleEntry arguments) {
+    return getInteger(arguments, FIRST_ITEM);
+  }
+
+  public static Integer getSecondInteger(TupleEntry arguments) {
+    return getInteger(arguments, SECOND_ITEM);
+  }
+
+  private static String getString(TupleEntry entry, int index) {
+    return entry.getString(index);
+  }
+
+  private static Integer getInteger(TupleEntry entry, int index) {
+    return entry.getInteger(index);
+  }
+
+  private static Object getObject(TupleEntry entry, int index) {
+    return entry.getObject(index);
+  }
 
   /**
    * Clones a {@link TupleEntry}.
@@ -111,10 +162,31 @@ public final class TupleEntries {
   }
 
   /**
+   * Casts an {@link Object} into a {@link TupleEntry}. The object is expected to be a non-null tuple entry.
+   * 
+   * @throws IllegalArgumentException If the object isn't a tuple entry.
+   */
+  public static Function<Object, TupleEntry> OBJECT_TO_TUPLE_ENTRY_CAST = new Function<Object, TupleEntry>() {
+
+    @Override
+    public TupleEntry apply(@NonNull Object object) {
+      checkArgument(
+          object instanceof TupleEntry,
+          "Object is expected to be a '%s', instead: '%s'",
+          TupleEntry.class.getSimpleName(), object.getClass().getSimpleName());
+
+      return (TupleEntry) object;
+    }
+
+  };
+
+  /**
    * Gives a string containing the json representation of the tupleEntry (with possibly multiple levels of
    * tuple/tupleEntry nesting).
    * <p>
    * Very useful for debugging.
+   * <p>
+   * TODO: use ObjectNode directly rather than String.
    */
   public static String toJson(TupleEntry tupleEntry) {
     Fields fields = tupleEntry.getFields();

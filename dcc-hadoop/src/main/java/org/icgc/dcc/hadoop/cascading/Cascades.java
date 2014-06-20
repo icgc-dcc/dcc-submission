@@ -15,27 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.hadoop.cascading;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.DASH;
+import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import org.icgc.dcc.core.util.Named;
+
+import cascading.cascade.Cascade;
 
 /**
- * Common object mappers.
+ * Utils methods for {@link Cascade}.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class Jackson {
+public class Cascades implements Named {
 
-  public static final ObjectMapper DEFAULT = new ObjectMapper();
-  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
+  private static final Cascades INTERNAL = new Cascades();
+  private static final String CLASS_NAME = removeTrailingS(Cascades.class.getSimpleName());
 
-  @SneakyThrows
-  public static String toJsonPrettyString(Object object) {
-    return PRETTY_WRITTER.writeValueAsString(object);
+  @Override
+  public String getName() {
+    return CLASS_NAME;
+  }
+
+  public static String getName(Object... qualifiers) {
+    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
+  }
+
+  public static String getName(Class<?> clazz, Object... qualifiers) {
+    return getName(clazz.getSimpleName(), getName(qualifiers));
   }
 
 }

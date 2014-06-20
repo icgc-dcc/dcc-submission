@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,28 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.hadoop.cascading.taps;
 
-import static com.google.common.base.Joiner.on;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
-import com.google.common.base.Joiner;
+import org.icgc.dcc.core.util.Separators;
 
 /**
- * Common joiners.
+ * Utility class for working with cascading {@code Schemes} (local/hadoop agnostic) objects.
+ * <p>
+ * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
+ * <p>
+ * TODO: homogenize names and generalize return types when possible + do not expose other than to {@link LocalTaps}.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class Joiners {
+class GenericSchemes {
 
-  public static final Joiner SLASH = on('/');
-  public static final Joiner TAB = on('\t');
-  public static final Joiner NEWLINE = on('\n');
-  public static final Joiner DOT = on(".");
-  public static final Joiner DASH = on("-");
-  public static final Joiner UNDERSCORE = on("_");
+  static final String TSV_DELIMITER = Separators.TAB;
 
-  public static final Joiner PATH = SLASH;
-  public static final Joiner INDENT = on("\n\t");
+  static boolean withHeader() {
+    return true;
+  }
 
 }
