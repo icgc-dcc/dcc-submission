@@ -1,5 +1,6 @@
 package org.icgc.dcc.reporter;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -10,13 +11,17 @@ import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
 import java.net.InetAddress;
 import java.net.URI;
+import java.util.Map;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class Main {
 
@@ -40,15 +45,27 @@ public class Main {
             defaultParentDataDir,
             projectsJsonFilePath,
             getPatterns(dictionaryRoot)));
-
     report(
         releaseName,
         inputData,
-        getMapping(
+        getSequencingStrategyMapping(
             dictionaryRoot,
-            codeListsRoot,
-            SSM_M_TYPE, // TODO: add check mapping is the same for all meta files (it should)
-            getFieldName(SEQUENCING_STRATEGY_FIELD)));
+            codeListsRoot));
+  }
+
+  private static Map<String, String> getSequencingStrategyMapping(
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final JsonNode codeListsRoot) {
+    val sequencingStrategyMapping = getMapping(
+        dictionaryRoot,
+        codeListsRoot,
+        SSM_M_TYPE, // TODO: add check mapping is the same for all meta files (it should)
+        getFieldName(SEQUENCING_STRATEGY_FIELD));
+    checkState(sequencingStrategyMapping.isPresent(),
+        "Expecting codelist to exists for: '%s.%s'",
+        SSM_M_TYPE, SEQUENCING_STRATEGY_FIELD);
+
+    return sequencingStrategyMapping.get();
   }
 
   @SneakyThrows

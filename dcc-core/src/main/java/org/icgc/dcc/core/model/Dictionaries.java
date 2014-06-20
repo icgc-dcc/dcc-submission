@@ -20,24 +20,38 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
+import static com.google.common.collect.Maps.asMap;
+import static com.google.common.collect.Maps.newTreeMap;
+import static com.google.common.collect.Maps.transformValues;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING;
+import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING_MAP;
 
 import java.util.Map;
+import java.util.Set;
 
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.val;
 
+import org.icgc.dcc.core.model.Dictionaries.RosettaStone.SchemaMapping.FieldMapping;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Guavas;
+import org.icgc.dcc.core.util.Jackson;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Generic utils method to traver dictionaries and codelist arrays.
  */
+@NoArgsConstructor(access = PRIVATE)
 public class Dictionaries {
 
   /**
@@ -88,19 +102,31 @@ public class Dictionaries {
   /**
    * Returns the name of a codelist for a given field. Field is expected to have a codelist restriction defined on it.
    */
-  public static String getCodeListName(
+  public static Optional<String> getCodeListName(
       @NonNull final JsonNode dictionaryRoot,
       @NonNull final FileType fileType,
       @NonNull final String fieldName) {
     val codeListRestriction = getCodeListRestriction(dictionaryRoot, fileType, fieldName);
-    checkState(codeListRestriction.isPresent(),
-        "Expecting codelist to exists for: '%s.%s'", fileType, fieldName);
 
-    return codeListRestriction
-        .get()
-        .path(CONFIG_KEY)
-        .path(CONFIG_NAME_KEY)
-        .asText();
+    return codeListRestriction.isPresent() ?
+        Optional.of(getString(
+            codeListRestriction.get().path(CONFIG_KEY),
+            CONFIG_NAME_KEY)) :
+        ABSENT_STRING;
+  }
+
+  private static Set<FileType> getFileTypes(@NonNull final JsonNode dictionaryRoot) {
+
+    return ImmutableSet.<FileType> copyOf(transform(
+        dictionaryRoot.path(FILE_SCHEMATA_KEY),
+        new Function<JsonNode, FileType>() {
+
+          @Override
+          public FileType apply(JsonNode fileSchema) {
+            return getFileType(fileSchema, FILE_SCHEMA_NAME_KEY);
+          }
+
+        }));
   }
 
   private static JsonNode getFileSchema(
@@ -135,6 +161,22 @@ public class Dictionaries {
           }
 
         });
+  }
+
+  private static Set<String> getFieldNames(
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final FileType fileType) {
+    return ImmutableSet.<String> copyOf(transform(
+        getFileSchema(dictionaryRoot, fileType)
+            .path(FIELDS_KEY),
+        new Function<JsonNode, String>() {
+
+          @Override
+          public String apply(JsonNode field) {
+            return getString(field, FIELD_NAME_KEY);
+          }
+
+        }));
   }
 
   private static JsonNode getRestrictions(
@@ -219,18 +261,30 @@ public class Dictionaries {
         });
   }
 
-  public static Map<String, String> getMapping(
+  public static Optional<Map<String, String>> getMapping(
       @NonNull final JsonNode dictionaryRoot,
       @NonNull final JsonNode codeListsRoot,
       @NonNull final FileType fileType,
       @NonNull final String fieldName) {
 
-    return getMapping(
-        codeListsRoot,
-        getCodeListName(
-            dictionaryRoot,
-            fileType,
-            fieldName));
+    val codeListName = getCodeListName(
+        dictionaryRoot,
+        fileType,
+        fieldName);
+
+    return codeListName.isPresent() ?
+        Optional.of(getMapping(
+            codeListsRoot,
+            codeListName.get())) :
+        ABSENT_STRING_MAP;
+  }
+
+  private static FileType getFileType(
+      @NonNull final JsonNode node,
+      @NonNull final String key) {
+
+    return FileType.from(
+        getString(node, key));
   }
 
   private static String getString(
@@ -240,6 +294,119 @@ public class Dictionaries {
     return node
         .path(key)
         .asText();
+  }
+
+  public static void main(String[] args) {
+    System.out.println(RosettaStone.getInstance(
+        Jackson.getJsonRoot("/home/tony/tmp/dcc/0.8c/Dictionary.json"),
+        Jackson.getJsonRoot("/home/tony/tmp/dcc/0.8c/CodeList.json")));
+  }
+
+  /**
+   * Optionally gives code translation for all fields in the dictionary, depending on whether a codelist is specified
+   * for the field or not.
+   */
+  @Value
+  public static class RosettaStone {
+
+    Map<FileType, SchemaMapping> fileTypeToSchemaMapping = newTreeMap();
+
+    @Value
+    public static class SchemaMapping {
+
+      Map<String, Optional<FieldMapping>> fieldToOptionalMapping = newTreeMap();
+
+      @Value
+      public static class FieldMapping {
+
+        Map<String, String> codeToValue;
+
+        private static FieldMapping getInstance(Map<String, String> mapping) {
+          return new FieldMapping(mapping);
+        }
+
+        public Optional<Map<String, String>> getOptionalCodeToValue() {
+          return Optional.of(codeToValue);
+        }
+
+      }
+
+    }
+
+    /**
+     * TODO: needs cleanup
+     */
+    public static RosettaStone getInstance(
+        @NonNull final JsonNode dictionaryRoot,
+        @NonNull final JsonNode codeListsRoot) {
+
+      RosettaStone rosettaStone = new RosettaStone();
+
+      for (val fileType : getFileTypes(dictionaryRoot)) {
+
+        SchemaMapping schemaMapping = new SchemaMapping();
+        rosettaStone.fileTypeToSchemaMapping.put(fileType, schemaMapping);
+
+        for (val fieldName : getFieldNames(dictionaryRoot, fileType)) {
+          val optionalCodeListName = getCodeListName(dictionaryRoot, fileType, fieldName);
+          if (optionalCodeListName.isPresent()) {
+            schemaMapping.fieldToOptionalMapping.put(
+                fieldName,
+                Optional.of(FieldMapping.getInstance(
+                    getMapping(
+                        codeListsRoot,
+                        optionalCodeListName.get()))));
+          } else {
+            schemaMapping.fieldToOptionalMapping.put(fieldName, Optional.<FieldMapping> absent());
+          }
+        }
+      }
+
+      return rosettaStone;
+    }
+
+    /**
+     * Expects field names provided to have a codelist restriction defined on them.
+     */
+    public Map<String, Map<String, String>> getGuaranteedFieldsMappings(
+        @NonNull final FileType fileType,
+        @NonNull final String... fieldNames) {
+
+      return transformValues(
+          getFieldsMappings(fileType, fieldNames),
+          new Function<Optional<Map<String, String>>, Map<String, String>>() {
+
+            @Override
+            public Map<String, String> apply(Optional<Map<String, String>> optionalFieldMapping) {
+              checkState(optionalFieldMapping.isPresent(),
+                  "All fields '%s' are expected to have a '%s' restriction defined on them",
+                  fieldNames, CODELIST_KEY); // TODO: how to access current key being transformed?
+
+              return optionalFieldMapping.get();
+            }
+
+          });
+    }
+
+    public Map<String, Optional<Map<String, String>>> getFieldsMappings(
+        @NonNull final FileType fileType,
+        @NonNull final String... fieldNames) {
+
+      return asMap(
+          ImmutableSet.<String> copyOf(fieldNames),
+          new Function<String, Optional<Map<String, String>>>() {
+
+            @Override
+            public Optional<Map<String, String>> apply(String input) {
+              val optionalFieldMapping = // TODO
+                  fileTypeToSchemaMapping.get(fileType).fieldToOptionalMapping.get(fieldNames[0]);
+              return optionalFieldMapping.isPresent() ?
+                  optionalFieldMapping.get().getOptionalCodeToValue() :
+                  ABSENT_STRING_MAP;
+            }
+
+          });
+    }
   }
 
 }
