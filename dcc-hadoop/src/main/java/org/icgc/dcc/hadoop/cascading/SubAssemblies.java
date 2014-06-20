@@ -39,9 +39,6 @@ import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.core.util.ObjectProviding;
-
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.FunctionCall;
@@ -57,6 +54,7 @@ import cascading.tuple.Tuple;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 
 /**
  * Useful sub-assemblies.
@@ -138,7 +136,7 @@ public class SubAssemblies {
    */
   public static class NullReplacer extends SubAssembly {
 
-    public NullReplacer(Fields targetFields, NullReplacing nullReplacing, Pipe pipe) {
+    public NullReplacer(Fields targetFields, NullReplacing<Tuple> nullReplacing, Pipe pipe) {
       setTails(new Each(
           pipe,
           checkFieldsCardinalityOne(targetFields),
@@ -149,13 +147,13 @@ public class SubAssemblies {
     /**
      * Returns a non-null replacement value for nulls. That the value is non-null will be checked for at runtime.
      */
-    public static interface NullReplacing extends ObjectProviding, Serializable {}
+    public static interface NullReplacing<T> extends Supplier<T>, Serializable {}
 
     private static class Nonce extends BaseOperation<Void> implements cascading.operation.Function<Void> {
 
-      private final NullReplacing nullReplacing;
+      private final NullReplacing<Tuple> nullReplacing;
 
-      public Nonce(NullReplacing nullReplacing) {
+      public Nonce(NullReplacing<Tuple> nullReplacing) {
         super(ARGS);
         this.nullReplacing = nullReplacing;
       }
@@ -186,10 +184,10 @@ public class SubAssemblies {
       public EmptyTupleNullReplacer(Fields targetFields, Pipe pipe) {
         setTails(new NullReplacer(
             checkFieldsCardinalityOne(targetFields),
-            new NullReplacing() {
+            new NullReplacing<Tuple>() {
 
               @Override
-              public Object get() {
+              public Tuple get() {
                 return new Tuple();
               }
 
