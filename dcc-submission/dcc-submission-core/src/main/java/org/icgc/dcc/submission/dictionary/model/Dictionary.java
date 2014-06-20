@@ -40,6 +40,7 @@ import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.Dictionaries;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -71,6 +72,9 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   private DictionaryState state;
 
+  /**
+   * Related to {@link Dictionaries#FILE_SCHEMATA_KEY}.
+   */
   @Valid
   private List<FileSchema> files;
 

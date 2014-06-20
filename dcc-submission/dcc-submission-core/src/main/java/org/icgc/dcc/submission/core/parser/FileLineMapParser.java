@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.val;
 
+import org.icgc.dcc.hadoop.parser.AbstractFileLineParser;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 import com.google.common.collect.ImmutableMap;

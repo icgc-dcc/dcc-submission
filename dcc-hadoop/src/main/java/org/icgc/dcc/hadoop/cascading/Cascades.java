@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,20 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.hadoop.cascading;
 
-import lombok.ToString;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.DASH;
+import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
+import lombok.NoArgsConstructor;
 
-@ToString
-public class FileLineStringParser extends AbstractFileLineParser<String> {
+import org.icgc.dcc.core.util.Named;
+
+import cascading.cascade.Cascade;
+
+/**
+ * Utils methods for {@link Cascade}.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class Cascades implements Named {
+
+  private static final Cascades INTERNAL = new Cascades();
+  private static final String CLASS_NAME = removeTrailingS(Cascades.class.getSimpleName());
 
   @Override
-  public String parse(String line) {
-    return split(line);
+  public String getName() {
+    return CLASS_NAME;
   }
 
-  protected static String split(String line) {
-    return line;
+  public static String getName(Object... qualifiers) {
+    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
+  }
+
+  public static String getName(Class<?> clazz, Object... qualifiers) {
+    return getName(clazz.getSimpleName(), getName(qualifiers));
   }
 
 }

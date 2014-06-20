@@ -19,23 +19,20 @@ package org.icgc.dcc.submission.core.parser;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import java.util.List;
 import java.util.Map;
 
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.hadoop.parser.FileParser;
+import org.icgc.dcc.hadoop.parser.FileParsers;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 @NoArgsConstructor(access = PRIVATE)
-public class FileParsers {
-
-  private static final FileSystem DEFAULT_FILE_SYSTEM = getDefaultFileSystem();
+public class SubmissionFileParsers {
 
   public static FileParser<Map<String, String>> newMapFileParser(FileSchema fileSchema) {
-    return newMapFileParser(DEFAULT_FILE_SYSTEM, fileSchema);
+    return newMapFileParser(FileParsers.DEFAULT_FILE_SYSTEM, fileSchema);
   }
 
   public static FileParser<Map<String, String>> newMapFileParser(FileSystem fileSystem, FileSchema fileSchema) {
@@ -45,59 +42,6 @@ public class FileParsers {
   public static FileParser<Map<String, String>> newMapFileParser(FileSystem fileSystem, FileSchema fileSchema,
       boolean processHeader) {
     return new FileParser<Map<String, String>>(fileSystem, new FileLineMapParser(fileSchema), processHeader);
-  }
-
-  public static FileParser<String[]> newArrayFileParser() {
-    return newArrayFileParser(DEFAULT_FILE_SYSTEM);
-  }
-
-  public static FileParser<String[]> newArrayFileParser(FileSystem fileSystem) {
-    return newArrayFileParser(fileSystem, false);
-  }
-
-  public static FileParser<String[]> newArrayFileParser(FileSystem fileSystem, boolean processHeader) {
-    return new FileParser<String[]>(fileSystem, new FileLineArrayParser(), processHeader);
-  }
-
-  public static FileParser<Iterable<String>> newIterableFileParser() {
-    return newIterableFileParser(DEFAULT_FILE_SYSTEM);
-  }
-
-  public static FileParser<Iterable<String>> newIterableFileParser(FileSystem fileSystem) {
-    return newIterableFileParser(fileSystem, false);
-  }
-
-  public static FileParser<Iterable<String>> newIterableFileParser(FileSystem fileSystem, boolean processHeader) {
-    return new FileParser<Iterable<String>>(fileSystem, new FileLineIterableParser(), processHeader);
-  }
-
-  public static FileParser<List<String>> newListFileParser() {
-    return newListFileParser(DEFAULT_FILE_SYSTEM);
-  }
-
-  public static FileParser<List<String>> newListFileParser(FileSystem fileSystem) {
-    return newListFileParser(fileSystem, false);
-  }
-
-  public static FileParser<List<String>> newListFileParser(FileSystem fileSystem, boolean processHeader) {
-    return new FileParser<List<String>>(fileSystem, new FileLineListParser(), processHeader);
-  }
-
-  public static FileParser<String> newStringFileParser() {
-    return newStringFileParser(DEFAULT_FILE_SYSTEM);
-  }
-
-  public static FileParser<String> newStringFileParser(FileSystem fileSystem) {
-    return newStringFileParser(fileSystem, false);
-  }
-
-  public static FileParser<String> newStringFileParser(FileSystem fileSystem, boolean processHeader) {
-    return new FileParser<String>(fileSystem, new FileLineStringParser(), processHeader);
-  }
-
-  @SneakyThrows
-  private static FileSystem getDefaultFileSystem() {
-    return FileSystem.getLocal(new Configuration());
   }
 
 }
