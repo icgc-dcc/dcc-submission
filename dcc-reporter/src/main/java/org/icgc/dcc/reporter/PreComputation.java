@@ -94,10 +94,10 @@ public class PreComputation extends SubAssembly {
 
     new NullReplacer(
         TYPE_FIELD,
-        new NullReplacing() {
+        new NullReplacing<String>() {
 
           @Override
-          public Object get() {
+          public String get() {
             return getValue(CLINICAL_CORE_TYPE);
           }
 

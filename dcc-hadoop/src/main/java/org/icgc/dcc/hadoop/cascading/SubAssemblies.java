@@ -134,13 +134,13 @@ public class SubAssemblies {
    * <p>
    * Only applicable for one {@link Fields} for now.
    */
-  public static class NullReplacer extends SubAssembly {
+  public static class NullReplacer<T> extends SubAssembly {
 
-    public NullReplacer(Fields targetFields, NullReplacing<Tuple> nullReplacing, Pipe pipe) {
+    public NullReplacer(Fields targetFields, NullReplacing<T> nullReplacing, Pipe pipe) {
       setTails(new Each(
           pipe,
           checkFieldsCardinalityOne(targetFields),
-          new Nonce(nullReplacing),
+          new Nonce<T>(nullReplacing),
           REPLACE));
     }
 
@@ -149,11 +149,11 @@ public class SubAssemblies {
      */
     public static interface NullReplacing<T> extends Supplier<T>, Serializable {}
 
-    private static class Nonce extends BaseOperation<Void> implements cascading.operation.Function<Void> {
+    private static class Nonce<T> extends BaseOperation<Void> implements cascading.operation.Function<Void> {
 
-      private final NullReplacing<Tuple> nullReplacing;
+      private final NullReplacing<T> nullReplacing;
 
-      public Nonce(NullReplacing<Tuple> nullReplacing) {
+      public Nonce(NullReplacing<T> nullReplacing) {
         super(ARGS);
         this.nullReplacing = nullReplacing;
       }
@@ -182,7 +182,7 @@ public class SubAssemblies {
     public static class EmptyTupleNullReplacer extends SubAssembly {
 
       public EmptyTupleNullReplacer(Fields targetFields, Pipe pipe) {
-        setTails(new NullReplacer(
+        setTails(new NullReplacer<Tuple>(
             checkFieldsCardinalityOne(targetFields),
             new NullReplacing<Tuple>() {
 

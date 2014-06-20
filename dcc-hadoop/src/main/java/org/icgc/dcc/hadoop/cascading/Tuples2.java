@@ -44,7 +44,7 @@ public final class Tuples2 {
   /**
    * See {@link #nestTuple(Tuple)} for rationale.
    */
-  public static Tuple nestValue(Object value) {
+  public static <T> Tuple nestValue(T value) {
     val nestingTuple = new Tuple();
     nestingTuple.add(value);
     return nestingTuple;
