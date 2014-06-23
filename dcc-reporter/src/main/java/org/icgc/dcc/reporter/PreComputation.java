@@ -92,7 +92,7 @@ public class PreComputation extends SubAssembly {
   private static Pipe processProject(final InputData inputData, final String projectKey) {
     return
 
-    new NullReplacer(
+    new NullReplacer<String>(
         TYPE_FIELD,
         new NullReplacing<String>() {
 
