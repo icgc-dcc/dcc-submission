@@ -55,6 +55,7 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
+import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.Joiner;
 import cascading.tuple.Fields;
@@ -299,7 +300,7 @@ public class SubAssemblies {
       new cascading.pipe.assembly.CountBy(
           countByData.pipe,
           countByData.countByFields,
-          countByData.resultField));
+          countByData.resultCountField));
     }
 
     @Value
@@ -308,7 +309,7 @@ public class SubAssemblies {
 
       Pipe pipe;
       Fields countByFields;
-      Fields resultField;
+      Fields resultCountField;
 
     }
 
@@ -317,24 +318,40 @@ public class SubAssemblies {
   /**
    * See https://gist.github.com/ceteri/4459908.
    * <p>
-   * TODO: add checks on fields cardinality
+   * TODO: add checks on fields cardinality and field sets (has to be consistent)
    */
   public static class UniqueCountBy extends SubAssembly {
 
-    public UniqueCountBy(Pipe pipe, Fields uniqueFields, Fields countByFields, Fields resultField) {
+    public UniqueCountBy(UniqueCountByData data) {
       setTails(new CountBy(CountByData.builder()
 
           .pipe(
 
               //
               new Unique( // TODO: automatically retains?
-                  pipe,
-                  uniqueFields))
 
-          .countByFields(countByFields)
-          .resultField(resultField)
+                  //
+                  new Retain(
+                      data.pipe,
+                      data.uniqueFields),
+
+                  ALL))
+
+          .countByFields(data.countByFields)
+          .resultCountField(data.resultCountField)
 
           .build()));
+
+    }
+
+    @Value
+    @Builder
+    public static class UniqueCountByData {
+
+      Pipe pipe;
+      Fields uniqueFields;
+      Fields countByFields;
+      Fields resultCountField;
 
     }
 

@@ -271,7 +271,7 @@ public class PreComputation extends SubAssembly {
                 .build()))
 
         .countByFields(META_PK_FIELDS)
-        .resultField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+        .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
         .build());
 

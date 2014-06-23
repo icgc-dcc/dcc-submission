@@ -1,6 +1,5 @@
 package org.icgc.dcc.reporter;
 
-import static cascading.tuple.Fields.ALL;
 import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
@@ -20,12 +19,12 @@ import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_F
 import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Sum;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
@@ -116,36 +115,29 @@ public class StatsGathering extends SubAssembly {
     new NamingPipe(
         SEQUENCING_STRATEGY,
 
-        //
-        new CountBy(CountByData.builder()
+        new UniqueCountBy(UniqueCountByData.builder()
 
-            .pipe(
-
-                //
-                new Unique(
-
-                    //
-                    new Retain(
-                        preComputationTable,
-                        countByFields
-                            .append(DONOR_ID_FIELD)
-                    ),
-
-                    ALL))
-
+            .pipe(preComputationTable)
+            .uniqueFields(
+                countByFields
+                    .append(DONOR_ID_FIELD))
             .countByFields(countByFields)
-            .resultField(getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD))
+            .resultCountField(getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD))
 
             .build()));
   }
 
   private static Pipe getUniqueCountPipe(Pipe preComputationTable, Fields targetField, Fields countByFields) {
-    return new SubAssemblies.UniqueCountBy(
-        preComputationTable,
-        checkFieldsCardinalityOne(targetField)
-            .append(countByFields),
-        countByFields,
-        getCountFieldCounterpart(targetField));
+    return new UniqueCountBy(UniqueCountByData.builder()
+
+        .pipe(preComputationTable)
+        .uniqueFields(
+            checkFieldsCardinalityOne(targetField)
+                .append(countByFields))
+        .countByFields(countByFields)
+        .resultCountField(getCountFieldCounterpart(targetField))
+
+        .build());
   }
 
   private static Pipe getPreCountedUniqueCountPipe(
