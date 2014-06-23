@@ -99,6 +99,16 @@ public final class FieldNames {
   }
 
   /**
+   * Names for the fields in the reporter.
+   */
+  @NoArgsConstructor(access = PRIVATE)
+  public static class ReporterFieldNames {
+
+    public static final String RELEASE_NAME = "release_name";
+
+  }
+
+  /**
    * Project field names.
    */
   public static final String PROJECT_ID = "_project_id"; // "BRCA-UK" for instance

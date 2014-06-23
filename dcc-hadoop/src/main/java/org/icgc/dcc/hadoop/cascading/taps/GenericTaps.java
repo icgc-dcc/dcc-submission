@@ -15,10 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.hadoop.cascading.taps;
 
-public interface FileLineParser<T> {
+import static lombok.AccessLevel.PRIVATE;
 
-  T parse(String line);
+import java.util.Map;
+
+import lombok.NoArgsConstructor;
+import cascading.flow.FlowDef;
+import cascading.tap.Tap;
+
+import com.google.common.base.Function;
+
+/**
+ * Utility class to help with {@link Tap} (local/hadoop agnostic) from cascading.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class GenericTaps {
+
+  /**
+   * Must suppress warning as cascading unfortunately uses raw types in {@link FlowDef#addSources(Map)}.
+   */
+  @SuppressWarnings("rawtypes")
+  public static Function<Tap<?, ?, ?>, Tap> RAW_CASTER = new Function<Tap<?, ?, ?>, Tap>() {
+
+    @Override
+    public Tap apply(Tap<?, ?, ?> tap) {
+      return tap;
+    }
+
+  };
 
 }

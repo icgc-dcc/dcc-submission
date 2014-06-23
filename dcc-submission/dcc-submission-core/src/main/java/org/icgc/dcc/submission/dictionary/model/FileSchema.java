@@ -37,6 +37,7 @@ import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.Dictionaries;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
@@ -59,12 +60,17 @@ public class FileSchema implements DictionaryElement, Serializable {
 
   /**
    * TODO: use {@link FileType} instead of String.
+   * <p>
+   * Related to {@link Dictionaries#FILE_SCHEMA_NAME_KEY}.
    */
   @NotBlank
   private String name;
 
   private String label;
 
+  /**
+   * Related to {@link Dictionaries#FILE_SCHEMA_PATTERN_KEY}.
+   */
   private String pattern;
 
   private FileSchemaRole role;
