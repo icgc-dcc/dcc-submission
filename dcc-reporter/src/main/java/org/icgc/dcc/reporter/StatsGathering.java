@@ -1,12 +1,9 @@
 package org.icgc.dcc.reporter;
 
 import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.ARGS;
-import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
-import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.reporter.OutputType.DONOR;
 import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.reporter.OutputType.SAMPLE;
@@ -28,18 +25,13 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.Sum;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Buffer;
-import cascading.operation.BufferCall;
-import cascading.pipe.Every;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.Unique;
 import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
 
 import com.google.common.collect.ImmutableList;
 
@@ -176,37 +168,13 @@ public class StatsGathering extends SubAssembly {
     checkFieldsCardinalityOne(targetField);
     checkFieldsCardinalityOne(preCountField);
 
-    /**
-     * TODO: cascading pre-defined buffer?
-     */
-    class Sum extends BaseOperation<Void> implements Buffer<Void> {
-
-      public Sum() {
-        super(ARGS);
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          BufferCall<Void> bufferCall) {
-
-        long observationCount = 0;
-        val entries = bufferCall.getArgumentsIterator();
-        while (entries.hasNext()) {
-          observationCount += getFirstInteger(entries.next());
-        }
-        bufferCall.getOutputCollector().add(new Tuple(observationCount));
-      }
-
-    }
-
     return
 
     //
     new Retain(
 
         //
-        new Every(
+        new Sum(
 
             //
             new GroupBy(GroupByData.builder()
@@ -227,12 +195,7 @@ public class StatsGathering extends SubAssembly {
                 .build()),
 
             //
-            preCountField,
-
-            //
-            new Sum(),
-
-            REPLACE),
+            preCountField),
 
         // Retain fields
         groupByFields

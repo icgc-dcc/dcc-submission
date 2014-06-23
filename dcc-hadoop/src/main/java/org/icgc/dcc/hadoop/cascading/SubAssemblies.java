@@ -27,6 +27,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.isNullTuple;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.nestValue;
@@ -41,8 +42,11 @@ import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
+import cascading.operation.Buffer;
+import cascading.operation.BufferCall;
 import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
+import cascading.pipe.Every;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
@@ -346,6 +350,42 @@ public class SubAssemblies {
 
       Fields resultFields;
       Fields discardFields; // TODO: derive from result fields rather
+
+    }
+
+  }
+
+  /**
+   * TODO: cascading pre-defined buffer? look into cascading.operation.aggregator.Sum
+   */
+  public static class Sum extends SubAssembly {
+
+    public Sum(Pipe pipe, Fields preCountField) {
+      setTails(new Every(
+          pipe,
+          checkFieldsCardinalityOne(preCountField),
+          new Nonce(),
+          REPLACE));
+    }
+
+    class Nonce extends BaseOperation<Void> implements Buffer<Void> {
+
+      public Nonce() {
+        super(ARGS);
+      }
+
+      @Override
+      public void operate(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          BufferCall<Void> bufferCall) {
+
+        long observationCount = 0;
+        val entries = bufferCall.getArgumentsIterator();
+        while (entries.hasNext()) {
+          observationCount += getFirstInteger(entries.next());
+        }
+        bufferCall.getOutputCollector().add(new Tuple(observationCount));
+      }
 
     }
 
