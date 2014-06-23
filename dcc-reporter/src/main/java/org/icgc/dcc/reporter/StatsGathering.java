@@ -16,9 +16,7 @@ import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
-import lombok.val;
 
-import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
@@ -49,10 +47,7 @@ public class StatsGathering extends SubAssembly {
         .add(processSpecimens(preComputationTable))
         .add(processSamples(preComputationTable))
         .add(processObservations(preComputationTable))
-        // .add(processSequencingStrategies(preComputationTable))
-
-        // For table 2
-        .add(processSequencingStrategies(preComputationTable)) // TODO: encapsulate elsewhere?
+        .add(processSequencingStrategies(preComputationTable))
 
         .build();
   }
@@ -61,35 +56,55 @@ public class StatsGathering extends SubAssembly {
     return new NamingPipe(
         DONOR,
 
-        //
-        getUniqueCountPipe(
-            preComputationTable,
+        new UniqueCountBy(UniqueCountByData.builder()
 
-            // Target field
-            DONOR_ID_FIELD,
+            .pipe(preComputationTable)
+            .uniqueFields(
+                PROJECT_ID_FIELD
+                    .append(TYPE_FIELD)
+                    .append(DONOR_ID_FIELD))
+            .countByFields(
+                PROJECT_ID_FIELD
+                    .append(TYPE_FIELD))
+            .resultCountField(getCountFieldCounterpart(DONOR_ID_FIELD))
 
-            // Group by fields
-            PROJECT_ID_FIELD.append(TYPE_FIELD)));
+            .build()));
   }
 
   private static Pipe processSpecimens(Pipe preComputationTable) {
     return new NamingPipe(
         SPECIMEN,
-        getUniqueCountPipe(
-            preComputationTable,
-            SPECIMEN_ID_FIELD,
-            PROJECT_ID_FIELD
-                .append(TYPE_FIELD)));
+        new UniqueCountBy(UniqueCountByData.builder()
+
+            .pipe(preComputationTable)
+            .uniqueFields(
+                PROJECT_ID_FIELD
+                    .append(TYPE_FIELD)
+                    .append(SPECIMEN_ID_FIELD))
+            .countByFields(
+                PROJECT_ID_FIELD
+                    .append(TYPE_FIELD))
+            .resultCountField(getCountFieldCounterpart(SPECIMEN_ID_FIELD))
+
+            .build()));
   }
 
   private static Pipe processSamples(Pipe preComputationTable) {
     return new NamingPipe(
         SAMPLE,
-        getUniqueCountPipe(
-            preComputationTable,
-            SAMPLE_ID_FIELD,
-            PROJECT_ID_FIELD
-                .append(TYPE_FIELD)));
+        new UniqueCountBy(UniqueCountByData.builder()
+
+            .pipe(preComputationTable)
+            .uniqueFields(
+                PROJECT_ID_FIELD
+                    .append(TYPE_FIELD)
+                    .append(SAMPLE_ID_FIELD))
+            .countByFields(
+                PROJECT_ID_FIELD
+                    .append(TYPE_FIELD))
+            .resultCountField(getCountFieldCounterpart(SAMPLE_ID_FIELD))
+
+            .build()));
   }
 
   private static Pipe processObservations(Pipe preComputationTable) {
@@ -103,41 +118,22 @@ public class StatsGathering extends SubAssembly {
                 .append(TYPE_FIELD)));
   }
 
-  /**
-   * TODO: promote unique count by to {@link SubAssemblies}?
-   */
   private static Pipe processSequencingStrategies(Pipe preComputationTable) {
-    val countByFields = PROJECT_ID_FIELD.append(SEQUENCING_STRATEGY_FIELD);
-
-    return
-
-    //
-    new NamingPipe(
+    return new NamingPipe(
         SEQUENCING_STRATEGY,
-
         new UniqueCountBy(UniqueCountByData.builder()
 
             .pipe(preComputationTable)
             .uniqueFields(
-                countByFields
+                PROJECT_ID_FIELD
+                    .append(SEQUENCING_STRATEGY_FIELD)
                     .append(DONOR_ID_FIELD))
-            .countByFields(countByFields)
+            .countByFields(
+                PROJECT_ID_FIELD
+                    .append(SEQUENCING_STRATEGY_FIELD))
             .resultCountField(getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD))
 
             .build()));
-  }
-
-  private static Pipe getUniqueCountPipe(Pipe preComputationTable, Fields targetField, Fields countByFields) {
-    return new UniqueCountBy(UniqueCountByData.builder()
-
-        .pipe(preComputationTable)
-        .uniqueFields(
-            checkFieldsCardinalityOne(targetField)
-                .append(countByFields))
-        .countByFields(countByFields)
-        .resultCountField(getCountFieldCounterpart(targetField))
-
-        .build());
   }
 
   private static Pipe getPreCountedUniqueCountPipe(

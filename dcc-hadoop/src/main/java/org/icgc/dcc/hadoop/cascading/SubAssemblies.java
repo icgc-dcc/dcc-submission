@@ -338,7 +338,7 @@ public class SubAssemblies {
                   ALL))
 
           .countByFields(data.countByFields)
-          .resultCountField(data.resultCountField)
+          .resultCountField(checkFieldsCardinalityOne(data.resultCountField))
 
           .build()));
 
