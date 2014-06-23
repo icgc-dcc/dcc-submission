@@ -139,28 +139,13 @@ public class StatsGathering extends SubAssembly {
             .build()));
   }
 
-  // see https://gist.github.com/ceteri/4459908
-  private static Pipe getUniqueCountPipe(Pipe preComputationTable, Fields targetField, Fields groupByFields) {
-    checkFieldsCardinalityOne(targetField);
-
-    return
-
-    //
-    new CountBy(CountByData.builder()
-
-        .pipe(
-
-            //
-            new Unique( // TODO: automatically retains?
-                preComputationTable,
-
-                // Unique fields
-                targetField.append(groupByFields)))
-
-        .countByFields(groupByFields)
-        .resultField(getCountFieldCounterpart(targetField))
-
-        .build());
+  private static Pipe getUniqueCountPipe(Pipe preComputationTable, Fields targetField, Fields countByFields) {
+    return new SubAssemblies.UniqueCountBy(
+        preComputationTable,
+        checkFieldsCardinalityOne(targetField)
+            .append(countByFields),
+        countByFields,
+        getCountFieldCounterpart(targetField));
   }
 
   private static Pipe getPreCountedUniqueCountPipe(

@@ -40,6 +40,9 @@ import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Buffer;
@@ -52,6 +55,7 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
+import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.Joiner;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
@@ -305,6 +309,32 @@ public class SubAssemblies {
       Pipe pipe;
       Fields countByFields;
       Fields resultField;
+
+    }
+
+  }
+
+  /**
+   * See https://gist.github.com/ceteri/4459908.
+   * <p>
+   * TODO: add checks on fields cardinality
+   */
+  public static class UniqueCountBy extends SubAssembly {
+
+    public UniqueCountBy(Pipe pipe, Fields uniqueFields, Fields countByFields, Fields resultField) {
+      setTails(new CountBy(CountByData.builder()
+
+          .pipe(
+
+              //
+              new Unique( // TODO: automatically retains?
+                  pipe,
+                  uniqueFields))
+
+          .countByFields(countByFields)
+          .resultField(resultField)
+
+          .build()));
 
     }
 
