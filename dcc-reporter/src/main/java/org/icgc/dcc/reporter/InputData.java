@@ -44,7 +44,7 @@ public class InputData {
 
               // TODO: improve when it's decided whether we go the NFS or HDFS route
               .replace("/hdfs/dcc", "")
-              .replace("/nfs/dcc_secure/dcc/etl/icgc16/migration", "/tmp/migration"));
+              .replace("/nfs/dcc_secure/dcc/etl/icgc16/migration", "/icgc/dcc_root_dir/ICGC16/migration"));
         }
       }
     }
