@@ -355,7 +355,7 @@ public class SubAssemblies {
           FunctionCall<HashCountByContext> functionCall) {
 
         val context = lazyContext(functionCall);
-        val tuple = functionCall.getArguments().getTuple();
+        val tuple = functionCall.getArguments().getTupleCopy(); // MUST use a copy
         val counts = context.getCounts();
 
         counts.put(
