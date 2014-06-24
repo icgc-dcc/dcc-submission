@@ -319,7 +319,6 @@ public class SubAssemblies {
 
     public HashCountBy(CountByData data) {
       // TODO: add checks on cardinalities
-
       setTails(
 
       new SumBy(
@@ -358,11 +357,13 @@ public class SubAssemblies {
         val context = lazyContext(functionCall);
         val tuple = functionCall.getArguments().getTuple();
         val counts = context.getCounts();
+
         counts.put(
             tuple,
-            counts.containsKey(tuple) ?
-                counts.get(tuple) + 1 : // Increment
-                INITIAL_COUNT);
+            (counts.containsKey(tuple) ?
+                counts.get(tuple) :
+                INITIAL_COUNT)
+            + 1); // Increment
 
         // Emit nothing here (in flush instead)
       }
