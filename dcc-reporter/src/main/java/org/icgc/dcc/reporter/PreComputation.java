@@ -23,8 +23,6 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.HashCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
@@ -258,20 +256,9 @@ public class PreComputation extends SubAssembly {
     // TODO: move that before the merge to maximum parallelization (optimization)
     new HashCountBy(CountByData.builder()
 
-        .pipe(
-
-            //
-            new GroupBy(GroupByData.builder()
-
-                .pipe(
-                    processFiles(
-                        inputData, projectKey, featureType.getPrimaryFileType(),
-                        META_PK_FIELDS))
-
-                .groupByFields(META_PK_FIELDS)
-
-                .build()))
-
+        .pipe(processFiles(
+            inputData, projectKey, featureType.getPrimaryFileType(),
+            META_PK_FIELDS))
         .countByFields(META_PK_FIELDS)
         .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
