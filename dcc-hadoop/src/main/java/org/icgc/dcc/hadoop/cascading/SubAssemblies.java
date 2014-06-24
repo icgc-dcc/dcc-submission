@@ -27,27 +27,31 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.isNullTuple;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.nestValue;
+import static org.icgc.dcc.hadoop.cascading.Tuples2.setFirstLong;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
-
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
+import cascading.operation.Function;
 import cascading.operation.FunctionCall;
+import cascading.operation.OperationCall;
 import cascading.pipe.Each;
 import cascading.pipe.Every;
 import cascading.pipe.HashJoin;
@@ -56,12 +60,13 @@ import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Retain;
+import cascading.pipe.assembly.SumBy;
 import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.Joiner;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntryCollector;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 
@@ -216,7 +221,7 @@ public class SubAssemblies {
     /**
      * TODO: builder like {@link ReadableHashJoin}.
      */
-    public Transformerge(Iterable<T> iterable, Function<T, Pipe> function) {
+    public Transformerge(Iterable<T> iterable, com.google.common.base.Function<T, Pipe> function) {
       setTails(
 
       //
@@ -303,13 +308,103 @@ public class SubAssemblies {
           countByData.resultCountField));
     }
 
-    @Value
-    @Builder
-    public static class CountByData {
+  }
 
-      Pipe pipe;
-      Fields countByFields;
-      Fields resultCountField;
+  /**
+   * For a count by in which there are few groups (fitting in memory and therefore not requiring a sort phase).
+   */
+  public static class HashCountBy extends SubAssembly {
+
+    private static final Fields TEMPORARY_PARTIAL_COUNT_FIELD = new Fields("_partial_count");
+
+    public HashCountBy(CountByData data) {
+      // TODO: add checks on cardinalities
+
+      setTails(
+
+      new SumBy(
+          new Each(
+
+              // Must insert a dummy value in order to use REPLACE further down
+              new Insert(
+                  keyValuePair(TEMPORARY_PARTIAL_COUNT_FIELD, null),
+                  data.pipe),
+
+              TEMPORARY_PARTIAL_COUNT_FIELD // Order matters
+                  .append(data.countByFields),
+              new Nonce(),
+              REPLACE),
+
+          data.countByFields,
+          TEMPORARY_PARTIAL_COUNT_FIELD,
+          data.resultCountField,
+          long.class));
+
+    }
+
+    private static class Nonce extends BaseOperation<HashCountByContext> implements Function<HashCountByContext> {
+
+      private static long INITIAL_COUNT = 0L;
+
+      private Nonce() {
+        super(ARGS);
+      }
+
+      @Override
+      public void operate(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          FunctionCall<HashCountByContext> functionCall) {
+
+        val context = lazyContext(functionCall);
+        val tuple = functionCall.getArguments().getTuple();
+        val counts = context.getCounts();
+        counts.put(
+            tuple,
+            counts.containsKey(tuple) ?
+                counts.get(tuple) + 1 : // Increment
+                INITIAL_COUNT);
+
+        // Emit nothing here (in flush instead)
+      }
+
+      /**
+       * See https://groups.google.com/forum/#!topic/cascading-user/VDdyGY04vlg
+       */
+      @Override
+      public void flush(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          OperationCall<HashCountByContext> operationCall) {
+
+        val context = operationCall.getContext();
+        for (val entry : context.counts.entrySet()) {
+          context
+              .getOutputCollector() // Cached from #operate()
+              .add(
+                  setFirstLong(
+                      new Tuple(entry.getKey()), // Create copy
+                      entry.getValue()));
+        }
+      }
+
+      private final HashCountByContext lazyContext(
+          @NonNull final FunctionCall<HashCountByContext> functionCall) {
+        HashCountByContext context = functionCall.getContext();
+        if (context == null) {
+          context = new HashCountByContext(
+              functionCall.getOutputCollector());
+          functionCall.setContext(context);
+        }
+
+        return context;
+      }
+
+    }
+
+    @Value
+    private static class HashCountByContext {
+
+      Map<Tuple, Long> counts = new HashMap<Tuple, Long>();
+      TupleEntryCollector outputCollector;
 
     }
 
@@ -435,6 +530,16 @@ public class SubAssemblies {
       }
 
     }
+
+  }
+
+  @Value
+  @Builder
+  public static class CountByData {
+
+    Pipe pipe;
+    Fields countByFields;
+    Fields resultCountField;
 
   }
 

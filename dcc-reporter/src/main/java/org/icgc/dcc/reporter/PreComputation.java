@@ -22,10 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.HashCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
@@ -143,6 +143,7 @@ public class PreComputation extends SubAssembly {
         JoinData.builder()
             .joiner(new InnerJoin())
 
+            // Specimen
             .leftPipe(
                 processFiles(
                     inputData, projectKey, SPECIMEN_TYPE,
@@ -150,6 +151,7 @@ public class PreComputation extends SubAssembly {
                         .append(SPECIMEN_ID_FIELD)))
             .leftJoinFields(SPECIMEN_ID_FIELD)
 
+            // Sample
             .rightPipe(
                 processFiles(
                     inputData, projectKey, SAMPLE_TYPE,
@@ -253,8 +255,8 @@ public class PreComputation extends SubAssembly {
       final InputData inputData, final String projectKey, final FeatureType featureType) {
     return
 
-    // TODO: move that before the merge to maximum parallelization (optimization) - also, use AggregateBy
-    new CountBy(CountByData.builder()
+    // TODO: move that before the merge to maximum parallelization (optimization)
+    new HashCountBy(CountByData.builder()
 
         .pipe(
 
