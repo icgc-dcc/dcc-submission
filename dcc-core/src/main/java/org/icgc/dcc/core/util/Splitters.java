@@ -15,23 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.core.util;
 
-import lombok.RequiredArgsConstructor;
+import static com.google.common.base.Splitter.on;
 
 import com.google.common.base.Splitter;
 
-@RequiredArgsConstructor
-public abstract class AbstractFileLineParser<T> implements FileLineParser<T> {
+/**
+ * Common splitters.
+ */
+public class Splitters {
 
-  /**
-   * Separator between fields.
-   */
-  public static final String FIELD_SEPARATOR = "\t";
-
-  /**
-   * Splits fields in to a {@code String} iterable.
-   */
-  public static final Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
+  public static final Splitter PATH = on(Separators.SLASH);
+  public static final Splitter TAB = on(Separators.TAB);
+  public static final Splitter NEWLINE = on(Separators.NEWLINE);
+  public static final Splitter SLASH = on('/');
+  public static final Splitter DOT = on(".");
+  public static final Splitter DASH = on("-");
+  public static final Splitter UNDERSCORE = on("_");
+  public static final Splitter COLON = on(':');
+  public static final Splitter SEMICOLON = on(';');
 
 }

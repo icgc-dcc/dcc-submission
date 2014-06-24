@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.sftp;
 
+import static org.icgc.dcc.submission.sftp.SftpSessions.setSessionSubject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.util.Base64;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
+import org.apache.sshd.common.Session;
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
@@ -61,7 +63,7 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
 
       if (isMatch(rsaKey)) {
         log.info("Successfully authenicated user '{}' using public key", username);
-        login(username);
+        login(username, session);
 
         return true;
       }
@@ -75,12 +77,11 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
   }
 
   @SneakyThrows
-  private void login(String username) {
+  private void login(String username, Session session) {
     try {
       val principals = new SimplePrincipalCollection(username, "");
       val subject = new Subject.Builder().principals(principals).authenticated(true).buildSubject();
-      ThreadContext.remove();
-      ThreadContext.bind(subject);
+      setSessionSubject(session, subject);
     } catch (Throwable t) {
       log.error("Exception logging in user '{}': {}", username, t.getMessage());
       throw t;

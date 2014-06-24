@@ -15,28 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
-
-import static com.google.common.base.Joiner.on;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-
-import com.google.common.base.Joiner;
+package org.icgc.dcc.core.util;
 
 /**
- * Common joiners.
+ * Common separators.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class Joiners {
+public class Separators {
 
-  public static final Joiner SLASH = on('/');
-  public static final Joiner TAB = on('\t');
-  public static final Joiner NEWLINE = on('\n');
-  public static final Joiner DOT = on(".");
-  public static final Joiner DASH = on("-");
-  public static final Joiner UNDERSCORE = on("_");
-
-  public static final Joiner PATH = SLASH;
-  public static final Joiner INDENT = on("\n\t");
+  public static final String NEWLINE = "\n";
+  public static final String TAB = "\t";
+  public static final String COMMA = ",";
+  public static final String SLASH = "/";
+  public static final String WHITESPACE = " ";
+  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
+  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  public static final String EXTENSION = Strings2.DOT;
 
 }

@@ -15,10 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.core.util;
 
-public interface FileLineParser<T> {
+import static com.google.common.base.Joiner.on;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-  T parse(String line);
+import com.google.common.base.Joiner;
+
+/**
+ * Common joiners.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class Joiners {
+
+  public static final Joiner WHITESPACE = on(Separators.WHITESPACE);
+  public static final Joiner EMPTY_STRING = on(Separators.EMPTY_STRING);
+  public static final Joiner SLASH = on('/');
+  public static final Joiner TAB = on(Separators.TAB);
+  public static final Joiner NEWLINE = on(Separators.NEWLINE);
+  public static final Joiner DOT = on(".");
+  public static final Joiner DASH = on("-");
+  public static final Joiner UNDERSCORE = on("_");
+  public static final Joiner COMMA = on(Separators.COMMA);
+  public static final Joiner COLON = on(':');
+  public static final Joiner SEMICOLON = on(';');
+
+  public static final Joiner PATH = SLASH;
+  public static final Joiner EXTENSION = DOT;
+  public static final Joiner INDENT = on(Separators.INDENT);
 
 }

@@ -106,7 +106,7 @@ public interface DataType {
         // Do nothing
       }
 
-      checkArgument(type != null, "Could not find a match for type %s", typeName);
+      checkArgument(type != null, "Could not find a match for type '%s'", typeName);
 
       return null;
     }
@@ -127,7 +127,7 @@ public interface DataType {
         // Do nothing
       }
 
-      return checkNotNull(type, "Could not find a match for name %s", name);
+      return checkNotNull(type, "Could not find a match for name '%s'", name);
     }
 
     /**

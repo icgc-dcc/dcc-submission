@@ -15,19 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.hadoop.cascading.taps;
 
-import static com.google.common.base.Splitter.on;
+import static lombok.AccessLevel.PRIVATE;
 
-import com.google.common.base.Splitter;
+import java.util.Map;
+
+import lombok.NoArgsConstructor;
+import cascading.flow.FlowDef;
+import cascading.tap.Tap;
+
+import com.google.common.base.Function;
 
 /**
- * Common splitters.
+ * Utility class to help with {@link Tap} (local/hadoop agnostic) from cascading.
  */
-public class Splitters {
+@NoArgsConstructor(access = PRIVATE)
+public class GenericTaps {
 
-  public static final Splitter PATH = on('/');
-  public static final Splitter TAB = on('\t');
-  public static final Splitter NEWLINE = on('\n');
+  /**
+   * Must suppress warning as cascading unfortunately uses raw types in {@link FlowDef#addSources(Map)}.
+   */
+  @SuppressWarnings("rawtypes")
+  public static Function<Tap<?, ?, ?>, Tap> RAW_CASTER = new Function<Tap<?, ?, ?>, Tap>() {
+
+    @Override
+    public Tap apply(Tap<?, ?, ?> tap) {
+      return tap;
+    }
+
+  };
 
 }

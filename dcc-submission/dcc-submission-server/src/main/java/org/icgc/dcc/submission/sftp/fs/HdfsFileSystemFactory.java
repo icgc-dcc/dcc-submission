@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.submission.sftp.fs;
 
+import static org.icgc.dcc.submission.sftp.SftpSessions.getSessionSubject;
+
 import java.io.IOException;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 import org.apache.sshd.common.Session;
 import org.apache.sshd.common.file.FileSystemFactory;
@@ -35,7 +38,9 @@ public class HdfsFileSystemFactory implements FileSystemFactory {
 
   @Override
   public FileSystemView createFileSystemView(Session session) throws IOException {
-    return new HdfsFileSystemView(context);
+    val subject = getSessionSubject(session);
+
+    return new HdfsFileSystemView(context, subject);
   }
 
 }

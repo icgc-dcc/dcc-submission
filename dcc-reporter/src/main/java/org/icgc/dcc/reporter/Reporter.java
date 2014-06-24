@@ -1,0 +1,167 @@
+package org.icgc.dcc.reporter;
+
+import static cascading.flow.FlowDef.flowDef;
+import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.core.util.Extensions.TSV;
+import static org.icgc.dcc.core.util.Joiners.EXTENSION;
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
+import static org.icgc.dcc.hadoop.cascading.Pipes.getTailNames;
+import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
+import static org.icgc.dcc.reporter.Connector.getRawOutputTaps;
+import static org.icgc.dcc.reporter.Main.isLocal;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapred.JobConf;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.cascading.Flows;
+import org.icgc.dcc.hadoop.cascading.Pipes;
+import org.icgc.dcc.hadoop.util.HadoopConstants;
+import org.icgc.dcc.hadoop.util.HadoopProperties;
+
+import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.flow.hadoop.util.HadoopUtil;
+import cascading.flow.local.LocalFlowConnector;
+import cascading.property.AppProps;
+
+@Slf4j
+public class Reporter {
+
+  private static final Class<Reporter> CLASS = Reporter.class;
+
+  static String OUTPUT_DIR = "/tmp/reports";
+  static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
+
+  public static void report(
+      @NonNull String releaseName,
+      @NonNull InputData inputData,
+      @NonNull Map<String, String> mapping) {
+    log.info("Gathering reports: '{}' ('{}')", inputData, mapping);
+
+    // Main processing
+    val tails = new StatsGathering(
+        new PreComputation(releaseName, inputData))
+        .getTails();
+
+    // Connect flow
+    getFlowConnector()
+        .connect(
+            flowDef()
+                .addSources(getRawInputTaps(inputData))
+                .addSinks(getRawOutputTaps(getTailNames(tails)))
+                .addTails(tails)
+                .setName(Flows.getName(CLASS)))
+        .complete();
+
+    val table = Gatherer
+        .getTable(inputData.getProjectKeys());
+    log.info(table.getCsvRepresentation());
+    // Gatherer.writeCsvFile(table);
+  }
+
+  public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
+    return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
+  }
+
+  public static String getOutputFilePath(OutputType output) {
+    return PATH.join(OUTPUT_DIR, getOutputFileName(output));
+  }
+
+  private static String getOutputFileName(OutputType output) {
+    return EXTENSION.join(
+        output.name().toLowerCase(),
+        TIMESTAMP,
+        TSV);
+  }
+
+  public static FlowConnector getFlowConnector() {
+
+    if (isLocal()) {
+      log.info("Using local mode");
+      return new LocalFlowConnector();
+    }
+    log.info("Using hadoop mode");
+
+    Map<Object, Object> flowProperties = newHashMap();
+
+    // From external application configuration file
+    // for (val configEntry : hadoopConfig.entrySet()) {
+    // flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
+    // }
+
+    HadoopProperties.setHadoopUserNameProperty();
+
+    // M/R job entry point
+    AppProps.setApplicationJarClass(flowProperties, CLASS);
+    AppProps.setApplicationName(flowProperties, "TODO");
+    AppProps.setApplicationVersion(flowProperties, getCommitId());
+
+    // flowProperties =
+    // enableJobOutputCompression(
+    // enableIntermediateMapOutputCompression(
+    // setAvailableCodecs(flowProperties),
+    // SNAPPY_CODEC_PROPERTY_VALUE),
+    // GZIP_CODEC_PROPERTY_VALUE);
+
+    flowProperties = HadoopProperties.enableIntermediateMapOutputCompression(
+        HadoopProperties.setAvailableCodecs(flowProperties),
+        HadoopConstants.LZO_CODEC_PROPERTY_VALUE);
+
+    // flowProperties.putAll(properties);
+
+    flowProperties.put("fs.defaultFS", "***REMOVED***");
+    flowProperties.put("mapred.job.tracker", "***REMOVED***");
+    flowProperties.put("mapred.child.java.opts", "-Xmx6g");
+
+    // flowProperties.put("mapred.reduce.tasks", "20");
+    // flowProperties.put("mapred.task.timeout", "1800000");
+    flowProperties.put("io.sort.mb", "2000");
+    flowProperties.put("io.sort.factor", "20");
+    // flowProperties.put("mapred.output.compress", "true");
+    // flowProperties.put("mapred.output.compression.type", "BLOCK");
+    // flowProperties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
+    // flowProperties.put("mapred.reduce.tasks.speculative.execution", "false");
+
+    return new HadoopFlowConnector(flowProperties);
+  }
+
+  /**
+   * Method that reproduces what Cascading does to serialize a job step.
+   * 
+   * @param object the object to serialize.
+   * @return the base 64 encoded object
+   */
+  @SneakyThrows
+  private static String cascadingSerialize(Object object) {
+    return HadoopUtil.serializeBase64(object, new JobConf(new Configuration()));
+  }
+
+  public static void main(String[] args) {
+    cascadingSerialize(new PreComputation("bla", InputData.getDummy()));
+    // cascadingSerialize(new StatsGathering(preComputationTable);
+  }
+
+  // @Test
+  // public void testSerializable() throws URISyntaxException {
+  // val task = new DistributedDocumentTask(RELEASE_TYPE, config);
+  //
+  // val serialized = cascadingSerialize(task);
+  // log.info("task: {}, serialized: {}", task, serialized);
+  // assertThat(serialized).isNotEmpty();
+  //
+  // val deserialized = cascadingDeserialize(serialized);
+  // log.info("task: {}, deserialized: {}", task, deserialized);
+  // assertThat(deserialized).isEqualTo(task);
+  // }
+
+}

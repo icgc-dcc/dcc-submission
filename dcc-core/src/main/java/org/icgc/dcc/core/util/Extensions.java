@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,24 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.core.util;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import java.util.List;
+/**
+ * Common extensions.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class Extensions {
 
-import lombok.ToString;
-
-@ToString
-public class FileLineListParser extends AbstractFileLineParser<List<String>> {
-
-  @Override
-  public List<String> parse(String line) {
-    return split(line);
-  }
-
-  protected static List<String> split(String line) {
-    return newArrayList(FIELD_SPLITTER.split(line));
-  }
+  public static final String TSV = "tsv";
 
 }
