@@ -62,12 +62,15 @@ public class Table2 extends SubAssembly {
     for (int i = 0; i < codes.size(); i++) {
       builder.add(iterator.next());
     }
-    builder.add(NULL_REPLACEMENT);
-    builder.add(MISSING_CODE1);
-    builder.add(MISSING_CODE2);
+    
     for (val featureType : TYPES_WITH_SEQUENCING_STRATEGY) {
       builder.add(featureType.getTypeName());      
     }
+    
+    // Remove this after DCC-2399 is done
+    builder.add(NULL_REPLACEMENT);
+    builder.add(MISSING_CODE1);
+    builder.add(MISSING_CODE2);
     
     return builder.build();
   }

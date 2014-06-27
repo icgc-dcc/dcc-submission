@@ -384,14 +384,15 @@ public class SubAssemblies {
           OperationCall<HashCountByContext> operationCall) {
 
         val context = operationCall.getContext();
-        if (context == null) return;
-        for (val entry : context.counts.entrySet()) {
-          context
-              .getOutputCollector() // Cached from #operate()
-              .add(
-                  setFirstLong(
-                      new Tuple(entry.getKey()), // Create copy
-                      entry.getValue()));
+        if (context != null) {
+          for (val entry : context.counts.entrySet()) {
+            context
+                .getOutputCollector() // Cached from #operate()
+                .add(
+                    setFirstLong(
+                        new Tuple(entry.getKey()), // Create copy
+                        entry.getValue()));
+          } // Else emit nothing
         }
       }
 

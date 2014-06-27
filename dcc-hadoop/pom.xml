@@ -76,5 +76,11 @@
       <artifactId>cascading-hadoop</artifactId>
     </dependency>
 
+    <!-- Mongo -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+    </dependency>
+    
   </dependencies>
 </project>
