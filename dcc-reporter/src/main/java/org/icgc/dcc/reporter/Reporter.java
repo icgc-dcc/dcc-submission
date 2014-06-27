@@ -4,10 +4,8 @@ import static cascading.flow.FlowDef.flowDef;
 import static org.icgc.dcc.core.util.Extensions.TSV;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
-import static org.icgc.dcc.hadoop.cascading.Pipes.getTailNames;
 import static org.icgc.dcc.reporter.Connector.getFlowConnector;
 import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
-import static org.icgc.dcc.reporter.Connector.getRawOutputTaps;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,23 +39,22 @@ public class Reporter {
     log.info("Gathering reports: '{}' ('{}')", inputData, mapping);
 
     // Main processing
-    val tails = new StatsGathering(
-        new PreComputation(releaseName, inputData))
-        .getTails();
+    val preComputationTable = new PreComputation(releaseName, inputData);
+    val table1 = new Table1(preComputationTable);
+    val table2 = new Table2(preComputationTable, Table1.processDonors(preComputationTable));
 
     // Connect flow
     getFlowConnector()
         .connect(
             flowDef()
                 .addSources(getRawInputTaps(inputData))
-                .addSinks(getRawOutputTaps(getTailNames(tails)))
-                .addTails(tails)
+                .addTailSink(table1, Connector.getRawOutputTap(table1.getName()))
+                .addTailSink(table2, Connector.getRawOutputTap2(table2.getName()))
                 .setName(Flows.getName(CLASS)))
         .complete();
 
-    val table = Gatherer
-        .getTable(inputData.getProjectKeys());
-    log.info(table.getCsvRepresentation());
+    Gatherer.getTable(inputData.getProjectKeys());
+    // log.info(table.getCsvRepresentation());
     // Gatherer.writeCsvFile(table);
   }
 

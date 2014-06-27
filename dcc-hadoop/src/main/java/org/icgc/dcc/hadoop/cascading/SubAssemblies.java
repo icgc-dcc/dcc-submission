@@ -24,7 +24,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
@@ -106,10 +105,14 @@ public class SubAssemblies {
       this(Optional.<String> absent(), pipe);
     }
 
+    public TupleEntriesLogger(String prefix, Pipe pipe) {
+      this(Optional.of(prefix), pipe);
+    }
+
     /**
      * TODO
      */
-    public TupleEntriesLogger(Optional<String> prefix, Pipe pipe) {
+    private TupleEntriesLogger(Optional<String> prefix, Pipe pipe) {
       setTails(new Each(pipe, new Nonce(prefix)));
     }
 
@@ -134,7 +137,7 @@ public class SubAssemblies {
             (prefix.isPresent() ? prefix.get() : EMPTY_STRING)
 
                 // Pretty json string
-                + toJsonPrettyString(toJson(entry)));
+                + toJson(entry));
 
         functionCall.getOutputCollector().add(entry);
       }
@@ -377,6 +380,7 @@ public class SubAssemblies {
           OperationCall<HashCountByContext> operationCall) {
 
         val context = operationCall.getContext();
+        if (context == null) return;
         for (val entry : context.counts.entrySet()) {
           context
               .getOutputCollector() // Cached from #operate()
@@ -492,7 +496,8 @@ public class SubAssemblies {
       Fields rightJoinFields;
 
       Fields resultFields;
-      Fields discardFields; // TODO: derive from result fields rather
+      Fields discardFields; // TODO: derive from result fields rather; this can actually be left null (TODO: find more
+                            // elegant way)
 
     }
 

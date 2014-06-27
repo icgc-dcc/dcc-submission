@@ -1,7 +1,6 @@
 package org.icgc.dcc.reporter;
 
 import static cascading.flow.FlowProps.setMaxConcurrentSteps;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.transformValues;
 import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
@@ -10,6 +9,7 @@ import static org.icgc.dcc.reporter.Reporter.getOutputFilePath;
 
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,6 @@ import cascading.property.AppProps;
 import cascading.tap.Tap;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 
 @Slf4j
 public class Connector {
@@ -106,23 +105,9 @@ public class Connector {
         GenericTaps.RAW_CASTER);
   }
 
-  /**
-   * See {@link LocalTaps#RAW_CASTER}.
-   */
-  @SuppressWarnings("rawtypes")
-  static Map<String, Tap> getRawOutputTaps(Iterable<String> tailNames) {
-    return
+  private static Map<String, Tap<?, ?, ?>> getInputTaps(
+      @NonNull final Map<String, String> pipeNameToFilePath) {
 
-    // Convert to raw taps
-    transformValues(
-
-        // Convert to pipe to tap map
-        getOutputTaps(tailNames),
-
-        GenericTaps.RAW_CASTER);
-  }
-
-  private static Map<String, Tap<?, ?, ?>> getInputTaps(Map<String, String> pipeNameToFilePath) {
     return transformValues(
         pipeNameToFilePath,
         new Function<String, Tap<?, ?, ?>>() {
@@ -135,16 +120,30 @@ public class Connector {
         });
   }
 
-  private static Map<String, Tap<?, ?, ?>> getOutputTaps(Iterable<String> tailNames) {
-    val rawOutputTaps = new ImmutableMap.Builder<String, Tap<?, ?, ?>>();
-    val iterator = newArrayList(tailNames).iterator();
-    for (val outputType : OutputType.values()) {
-      val outputFilePath = getOutputFilePath(outputType);
-      rawOutputTaps.put(
-          iterator.next(), // TODO: explain...
-          TAPS.getNoCompressionTsvWithHeader(outputFilePath));
-    }
-
-    return rawOutputTaps.build();
+  /**
+   * See {@link LocalTaps#RAW_CASTER}.
+   */
+  @SuppressWarnings("rawtypes")
+  static Tap getRawOutputTap(String tailName) {
+    return GenericTaps.RAW_CASTER.apply(getOutputTap(tailName));
   }
+
+  /**
+   * See {@link LocalTaps#RAW_CASTER}.
+   */
+  @SuppressWarnings("rawtypes")
+  static Tap getRawOutputTap2(String tailName) {
+    return GenericTaps.RAW_CASTER.apply(getOutputTap2(tailName));
+  }
+
+  private static Tap<?, ?, ?> getOutputTap(String tailName) {
+    val outputFilePath = getOutputFilePath(OutputType.DONOR);
+    return TAPS.getNoCompressionTsvWithHeader(outputFilePath);
+  }
+
+  private static Tap<?, ?, ?> getOutputTap2(String tailName) {
+    val outputFilePath = getOutputFilePath(OutputType.SEQUENCING_STRATEGY);
+    return TAPS.getNoCompressionTsvWithHeader(outputFilePath);
+  }
+
 }

@@ -130,16 +130,7 @@ public final class Fields2 {
   }
 
   public static Entry<Fields, Object> keyValuePair(String fieldName, Object value) {
-    return new SimpleEntry<Fields, Object>(
-        new Function<String, Fields>() {
-
-          @Override
-          public Fields apply(String fieldName) {
-            return new Fields(fieldName);
-          }
-
-        }.apply(fieldName),
-        value);
+    return new SimpleEntry<Fields, Object>(NAME_TO_FIELD.apply(fieldName), value);
   }
 
   public static Entry<Fields, Object> keyValuePair(Fields field, Object value) {
@@ -150,20 +141,20 @@ public final class Fields2 {
     return fieldNames.toArray(new String[] {});
   }
 
-  public static Fields getCountFieldCounterpart(Fields fields) {
-    return getCountFieldCounterpart(getFieldName(fields));
+  public static Fields getCountFieldCounterpart(Fields field) {
+    return getCountFieldCounterpart(getFieldName(checkFieldsCardinalityOne(field)));
   }
 
   public static Fields getCountFieldCounterpart(String fieldName) {
-    return new Fields(UNDERSCORE.join(fieldName, COUNT_SUFFIX));
+    return new Fields(ADD_COUNT_SUFFIX.apply(fieldName));
   }
 
-  public static Fields getRedundantFieldCounterpart(Fields fields) {
-    return getRedundantFieldCounterpart(getFieldName(fields));
+  public static Fields getRedundantFieldCounterpart(Fields field) {
+    return getRedundantFieldCounterpart(getFieldName(checkFieldsCardinalityOne(field)));
   }
 
   public static Fields getRedundantFieldCounterpart(String fieldName) {
-    return new Fields(UNDERSCORE.join(REDUNDANT_PREFIX, fieldName));
+    return new Fields(ADD_REDUNDANT_PREFIX.apply(fieldName));
   }
 
   /**
@@ -292,8 +283,8 @@ public final class Fields2 {
   /**
    * Returns the actual field name.
    */
-  public static String getFieldName(Fields fields) {
-    return fields.print().replace("['", "").replace("']", "");
+  public static String getFieldName(Fields field) {
+    return checkFieldsCardinalityOne(field).print().replace("['", "").replace("']", "");
   }
 
   public static Fields appendIfApplicable(
@@ -306,5 +297,64 @@ public final class Fields2 {
             conditionedFields :
             NO_FIELDS);
   }
+
+  public static final Fields getRedundantFieldCounterparts(Fields fields) {
+    int i = 0;
+    Fields f = new Fields();
+    for (val field : fields) {
+      String s = ADD_REDUNDANT_PREFIX.apply(field.toString()) + "_" + i++;
+      f = f.append(new Fields(s));
+    }
+    return f;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(getRedundantFieldCounterparts(new Fields("a", "b", "c")));
+  }
+
+  private static final Function<Comparable, String> FIELD_TO_NAME2 = new Function<Comparable, String>() {
+
+    @Override
+    public String apply(Comparable field) {
+      return field.toString();
+    }
+
+  };
+
+  private static final Function<Fields, String> FIELD_TO_NAME = new Function<Fields, String>() {
+
+    @Override
+    public String apply(Fields field) {
+      return getFieldName(checkFieldsCardinalityOne(field));
+    }
+
+  };
+
+  private static final Function<String, Fields> NAME_TO_FIELD = new Function<String, Fields>() {
+
+    @Override
+    public Fields apply(String fieldName) {
+      return new Fields(fieldName);
+    }
+
+  };
+
+  private static final Function<String, String> ADD_COUNT_SUFFIX = new Function<String, String>() {
+
+    @Override
+    public String apply(String fieldName) {
+      return UNDERSCORE.join(fieldName, COUNT_SUFFIX);
+    }
+
+  };
+
+  private static final Function<String, String> ADD_REDUNDANT_PREFIX = new Function<String, String>() {
+
+    @Override
+    public String apply(String fieldName) {
+      return UNDERSCORE.join(REDUNDANT_PREFIX, fieldName);
+    }
+
+  };
 
 }

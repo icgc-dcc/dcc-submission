@@ -1,22 +1,26 @@
 package org.icgc.dcc.reporter;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static org.icgc.dcc.core.util.Joiners.INDENT;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Files.readLines;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Splitters.TAB;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.apache.commons.lang.StringUtils;
-import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.reporter.presentation.DataTypeCountsReportTable;
 
+import com.google.common.base.Predicate;
 import com.google.common.io.Files;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObjectBuilder;
 
 public class Gatherer {
 
@@ -24,42 +28,56 @@ public class Gatherer {
   private static final String PART_FILE = "part-00000";
 
   public static DataTypeCountsReportTable getTable(Set<String> projectKeys) {
-    val table = new DataTypeCountsReportTable(projectKeys);
-    populateTable(table, OutputType.DONOR);
-    populateTable(table, OutputType.SPECIMEN);
-    populateTable(table, OutputType.SAMPLE);
-    populateTable(table, OutputType.OBSERVATION);
+    val outputFilePath = getOuputFilePath(OutputType.SEQUENCING_STRATEGY);
+    val headerLine = readFirstLine(outputFilePath);
+    val headers = newArrayList(TAB.split(headerLine));
+    val headerSize = headers.size();
 
-    // OutputType.SEQUENCING_STRATEGY.name(); // N/A for sequencing strategy
-    val lines = readLines(OutputType.SEQUENCING_STRATEGY);
+    System.out.println(readRemainingLines(outputFilePath));
 
-    System.out.println(StringUtils.repeat("=", 75));
-    System.out.println(INDENT.join(OutputType.SEQUENCING_STRATEGY, INDENT.join(lines)));
-    System.out.println();
+    val documents = new BasicDBList();
+    for (val line : readRemainingLines(outputFilePath)) {
+      val values = newArrayList(TAB.split(line));
+      checkState(headerSize == values.size());
 
-    return table;
-  }
-
-  private static void populateTable(DataTypeCountsReportTable table, OutputType output) {
-    val lines = readLines(output);
-
-    System.out.println(StringUtils.repeat("=", 75));
-    System.out.println(INDENT.join(output, INDENT.join(lines)));
-    System.out.println();
-
-    for (int i = 1; i < lines.size(); i++) { // Skip header
-      val fields = TAB.split(lines.get(i));
-      val iterator = fields.iterator();
-      val projectId = iterator.next();
-      val type = DataTypes.from(iterator.next()); // TODO: explain (can't use actual enum until here)
-      val count = Long.valueOf(iterator.next());
-
-      table.updateCount(output, projectId, type, count);
+      val builder = new BasicDBObjectBuilder();
+      for (int i = 0; i < headerSize; i++) {
+        builder.add(
+            headers.get(i),
+            values.get(i));
+      }
+      documents.add(builder.get());
     }
+    System.out.println(Jackson.toJsonPrettyString(documents.toString()));
+
+    return null;
   }
 
   @SneakyThrows
-  private static List<String> readLines(OutputType output) {
+  private static String readFirstLine(String filePath) {
+    return Files.readFirstLine(
+        new File(filePath),
+        UTF_8);
+  }
+
+  @SneakyThrows
+  private static Iterable<String> readRemainingLines(String filePath) {
+    return filter(readLines(
+        new File(filePath),
+        UTF_8),
+        new Predicate<String>() {
+
+          int lineNumber;
+
+          @Override
+          public boolean apply(String line) {
+            return lineNumber++ != 0;
+          }
+
+        });
+  }
+
+  private static String getOuputFilePath(OutputType output) {
     String outputFilePath = Reporter.getOutputFilePath(output);
     if (!Main.isLocal()) {
       outputFilePath = PATH.join(
@@ -67,9 +85,7 @@ public class Gatherer {
           outputFilePath,
           PART_FILE);
     }
-    return Files.readLines(
-        new File(outputFilePath),
-        UTF_8);
+    return outputFilePath;
   }
 
   @SneakyThrows
