@@ -53,7 +53,7 @@ public class Reporter {
                 .setName(Flows.getName(CLASS)))
         .complete();
 
-    Gatherer.getTable(inputData.getProjectKeys());
+    Gatherer.getTable(inputData.getProjectKeys(), mapping);
     // log.info(table.getCsvRepresentation());
     // Gatherer.writeCsvFile(table);
   }
