@@ -44,6 +44,7 @@ public final class FieldNames {
     public static final String SUBMISSION_MATCHED_SAMPLE_ID = "matched_sample_id";
     public static final String SUBMISSION_GENE_AFFECTED = "gene_affected";
     public static final String SUBMISSION_TRANSCRIPT_AFFECTED = "transcript_affected";
+    public static final String SUBMISSION_DIGITAL_IMAGE_OF_STAINED_SECTION = "digital_image_of_stained_section";
 
     public static final String SUBMISSION_OBSERVATION_ANALYSIS_ID = "analysis_id";
     public static final String SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID = SUBMISSION_ANALYZED_SAMPLE_ID;
