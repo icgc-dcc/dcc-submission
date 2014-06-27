@@ -41,7 +41,10 @@ public class Reporter {
     // Main processing
     val preComputationTable = new PreComputation(releaseName, inputData);
     val table1 = new Table1(preComputationTable);
-    val table2 = new Table2(preComputationTable, Table1.processDonors(preComputationTable));
+    val table2 = new Table2(
+        preComputationTable,
+        Table1.processDonors(preComputationTable),
+        mapping.keySet());
 
     // Connect flow
     getFlowConnector()

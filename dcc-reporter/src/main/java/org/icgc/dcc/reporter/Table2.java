@@ -1,5 +1,8 @@
 package org.icgc.dcc.reporter;
 
+import static org.icgc.dcc.core.model.FeatureTypes.TYPES_WITH_SEQUENCING_STRATEGY;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
@@ -7,7 +10,12 @@ import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.REDUNDANT_PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.TRANSPOSITION_FIELDS;
+
+import java.util.List;
+import java.util.Set;
+
+import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
@@ -25,24 +33,53 @@ import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.SumBy;
+import cascading.tuple.Fields;
+
+import com.google.common.collect.ImmutableList;
 
 public class Table2 extends SubAssembly {
 
   private static final String NULL_REPLACEMENT = "null";
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
-
-  Table2(Pipe preComputationTable, Pipe donors) {
-    setTails(table2(preComputationTable, donors));
+  
+  Table2(Pipe preComputationTable, Pipe donors, Set<String> codes) {
+    setTails(table2(preComputationTable, donors, getTranspositionFields(codes)));
   }
 
-  private static Pipe table2(Pipe preComputationTable, Pipe donors) {
+  private static Fields getTranspositionFields(Set<String> codes) {
+    Fields transpositionFields = new Fields();
+    for (val code : getAugmentedCodes(codes)) {
+      transpositionFields = transpositionFields.append(new Fields(code));
+    }
+    return transpositionFields;
+  }
+
+  private static List<String> getAugmentedCodes(
+      @NonNull final Set<String> codes) {
+    
+    val builder = new ImmutableList.Builder<String>();
+    val iterator = codes.iterator();
+    for (int i = 0; i < codes.size(); i++) {
+      builder.add(iterator.next());
+    }
+    builder.add(NULL_REPLACEMENT);
+    builder.add(MISSING_CODE1);
+    builder.add(MISSING_CODE2);
+    for (val featureType : TYPES_WITH_SEQUENCING_STRATEGY) {
+      builder.add(featureType.getTypeName());      
+    }
+    
+    return builder.build();
+  }
+  
+  private static Pipe table2(Pipe preComputationTable, Pipe donors, Fields transpositionFields) {
 
     return new ReadableHashJoin(JoinData.builder()
 
         .leftPipe(postProcessDonors(donors))
         .leftJoinFields(REDUNDANT_PROJECT_ID_FIELD)
 
-        .rightPipe(processSequencingStrategies(preComputationTable))
+        .rightPipe(processSequencingStrategies(preComputationTable, transpositionFields))
         .rightJoinFields(PROJECT_ID_FIELD)
 
         .discardFields(REDUNDANT_PROJECT_ID_FIELD)
@@ -65,7 +102,7 @@ public class Table2 extends SubAssembly {
         REDUNDANT_PROJECT_ID_FIELD);
   }
 
-  private static Pipe processSequencingStrategies(Pipe preComputationTable) {
+  private static Pipe processSequencingStrategies(Pipe preComputationTable, Fields transpositionFields) {
 
     return new Discard(
         new Every(
@@ -95,12 +132,12 @@ public class Table2 extends SubAssembly {
                         .build())),
                 PROJECT_ID_FIELD, SEQUENCING_STRATEGY_FIELD),
             new TransposeBuffer<Long>(
-                TRANSPOSITION_FIELDS,
+                transpositionFields,
                 SEQUENCING_STRATEGY_FIELD,
                 SEQUENCING_STRATEGY_COUNT_FIELD,
                 TRANSPOSITION_DEFAULT_VALUE)),
         SEQUENCING_STRATEGY_FIELD
             .append(SEQUENCING_STRATEGY_COUNT_FIELD));
   }
-
+  
 }
