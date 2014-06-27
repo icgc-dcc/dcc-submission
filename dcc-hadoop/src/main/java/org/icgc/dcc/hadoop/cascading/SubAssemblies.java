@@ -21,11 +21,13 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
@@ -35,6 +37,7 @@ import static org.icgc.dcc.hadoop.cascading.Tuples2.setFirstLong;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -64,6 +67,7 @@ import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.Joiner;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryCollector;
 
 import com.google.common.base.Optional;
@@ -546,6 +550,74 @@ public class SubAssemblies {
     Pipe pipe;
     Fields countByFields;
     Fields resultCountField;
+
+  }
+
+  public static class TransposeBuffer<T> extends BaseOperation<Void> implements Buffer<Void> {
+
+    private final Fields futureFieldsField;
+    private final Fields futureValuesField;
+    private final T defaultValue;
+
+    public TransposeBuffer(Fields transpositionFields, Fields futureFields, Fields futureValues, T defaultValue) {
+      super(transpositionFields);
+      this.futureFieldsField = futureFields;
+      this.futureValuesField = futureValues;
+      this.defaultValue = defaultValue;
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        BufferCall<Void> bufferCall) {
+
+      val entries = bufferCall.getArgumentsIterator();
+      bufferCall
+          .getOutputCollector()
+          .add(transpose(entries));
+    }
+
+    private TupleEntry transpose(
+        @NonNull final Iterator<TupleEntry> entries) {
+
+      val counts = new HashMap<String, T>();
+      while (entries.hasNext()) {
+        val entry = entries.next();
+        counts.put(
+            checkKeysIntegrity(
+                counts,
+                entry.getString(futureFieldsField)),
+            getT(entry, futureValuesField));
+      }
+
+      val transpositionTuple = new Tuple();
+      for (val code : getFieldNames(fieldDeclaration)) {
+        transpositionTuple.add(
+            counts.containsKey(code) ?
+                counts.get(code) :
+                defaultValue);
+      }
+
+      return new TupleEntry(
+          fieldDeclaration,
+          transpositionTuple);
+    }
+
+    @SuppressWarnings("unchecked")
+    private T getT(
+        @NonNull final TupleEntry entry,
+        @NonNull final Fields field) {
+
+      return (T) entry.getObject(checkFieldsCardinalityOne(field));
+    }
+
+    private static <T> String checkKeysIntegrity(
+        @NonNull final Map<String, T> counts,
+        @NonNull final String key) {
+      checkState(!counts.containsKey(key));
+
+      return key;
+    }
 
   }
 

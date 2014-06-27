@@ -2,14 +2,18 @@ package org.icgc.dcc.reporter;
 
 import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import static org.icgc.dcc.reporter.OutputType.DONOR;
 import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.reporter.OutputType.SAMPLE;
 import static org.icgc.dcc.reporter.OutputType.SPECIMEN;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SAMPLE_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SAMPLE_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 
@@ -30,23 +34,27 @@ import com.google.common.collect.ImmutableList;
 
 public class Table1 extends SubAssembly {
 
-  private static final Fields DONOR_COUNT_FIELD = getCountFieldCounterpart(DONOR_ID_FIELD);
-  private static final Fields SPECIMEN_COUNT_FIELD = getCountFieldCounterpart(SPECIMEN_ID_FIELD);
-  private static final Fields SAMPLE_COUNT_FIELD = getCountFieldCounterpart(SAMPLE_ID_FIELD);
-
   private static final Fields COUNT_BY_FIELDS = PROJECT_ID_FIELD.append(TYPE_FIELD);
-  private static final Fields SP = new Fields("spP", "spT");
-  private static final Fields SA = new Fields("saP", "saT");
-  private static final Fields OBS = new Fields("oP", "oT");
+
+  // Temporary fields
+  private static final Fields SPECIMEN_COUNT_BY_FIELDS =
+      getRedundantFieldCounterpart("specimen_" + PROJECT_ID_FIELD)
+          .append(getRedundantFieldCounterpart("specimen_" + TYPE_FIELD));
+  private static final Fields SAMPLE_COUNT_BY_FIELDS =
+      getRedundantFieldCounterpart("sample_" + PROJECT_ID_FIELD)
+          .append(getRedundantFieldCounterpart("sample_" + TYPE_FIELD));
+  private static final Fields OBSERVATION_COUNT_BY_FIELDS =
+      getRedundantFieldCounterpart("observation_" + PROJECT_ID_FIELD)
+          .append(getRedundantFieldCounterpart("observation_" + TYPE_FIELD));
 
   Table1(Pipe preComputationTable) {
     setTails(process(preComputationTable));
   }
 
   private static Pipe process(Pipe preComputationTable) {
-    // TODO: inner or side join??
     return new Retain(
-        new HashJoin( // TODO: create more readable subassembly
+        new HashJoin(
+            // TODO: create more readable subassembly
             toArray(
 
                 ImmutableList.<Pipe> builder()
@@ -58,19 +66,22 @@ public class Table1 extends SubAssembly {
 
                     .build()
                 , Pipe.class),
-            new Fields[] { COUNT_BY_FIELDS, SP, SA, OBS },
-            DONOR_COUNT_FIELD.append(COUNT_BY_FIELDS)
-                .append(SPECIMEN_COUNT_FIELD.append(SP))
-                .append(SAMPLE_COUNT_FIELD.append(SA))
-                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD.append(OBS)),
+            new Fields[] { COUNT_BY_FIELDS, SPECIMEN_COUNT_BY_FIELDS, SAMPLE_COUNT_BY_FIELDS, OBSERVATION_COUNT_BY_FIELDS },
+            DONOR_UNIQUE_COUNT_FIELD.append(COUNT_BY_FIELDS)
+                .append(SPECIMEN_UNIQUE_COUNT_FIELD.append(SPECIMEN_COUNT_BY_FIELDS))
+                .append(SAMPLE_UNIQUE_COUNT_FIELD.append(SAMPLE_COUNT_BY_FIELDS))
+                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD.append(OBSERVATION_COUNT_BY_FIELDS)),
             new InnerJoin()),
         COUNT_BY_FIELDS
-            .append(DONOR_COUNT_FIELD)
-            .append(SPECIMEN_COUNT_FIELD)
-            .append(SAMPLE_COUNT_FIELD)
+            .append(DONOR_UNIQUE_COUNT_FIELD)
+            .append(SPECIMEN_UNIQUE_COUNT_FIELD)
+            .append(SAMPLE_UNIQUE_COUNT_FIELD)
             .append(_ANALYSIS_OBSERVATION_COUNT_FIELD));
   }
 
+  /**
+   * This one is also used by {@link Table2}.
+   */
   static Pipe processDonors(Pipe preComputationTable) {
     return new NamingPipe(
         DONOR,
@@ -106,7 +117,7 @@ public class Table1 extends SubAssembly {
 
                 .build()),
             COUNT_BY_FIELDS,
-            SP));
+            SPECIMEN_COUNT_BY_FIELDS));
   }
 
   private static Pipe processSamples(Pipe preComputationTable) {
@@ -128,7 +139,7 @@ public class Table1 extends SubAssembly {
 
                 .build()),
             COUNT_BY_FIELDS,
-            SA));
+            SAMPLE_COUNT_BY_FIELDS));
   }
 
   private static Pipe processObservations(Pipe preComputationTable) {
@@ -137,14 +148,14 @@ public class Table1 extends SubAssembly {
 
         new Rename(
 
-            new SumBy(// TODO: retain necessary?
+            new SumBy( // TODO: retain necessary?
                 preComputationTable,
                 PROJECT_ID_FIELD.append(TYPE_FIELD),
                 _ANALYSIS_OBSERVATION_COUNT_FIELD,
-                _ANALYSIS_OBSERVATION_COUNT_FIELD, // TODO: can reuse same?
+                _ANALYSIS_OBSERVATION_COUNT_FIELD,
                 long.class),
             COUNT_BY_FIELDS,
-            OBS));
+            OBSERVATION_COUNT_BY_FIELDS));
   }
 
 }

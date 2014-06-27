@@ -298,38 +298,6 @@ public final class Fields2 {
             NO_FIELDS);
   }
 
-  public static final Fields getRedundantFieldCounterparts(Fields fields) {
-    int i = 0;
-    Fields f = new Fields();
-    for (val field : fields) {
-      String s = ADD_REDUNDANT_PREFIX.apply(field.toString()) + "_" + i++;
-      f = f.append(new Fields(s));
-    }
-    return f;
-  }
-
-  public static void main(String[] args) {
-    System.out.println(getRedundantFieldCounterparts(new Fields("a", "b", "c")));
-  }
-
-  private static final Function<Comparable, String> FIELD_TO_NAME2 = new Function<Comparable, String>() {
-
-    @Override
-    public String apply(Comparable field) {
-      return field.toString();
-    }
-
-  };
-
-  private static final Function<Fields, String> FIELD_TO_NAME = new Function<Fields, String>() {
-
-    @Override
-    public String apply(Fields field) {
-      return getFieldName(checkFieldsCardinalityOne(field));
-    }
-
-  };
-
   private static final Function<String, Fields> NAME_TO_FIELD = new Function<String, Fields>() {
 
     @Override
