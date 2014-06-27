@@ -273,7 +273,8 @@ public final class FieldNames {
   public static final String MUTATION_CHROMOSOME = "chromosome";
   public static final String MUTATION_CHROMOSOME_START = "chromosome_start";
   public static final String MUTATION_CHROMOSOME_END = "chromosome_end";
-  public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
+  public static final String MUTATION_OBSERVATIONS = "observation";
+  public static final String MUTATION_OCCURRENCES = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";
   public static final String MUTATION_TRANSCRIPTS = "transcript";
