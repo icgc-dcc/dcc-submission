@@ -17,8 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
+import static org.icgc.dcc.hadoop.cascading.Cascades.cascadingSerialize;
+
 import java.util.Iterator;
 
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.EmitNothing;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;
@@ -28,6 +31,16 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 public class CascadingFunctionsTest extends CascadingTestCase {
+
+  @Test
+  public void test_serialization() {
+    cascadingSerialize(new EmitNothing());
+    cascadingSerialize(new CascadingFunctions.Counter(null, 1L));
+    cascadingSerialize(new CascadingFunctions.CloneField(new Fields(""), new Fields("")));
+    cascadingSerialize(new CascadingFunctions.AvailableDataTypes(new Fields("")));
+    cascadingSerialize(new CascadingFunctions.ReplaceNulls(false));
+    cascadingSerialize(new CascadingFunctions.MissingFieldsAdder(new Fields("")));
+  }
 
   @Test
   public void test_cascading_EmitNothing() {
