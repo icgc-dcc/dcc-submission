@@ -89,10 +89,10 @@ public class SubAssembliesTest {
   public void test_serialization() {
     cascadingSerialize(new NamingPipe("", null));
     cascadingSerialize(new TupleEntriesLogger(null));
-    cascadingSerialize(new NullReplacer<Void>(new Fields(""), DUMMY, null));
+    cascadingSerialize(new NullReplacer<Void>(DUMMY_FIELD, DUMMY, null));
     cascadingSerialize(new Transformerge<Void>(new ArrayList<Void>(), DUMMY_FUNCTION));
-    cascadingSerialize(new Insert(keyValuePair(new Fields(""), ""), null));
-    cascadingSerialize(new SubAssemblies.NullReplacer.EmptyTupleNullReplacer(new Fields(""), null));
+    cascadingSerialize(new Insert(keyValuePair(DUMMY_FIELD, ""), null));
+    cascadingSerialize(new SubAssemblies.NullReplacer.EmptyTupleNullReplacer(DUMMY_FIELD, null));
     cascadingSerialize(new SubAssemblies.GroupBy(DUMMY_GROUP_BY_DATA));
     cascadingSerialize(new SubAssemblies.CountBy(DUMMY_COUNT_BY_DATA));
     cascadingSerialize(new SubAssemblies.ReadableHashJoin(DUMMY_JOIN_DATA));

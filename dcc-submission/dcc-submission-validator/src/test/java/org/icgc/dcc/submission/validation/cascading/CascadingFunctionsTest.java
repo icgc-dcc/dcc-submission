@@ -32,14 +32,16 @@ import cascading.tuple.TupleEntry;
 
 public class CascadingFunctionsTest extends CascadingTestCase {
 
+  private static final Fields DUMMY_FIELD = new Fields("");
+
   @Test
   public void test_serialization() {
     cascadingSerialize(new EmitNothing());
     cascadingSerialize(new CascadingFunctions.Counter(null, 1L));
-    cascadingSerialize(new CascadingFunctions.CloneField(new Fields(""), new Fields("")));
-    cascadingSerialize(new CascadingFunctions.AvailableDataTypes(new Fields("")));
+    cascadingSerialize(new CascadingFunctions.CloneField(DUMMY_FIELD, DUMMY_FIELD));
+    cascadingSerialize(new CascadingFunctions.AvailableDataTypes(DUMMY_FIELD));
     cascadingSerialize(new CascadingFunctions.ReplaceNulls(false));
-    cascadingSerialize(new CascadingFunctions.MissingFieldsAdder(new Fields("")));
+    cascadingSerialize(new CascadingFunctions.MissingFieldsAdder(DUMMY_FIELD));
   }
 
   @Test
