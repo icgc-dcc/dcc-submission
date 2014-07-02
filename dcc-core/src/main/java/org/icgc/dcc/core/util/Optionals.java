@@ -19,45 +19,29 @@ package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+
+import com.google.common.base.Optional;
 
 /**
- * Common object mappers.
+ * Common optionals.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class Jackson {
+public class Optionals {
 
-  public static final ObjectMapper DEFAULT = new ObjectMapper();
-  public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
+  public static final Optional<String> ABSENT_STRING = Optional.absent();
+  public static final Optional<List<String>> ABSENT_STRING_LIST = Optional.<List<String>> absent();
+  public static final Optional<Set<String>> ABSENT_STRING_SET = Optional.<Set<String>> absent();
+  public static final Optional<Map<String, String>> ABSENT_STRING_MAP = Optional.<Map<String, String>> absent();
 
-  @SneakyThrows
-  public static String toJsonPrettyString(String jsonString) {
-    return PRETTY_WRITTER.writeValueAsString(DEFAULT.readTree(jsonString));
-  }
-
-  @SneakyThrows
-  public static String toJsonPrettyString(Object object) {
-    return PRETTY_WRITTER.writeValueAsString(object);
-  }
-
-  public static JsonNode getJsonRoot(String path) {
-    return getJsonRoot(new File(path));
-  }
-
-  @SneakyThrows
-  public static JsonNode getJsonRoot(File file) {
-    return DEFAULT.readTree(file);
-  }
-
-  public static <T> JsonNode toJsonNode(T t) {
-    return DEFAULT.convertValue(t, JsonNode.class);
-  }
+  public static final Optional<FileType> ABSENT_FILE_TYPE = Optional.absent();
+  public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
 
 }

@@ -156,12 +156,11 @@ public class DccFileSystem2 {
    * List relevant files for the loader component, not necessarily all under the same directory.
    */
   public List<String> listLoaderFiles(
-      String releaseName, String projectKey, String projectDefaultPath,
-      String ssmPPattern, String ssmSPattern) {
+      String projectKey, String projectDataPath, String ssmPPattern, String ssmSPattern) {
     val files = Lists.<String> newArrayList();
 
     // Handle all but ssm_p and ssm_s files (directly from the submission system)
-    for (val filePath : lsFile(fileSystem, new Path(projectDefaultPath))) {
+    for (val filePath : lsFile(fileSystem, new Path(projectDataPath))) {
       val file = filePath.toUri().toString();
       if (!matches(file, ssmPPattern) && !matches(file, ssmSPattern)) { // ssm_p and ssm_s are handled separately
         files.add(file);
@@ -174,7 +173,7 @@ public class DccFileSystem2 {
       // https://wiki.oicr.on.ca/display/DCCSOFT/Incremental+Submission+-+Discussion and
       // https://wiki.oicr.on.ca/display/DCCSOFT/Overarching+Component are fleshed out
       // val normalizationDataOutputFile = getNormalizationDataOutputFile(releaseName, projectKey);
-      val normalizationDataOutputFile = Joiner.on('/').join(projectDefaultPath, SSM_P_FILE_NAME);
+      val normalizationDataOutputFile = Joiner.on('/').join(projectDataPath, SSM_P_FILE_NAME);
 
       if (checkExistence(fileSystem, normalizationDataOutputFile)) {
         val fileName = new File(normalizationDataOutputFile).getName();
@@ -193,7 +192,7 @@ public class DccFileSystem2 {
       // https://wiki.oicr.on.ca/display/DCCSOFT/Incremental+Submission+-+Discussion and
       // https://wiki.oicr.on.ca/display/DCCSOFT/Overarching+Component are fleshed out
       // val annotationDataOutputFile = getAnnotationDataOutputFile(releaseName, projectKey);
-      val annotationDataOutputFile = Joiner.on('/').join(projectDefaultPath, SSM_S_FILE_NAME);
+      val annotationDataOutputFile = Joiner.on('/').join(projectDataPath, SSM_S_FILE_NAME);
 
       if (checkExistence(fileSystem, annotationDataOutputFile)) {
         val fileName = new File(annotationDataOutputFile).getName();
