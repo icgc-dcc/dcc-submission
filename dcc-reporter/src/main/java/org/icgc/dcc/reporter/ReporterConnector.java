@@ -28,8 +28,9 @@ import cascading.tap.Tap;
 import com.google.common.base.Function;
 
 @Slf4j
-public class Connector {
+public class ReporterConnector {
 
+  private static final int NUM_CONCURRENT_STEPS = 25;
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
 
   static FlowConnector getFlowConnector() {
@@ -41,47 +42,20 @@ public class Connector {
     log.info("Using hadoop mode");
 
     Map<Object, Object> flowProperties = newHashMap();
-
-    // From external application configuration file
-    // for (val configEntry : hadoopConfig.entrySet()) {
-    // flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
-    // }
-
     HadoopProperties.setHadoopUserNameProperty();
 
-    // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, Reporter.CLASS);
-    AppProps.setApplicationName(flowProperties, "TODO");
+    AppProps.setApplicationName(flowProperties, Reporter.CLASS.getSimpleName());
     AppProps.setApplicationVersion(flowProperties, getCommitId());
-
-    // flowProperties =
-    // enableJobOutputCompression(
-    // enableIntermediateMapOutputCompression(
-    // setAvailableCodecs(flowProperties),
-    // SNAPPY_CODEC_PROPERTY_VALUE),
-    // GZIP_CODEC_PROPERTY_VALUE);
-
-    // CascadeDef cascadeDef = createCascadeDef("loader").setMaxConcurrentFlows(maxConcurrentFlows);
-    setMaxConcurrentSteps(flowProperties, 25);
-
+    setMaxConcurrentSteps(flowProperties, NUM_CONCURRENT_STEPS);
     flowProperties = HadoopProperties.enableIntermediateMapOutputCompression(
         HadoopProperties.setAvailableCodecs(flowProperties),
         HadoopConstants.LZO_CODEC_PROPERTY_VALUE);
-
-    // flowProperties.putAll(properties);
-
     flowProperties.put("fs.defaultFS", "***REMOVED***");
     flowProperties.put("mapred.job.tracker", "***REMOVED***");
     flowProperties.put("mapred.child.java.opts", "-Xmx6g");
-
-    // flowProperties.put("mapred.reduce.tasks", "20");
-    // flowProperties.put("mapred.task.timeout", "1800000");
     flowProperties.put("io.sort.mb", "2000");
     flowProperties.put("io.sort.factor", "20");
-    // flowProperties.put("mapred.output.compress", "true");
-    // flowProperties.put("mapred.output.compression.type", "BLOCK");
-    // flowProperties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
-    // flowProperties.put("mapred.reduce.tasks.speculative.execution", "false");
 
     return new HadoopFlowConnector(flowProperties);
   }

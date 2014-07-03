@@ -4,8 +4,8 @@ import static cascading.flow.FlowDef.flowDef;
 import static org.icgc.dcc.core.util.Extensions.TSV;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
-import static org.icgc.dcc.reporter.Connector.getFlowConnector;
-import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
+import static org.icgc.dcc.reporter.ReporterConnector.getFlowConnector;
+import static org.icgc.dcc.reporter.ReporterConnector.getRawInputTaps;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -51,8 +51,8 @@ public class Reporter {
         .connect(
             flowDef()
                 .addSources(getRawInputTaps(inputData))
-                .addTailSink(table1, Connector.getRawOutputTap(table1.getName()))
-                .addTailSink(table2, Connector.getRawOutputTap2(table2.getName()))
+                .addTailSink(table1, ReporterConnector.getRawOutputTap(table1.getName()))
+                .addTailSink(table2, ReporterConnector.getRawOutputTap2(table2.getName()))
                 .setName(Flows.getName(CLASS)))
         .complete();
 
