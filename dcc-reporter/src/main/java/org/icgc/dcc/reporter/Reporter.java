@@ -1,6 +1,5 @@
 package org.icgc.dcc.reporter;
 
-import static com.google.common.collect.Maps.newLinkedHashMap;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -14,6 +13,7 @@ import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.val;
@@ -29,6 +29,9 @@ import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
 import cascading.pipe.Pipe;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
+
 @Slf4j
 public class Reporter {
 
@@ -39,6 +42,7 @@ public class Reporter {
 
   public static void report(
       @NonNull final String releaseName,
+      @NonNull final Optional<Set<String>> projectKeys,
       @NonNull final String defaultParentDataDir,
       @NonNull final String projectsJsonFilePath,
       @NonNull final String dictionaryFilePath,
@@ -56,6 +60,9 @@ public class Reporter {
 
     process(
         releaseName,
+        projectKeys.isPresent() ?
+            projectKeys.get() :
+            reporterInput.getProjectKeys(),
         reporterInput,
         getMapping(
             dictionaryRoot,
@@ -66,15 +73,16 @@ public class Reporter {
 
   public static void process(
       @NonNull String releaseName,
+      @NonNull Set<String> projectKeys,
       @NonNull ReporterInput reporterInput,
       @NonNull Map<String, String> mapping) {
     log.info("Gathering reports: '{}' ('{}')", reporterInput, mapping);
 
     // Main processing
-    Map<String, Pipe> table1s = newLinkedHashMap();
-    Map<String, Pipe> table2s = newLinkedHashMap();
-    for (val projectKey : reporterInput.getProjectKeys()) {
-      val preComputationTable = new PreComputation(releaseName, reporterInput, projectKey);
+    val table1s = Maps.<String, Pipe> newLinkedHashMap();
+    val table2s = Maps.<String, Pipe> newLinkedHashMap();
+    for (val projectKey : projectKeys) {
+      val preComputationTable = new PreComputation(releaseName, projectKey, reporterInput);
       val table1 = new Table1(preComputationTable);
       val table2 = new Table2(
           preComputationTable,

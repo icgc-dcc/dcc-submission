@@ -1,29 +1,49 @@
 package org.icgc.dcc.reporter;
 
+import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.icgc.dcc.core.util.Splitters.COMMA;
+
 import java.net.InetAddress;
+import java.util.Set;
 
 import lombok.SneakyThrows;
 import lombok.val;
 
+import com.google.common.base.Optional;
+
 public class Main {
 
-  /**
-   * args: my_release /home/tony/Desktop/reports /home/tony/Desktop/reports/projects.json
-   * /home/tony/tmp/dcc/0.8c/Dictionary.json /home/tony/tmp/dcc/0.8c/CodeList.json
-   */
+  private static final String ALL_PROJECTS_SHORTHAND1 = "all";
+  private static final String ALL_PROJECTS_SHORTHAND2 = "-";
+
   public static void main(String[] args) {
     val releaseName = args[0];
-    val defaultParentDataDir = args[1];
-    val projectsJsonFilePath = args[2];
-    val dictionaryFilePath = args[3];
-    val codeListsFilePath = args[4];
+    val projectKeys = args[1];
+    val defaultParentDataDir = args[2];
+    val projectsJsonFilePath = args[3];
+    val dictionaryFilePath = args[4];
+    val codeListsFilePath = args[5];
 
     Reporter.report(
         releaseName,
+        foo(projectKeys),
         defaultParentDataDir,
         projectsJsonFilePath,
         dictionaryFilePath,
         codeListsFilePath);
+  }
+
+  private static final Optional<Set<String>> foo(String projectKeys) {
+    return isAllProjects(projectKeys) ?
+        Optional.<Set<String>> absent() :
+        Optional.<Set<String>> of(newLinkedHashSet(COMMA.split(projectKeys)));
+  }
+
+  private static boolean isAllProjects(String projectKeys) {
+    return projectKeys == null
+        || projectKeys.isEmpty()
+        || ALL_PROJECTS_SHORTHAND1.equalsIgnoreCase(projectKeys)
+        || ALL_PROJECTS_SHORTHAND2.equals(projectKeys);
   }
 
   @SneakyThrows

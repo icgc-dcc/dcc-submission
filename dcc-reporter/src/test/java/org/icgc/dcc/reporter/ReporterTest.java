@@ -17,7 +17,12 @@
  */
 package org.icgc.dcc.reporter;
 
+import java.util.Set;
+
 import org.junit.Test;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * TODO: add checks
@@ -33,6 +38,7 @@ public class ReporterTest {
 
     Reporter.report(
         TEST_RELEASE_NAME,
+        Optional.<Set<String>> of(ImmutableSet.of("p1", "p2")),
         DEFAULT_PARENT_TEST_DIR,
         TEST_CONF_DIR + "/projects.json",
         TEST_CONF_DIR + "/Dictionary.json",

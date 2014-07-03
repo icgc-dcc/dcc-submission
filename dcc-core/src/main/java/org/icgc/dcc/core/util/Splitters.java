@@ -34,6 +34,7 @@ public class Splitters {
   public static final Splitter DASH = on("-");
   public static final Splitter UNDERSCORE = on("_");
   public static final Splitter COLON = on(':');
+  public static final Splitter COMMA = on(',');
   public static final Splitter SEMICOLON = on(';');
 
 }

@@ -48,7 +48,7 @@ public class PreComputation extends SubAssembly {
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
 
-  public PreComputation(String releaseName, ReporterInput inputData, String projectKey) {
+  public PreComputation(String releaseName, String projectKey, ReporterInput inputData) {
     setTails(process(releaseName, projectKey, inputData));
   }
 
