@@ -23,7 +23,7 @@ import org.icgc.dcc.hadoop.util.HadoopProperties;
 import org.icgc.dcc.reporter.Main;
 import org.icgc.dcc.reporter.OutputType;
 import org.icgc.dcc.reporter.Reporter;
-import org.icgc.dcc.reporter.ReporterInputData;
+import org.icgc.dcc.reporter.ReporterInput;
 import org.icgc.dcc.reporter.cascading.subassembly.Table1;
 import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
@@ -43,14 +43,14 @@ public class ReporterConnector {
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
 
   public static Flow<?> connectFlow(
-      @NonNull final ReporterInputData reporterInputData,
+      @NonNull final ReporterInput reporterInput,
       @NonNull final Table1 table1,
       @NonNull final Table2 table2) {
 
     return getFlowConnector()
         .connect(
             flowDef()
-                .addSources(getRawInputTaps(reporterInputData))
+                .addSources(getRawInputTaps(reporterInput))
                 .addTailSink(table1, ReporterConnector.getRawOutputTap(table1.getName()))
                 .addTailSink(table2, ReporterConnector.getRawOutputTap2(table2.getName()))
                 .setName(Flows.getName(Reporter.CLASS)));
@@ -90,7 +90,7 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private static Map<String, Tap> getRawInputTaps(ReporterInputData reporterInputData) {
+  private static Map<String, Tap> getRawInputTaps(ReporterInput reporterInput) {
     return
 
     // Convert to raw taps
@@ -100,7 +100,7 @@ public class ReporterConnector {
         getInputTaps(
 
         // get pipe to path map for the project/file type combination
-        reporterInputData.getPipeNameToFilePath()),
+        reporterInput.getPipeNameToFilePath()),
 
         GenericTaps.RAW_CASTER);
   }

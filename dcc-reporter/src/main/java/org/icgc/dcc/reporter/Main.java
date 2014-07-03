@@ -34,7 +34,7 @@ public class Main {
     val dictionaryRoot = getJsonRoot(dictionaryFilePath);
     val codeListsRoot = getJsonRoot(codeListsFilePath);
 
-    val reporterInputData = ReporterInputData.from(
+    val reporterInput = ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
             getLocalFileSystem(),
             defaultParentDataDir,
@@ -43,7 +43,7 @@ public class Main {
 
     report(
         releaseName,
-        reporterInputData,
+        reporterInput,
         getMapping(
             dictionaryRoot,
             codeListsRoot,

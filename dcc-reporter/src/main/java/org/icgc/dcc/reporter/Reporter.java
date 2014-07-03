@@ -34,12 +34,12 @@ public class Reporter {
 
   public static void report(
       @NonNull String releaseName,
-      @NonNull ReporterInputData reporterInputData,
+      @NonNull ReporterInput reporterInput,
       @NonNull Map<String, String> mapping) {
-    log.info("Gathering reports: '{}' ('{}')", reporterInputData, mapping);
+    log.info("Gathering reports: '{}' ('{}')", reporterInput, mapping);
 
     // Main processing
-    val preComputationTable = new PreComputation(releaseName, reporterInputData);
+    val preComputationTable = new PreComputation(releaseName, reporterInput);
     val table1 = new Table1(preComputationTable);
     val table2 = new Table2(
         preComputationTable,
@@ -47,12 +47,12 @@ public class Reporter {
         mapping.keySet());
 
     ReporterConnector.connectFlow(
-        reporterInputData,
+        reporterInput,
         table1,
         table2)
         .complete();
 
-    ReporterGatherer.getTable(reporterInputData.getProjectKeys(), mapping);
+    ReporterGatherer.getTable(reporterInput.getProjectKeys(), mapping);
     // log.info(table.getCsvRepresentation());
     // Gatherer.writeCsvFile(table);
   }
@@ -84,7 +84,7 @@ public class Reporter {
   }
 
   public static void main(String[] args) {
-    cascadingSerialize(new PreComputation("bla", ReporterInputData.getDummy()));
+    cascadingSerialize(new PreComputation("bla", ReporterInput.getDummy()));
     // cascadingSerialize(new StatsGathering(preComputationTable);
   }
 

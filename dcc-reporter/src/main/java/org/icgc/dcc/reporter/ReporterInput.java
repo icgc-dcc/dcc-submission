@@ -27,15 +27,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 
-public class ReporterInputData {
+public class ReporterInput {
 
   private final Table<String, FileType, Set<String>> data = HashBasedTable.create();
 
   /**
    * TODO: necessary?
    */
-  public static ReporterInputData from(Map<String, Map<FileType, List<Path>>> matchingFiles) {
-    val inputData = new ReporterInputData();
+  public static ReporterInput from(Map<String, Map<FileType, List<Path>>> matchingFiles) {
+    val inputData = new ReporterInput();
     for (val projectKey : matchingFiles.keySet()) {
       val projectFiles = matchingFiles.get(projectKey);
       for (val fileType : projectFiles.keySet()) {
@@ -120,13 +120,13 @@ public class ReporterInputData {
     paths.add(path);
   }
 
-  public static ReporterInputData getDummy() {
-    ReporterInputData data;
+  public static ReporterInput getDummy() {
+    ReporterInput data;
 
     val dir = "/home/tony/Desktop/reports/1";
     val dir2 = "/home/tony/Desktop/reports/2";
 
-    data = new ReporterInputData();
+    data = new ReporterInput();
     data.addFile("project.1", FileType.SPECIMEN_TYPE, new File(dir, "specimen.txt").getPath());
     data.addFile("project.1", FileType.SAMPLE_TYPE, new File(dir, "sample.txt").getPath());
     data.addFile("project.1", FileType.CNSM_M_TYPE, new File(dir, "cnsm_m.txt").getPath());
