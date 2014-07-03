@@ -77,16 +77,16 @@ public class ReporterInput {
         });
   }
 
-  public Map<String, String> getPipeNameToFilePath() {
+  public Map<String, String> getPipeNameToFilePath(
+      final java.lang.String projectKey) {
     val pipeNameToFilePath = new ImmutableMap.Builder<String, String>();
-    for (val projectKey : getProjectKeys()) {
-      pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, SPECIMEN_TYPE));
-      pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, SAMPLE_TYPE));
 
-      for (val featureType : getFeatureTypesWithData(projectKey)) {
-        pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, featureType.getMetaFileType()));
-        pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, featureType.getPrimaryFileType()));
-      }
+    pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, SPECIMEN_TYPE));
+    pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, SAMPLE_TYPE));
+
+    for (val featureType : getFeatureTypesWithData(projectKey)) {
+      pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, featureType.getMetaFileType()));
+      pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, featureType.getPrimaryFileType()));
     }
 
     return pipeNameToFilePath.build();

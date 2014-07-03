@@ -1,5 +1,6 @@
 package org.icgc.dcc.reporter;
 
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -25,6 +26,8 @@ import org.icgc.dcc.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.reporter.cascading.subassembly.Table1;
 import org.icgc.dcc.reporter.cascading.subassembly.Table2;
+
+import cascading.pipe.Pipe;
 
 @Slf4j
 public class Reporter {
@@ -68,20 +71,29 @@ public class Reporter {
     log.info("Gathering reports: '{}' ('{}')", reporterInput, mapping);
 
     // Main processing
-    val preComputationTable = new PreComputation(releaseName, reporterInput);
-    val table1 = new Table1(preComputationTable);
-    val table2 = new Table2(
-        preComputationTable,
-        Table1.processDonors(preComputationTable),
-        mapping.keySet());
+    Map<String, Pipe> table1s = newLinkedHashMap();
+    Map<String, Pipe> table2s = newLinkedHashMap();
+    for (val projectKey : reporterInput.getProjectKeys()) {
+      val preComputationTable = new PreComputation(releaseName, reporterInput, projectKey);
+      val table1 = new Table1(preComputationTable);
+      val table2 = new Table2(
+          preComputationTable,
+          Table1.processDonors(preComputationTable),
+          mapping.keySet());
 
-    ReporterConnector.connectFlow(
+      table1s.put(projectKey, table1);
+      table2s.put(projectKey, table2);
+    }
+
+    ReporterConnector.connectCascade(
         reporterInput,
-        table1,
-        table2)
+        table1s,
+        table2s)
         .complete();
 
-    ReporterGatherer.getTable(reporterInput.getProjectKeys(), mapping);
+    for (val projectKey : reporterInput.getProjectKeys()) {
+      ReporterGatherer.getTable(projectKey, mapping);
+    }
     // log.info(table.getCsvRepresentation());
     // Gatherer.writeCsvFile(table);
   }
@@ -90,7 +102,7 @@ public class Reporter {
     return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
   }
 
-  public static String getOutputFilePath(OutputType output) {
+  public static String getOutputFilePath(OutputType output, String projectKey) {
     return PATH.join(OUTPUT_DIR, getOutputFileName(output));
   }
 

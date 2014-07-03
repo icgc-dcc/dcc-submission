@@ -11,7 +11,6 @@ import static org.icgc.dcc.core.util.Splitters.TAB;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -32,10 +31,10 @@ public class ReporterGatherer {
   private static final String PART_FILE = "part-00000";
 
   public static DataTypeCountsReportTable getTable(
-      @NonNull final Set<String> projectKeys,
+      @NonNull final String projectKey,
       @NonNull final Map<String, String> mapping) {
 
-    val outputFilePath = getOuputFilePath(OutputType.SEQUENCING_STRATEGY);
+    val outputFilePath = getOuputFilePath(OutputType.SEQUENCING_STRATEGY, projectKey);
     val headerLine = readFirstLine(outputFilePath);
     val headers = newArrayList(TAB.split(headerLine));
     val headerSize = headers.size();
@@ -55,7 +54,8 @@ public class ReporterGatherer {
       }
       documents.add(builder.get());
     }
-    log.info("Content: '{}'", toJsonPrettyString(documents.toString()));
+    log.info("Content for '{}': '{}'", projectKey, toJsonPrettyString(documents.toString()));
+
     return null;
   }
 
@@ -91,8 +91,8 @@ public class ReporterGatherer {
         });
   }
 
-  private static String getOuputFilePath(OutputType output) {
-    String outputFilePath = Reporter.getOutputFilePath(output);
+  private static String getOuputFilePath(OutputType output, String projectKey) {
+    String outputFilePath = Reporter.getOutputFilePath(output, projectKey);
     if (!Main.isLocal()) {
       outputFilePath = PATH.join(
           FUSE_MOUTPOINT_PREFIX,

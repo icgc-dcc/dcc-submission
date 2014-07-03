@@ -48,11 +48,11 @@ public class PreComputation extends SubAssembly {
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
 
-  public PreComputation(String releaseName, ReporterInput inputData) {
-    setTails(process(releaseName, inputData));
+  public PreComputation(String releaseName, ReporterInput inputData, String projectKey) {
+    setTails(process(releaseName, projectKey, inputData));
   }
 
-  private static Pipe process(final String releaseName, final ReporterInput inputData) {
+  private static Pipe process(final String releaseName, final String projectKey, final ReporterInput inputData) {
     return
 
     // Insert release name
@@ -62,16 +62,7 @@ public class PreComputation extends SubAssembly {
         keyValuePair(RELEASE_NAME, releaseName),
 
         //
-        new Transformerge<String>(
-            inputData.getProjectKeys(),
-            new Function<String, Pipe>() {
-
-              @Override
-              public Pipe apply(String projectKey) {
-                return processProject(inputData, projectKey);
-              }
-
-            }));
+        processProject(inputData, projectKey));
   }
 
   private static Pipe processProject(final ReporterInput inputData, final String projectKey) {
