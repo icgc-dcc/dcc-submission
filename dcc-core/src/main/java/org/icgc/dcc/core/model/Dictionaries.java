@@ -22,13 +22,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
-import static com.google.common.collect.Maps.asMap;
 import static com.google.common.collect.Maps.newTreeMap;
-import static com.google.common.collect.Maps.transformValues;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING;
 import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING_MAP;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +39,6 @@ import lombok.val;
 import org.icgc.dcc.core.model.Dictionaries.RosettaStone.SchemaMapping.FieldMapping;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Guavas;
-import org.icgc.dcc.core.util.Jackson;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
@@ -296,18 +294,12 @@ public class Dictionaries {
         .asText();
   }
 
-  public static void main(String[] args) {
-    System.out.println(RosettaStone.getInstance(
-        Jackson.getJsonRoot("/home/tony/tmp/dcc/0.8c/Dictionary.json"),
-        Jackson.getJsonRoot("/home/tony/tmp/dcc/0.8c/CodeList.json")));
-  }
-
   /**
    * Optionally gives code translation for all fields in the dictionary, depending on whether a codelist is specified
    * for the field or not.
    */
   @Value
-  public static class RosettaStone {
+  public static class RosettaStone implements Serializable {
 
     Map<FileType, SchemaMapping> fileTypeToSchemaMapping = newTreeMap();
 
@@ -349,16 +341,15 @@ public class Dictionaries {
 
         for (val fieldName : getFieldNames(dictionaryRoot, fileType)) {
           val optionalCodeListName = getCodeListName(dictionaryRoot, fileType, fieldName);
-          if (optionalCodeListName.isPresent()) {
-            schemaMapping.fieldToOptionalMapping.put(
-                fieldName,
-                Optional.of(FieldMapping.getInstance(
-                    getMapping(
-                        codeListsRoot,
-                        optionalCodeListName.get()))));
-          } else {
-            schemaMapping.fieldToOptionalMapping.put(fieldName, Optional.<FieldMapping> absent());
-          }
+          schemaMapping.fieldToOptionalMapping.put(
+              fieldName,
+              optionalCodeListName.isPresent() ?
+                  Optional.of(FieldMapping.getInstance(
+                      getMapping(
+                          codeListsRoot,
+                          optionalCodeListName.get()))) :
+                  Optional.<FieldMapping> absent()
+              );
         }
       }
 
@@ -366,13 +357,14 @@ public class Dictionaries {
     }
 
     /**
-     * Expects field names provided to have a codelist restriction defined on them.
+     * Expects field names provided to exist for the file type and for them to have a codelist restriction defined on
+     * them.
      */
     public Map<String, Map<String, String>> getGuaranteedFieldsMappings(
         @NonNull final FileType fileType,
         @NonNull final String... fieldNames) {
 
-      return transformValues(
+      return Guavas.transformValues(
           getFieldsMappings(fileType, fieldNames),
           new Function<Optional<Map<String, String>>, Map<String, String>>() {
 
@@ -392,14 +384,16 @@ public class Dictionaries {
         @NonNull final FileType fileType,
         @NonNull final String... fieldNames) {
 
-      return asMap(
+      return Guavas.asMap(
           ImmutableSet.<String> copyOf(fieldNames),
           new Function<String, Optional<Map<String, String>>>() {
 
             @Override
-            public Optional<Map<String, String>> apply(String input) {
-              val optionalFieldMapping = // TODO
-                  fileTypeToSchemaMapping.get(fileType).fieldToOptionalMapping.get(fieldNames[0]);
+            public Optional<Map<String, String>> apply(String fieldName) {
+              val optionalFieldMapping = fileTypeToSchemaMapping
+                  .get(fileType)
+                  .fieldToOptionalMapping
+                      .get(fieldName);
               return optionalFieldMapping.isPresent() ?
                   optionalFieldMapping.get().getOptionalCodeToValue() :
                   ABSENT_STRING_MAP;
@@ -407,6 +401,7 @@ public class Dictionaries {
 
           });
     }
+
   }
 
 }
