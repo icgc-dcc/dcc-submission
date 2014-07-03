@@ -40,7 +40,7 @@ public final class URIs {
 
   private static final String MISSING_INFO = Strings2.EMPTY_STRING;
   private static final int USERNAME_OFFSET = 0;
-  private static final int PASSWORD_OFFSET = 0;
+  private static final int PASSWORD_OFFSET = USERNAME_OFFSET + 1;
   private static final int MISSING_PORT = -1;
   private static final String MISSING_CREDENTIALS = Joiners.CREDENTIALS.join(MISSING_INFO, MISSING_INFO);
 
@@ -72,7 +72,7 @@ public final class URIs {
         Splitters.CREDENTIALS.split(
             firstNonNull(userInfo, MISSING_CREDENTIALS)),
         String.class);
-    checkState(credentials.length == 2, // TODO: case where only the username is provided possible?
+    checkState(credentials.length == PASSWORD_OFFSET + 1, // TODO: case where only the username is provided possible?
         "Credentials are expected to have 2 components, a username and a password");
     return new SimpleEntry<String, String>(
         credentials[USERNAME_OFFSET],
