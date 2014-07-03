@@ -72,7 +72,8 @@ public final class URIs {
         Splitters.CREDENTIALS.split(
             firstNonNull(userInfo, MISSING_CREDENTIALS)),
         String.class);
-    checkState(credentials.length == 2, "");
+    checkState(credentials.length == 2, // TODO: case where only the username is provided possible?
+        "Credentials are expected to have 2 components, a username and a password");
     return new SimpleEntry<String, String>(
         credentials[USERNAME_OFFSET],
         credentials[PASSWORD_OFFSET]);
