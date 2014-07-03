@@ -60,8 +60,8 @@ public class ReporterConnector {
         .connect(
             flowDef()
                 .addSources(getRawInputTaps(reporterInput))
-                .addTailSink(table1, ReporterConnector.getRawOutputTap(table1.getName()))
-                .addTailSink(table2, ReporterConnector.getRawOutputTap2(table2.getName()))
+                .addTailSink(table1, getRawOutputTable1Tap(table1.getName()))
+                .addTailSink(table2, getRawOutputTable2Tap(table2.getName()))
                 .setName(Flows.getName(Reporter.CLASS)));
   }
 
@@ -133,24 +133,24 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private static Tap getRawOutputTap(String tailName) {
-    return GenericTaps.RAW_CASTER.apply(getOutputTap(tailName));
+  private static Tap getRawOutputTable1Tap(String tailName) {
+    return GenericTaps.RAW_CASTER.apply(getOutputTable1Tap(tailName));
   }
 
   /**
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private static Tap getRawOutputTap2(String tailName) {
-    return GenericTaps.RAW_CASTER.apply(getOutputTap2(tailName));
+  private static Tap getRawOutputTable2Tap(String tailName) {
+    return GenericTaps.RAW_CASTER.apply(getOutputTable2Tap(tailName));
   }
 
-  private static Tap<?, ?, ?> getOutputTap(String tailName) {
+  private static Tap<?, ?, ?> getOutputTable1Tap(String tailName) {
     val outputFilePath = getOutputFilePath(OutputType.DONOR);
     return TAPS.getNoCompressionTsvWithHeader(outputFilePath);
   }
 
-  private static Tap<?, ?, ?> getOutputTap2(String tailName) {
+  private static Tap<?, ?, ?> getOutputTable2Tap(String tailName) {
     val outputFilePath = getOutputFilePath(OutputType.SEQUENCING_STRATEGY);
     return TAPS.getNoCompressionTsvWithHeader(outputFilePath);
   }
