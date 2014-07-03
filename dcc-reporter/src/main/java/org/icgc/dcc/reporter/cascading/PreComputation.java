@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.reporter.cascading;
 
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
@@ -32,6 +32,7 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
+import org.icgc.dcc.reporter.InputData;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
@@ -47,7 +48,7 @@ public class PreComputation extends SubAssembly {
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
 
-  PreComputation(String releaseName, InputData inputData) {
+  public PreComputation(String releaseName, InputData inputData) {
     setTails(process(releaseName, inputData));
   }
 

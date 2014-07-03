@@ -21,6 +21,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.Pipes;
+import org.icgc.dcc.reporter.cascading.PreComputation;
+import org.icgc.dcc.reporter.cascading.Table1;
+import org.icgc.dcc.reporter.cascading.Table2;
 
 import cascading.flow.hadoop.util.HadoopUtil;
 
@@ -56,7 +59,7 @@ public class Reporter {
                 .setName(Flows.getName(CLASS)))
         .complete();
 
-    Gatherer.getTable(inputData.getProjectKeys(), mapping);
+    ReporterGatherer.getTable(inputData.getProjectKeys(), mapping);
     // log.info(table.getCsvRepresentation());
     // Gatherer.writeCsvFile(table);
   }

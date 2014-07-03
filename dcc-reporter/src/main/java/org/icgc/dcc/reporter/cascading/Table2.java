@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.reporter.cascading;
 
 import static org.icgc.dcc.core.model.FeatureTypes.TYPES_WITH_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
@@ -41,8 +41,8 @@ public class Table2 extends SubAssembly {
 
   private static final String NULL_REPLACEMENT = "null";
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
-  
-  Table2(Pipe preComputationTable, Pipe donors, Set<String> codes) {
+
+  public Table2(Pipe preComputationTable, Pipe donors, Set<String> codes) {
     setTails(table2(preComputationTable, donors, getTranspositionFields(codes)));
   }
 
@@ -56,25 +56,25 @@ public class Table2 extends SubAssembly {
 
   private static List<String> getAugmentedCodes(
       @NonNull final Set<String> codes) {
-    
+
     val builder = new ImmutableList.Builder<String>();
     val iterator = codes.iterator();
     for (int i = 0; i < codes.size(); i++) {
       builder.add(iterator.next());
     }
-    
+
     for (val featureType : TYPES_WITH_SEQUENCING_STRATEGY) {
-      builder.add(featureType.getTypeName());      
+      builder.add(featureType.getTypeName());
     }
-    
+
     // Remove this after DCC-2399 is done
     builder.add(NULL_REPLACEMENT);
     builder.add(MISSING_CODE1);
     builder.add(MISSING_CODE2);
-    
+
     return builder.build();
   }
-  
+
   private static Pipe table2(Pipe preComputationTable, Pipe donors, Fields transpositionFields) {
 
     return new ReadableHashJoin(JoinData.builder()
@@ -142,5 +142,5 @@ public class Table2 extends SubAssembly {
         SEQUENCING_STRATEGY_FIELD
             .append(SEQUENCING_STRATEGY_COUNT_FIELD));
   }
-  
+
 }

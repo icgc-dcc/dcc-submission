@@ -26,7 +26,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObjectBuilder;
 
 @Slf4j
-public class Gatherer {
+public class ReporterGatherer {
 
   private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
   private static final String PART_FILE = "part-00000";

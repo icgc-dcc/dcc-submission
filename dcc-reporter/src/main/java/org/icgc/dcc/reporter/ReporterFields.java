@@ -34,25 +34,25 @@ import cascading.tuple.Fields;
  * Fields pertaining to the reporter.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-class ReporterFields {
+public class ReporterFields {
 
-  static final Fields TYPE_FIELD = new Fields(OBSERVATION_TYPE);
-  static final Fields PROJECT_ID_FIELD = new Fields(PROJECT_ID);
-  static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
-  static final Fields SPECIMEN_ID_FIELD = new Fields(SUBMISSION_SPECIMEN_ID);
-  static final Fields SAMPLE_ID_FIELD = new Fields(SUBMISSION_ANALYZED_SAMPLE_ID);
-  static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
-  static final Fields SEQUENCING_STRATEGY_FIELD = new Fields(SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
+  public static final Fields TYPE_FIELD = new Fields(OBSERVATION_TYPE);
+  public static final Fields PROJECT_ID_FIELD = new Fields(PROJECT_ID);
+  public static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
+  public static final Fields SPECIMEN_ID_FIELD = new Fields(SUBMISSION_SPECIMEN_ID);
+  public static final Fields SAMPLE_ID_FIELD = new Fields(SUBMISSION_ANALYZED_SAMPLE_ID);
+  public static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
+  public static final Fields SEQUENCING_STRATEGY_FIELD = new Fields(SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
 
-  static final Fields DONOR_UNIQUE_COUNT_FIELD = getCountFieldCounterpart(DONOR_ID_FIELD);
-  static final Fields SPECIMEN_UNIQUE_COUNT_FIELD = getCountFieldCounterpart(SPECIMEN_ID_FIELD);
-  static final Fields SAMPLE_UNIQUE_COUNT_FIELD = getCountFieldCounterpart(SAMPLE_ID_FIELD);
-  static final Fields SEQUENCING_STRATEGY_COUNT_FIELD = getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD);
-  static final Fields _ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart("analysis_observation");
+  public static final Fields DONOR_UNIQUE_COUNT_FIELD = getCountFieldCounterpart(DONOR_ID_FIELD);
+  public static final Fields SPECIMEN_UNIQUE_COUNT_FIELD = getCountFieldCounterpart(SPECIMEN_ID_FIELD);
+  public static final Fields SAMPLE_UNIQUE_COUNT_FIELD = getCountFieldCounterpart(SAMPLE_ID_FIELD);
+  public static final Fields SEQUENCING_STRATEGY_COUNT_FIELD = getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD);
+  public static final Fields _ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart("analysis_observation");
 
-  static final Fields REDUNDANT_PROJECT_ID_FIELD = getRedundantFieldCounterpart(PROJECT_ID_FIELD);
-  static final Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
-  static final Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
-  static final Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
+  public static final Fields REDUNDANT_PROJECT_ID_FIELD = getRedundantFieldCounterpart(PROJECT_ID_FIELD);
+  public static final Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
+  public static final Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
+  public static final Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
 
 }

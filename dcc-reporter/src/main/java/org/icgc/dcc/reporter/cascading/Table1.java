@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.reporter.cascading;
 
 import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
@@ -47,7 +47,7 @@ public class Table1 extends SubAssembly {
       getRedundantFieldCounterpart("observation_" + PROJECT_ID_FIELD)
           .append(getRedundantFieldCounterpart("observation_" + TYPE_FIELD));
 
-  Table1(Pipe preComputationTable) {
+  public Table1(Pipe preComputationTable) {
     setTails(process(preComputationTable));
   }
 
@@ -82,7 +82,7 @@ public class Table1 extends SubAssembly {
   /**
    * This one is also used by {@link Table2}.
    */
-  static Pipe processDonors(Pipe preComputationTable) {
+  public static Pipe processDonors(Pipe preComputationTable) {
     return new NamingPipe(
         DONOR,
 
