@@ -27,6 +27,7 @@ public class Separators {
   public static final String COMMA = ",";
   public static final String SLASH = "/";
   public static final String WHITESPACE = " ";
+  public static final String COLON = ":";
   public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
   public static final String INDENT = Separators.NEWLINE + Separators.TAB;
   public static final String EXTENSION = Strings2.DOT;

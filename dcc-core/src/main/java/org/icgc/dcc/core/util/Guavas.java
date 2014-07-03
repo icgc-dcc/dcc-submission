@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.core.util;
 
-import static com.google.common.collect.Maps.transformValues;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.uniqueIndex;
 
 import java.util.Map;
+import java.util.Set;
+
+import lombok.val;
 
 import com.google.common.base.Function;
 
@@ -41,6 +44,26 @@ public class Guavas {
             iterable,
             keyFunction),
         valueFunction);
+  }
+
+  public static <K, V1, V2> Map<K, V2> transformValues(
+      Map<K, V1> inputMap,
+      Function<V1, V2> function) {
+    Map<K, V2> map = newLinkedHashMap();
+    for (val entry : inputMap.entrySet()) {
+      map.put(entry.getKey(), function.apply(entry.getValue()));
+    }
+    return map;
+  }
+
+  public static <K, V> Map<K, V> asMap(
+      Set<K> inputSet,
+      Function<K, V> function) {
+    Map<K, V> map = newLinkedHashMap();
+    for (val k : inputSet) {
+      map.put(k, function.apply(k));
+    }
+    return map;
   }
 
 }
