@@ -17,32 +17,65 @@
  */
 package org.icgc.dcc.core.util;
 
-import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.toArray;
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
 
-import com.google.common.base.Joiner;
+import java.net.URI;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
+
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
 
 /**
- * Common joiners.
+ * Util methods for {@link URI}s.
+ * <p>
+ * TODO: change to decorator? + write test class
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class Joiners {
+public final class URIs {
 
-  public static final Joiner WHITESPACE = on(Separators.WHITESPACE);
-  public static final Joiner EMPTY_STRING = on(Separators.EMPTY_STRING);
-  public static final Joiner SLASH = on('/');
-  public static final Joiner TAB = on(Separators.TAB);
-  public static final Joiner NEWLINE = on(Separators.NEWLINE);
-  public static final Joiner DOT = on(".");
-  public static final Joiner DASH = on("-");
-  public static final Joiner UNDERSCORE = on("_");
-  public static final Joiner COMMA = on(Separators.COMMA);
-  public static final Joiner COLON = on(':');
-  public static final Joiner SEMICOLON = on(';');
-  public static final Joiner PATH = SLASH;
-  public static final Joiner EXTENSION = DOT;
-  public static final Joiner INDENT = on(Separators.INDENT);
-  public static final Joiner CREDENTIALS = COLON;
+  private static final String MISSING_INFO = Strings2.EMPTY_STRING;
+  private static final int USERNAME_OFFSET = 0;
+  private static final int PASSWORD_OFFSET = 0;
+  private static final int MISSING_PORT = -1;
+  private static final String MISSING_CREDENTIALS = Joiners.CREDENTIALS.join(MISSING_INFO, MISSING_INFO);
+
+  @SneakyThrows
+  public static URI getURI(String fsUrl) {
+    return new URI(fsUrl);
+  }
+
+  // TODO: change to optional
+  public static String getHost(URI uri) {
+    return firstNonNull(uri.getHost(), MISSING_INFO);
+  }
+
+  public static String getPort(URI uri) {
+    val port = uri.getPort();
+    return String.valueOf(port == MISSING_PORT ? MISSING_INFO : port);
+  }
+
+  public static String getUsername(URI uri) {
+    return getCredentials(uri.getUserInfo()).getKey();
+  }
+
+  public static String getPassword(URI uri) {
+    return getCredentials(uri.getUserInfo()).getValue();
+  }
+
+  private static Entry<String, String> getCredentials(String userInfo) {
+    val credentials = toArray(
+        Splitters.CREDENTIALS.split(
+            firstNonNull(userInfo, MISSING_CREDENTIALS)),
+        String.class);
+    checkState(credentials.length == 2, "");
+    return new SimpleEntry<String, String>(
+        credentials[USERNAME_OFFSET],
+        credentials[PASSWORD_OFFSET]);
+  }
 
 }

@@ -35,5 +35,6 @@ public class Splitters {
   public static final Splitter UNDERSCORE = on("_");
   public static final Splitter COLON = on(':');
   public static final Splitter SEMICOLON = on(';');
+  public static final Splitter CREDENTIALS = COLON;
 
 }
