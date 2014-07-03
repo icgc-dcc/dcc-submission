@@ -8,12 +8,16 @@ import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
 import static org.icgc.dcc.reporter.Main.isLocal;
 import static org.icgc.dcc.reporter.Reporter.getOutputFilePath;
 
+import java.net.URI;
 import java.util.Map;
 
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
@@ -41,6 +45,11 @@ public class ReporterConnector {
 
   private static final int NUM_CONCURRENT_STEPS = 5;
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
+
+  @SneakyThrows
+  public static FileSystem getLocalFileSystem() {
+    return FileSystem.get(new URI("file:///"), new Configuration());
+  }
 
   public static Flow<?> connectFlow(
       @NonNull final ReporterInput reporterInput,

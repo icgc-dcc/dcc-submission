@@ -9,7 +9,6 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.Jackson.PRETTY_WRITTER;
 import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,76 +119,4 @@ public class ReporterInput {
     paths.add(path);
   }
 
-  public static ReporterInput getDummy() {
-    ReporterInput data;
-
-    val dir = "/home/tony/Desktop/reports/1";
-    val dir2 = "/home/tony/Desktop/reports/2";
-
-    data = new ReporterInput();
-    data.addFile("project.1", FileType.SPECIMEN_TYPE, new File(dir, "specimen.txt").getPath());
-    data.addFile("project.1", FileType.SAMPLE_TYPE, new File(dir, "sample.txt").getPath());
-    data.addFile("project.1", FileType.CNSM_M_TYPE, new File(dir, "cnsm_m.txt").getPath());
-    data.addFile("project.1", FileType.CNSM_P_TYPE, new File(dir, "cnsm_p.txt").getPath());
-    data.addFile("project.1", FileType.CNSM_S_TYPE, new File(dir, "cnsm_s.txt").getPath());
-
-    data.addFile("project.1", FileType.EXP_ARRAY_M_TYPE, new File(dir, "exp_array_m.txt").getPath());
-    data.addFile("project.1", FileType.EXP_ARRAY_P_TYPE, new File(dir, "exp_array_p.txt").getPath());
-    data.addFile("project.1", FileType.EXP_SEQ_M_TYPE, new File(dir, "exp_seq_m.txt").getPath());
-    data.addFile("project.1", FileType.EXP_SEQ_P_TYPE, new File(dir, "exp_seq_p.txt").getPath());
-    data.addFile("project.1", FileType.JCN_M_TYPE, new File(dir, "jcn_m.txt").getPath());
-    data.addFile("project.1", FileType.JCN_P_TYPE, new File(dir, "jcn_p.txt").getPath());
-    data.addFile("project.1", FileType.METH_ARRAY_M_TYPE, new File(dir, "meth_array_m.txt").getPath());
-    data.addFile("project.1", FileType.METH_ARRAY_P_TYPE, new File(dir, "meth_array_p.txt").getPath());
-    data.addFile("project.1", FileType.METH_SEQ_M_TYPE, new File(dir, "meth_seq_m.txt").getPath());
-    data.addFile("project.1", FileType.METH_SEQ_P_TYPE, new File(dir, "meth_seq_p.txt").getPath());
-    data.addFile("project.1", FileType.MIRNA_SEQ_M_TYPE, new File(dir, "mirna_seq_m.txt").getPath());
-    data.addFile("project.1", FileType.MIRNA_SEQ_P_TYPE, new File(dir, "mirna_seq_p.txt").getPath());
-    data.addFile("project.1", FileType.PEXP_M_TYPE, new File(dir, "pexp_m.txt").getPath());
-    data.addFile("project.1", FileType.PEXP_P_TYPE, new File(dir, "pexp_p.txt").getPath());
-    data.addFile("project.1", FileType.SGV_M_TYPE, new File(dir, "sgv_m.txt").getPath());
-    data.addFile("project.1", FileType.SGV_P_TYPE, new File(dir, "sgv_p.txt").getPath());
-    data.addFile("project.1", FileType.SSM_M_TYPE, new File(dir, "ssm_m.1.txt").getPath());
-    data.addFile("project.1", FileType.SSM_M_TYPE, new File(dir, "ssm_m.2.txt").getPath());
-    data.addFile("project.1", FileType.SSM_M_TYPE, new File(dir, "ssm_m.3.txt").getPath());
-    data.addFile("project.1", FileType.SSM_P_TYPE, new File(dir, "ssm_p.1.txt").getPath());
-    data.addFile("project.1", FileType.SSM_P_TYPE, new File(dir, "ssm_p.2.txt").getPath());
-    data.addFile("project.1", FileType.SSM_P_TYPE, new File(dir, "ssm_p.3.txt").getPath());
-    data.addFile("project.1", FileType.STSM_M_TYPE, new File(dir, "stsm_m.txt").getPath());
-    data.addFile("project.1", FileType.STSM_P_TYPE, new File(dir, "stsm_p.txt").getPath());
-    data.addFile("project.1", FileType.STSM_S_TYPE, new File(dir, "stsm_s.txt").getPath());
-
-    data.addFile("project.2", FileType.SPECIMEN_TYPE, new File(dir2, "specimen.txt").getPath());
-    data.addFile("project.2", FileType.SAMPLE_TYPE, new File(dir2, "sample.txt").getPath());
-    data.addFile("project.2", FileType.CNSM_M_TYPE, new File(dir2, "cnsm_m.txt").getPath());
-    data.addFile("project.2", FileType.CNSM_P_TYPE, new File(dir2, "cnsm_p.txt").getPath());
-    data.addFile("project.2", FileType.CNSM_S_TYPE, new File(dir2, "cnsm_s.txt").getPath());
-    // data.addFile("project.2", FileType.EXP_ARRAY_M_TYPE, new File(dir2, "exp_array_m.txt").getPath());
-    // data.addFile("project.2", FileType.EXP_ARRAY_P_TYPE, new File(dir2, "exp_array_p.txt").getPath());
-    data.addFile("project.2", FileType.EXP_SEQ_M_TYPE, new File(dir2, "exp_seq_m.txt").getPath());
-    data.addFile("project.2", FileType.EXP_SEQ_P_TYPE, new File(dir2, "exp_seq_p.txt").getPath());
-    data.addFile("project.2", FileType.JCN_M_TYPE, new File(dir2, "jcn_m.txt").getPath());
-    data.addFile("project.2", FileType.JCN_P_TYPE, new File(dir2, "jcn_p.txt").getPath());
-    // data.addFile("project.2", FileType.METH_ARRAY_M_TYPE, new File(dir2, "meth_array_m.txt").getPath());
-    // data.addFile("project.2", FileType.METH_ARRAY_P_TYPE, new File(dir2, "meth_array_p.txt").getPath());
-    data.addFile("project.2", FileType.METH_SEQ_M_TYPE, new File(dir2, "meth_seq_m.txt").getPath());
-    data.addFile("project.2", FileType.METH_SEQ_P_TYPE, new File(dir2, "meth_seq_p.txt").getPath());
-    data.addFile("project.2", FileType.MIRNA_SEQ_M_TYPE, new File(dir2, "mirna_seq_m.txt").getPath());
-    data.addFile("project.2", FileType.MIRNA_SEQ_P_TYPE, new File(dir2, "mirna_seq_p.txt").getPath());
-    // data.addFile("project.2", FileType.PEXP_M_TYPE, new File(dir2, "pexp_m.txt").getPath());
-    // data.addFile("project.2", FileType.PEXP_P_TYPE, new File(dir2, "pexp_p.txt").getPath());
-    data.addFile("project.2", FileType.SGV_M_TYPE, new File(dir2, "sgv_m.txt").getPath());
-    data.addFile("project.2", FileType.SGV_P_TYPE, new File(dir2, "sgv_p.txt").getPath());
-    data.addFile("project.2", FileType.SSM_M_TYPE, new File(dir2, "ssm_m.1.txt").getPath());
-    data.addFile("project.2", FileType.SSM_M_TYPE, new File(dir2, "ssm_m.2.txt").getPath());
-    data.addFile("project.2", FileType.SSM_M_TYPE, new File(dir2, "ssm_m.3.txt").getPath());
-    data.addFile("project.2", FileType.SSM_P_TYPE, new File(dir2, "ssm_p.1.txt").getPath());
-    data.addFile("project.2", FileType.SSM_P_TYPE, new File(dir2, "ssm_p.2.txt").getPath());
-    data.addFile("project.2", FileType.SSM_P_TYPE, new File(dir2, "ssm_p.3.txt").getPath());
-    data.addFile("project.2", FileType.STSM_M_TYPE, new File(dir2, "stsm_m.txt").getPath());
-    data.addFile("project.2", FileType.STSM_P_TYPE, new File(dir2, "stsm_p.txt").getPath());
-    data.addFile("project.2", FileType.STSM_S_TYPE, new File(dir2, "stsm_s.txt").getPath());
-
-    return data;
-  }
 }

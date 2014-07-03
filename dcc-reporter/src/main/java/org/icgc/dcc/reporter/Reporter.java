@@ -1,28 +1,30 @@
 package org.icgc.dcc.reporter;
 
+import static org.icgc.dcc.core.model.Dictionaries.getMapping;
+import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.util.Extensions.TSV;
+import static org.icgc.dcc.core.util.Jackson.getJsonRoot;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.Pipes;
+import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.reporter.cascading.subassembly.Table1;
 import org.icgc.dcc.reporter.cascading.subassembly.Table2;
-
-import cascading.flow.hadoop.util.HadoopUtil;
 
 @Slf4j
 public class Reporter {
@@ -33,6 +35,33 @@ public class Reporter {
   static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
 
   public static void report(
+      @NonNull final String releaseName,
+      @NonNull final String defaultParentDataDir,
+      @NonNull final String projectsJsonFilePath,
+      @NonNull final String dictionaryFilePath,
+      @NonNull final String codeListsFilePath) {
+
+    val dictionaryRoot = getJsonRoot(dictionaryFilePath);
+    val codeListsRoot = getJsonRoot(codeListsFilePath);
+
+    val reporterInput = ReporterInput.from(
+        SubmissionInputData.getMatchingFiles(
+            ReporterConnector.getLocalFileSystem(),
+            defaultParentDataDir,
+            projectsJsonFilePath,
+            getPatterns(dictionaryRoot)));
+
+    process(
+        releaseName,
+        reporterInput,
+        getMapping(
+            dictionaryRoot,
+            codeListsRoot,
+            SSM_M_TYPE, // TODO: add check mapping is the same for all meta files (it should)
+            getFieldName(SEQUENCING_STRATEGY_FIELD)));
+  }
+
+  public static void process(
       @NonNull String releaseName,
       @NonNull ReporterInput reporterInput,
       @NonNull Map<String, String> mapping) {
@@ -71,34 +100,5 @@ public class Reporter {
         TIMESTAMP,
         TSV);
   }
-
-  /**
-   * Method that reproduces what Cascading does to serialize a job step.
-   * 
-   * @param object the object to serialize.
-   * @return the base 64 encoded object
-   */
-  @SneakyThrows
-  private static String cascadingSerialize(Object object) {
-    return HadoopUtil.serializeBase64(object, new JobConf(new Configuration()));
-  }
-
-  public static void main(String[] args) {
-    cascadingSerialize(new PreComputation("bla", ReporterInput.getDummy()));
-    // cascadingSerialize(new StatsGathering(preComputationTable);
-  }
-
-  // @Test
-  // public void testSerializable() throws URISyntaxException {
-  // val task = new DistributedDocumentTask(RELEASE_TYPE, config);
-  //
-  // val serialized = cascadingSerialize(task);
-  // log.info("task: {}, serialized: {}", task, serialized);
-  // assertThat(serialized).isNotEmpty();
-  //
-  // val deserialized = cascadingDeserialize(serialized);
-  // log.info("task: {}, deserialized: {}", task, deserialized);
-  // assertThat(deserialized).isEqualTo(task);
-  // }
 
 }
