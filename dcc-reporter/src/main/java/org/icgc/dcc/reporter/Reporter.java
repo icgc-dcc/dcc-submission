@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.Pipes;
+import org.icgc.dcc.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.reporter.cascading.subassembly.Table1;
 import org.icgc.dcc.reporter.cascading.subassembly.Table2;
@@ -27,7 +27,7 @@ import cascading.flow.hadoop.util.HadoopUtil;
 @Slf4j
 public class Reporter {
 
-  static final Class<Reporter> CLASS = Reporter.class;
+  public static final Class<Reporter> CLASS = Reporter.class;
 
   static String OUTPUT_DIR = "/tmp/reports";
   static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
@@ -49,8 +49,7 @@ public class Reporter {
     ReporterConnector.connectFlow(
         inputData,
         table1,
-        table2,
-        Flows.getName(CLASS))
+        table2)
         .complete();
 
     ReporterGatherer.getTable(inputData.getProjectKeys(), mapping);

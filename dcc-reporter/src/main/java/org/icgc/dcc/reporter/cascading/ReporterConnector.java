@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.reporter.cascading;
 
 import static cascading.flow.FlowDef.flowDef;
 import static cascading.flow.FlowProps.setMaxConcurrentSteps;
@@ -14,11 +14,16 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
+import org.icgc.dcc.reporter.InputData;
+import org.icgc.dcc.reporter.Main;
+import org.icgc.dcc.reporter.OutputType;
+import org.icgc.dcc.reporter.Reporter;
 import org.icgc.dcc.reporter.cascading.subassembly.Table1;
 import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
@@ -40,8 +45,7 @@ public class ReporterConnector {
   public static Flow<?> connectFlow(
       @NonNull final InputData inputData,
       @NonNull final Table1 table1,
-      @NonNull final Table2 table2,
-      @NonNull final String flowName) {
+      @NonNull final Table2 table2) {
 
     return getFlowConnector()
         .connect(
@@ -49,9 +53,12 @@ public class ReporterConnector {
                 .addSources(getRawInputTaps(inputData))
                 .addTailSink(table1, ReporterConnector.getRawOutputTap(table1.getName()))
                 .addTailSink(table2, ReporterConnector.getRawOutputTap2(table2.getName()))
-                .setName(flowName));
+                .setName(Flows.getName(Reporter.CLASS)));
   }
 
+  /**
+   * TODO: refactoring with the other components.
+   */
   private static FlowConnector getFlowConnector() {
 
     if (isLocal()) {
