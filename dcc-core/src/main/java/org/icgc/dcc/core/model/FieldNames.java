@@ -260,6 +260,7 @@ public final class FieldNames {
   public static final String OBSERVATION_VALIDATION_PLATFORM = "validation_platform";
   public static final String OBSERVATION_VERIFICATION_STATUS = "verification_status";
   public static final String OBSERVATION_VERIFICATION_PLATFORM = "verification_platform";
+  public static final String OBSERVATION_SEQUENCING_STRATEGY = "sequencing_strategy";
   public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
 
   public static String getPartitionTypeFieldName(String type) {
@@ -291,6 +292,7 @@ public final class FieldNames {
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
   public static final String MUTATION_VERIFICATION_STATUS = "verification_status";
+  public static final String MUTATION_SEQUENCING_STRATEGY = "sequencing_strategy";
 
   public static final String MUTATION_SUMMARY = "_summary";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
