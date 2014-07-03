@@ -32,7 +32,7 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
-import org.icgc.dcc.reporter.InputData;
+import org.icgc.dcc.reporter.ReporterInputData;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
@@ -48,11 +48,11 @@ public class PreComputation extends SubAssembly {
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
 
-  public PreComputation(String releaseName, InputData inputData) {
+  public PreComputation(String releaseName, ReporterInputData inputData) {
     setTails(process(releaseName, inputData));
   }
 
-  private static Pipe process(final String releaseName, final InputData inputData) {
+  private static Pipe process(final String releaseName, final ReporterInputData inputData) {
     return
 
     // Insert release name
@@ -74,7 +74,7 @@ public class PreComputation extends SubAssembly {
             }));
   }
 
-  private static Pipe processProject(final InputData inputData, final String projectKey) {
+  private static Pipe processProject(final ReporterInputData inputData, final String projectKey) {
     return
 
     new NullReplacer<String>(
@@ -120,7 +120,7 @@ public class PreComputation extends SubAssembly {
                     .build())));
   }
 
-  private static Pipe processClinical(final InputData inputData, String projectKey) {
+  private static Pipe processClinical(final ReporterInputData inputData, String projectKey) {
     return
 
     //
@@ -154,7 +154,7 @@ public class PreComputation extends SubAssembly {
             .build());
   }
 
-  private static Pipe processFeatureTypes(final InputData inputData, final String projectKey) {
+  private static Pipe processFeatureTypes(final ReporterInputData inputData, final String projectKey) {
     return
 
     //
@@ -170,7 +170,7 @@ public class PreComputation extends SubAssembly {
         });
   }
 
-  private static Pipe processFeatureType(final InputData inputData, final String projectKey,
+  private static Pipe processFeatureType(final ReporterInputData inputData, final String projectKey,
       final FeatureType featureType) {
     log.info("Processing '{}'", featureType);
 
@@ -237,7 +237,7 @@ public class PreComputation extends SubAssembly {
   }
 
   private static Pipe processPrimaryFiles(
-      final InputData inputData, final String projectKey, final FeatureType featureType) {
+      final ReporterInputData inputData, final String projectKey, final FeatureType featureType) {
     return
 
     // TODO: move that before the merge to maximum parallelization (optimization)
@@ -253,7 +253,7 @@ public class PreComputation extends SubAssembly {
 
   }
 
-  private static Pipe processFiles(InputData inputData,
+  private static Pipe processFiles(ReporterInputData inputData,
       final String projectKey, final FileType fileType, final Fields retainedFields) {
     return
 

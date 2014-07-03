@@ -20,10 +20,10 @@ import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
-import org.icgc.dcc.reporter.InputData;
 import org.icgc.dcc.reporter.Main;
 import org.icgc.dcc.reporter.OutputType;
 import org.icgc.dcc.reporter.Reporter;
+import org.icgc.dcc.reporter.ReporterInputData;
 import org.icgc.dcc.reporter.cascading.subassembly.Table1;
 import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
@@ -39,18 +39,18 @@ import com.google.common.base.Function;
 @Slf4j
 public class ReporterConnector {
 
-  private static final int NUM_CONCURRENT_STEPS = 25;
+  private static final int NUM_CONCURRENT_STEPS = 5;
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
 
   public static Flow<?> connectFlow(
-      @NonNull final InputData inputData,
+      @NonNull final ReporterInputData reporterInputData,
       @NonNull final Table1 table1,
       @NonNull final Table2 table2) {
 
     return getFlowConnector()
         .connect(
             flowDef()
-                .addSources(getRawInputTaps(inputData))
+                .addSources(getRawInputTaps(reporterInputData))
                 .addTailSink(table1, ReporterConnector.getRawOutputTap(table1.getName()))
                 .addTailSink(table2, ReporterConnector.getRawOutputTap2(table2.getName()))
                 .setName(Flows.getName(Reporter.CLASS)));
@@ -90,7 +90,7 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private static Map<String, Tap> getRawInputTaps(InputData inputData) {
+  private static Map<String, Tap> getRawInputTaps(ReporterInputData reporterInputData) {
     return
 
     // Convert to raw taps
@@ -100,7 +100,7 @@ public class ReporterConnector {
         getInputTaps(
 
         // get pipe to path map for the project/file type combination
-        inputData.getPipeNameToFilePath()),
+        reporterInputData.getPipeNameToFilePath()),
 
         GenericTaps.RAW_CASTER);
   }
