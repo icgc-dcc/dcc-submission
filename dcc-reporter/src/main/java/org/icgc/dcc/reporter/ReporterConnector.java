@@ -1,5 +1,6 @@
 package org.icgc.dcc.reporter;
 
+import static cascading.flow.FlowDef.flowDef;
 import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.transformValues;
@@ -18,7 +19,10 @@ import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
+import org.icgc.dcc.reporter.cascading.subassembly.Table1;
+import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
+import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.flow.local.LocalFlowConnector;
@@ -33,7 +37,22 @@ public class ReporterConnector {
   private static final int NUM_CONCURRENT_STEPS = 25;
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
 
-  static FlowConnector getFlowConnector() {
+  public static Flow<?> connectFlow(
+      @NonNull final InputData inputData,
+      @NonNull final Table1 table1,
+      @NonNull final Table2 table2,
+      @NonNull final String flowName) {
+
+    return getFlowConnector()
+        .connect(
+            flowDef()
+                .addSources(getRawInputTaps(inputData))
+                .addTailSink(table1, ReporterConnector.getRawOutputTap(table1.getName()))
+                .addTailSink(table2, ReporterConnector.getRawOutputTap2(table2.getName()))
+                .setName(flowName));
+  }
+
+  private static FlowConnector getFlowConnector() {
 
     if (isLocal()) {
       log.info("Using local mode");
@@ -64,7 +83,7 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  static Map<String, Tap> getRawInputTaps(InputData inputData) {
+  private static Map<String, Tap> getRawInputTaps(InputData inputData) {
     return
 
     // Convert to raw taps
@@ -98,7 +117,7 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  static Tap getRawOutputTap(String tailName) {
+  private static Tap getRawOutputTap(String tailName) {
     return GenericTaps.RAW_CASTER.apply(getOutputTap(tailName));
   }
 
@@ -106,7 +125,7 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  static Tap getRawOutputTap2(String tailName) {
+  private static Tap getRawOutputTap2(String tailName) {
     return GenericTaps.RAW_CASTER.apply(getOutputTap2(tailName));
   }
 

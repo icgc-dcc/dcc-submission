@@ -1,11 +1,8 @@
 package org.icgc.dcc.reporter;
 
-import static cascading.flow.FlowDef.flowDef;
 import static org.icgc.dcc.core.util.Extensions.TSV;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
-import static org.icgc.dcc.reporter.ReporterConnector.getFlowConnector;
-import static org.icgc.dcc.reporter.ReporterConnector.getRawInputTaps;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,9 +18,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.Pipes;
-import org.icgc.dcc.reporter.cascading.PreComputation;
-import org.icgc.dcc.reporter.cascading.Table1;
-import org.icgc.dcc.reporter.cascading.Table2;
+import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
+import org.icgc.dcc.reporter.cascading.subassembly.Table1;
+import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
 import cascading.flow.hadoop.util.HadoopUtil;
 
@@ -49,14 +46,11 @@ public class Reporter {
         Table1.processDonors(preComputationTable),
         mapping.keySet());
 
-    // Connect flow
-    getFlowConnector()
-        .connect(
-            flowDef()
-                .addSources(getRawInputTaps(inputData))
-                .addTailSink(table1, ReporterConnector.getRawOutputTap(table1.getName()))
-                .addTailSink(table2, ReporterConnector.getRawOutputTap2(table2.getName()))
-                .setName(Flows.getName(CLASS)))
+    ReporterConnector.connectFlow(
+        inputData,
+        table1,
+        table2,
+        Flows.getName(CLASS))
         .complete();
 
     ReporterGatherer.getTable(inputData.getProjectKeys(), mapping);

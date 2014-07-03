@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter.cascading;
+package org.icgc.dcc.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;

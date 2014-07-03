@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter.cascading;
+package org.icgc.dcc.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.core.model.FeatureTypes.TYPES_WITH_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;

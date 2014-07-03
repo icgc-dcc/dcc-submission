@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter.cascading;
+package org.icgc.dcc.reporter.cascading.subassembly;
 
 import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
