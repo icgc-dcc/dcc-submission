@@ -99,9 +99,14 @@ public class Reporter {
         table2s)
         .complete();
 
-    for (val projectKey : reporterInput.getProjectKeys()) {
-      ReporterGatherer.getTable(projectKey, mapping);
+    for (val projectKey : projectKeys) {
+      ReporterGatherer.getJsonTable1(projectKey);
     }
+    for (val projectKey : projectKeys) {
+      ReporterGatherer.getJsonTable2(projectKey, mapping);
+    }
+    System.out.println(ReporterGatherer.getTsvTable1(projectKeys));
+    System.out.println(ReporterGatherer.getTsvTable2(projectKeys, mapping));
     // log.info(table.getCsvRepresentation());
     // Gatherer.writeCsvFile(table);
   }
@@ -110,13 +115,28 @@ public class Reporter {
     return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
   }
 
-  public static String getOutputFilePath(OutputType output, String projectKey) {
-    return PATH.join(OUTPUT_DIR, getOutputFileName(output));
+  private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
+  private static final String PART_FILE = "part-00000";
+
+  public static String getOuputFileFusePath(OutputType output, String projectKey) {
+    String outputFilePath = Reporter.getOutputFilePath(output, projectKey);
+    if (!Main.isLocal()) {
+      outputFilePath = PATH.join(
+          FUSE_MOUTPOINT_PREFIX,
+          outputFilePath,
+          PART_FILE);
+    }
+    return outputFilePath;
   }
 
-  private static String getOutputFileName(OutputType output) {
+  public static String getOutputFilePath(OutputType output, String projectKey) {
+    return PATH.join(OUTPUT_DIR, getOutputFileName(output, projectKey));
+  }
+
+  private static String getOutputFileName(OutputType output, String projectKey) {
     return EXTENSION.join(
         output.name().toLowerCase(),
+        projectKey,
         TIMESTAMP,
         TSV);
   }

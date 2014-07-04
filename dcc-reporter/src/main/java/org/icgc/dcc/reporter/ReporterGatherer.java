@@ -5,20 +5,23 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Files.readLines;
-import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
-import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Splitters.TAB;
+import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.util.Jackson;
+import org.icgc.dcc.core.util.Separators;
 import org.icgc.dcc.reporter.presentation.DataTypeCountsReportTable;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.io.Files;
 import com.mongodb.BasicDBList;
@@ -27,14 +30,78 @@ import com.mongodb.BasicDBObjectBuilder;
 @Slf4j
 public class ReporterGatherer {
 
-  private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
-  private static final String PART_FILE = "part-00000";
+  private static final Optional<Map<String, String>> ABSENT_MAPPING = Optional.<Map<String, String>> absent();
 
-  public static DataTypeCountsReportTable getTable(
+  public static String getTsvTable1(
+      @NonNull final Set<String> projectKeys) {
+
+    val sb = new StringBuilder();
+    boolean firstProject = true;
+    for (val projectKey : projectKeys) {
+      sb.append(getTsvTable(OutputType.DONOR, projectKey, ABSENT_MAPPING, firstProject));
+      firstProject = false;
+    }
+
+    return sb.toString();
+  }
+
+  public static String getTsvTable2(
+      @NonNull final Set<String> projectKeys,
+      @NonNull final Map<String, String> mapping) {
+
+    val sb = new StringBuilder();
+    boolean firstProject = true;
+    for (val projectKey : projectKeys) {
+      sb.append(getTsvTable(OutputType.SEQUENCING_STRATEGY, projectKey, Optional.of(mapping), firstProject));
+      firstProject = false;
+    }
+
+    return sb.toString();
+  }
+
+  private static String getTsvTable(
+      OutputType outputType,
+      final java.lang.String projectKey,
+      Optional<Map<String, String>> mapping,
+      boolean printHeader) {
+    val outputFilePath = Reporter.getOuputFileFusePath(outputType, projectKey);
+    val headerLine = readFirstLine(outputFilePath);
+    val sb = new StringBuilder();
+    if (printHeader) {
+      val headers = newArrayList(TAB.split(headerLine));
+      val headerSize = headers.size();
+      for (int i = 0; i < headerSize; i++) {
+        sb.append(i == 0 ?
+            EMPTY_STRING : Separators.TAB);
+        sb.append(
+            getHeader(
+                headers.get(i),
+                mapping));
+      }
+      sb.append(Separators.NEWLINE);
+    }
+    for (val line : readRemainingLines(outputFilePath)) {
+      sb.append(line + Separators.NEWLINE);
+    }
+
+    return sb.toString();
+  }
+
+  public static void getJsonTable1(
+      @NonNull final String projectKey) {
+
+    getJsonTable(projectKey, OutputType.DONOR, ABSENT_MAPPING);
+  }
+
+  public static void getJsonTable2(
       @NonNull final String projectKey,
       @NonNull final Map<String, String> mapping) {
 
-    val outputFilePath = getOuputFilePath(OutputType.SEQUENCING_STRATEGY, projectKey);
+    getJsonTable(projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
+  }
+
+  private static void getJsonTable(final String projectKey, OutputType outputType, Optional<Map<String, String>> mapping) {
+    val outputFilePath = Reporter.getOuputFileFusePath(outputType, projectKey);
     val headerLine = readFirstLine(outputFilePath);
     val headers = newArrayList(TAB.split(headerLine));
     val headerSize = headers.size();
@@ -47,16 +114,22 @@ public class ReporterGatherer {
       val builder = new BasicDBObjectBuilder();
       for (int i = 0; i < headerSize; i++) {
         builder.add(
-            tryTranslate(
-                mapping,
-                headers.get(i)),
+            getHeader(
+                headers.get(i),
+                mapping),
             values.get(i));
       }
       documents.add(builder.get());
     }
-    log.info("Content for '{}': '{}'", projectKey, toJsonPrettyString(documents.toString()));
+    log.info("Content for '{}': '{}'", projectKey, Jackson.toJsonPrettyString(documents.toString()));
+  }
 
-    return null;
+  private static String getHeader(String header, Optional<Map<String, String>> mapping) {
+    return mapping.isPresent() ?
+        tryTranslate(
+            mapping.get(),
+            header) :
+        header;
   }
 
   private static String tryTranslate(
@@ -89,17 +162,6 @@ public class ReporterGatherer {
           }
 
         });
-  }
-
-  private static String getOuputFilePath(OutputType output, String projectKey) {
-    String outputFilePath = Reporter.getOutputFilePath(output, projectKey);
-    if (!Main.isLocal()) {
-      outputFilePath = PATH.join(
-          FUSE_MOUTPOINT_PREFIX,
-          outputFilePath,
-          PART_FILE);
-    }
-    return outputFilePath;
   }
 
   @SneakyThrows

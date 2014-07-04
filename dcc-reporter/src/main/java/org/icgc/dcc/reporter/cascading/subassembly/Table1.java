@@ -4,9 +4,6 @@ import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import static org.icgc.dcc.reporter.OutputType.DONOR;
-import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
-import static org.icgc.dcc.reporter.OutputType.SAMPLE;
-import static org.icgc.dcc.reporter.OutputType.SPECIMEN;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
@@ -100,7 +97,7 @@ public class Table1 extends SubAssembly {
 
   private static Pipe processSpecimens(Pipe preComputationTable) {
     return new NamingPipe(
-        SPECIMEN,
+        "SPECIMEN",
 
         new Rename(
             new UniqueCountBy(UniqueCountByData.builder()
@@ -122,7 +119,7 @@ public class Table1 extends SubAssembly {
 
   private static Pipe processSamples(Pipe preComputationTable) {
     return new NamingPipe(
-        SAMPLE,
+        "SAMPLE",
 
         new Rename(
             new UniqueCountBy(UniqueCountByData.builder()
@@ -144,7 +141,7 @@ public class Table1 extends SubAssembly {
 
   private static Pipe processObservations(Pipe preComputationTable) {
     return new NamingPipe(
-        OBSERVATION,
+        "OBSERVATION",
 
         new Rename(
 
