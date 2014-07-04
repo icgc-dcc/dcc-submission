@@ -21,7 +21,12 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.apache.hadoop.fs.Path.SEPARATOR;
+import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.util.Joiners.DOT;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.FS_DEFAULT_FS;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.util.Collection;
@@ -54,12 +59,12 @@ import com.typesafe.config.Config;
 public class NomalizationValidationContext extends AbstractValidationContext {
 
   @NonNull
-  private final String releaseName;
+  private final String parentInputDirName;
   @NonNull
   private final String projectKey;
 
   @NonNull
-  private final String fsRoot;
+  private final String overarchDirName;
   @NonNull
   private final String fsUrl;
   @NonNull
@@ -86,15 +91,15 @@ public class NomalizationValidationContext extends AbstractValidationContext {
 
   @SneakyThrows
   public NomalizationValidationContext(
-      String releaseName, String projectKey, String fsRoot, String fsUrl, String jobTracker) {
-    this.releaseName = releaseName;
+      String overarchDirName, String parentInputDirName, String projectKey, String fsUrl, String jobTracker) {
+    this.overarchDirName = overarchDirName;
+    this.parentInputDirName = parentInputDirName;
     this.projectKey = projectKey;
-    this.fsRoot = fsRoot;
     this.fsUrl = fsUrl;
     this.jobTracker = jobTracker;
 
-    this.release = new Release(releaseName);
-    this.submission = new Submission(projectKey, projectKey, releaseName);
+    this.release = new Release(parentInputDirName);
+    this.submission = new Submission(projectKey, projectKey, parentInputDirName);
 
     val config = getHadoopConfig();
     this.fileSystem = FileSystem.get(config);
@@ -104,6 +109,9 @@ public class NomalizationValidationContext extends AbstractValidationContext {
         dccFileSystem, releaseFileSystem, release, projectKey, submission);
   }
 
+  /**
+   * May be local though (hadoop as in not-app).
+   */
   private final Configuration getHadoopConfig() {
     val fsUrl = getAppConfig().getString(FS_URL);
     val configuration = new Configuration();
@@ -114,11 +122,11 @@ public class NomalizationValidationContext extends AbstractValidationContext {
 
   private final Config getAppConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
-        "hadoop.mapred.job.tracker", jobTracker,
-        "hadoop.fs.defaultFS", fsUrl,
+        DOT.join(HADOOP_KEY, MR_JOBTRACKER_ADDRESS_KEY), jobTracker,
+        DOT.join(HADOOP_KEY, FS_DEFAULT_FS), fsUrl,
 
-        "fs.root", fsRoot,
-        "fs.url", fsUrl
+        FS_ROOT, overarchDirName,
+        FS_URL, fsUrl
         ));
   }
 
@@ -128,7 +136,7 @@ public class NomalizationValidationContext extends AbstractValidationContext {
     val factory = provider.get();
 
     // Reuse primary validation component
-    val project = new Path(fsRoot, new Path(releaseName, projectKey));
+    val project = new Path(overarchDirName, new Path(parentInputDirName, projectKey));
     val input = project;
     val output = project;
     val system = new Path(SEPARATOR); // Not used by normalizer

@@ -1,5 +1,3 @@
-package org.icgc.dcc.hadoop.parser;
-
 /*
  * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
@@ -17,55 +15,53 @@ package org.icgc.dcc.hadoop.parser;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.icgc.dcc.submission.validation.norm;
 
-import static org.icgc.dcc.hadoop.parser.FileParsers.newStringFileParser;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-import java.util.List;
-
+import lombok.Cleanup;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
+import org.icgc.dcc.hadoop.parser.TsvPartFileProcessor;
 
-import com.google.common.collect.ImmutableList;
+/**
+ * "Pseudo" normalizer, simply adds a PK to {@link FeatureType#SGV_TYPE} files.
+ */
+@RequiredArgsConstructor
+public class PseudoNormalizer {
 
-@Slf4j
-public class TsvPartFileProcessor {
+  private final FileSystem fileSystem;
+  private final String inputFilePath;
+  private final String outputFilePath;
 
-  public static void parseFile(
-      FileSystem fileSystem,
-      Path inputFile,
-      FileRecordProcessor<String> recordProcessor) {
+  public void process() {
 
-    parseFiles(fileSystem, ImmutableList.of(inputFile), recordProcessor);
-  }
+    @Cleanup
+    val concatWriter = getWriter();
 
-  public static void parseFiles(
-      FileSystem fileSystem,
-      List<Path> inputFiles,
-      FileRecordProcessor<String> recordProcessor) {
-    int partNumber = 1;
-    int partTotalCount = inputFiles.size();
+    TsvPartFileProcessor.parseFile(
+        fileSystem,
+        new Path(inputFilePath),
+        new FileRecordProcessor<String>() {
 
-    for (val partFile : inputFiles) {
-      val partFileParser = newStringFileParser(fileSystem, true);
+          @Override
+          public void process(long lineNumber, String record) throws IOException {
+            concatWriter.println(record);
+          }
 
-      log.info("    * [{}/{}] Parsing part file '{}'", new Object[] { partNumber, partTotalCount, partFile });
-      val lineCount = parseRecord(partFileParser, partFile, recordProcessor);
-      log.info("    * [{}/{}] Number of lines read: '{}'", new Object[] { partNumber, partTotalCount, lineCount });
-
-      partNumber++;
-    }
+        });
   }
 
   @SneakyThrows
-  private static long parseRecord(
-      FileParser<String> partFileParser,
-      Path partFile,
-      FileRecordProcessor<String> recordProcessor) {
-    return partFileParser.parse(partFile, recordProcessor);
+  private PrintWriter getWriter() {
+    return new PrintWriter(fileSystem.create(new Path(outputFilePath)));
   }
 
 }

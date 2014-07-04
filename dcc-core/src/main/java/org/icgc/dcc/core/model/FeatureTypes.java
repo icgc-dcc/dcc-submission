@@ -117,6 +117,14 @@ public final class FeatureTypes {
       return this == SSM_TYPE;
     }
 
+    public boolean isSgv() {
+      return this == SGV_TYPE;
+    }
+
+    public boolean isSimple() {
+      return isSsm() || isSgv();
+    }
+
     public boolean isCountSummary() {
       return isSsm();
     }
