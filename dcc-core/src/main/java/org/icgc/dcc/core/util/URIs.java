@@ -43,10 +43,15 @@ public final class URIs {
   private static final int PASSWORD_OFFSET = USERNAME_OFFSET + 1;
   private static final int MISSING_PORT = -1;
   private static final String MISSING_CREDENTIALS = Joiners.CREDENTIALS.join(MISSING_INFO, MISSING_INFO);
+  private static final String SCHEME_SEPARATOR = "://";
+  private static final String DEFAULT_PROTOCOL = "http"; // TODO: make more generic...
+  private static final String DEFAULT_SCHEME = DEFAULT_PROTOCOL + SCHEME_SEPARATOR;
 
   @SneakyThrows
-  public static URI getURI(String fsUrl) {
-    return new URI(fsUrl);
+  public static URI getURI(String value) {
+    return new URI(value.contains(SCHEME_SEPARATOR) ?
+        value :
+        DEFAULT_SCHEME + value);
   }
 
   // TODO: change to optional
