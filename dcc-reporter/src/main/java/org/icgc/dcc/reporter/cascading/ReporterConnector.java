@@ -2,7 +2,7 @@ package org.icgc.dcc.reporter.cascading;
 
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
-import static cascading.flow.FlowProps.setMaxConcurrentSteps;
+import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.transformValues;
 import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
@@ -45,7 +45,7 @@ import com.google.common.base.Function;
 @Slf4j
 public class ReporterConnector {
 
-  private static final int NUM_CONCURRENT_STEPS = 5;
+  private static final String CONCURRENCY = String.valueOf(5);
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
 
   @SneakyThrows
@@ -58,8 +58,13 @@ public class ReporterConnector {
       @NonNull final Map<String, Pipe> table1s,
       @NonNull final Map<String, Pipe> table2s) {
 
+    val maxConcurrentFlows = Integer.valueOf(firstNonNull(
+        // To ease benchmarking until we find the sweet spot
+        System.getProperty("DCC_REPORT_CONCURRENCY"),
+        CONCURRENCY));
+    log.info("maxConcurrentFlows: '{}'", maxConcurrentFlows);
     CascadeDef cascadeDef = cascadeDef().setName("reportscascade")
-        .setMaxConcurrentFlows(NUM_CONCURRENT_STEPS);
+        .setMaxConcurrentFlows(maxConcurrentFlows);
 
     for (val projectKey : reporterInput.getProjectKeys()) {
       val table1 = table1s.get(projectKey);
@@ -86,13 +91,12 @@ public class ReporterConnector {
     }
     log.info("Using hadoop mode");
 
-    Map<Object, Object> flowProperties = newHashMap();
     HadoopProperties.setHadoopUserNameProperty();
-
+    Map<Object, Object> flowProperties = newHashMap();
     AppProps.setApplicationJarClass(flowProperties, Reporter.CLASS);
     AppProps.setApplicationName(flowProperties, Reporter.CLASS.getSimpleName());
     AppProps.setApplicationVersion(flowProperties, getCommitId());
-    setMaxConcurrentSteps(flowProperties, NUM_CONCURRENT_STEPS);
+    // setMaxConcurrentSteps(flowProperties, CONCURRENCY);
     flowProperties = HadoopProperties.enableIntermediateMapOutputCompression(
         HadoopProperties.setAvailableCodecs(flowProperties),
         HadoopConstants.LZO_CODEC_PROPERTY_VALUE);
