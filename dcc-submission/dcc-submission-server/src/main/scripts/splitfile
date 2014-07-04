@@ -28,6 +28,8 @@ size=`expr ${size?} + 1`  # ensure not 0
 
 echo "($lc) dividing into $chunk with $size lines per chunk"
 
+pwd
+
 rm -rf /tmp/splitting
 mkdir /tmp/splitting
 cd /tmp/splitting
@@ -45,3 +47,4 @@ for f in $(find /tmp/splitting -type f -name 'temp*');  do
    rm ${f?}
    c=`expr ${c?} + 1`
 done
+
