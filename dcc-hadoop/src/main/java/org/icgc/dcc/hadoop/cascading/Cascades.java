@@ -21,10 +21,14 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Joiners.DASH;
 import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.util.Named;
 
 import cascading.cascade.Cascade;
+import cascading.flow.hadoop.util.HadoopUtil;
 
 /**
  * Utils methods for {@link Cascade}.
@@ -46,6 +50,11 @@ public class Cascades implements Named {
 
   public static String getName(Class<?> clazz, Object... qualifiers) {
     return getName(clazz.getSimpleName(), getName(qualifiers));
+  }
+
+  @SneakyThrows
+  public static String cascadingSerialize(Object object) {
+    return HadoopUtil.serializeBase64(object, new JobConf(new Configuration()));
   }
 
 }

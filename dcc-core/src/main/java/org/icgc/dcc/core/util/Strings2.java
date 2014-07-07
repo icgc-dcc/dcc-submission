@@ -28,6 +28,7 @@ public class Strings2 {
 
   public static final String DOT = ".";
   public static final String EMPTY_STRING = "";
+  public static final String TAB = "\t";
   public static final String UNIX_NEW_LINE = "\n";
 
   public static String removeTrailingS(String s) {

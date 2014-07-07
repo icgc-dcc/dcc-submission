@@ -60,16 +60,16 @@ public class DataTypeCountsReportTable implements CsvRepresentable {
     case DONOR:
       dataTypeCountsReportRow.setDonorCount(count);
       break;
-    case SPECIMEN:
-      dataTypeCountsReportRow.setSpecimenCount(count);
-      break;
-    case SAMPLE:
-      dataTypeCountsReportRow.setSampleCount(count);
-      break;
-    case OBSERVATION:
-      val optionalObservationCount = dataType.isClinicalType() ? Optional.<Long> absent() : Optional.of(count);
-      dataTypeCountsReportRow.setObservationCount(optionalObservationCount);
-      break;
+    // case SPECIMEN:
+    // dataTypeCountsReportRow.setSpecimenCount(count);
+    // break;
+    // case SAMPLE:
+    // dataTypeCountsReportRow.setSampleCount(count);
+    // break;
+    // case OBSERVATION:
+    // val optionalObservationCount = dataType.isClinicalType() ? Optional.<Long> absent() : Optional.of(count);
+    // dataTypeCountsReportRow.setObservationCount(optionalObservationCount);
+    // break;
     default:
       checkState(false, "TODO");
       break;

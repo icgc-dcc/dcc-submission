@@ -23,6 +23,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.asMap;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
 
@@ -318,6 +319,28 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     return map.build();
   }
 
+  @JsonIgnore
+  public Map<FileType, Set<String>> getFieldNames() {
+    return asMap(
+        getFileTypeSet(),
+        new Function<FileType, Set<String>>() {
+
+          @Override
+          public Set<String> apply(FileType fileType) {
+            return getFileSchema(fileType).getFieldNameSet();
+          }
+
+        });
+  }
+
+  @JsonIgnore
+  public Set<FileType> getFileTypeSet() {
+    return ImmutableSet.<FileType> copyOf(getFileTypes());
+  }
+
+  /**
+   * TODO: change to {@link java.util.Set} and delete {@link #getFileTypeSet()}.
+   */
   @JsonIgnore
   public List<FileType> getFileTypes() {
     return newArrayList(transform(files, new Function<FileSchema, FileType>() {

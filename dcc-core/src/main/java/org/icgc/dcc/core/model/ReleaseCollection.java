@@ -20,13 +20,16 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.core.model.FieldNames.MONGO_INTERNAL_ID;
+import static org.icgc.dcc.core.model.FieldNames.PATHWAY_REACTOME_ID;
 import static org.icgc.dcc.core.model.FieldNames.RELEASE_ID;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 
 import java.util.List;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.core.model.FieldNames.IdentifierFieldNames;
+import org.icgc.dcc.core.model.FieldNames.LoaderFieldNames;
 
 /**
  * Represents a collection in the the MongoDB data model.
@@ -36,15 +39,14 @@ import lombok.RequiredArgsConstructor;
 public enum ReleaseCollection {
 
   RELEASE_COLLECTION("Release", newArrayList(RELEASE_ID)),
-  PROJECT_COLLECTION("Project", newArrayList(SurrogateKeys.PROJECT)),
-  DONOR_COLLECTION("Donor", newArrayList(SurrogateKeys.DONOR)),
-  GENE_COLLECTION("Gene", newArrayList(SurrogateKeys.GENE)),
+  PROJECT_COLLECTION("Project", newArrayList(LoaderFieldNames.PROJECT_ID)),
+  DONOR_COLLECTION("Donor", newArrayList(IdentifierFieldNames.SURROGATE_DONOR_ID)),
+  GENE_COLLECTION("Gene", newArrayList(LoaderFieldNames.GENE_ID)),
   OBSERVATION_COLLECTION("Observation", newArrayList(
-      SurrogateKeys.SAMPLE,
-      SurrogateKeys.MUTATION,
-      SUBMISSION_OBSERVATION_ANALYSIS_ID)),
-  MUTATION_COLLECTION("Mutation", newArrayList(SurrogateKeys.MUTATION)),
-  PATHWAY_COLLECTION("Pathway", newArrayList(SurrogateKeys.PATHWAY));
+      IdentifierFieldNames.SURROGATE_DONOR_ID,
+      IdentifierFieldNames.SURROGATE_MUTATION_ID)),
+  MUTATION_COLLECTION("Mutation", newArrayList(IdentifierFieldNames.SURROGATE_MUTATION_ID)),
+  PATHWAY_COLLECTION("Pathway", newArrayList(PATHWAY_REACTOME_ID));
 
   /**
    * The name of the collection.

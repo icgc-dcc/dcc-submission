@@ -138,6 +138,7 @@ public class Field implements DictionaryElement, Serializable {
       public boolean apply(Restriction input) {
         return input.getType() == type;
       }
+
     });
   }
 
