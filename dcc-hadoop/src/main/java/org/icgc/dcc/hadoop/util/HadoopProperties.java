@@ -27,6 +27,8 @@ import static org.icgc.dcc.hadoop.util.HadoopConstants.CASCADING_ERROR_DOT_FILE_
 import static org.icgc.dcc.hadoop.util.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.ENABLED_COMPRESSION;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.HADOOP_USER_NAME_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.HDFS_USERNAME_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.IO_COMPRESSION_CODECS_PROPERTY_NAME;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.LZOP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.LZO_CODEC_PROPERTY_VALUE;
@@ -51,6 +53,15 @@ import org.icgc.dcc.core.util.AppUtils;
  */
 @Slf4j
 public class HadoopProperties {
+
+  /**
+   * DCC-572: Set systems properties
+   */
+  public static void setHadoopUserNameProperty() {
+    System.setProperty(
+        HADOOP_USER_NAME_PROPERTY_NAME,
+        HDFS_USERNAME_PROPERTY_VALUE);
+  }
 
   public static Map<Object, Object> setAvailableCodecs(Map<Object, Object> properties) {
     val codecs = on(PROPERTY_VALUES_SEPARATOR)

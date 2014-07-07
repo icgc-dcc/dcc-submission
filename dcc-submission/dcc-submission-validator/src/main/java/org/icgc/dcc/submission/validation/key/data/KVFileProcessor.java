@@ -34,7 +34,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.parser.FileRecordProcessor;
+import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVDictionary;
 import org.icgc.dcc.submission.validation.key.core.KVErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVFileParser;
