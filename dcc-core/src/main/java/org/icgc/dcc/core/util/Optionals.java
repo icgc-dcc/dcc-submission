@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,39 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm.steps;
+package org.icgc.dcc.core.util;
 
-import java.util.Iterator;
+import static lombok.AccessLevel.PRIVATE;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
-import org.junit.Test;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import cascading.operation.Buffer;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+import lombok.NoArgsConstructor;
 
-public class RedundantObservationRemovalTest {
+import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
-  @Test
-  public void test_cascading_FilterRedundantObservationBuffer() {
-    Buffer<?> buffer = new RedundantObservationRemoval.FilterRedundantObservationBuffer();
+import com.google.common.base.Optional;
 
-    Fields inputFields = new Fields("f1", "f2");
+/**
+ * Common optionals.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class Optionals {
 
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy1")),
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy2")),
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy3"))
-    };
-    Fields resultFields = inputFields;
+  public static final Optional<String> ABSENT_STRING = Optional.absent();
+  public static final Optional<List<String>> ABSENT_STRING_LIST = Optional.<List<String>> absent();
+  public static final Optional<Set<String>> ABSENT_STRING_SET = Optional.<Set<String>> absent();
+  public static final Optional<Map<String, String>> ABSENT_STRING_MAP = Optional.<Map<String, String>> absent();
 
-    Tuple[] resultTuples = new Tuple[] {
-        new Tuple("dummy", "dummy1") // Only one left
-    };
+  public static final Optional<FileType> ABSENT_FILE_TYPE = Optional.absent();
+  public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
 
-    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeBuffer(buffer, entries, resultFields);
-    CascadingTestUtils.checkOperationResults(iterator, resultTuples);
-  }
 }

@@ -231,7 +231,7 @@ public final class FeatureTypes {
   public static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE =
       TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE;
 
-  public static Proposition hasSequencingStrategy(
+  public static final Proposition HAS_RAW_SEQUENCE_DATA(
       @NonNull final FeatureType featureType) {
 
     return new Proposition() {
@@ -242,6 +242,13 @@ public final class FeatureTypes {
       }
 
     };
+
+  }
+
+  public static final Proposition HAS_SEQUENCING_STRATEGY(
+      @NonNull final FeatureType featureType) {
+
+    return HAS_RAW_SEQUENCE_DATA(featureType);
 
   }
 

@@ -1,5 +1,6 @@
 package org.icgc.dcc.reporter;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -29,6 +30,7 @@ import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
 import cascading.pipe.Pipe;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 
@@ -64,11 +66,9 @@ public class Reporter {
             projectKeys.get() :
             reporterInput.getProjectKeys(),
         reporterInput,
-        getMapping(
+        getSequencingStrategyMapping(
             dictionaryRoot,
-            codeListsRoot,
-            SSM_M_TYPE, // TODO: add check mapping is the same for all meta files (it should)
-            getFieldName(SEQUENCING_STRATEGY_FIELD)));
+            codeListsRoot));
   }
 
   public static void process(
@@ -139,6 +139,21 @@ public class Reporter {
         projectKey,
         TIMESTAMP,
         TSV);
+  }
+
+  private static Map<String, String> getSequencingStrategyMapping(
+      @NonNull final JsonNode dictionaryRoot,
+      @NonNull final JsonNode codeListsRoot) {
+    val sequencingStrategyMapping = getMapping(
+        dictionaryRoot,
+        codeListsRoot,
+        SSM_M_TYPE, // TODO: add check mapping is the same for all meta files (it should)
+        getFieldName(SEQUENCING_STRATEGY_FIELD));
+    checkState(sequencingStrategyMapping.isPresent(),
+        "Expecting codelist to exists for: '%s.%s'",
+        SSM_M_TYPE, SEQUENCING_STRATEGY_FIELD);
+
+    return sequencingStrategyMapping.get();
   }
 
 }

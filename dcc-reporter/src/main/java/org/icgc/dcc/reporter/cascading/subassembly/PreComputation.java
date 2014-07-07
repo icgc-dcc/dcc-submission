@@ -1,7 +1,7 @@
 package org.icgc.dcc.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
+import static org.icgc.dcc.core.model.FeatureTypes.HAS_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
@@ -195,7 +195,7 @@ public class PreComputation extends SubAssembly {
                             inputData, projectKey, featureType.getMetaFileType(),
                             appendIfApplicable(
                                 META_PK_FIELDS,
-                                hasSequencingStrategy(featureType),
+                                HAS_SEQUENCING_STRATEGY(featureType),
                                 SEQUENCING_STRATEGY_FIELD))))
                 .rightJoinFields(META_PK_FIELDS)
 

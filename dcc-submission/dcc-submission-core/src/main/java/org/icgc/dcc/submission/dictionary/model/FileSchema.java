@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -48,6 +49,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -215,8 +217,27 @@ public class FileSchema implements DictionaryElement, Serializable {
     return newArrayList(getFieldNames(filter(fields, IS_CONTROLLED)));
   }
 
+  static Predicate<Field> HAS_CODELIST_RESTRICTION = new Predicate<Field>() {
+
+    @Override
+    public boolean apply(Field field) {
+      return field.hasCodeListRestriction();
+    }
+
+  };
+
+  @JsonIgnore
+  public Set<Field> getEncodedFields() {
+    return ImmutableSet.<Field> copyOf(filter(getFields(), HAS_CODELIST_RESTRICTION));
+  }
+
+  @JsonIgnore
+  public Set<String> getFieldNameSet() {
+    return ImmutableSet.<String> copyOf(getFieldNames());
+  }
+
   /**
-   * TODO: change to List (never big)
+   * TODO: change to {@link java.util.Set} and delete {@link #getFieldNameSet()}.
    */
   @JsonIgnore
   public List<String> getFieldNames() {

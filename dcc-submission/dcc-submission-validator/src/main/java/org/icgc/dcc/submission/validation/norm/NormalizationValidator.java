@@ -61,7 +61,6 @@ import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
 import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
-import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
 import org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking;
 import org.icgc.dcc.submission.validation.norm.steps.UniqueCounting;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -92,6 +91,11 @@ public final class NormalizationValidator implements Validator {
    * Type that is the focus of normalization (there could be more in the future).
    */
   public static final FileType FOCUS_TYPE = SSM_P_TYPE;
+
+  /**
+   * Field used for unique counts.
+   */
+  public static final String ANALYSIS_ID = SUBMISSION_OBSERVATION_ANALYSIS_ID;
 
   /**
    * Name of the uncompressed single output file.
@@ -136,7 +140,7 @@ public final class NormalizationValidator implements Validator {
         new ImmutableList.Builder<NormalizationStep>()
 
             .add(new UniqueCounting(
-                SUBMISSION_OBSERVATION_ANALYSIS_ID,
+                ANALYSIS_ID,
                 UNIQUE_START))
             .add(new Counting(TOTAL_START))
 
@@ -149,11 +153,9 @@ public final class NormalizationValidator implements Validator {
 
             // Must happen after allele masking
             .add(new MutationRebuilding()) // Must happen before removing redundant observations
-            .add(new RedundantObservationRemoval(SUBMISSION_OBSERVATION_ANALYSIS_ID))
-            // May be skipped
 
             .add(new UniqueCounting(
-                SUBMISSION_OBSERVATION_ANALYSIS_ID,
+                ANALYSIS_ID,
                 UNIQUE_REMAINING))
 
             // Must happen after removing duplicates and allele masking
