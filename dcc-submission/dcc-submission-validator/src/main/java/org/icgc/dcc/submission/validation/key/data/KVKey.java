@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Charsets.US_ASCII;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.MISSING_CODE1;
-import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.MISSING_CODE2;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
 
 import java.nio.ByteBuffer;
 import java.util.List;

@@ -122,7 +122,7 @@ public final class FeatureTypes {
     }
 
     public boolean hasSequencingStrategy() {
-      return TYPES_WITH_SEQUENCING_STRATEGY.apply(this);
+      return TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE.apply(this);
     }
 
     /**
@@ -212,21 +212,24 @@ public final class FeatureTypes {
     return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 
-  private static Predicate<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = new Predicate<FeatureType>() {
+  public static final Set<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = ImmutableSet.<FeatureType> of(
+      METH_ARRAY_TYPE,
+      EXP_ARRAY_TYPE,
+      PEXP_TYPE);
 
-    private final Set<FeatureType> TYPES = ImmutableSet.<FeatureType> of(
-        METH_ARRAY_TYPE,
-        EXP_ARRAY_TYPE,
-        PEXP_TYPE);
+  public static final Set<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
+
+  private static Predicate<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE = new Predicate<FeatureType>() {
 
     @Override
     public boolean apply(FeatureType featureType) {
-      return !TYPES.contains(featureType);
+      return !TYPES_WITH_RAW_SEQUENCE_DATA.contains(featureType);
     }
 
   };
 
-  private static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
+  public static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE =
+      TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE;
 
   public static final Proposition HAS_RAW_SEQUENCE_DATA(
       @NonNull final FeatureType featureType) {
@@ -235,7 +238,7 @@ public final class FeatureTypes {
 
       @Override
       public boolean evaluate() {
-        return TYPES_WITH_SEQUENCING_STRATEGY.apply(featureType);
+        return TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE.apply(featureType);
       }
 
     };
@@ -250,11 +253,11 @@ public final class FeatureTypes {
   }
 
   public static Iterable<FeatureType> withRawSequenceData(@NonNull final Iterable<FeatureType> items) {
-    return filter(items, TYPES_WITH_RAW_SEQUENCE_DATA);
+    return filter(items, TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE);
   }
 
   public static Iterable<FeatureType> withSequencingStrategy(@NonNull final Iterable<FeatureType> items) {
-    return filter(items, TYPES_WITH_SEQUENCING_STRATEGY);
+    return filter(items, TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE);
   }
 
 }

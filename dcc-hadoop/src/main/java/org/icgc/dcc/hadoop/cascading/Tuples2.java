@@ -17,20 +17,99 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static lombok.AccessLevel.PRIVATE;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
+import cascading.operation.BaseOperation;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
 /**
  * Utility class to help with the {@link Tuple} object from cascading.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = PRIVATE)
 public final class Tuples2 {
+
+  /**
+   * Index of the first item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   */
+  static final int FIRST_ITEM = 0;
+
+  /**
+   * Index of the second item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
+   */
+  static final int SECOND_ITEM = FIRST_ITEM + 1;
+
+  public static String getFirstString(Tuple tuple) {
+    return getString(tuple, FIRST_ITEM);
+  }
+
+  public static String getSecondString(Tuple tuple) {
+    return getString(tuple, SECOND_ITEM);
+  }
+
+  public static Object getFirstObject(Tuple tuple) {
+    return getObject(tuple, FIRST_ITEM);
+  }
+
+  public static Object getSecondObject(Tuple tuple) {
+    return getObject(tuple, SECOND_ITEM);
+  }
+
+  public static int getFirstInteger(Tuple tuple) {
+    return getInteger(tuple, FIRST_ITEM);
+  }
+
+  public static int getSecondInteger(Tuple tuple) {
+    return getInteger(tuple, SECOND_ITEM);
+  }
+
+  public static Tuple setFirstInteger(Tuple tuple, int value) {
+    tuple.set(FIRST_ITEM, value);
+    return tuple;
+  }
+
+  public static Tuple setSecondInteger(Tuple tuple, int value) {
+    tuple.set(SECOND_ITEM, value);
+    return tuple;
+  }
+
+  public static Tuple setFirstLong(Tuple tuple, long value) {
+    tuple.set(FIRST_ITEM, value);
+    return tuple;
+  }
+
+  public static Tuple setSecondLong(Tuple tuple, long value) {
+    tuple.set(SECOND_ITEM, value);
+    return tuple;
+  }
+
+  public static Tuple setFirstString(Tuple tuple, String value) {
+    tuple.set(FIRST_ITEM, value);
+    return tuple;
+  }
+
+  public static Tuple setSecondString(Tuple tuple, String value) {
+    tuple.set(SECOND_ITEM, value);
+    return tuple;
+  }
+
+  private static String getString(Tuple tuple, int index) {
+    return tuple.getString(index);
+  }
+
+  private static int getInteger(Tuple tuple, int index) {
+    return tuple.getInteger(index);
+  }
+
+  private static Object getObject(Tuple tuple, int index) {
+    return tuple.getObject(index);
+  }
 
   /**
    * Nests a tuple within a tuple.
