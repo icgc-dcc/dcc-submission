@@ -27,7 +27,6 @@ import java.util.List;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
-import cascading.operation.BaseOperation;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -40,38 +39,28 @@ import com.google.common.base.Function;
 @NoArgsConstructor(access = PRIVATE)
 public final class TupleEntries {
 
-  /**
-   * Index of the first item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
-   */
-  private static final int FIRST_ITEM = 0;
-
-  /**
-   * Index of the second item in a {@link TupleEntry} (convenient for {@link BaseOperation}s).
-   */
-  private static final int SECOND_ITEM = FIRST_ITEM + 1;
-
-  public static String getFirstString(TupleEntry arguments) {
-    return getString(arguments, FIRST_ITEM);
+  public static String getFirstString(TupleEntry entry) {
+    return Tuples2.getFirstString(entry.getTuple());
   }
 
-  public static String getSecondString(TupleEntry arguments) {
-    return getString(arguments, SECOND_ITEM);
+  public static String getSecondString(TupleEntry entry) {
+    return Tuples2.getSecondString(entry.getTuple());
   }
 
-  public static Object getFirstObject(TupleEntry arguments) {
-    return getObject(arguments, FIRST_ITEM);
+  public static Object getFirstObject(TupleEntry entry) {
+    return Tuples2.getFirstObject(entry.getTuple());
   }
 
-  public static Object getSecondObject(TupleEntry arguments) {
-    return getObject(arguments, SECOND_ITEM);
+  public static Object getSecondObject(TupleEntry entry) {
+    return Tuples2.getSecondObject(entry.getTuple());
   }
 
-  private static String getString(TupleEntry entry, int index) {
-    return entry.getString(index);
+  public static int getFirstInteger(TupleEntry entry) {
+    return Tuples2.getFirstInteger(entry.getTuple());
   }
 
-  private static Object getObject(TupleEntry entry, int index) {
-    return entry.getObject(index);
+  public static int getSecondInteger(TupleEntry entry) {
+    return Tuples2.getSecondInteger(entry.getTuple());
   }
 
   /**
@@ -173,6 +162,8 @@ public final class TupleEntries {
    * tuple/tupleEntry nesting).
    * <p>
    * Very useful for debugging.
+   * <p>
+   * TODO: use ObjectNode directly rather than String.
    */
   public static String toJson(TupleEntry tupleEntry) {
     Fields fields = tupleEntry.getFields();

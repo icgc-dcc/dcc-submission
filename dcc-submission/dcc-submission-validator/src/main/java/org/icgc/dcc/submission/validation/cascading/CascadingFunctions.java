@@ -29,6 +29,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -51,31 +52,6 @@ public final class CascadingFunctions {
    * Value used to represent "nothing" in cascading {@link Tuple}s.
    */
   public static final Object NO_VALUE = null;
-
-  /**
-   * Simple function that logs the incoming tuple entries (useful for debugging).
-   * <p>
-   * Example of call:
-   * <code>pipe = new Each(pipe, new CascadingFunctions.LogFunction("my_prefix"), Fields.RESULTS);</code>
-   */
-  @SuppressWarnings("rawtypes")
-  public static class LogFunction extends BaseOperation implements Function {
-
-    private final String prefix;
-
-    public LogFunction(String prefix) {
-      super(Fields.ARGS);
-      this.prefix = prefix;
-      System.out.println(prefix);
-    }
-
-    @Override
-    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      TupleEntry entry = functionCall.getArguments();
-      System.out.println(prefix + "\t" + org.icgc.dcc.hadoop.cascading.TupleEntries.toJson(entry));
-      functionCall.getOutputCollector().add(entry);
-    }
-  }
 
   /**
    * {@link Function} that emits no {@link Tuple}s. It is different than {@link NoOp} because it still preserves the
@@ -168,32 +144,10 @@ public final class CascadingFunctions {
   }
 
   /**
-   * Replaces a null value with an empty tuple.
-   */
-  @SuppressWarnings("rawtypes")
-  public static class AddEmptyTuple extends BaseOperation implements Function {
-
-    private static final int NEST_FIELD_INDEX = 0;
-
-    public AddEmptyTuple() {
-      super(ARGS);
-    }
-
-    @Override
-    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      Tuple copy = functionCall.getArguments().getTupleCopy();
-
-      if (copy.getObject(NEST_FIELD_INDEX) == null) { // If null, then replace it with an empty tuple
-        copy.set(NEST_FIELD_INDEX, new Tuple());
-      }
-
-      functionCall.getOutputCollector().add(copy);
-    }
-  }
-
-  /**
    * Replaces the nulls resulting from a left join for summary data with the appropriate value (0 or false) based on the
    * feature type.
+   * <p>
+   * TODO: try and re-use {@link NullReplacer} (if possible at all)?
    */
   public static class ReplaceNulls extends BaseOperation<Void> implements cascading.operation.Function<Void> {
 

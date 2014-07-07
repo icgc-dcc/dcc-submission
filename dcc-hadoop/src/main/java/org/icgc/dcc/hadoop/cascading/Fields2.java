@@ -21,17 +21,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.UNDERSCORE;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
+
+import org.icgc.dcc.core.util.Proposition;
+
 import cascading.tuple.Fields;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -42,13 +50,31 @@ import com.google.common.collect.ImmutableList;
 @NoArgsConstructor(access = PRIVATE)
 public final class Fields2 {
 
-  private static final String DEFAULT_PREFIX_SEPARATOR = ".";
+  public static Fields NO_FIELDS = new Fields();
+  public static Fields EMPTY_FIELDS = NO_FIELDS;
 
-  public static void checkFieldsCardinality(Fields fields, int expectedSize) {
+  private static final String DEFAULT_PREFIX_SEPARATOR = ".";
+  private static final String COUNT_SUFFIX = "count";
+  private static final String REDUNDANT_PREFIX = "redundant";
+
+  public static Fields checkFieldsCardinalityOne(Fields fields) {
+    return checkFieldsCardinality(fields, 1);
+  }
+
+  public static Fields checkFieldsCardinalityTwo(Fields fields) {
+    return checkFieldsCardinality(fields, 2);
+  }
+
+  public static Fields checkFieldsCardinalityThree(Fields fields) {
+    return checkFieldsCardinality(fields, 3);
+  }
+
+  public static Fields checkFieldsCardinality(Fields fields, int expectedSize) {
     checkState(
         fields.size() == expectedSize,
         "Expecting only '%s' field(s), instead got '%s' ('%s')",
         fields.size(), fields);
+    return fields;
   }
 
   public static Fields fields(Iterable<String> fieldNames) {
@@ -103,8 +129,32 @@ public final class Fields2 {
     return new Fields(fieldNames);
   }
 
+  public static Entry<Fields, Object> keyValuePair(String fieldName, Object value) {
+    return new SimpleEntry<Fields, Object>(NAME_TO_FIELD.apply(fieldName), value);
+  }
+
+  public static Entry<Fields, Object> keyValuePair(Fields field, Object value) {
+    return new SimpleEntry<Fields, Object>(field, value);
+  }
+
   private static String[] toStringArray(Collection<String> fieldNames) {
     return fieldNames.toArray(new String[] {});
+  }
+
+  public static Fields getCountFieldCounterpart(Fields field) {
+    return getCountFieldCounterpart(getFieldName(checkFieldsCardinalityOne(field)));
+  }
+
+  public static Fields getCountFieldCounterpart(String fieldName) {
+    return new Fields(ADD_COUNT_SUFFIX.apply(fieldName));
+  }
+
+  public static Fields getRedundantFieldCounterpart(Fields field) {
+    return getRedundantFieldCounterpart(getFieldName(checkFieldsCardinalityOne(field)));
+  }
+
+  public static Fields getRedundantFieldCounterpart(String fieldName) {
+    return new Fields(ADD_REDUNDANT_PREFIX.apply(fieldName));
   }
 
   /**
@@ -233,8 +283,46 @@ public final class Fields2 {
   /**
    * Returns the actual field name.
    */
-  public static String getFieldName(Fields fields) {
-    return fields.print().replace("['", "").replace("']", "");
+  public static String getFieldName(Fields field) {
+    return checkFieldsCardinalityOne(field).print().replace("['", "").replace("']", "");
   }
+
+  public static Fields appendIfApplicable(
+      @NonNull final Fields fields, // TODO: decorator around that Fields rather
+      @NonNull final Proposition proposition,
+      @NonNull final Fields conditionedFields) {
+
+    return fields.append(
+        proposition.evaluate() ?
+            conditionedFields :
+            NO_FIELDS);
+  }
+
+  private static final Function<String, Fields> NAME_TO_FIELD = new Function<String, Fields>() {
+
+    @Override
+    public Fields apply(String fieldName) {
+      return new Fields(fieldName);
+    }
+
+  };
+
+  private static final Function<String, String> ADD_COUNT_SUFFIX = new Function<String, String>() {
+
+    @Override
+    public String apply(String fieldName) {
+      return UNDERSCORE.join(fieldName, COUNT_SUFFIX);
+    }
+
+  };
+
+  private static final Function<String, String> ADD_REDUNDANT_PREFIX = new Function<String, String>() {
+
+    @Override
+    public String apply(String fieldName) {
+      return UNDERSCORE.join(REDUNDANT_PREFIX, fieldName);
+    }
+
+  };
 
 }

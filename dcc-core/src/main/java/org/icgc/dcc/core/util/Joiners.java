@@ -29,16 +29,19 @@ import com.google.common.base.Joiner;
 @NoArgsConstructor(access = PRIVATE)
 public final class Joiners {
 
+  public static final Joiner WHITESPACE = on(Separators.WHITESPACE);
+  public static final Joiner EMPTY_STRING = on(Separators.EMPTY_STRING);
   public static final Joiner SLASH = on('/');
-  public static final Joiner TAB = on('\t');
-  public static final Joiner NEWLINE = on('\n');
-  public static final Joiner DOT = on('.');
-  public static final Joiner DASH = on('-');
-  public static final Joiner UNDERSCORE = on('_');
+  public static final Joiner TAB = on(Separators.TAB);
+  public static final Joiner NEWLINE = on(Separators.NEWLINE);
+  public static final Joiner DOT = on(".");
+  public static final Joiner DASH = on("-");
+  public static final Joiner UNDERSCORE = on("_");
+  public static final Joiner COMMA = on(Separators.COMMA);
   public static final Joiner COLON = on(':');
   public static final Joiner SEMICOLON = on(';');
-
   public static final Joiner PATH = SLASH;
-  public static final Joiner INDENT = on("\n\t");
+  public static final Joiner EXTENSION = DOT;
+  public static final Joiner INDENT = on(Separators.INDENT);
 
 }
