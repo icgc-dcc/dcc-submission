@@ -36,6 +36,8 @@ import org.mockito.Mock;
 import org.mockito.internal.matchers.Contains;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.base.Optional;
+
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractServiceTest {
 
@@ -55,7 +57,7 @@ public class AbstractServiceTest {
   public void test_withRetry_pass_first() {
     val description = "@@@test@@@";
     val expected = 10;
-    val actual = service.withRetry(description, new Callable<Integer>() {
+    Optional<Integer> actual = service.withRetry(description, new Callable<Integer>() {
 
       @Override
       public Integer call() throws Exception {
@@ -72,7 +74,7 @@ public class AbstractServiceTest {
   public void test_withRetry_pass_half() {
     val description = "@@@test@@@";
     val expected = 10;
-    val actual = service.withRetry(description, new Callable<Integer>() {
+    Optional<Integer> actual = service.withRetry(description, new Callable<Integer>() {
 
       int i = 1;
 
