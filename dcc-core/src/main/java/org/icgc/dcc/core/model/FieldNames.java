@@ -18,8 +18,11 @@
 package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.util.FormatUtils._;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
@@ -35,8 +38,10 @@ public final class FieldNames {
   /**
    * Field names in the original submission format.
    */
-  @NoArgsConstructor(access = PRIVATE)
   public static class SubmissionFieldNames {
+
+    private SubmissionFieldNames() {
+    }
 
     public static final String SUBMISSION_DONOR_ID = "donor_id";
     public static final String SUBMISSION_SPECIMEN_ID = "specimen_id";
@@ -64,16 +69,20 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE = "mutated_from_allele";
     public static final String SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE = "mutated_to_allele";
 
+    public static final String SUBMISSION_OBSERVATION_CHROMOSOME_STRAND = "chromosome_strand";
     public static final String SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY = "sequencing_strategy";
     public static final String SUBMISSION_OBSERVATION_RAW_DATA_REPOSITORY = "raw_data_repository";
     public static final String SUBMISSION_OBSERVATION_RAW_DATA_ACCESSION = "raw_data_accession";
+
   }
 
   /**
    * Field names used in the normalizer component.
    */
-  @NoArgsConstructor(access = PRIVATE)
   public static class NormalizerFieldNames {
+
+    private NormalizerFieldNames() {
+    }
 
     /**
      * Field to act as primary key between primary and secondary files.
@@ -88,14 +97,38 @@ public final class FieldNames {
   }
 
   /**
-   * Names for the array fields in the loader.
+   * Field names used in the identifier component.
    */
-  @NoArgsConstructor(access = PRIVATE)
-  public static class LoaderArrayNames {
+  public static class IdentifierFieldNames {
 
+    private IdentifierFieldNames() {
+    }
+
+    public static final String SURROGATE_DONOR_ID = _("_%s", SUBMISSION_DONOR_ID);
+    public static final String SURROGATE_SPECIMEN_ID = _("_%s", SUBMISSION_SPECIMEN_ID);
+    public static final String SURROGATE_SAMPLE_ID = "_sample_id";
+    public static final String SURROGATE_MUTATION_ID = "_mutation_id";
+
+  }
+
+  /**
+   * Names for the fields in the loader.
+   */
+  public static class LoaderFieldNames {
+
+    private LoaderFieldNames() {
+    }
+
+    public static final String OBSERVATION_TYPE = "_type";
+    public static final String PROJECT_ID = "_project_id";
+    public static final String GENE_ID = "_gene_id";
+    public static final String TRANSCRIPT_ID = "_transcript_id";
+
+    // Arrays
     public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
     public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
+    public static final String OBSERVATION_ARRAY_NAME = "observation";
 
   }
 
@@ -139,7 +172,7 @@ public final class FieldNames {
   /**
    * Donor field names.
    */
-  public static final String DONOR_ID = "_donor_id";
+  public static final String DONOR_ID = IdentifierFieldNames.SURROGATE_DONOR_ID;
 
   public static final String DONOR_SUMMARY = "_summary";
   public static final String DONOR_SUMMARY_REPOSITORY = "repository";
@@ -150,15 +183,15 @@ public final class FieldNames {
   public static final String DONOR_SUMMARY_AFFECTED_GENE_COUNT = "_affected_gene_count";
 
   public static final String DONOR_GENES = "gene";
-  public static final String DONOR_GENE_GENE_ID = "_gene_id";
+  public static final String DONOR_GENE_GENE_ID = LoaderFieldNames.GENE_ID;
   public static final String DONOR_GENE_SUMMARY = "_summary";
   public static final String DONOR_PROJECT_ID = PROJECT_ID;
   public static final String DONOR_PROJECT = "project";
   public static final String DONOR_AGE_AT_DIAGNOSIS = "donor_age_at_diagnosis";
   public static final String DONOR_SPECIMEN = "specimen";
-  public static final String DONOR_SPECIMEN_ID = "_specimen_id";
-  public static final String DONOR_SAMPLE = "sample";
-  public static final String DONOR_SAMPLE_ID = "_sample_id";
+  public static final String DONOR_SPECIMEN_ID = IdentifierFieldNames.SURROGATE_SPECIMEN_ID;
+  public static final String DONOR_SAMPLE = "sample"; // TODO: reuse loader's
+  public static final String DONOR_SAMPLE_ID = IdentifierFieldNames.SURROGATE_SAMPLE_ID;
   public static final String DONOR_CONTROL_SAMPLE_ID = "_matched_sample_id";
   public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
   public static final String DONOR_SAMPLE_SEQUENCE_DATA = "available_raw_sequence_data";
@@ -166,7 +199,7 @@ public final class FieldNames {
   /**
    * CGHub field names.
    */
-  public static final String SEQUENCE_DATA_PROJECT_ID = "_project_id";
+  public static final String SEQUENCE_DATA_PROJECT_ID = PROJECT_ID;
   public static final String SEQUENCE_DATA_LEGACY_SAMPLE_ID = "legacy_sample_id";
   public static final String SEQUENCE_DATA_LIBRARY_STRATEGY = "library_strategy";
   public static final String SEQUENCE_DATA_REPOSITORY = "repository";
@@ -174,10 +207,10 @@ public final class FieldNames {
   /**
    * Gene field names.
    */
-  public static final String GENE_ID = "_gene_id";
+  public static final String GENE_ID = LoaderFieldNames.GENE_ID; // TODO: remove?
   public static final String GENE_SYMBOL = "symbol";
   public static final String GENE_DONORS = "donor";
-  public static final String GENE_DONOR_DONOR_ID = "_donor_id";
+  public static final String GENE_DONOR_DONOR_ID = IdentifierFieldNames.SURROGATE_DONOR_ID;
   public static final String GENE_DONOR_PROJECT = "project";
   public static final String GENE_DONOR_SUMMARY = "_summary";
   public static final String GENE_PROJECTS = "project";
@@ -205,10 +238,10 @@ public final class FieldNames {
    * Observation field names.
    */
   public static final String OBSERVATION_ID = MONGO_INTERNAL_ID;
-  public static final String OBSERVATION_MUTATION_ID = "_mutation_id";
+  public static final String OBSERVATION_MUTATION_ID = IdentifierFieldNames.SURROGATE_MUTATION_ID;
   public static final String OBSERVATION_TYPE = "_type";
   public static final String OBSERVATION_DONOR = "donor";
-  public static final String OBSERVATION_DONOR_ID = "_donor_id";
+  public static final String OBSERVATION_DONOR_ID = IdentifierFieldNames.SURROGATE_DONOR_ID;
   public static final String OBSERVATION_PROJECT = "project";
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_FUNCTIONAL_IMPACT_PREDICTION_SUMMARY = "functional_impact_prediction_summary";
@@ -220,8 +253,8 @@ public final class FieldNames {
       "functional_impact_prediction";
   public static final String OBSERVATION_CONSEQUENCES_AA_MUTATION = CONSEQUENCE_AA_MUTATION;
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_CANONICAL = "_is_canonical_transcript";
-  public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
-  public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
+  public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = LoaderFieldNames.TRANSCRIPT_ID;
+  public static final String OBSERVATION_CONSEQUENCES_GENE_ID = LoaderFieldNames.GENE_ID;
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
   public static final String OBSERVATION_PLATFORM = "platform";
   public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
@@ -237,7 +270,7 @@ public final class FieldNames {
   /**
    * Mutation field names.
    */
-  public static final String MUTATION_ID = "_mutation_id";
+  public static final String MUTATION_ID = IdentifierFieldNames.SURROGATE_MUTATION_ID;
   public static final String MUTATION_CHROMOSOME = "chromosome";
   public static final String MUTATION_CHROMOSOME_START = "chromosome_start";
   public static final String MUTATION_CHROMOSOME_END = "chromosome_end";
