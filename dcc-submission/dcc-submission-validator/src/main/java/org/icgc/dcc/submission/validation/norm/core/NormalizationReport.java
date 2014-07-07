@@ -18,10 +18,9 @@
 package org.icgc.dcc.submission.validation.norm.core;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.ANALYSIS_ID;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval.ANALYSIS_ID_FIELD;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -85,12 +84,11 @@ public final class NormalizationReport {
 
     // Order matters
     TOTAL_START("Number of observations at the beginning of the process", EXTERNAL),
-    UNIQUE_START(format("Number of unique '%s' before filtering", getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
+    UNIQUE_START(format("Number of unique '%s' before filtering", ANALYSIS_ID), INTERNAL),
     MARKED_AS_CONTROLLED(format("Number of observations marked as '%s'", Marking.CONTROLLED), EXTERNAL),
     MASKED(format("Number of observations for which a '%s' counterpart was generated", Marking.MASKED), INTERNAL),
-    DROPPED(format("Number of redundant observations dropped (those only differing by their '%s')",
-        getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
-    UNIQUE_REMAINING(format("Number of unique '%s' remaining after filtering", getFieldName(ANALYSIS_ID_FIELD)), INTERNAL),
+    DROPPED(format("Number of redundant observations dropped (those only differing by their '%s')", ANALYSIS_ID), INTERNAL),
+    UNIQUE_REMAINING(format("Number of unique '%s' remaining after filtering", ANALYSIS_ID), INTERNAL),
     TOTAL_END("Number of observations at the end of the process", INTERNAL);
 
     public static final long COUNT_INCREMENT = 1;

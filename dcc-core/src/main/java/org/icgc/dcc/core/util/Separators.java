@@ -22,8 +22,8 @@ package org.icgc.dcc.core.util;
  */
 public class Separators {
 
-  public static final String NEWLINE = "\n";
-  public static final String TAB = "\t";
+  public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
+  public static final String TAB = Strings2.TAB;
   public static final String COMMA = ",";
   public static final String SLASH = "/";
   public static final String WHITESPACE = " ";

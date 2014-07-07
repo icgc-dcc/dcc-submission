@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,39 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm.steps;
+package org.icgc.dcc.reporter;
 
-import java.util.Iterator;
+import java.util.Set;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
 import org.junit.Test;
 
-import cascading.operation.Buffer;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 
-public class RedundantObservationRemovalTest {
+/**
+ * TODO: add checks
+ */
+public class ReporterTest {
+
+  private static final String TEST_RELEASE_NAME = "reporter-release-name";
+  private static final String DEFAULT_PARENT_TEST_DIR = "src/test/resources/data";
+  private static final String TEST_CONF_DIR = "src/test/resources/conf";
 
   @Test
-  public void test_cascading_FilterRedundantObservationBuffer() {
-    Buffer<?> buffer = new RedundantObservationRemoval.FilterRedundantObservationBuffer();
+  public void test_reporter() {
 
-    Fields inputFields = new Fields("f1", "f2");
+    Reporter.report(
+        TEST_RELEASE_NAME,
+        Optional.<Set<String>> of(ImmutableSet.of("p1", "p2")),
+        DEFAULT_PARENT_TEST_DIR,
+        TEST_CONF_DIR + "/projects.json",
+        TEST_CONF_DIR + "/Dictionary.json",
+        TEST_CONF_DIR + "/CodeList.json");
 
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy1")),
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy2")),
-        new TupleEntry(inputFields, new Tuple("dummy", "dummy3"))
-    };
-    Fields resultFields = inputFields;
-
-    Tuple[] resultTuples = new Tuple[] {
-        new Tuple("dummy", "dummy1") // Only one left
-    };
-
-    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeBuffer(buffer, entries, resultFields);
-    CascadingTestUtils.checkOperationResults(iterator, resultTuples);
   }
+
 }
