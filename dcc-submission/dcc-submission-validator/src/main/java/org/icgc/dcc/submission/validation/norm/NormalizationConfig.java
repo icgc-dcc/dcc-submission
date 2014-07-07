@@ -28,7 +28,6 @@ import lombok.val;
 
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
-import org.icgc.dcc.submission.validation.norm.steps.RedundantObservationRemoval;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
@@ -70,7 +69,8 @@ public final class NormalizationConfig {
   private static final float CONFIDENTIAL_ERROR_THRESHOLD_DEFAULT_VALUE = 0.1f;
   private static final Map<Class<? extends OptionalStep>, Boolean> STEP_ENABLING_DEFAULT_VALUES =
       new ImmutableMap.Builder<Class<? extends OptionalStep>, Boolean>()
-          .put(RedundantObservationRemoval.class, ON).put(MaskedRowGeneration.class, ON).build();
+          .put(MaskedRowGeneration.class, ON)
+          .build();
 
   /**
    * Checks whether a step is enabled or not. Non-optional step are always considered enabled.

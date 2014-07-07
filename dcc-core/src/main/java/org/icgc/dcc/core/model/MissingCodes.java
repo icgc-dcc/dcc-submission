@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -18,27 +18,15 @@
 package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
-import static org.icgc.dcc.core.model.FieldNames.PATHWAY_REACTOME_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
 import lombok.NoArgsConstructor;
 
 /**
- * Contains surrogate keys for the ICGC DCC portal.
+ * Missing codes for ICGC.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class SurrogateKeys {
+public final class MissingCodes {
 
-  public static final String PROJECT = PROJECT_ID;
-  public static final String GENE = GENE_ID;
-  public static final String DONOR = DONOR_ID;
-  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
-  public static final String SAMPLE = DONOR_SAMPLE_ID;
-  public static final String MUTATION = OBSERVATION_MUTATION_ID;
-  public static final String PATHWAY = PATHWAY_REACTOME_ID;
+  public static final String MISSING_CODE1 = "-777";
+  public static final String MISSING_CODE2 = "-888";
 
 }

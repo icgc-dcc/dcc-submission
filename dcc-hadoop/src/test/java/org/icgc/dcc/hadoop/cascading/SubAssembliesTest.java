@@ -22,7 +22,7 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 
 import java.util.ArrayList;
 
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountBy.CountByData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.GroupBy.GroupByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
@@ -74,7 +74,7 @@ public class SubAssembliesTest {
       CountByData.builder()
           .pipe(DUMMY_PIPE)
           .countByFields(DUMMY_FIELD)
-          .resultField(DUMMY_FIELD2)
+          .resultCountField(DUMMY_FIELD2)
           .build();
   private static final Function<Void, Pipe> DUMMY_FUNCTION = new Function<Void, Pipe>() {
 
