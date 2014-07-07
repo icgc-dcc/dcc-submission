@@ -1,71 +1,113 @@
 package org.icgc.dcc.reporter;
 
-import static cascading.flow.FlowDef.flowDef;
-import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.core.model.Dictionaries.getMapping;
+import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.util.Extensions.TSV;
+import static org.icgc.dcc.core.util.Jackson.getJsonRoot;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
-import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
-import static org.icgc.dcc.hadoop.cascading.Pipes.getTailNames;
-import static org.icgc.dcc.reporter.Connector.getRawInputTaps;
-import static org.icgc.dcc.reporter.Connector.getRawOutputTaps;
-import static org.icgc.dcc.reporter.Main.isLocal;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.Pipes;
-import org.icgc.dcc.hadoop.util.HadoopConstants;
-import org.icgc.dcc.hadoop.util.HadoopProperties;
+import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
+import org.icgc.dcc.reporter.cascading.ReporterConnector;
+import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
+import org.icgc.dcc.reporter.cascading.subassembly.Table1;
+import org.icgc.dcc.reporter.cascading.subassembly.Table2;
 
-import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
-import cascading.flow.hadoop.util.HadoopUtil;
-import cascading.flow.local.LocalFlowConnector;
-import cascading.property.AppProps;
+import cascading.pipe.Pipe;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 
 @Slf4j
 public class Reporter {
 
-  private static final Class<Reporter> CLASS = Reporter.class;
+  public static final Class<Reporter> CLASS = Reporter.class;
 
   static String OUTPUT_DIR = "/tmp/reports";
   static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
 
   public static void report(
+      @NonNull final String releaseName,
+      @NonNull final Optional<Set<String>> projectKeys,
+      @NonNull final String defaultParentDataDir,
+      @NonNull final String projectsJsonFilePath,
+      @NonNull final String dictionaryFilePath,
+      @NonNull final String codeListsFilePath) {
+
+    val dictionaryRoot = getJsonRoot(dictionaryFilePath);
+    val codeListsRoot = getJsonRoot(codeListsFilePath);
+
+    val reporterInput = ReporterInput.from(
+        SubmissionInputData.getMatchingFiles(
+            ReporterConnector.getLocalFileSystem(),
+            defaultParentDataDir,
+            projectsJsonFilePath,
+            getPatterns(dictionaryRoot)));
+
+    process(
+        releaseName,
+        projectKeys.isPresent() ?
+            projectKeys.get() :
+            reporterInput.getProjectKeys(),
+        reporterInput,
+        getMapping(
+            dictionaryRoot,
+            codeListsRoot,
+            SSM_M_TYPE, // TODO: add check mapping is the same for all meta files (it should)
+            getFieldName(SEQUENCING_STRATEGY_FIELD)));
+  }
+
+  public static void process(
       @NonNull String releaseName,
-      @NonNull InputData inputData,
+      @NonNull Set<String> projectKeys,
+      @NonNull ReporterInput reporterInput,
       @NonNull Map<String, String> mapping) {
-    log.info("Gathering reports: '{}' ('{}')", inputData, mapping);
+    log.info("Gathering reports: '{}' ('{}')", reporterInput, mapping);
 
     // Main processing
-    val tails = new StatsGathering(
-        new PreComputation(releaseName, inputData))
-        .getTails();
+    val table1s = Maps.<String, Pipe> newLinkedHashMap();
+    val table2s = Maps.<String, Pipe> newLinkedHashMap();
+    for (val projectKey : projectKeys) {
+      val preComputationTable = new PreComputation(releaseName, projectKey, reporterInput);
+      val table1 = new Table1(preComputationTable);
+      val table2 = new Table2(
+          preComputationTable,
+          Table1.processDonors(preComputationTable),
+          mapping.keySet());
 
-    // Connect flow
-    getFlowConnector()
-        .connect(
-            flowDef()
-                .addSources(getRawInputTaps(inputData))
-                .addSinks(getRawOutputTaps(getTailNames(tails)))
-                .addTails(tails)
-                .setName(Flows.getName(CLASS)))
+      table1s.put(projectKey, table1);
+      table2s.put(projectKey, table2);
+    }
+
+    ReporterConnector.connectCascade(
+        reporterInput,
+        table1s,
+        table2s)
         .complete();
 
-    val table = Gatherer
-        .getTable(inputData.getProjectKeys());
-    log.info(table.getCsvRepresentation());
+    for (val projectKey : projectKeys) {
+      ReporterGatherer.getJsonTable1(projectKey);
+    }
+    for (val projectKey : projectKeys) {
+      ReporterGatherer.getJsonTable2(projectKey, mapping);
+    }
+    System.out.println(ReporterGatherer.getTsvTable1(projectKeys));
+    System.out.println(ReporterGatherer.getTsvTable2(projectKeys, mapping));
+    // log.info(table.getCsvRepresentation());
     // Gatherer.writeCsvFile(table);
   }
 
@@ -73,95 +115,30 @@ public class Reporter {
     return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
   }
 
-  public static String getOutputFilePath(OutputType output) {
-    return PATH.join(OUTPUT_DIR, getOutputFileName(output));
+  private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
+  private static final String PART_FILE = "part-00000";
+
+  public static String getOuputFileFusePath(OutputType output, String projectKey) {
+    String outputFilePath = Reporter.getOutputFilePath(output, projectKey);
+    if (!Main.isLocal()) {
+      outputFilePath = PATH.join(
+          FUSE_MOUTPOINT_PREFIX,
+          outputFilePath,
+          PART_FILE);
+    }
+    return outputFilePath;
   }
 
-  private static String getOutputFileName(OutputType output) {
+  public static String getOutputFilePath(OutputType output, String projectKey) {
+    return PATH.join(OUTPUT_DIR, getOutputFileName(output, projectKey));
+  }
+
+  private static String getOutputFileName(OutputType output, String projectKey) {
     return EXTENSION.join(
         output.name().toLowerCase(),
+        projectKey,
         TIMESTAMP,
         TSV);
   }
-
-  public static FlowConnector getFlowConnector() {
-
-    if (isLocal()) {
-      log.info("Using local mode");
-      return new LocalFlowConnector();
-    }
-    log.info("Using hadoop mode");
-
-    Map<Object, Object> flowProperties = newHashMap();
-
-    // From external application configuration file
-    // for (val configEntry : hadoopConfig.entrySet()) {
-    // flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
-    // }
-
-    HadoopProperties.setHadoopUserNameProperty();
-
-    // M/R job entry point
-    AppProps.setApplicationJarClass(flowProperties, CLASS);
-    AppProps.setApplicationName(flowProperties, "TODO");
-    AppProps.setApplicationVersion(flowProperties, getCommitId());
-
-    // flowProperties =
-    // enableJobOutputCompression(
-    // enableIntermediateMapOutputCompression(
-    // setAvailableCodecs(flowProperties),
-    // SNAPPY_CODEC_PROPERTY_VALUE),
-    // GZIP_CODEC_PROPERTY_VALUE);
-
-    flowProperties = HadoopProperties.enableIntermediateMapOutputCompression(
-        HadoopProperties.setAvailableCodecs(flowProperties),
-        HadoopConstants.LZO_CODEC_PROPERTY_VALUE);
-
-    // flowProperties.putAll(properties);
-
-    flowProperties.put("fs.defaultFS", "***REMOVED***");
-    flowProperties.put("mapred.job.tracker", "***REMOVED***");
-    flowProperties.put("mapred.child.java.opts", "-Xmx6g");
-
-    // flowProperties.put("mapred.reduce.tasks", "20");
-    // flowProperties.put("mapred.task.timeout", "1800000");
-    flowProperties.put("io.sort.mb", "2000");
-    flowProperties.put("io.sort.factor", "20");
-    // flowProperties.put("mapred.output.compress", "true");
-    // flowProperties.put("mapred.output.compression.type", "BLOCK");
-    // flowProperties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
-    // flowProperties.put("mapred.reduce.tasks.speculative.execution", "false");
-
-    return new HadoopFlowConnector(flowProperties);
-  }
-
-  /**
-   * Method that reproduces what Cascading does to serialize a job step.
-   * 
-   * @param object the object to serialize.
-   * @return the base 64 encoded object
-   */
-  @SneakyThrows
-  private static String cascadingSerialize(Object object) {
-    return HadoopUtil.serializeBase64(object, new JobConf(new Configuration()));
-  }
-
-  public static void main(String[] args) {
-    cascadingSerialize(new PreComputation("bla", InputData.getDummy()));
-    // cascadingSerialize(new StatsGathering(preComputationTable);
-  }
-
-  // @Test
-  // public void testSerializable() throws URISyntaxException {
-  // val task = new DistributedDocumentTask(RELEASE_TYPE, config);
-  //
-  // val serialized = cascadingSerialize(task);
-  // log.info("task: {}, serialized: {}", task, serialized);
-  // assertThat(serialized).isNotEmpty();
-  //
-  // val deserialized = cascadingDeserialize(serialized);
-  // log.info("task: {}, deserialized: {}", task, deserialized);
-  // assertThat(deserialized).isEqualTo(task);
-  // }
 
 }

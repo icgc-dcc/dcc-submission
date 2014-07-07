@@ -20,6 +20,8 @@ package org.icgc.dcc.submission.validation.cascading;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
 import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
 
 import java.util.ArrayList;
@@ -57,9 +59,6 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
    * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
    */
   private static final String LEGACY_CODE = "-9999";
-
-  public static final String MISSING_CODE1 = "-777";
-  public static final String MISSING_CODE2 = "-888";
 
   /**
    * Values representing absent values.
