@@ -23,6 +23,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.FormatUtils._;
 
 import java.util.List;
 import java.util.Set;
@@ -245,6 +246,13 @@ public final class FileTypes {
     @Getter
     private final FileSubType subType;
 
+    /**
+     * Returns the "harmonized" (uncompressed concatenated) file name.
+     */
+    public String getHarmonizedOutputFileName() {
+      return _("%s%s", getTypeName(), FILE_EXTENSION);
+    }
+
     public String getTypeName() {
       if (subType.usedAsAbbrevatiation()) {
         return JOINER.join(dataType.getTypeName(), subType.getAbbreviation());
@@ -264,6 +272,7 @@ public final class FileTypes {
     public static FileType from(String typeName) {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
+
   }
 
 }

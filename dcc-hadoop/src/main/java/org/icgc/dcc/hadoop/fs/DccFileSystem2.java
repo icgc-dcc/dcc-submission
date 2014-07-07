@@ -20,6 +20,8 @@ package org.icgc.dcc.hadoop.fs;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.mkdirs;
@@ -36,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
@@ -65,7 +68,7 @@ public class DccFileSystem2 {
   private final boolean hadoopMode;
 
   public Tap<?, ?, ?> getNormalizationDataOutputTap(String releaseName, String projectKey) {
-    String path = getNormalizationDataOutputFile(releaseName, projectKey);
+    String path = getNormalizationSsmDataOutputFile(releaseName, projectKey);
     return getTap(path);
   }
 
@@ -112,11 +115,19 @@ public class DccFileSystem2 {
         lazyDirCreation(getNormalizationReportsDir(releaseName, projectKey)));
   }
 
-  public String getNormalizationDataOutputFile(String releaseName, String projectKey) {
+  public String getNormalizationSsmDataOutputFile(String releaseName, String projectKey) {
+    return getNormalizationDataOutputFile(releaseName, projectKey, SSM_P_TYPE);
+  }
+
+  public String getNormalizationSgvDataOutputFile(String releaseName, String projectKey) {
+    return getNormalizationDataOutputFile(releaseName, projectKey, SGV_P_TYPE);
+  }
+
+  private String getNormalizationDataOutputFile(String releaseName, String projectKey, FileType fileType) {
     return format(
         "%s/%s",
         lazyDirCreation(getNormalizationDataDir(releaseName, projectKey)),
-        SSM_P_FILE_NAME);
+        fileType.getHarmonizedOutputFileName());
   }
 
   public String getAnnotationDataOutputFile(String releaseName, String projectKey) {

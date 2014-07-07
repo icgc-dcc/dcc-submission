@@ -17,10 +17,15 @@
  */
 package org.icgc.dcc.submission.validation.norm;
 
+import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.core.util.Separators.TAB;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -30,6 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.hadoop.parser.TsvPartFileProcessor;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 /**
  * "Pseudo" normalizer, simply adds a PK to {@link FeatureType#SGV_TYPE} files.
@@ -38,22 +44,47 @@ import org.icgc.dcc.hadoop.parser.TsvPartFileProcessor;
 public class PseudoNormalizer {
 
   private final FileSystem fileSystem;
-  private final String inputFilePath;
-  private final String outputFilePath;
+  private final Path inputFile;
+  private final Path outputFile;
 
-  public void process() {
+  public static void pseudoNormalize(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final PlatformStrategy platformStrategy,
+      @NonNull final String outputFilePath) {
+
+    new PseudoNormalizer(
+        fileSystem,
+        platformStrategy.getFilePath(SGV_P_TYPE.getHarmonizedOutputFileName()),
+        new Path(outputFilePath))
+        .process();
+  }
+
+  private void process() {
 
     @Cleanup
     val concatWriter = getWriter();
 
     TsvPartFileProcessor.parseFile(
         fileSystem,
-        new Path(inputFilePath),
+        inputFile,
         new FileRecordProcessor<String>() {
+
+          long observationId = 0;
 
           @Override
           public void process(long lineNumber, String record) throws IOException {
-            concatWriter.println(record);
+            if (!record.isEmpty()) {
+              concatWriter.println(
+                  record
+                      + TAB
+                      + (isHeader(lineNumber) ?
+                          NORMALIZER_OBSERVATION_ID :
+                          observationId++));
+            }
+          }
+
+          private boolean isHeader(long lineNumber) {
+            return lineNumber == 1;
           }
 
         });
@@ -61,7 +92,7 @@ public class PseudoNormalizer {
 
   @SneakyThrows
   private PrintWriter getWriter() {
-    return new PrintWriter(fileSystem.create(new Path(outputFilePath)));
+    return new PrintWriter(fileSystem.create(outputFile));
   }
 
 }
