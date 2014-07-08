@@ -162,7 +162,7 @@ public class SftpContext {
   // TODO: Duplicated code with ReleaseService
   private SubmissionFile getSubmissionFile(Dictionary dictionary, Path filePath) throws IOException {
     val fileName = filePath.getName();
-    val fileStatus = HadoopUtils.getFileStatus(fs.getFileSystem(), filePath);
+    val fileStatus = HadoopUtils.getFileStatus(fs.getFileSystem(), filePath).get();
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
     val fileType = getSubmissionFileType(dictionary, filePath).orNull();

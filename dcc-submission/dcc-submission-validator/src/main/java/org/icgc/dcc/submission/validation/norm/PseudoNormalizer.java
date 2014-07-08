@@ -47,7 +47,7 @@ public class PseudoNormalizer {
   private final Path inputFile;
   private final Path outputFile;
 
-  public static void pseudoNormalize(
+  public static void process(
       @NonNull final FileSystem fileSystem,
       @NonNull final PlatformStrategy platformStrategy,
       @NonNull final String outputFilePath) {
@@ -56,10 +56,10 @@ public class PseudoNormalizer {
         fileSystem,
         platformStrategy.getFilePath(SGV_P_TYPE.getHarmonizedOutputFileName()),
         new Path(outputFilePath))
-        .process();
+        .normalize();
   }
 
-  private void process() {
+  private void normalize() {
 
     @Cleanup
     val concatWriter = getWriter();

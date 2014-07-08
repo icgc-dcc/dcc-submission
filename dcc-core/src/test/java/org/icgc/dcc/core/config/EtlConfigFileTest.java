@@ -15,39 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission;
+package org.icgc.dcc.core.config;
 
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.getFileStatus;
-import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import java.io.File;
 
-import lombok.SneakyThrows;
+import lombok.val;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.config.EtlConfig;
+import org.icgc.dcc.core.config.EtlConfigFile;
+import org.junit.After;
+import org.junit.Test;
 
-public class BaseIntegrationTest {
+public class EtlConfigFileTest {
 
-  static {
-    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
-    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
-    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+  /**
+   * Test configuration file.
+   */
+  private static final String TEST_CONFIG_FILE = "src/test/conf/config.yaml";
+
+  @After
+  public void tearDown() {
+    System.clearProperty(getOverrideName());
   }
 
-  protected final Client client = ClientFactory.newClient();
+  @Test
+  public void testConfigOverride() {
+    val overrideName = getOverrideName();
+    val overrideValue = "override-" + System.currentTimeMillis();
+    System.setProperty(overrideName, overrideValue);
 
-  protected static String _(String format, Object... args) {
-    return String.format(format, args);
+    EtlConfig config = new EtlConfigFile(new File(TEST_CONFIG_FILE)).read();
+
+    assertThat(config.getEsUri()).isEqualTo(overrideValue);
+    assertThat(config.isFilterAllControlled()).isTrue();
   }
 
-  @SneakyThrows
-  protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {
-    Path errorFile = new Path(dir, path);
-    assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
-    assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).get().getLen() == 0);
+  private String getOverrideName() {
+    return EtlConfigFile.PROPERTY_PREFIX + "esUri";
   }
 
 }

@@ -67,7 +67,7 @@ public class Main {
       val validator = getValidator(context);
       validator.validate(context);
     } else {
-      PseudoNormalizer.pseudoNormalize(
+      PseudoNormalizer.process(
           context.getFileSystem(),
           context.getPlatformStrategy(),
           getDccFileSystem2(context) // Not very clean but is consistent with the SSM normalizer
