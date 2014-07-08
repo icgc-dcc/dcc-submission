@@ -24,6 +24,7 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.Component.NORMALIZER;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
@@ -85,7 +86,7 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor(access = PRIVATE)
 public final class NormalizationValidator implements Validator {
 
-  public static final String COMPONENT_NAME = "normalizer";
+  static final String COMPONENT_NAME = NORMALIZER.getComponentName();
 
   /**
    * Type that is the focus of normalization (there could be more in the future).

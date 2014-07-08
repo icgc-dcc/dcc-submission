@@ -29,8 +29,12 @@ public enum Component {
   ANNOTATOR,
   LOADER;
 
-  public String getDirName() {
+  public String getComponentName() {
     return name().toLowerCase();
+  }
+
+  public String getDirName() {
+    return getComponentName();
   }
 
   public String getProjectDir(String dataParentDir, String projectKey) {
