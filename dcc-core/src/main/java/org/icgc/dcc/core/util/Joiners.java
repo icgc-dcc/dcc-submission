@@ -43,5 +43,6 @@ public final class Joiners {
   public static final Joiner PATH = SLASH;
   public static final Joiner EXTENSION = DOT;
   public static final Joiner INDENT = on(Separators.INDENT);
+  public static final Joiner CREDENTIALS = COLON;
 
 }

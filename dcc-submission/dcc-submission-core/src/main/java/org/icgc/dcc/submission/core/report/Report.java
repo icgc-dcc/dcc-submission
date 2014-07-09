@@ -250,14 +250,15 @@ public class Report implements ReportElement {
     }
 
     private void replaceDataTypeReport(final DataTypeReport originalDataTypeReport) {
-      val optionalStaleDataTypeReport = Iterables.tryFind(dataTypeReports, new Predicate<DataTypeReport>() {
+      Optional<DataTypeReport> optionalStaleDataTypeReport =
+          Iterables.tryFind(dataTypeReports, new Predicate<DataTypeReport>() {
 
-        @Override
-        public boolean apply(DataTypeReport input) {
-          return input.getDataType() == originalDataTypeReport.getDataType();
-        }
+            @Override
+            public boolean apply(DataTypeReport input) {
+              return input.getDataType() == originalDataTypeReport.getDataType();
+            }
 
-      });
+          });
       if (optionalStaleDataTypeReport.isPresent()) {
         removeDataTypeReport(optionalStaleDataTypeReport.get());
       }

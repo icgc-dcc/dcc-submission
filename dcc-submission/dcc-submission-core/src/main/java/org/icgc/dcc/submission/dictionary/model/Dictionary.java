@@ -241,7 +241,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<FileSchema> getFileSchemata(@NonNull final FeatureType featureType) {
-    val filter = filter(files, new Predicate<FileSchema>() {
+    Iterable<FileSchema> filter = filter(files, new Predicate<FileSchema>() {
 
       @Override
       public boolean apply(FileSchema input) {
