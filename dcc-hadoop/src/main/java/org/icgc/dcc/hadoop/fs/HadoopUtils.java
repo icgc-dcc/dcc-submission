@@ -17,7 +17,12 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.io.ByteStreams.copy;
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.Separators.DASH;
+import static org.icgc.dcc.core.util.Splitters.TAB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,15 +46,26 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 
+import cascading.tuple.Fields;
+
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.io.LineReader;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
  */
 public class HadoopUtils {
+
+  public static final String MR_PART_FILE_NAME_BASE = "part";
+  public static final String MR_PART_FILE_SEPARATOR = DASH;
+  public static final String MR_PART_FILE_NAME_FIRST_INDEX = "00000";
+  public static final String FIRST_PLAIN_MR_PART_FILE_NAME = Joiner.on(MR_PART_FILE_SEPARATOR)
+      .join(MR_PART_FILE_NAME_BASE, MR_PART_FILE_NAME_FIRST_INDEX);
 
   public static String getConfigurationDescription(Configuration configuration) throws IOException {
     final Writer writer = new StringWriter();
@@ -87,6 +103,14 @@ public class HadoopUtils {
     } catch (IOException e) {
       throw new HdfsException(e);
     }
+  }
+
+  @SneakyThrows
+  public static boolean exists(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path alternativeFile) {
+
+    return fileSystem.exists(alternativeFile);
   }
 
   public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) {
@@ -296,6 +320,37 @@ public class HadoopUtils {
       lines.add(line);
     }
     return lines;
+  }
+
+  @SneakyThrows
+  public static Fields getFileHeader(FileSystem fileSystem, String inputFilePath) {
+
+    val inputFile = new Path(inputFilePath);
+    val codec = new CompressionCodecFactory(fileSystem.getConf()).getCodec(inputFile);
+
+    @Cleanup
+    InputStreamReader reader = new InputStreamReader(
+        codec == null ?
+            fileSystem
+                .open(inputFile) :
+            codec.createInputStream(fileSystem.open(inputFile)),
+        UTF_8);
+
+    return new Fields(toArray(
+        TAB.split(
+            new LineReader(reader)
+                .readLine()),
+        String.class));
+
+  }
+
+  /**
+   * TODO: handle compression
+   */
+  public static String addMRFirstPartSuffix(String filePath) {
+    return PATH.join(
+        filePath,
+        FIRST_PLAIN_MR_PART_FILE_NAME);
   }
 
 }
