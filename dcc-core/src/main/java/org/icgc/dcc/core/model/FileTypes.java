@@ -246,6 +246,18 @@ public final class FileTypes {
     @Getter
     private final FileSubType subType;
 
+    public boolean isSsmS() {
+      return this == SSM_S_TYPE;
+    }
+
+    public boolean isSgvS() {
+      return this == SGV_S_TYPE;
+    }
+
+    public boolean isSimpleSecondary() {
+      return isSsmS() || isSgvS();
+    }
+
     /**
      * Returns the "harmonized" (uncompressed concatenated) file name.
      * <p>
