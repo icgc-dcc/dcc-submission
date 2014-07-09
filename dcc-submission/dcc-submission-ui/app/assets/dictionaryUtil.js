@@ -1,20 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dictionary reader and utilities
 ////////////////////////////////////////////////////////////////////////////////
-
 var DictionaryUtil = function(list, config) {
    this.dictList = list;
    this.config = config;
    this.sortedDictionaryList = _.sortBy(this.dictList, function(obj) {
       return obj.version;
-   });
+   }).reverse();
    this.versionList = _.pluck(this.sortedDictionaryList, "version");
    this.dictionaryMap = {};
    for (var i=0; i < list.length; i++) {
       this.dictionaryMap[ list[i].version ] = list[i];
    }
-
-
 };
 
 
@@ -82,17 +79,27 @@ DictionaryUtil.prototype.isDifferent = function(row1, row2) {
 DictionaryUtil.prototype.isDifferent2 = function(row1, row2) {
    var diffList = [];
    function getRestriction(r, type) {
-      if (! r.restrictions) return null;
-
+      if (! r.restrictions) return {};
       return _.find(r.restrictions, function(res) {
          return res.type === type;
       });
    }
 
-   if (row1.label !== row2.label) diffList.push("description");
-   if (row1.controlled !== row2.controlled) diffList.push("controlled");
-   if (! _.isEqual( getRestriction(row1, "regex"), getRestriction(row2, "regex"))) diffList.push("regex");
-   if (! _.isEqual( getRestriction(row1, "script"), getRestriction(row2, "script"))) diffList.push("script");
+   if (row1.controlled !== row2.controlled) {
+      diffList.push("controlled");
+   }
+   if (! _.isEqual(getRestriction(row1, "regex"), getRestriction(row2, "regex"))) {
+      diffList.push("regex");
+   }
+   if (! _.isEqual(getRestriction(row1, "required"), getRestriction(row2, "required"))) {
+      diffList.push("required");
+   }
+   if (! _.isEqual(getRestriction(row1, "script"), getRestriction(row2, "script"))) {
+      diffList.push("script");
+   }
+   if (! _.isEqual(getRestriction(row1, "codelist"), getRestriction(row2, "codelist"))) {
+      diffList.push("codelist");
+   }
 
    return diffList;
 };
@@ -109,6 +116,7 @@ DictionaryUtil.prototype.isMatch = function(row, regex) {
    if (row.name.match(regex) || (codelist && codelist.config.name.match(regex))) {
       return true;
    }
+
    return false;
 };
 
@@ -149,7 +157,7 @@ DictionaryUtil.prototype.createDiffListing = function(versionFrom, versionTo) {
                      fileType: fileFrom.name,
                      fieldName: fieldFrom.name
                   });
-               } else if (_self.isDifferent(fieldTo, fieldFrom)) {
+               } else if (_self.isDifferent2(fieldTo, fieldFrom).length > 0) {
                   report.fieldsChanged.push({
                      fileType: fileFrom.name,
                      fieldName: fieldFrom.name,
@@ -267,19 +275,4 @@ DictionaryUtil.prototype.getParentRelation = function(dict) {
    });
    return list;
 };
-
-
-// Test 
-DictionaryUtil.prototype.testRandom = function() {
-   var _self = this;
-   _self.getField("0.8a", "donor", "donor_region_of_residence").label = "test!!!";
-   _self.getField("0.8a", "donor", "donor_notes").label = "test!!!";
-   _self.getField("0.8a", "family", "relationship_type").label = "test!!!";
-   _self.getField("0.8a", "family", "relationship_type_other").label = "test!!!";
-
-   console.log(_self.getFileType("0.8a", "donor"));
-   _self.getFileType("0.8a", "donor").fields.shift();
-};
-
-
 

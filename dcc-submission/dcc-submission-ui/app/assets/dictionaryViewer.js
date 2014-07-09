@@ -8,8 +8,11 @@ function TableViewer(config, dictUtil) {
    // Configuraitons
    this.barHeight = 25;
    this.colourDefault   = d3.rgb(240, 240, 240);
-   this.colourNew       = d3.rgb(27,158,119);
-   this.colourChanged   = d3.rgb(117,112,179);
+   //this.colourNew       = d3.rgb(27,158,119);
+   //this.colourChanged   = d3.rgb(117,112,179);
+
+   this.colourNew       = d3.rgb(0,188,58);
+   this.colourChanged   = d3.rgb(177,12,12);
    this.colourHighlight = d3.rgb(242, 155, 4);
 
    this.colourMinimapDefault = d3.rgb(230,230,230);
@@ -187,9 +190,11 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
    var tableName = d3.select(elem.node().parentNode).datum().name;
    var compareRow = rowFrom;
 
+   var differenceList = compareRow? dictUtil.isDifferent2(row, compareRow) : [];
+
    elem.append("td").style("background-color", function() {
       if (!compareRow) return _self.colourNew;
-      if (dictUtil.isDifferent(row, compareRow)) return _self.colourChanged;
+      if (differenceList.length > 0) return _self.colourChanged;
       return null;
    });
 
@@ -199,7 +204,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
    if (!compareRow)  {
       minimap.style("fill", _self.colourNew);
       // entryNew ++;
-   } else if (dictUtil.isDifferent(row, compareRow)) {
+   } else if (differenceList.length > 0) {
       minimap.style("fill", _self.colourChanged);
    } else {
       minimap.style("fill", _self.colourDefault);
@@ -257,7 +262,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
          d3.select(this).append("p").classed("regex", true).text(regex.config.pattern);
 
          if (regex.config.examples) {
-            d3.select(this).append("pre")
+            var example = d3.select(this).append("pre")
               .style("width", "100%")
               .style("font-size", "9px")
               .style("cursor", "pointer")
@@ -277,8 +282,13 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
 
                  window.open(baseURL, "_blank");
               })
-              .append("code")
+              .append("code");
+
+            example.append("p").text("Examples");
+            example.append("a")
               .text(regex.config.examples);
+             
+              //.text(regex.config.examples);
          }
       }
    });
@@ -290,6 +300,17 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
          d3.select(this).append("pre").style("width", "100%").style("font-size", "9px").append("code").html(beautifiedScript);
       }
    });
+   
+   /*
+   .style("box-shadow", function() {
+      if (differenceList.indexOf("script") >= 0) {
+         //return _self.colourChanged;
+         return "inset 0 0 10px 0 " + _self.colourChanged;
+      } else {
+         return null;
+      }
+   });
+   */
 }
 
 
@@ -560,7 +581,7 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
      nodeEnter.append("text")
          .attr("x", "10")
          .attr("dy", ".10em")
-         .text(function(d) { return d.name + " (" + d.data.fields.length + ")"; })
+         .text(function(d) { return d.name + " (" + d.data.fields.length + " Fields)"; })
          .style("fill-opacity", 1);
 
 
@@ -590,10 +611,10 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
               var fieldFrom = dictUtil.getField(versionFrom, node.name, field.name); 
               if (!fieldFrom) {
                  return _self.colourNew;
-              } else if (fieldFrom && dictUtil.isDifferent(field, fieldFrom)) {
+              } else if (fieldFrom && dictUtil.isDifferent2(field, fieldFrom).length > 0) {
                  return _self.colourChanged;
               } else {
-                 return "#CCDDEE";
+                 return "#DDDDEE";
               }
            });
 
@@ -646,26 +667,27 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    this.renderLegend(svg, 20, 30);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Legend
 ////////////////////////////////////////////////////////////////////////////////
 TableViewer.prototype.renderLegend = function(svg, x, y) {
    var legend = svg.insert("g", ":first-child")
-      .attr("class", "node")
+      .attr("font-size", "0.8em")
       .attr("transform", "translate(" + x + "," +  y + ")");
 
    legend.append("rect")
       .attr("x", -15)
       .attr("y", -15)
-      .attr("width", 200)
+      .attr("width", 220)
       .attr("height", 40)
-      .attr("stroke", "#668822")
+      .attr("stroke", "#666666")
       .attr("fill", "#FFFFFF");
 
    legend.append("circle")
       .attr("r", 6.5)
       .attr("fill", "#FFFFFF")
-      .attr("stroke", "steelblue");
+      .attr("stroke", "#666666");
       
    legend.append("text")
       .attr("x", 10)
@@ -674,23 +696,23 @@ TableViewer.prototype.renderLegend = function(svg, x, y) {
          
    for(var i=0; i < 6; i++) {
       legend.append("rect")
-         .attr("x", 10+3*i)
+         .attr("x", 10+4*i)
          .attr("y", "6")
          .attr("height", 11)
-         .attr("width", 1)
-         .style("fill", "#CCDDEE");
+         .attr("width", 2)
+         .style("fill", "#DDDDEE");
    }
 
    legend.append("text")
       .attr("x", 90)
       .attr("y", 0)
-      .attr("fill", "#668822") 
+      .attr("fill", "#666666") 
       .text("<--- FileType Name");
 
    legend.append("text")
       .attr("x", 90)
       .attr("y", 14)
-      .attr("fill", "#668822") 
-      .text("<--- # fields");
+      .attr("fill", "#666666") 
+      .text("<--- # Fields");
 }
 

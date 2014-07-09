@@ -23,6 +23,11 @@
    border-bottom-width: 2px;
 }
 
+.toolbar_item {
+  display: inline-block;
+  margin-right: 1em;
+}
+
 
 .data-type-list {
    padding-left:1em;
@@ -38,17 +43,13 @@
    font-size:1.0em;
 }
 
-.removed {
-   color: rgb(243, 92, 22);
-}
-
 .tiny {
    padding-left: 0.15em;
    font-size: 0.75em;
 }
 
 
-// Bostock example css
+// From Bostock's examples
 .node {
   cursor: pointer;
 }
@@ -61,7 +62,7 @@
 }
 
 .node text {
-  font: 10px sans-serif;
+  font: 0.75em sans-serif;
   cursor: pointer;
 }
 
@@ -72,15 +73,16 @@
 }
 
 
+
+
 // Override bootstrap default styles to make UI less blobby-looking
 th {
-   font-size: 12px;
+   font-size: 0.8em;
 }
 
 pre {
    background-color: rgb(250, 245, 245);
 }
-
 
 select {
    line-height: inherit;
@@ -108,39 +110,40 @@ a {
 <!-- toolbar -->
 <div class="toolbar">
    <ul class="list-unstyled">
-      <li style="display:inline-block; margin-right:1em">
+      <li class="toolbar_item">
           <img src="https://dcc.icgc.org/styles/images/icgc-logo.png" width="25px"></img> 
           <span style="font-size:1.7rem; vertical-align:middle">
               <span style="color:#777777">ICGC</span>
               <span> Dictionary Viewer</span>
           <span>
       </li>
-      <li style="display:inline-block; margin-right:1em">|</li>
-      <li style="display:inline-block; margin-right:1em"><input style="margin-bottom:0" id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input></li>
-      <li style="display:inline-block; margin-right:1em">From <select id="version_from" onChange="switchDictionary()"></select></li>
-      <li style="display:inline-block; margin-right:1em">To  <select id="version_to" onChange="switchDictionary()"></select></li>
-      <li style="display:inline-block; margin-right:1em">|</li>
-      <li style="display:inline-block; margin-right:1em">
-         <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterNew"></span></span>
-         <span id="labelNew" class="legend">New</span>
+      <li class="toolbar_item">|</li>
+      <li class="toolbar_item">
+          <input style="margin-bottom:0" id="filter" type="text" size="30" onKeyUp="doFilter()" placeholder="Search"></input>
       </li>
-      <li style="display:inline-block; margin-right:1em">
-         <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterChanged"></span></span>
-         <span id="labelChanged" class="legend">Changed</span>
+      <li class="toolbar_item">From <select id="version_from" onChange="switchDictionary()"></select></li>
+      <li class="toolbar_item">To  <select id="version_to" onChange="switchDictionary()"></select></li>
+      <li class="toolbar_item">|</li>
+      <li class="toolbar_item">
+          <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterNew"></span></span>
+          <span id="labelNew" class="legend">New</span>
       </li>
-      <li style="display:inline-block; margin-right:1em;"> 
-        <button><div id="viewReport">View Report</div></button>
+      <li class="toolbar_item">
+          <span style="position:absolute; margin:2px; color:#EEE"><span class="tiny" id="counterChanged"></span></span>
+          <span id="labelChanged" class="legend">Changed</span>
       </li>
-      <li style="display:inline-block; margin-right:2em">|</li>
-      <li style="display:inline-block"> 
-         <!--<button><div id="viewToggle"></div></button>-->
-         <button id="viewToggle"></button>
+      <li class="toolbar_item">
+          <button><div id="viewReport">View Report</div></button>
+      </li>
+      <li class="toolbar_item">|</li>
+      <li class="toolbar_item">
+          <button id="viewToggle"></button>
       </li>
    </ul>
 </div>
 <!---->
 
-<div id="visWrapper">
+<div id="visWrapper" style="margin:0.5em">
    <!-- template for table viewer-->
    <span id="datatypeSelector" style="display:inline-block; margin-right:10em; float:right">
        <button id="minimapLabel"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
@@ -148,11 +151,10 @@ a {
           <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
        </div>
    </span>
-   <div id="datatypeRemoved" class="removed" style="margin:0.5em"></div>
-   <div id="datatypeTable" style="margin:0.5em"></div>
+   <div id="datatypeTable"></div>
 
    <!-- template for graph viewer -->
-   <div id="datatypeGraph" style="margin:0.5em">
+   <div id="datatypeGraph">
       <div id="graph" style="float:left; width:75%"></div>
    </div>
 </div>
@@ -212,7 +214,7 @@ function doFilter() {
 }
 
 
-function render(version) {
+function render() {
    var versionFrom = getSelect("#version_from");
    var versionTo = getSelect("#version_to");
 
@@ -223,18 +225,14 @@ function render(version) {
       tableViewer.showDictionaryGraph(versionFrom, versionTo);
    }
    doFilter();
-
- 
 }
 
 
 function generateChangeList() {
-
-
    var versionFrom = getSelect("#version_from");
    var versionTo = getSelect("#version_to");
    var changeReport = dictUtil.createDiffListing(versionFrom, versionTo);
-   //d3.select("#changeReport").text(JSON.stringify(changeReport));
+
    d3.select("#changeReport").html("");
    d3.select("#changeReport").append("pre").text(function() {
       var text = "";
@@ -265,15 +263,12 @@ function generateChangeList() {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Entry point
+// Entry point, setting up user interaction events
 ////////////////////////////////////////////////////////////////////////////////
 d3.json("/ws/dictionaries", function(dictionaryList) {
 
    dictUtil = new DictionaryUtil(dictionaryList);
    tableViewer = new TableViewer(dictUtil, null);
-
-   // test
-   dictUtil.testRandom();
 
 
    // Externalized function
@@ -316,7 +311,6 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
          d3.select("#viewToggle").style("display", "block");
          d3.select("#reportWrapper").style("display", "none");
       }
-
    });
 
 
@@ -344,9 +338,13 @@ d3.json("/ws/dictionaries", function(dictionaryList) {
         codelistMap[c.name] = c;
      });
 
-     // Done preparing data, now start rendering
+     // Done preparing data, now start rendering, this may be flaky
+     // because we are attempting to guess the correct dictionaries
      tableViewer.toggleFunc();
-     render(dictUtil.sortedDictionaryList[0].version);
+     if (d3.select("#version_from").node().children.length > 1) {
+        d3.select("#version_from").node().selectedIndex = 1;
+     }
+     switchDictionary();
 
    });
 
