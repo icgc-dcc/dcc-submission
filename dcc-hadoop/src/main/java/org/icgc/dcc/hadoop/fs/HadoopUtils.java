@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.io.ByteStreams.copy;
 
 import java.io.BufferedReader;
@@ -43,6 +42,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -89,20 +89,22 @@ public class HadoopUtils {
     }
   }
 
-  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) throws IOException {
+  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) {
     return isFile(fileSystem, new Path(stringPath));
   }
 
-  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) throws IOException {
-    return getFileStatus(fileSystem, path).isFile();
+  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) {
+    val fileStatus = getFileStatus(fileSystem, path);
+    return fileStatus.isPresent() && fileStatus.get().isFile();
   }
 
-  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) throws IOException {
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) {
     return isDirectory(fileSystem, new Path(stringPath));
   }
 
-  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) throws IOException {
-    return getFileStatus(fileSystem, path).isDirectory();
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) {
+    val fileStatus = getFileStatus(fileSystem, path);
+    return fileStatus.isPresent() && fileStatus.get().isDirectory();
   }
 
   public static void rm(FileSystem fileSystem, String stringPath) {
@@ -267,11 +269,12 @@ public class HadoopUtils {
 
   /**
    * Returns the {@link FileStatus} for the given {@link Path}.
-   * @throws IOException
    */
-  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) throws IOException {
-    val status = fileSystem.getFileStatus(path);
-    return checkNotNull(status, "Expecting a non-null reference for '%s'", path);
+  @SneakyThrows
+  public static Optional<FileStatus> getFileStatus(FileSystem fileSystem, Path path) {
+    return fileSystem.exists(path) ?
+        Optional.of(fileSystem.getFileStatus(path)) :
+        Optional.<FileStatus> absent();
   }
 
   /**

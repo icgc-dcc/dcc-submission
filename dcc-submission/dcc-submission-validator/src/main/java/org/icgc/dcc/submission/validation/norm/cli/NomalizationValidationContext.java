@@ -25,6 +25,7 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.util.Joiners.DOT;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.FS_DEFAULT_FS;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.util.Collection;
@@ -58,30 +59,32 @@ import com.typesafe.config.Config;
 public class NomalizationValidationContext extends AbstractValidationContext {
 
   @Value
-  class Data {
+  class Param {
 
     String fsUrl;
+    String fsRoot;
     String jobTracker;
 
     private final Config getAppConfig() {
       return parseMap(ImmutableMap.<String, Object> of(
           DOT.join(HADOOP_KEY, MR_JOBTRACKER_ADDRESS_KEY), jobTracker,
           DOT.join(HADOOP_KEY, FS_DEFAULT_FS), fsUrl,
-          FS_URL, fsUrl
+          FS_URL, fsUrl,
+          FS_ROOT, fsRoot
           ));
     }
 
   }
 
   @NonNull
-  private final String parentDirName;
+  private final String overarchDirName;
   @NonNull
   private final String parentInputDirName;
   @NonNull
   private final String projectKey;
 
   @NonNull
-  private final Data data; // TODO: rename
+  private final Param param;
 
   @Getter
   @NonNull
@@ -103,18 +106,18 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   private final SubmissionDirectory submissionDirectory;
 
   public NomalizationValidationContext(
-      String parentDirName, String parentInputDirName, String projectKey, String fsUrl, String jobTracker) {
-    this.parentDirName = parentDirName;
+      String overarchDirName, String parentInputDirName, String projectKey, String fsUrl, String jobTracker) {
+    this.overarchDirName = overarchDirName;
     this.parentInputDirName = parentInputDirName;
     this.projectKey = projectKey;
 
-    this.data = new Data(fsUrl, jobTracker);
+    this.param = new Param(fsUrl, overarchDirName, jobTracker);
 
     this.release = new Release(parentInputDirName);
     this.submission = new Submission(projectKey, projectKey, parentInputDirName);
 
     this.fileSystem = FileSystems.getFileSystem(fsUrl);
-    this.dccFileSystem = new DccFileSystem(data.getAppConfig(), fileSystem);
+    this.dccFileSystem = new DccFileSystem(param.getAppConfig(), fileSystem);
     this.releaseFileSystem = new ReleaseFileSystem(dccFileSystem, release);
     this.submissionDirectory = new SubmissionDirectory(
         dccFileSystem, releaseFileSystem, release, projectKey, submission);
@@ -122,11 +125,11 @@ public class NomalizationValidationContext extends AbstractValidationContext {
 
   @Override
   public PlatformStrategy getPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(data.getAppConfig(), getFileSystem());
+    val provider = new PlatformStrategyFactoryProvider(param.getAppConfig(), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component
-    val project = new Path(parentDirName, new Path(parentInputDirName, projectKey));
+    val project = new Path(overarchDirName, new Path(parentInputDirName, projectKey));
     val input = project;
     val output = project;
     val system = new Path(SEPARATOR); // Not used by normalizer

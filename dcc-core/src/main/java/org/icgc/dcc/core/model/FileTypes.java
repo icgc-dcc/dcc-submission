@@ -34,6 +34,7 @@ import lombok.NoArgsConstructor;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
@@ -85,7 +86,6 @@ public final class FileTypes {
     META_SUBTYPE,
     PRIMARY_SUBTYPE,
     SECONDARY_SUBTYPE,
-    GENE_SUBTYPE,
 
     //
     // System
@@ -117,7 +117,7 @@ public final class FileTypes {
      * See {@link #usedAsAbbrevatiation()}.
      */
     private static final List<FileSubType> TYPES_USED_AS_ABBREVIATION =
-        newArrayList(META_SUBTYPE, PRIMARY_SUBTYPE, SECONDARY_SUBTYPE, GENE_SUBTYPE);
+        newArrayList(META_SUBTYPE, PRIMARY_SUBTYPE, SECONDARY_SUBTYPE);
 
     public String getAbbreviation() {
       checkState(usedAsAbbrevatiation(),
@@ -248,6 +248,8 @@ public final class FileTypes {
 
     /**
      * Returns the "harmonized" (uncompressed concatenated) file name.
+     * <p>
+     * fs-convention
      */
     public String getHarmonizedOutputFileName() {
       return _("%s%s", getTypeName(), FILE_EXTENSION);
@@ -272,6 +274,15 @@ public final class FileTypes {
     public static FileType from(String typeName) {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
+
+    public static Function<FileType, FileSubType> GET_SUB_TYPE = new Function<FileType, FileSubType>() {
+
+      @Override
+      public FileSubType apply(FileType fileType) {
+        return fileType.getSubType();
+      }
+
+    };
 
   }
 

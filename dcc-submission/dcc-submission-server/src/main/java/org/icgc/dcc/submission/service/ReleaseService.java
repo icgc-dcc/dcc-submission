@@ -790,7 +790,7 @@ public class ReleaseService extends AbstractService {
   private SubmissionFile getSubmissionFile(Map<String, FileType> filePatternToTypeMap, Path filePath)
       throws IOException {
     val fileName = filePath.getName();
-    val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath);
+    val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath).get();
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
     val fileType = getFileType(filePatternToTypeMap, fileName).orNull();

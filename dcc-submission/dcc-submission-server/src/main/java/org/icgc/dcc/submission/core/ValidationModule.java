@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.core;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static org.icgc.dcc.core.Component.NORMALIZER;
 
 import java.util.Set;
 
@@ -72,7 +73,7 @@ public class ValidationModule extends AbstractDccModule {
    */
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
   private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
-  private static final String NORMALIZER_CONFIG_PARAM = NormalizationValidator.COMPONENT_NAME;
+  private static final String NORMALIZER_CONFIG_PARAM = NORMALIZER.getComponentName();
 
   /**
    * Default value for maximum number of concurrent validations.
