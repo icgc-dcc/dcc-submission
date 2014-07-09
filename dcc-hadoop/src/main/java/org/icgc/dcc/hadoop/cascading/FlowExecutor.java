@@ -201,7 +201,7 @@ public class FlowExecutor extends ThreadPoolExecutor {
   @SneakyThrows
   private Flow<?> createHadoopFlow(FlowExecutorJob job) {
     val jobConf = createJobConf(job);
-    val flow = new MapReduceFlow(jobConf, false) {
+    MapReduceFlow flow = new MapReduceFlow(jobConf, false) {
 
       @Override
       @SuppressWarnings("rawtypes")

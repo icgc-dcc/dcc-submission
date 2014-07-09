@@ -56,4 +56,8 @@ public final class Jackson {
     return DEFAULT.readTree(file);
   }
 
+  public static <T> JsonNode toJsonNode(T t) {
+    return DEFAULT.convertValue(t, JsonNode.class);
+  }
+
 }

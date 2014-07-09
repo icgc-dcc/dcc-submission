@@ -44,8 +44,8 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
+import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGenerationTest;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -184,9 +184,9 @@ public class NormalizationValidatorTest {
                 "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
                 "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
                 "3\t" + NormalizationCounter.MASKED.getInternalReportDisplayName() + "\n" +
-                "4\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
-                "6\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
-                "10\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
+                "0\t" + NormalizationCounter.DROPPED.getInternalReportDisplayName() + "\n" +
+                "9\t" + NormalizationCounter.UNIQUE_REMAINING.getInternalReportDisplayName() + "\n" +
+                "14\t" + NormalizationCounter.TOTAL_END.getInternalReportDisplayName() + "\n" // 10+1-4
             ));
   }
 

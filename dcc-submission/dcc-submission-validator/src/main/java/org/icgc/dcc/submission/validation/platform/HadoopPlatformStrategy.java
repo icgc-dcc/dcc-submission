@@ -121,7 +121,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
       val filePath = fileStatus.getPath();
 
       if (fileStatus.isFile() && filePath.getName().startsWith(PART_FILE_NAME_PREFIX)) {
-        val inputSupplier = new InputSupplier<InputStream>() {
+        InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
 
           @Override
           public InputStream getInput() throws IOException {
