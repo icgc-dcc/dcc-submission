@@ -20,7 +20,7 @@ package org.icgc.dcc.core;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 
 /**
- * TODO
+ * Represents components in our system.
  */
 public enum Component {
 
