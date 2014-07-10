@@ -86,7 +86,7 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor(access = PRIVATE)
 public final class NormalizationValidator implements Validator {
 
-  static final String COMPONENT_NAME = NORMALIZER.getComponentName();
+  static final String COMPONENT_NAME = NORMALIZER.getId();
 
   /**
    * Type that is the focus of normalization (there could be more in the future).

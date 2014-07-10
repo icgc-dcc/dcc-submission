@@ -19,6 +19,7 @@ package org.icgc.dcc.reporter;
 
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
@@ -27,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * TODO: add checks
  */
+@Ignore
 public class ReporterTest {
 
   private static final String TEST_RELEASE_NAME = "reporter-release-name";

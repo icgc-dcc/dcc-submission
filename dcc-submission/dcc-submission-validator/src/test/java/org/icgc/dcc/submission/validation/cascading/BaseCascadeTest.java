@@ -55,7 +55,7 @@ public abstract class BaseCascadeTest {
 
   protected Future<Throwable> executeCascade(ExecutorService executor, final Runnable testAction) {
     log.info("[Main] Submitting action...");
-    val future = executor.submit(new Callable<Throwable>() {
+    Future<Throwable> future = executor.submit(new Callable<Throwable>() {
 
       @Override
       public Throwable call() throws Exception {
