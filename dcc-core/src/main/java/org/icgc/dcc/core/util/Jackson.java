@@ -62,7 +62,7 @@ public final class Jackson {
     return DEFAULT.convertValue(t, JsonNode.class);
   }
 
-  public static <T> String getPrettyLogString(String message, T t) {
+  public static <T> String formatPrettyLog(String message, T t) {
     return INDENT.join(
         message,
         INDENT.join(

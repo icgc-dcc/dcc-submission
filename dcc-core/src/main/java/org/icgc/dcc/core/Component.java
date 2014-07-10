@@ -19,22 +19,25 @@ package org.icgc.dcc.core;
 
 import static org.icgc.dcc.core.util.Joiners.PATH;
 
+import org.icgc.dcc.core.model.Identifiable;
+
 /**
  * Represents components in our system.
  */
-public enum Component {
+public enum Component implements Identifiable {
 
   CONCATENATOR,
   NORMALIZER,
   ANNOTATOR,
   LOADER;
 
-  public String getComponentName() {
+  @Override
+  public String getId() {
     return name().toLowerCase();
   }
 
   public String getDirName() {
-    return getComponentName();
+    return getId();
   }
 
   public String getProjectDir(String dataParentDir, String projectKey) {
