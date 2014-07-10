@@ -112,4 +112,9 @@ public class EtlConfig {
    */
   Map<String, String> indexerHadoop;
 
+  /**
+   * ICGC client configuration
+   */
+  Map<String, String> icgc;
+
 }
