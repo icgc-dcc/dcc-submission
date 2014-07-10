@@ -246,29 +246,4 @@ public final class CascadingFunctions {
     }
   }
 
-  public static class MissingFieldsAdder extends BaseOperation<Void> implements Function<Void> {
-
-    /**
-     * {@link Tuple} to add to every record.
-     */
-    private final Tuple missingTuple;
-
-    public MissingFieldsAdder(Fields missingFields) {
-      super(missingFields);
-
-      // Create tuple to be added for every records
-      missingTuple = new Tuple();
-      for (int i = 0; i < missingFields.size(); i++) {
-        missingTuple.add(NO_VALUE); // At the moment we just nullify it
-      }
-    }
-
-    @Override
-    public void operate(
-        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-        FunctionCall<Void> functionCall) {
-      functionCall.getOutputCollector().add(new Tuple(missingTuple));
-    }
-
-  }
 }
