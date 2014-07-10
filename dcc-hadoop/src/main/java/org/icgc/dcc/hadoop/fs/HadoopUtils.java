@@ -17,8 +17,12 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.io.ByteStreams.copy;
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.Separators.DASH;
+import static org.icgc.dcc.core.util.Splitters.TAB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,14 +46,26 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 
+import cascading.tuple.Fields;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.io.LineReader;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
  */
 public class HadoopUtils {
+
+  public static final String MR_PART_FILE_NAME_BASE = "part";
+  public static final String MR_PART_FILE_SEPARATOR = DASH;
+  public static final String MR_PART_FILE_NAME_FIRST_INDEX = "00000";
+  public static final String FIRST_PLAIN_MR_PART_FILE_NAME = Joiner.on(MR_PART_FILE_SEPARATOR)
+      .join(MR_PART_FILE_NAME_BASE, MR_PART_FILE_NAME_FIRST_INDEX);
 
   public static String getConfigurationDescription(Configuration configuration) throws IOException {
     final Writer writer = new StringWriter();
@@ -89,20 +105,30 @@ public class HadoopUtils {
     }
   }
 
-  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) throws IOException {
+  @SneakyThrows
+  public static boolean exists(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path alternativeFile) {
+
+    return fileSystem.exists(alternativeFile);
+  }
+
+  public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) {
     return isFile(fileSystem, new Path(stringPath));
   }
 
-  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) throws IOException {
-    return getFileStatus(fileSystem, path).isFile();
+  public static boolean isFile(FileSystem fileSystem, @NonNull Path path) {
+    val fileStatus = getFileStatus(fileSystem, path);
+    return fileStatus.isPresent() && fileStatus.get().isFile();
   }
 
-  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) throws IOException {
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull String stringPath) {
     return isDirectory(fileSystem, new Path(stringPath));
   }
 
-  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) throws IOException {
-    return getFileStatus(fileSystem, path).isDirectory();
+  public static boolean isDirectory(FileSystem fileSystem, @NonNull Path path) {
+    val fileStatus = getFileStatus(fileSystem, path);
+    return fileStatus.isPresent() && fileStatus.get().isDirectory();
   }
 
   public static void rm(FileSystem fileSystem, String stringPath) {
@@ -267,11 +293,12 @@ public class HadoopUtils {
 
   /**
    * Returns the {@link FileStatus} for the given {@link Path}.
-   * @throws IOException
    */
-  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) throws IOException {
-    val status = fileSystem.getFileStatus(path);
-    return checkNotNull(status, "Expecting a non-null reference for '%s'", path);
+  @SneakyThrows
+  public static Optional<FileStatus> getFileStatus(FileSystem fileSystem, Path path) {
+    return fileSystem.exists(path) ?
+        Optional.of(fileSystem.getFileStatus(path)) :
+        Optional.<FileStatus> absent();
   }
 
   /**
@@ -293,6 +320,37 @@ public class HadoopUtils {
       lines.add(line);
     }
     return lines;
+  }
+
+  @SneakyThrows
+  public static Fields getFileHeader(FileSystem fileSystem, String inputFilePath) {
+
+    val inputFile = new Path(inputFilePath);
+    val codec = new CompressionCodecFactory(fileSystem.getConf()).getCodec(inputFile);
+
+    @Cleanup
+    InputStreamReader reader = new InputStreamReader(
+        codec == null ?
+            fileSystem
+                .open(inputFile) :
+            codec.createInputStream(fileSystem.open(inputFile)),
+        UTF_8);
+
+    return new Fields(toArray(
+        TAB.split(
+            new LineReader(reader)
+                .readLine()),
+        String.class));
+
+  }
+
+  /**
+   * TODO: handle compression
+   */
+  public static String addMRFirstPartSuffix(String filePath) {
+    return PATH.join(
+        filePath,
+        FIRST_PLAIN_MR_PART_FILE_NAME);
   }
 
 }

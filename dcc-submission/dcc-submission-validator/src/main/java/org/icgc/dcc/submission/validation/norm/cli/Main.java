@@ -17,13 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.norm.cli;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.typesafe.config.ConfigFactory.parseMap;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
+import org.icgc.dcc.submission.validation.norm.PseudoNormalizer;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
@@ -46,35 +50,48 @@ public class Main {
 
     // Resolve configuration @formatter:off
     int i = 0;
-    val releaseName = args.length >= ++i ? args[i - 1] : "release2";
-    val projectKey  = args.length >= ++i ? args[i - 1] : "project.1";
-    val fsRoot      = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
-    val fsUrl       = args.length >= ++i ? args[i - 1] : "file:///";
-    val jobTracker  = args.length >= ++i ? args[i - 1] : "localhost";
+    val parentInputDirName = args.length >= ++i ? args[i - 1] : "1_concatenator";
+    val projectKey   = args.length >= ++i ? args[i - 1] : "project.1";
+    val overarchDirName       = args.length >= ++i ? args[i - 1] : "/.../intermediate"; // TODO: make first
+    val fsUrl        = args.length >= ++i ? args[i - 1] : "file:///"; // or like "hdfs://hname-dev.res:8020"
+    val jobTracker   = args.length >= ++i ? args[i - 1] : "localhost"; // or like "hcn51.res:8021"
+    val fileTypeName = args.length >= ++i ? args[i - 1] : SSM_TYPE.getTypeName(); // or "sgv"
     // @formatter:on
 
+    val fileType = FeatureType.from(fileTypeName);
+    checkState(fileType.isSimple());
+
     // Execute
-    val context = getValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
-    val validator = getValidator(context);
-    validator.validate(context);
+    val context = getValidationContext(overarchDirName, parentInputDirName, projectKey, fsUrl, jobTracker);
+    if (fileType.isSsm()) {
+      val validator = getValidator(context);
+      validator.validate(context);
+    } else {
+      PseudoNormalizer.process(
+          context.getFileSystem(),
+          context.getPlatformStrategy(),
+          getDccFileSystem2(context) // Not very clean but is consistent with the SSM normalizer
+              .getNormalizationSgvDataOutputFile(
+                  parentInputDirName,
+                  projectKey));
+    }
 
     log.info("Finished normalization.");
   }
 
-  private static ValidationContext getValidationContext(String releaseName, String projectKey, String fsRoot,
-      String fsUrl,
-      String jobTracker) {
+  private static ValidationContext getValidationContext(String overarchDirName, String parentInputDirName,
+      String projectKey, String fsUrl, String jobTracker) {
     // @formatter:off
-    log.info("releaseName: {}", releaseName);
+    log.info("overarchDirName:    {}", overarchDirName);
+    log.info("parentInputDirName: {}", parentInputDirName);
     log.info("projectKey:  {}", projectKey);
-    log.info("fsRoot:      {}", fsRoot);
     log.info("fsUrl:       {}", fsUrl);
     log.info("jobTracker:  {}", jobTracker);
-    log.info("input:       {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + "{ssmP}");
-    log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation/normalization");
+    log.info("input:       {}", overarchDirName + "/" + parentInputDirName + "/" + projectKey + "/" + "{ssmP}");
+    log.info("output:      {}", overarchDirName + "/" + parentInputDirName + "/" + projectKey + "/" + ".validation/normalization");
     // @formatter:on
 
-    return new NomalizationValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
+    return new NomalizationValidationContext(overarchDirName, parentInputDirName, projectKey, fsUrl, jobTracker);
   }
 
   private static NormalizationValidator getValidator(ValidationContext context) {

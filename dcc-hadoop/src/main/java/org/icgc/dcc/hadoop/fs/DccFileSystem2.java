@@ -17,32 +17,28 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
-import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.mkdirs;
 
 import java.io.File;
-import java.util.List;
 
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.local.FileTap;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 /**
  * Very basic replacement for {@link DccFileSystem}, as discussed with @Bob Tiernay around 13/11/07 (see DCC-1876). This
@@ -55,17 +51,12 @@ import com.google.common.collect.Lists;
 @Slf4j
 public class DccFileSystem2 {
 
-  private static final String SSM_P_FILE_NAME = "ssm_p.txt";
-  private static final String SSM_S_FILE_NAME = "ssm_s.txt";
-
   private final FileSystem fileSystem;
-
   private final String rootDir;
-
   private final boolean hadoopMode;
 
   public Tap<?, ?, ?> getNormalizationDataOutputTap(String releaseName, String projectKey) {
-    String path = getNormalizationDataOutputFile(releaseName, projectKey);
+    String path = getNormalizationSsmDataOutputFile(releaseName, projectKey);
     return getTap(path);
   }
 
@@ -112,18 +103,19 @@ public class DccFileSystem2 {
         lazyDirCreation(getNormalizationReportsDir(releaseName, projectKey)));
   }
 
-  public String getNormalizationDataOutputFile(String releaseName, String projectKey) {
+  public String getNormalizationSsmDataOutputFile(String releaseName, String projectKey) {
+    return getNormalizationDataOutputFile(releaseName, projectKey, SSM_P_TYPE);
+  }
+
+  public String getNormalizationSgvDataOutputFile(String releaseName, String projectKey) {
+    return getNormalizationDataOutputFile(releaseName, projectKey, SGV_P_TYPE);
+  }
+
+  private String getNormalizationDataOutputFile(String releaseName, String projectKey, FileType fileType) {
     return format(
         "%s/%s",
         lazyDirCreation(getNormalizationDataDir(releaseName, projectKey)),
-        SSM_P_FILE_NAME);
-  }
-
-  public String getAnnotationDataOutputFile(String releaseName, String projectKey) {
-    return format(
-        "%s/%s",
-        lazyDirCreation(getAnnotationDataDir(releaseName, projectKey)),
-        SSM_S_FILE_NAME);
+        fileType.getHarmonizedOutputFileName());
   }
 
   // TODO: move to a NormalizerDccFileSystem2-like class?
@@ -150,62 +142,6 @@ public class DccFileSystem2 {
       mkdirs(fileSystem, dir);
     }
     return dir;
-  }
-
-  /**
-   * List relevant files for the loader component, not necessarily all under the same directory.
-   */
-  public List<String> listLoaderFiles(
-      String projectKey, String projectDataPath, String ssmPPattern, String ssmSPattern) {
-    val files = Lists.<String> newArrayList();
-
-    // Handle all but ssm_p and ssm_s files (directly from the submission system)
-    for (val filePath : lsFile(fileSystem, new Path(projectDataPath))) {
-      val file = filePath.toUri().toString();
-      if (!matches(file, ssmPPattern) && !matches(file, ssmSPattern)) { // ssm_p and ssm_s are handled separately
-        files.add(file);
-      }
-    }
-
-    // Handle ssm_p (from the normalizer)
-    {
-      // Temporarily using the same directory until
-      // https://wiki.oicr.on.ca/display/DCCSOFT/Incremental+Submission+-+Discussion and
-      // https://wiki.oicr.on.ca/display/DCCSOFT/Overarching+Component are fleshed out
-      // val normalizationDataOutputFile = getNormalizationDataOutputFile(releaseName, projectKey);
-      val normalizationDataOutputFile = Joiner.on('/').join(projectDataPath, SSM_P_FILE_NAME);
-
-      if (checkExistence(fileSystem, normalizationDataOutputFile)) {
-        val fileName = new File(normalizationDataOutputFile).getName();
-        val matchesSsmPPattern = compile(ssmPPattern).matcher(fileName).matches();
-        checkState(matchesSsmPPattern, // By design
-            "File '%s' does not match expected pattern: '%s'", ssmPPattern, fileName);
-        files.add(normalizationDataOutputFile);
-      } else {
-        log.info("No ssm_p normalization file found at '{}'", normalizationDataOutputFile);
-      }
-    }
-
-    // Handle ssm_s (from the annotator)
-    {
-      // Temporarily using the same directory until
-      // https://wiki.oicr.on.ca/display/DCCSOFT/Incremental+Submission+-+Discussion and
-      // https://wiki.oicr.on.ca/display/DCCSOFT/Overarching+Component are fleshed out
-      // val annotationDataOutputFile = getAnnotationDataOutputFile(releaseName, projectKey);
-      val annotationDataOutputFile = Joiner.on('/').join(projectDataPath, SSM_S_FILE_NAME);
-
-      if (checkExistence(fileSystem, annotationDataOutputFile)) {
-        val fileName = new File(annotationDataOutputFile).getName();
-        val matchesSsmSPattern = compile(ssmSPattern).matcher(fileName).matches();
-        checkState(matchesSsmSPattern, // By design
-            "File '%s' does not match expected pattern: '%s'", fileName, ssmSPattern);
-        files.add(annotationDataOutputFile);
-      } else {
-        log.info("No ssm_s annotation file found at '{}'", annotationDataOutputFile);
-      }
-    }
-
-    return files;
   }
 
   /**

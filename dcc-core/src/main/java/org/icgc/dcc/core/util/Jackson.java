@@ -18,6 +18,8 @@
 package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.INDENT;
+import static org.icgc.dcc.core.util.Splitters.NEWLINE;
 
 import java.io.File;
 
@@ -58,6 +60,14 @@ public final class Jackson {
 
   public static <T> JsonNode toJsonNode(T t) {
     return DEFAULT.convertValue(t, JsonNode.class);
+  }
+
+  public static <T> String formatPrettyLog(String message, T t) {
+    return INDENT.join(
+        message,
+        INDENT.join(
+            NEWLINE.split(
+                toJsonPrettyString(t))));
   }
 
 }

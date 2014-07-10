@@ -22,7 +22,6 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.BIOMARKER_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.DONOR_SUBTYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileSubType.GENE_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.SAMPLE_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.BIOMARKER_TYPE;
@@ -73,7 +72,6 @@ public class FileTypesTest {
   @Test
   public void test_SubmissionFileSubType_valid() {
     assertThat(META_SUBTYPE.getAbbreviation()).isEqualTo("m");
-    assertThat(GENE_SUBTYPE.getAbbreviation()).isEqualTo("g");
     assertThat(DONOR_SUBTYPE.getFullName()).isEqualTo("donor");
     assertThat(SAMPLE_SUBTYPE.getFullName()).isEqualTo("sample");
     assertThat(BIOMARKER_SUBTYPE.getFullName()).isEqualTo("biomarker");
@@ -82,11 +80,6 @@ public class FileTypesTest {
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_meta() {
     META_SUBTYPE.getFullName();
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void test_SubmissionFileSubType_invalid_gene() {
-    GENE_SUBTYPE.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)

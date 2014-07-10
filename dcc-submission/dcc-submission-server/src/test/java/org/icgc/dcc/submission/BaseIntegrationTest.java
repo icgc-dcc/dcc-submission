@@ -47,7 +47,7 @@ public class BaseIntegrationTest {
   protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {
     Path errorFile = new Path(dir, path);
     assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
-    assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).getLen() == 0);
+    assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).get().getLen() == 0);
   }
 
 }

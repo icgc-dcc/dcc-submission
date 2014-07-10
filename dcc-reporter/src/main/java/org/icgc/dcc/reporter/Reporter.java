@@ -9,6 +9,7 @@ import static org.icgc.dcc.core.util.Jackson.getJsonRoot;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.FIRST_PLAIN_MR_PART_FILE_NAME;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
 import java.text.SimpleDateFormat;
@@ -38,6 +39,11 @@ import com.google.common.collect.Maps;
 public class Reporter {
 
   public static final Class<Reporter> CLASS = Reporter.class;
+
+  /**
+   * TODO: from config
+   */
+  private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
 
   static String OUTPUT_DIR = "/tmp/reports";
   static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
@@ -115,16 +121,13 @@ public class Reporter {
     return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
   }
 
-  private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
-  private static final String PART_FILE = "part-00000";
-
   public static String getOuputFileFusePath(OutputType output, String projectKey) {
     String outputFilePath = Reporter.getOutputFilePath(output, projectKey);
     if (!Main.isLocal()) {
       outputFilePath = PATH.join(
           FUSE_MOUTPOINT_PREFIX,
           outputFilePath,
-          PART_FILE);
+          FIRST_PLAIN_MR_PART_FILE_NAME);
     }
     return outputFilePath;
   }

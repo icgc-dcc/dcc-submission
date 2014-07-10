@@ -33,6 +33,12 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
 
+    <!-- YAML -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+    </dependency>
+    
     <!-- Utilities -->
     <dependency>
       <groupId>org.projectlombok</groupId>

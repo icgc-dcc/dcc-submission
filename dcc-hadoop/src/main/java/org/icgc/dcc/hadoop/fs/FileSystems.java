@@ -1,5 +1,3 @@
-package org.icgc.dcc.hadoop.parser;
-
 /*
  * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
@@ -17,55 +15,32 @@ package org.icgc.dcc.hadoop.parser;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.icgc.dcc.hadoop.fs;
 
-import static org.icgc.dcc.hadoop.parser.FileParsers.newStringFileParser;
-
-import java.util.List;
-
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
-import com.google.common.collect.ImmutableList;
-
-@Slf4j
-public class TsvPartFileProcessor {
-
-  public static void parseFile(
-      FileSystem fileSystem,
-      Path inputFile,
-      FileRecordProcessor<String> recordProcessor) {
-
-    parseFiles(fileSystem, ImmutableList.of(inputFile), recordProcessor);
-  }
-
-  public static void parseFiles(
-      FileSystem fileSystem,
-      List<Path> inputFiles,
-      FileRecordProcessor<String> recordProcessor) {
-    int partNumber = 1;
-    int partTotalCount = inputFiles.size();
-
-    for (val partFile : inputFiles) {
-      val partFileParser = newStringFileParser(fileSystem, true);
-
-      log.info("    * [{}/{}] Parsing part file '{}'", new Object[] { partNumber, partTotalCount, partFile });
-      val lineCount = parseRecord(partFileParser, partFile, recordProcessor);
-      log.info("    * [{}/{}] Number of lines read: '{}'", new Object[] { partNumber, partTotalCount, lineCount });
-
-      partNumber++;
-    }
-  }
+/**
+ * Util methods for {@link FileSystem}.
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class FileSystems {
 
   @SneakyThrows
-  private static long parseRecord(
-      FileParser<String> partFileParser,
-      Path partFile,
-      FileRecordProcessor<String> recordProcessor) {
-    return partFileParser.parse(partFile, recordProcessor);
+  public static FileSystem getFileSystem(String fsUrl) {
+    return FileSystem.get(getHadoopConfig(fsUrl));
+  }
+
+  private static Configuration getHadoopConfig(String fsUrl) {
+    val configuration = new Configuration();
+    configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
+    return configuration;
   }
 
 }

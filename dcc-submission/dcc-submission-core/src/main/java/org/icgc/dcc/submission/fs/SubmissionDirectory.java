@@ -31,7 +31,6 @@ import static org.icgc.dcc.hadoop.fs.HadoopUtils.rm;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -169,13 +168,9 @@ public class SubmissionDirectory {
   public void removeValidationFiles() {
     val fs = dccFileSystem.getFileSystem();
     for (val file : lsFile(fs, new Path(getValidationDirPath()))) {
-      try {
-        checkState(isFile(fs, file), "Expecting file, not a directory: '%s'", file);
-        log.info("Deleting file '{}'", file);
-        rm(fs, file);
-      } catch (IOException e) {
-        log.warn("Could not delete '{}': {}", file, e.getMessage());
-      }
+      checkState(isFile(fs, file), "Expecting file, not a directory: '%s'", file);
+      log.info("Deleting file '{}'", file);
+      rm(fs, file);
     }
   }
 
