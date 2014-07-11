@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.core.state;
 
 import static com.google.common.collect.Iterables.find;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
+import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.submission.core.report.DataTypeState.INVALID;
 import static org.icgc.dcc.submission.core.report.DataTypeState.VALID;
 import static org.mockito.Mockito.when;
@@ -75,18 +75,18 @@ public class ValidatingStateTest {
   @Test
   public void testFinishValidationCornerCase() {
     val originalReport = getOriginalReport();
-    log.info(toJsonPrettyString(originalReport));
+    log.info(formatPrettyJson(originalReport));
     when(mockStateContext.getReport()).thenReturn(originalReport);
 
     val newReport = getNewReport();
-    log.info(toJsonPrettyString(newReport));
+    log.info(formatPrettyJson(newReport));
     SubmissionState.VALIDATING.finishValidation(
         mockStateContext,
         Lists.<DataType> newArrayList(
             ClinicalType.CLINICAL_CORE_TYPE),
         Outcome.ABORTED,
         newReport);
-    log.info(toJsonPrettyString(newReport));
+    log.info(formatPrettyJson(newReport));
 
     assertThat(find(newReport.getDataTypeReports(), IS_CLINICAL).getDataTypeState()).isEqualTo(VALID);
     assertThat(find(newReport.getDataTypeReports(), IS_SSM).getDataTypeState()).isEqualTo(INVALID);

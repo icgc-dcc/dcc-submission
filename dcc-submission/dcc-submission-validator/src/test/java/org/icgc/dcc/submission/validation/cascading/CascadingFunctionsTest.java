@@ -41,7 +41,6 @@ public class CascadingFunctionsTest extends CascadingTestCase {
     cascadingSerialize(new CascadingFunctions.CloneField(DUMMY_FIELD, DUMMY_FIELD));
     cascadingSerialize(new CascadingFunctions.AvailableDataTypes(DUMMY_FIELD));
     cascadingSerialize(new CascadingFunctions.ReplaceNulls(false));
-    cascadingSerialize(new CascadingFunctions.MissingFieldsAdder(DUMMY_FIELD));
   }
 
   @Test

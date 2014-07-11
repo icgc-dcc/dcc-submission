@@ -121,7 +121,7 @@ public class ReporterGatherer {
       }
       documents.add(builder.get());
     }
-    log.info("Content for '{}': '{}'", projectKey, Jackson.toJsonPrettyString(documents.toString()));
+    log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents.toString()));
   }
 
   private static String getHeader(String header, Optional<Map<String, String>> mapping) {
