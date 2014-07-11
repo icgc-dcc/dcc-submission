@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,47 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm.steps;
+package org.icgc.dcc.core.model;
 
-import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
+import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
 
-import org.icgc.dcc.hadoop.cascading.CascadingFunctions.Counter;
-import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
-import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
-import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
-
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
+import java.util.List;
 
 /**
- * Performs final count of observations.
- * <p>
- * TODO: merge with {@link InitialCounting} by passing the counter to use.
+ * 
  */
-@RequiredArgsConstructor
-public final class Counting implements NormalizationStep {
+public class SpecialValue {
 
   /**
-   * Short name for the step.
+   * Former reserved values that must not appear in required data anymore.
    */
-  private static final String SHORT_NAME = "count";
+  public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
+  /**
+   * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
+   */
+  public static final String LEGACY_CODE = "-9999";
+  /**
+   * Values representing absent values.
+   * <p>
+   * "-999" has been deprecated {@link ForbiddenValuesFunction}
+   */
+  public static final List<String> MISSING_CODES =
+      newArrayList(MISSING_CODE1, MISSING_CODE2, LEGACY_CODE);
 
-  private final NormalizationCounter counter;
-
-  @Override
-  public String shortName() {
-    return SHORT_NAME;
-  }
-
-  @Override
-  public Pipe extend(Pipe pipe, NormalizationContext context) {
-    return new Each(
-        pipe,
-        ALL,
-        new Counter(counter, COUNT_INCREMENT),
-        RESULTS);
-  }
 }

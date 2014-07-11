@@ -15,33 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.submission.service;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Filter;
-import cascading.operation.FilterCall;
-import cascading.tuple.Tuple;
+import com.google.common.util.concurrent.Service;
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
 
-/**
- * TODO: move to a more generic module
- * <p>
- * "hollow" because "empty" would be ambiguous with regard to whether the {@code Tuple} has elements or not, whereas we
- * care whether those elements are null or not instead.
- */
-public class RemoveHollowTupleFilter extends BaseOperation<Void> implements Filter<Void> {
+public abstract class AbstractDccModule extends AbstractModule {
 
-  @Override
-  public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
-    Tuple tuple = filterCall.getArguments().getTuple();
-    return isHollowTuple(tuple);
+  /**
+   * Creates a singleton binding for a {@code Service} class. This will allow managing the service's lifecycle
+   * automatically.
+   */
+  protected void bindService(Class<? extends Service> serviceClass) {
+    bind(serviceClass).in(Singleton.class);
+    Multibinder<Service> servicesBinder = Multibinder.newSetBinder(binder(), Service.class);
+    servicesBinder.addBinding().to(serviceClass);
   }
 
-  private boolean isHollowTuple(Tuple tuple) {
-    return tuple.equals(hollowTuple(tuple.size()));
-  }
-
-  private Tuple hollowTuple(int size) {
-    return Tuple.size(size);
-  }
 }

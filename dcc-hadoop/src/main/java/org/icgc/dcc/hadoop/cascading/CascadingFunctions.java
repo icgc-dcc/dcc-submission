@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.hadoop.cascading;
 
 import static cascading.tuple.Fields.ARGS;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -29,7 +29,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
