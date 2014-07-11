@@ -8,12 +8,13 @@ function TableViewer(config, dictUtil) {
    // Configuraitons
    this.barHeight = 25;
    this.colourDefault   = d3.rgb(240, 240, 240);
-   //this.colourNew       = d3.rgb(27,158,119);
-   //this.colourChanged   = d3.rgb(117,112,179);
 
-   this.colourNew       = d3.rgb(0,188,58);
-   this.colourChanged   = d3.rgb(177,12,12);
+   //this.colourNew       = d3.rgb(0,188,58);
+   //this.colourChanged   = d3.rgb(177,12,12);
    this.colourHighlight = d3.rgb(242, 155, 4);
+
+   this.colourNew = d3.rgb(77,175,74);
+   this.colourChanged = d3.rgb(228,26,28);
 
    this.colourMinimapDefault = d3.rgb(230,230,230);
    this.colourMinimapSelect  = d3.rgb(166, 206, 227);
@@ -104,7 +105,7 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
 
         // Section title
         d3.select(this).append("br");
-        d3.select(this).append("em").text(table.label);
+        d3.select(this).append("strong").text(table.label);
         d3.select(this).append("br");
 
         // Generate a deleted columns list, or show table wiped
@@ -161,7 +162,7 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
           .data(table.fields)
           .enter()
           .append("tr")
-          .style("font-size", "12px")
+          .style("font-size", "1em")
           .each(function(row, idx) {
              var rrr = dictUtil.getField(versionFrom, table.name, row.name);
              _self.buildRow(d3.select(this), row, rrr, idx);
@@ -264,7 +265,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
          if (regex.config.examples) {
             var example = d3.select(this).append("pre")
               .style("width", "100%")
-              .style("font-size", "9px")
+              .style("font-size", "0.8em")
               .style("cursor", "pointer")
               .on("click", function() {
                  var examples = [];
@@ -297,7 +298,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
       if (script) {
          var beautifiedScript = hljs.highlight("java", js_beautify( script.config.script )).value;
          d3.select(this).append("p").text(script.config.description);
-         d3.select(this).append("pre").style("width", "100%").style("font-size", "9px").append("code").html(beautifiedScript);
+         d3.select(this).append("pre").style("width", "100%").style("font-size", "0.8em").append("code").html(beautifiedScript);
       }
    });
    
@@ -357,7 +358,7 @@ TableViewer.prototype.buildFilterRow = function(grp, name, label, height) {
    grp.append("text")
       .attr("x", 30)
       .attr("y", 15)
-      .attr("font-size", "11px")
+      .attr("font-size", "0.9em")
       .style("pointer-events", "none")
       .text(name);
 }
@@ -462,10 +463,14 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    d3.select("#graph").selectAll("*").remove();
 
 
+
    var svg = d3.select("#graph")
       .append("svg")
-      .attr("width", 1500)
-      .attr("height", 700)
+      .attr("viewBox", "0 0 1400 700")
+      //.attr("viewBox", "0 0 " + window.screen.width + " " + window.screen.height)
+      .attr("preserveAspectRatio", "xMinYMin")
+      //.attr("width", 1500)
+      //.attr("height", 700)
       .append("g")
       .attr("transform", "translate(40, 0)");
 
@@ -473,8 +478,8 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    var i = 0, duration = 750, root;
 
    // This is pivoted
-   var graphHeight = 620;
-   var graphWidth = 1300;
+   var graphHeight = 700;
+   var graphWidth = 1400;
 
    var tree = d3.layout.tree().size([graphHeight, graphWidth]);
    var diagonal = d3.svg.diagonal().projection(function(d) { return [d.y, d.x]; });
@@ -511,7 +516,7 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
      // Normalize for fixed-depth.
      nodes.forEach(function(d) { 
         if (d.depth === 1) d.y = 150;
-        else d.y = d.depth * 210; 
+        else d.y = d.depth * 220; 
 
 
         // hardwired, make a bit more room
@@ -581,6 +586,7 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
      nodeEnter.append("text")
          .attr("x", "10")
          .attr("dy", ".10em")
+         .style("font-size", "1.05em")
          .text(function(d) { return d.name + " (" + d.data.fields.length + " Fields)"; })
          .style("fill-opacity", 1);
 
@@ -604,10 +610,9 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
            .classed("field-indicator", true)
            .attr("x", function(d, i) { return 10+4.0*i;})
            .attr("y", "6")
-           .attr("height", 10)
-           .attr("width", 1.8)
+           .attr("height", 11)
+           .attr("width", 2.0)
            .style("fill", function(field) {
-              
               var fieldFrom = dictUtil.getField(versionFrom, node.name, field.name); 
               if (!fieldFrom) {
                  return _self.colourNew;
@@ -616,7 +621,19 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
               } else {
                  return "#DDDDEE";
               }
+           })
+           .style("opacity", function(field) {
+              var fieldFrom = dictUtil.getField(versionFrom, node.name, field.name); 
+              if (!fieldFrom) {
+                 return 1.0;
+              } else if (fieldFrom && dictUtil.isDifferent2(field, fieldFrom).length > 0) {
+                 return 1.0;
+              } else {
+                 return 0.6;
+              }
+ 
            });
+
 
         ref.selectAll(".filter-indicator")
            .data(node.data.fields)

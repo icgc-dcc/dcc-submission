@@ -2,6 +2,12 @@
 // Dictionary reader and utilities
 ////////////////////////////////////////////////////////////////////////////////
 var DictionaryUtil = function(list, config) {
+
+   list = _.filter(list, function(d) {
+      var pattern = new RegExp("^draft");
+      return pattern.test(d.version) === false;
+   });
+
    this.dictList = list;
    this.config = config;
    this.sortedDictionaryList = _.sortBy(this.dictList, function(obj) {
@@ -9,6 +15,7 @@ var DictionaryUtil = function(list, config) {
    }).reverse();
    this.versionList = _.pluck(this.sortedDictionaryList, "version");
    this.dictionaryMap = {};
+
    for (var i=0; i < list.length; i++) {
       this.dictionaryMap[ list[i].version ] = list[i];
    }
