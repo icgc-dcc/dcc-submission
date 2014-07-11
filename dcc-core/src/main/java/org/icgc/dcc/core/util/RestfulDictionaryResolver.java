@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.core.util;
 
+import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Resolver.Resolvers.getContent;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -51,7 +52,9 @@ public class RestfulDictionaryResolver implements DictionaryResolver {
 
   @Override
   public String getFullUrl(Optional<String> version) {
-    return url + DictionaryResolver.PATH + (version.isPresent() ? "/" + version.get() : "");
+    return url + (version.isPresent() ?
+        PATH.join(DictionaryResolver.PATH_SPECIFIC, version.get()) :
+        DictionaryResolver.PATH_CURRENT);
   }
 
 }

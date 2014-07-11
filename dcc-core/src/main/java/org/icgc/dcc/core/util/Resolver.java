@@ -41,8 +41,9 @@ public interface Resolver {
    */
   public interface DictionaryResolver extends Resolver {
 
-    String PATH = PATH_BASE + "/nextRelease/dictionary";
-    String DEFAULT_DICTIONARY_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH;
+    String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
+    String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
+    String DEFAULT_DICTIONARY_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH_CURRENT;
 
     /**
      * Resolves the current version of the dictionary.

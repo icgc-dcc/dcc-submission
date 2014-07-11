@@ -17,15 +17,14 @@
  */
 package org.icgc.dcc.submission.fs;
 
+import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;
 
 import com.google.inject.Inject;
@@ -34,7 +33,7 @@ import com.typesafe.config.Config;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
-public class FileSystemProvider implements Provider<FileSystem> {
+public class SubmissionFileSystemProvider implements Provider<FileSystem> {
 
   @NonNull
   private final Config config;
@@ -42,13 +41,12 @@ public class FileSystemProvider implements Provider<FileSystem> {
   private final Configuration configuration;
 
   @Override
-  @SneakyThrows
   public FileSystem get() {
-    String fsUrl = config.getString(FS_URL);
-    configuration.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsUrl);
-    log.info("configuration = {}", getConfigurationDescription(configuration));
+    log.info("Hadoop configuration = {}", getConfigurationDescription(configuration));
 
-    return FileSystem.get(configuration);
+    return getFileSystem(
+        configuration,
+        config.getString(FS_URL));
   }
 
 }
