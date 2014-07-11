@@ -17,62 +17,38 @@
  */
 package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.core.util.FormatUtils._;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import lombok.Cleanup;
+import static com.google.common.base.Preconditions.checkArgument;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
 
-import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+import org.icgc.dcc.core.util.Resolver.CodeListsResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Optional;
 
-public class ArtifactoryDictionaryResolver implements DictionaryResolver {
+@AllArgsConstructor
+@NoArgsConstructor
+public class RestfulCodeListsResolver implements CodeListsResolver {
 
-  private static String getDefaultVersion() {
-    return "0.8a";
-  }
+  private String url = CodeListsResolver.DEFAULT_CODELISTS_URL;
 
-  @Override
-  public ObjectNode getDictionary() {
-    return getDictionary(Optional.of(getDefaultVersion()));
-  }
-
-  @Override
   @SneakyThrows
-  public ObjectNode getDictionary(Optional<String> version) {
-    // Resolve
-    @Cleanup
-    val zip = new ZipInputStream(getDictionaryUrl(version).openStream());
-    ZipEntry entry;
-
-    val entryName = "org/icgc/dcc/resources/Dictionary.json";
-    do {
-      entry = zip.getNextEntry();
-    } while (!entryName.equals(entry.getName()));
-
-    return new ObjectMapper().readValue(zip, ObjectNode.class);
-  }
-
-  protected static URL getDictionaryUrl(Optional<String> optionalVersion) throws MalformedURLException {
-    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
-    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
-    val version = optionalVersion.isPresent() ? optionalVersion.get() : getDefaultVersion();
-    URL url = new URL(_(template, basePath, version, version));
-
-    return url;
+  @Override
+  public ArrayNode getCodeLists() {
+    return new ObjectMapper().readValue(
+        Resolvers.getContent(
+            getFullUrl(
+            Optional.<String> absent())),
+        ArrayNode.class);
   }
 
   @Override
   public String getFullUrl(Optional<String> qualifier) {
-    throw new UnsupportedOperationException();
+    checkArgument(!qualifier.isPresent(),
+        "Code lists can not be qualified, '%s' provided", qualifier);
+    return url + CodeListsResolver.PATH;
   }
 
 }

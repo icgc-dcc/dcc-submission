@@ -22,13 +22,16 @@ import static org.icgc.dcc.core.util.Joiners.INDENT;
 import static org.icgc.dcc.core.util.Splitters.NEWLINE;
 
 import java.io.File;
+import java.util.List;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Common object mappers.
@@ -59,6 +62,16 @@ public final class Jackson {
 
   public static <T> JsonNode toJsonNode(T t) {
     return DEFAULT.convertValue(t, JsonNode.class);
+  }
+
+  public static <T> T fromJsonNode(JsonNode jsonNode, Class<T> type) {
+    return DEFAULT.convertValue(jsonNode, type);
+  }
+
+  public static <T> List<T> fromArrayNode(ArrayNode arrayNode, Class<T> type) {
+    return DEFAULT.convertValue(
+        arrayNode,
+        new TypeReference<List<T>>() {});
   }
 
   public static <T> String formatPrettyLog(String message, T t) {
