@@ -39,13 +39,12 @@ public final class Jackson {
   public static final ObjectMapper DEFAULT = new ObjectMapper();
   public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
 
-  @SneakyThrows
-  public static String toJsonPrettyString(String jsonString) {
-    return PRETTY_WRITTER.writeValueAsString(DEFAULT.readTree(jsonString));
+  public static String formatPrettyJson(String jsonString) {
+    return formatPrettyJson(toJsonNode(jsonString));
   }
 
   @SneakyThrows
-  public static String toJsonPrettyString(Object object) {
+  public static String formatPrettyJson(Object object) {
     return PRETTY_WRITTER.writeValueAsString(object);
   }
 
@@ -67,7 +66,12 @@ public final class Jackson {
         message,
         INDENT.join(
             NEWLINE.split(
-                toJsonPrettyString(t))));
+                formatPrettyJson(t))));
+  }
+
+  @SneakyThrows
+  private static JsonNode toJsonNode(String jsonString) {
+    return DEFAULT.readTree(jsonString);
   }
 
 }

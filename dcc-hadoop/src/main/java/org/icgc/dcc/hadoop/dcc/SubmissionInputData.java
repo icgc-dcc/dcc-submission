@@ -26,7 +26,7 @@ import static com.google.common.collect.Maps.transformValues;
 import static java.util.Collections.sort;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.core.util.FormatUtils._;
-import static org.icgc.dcc.core.util.Jackson.toJsonPrettyString;
+import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsAll;
 
@@ -178,7 +178,7 @@ public class SubmissionInputData {
 
   @SneakyThrows
   private static String getDisplayString(Map<String, Map<FileType, List<Path>>> matchingFiles) {
-    return toJsonPrettyString(transformMap(matchingFiles));
+    return formatPrettyJson(transformMap(matchingFiles));
   }
 
   private static Map<String, Map<FileType, List<String>>> transformMap(
