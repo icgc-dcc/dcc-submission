@@ -19,6 +19,7 @@ package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_MATCHED_SAMPLE_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
@@ -130,6 +131,8 @@ public final class FieldNames {
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
     public static final String OBSERVATION_ARRAY_NAME = "observation";
 
+    public static final String SURROGATE_MATCHED_SAMPLE_ID = _("_%s", SUBMISSION_MATCHED_SAMPLE_ID);
+
   }
 
   /**
@@ -192,7 +195,6 @@ public final class FieldNames {
   public static final String DONOR_SPECIMEN_ID = IdentifierFieldNames.SURROGATE_SPECIMEN_ID;
   public static final String DONOR_SAMPLE = "sample"; // TODO: reuse loader's
   public static final String DONOR_SAMPLE_ID = IdentifierFieldNames.SURROGATE_SAMPLE_ID;
-  public static final String DONOR_CONTROL_SAMPLE_ID = "_matched_sample_id";
   public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
   public static final String DONOR_SAMPLE_SEQUENCE_DATA = "available_raw_sequence_data";
 
