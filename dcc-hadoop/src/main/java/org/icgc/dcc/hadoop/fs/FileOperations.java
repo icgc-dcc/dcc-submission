@@ -33,6 +33,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
@@ -45,8 +46,6 @@ import com.google.common.collect.Lists;
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public class FileOperations {
-
-  private final static String HDFS_PART_FILE_PREFIX = "part";
 
   /**
    * Merge files, assumes that a header line exists on all input files
@@ -62,7 +61,7 @@ public class FileOperations {
       @Override
       public void process(long lineNumber, String record) throws IOException {
         if (lineNumber == 1) {
-          if (firstFile == true) {
+          if (firstFile) {
             writer.println(record);
             firstFile = false;
           }
@@ -88,14 +87,12 @@ public class FileOperations {
       throws IOException {
     log.info("Repartitioning {} into {} byte chunks", inputPath, sizeBytes);
 
-    boolean isDirectory = true;
     List<Path> inputFiles = Lists.newArrayList();
-
-    if (fs.isDirectory(inputPath)) {
+    FileStatus fStatus = fs.getFileStatus(inputPath);
+    if (fStatus.isDirectory()) {
       inputFiles.addAll(HadoopUtils.lsAll(fs, inputPath));
-    } else if (fs.isFile(inputPath)) {
+    } else {
       inputFiles.add(inputPath);
-      isDirectory = false;
     }
 
     val parser = newStringFileParser(fs, true);
@@ -132,7 +129,7 @@ public class FileOperations {
     };
 
     for (val file : inputFiles) {
-      if (isDirectory && !file.getName().startsWith(HDFS_PART_FILE_PREFIX)) continue;
+      if (fStatus.isDirectory() && !file.getName().startsWith(HadoopUtils.MR_PART_FILE_NAME_BASE)) continue;
       parser.parse(file, processor);
     }
     writerHandle.get().close();
