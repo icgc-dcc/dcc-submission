@@ -21,15 +21,20 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
 import lombok.ToString;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.util.Guavas;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.mongodb.morphia.annotations.Entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Function;
 
 /**
  * Describes a list of codes (see {@code Term})
@@ -91,6 +96,28 @@ public class CodeList extends BaseEntity implements HasName {
 
   public boolean containsTerm(Term term) {
     return terms.contains(term);
+  }
+
+  @JsonIgnore
+  public Map<String, String> asMap() {
+    return Guavas.<Term, String, String> transformListToMap(
+        terms,
+        new Function<Term, String>() {
+
+          @Override
+          public String apply(Term term) {
+            return term.getCode();
+          }
+
+        },
+        new Function<Term, String>() {
+
+          @Override
+          public String apply(Term term) {
+            return term.getValue();
+          }
+
+        });
   }
 
 }
