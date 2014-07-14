@@ -1,8 +1,6 @@
 package org.icgc.dcc.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.core.model.FeatureTypes.TYPES_WITH_SEQUENCING_STRATEGY;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
@@ -17,6 +15,7 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.core.model.SpecialValue;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
@@ -69,8 +68,8 @@ public class Table2 extends SubAssembly {
 
     // Remove this after DCC-2399 is done
     builder.add(NULL_REPLACEMENT);
-    builder.add(MISSING_CODE1);
-    builder.add(MISSING_CODE2);
+    builder.add(SpecialValue.MISSING_CODE1);
+    builder.add(SpecialValue.MISSING_CODE2);
 
     return builder.build();
   }

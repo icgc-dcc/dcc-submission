@@ -18,13 +18,11 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
 
 import java.util.List;
 
 /**
- * 
+ * Values with a special meaning.
  */
 public class SpecialValue {
 
@@ -32,10 +30,15 @@ public class SpecialValue {
    * Former reserved values that must not appear in required data anymore.
    */
   public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
+
+  public static final String MISSING_CODE1 = "-777";
+  public static final String MISSING_CODE2 = "-888";
+
   /**
    * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
    */
   public static final String LEGACY_CODE = "-9999";
+
   /**
    * Values representing absent values.
    * <p>
