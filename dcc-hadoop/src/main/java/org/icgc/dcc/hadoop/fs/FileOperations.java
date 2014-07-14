@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.io.Files.getFileExtension;
+import static com.google.common.io.Files.getNameWithoutExtension;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.hadoop.parser.FileParsers.newStringFileParser;
 
 import java.io.IOException;
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import lombok.Cleanup;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +38,19 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
 
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 
+/**
+ * File level utilities.
+ */
 @Slf4j
-public class FilePartitionUtils {
+@NoArgsConstructor(access = PRIVATE)
+public class FileOperations {
 
   private final static String HDFS_PART_FILE_PREFIX = "part";
 
-  // Merge files, this assumes that the header exists on all input files
+  /**
+   * Merge files, assumes that a header line exists on all input files
+   */
   public static void merge(FileSystem fs, List<Path> input, Path output) throws IOException {
     @Cleanup
     val writer = getWriter(fs, output);
@@ -63,13 +72,17 @@ public class FilePartitionUtils {
       }
     };
 
-    for (Path path : input) {
+    for (val path : input) {
       parser.parse(path, processor);
     }
   }
 
-  // Repartition part files {C1, C2, ... Cn} to {D1, D2, D3, ... Dk}
-  // Assumes the first file has a header
+  /**
+   * Repartition part files {C1, C2, ... Cn} into {D1, D2, D3, ... Dk}. Each file has an approximate upper bound size of
+   * <code>sizeBytes</code>, note size calculation is by line and not per character.
+   * 
+   * Assumes the header line is in the first part file.
+   */
   public static void repartition(final FileSystem fs, final Path inputPath, final Path outputPath,
       final String outFile, final long sizeBytes)
       throws IOException {
@@ -106,7 +119,6 @@ public class FilePartitionUtils {
         }
 
         if (currentBytes >= sizeBytes) {
-          writerHandle.get().flush();
           writerHandle.get().close();
           ++currentPart;
           currentBytes = 0;
@@ -119,25 +131,24 @@ public class FilePartitionUtils {
       }
     };
 
-    for (Path file : inputFiles) {
+    for (val file : inputFiles) {
       if (isDirectory && !file.getName().startsWith(HDFS_PART_FILE_PREFIX)) continue;
       parser.parse(file, processor);
     }
-    writerHandle.get().flush();
     writerHandle.get().close();
   }
 
   private static Path repartitionPath(Path outPath, String fileName, int partNum) {
-    val extension = Files.getFileExtension(fileName);
-    val name = Files.getNameWithoutExtension(fileName);
+    val extension = getFileExtension(fileName);
+    val name = getNameWithoutExtension(fileName);
     val newName = name + "." + partNum + "." + extension;
 
-    return new Path(outPath.toUri().getPath() + "/" + newName);
+    return new Path(outPath.toUri().getPath(), newName);
   }
 
   @SneakyThrows
-  private static PrintWriter getWriter(FileSystem fs, Path p) {
-    return new PrintWriter(fs.create(p));
+  private static PrintWriter getWriter(FileSystem fs, Path path) {
+    return new PrintWriter(fs.create(path));
   }
 
 }
