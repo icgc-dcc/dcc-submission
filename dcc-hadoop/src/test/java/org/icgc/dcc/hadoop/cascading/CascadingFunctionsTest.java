@@ -21,13 +21,7 @@ import static org.icgc.dcc.hadoop.cascading.Cascades.cascadingSerialize;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.AvailableDataTypes;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.CloneField;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
-import org.icgc.dcc.hadoop.cascading.CascadingFunctions;
-import org.icgc.dcc.hadoop.import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.ReplaceNulls;
-cascading.CascadingFunctions.EmitNothing;
+import org.icgc.dcc.hadoop.cascading.CascadingFunctions.EmitNothing;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;

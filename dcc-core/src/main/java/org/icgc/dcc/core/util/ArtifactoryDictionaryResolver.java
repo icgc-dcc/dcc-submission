@@ -25,6 +25,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -43,6 +44,12 @@ public class ArtifactoryDictionaryResolver implements DictionaryResolver {
   @Override
   public ObjectNode getDictionary() {
     return getDictionary(Optional.of(getDefaultVersion()));
+  }
+
+  public ObjectNode getDictionary(
+      @NonNull final String version) {
+
+    return getDictionary(Optional.of(version));
   }
 
   @Override

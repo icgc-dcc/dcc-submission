@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.norm.steps;
 
-import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.checkOperationResults;
+import static org.icgc.dcc.hadoop.cascading.CascadingTestUtils.checkOperationResults;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
+import org.icgc.dcc.hadoop.cascading.CascadingTestUtils;
 import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
 import org.junit.Test;
 
