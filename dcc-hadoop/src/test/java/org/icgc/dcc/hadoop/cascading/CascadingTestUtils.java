@@ -31,6 +31,9 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+/**
+ * Create dcc-test-hadoop (see DCC-2415)
+ */
 public class CascadingTestUtils {
 
   public static Iterator<TupleEntry> invokeFunction(Function<?> function, TupleEntry[] entries, Fields resultFields) {
