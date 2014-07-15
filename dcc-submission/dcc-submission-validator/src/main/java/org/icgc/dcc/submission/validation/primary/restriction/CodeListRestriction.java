@@ -20,12 +20,12 @@ package org.icgc.dcc.submission.validation.primary.restriction;
 import java.util.List;
 import java.util.Set;
 
+import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
@@ -98,6 +98,10 @@ public class CodeListRestriction implements InternalPlanElement {
   @Override
   public Pipe extend(Pipe pipe) {
     return new Each(pipe, new ValidationFields(field), new InCodeListFunction(codes, values), Fields.REPLACE);
+  }
+
+  public static String getCodeListName(Restriction codeListRestriction) {
+    return (String) codeListRestriction.getConfig().get(FIELD);
   }
 
   public static class Type implements RestrictionType {
