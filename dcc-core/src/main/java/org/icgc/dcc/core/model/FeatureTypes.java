@@ -113,6 +113,11 @@ public final class FeatureTypes {
       return this;
     }
 
+    @Override
+    public FileType getTopLevelFileType() {
+      return getPrimaryFileType();
+    }
+
     public boolean isSsm() {
       return this == SSM_TYPE;
     }

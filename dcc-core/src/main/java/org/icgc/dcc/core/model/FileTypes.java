@@ -255,6 +255,10 @@ public final class FileTypes {
       return this == SSM_S_TYPE;
     }
 
+    public boolean isSpecimen() {
+      return this == SPECIMEN_TYPE;
+    }
+
     public boolean isSample() {
       return this == SAMPLE_TYPE;
     }
@@ -317,6 +321,7 @@ public final class FileTypes {
       }
 
     };
+
   }
 
 }
