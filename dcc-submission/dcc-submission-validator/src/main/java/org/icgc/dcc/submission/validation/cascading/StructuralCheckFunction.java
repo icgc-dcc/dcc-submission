@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.core.model.SpecialValue;
+import org.icgc.dcc.core.model.SpecialValue.NO_VALUE;
 import org.icgc.dcc.hadoop.cascading.RemoveHollowTupleFilter;
 
 import cascading.flow.FlowProcess;
@@ -106,7 +107,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     for (int i = 0; i < values.size(); i++) {
       String value = values.get(i);
       if (SpecialValue.MISSING_CODES.contains(value)) {
-        adjustedValues.add((String) NO_VALUE);
+        adjustedValues.add((String) SpecialValue.NO_VALUE);
 
         // Mark field as originally using a missing code
         tupleState.addMissingField((String) this.getFieldDeclaration().get(i));
