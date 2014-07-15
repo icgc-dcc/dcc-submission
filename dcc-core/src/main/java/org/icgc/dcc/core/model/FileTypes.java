@@ -23,6 +23,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_OPTIONAL_TYPE;
 import static org.icgc.dcc.core.util.FormatUtils._;
 
 import java.util.List;
@@ -250,12 +251,20 @@ public final class FileTypes {
       return this == SSM_S_TYPE;
     }
 
+    public boolean isSample() {
+      return this == SAMPLE_TYPE;
+    }
+
     public boolean isSgvS() {
       return this == SGV_S_TYPE;
     }
 
     public boolean isSimpleSecondary() {
       return isSsmS() || isSgvS();
+    }
+
+    public boolean isOptional() {
+      return getDataType() == CLINICAL_OPTIONAL_TYPE;
     }
 
     /**
