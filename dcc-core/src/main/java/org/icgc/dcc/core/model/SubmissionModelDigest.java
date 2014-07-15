@@ -17,38 +17,49 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Sets.newLinkedHashSet;
+
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import lombok.Value;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.model.SubmissionModelDigest.FileModelDigest.FieldModelDigest;
+import org.icgc.dcc.core.util.Guavas;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
 /**
  * A digest of the submission model.
  */
 @Value
-public class SubmissionModelDigest {
+public class SubmissionModelDigest implements Serializable {
 
   String dictionaryVersion;
   Map<FileType, FileModelDigest> files;
   Map<FileType, Join> joins;
   Map<FileType, List<String>> pks;
   Map<FileType, List<String>> fks;
-  Map<String, String> mapping;
+  Map<String, String> generalMapping;
   List<String> extensions;
 
   @Value
-  public static class FileModelDigest {
+  public static class FileModelDigest implements Serializable {
 
+    Pattern pattern;
     Map<String, FieldModelDigest> fields;
 
     @Value
-    public static class FieldModelDigest {
+    public static class FieldModelDigest implements Serializable {
 
-      Class<?> type; // TODO: use enum?
+      ValueType type;
       boolean controlled;
       Optional<Map<String, String>> mapping;
 
@@ -56,11 +67,75 @@ public class SubmissionModelDigest {
   }
 
   @Value
-  public static class Join {
+  public static class Join implements Serializable {
 
-    FileType type;
+    FileType target;
     boolean innerJoin; // TODO: enum
 
+  }
+
+  public static Function<FieldModelDigest, Optional<Map<String, String>>> TO_OPTIONAL_MAP =
+      new Function<FieldModelDigest, Optional<Map<String, String>>>() {
+
+        @Override
+        public Optional<Map<String, String>> apply(FieldModelDigest digest) {
+          return digest.getMapping();
+        }
+
+      };
+
+  public static Function<FieldModelDigest, Map<String, String>> TO_MAP =
+      new Function<FieldModelDigest, Map<String, String>>() {
+
+        @Override
+        public Map<String, String> apply(FieldModelDigest digest) {
+
+          // TODO: add checkstate
+
+          return digest.getMapping().get();
+        }
+
+      };
+
+  public static Function<FieldModelDigest, ValueType> TO_VALUE_TYPE =
+      new Function<FieldModelDigest, ValueType>() {
+
+        @Override
+        public ValueType apply(FieldModelDigest digest) {
+          return digest.getType();
+        }
+
+      };
+
+  @JsonIgnore
+  public Map<String, Optional<Map<String, String>>> getFileMapping(FileType fileType) {
+
+    return Guavas.transformValues(
+        getFiles().get(fileType).getFields(),
+        TO_OPTIONAL_MAP);
+  }
+
+  @JsonIgnore
+  public Map<String, ValueType> getValueTypes(FileType fileType) {
+    return Guavas.transformValues( // TODO: defensive copy
+        getFiles().get(fileType).getFields(),
+        TO_VALUE_TYPE);
+  }
+
+  @JsonIgnore
+  public Pattern getPattern(FileType fileType) {
+    return getFiles().get(fileType).getPattern();
+  }
+
+  @JsonIgnore
+  public Iterable<String> getFieldNames(FileType fileType) {
+    return getFiles().get(fileType).getFields().keySet(); // TODO: cleanup
+  }
+
+  @JsonIgnore
+  public Set<DataType> getDataTypes() {
+    return newLinkedHashSet(transform(
+        getFiles().keySet(), FileType.TO_DATA_TYPE));
   }
 
 }
