@@ -26,10 +26,12 @@ import java.util.Set;
 
 import lombok.ToString;
 
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -122,6 +124,11 @@ public class Relation implements DictionaryElement, Serializable {
 
   public List<Integer> getOptionals() {
     return optionals;
+  }
+
+  @JsonIgnore
+  public FileType getOtherFileType() {
+    return FileType.from(other);
   }
 
   private final boolean isOptionalValid() {
