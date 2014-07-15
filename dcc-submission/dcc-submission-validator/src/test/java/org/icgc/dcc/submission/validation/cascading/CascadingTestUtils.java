@@ -15,47 +15,59 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm.steps;
+package org.icgc.dcc.submission.validation.cascading;
 
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.hadoop.cascading.Tuples2.sameContent;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.submission.normalization.Marking;
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.icgc.dcc.submission.validation.norm.steps.PreMarking.PreMarker;
-import org.junit.Test;
-
 import cascading.CascadingTestCase;
+import cascading.operation.Buffer;
 import cascading.operation.Function;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public class PreMarkingTest extends CascadingTestCase {
+/**
+ * Create dcc-test-hadoop (see DCC-2415)
+ */
+public class CascadingTestUtils {
 
-  @Test
-  public void test_cascading_PreMaskingMarker() {
-    Function<?> function = new PreMarker();
+  public static Iterator<TupleEntry> invokeFunction(Function<?> function, TupleEntry[] entries, Fields resultFields) {
+    return CascadingTestCase
+        .invokeFunction(
+            function,
+            entries,
+            resultFields)
+        .entryIterator();
+  }
 
-    Fields inputFields = new Fields("f1", "f2");
-    String dummyValue = "dummy";
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
-    };
-    Fields resultFields = PreMarking.MARKING_FIELD;
+  public static Iterator<TupleEntry> invokeBuffer(Buffer<?> buffer, TupleEntry[] entries, Fields resultFields) {
+    return CascadingTestCase
+        .invokeBuffer(
+            buffer,
+            entries,
+            resultFields)
+        .entryIterator();
+  }
 
-    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
-    for (int i = 0; i < 3; i++) {
+  public static void checkOperationResults(Iterator<TupleEntry> iterator, Tuple[] resultTuples) {
+    for (int i = 0; i < resultTuples.length; i++) {
       assertThat(iterator.hasNext());
       TupleEntry entry = iterator.next();
-      Object object = entry.getObject(resultFields);
-      assertThat(object)
-          .isEqualTo(Marking.OPEN.getTupleValue());
+      Tuple actualTuple = entry.getTuple();
+      Tuple expectedTuple = resultTuples[i];
+      assertTrue(
+          String.format("%s != %s",
+              actualTuple,
+              expectedTuple),
+          sameContent(
+              entry.getTuple(),
+              expectedTuple));
     }
     assertFalse(iterator.hasNext());
   }
-
 }
