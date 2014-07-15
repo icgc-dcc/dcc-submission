@@ -20,13 +20,11 @@ package org.icgc.dcc.submission.validation.cascading;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.icgc.dcc.hadoop.cascading.CascadingFunctions.NO_VALUE;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.core.model.SpecialValue;
-import org.icgc.dcc.core.model.SpecialValue.NO_VALUE;
 import org.icgc.dcc.hadoop.cascading.RemoveHollowTupleFilter;
 
 import cascading.flow.FlowProcess;

@@ -21,7 +21,6 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.hadoop.cascading.CascadingFunctions.NO_VALUE;
 import static org.icgc.dcc.submission.normalization.Marking.CONTROLLED;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MASKED;
@@ -35,7 +34,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.SpecialValue;
-import org.icgc.dcc.core.model.SpecialValue.NO_VALUE;
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
 import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
