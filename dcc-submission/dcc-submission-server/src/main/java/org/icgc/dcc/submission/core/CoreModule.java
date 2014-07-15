@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.core;
 
 import java.util.logging.LogManager;
 
+import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.common.util.concurrent.Service;

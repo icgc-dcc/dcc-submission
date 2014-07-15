@@ -17,16 +17,34 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
 
 /**
- * Missing codes for ICGC.
+ * Values with a special meaning.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class MissingCodes {
+public class SpecialValue {
+
+  /**
+   * Former reserved values that must not appear in required data anymore.
+   */
+  public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
 
   public static final String MISSING_CODE1 = "-777";
   public static final String MISSING_CODE2 = "-888";
+
+  /**
+   * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
+   */
+  public static final String LEGACY_CODE = "-9999";
+
+  /**
+   * Values representing absent values.
+   * <p>
+   * "-999" has been deprecated {@link ForbiddenValuesFunction}
+   */
+  public static final List<String> MISSING_CODES =
+      newArrayList(MISSING_CODE1, MISSING_CODE2, LEGACY_CODE);
 
 }

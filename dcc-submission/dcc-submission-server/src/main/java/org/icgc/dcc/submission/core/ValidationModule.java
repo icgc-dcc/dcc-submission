@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.core.Validator;

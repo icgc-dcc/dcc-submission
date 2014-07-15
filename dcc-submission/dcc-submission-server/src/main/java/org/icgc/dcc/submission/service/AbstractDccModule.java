@@ -15,43 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.graph;
+package org.icgc.dcc.submission.service;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.model.Relation;
-import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.graph.DefaultDirectedGraph;
+import com.google.common.util.concurrent.Service;
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
 
-/**
- * Builds a {@code DirectedGraph} with {@code FileSchema} name as nodes and {@code Relation} as edges. The {@code Graph}
- * is directed because the {@code Relation} are modelled on one side of the relation only.
- */
-public class DictionaryGraphVisitor extends BaseDictionaryVisitor {
+public abstract class AbstractDccModule extends AbstractModule {
 
-  private final DirectedGraph<String, Relation> graph = new DefaultDirectedGraph<String, Relation>(Relation.class);
-
-  private String lastFileSchema;
-
-  @Override
-  public void visit(FileSchema fileSchema) {
-    ensureVertex(fileSchema.getName());
-    lastFileSchema = fileSchema.getName();
+  /**
+   * Creates a singleton binding for a {@code Service} class. This will allow managing the service's lifecycle
+   * automatically.
+   */
+  protected void bindService(Class<? extends Service> serviceClass) {
+    bind(serviceClass).in(Singleton.class);
+    Multibinder<Service> servicesBinder = Multibinder.newSetBinder(binder(), Service.class);
+    servicesBinder.addBinding().to(serviceClass);
   }
 
-  @Override
-  public void visit(Relation relation) {
-    ensureVertex(relation.getOther());
-    graph.addEdge(lastFileSchema, relation.getOther(), relation);
-  }
-
-  public DirectedGraph<String, Relation> getGraph() {
-    return graph;
-  }
-
-  private void ensureVertex(String fileSchema) {
-    if(graph.containsVertex(fileSchema) == false) {
-      graph.addVertex(fileSchema);
-    }
-  }
 }

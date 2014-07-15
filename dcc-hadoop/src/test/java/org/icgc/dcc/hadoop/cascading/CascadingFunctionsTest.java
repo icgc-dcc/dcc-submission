@@ -15,13 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.hadoop.cascading;
 
 import static org.icgc.dcc.hadoop.cascading.Cascades.cascadingSerialize;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.EmitNothing;
+import org.icgc.dcc.hadoop.cascading.CascadingFunctions.EmitNothing;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;
@@ -39,8 +39,6 @@ public class CascadingFunctionsTest extends CascadingTestCase {
     cascadingSerialize(new EmitNothing());
     cascadingSerialize(new CascadingFunctions.Counter(null, 1L));
     cascadingSerialize(new CascadingFunctions.CloneField(DUMMY_FIELD, DUMMY_FIELD));
-    cascadingSerialize(new CascadingFunctions.AvailableDataTypes(DUMMY_FIELD));
-    cascadingSerialize(new CascadingFunctions.ReplaceNulls(false));
   }
 
   @Test

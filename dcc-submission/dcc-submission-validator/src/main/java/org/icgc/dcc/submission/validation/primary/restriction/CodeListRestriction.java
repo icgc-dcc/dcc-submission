@@ -100,10 +100,6 @@ public class CodeListRestriction implements InternalPlanElement {
     return new Each(pipe, new ValidationFields(field), new InCodeListFunction(codes, values), Fields.REPLACE);
   }
 
-  public static String getCodeListName(Restriction codeListRestriction) {
-    return (String) codeListRestriction.getConfig().get(FIELD);
-  }
-
   public static class Type implements RestrictionType {
 
     private final RestrictionContext context;

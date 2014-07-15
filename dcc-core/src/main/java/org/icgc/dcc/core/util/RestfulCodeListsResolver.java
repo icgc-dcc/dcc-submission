@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,40 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs;
+package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.base.Preconditions.checkArgument;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.CommonConfigurationKeys;
-import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.util.Resolver.CodeListsResolver;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.typesafe.config.Config;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Optional;
 
-@Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
-public class FileSystemProvider implements Provider<FileSystem> {
+@AllArgsConstructor
+@NoArgsConstructor
+public class RestfulCodeListsResolver implements CodeListsResolver {
 
-  @NonNull
-  private final Config config;
-  @NonNull
-  private final Configuration configuration;
+  private String url = CodeListsResolver.DEFAULT_CODELISTS_URL;
+
+  @SneakyThrows
+  @Override
+  public ArrayNode getCodeLists() {
+    return new ObjectMapper().readValue(
+        Resolvers.getContent(
+            getFullUrl(
+            Optional.<String> absent())),
+        ArrayNode.class);
+  }
 
   @Override
-  @SneakyThrows
-  public FileSystem get() {
-    String fsUrl = config.getString(FS_URL);
-    configuration.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsUrl);
-    log.info("configuration = {}", getConfigurationDescription(configuration));
-
-    return FileSystem.get(configuration);
+  public String getFullUrl(Optional<String> qualifier) {
+    checkArgument(!qualifier.isPresent(),
+        "Code lists can not be qualified, '%s' provided", qualifier);
+    return url + CodeListsResolver.PATH;
   }
 
 }

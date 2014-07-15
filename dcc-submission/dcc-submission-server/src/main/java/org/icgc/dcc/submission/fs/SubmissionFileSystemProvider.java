@@ -15,47 +15,38 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.norm.steps;
+package org.icgc.dcc.submission.fs;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.Iterator;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 
-import org.icgc.dcc.submission.normalization.Marking;
-import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.icgc.dcc.submission.validation.norm.steps.PreMarking.PreMarker;
-import org.junit.Test;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.typesafe.config.Config;
 
-import cascading.CascadingTestCase;
-import cascading.operation.Function;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+@Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
+public class SubmissionFileSystemProvider implements Provider<FileSystem> {
 
-public class PreMarkingTest extends CascadingTestCase {
+  @NonNull
+  private final Config config;
+  @NonNull
+  private final Configuration configuration;
 
-  @Test
-  public void test_cascading_PreMaskingMarker() {
-    Function<?> function = new PreMarker();
+  @Override
+  public FileSystem get() {
+    log.info("Hadoop configuration = {}", getConfigurationDescription(configuration));
 
-    Fields inputFields = new Fields("f1", "f2");
-    String dummyValue = "dummy";
-    TupleEntry[] entries = new TupleEntry[] {
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue)),
-        new TupleEntry(inputFields, new Tuple(dummyValue, dummyValue))
-    };
-    Fields resultFields = PreMarking.MARKING_FIELD;
-
-    Iterator<TupleEntry> iterator = CascadingTestUtils.invokeFunction(function, entries, resultFields);
-    for (int i = 0; i < 3; i++) {
-      assertThat(iterator.hasNext());
-      TupleEntry entry = iterator.next();
-      Object object = entry.getObject(resultFields);
-      assertThat(object)
-          .isEqualTo(Marking.OPEN.getTupleValue());
-    }
-    assertFalse(iterator.hasNext());
+    return getFileSystem(
+        configuration,
+        config.getString(FS_URL));
   }
 
 }

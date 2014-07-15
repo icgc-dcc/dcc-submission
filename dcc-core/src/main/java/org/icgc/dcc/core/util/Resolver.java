@@ -17,25 +17,77 @@
  */
 package org.icgc.dcc.core.util;
 
+import static com.google.common.net.HttpHeaders.ACCEPT;
+
+import java.io.InputStream;
+import java.net.URL;
+
+import lombok.SneakyThrows;
+import lombok.val;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Optional;
 
-/**
- * Abstraction that resolves the content of the most current dictionary.
- */
-public interface DictionaryResolver {
+public interface Resolver {
 
-  /**
-   * Resolves the current version of the dictionary.
-   * 
-   * @return the current dictionary
-   */
-  ObjectNode getDictionary();
+  int DEFAULT_PORT = 5380;
+  String PATH_BASE = "/ws";
+
+  String getFullUrl(Optional<String> qualifier);
 
   /**
-   * Resolves version {@code version} of the dictionary.
-   * 
-   * @return the requested dictionary
+   * Abstraction that resolves the content of the most current dictionary.
    */
-  ObjectNode getDictionary(String version);
+  public interface DictionaryResolver extends Resolver {
+
+    String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
+    String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
+    String DEFAULT_DICTIONARY_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH_CURRENT;
+
+    /**
+     * Resolves the current version of the dictionary.
+     * 
+     * @return the current dictionary
+     */
+    ObjectNode getDictionary();
+
+    /**
+     * Resolves version {@code version} of the dictionary.
+     * 
+     * @return the requested dictionary
+     */
+    ObjectNode getDictionary(Optional<String> version);
+
+  }
+
+  /**
+   * Abstraction that resolves the content of the code lists.
+   */
+  public interface CodeListsResolver extends Resolver {
+
+    String PATH = PATH_BASE + "/codeLists";
+    String DEFAULT_CODELISTS_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH;
+
+    /**
+     * Resolves the codelists.
+     * 
+     * @return the code lists
+     */
+    ArrayNode getCodeLists();
+
+  }
+
+  static class Resolvers {
+
+    @SneakyThrows
+    static InputStream getContent(String url) {
+      val connection = new URL(url).openConnection();
+      connection.setRequestProperty(ACCEPT, "application/json");
+
+      return (InputStream) connection.getContent();
+    }
+
+  }
 
 }

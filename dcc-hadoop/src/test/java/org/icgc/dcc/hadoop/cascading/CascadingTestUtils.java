@@ -15,28 +15,59 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core;
+package org.icgc.dcc.hadoop.cascading;
 
-import org.icgc.dcc.submission.core.model.BaseEntity;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.hadoop.cascading.Tuples2.sameContent;
 
-import com.google.common.util.concurrent.Service;
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
+import java.util.Iterator;
 
-public abstract class AbstractDccModule extends AbstractModule {
+import cascading.CascadingTestCase;
+import cascading.operation.Buffer;
+import cascading.operation.Function;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  /**
-   * Creates a singleton binding for a {@code Service} class. This will allow managing the service's lifecycle
-   * automatically.
-   */
-  protected void bindService(Class<? extends Service> serviceClass) {
-    bind(serviceClass).in(Singleton.class);
-    Multibinder<Service> servicesBinder = Multibinder.newSetBinder(binder(), Service.class);
-    servicesBinder.addBinding().to(serviceClass);
+/**
+ * Create dcc-test-hadoop (see DCC-2415)
+ */
+public class CascadingTestUtils {
+
+  public static Iterator<TupleEntry> invokeFunction(Function<?> function, TupleEntry[] entries, Fields resultFields) {
+    return CascadingTestCase
+        .invokeFunction(
+            function,
+            entries,
+            resultFields)
+        .entryIterator();
   }
 
-  protected void bindModelClasses(Class<? extends BaseEntity>... entities) {
+  public static Iterator<TupleEntry> invokeBuffer(Buffer<?> buffer, TupleEntry[] entries, Fields resultFields) {
+    return CascadingTestCase
+        .invokeBuffer(
+            buffer,
+            entries,
+            resultFields)
+        .entryIterator();
   }
 
+  public static void checkOperationResults(Iterator<TupleEntry> iterator, Tuple[] resultTuples) {
+    for (int i = 0; i < resultTuples.length; i++) {
+      assertThat(iterator.hasNext());
+      TupleEntry entry = iterator.next();
+      Tuple actualTuple = entry.getTuple();
+      Tuple expectedTuple = resultTuples[i];
+      assertTrue(
+          String.format("%s != %s",
+              actualTuple,
+              expectedTuple),
+          sameContent(
+              entry.getTuple(),
+              expectedTuple));
+    }
+    assertFalse(iterator.hasNext());
+  }
 }

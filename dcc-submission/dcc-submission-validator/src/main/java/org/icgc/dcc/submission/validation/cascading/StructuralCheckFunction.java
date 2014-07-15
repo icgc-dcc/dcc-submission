@@ -20,12 +20,13 @@ package org.icgc.dcc.submission.validation.cascading;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
-import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
+import static org.icgc.dcc.hadoop.cascading.CascadingFunctions.NO_VALUE;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.icgc.dcc.core.model.SpecialValue;
+import org.icgc.dcc.hadoop.cascading.RemoveHollowTupleFilter;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -54,19 +55,6 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
   public static final String LINE_FIELD_NAME = "line";
 
   public static final char FIELD_SEPARATOR = '\t';
-
-  /**
-   * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
-   */
-  private static final String LEGACY_CODE = "-9999";
-
-  /**
-   * Values representing absent values.
-   * <p>
-   * "-999" has been deprecated {@link ForbiddenValuesFunction}
-   */
-  public static final List<String> MISSING_CODES =
-      newArrayList(MISSING_CODE1, MISSING_CODE2, LEGACY_CODE); // TODO: move elsewhere?
 
   private final Integer headerSize;
 
@@ -117,7 +105,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     List<String> adjustedValues = new ArrayList<String>(values.size());
     for (int i = 0; i < values.size(); i++) {
       String value = values.get(i);
-      if (MISSING_CODES.contains(value)) {
+      if (SpecialValue.MISSING_CODES.contains(value)) {
         adjustedValues.add((String) NO_VALUE);
 
         // Mark field as originally using a missing code

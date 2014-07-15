@@ -25,24 +25,36 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Optional;
 
 public class ArtifactoryDictionaryResolver implements DictionaryResolver {
 
-  private static final String CURRENT_DICTIONARY_VERSION = "0.8a";
+  private static String getDefaultVersion() {
+    return "0.8a";
+  }
 
   @Override
   public ObjectNode getDictionary() {
-    return getDictionary(CURRENT_DICTIONARY_VERSION);
+    return getDictionary(Optional.of(getDefaultVersion()));
+  }
+
+  public ObjectNode getDictionary(
+      @NonNull final String version) {
+
+    return getDictionary(Optional.of(version));
   }
 
   @Override
   @SneakyThrows
-  public ObjectNode getDictionary(String version) {
+  public ObjectNode getDictionary(Optional<String> version) {
     // Resolve
     @Cleanup
     val zip = new ZipInputStream(getDictionaryUrl(version).openStream());
@@ -56,12 +68,18 @@ public class ArtifactoryDictionaryResolver implements DictionaryResolver {
     return new ObjectMapper().readValue(zip, ObjectNode.class);
   }
 
-  protected static URL getDictionaryUrl(String version) throws MalformedURLException {
+  protected static URL getDictionaryUrl(Optional<String> optionalVersion) throws MalformedURLException {
     val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
     val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
+    val version = optionalVersion.isPresent() ? optionalVersion.get() : getDefaultVersion();
     URL url = new URL(_(template, basePath, version, version));
 
     return url;
+  }
+
+  @Override
+  public String getFullUrl(Optional<String> qualifier) {
+    throw new UnsupportedOperationException();
   }
 
 }

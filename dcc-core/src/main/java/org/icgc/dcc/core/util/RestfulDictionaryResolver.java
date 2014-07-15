@@ -17,40 +17,44 @@
  */
 package org.icgc.dcc.core.util;
 
-import static com.google.common.net.HttpHeaders.ACCEPT;
-
-import java.io.InputStream;
-import java.net.URL;
-
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.Resolver.Resolvers.getContent;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
+
+import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
 public class RestfulDictionaryResolver implements DictionaryResolver {
-
-  private final String DEFAULT_DICTIONARY_URL = "http://***REMOVED***:5380/ws/nextRelease/dictionary";
 
   private String url = DEFAULT_DICTIONARY_URL;
 
   @Override
   @SneakyThrows
   public ObjectNode getDictionary() {
-    return getDictionary("");
+    return getDictionary(Optional.<String> absent());
   }
 
   @Override
   @SneakyThrows
-  public ObjectNode getDictionary(String version) {
-    val connection = new URL(url + "/" + version).openConnection();
-    connection.setRequestProperty(ACCEPT, "application/json");
+  public ObjectNode getDictionary(Optional<String> version) {
+    return new ObjectMapper().readValue(
+        getContent(
+        getFullUrl(version)),
+        ObjectNode.class);
+  }
 
-    return new ObjectMapper().readValue((InputStream) connection.getContent(), ObjectNode.class);
+  @Override
+  public String getFullUrl(Optional<String> version) {
+    return url + (version.isPresent() ?
+        PATH.join(DictionaryResolver.PATH_SPECIFIC, version.get()) :
+        DictionaryResolver.PATH_CURRENT);
   }
 
 }
