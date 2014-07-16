@@ -35,11 +35,13 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Proposition;
 
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -234,6 +236,30 @@ public final class Fields2 {
     return fieldNames;
   }
 
+  public static String prefixedFieldName(FileType fileType, String fieldName) {
+    return prefixedFieldName(fileType.getTypeName(), fieldName);
+  }
+
+  public static String prefixedFieldName(String prefix, String fieldName) {
+    return prefixedFieldName(prefix, DEFAULT_PREFIX_SEPARATOR, fieldName);
+  }
+
+  public static String prefixedFieldName(FileType fileType, String sep, String fieldName) {
+    return prefixedFieldName(fileType.getTypeName(), sep, fieldName);
+  }
+
+  public static String prefixedFieldName(String prefix, String sep, String fieldName) {
+    return prefix(prefix, sep, fieldName);
+  }
+
+  public static Fields prefixedFields(FileType fileType, String fieldName) {
+    return prefixedFields(fileType, new Fields(fieldName));
+  }
+
+  public static Fields prefixedFields(FileType fileType, Fields fields) {
+    return prefixedFields(fileType.getTypeName(), fields);
+  }
+
   public static Fields prefixedFields(String prefix, Fields fields) {
     return prefixedFields(prefix, DEFAULT_PREFIX_SEPARATOR, fields);
   }
@@ -278,6 +304,14 @@ public final class Fields2 {
     if (index < 0) throw new IllegalArgumentException();
     if (index + 1 > prefixedField.length()) throw new IllegalArgumentException();
     return prefixedField.substring(index + 1);
+  }
+
+  public static String getPrefix(String prefixedFieldName) {
+    return getPrefix(prefixedFieldName, DEFAULT_PREFIX_SEPARATOR);
+  }
+
+  public static String getPrefix(String prefixedFieldName, String sep) {
+    return Splitter.on(sep).split(prefixedFieldName).iterator().next();
   }
 
   /**

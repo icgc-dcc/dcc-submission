@@ -100,6 +100,26 @@ public class SubAssemblies {
 
   }
 
+  public static class Nester extends BaseOperation<Void> implements Function<Void> {
+
+    public Nester(HasSingleResultField subAssembly) {
+      super(checkFieldsCardinalityOne(subAssembly.getResultField()));
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+
+      functionCall
+          .getOutputCollector()
+          .add(nestValue(
+              TupleEntries.clone(
+                  functionCall.getArguments())));
+    }
+
+  }
+
   /**
    * TODO
    */

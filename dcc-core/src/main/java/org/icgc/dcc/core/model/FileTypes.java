@@ -100,6 +100,14 @@ public final class FileTypes {
       return this == META_SUBTYPE;
     }
 
+    public boolean isPrimarySubType() {
+      return this == PRIMARY_SUBTYPE;
+    }
+
+    public boolean isSecondarySubType() {
+      return this == SECONDARY_SUBTYPE;
+    }
+
     public boolean isSystemSubType() {
       return this == SYSTEM_SUBTYPE;
     }
@@ -255,6 +263,10 @@ public final class FileTypes {
       return this == SSM_S_TYPE;
     }
 
+    public boolean isDonor() {
+      return this == DONOR_TYPE;
+    }
+
     public boolean isSpecimen() {
       return this == SPECIMEN_TYPE;
     }
@@ -304,14 +316,17 @@ public final class FileTypes {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 
-    public static Function<FileType, FileSubType> GET_SUB_TYPE = new Function<FileType, FileSubType>() {
+    public static Function<FileType, FileSubType> getGetSubTypeFunction() {
 
-      @Override
-      public FileSubType apply(FileType fileType) {
-        return fileType.getSubType();
-      }
+      return new Function<FileType, FileSubType>() {
 
-    };
+        @Override
+        public FileSubType apply(FileType fileType) {
+          return fileType.getSubType();
+        }
+
+      };
+    }
 
     public static Function<FileType, DataType> TO_DATA_TYPE = new Function<FileType, DataType>() {
 

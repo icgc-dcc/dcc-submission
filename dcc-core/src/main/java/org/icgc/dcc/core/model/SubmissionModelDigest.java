@@ -39,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 
 /**
  * A digest of the submission model.
@@ -109,14 +110,19 @@ public class SubmissionModelDigest implements Serializable {
   }
 
   @JsonIgnore
-  public Iterable<String> getFieldNames(FileType fileType) {
-    return getFields(fileType).keySet(); // TODO: cleanup
+  public List<String> getFieldNames(FileType fileType) {
+    return ImmutableList.copyOf(getFields(fileType).keySet()); // TODO: cleanup
   }
 
   @JsonIgnore
   public Set<DataType> getDataTypes() {
     return newLinkedHashSet(transform(
         getFiles().keySet(), FileType.TO_DATA_TYPE));
+  }
+
+  @JsonIgnore
+  public boolean isControlled(FileType fileType, String fieldName) {
+    return getFields(fileType).get(fieldName).isControlled();
   }
 
   @JsonIgnore

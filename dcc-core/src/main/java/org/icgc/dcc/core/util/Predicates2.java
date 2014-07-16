@@ -19,45 +19,30 @@ package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
-import org.icgc.dcc.core.model.FileTypes.FileSubType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
 
 /**
- * Common optionals.
+ * Util methods for {@link Predicate}.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class Optionals {
+public final class Predicates2 {
 
-  public static final Optional<String> ABSENT_STRING = Optional.absent();
-  public static final Optional<List<String>> ABSENT_STRING_LIST = Optional.<List<String>> absent();
-  public static final Optional<Set<String>> ABSENT_STRING_SET = Optional.<Set<String>> absent();
-  public static final Optional<Map<String, String>> ABSENT_STRING_MAP = Optional.<Map<String, String>> absent();
+  public final static <T> Predicate<T> contains(
+      @NonNull final Collection<T> collection) {
 
-  public static final Optional<FileType> ABSENT_FILE_TYPE = Optional.absent();
-  public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
+    return new Predicate<T>() {
 
-  public final static <T, T2> Optional<T2> ofPredicate(Predicate<T> predicate, T t, Supplier<T2> supplier) {
-    return ofCondition(predicate.apply(t), supplier);
-  }
+      @Override
+      public boolean apply(T t) {
+        return collection.contains(t);
+      }
 
-  public final static <T> Optional<T> ofProposition(Proposition proposition, Supplier<T> supplier) {
-    return ofCondition(proposition.evaluate(), supplier);
-  }
-
-  public final static <T> Optional<T> ofCondition(boolean b, Supplier<T> supplier) {
-    return b ?
-        Optional.of(supplier.get()) :
-        Optional.<T> absent();
+    };
   }
 
 }
