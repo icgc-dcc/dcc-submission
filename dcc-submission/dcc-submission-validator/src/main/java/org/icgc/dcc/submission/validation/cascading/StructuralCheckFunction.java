@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.cascading;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.icgc.dcc.hadoop.cascading.CascadingFunctions.NO_VALUE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +105,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     for (int i = 0; i < values.size(); i++) {
       String value = values.get(i);
       if (SpecialValue.MISSING_CODES.contains(value)) {
-        adjustedValues.add((String) NO_VALUE);
+        adjustedValues.add((String) SpecialValue.NO_VALUE);
 
         // Mark field as originally using a missing code
         tupleState.addMissingField((String) this.getFieldDeclaration().get(i));

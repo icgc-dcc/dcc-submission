@@ -47,4 +47,9 @@ public class SpecialValue {
   public static final List<String> MISSING_CODES =
       newArrayList(MISSING_CODE1, MISSING_CODE2, LEGACY_CODE);
 
+  /**
+   * Value used to represent "nothing" in cascading {@link Tuple}s.
+   */
+  public static final Object NO_VALUE = null;
+
 }

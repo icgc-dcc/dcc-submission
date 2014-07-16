@@ -247,6 +247,10 @@ public final class FileTypes {
     @Getter
     private final FileSubType subType;
 
+    public boolean isSsmP() {
+      return this == SSM_P_TYPE;
+    }
+
     public boolean isSsmS() {
       return this == SSM_S_TYPE;
     }
@@ -305,6 +309,14 @@ public final class FileTypes {
 
     };
 
+    public static Function<FileType, DataType> TO_DATA_TYPE = new Function<FileType, DataType>() {
+
+      @Override
+      public DataType apply(FileType fileType) {
+        return fileType.getDataType();
+      }
+
+    };
   }
 
 }

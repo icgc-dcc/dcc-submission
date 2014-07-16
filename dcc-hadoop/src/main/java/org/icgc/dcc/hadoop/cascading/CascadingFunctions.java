@@ -41,11 +41,6 @@ import cascading.tuple.TupleEntry;
 public final class CascadingFunctions {
 
   /**
-   * Value used to represent "nothing" in cascading {@link Tuple}s.
-   */
-  public static final Object NO_VALUE = null;
-
-  /**
    * {@link Function} that emits no {@link Tuple}s. It is different than {@link NoOp} because it still preserves the
    * schema (TODO: unusure why NoOp doesn't, figure it out..).
    */
