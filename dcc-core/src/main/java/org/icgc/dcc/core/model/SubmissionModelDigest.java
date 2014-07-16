@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableList;
  * A digest of the submission model.
  */
 @Value
-public class SubmissionModelDigest implements Serializable {
+public class SubmissionModelDigest implements Serializable, ControlFieldsReference {
 
   String dictionaryVersion;
   Map<FileType, FileModelDigest> files;
@@ -120,6 +120,7 @@ public class SubmissionModelDigest implements Serializable {
         getFiles().keySet(), FileType.TO_DATA_TYPE));
   }
 
+  @Override
   @JsonIgnore
   public boolean isControlled(FileType fileType, String fieldName) {
     return getFields(fileType).get(fieldName).isControlled();

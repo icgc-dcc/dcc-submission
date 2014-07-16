@@ -243,7 +243,7 @@ public final class FieldNames {
    */
   public static final String OBSERVATION_ID = MONGO_INTERNAL_ID;
   public static final String OBSERVATION_MUTATION_ID = IdentifierFieldNames.SURROGATE_MUTATION_ID;
-  public static final String OBSERVATION_TYPE = "_type";
+  public static final String OBSERVATION_TYPE = LoaderFieldNames.OBSERVATION_TYPE;
   public static final String OBSERVATION_DONOR = "donor";
   public static final String OBSERVATION_DONOR_ID = IdentifierFieldNames.SURROGATE_DONOR_ID;
   public static final String OBSERVATION_PROJECT = "project";
