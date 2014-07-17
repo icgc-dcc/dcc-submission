@@ -73,14 +73,17 @@ import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.dcc.submission.web.InvalidNameException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -91,6 +94,8 @@ public class ReleaseService extends AbstractService {
   private final ReleaseRepository releaseRepository;
   private final DictionaryRepository dictionaryRepository;
   private final ProjectRepository projectRepository;
+  private final CodeListRepository codelistRepository;
+  private final ExecutiveReportService executiveReportService;
 
   @Inject
   public ReleaseService(
@@ -98,12 +103,16 @@ public class ReleaseService extends AbstractService {
       @NonNull DccFileSystem dccFileSystem,
       @NonNull ReleaseRepository releaseRepository,
       @NonNull DictionaryRepository dictionaryRepository,
-      @NonNull ProjectRepository projectRepository) {
+      @NonNull ProjectRepository projectRepository,
+      @NonNull CodeListRepository codelistRepository,
+      @NonNull ExecutiveReportService executiveReportService) {
     super(mailService);
     this.dccFileSystem = dccFileSystem;
     this.releaseRepository = releaseRepository;
     this.dictionaryRepository = dictionaryRepository;
     this.projectRepository = projectRepository;
+    this.codelistRepository = codelistRepository;
+    this.executiveReportService = executiveReportService;
   }
 
   /**
@@ -320,6 +329,17 @@ public class ReleaseService extends AbstractService {
       submission.signOff(submissionFiles);
     }
 
+    // Test
+    ObjectMapper mapper = new ObjectMapper();
+    final String _releaseName = releaseName;
+    val _projectKeys = ImmutableSet.<String> copyOf(projectKeys);
+    val dictionaryNode =
+        mapper.valueToTree(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()));
+    val codelistNode = mapper.valueToTree(codelistRepository.findCodeLists());
+    val releasePath = dccFileSystem.buildReleaseStringPath(_releaseName);
+
+    // This spawns a separate thread
+    executiveReportService.generateReport(_releaseName, _projectKeys, releasePath, dictionaryNode, codelistNode);
     releaseRepository.updateRelease(releaseName, release);
 
     // Remove validation files in the ".validation" folder (leave normalization files untouched)
