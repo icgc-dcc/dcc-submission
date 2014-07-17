@@ -32,7 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.model.SubmissionModelDigest.FileModelDigest.FieldModelDigest;
+import org.icgc.dcc.core.model.SubmissionModel.FileModelDigest.FieldModelDigest;
 import org.icgc.dcc.core.util.Guavas;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableList;
  * A digest of the submission model.
  */
 @Value
-public class SubmissionModelDigest implements Serializable, ControlFieldsReference {
+public class SubmissionModel implements Serializable, ControlFieldsReference {
 
   String dictionaryVersion;
   Map<FileType, FileModelDigest> files;
