@@ -21,8 +21,6 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_MATCHED_SAMPLE_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.FormatUtils._;
 import lombok.NoArgsConstructor;
 
@@ -125,9 +123,6 @@ public final class FieldNames {
     public static final String GENE_ID = "_gene_id";
     public static final String TRANSCRIPT_ID = "_transcript_id";
 
-    // Arrays
-    public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
-    public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
     public static final String OBSERVATION_ARRAY_NAME = "observation";
 
