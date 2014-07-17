@@ -26,6 +26,7 @@ import java.util.Set;
 import lombok.val;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 
 /**
  * Util methods for guava.
@@ -39,6 +40,7 @@ public class Guavas {
       Iterable<T> iterable,
       Function<T, K> keyFunction,
       Function<T, V> valueFunction) {
+
     return transformValues(
         uniqueIndex(
             iterable,
@@ -53,6 +55,7 @@ public class Guavas {
     for (val entry : inputMap.entrySet()) {
       map.put(entry.getKey(), function.apply(entry.getValue()));
     }
+
     return map;
   }
 
@@ -63,6 +66,20 @@ public class Guavas {
     for (val k : inputSet) {
       map.put(k, function.apply(k));
     }
+
+    return map;
+  }
+
+  public static <K, V> Map<K, V> filterKeys(
+      Map<K, V> inputMap,
+      Predicate<K> predicate) {
+    Map<K, V> map = newLinkedHashMap();
+    for (val k : inputMap.keySet()) {
+      if (predicate.apply(k)) {
+        map.put(k, inputMap.get(k));
+      }
+    }
+
     return map;
   }
 
