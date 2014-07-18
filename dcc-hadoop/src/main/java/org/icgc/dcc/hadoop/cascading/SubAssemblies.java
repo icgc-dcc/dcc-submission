@@ -105,9 +105,9 @@ public class SubAssemblies {
 
   }
 
-  public static class Nester extends BaseFunction<Void> {
+  public static class Nest extends BaseFunction<Void> {
 
-    public Nester(HasSingleResultField subAssembly) {
+    public Nest(HasSingleResultField subAssembly) {
       super(checkFieldsCardinalityOne(subAssembly.getResultField()));
     }
 
