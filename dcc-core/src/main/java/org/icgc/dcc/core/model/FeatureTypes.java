@@ -19,6 +19,8 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.ImmutableSet.of;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
@@ -37,6 +39,7 @@ import static org.icgc.dcc.core.model.FileTypes.FileSubType.PRIMARY_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.SECONDARY_SUBTYPE;
 import static org.icgc.dcc.core.util.Joiners.UNDERSCORE;
 import static org.icgc.dcc.core.util.Optionals.ABSENT_FILE_TYPE;
+import static org.icgc.dcc.core.util.Proposition.Propositions.from;
 
 import java.util.List;
 import java.util.Set;
@@ -267,51 +270,18 @@ public final class FeatureTypes {
   }
 
   public static Proposition hasRawSequenceData(@NonNull final FeatureType featureType) {
-
-    return new Proposition() {
-
-      @Override
-      public boolean evaluate() {
-        return hasRawSequenceData().apply(featureType);
-      }
-
-    };
+    return from(hasRawSequenceData(), featureType);
   }
 
   public static Proposition hasSequencingStrategy(@NonNull final FeatureType featureType) {
-
-    return new Proposition() {
-
-      @Override
-      public boolean evaluate() {
-        return hasSequencingStrategy().apply(featureType);
-      }
-
-    };
+    return from(hasSequencingStrategy(), featureType);
   }
 
   private static Predicate<FeatureType> hasRawSequenceData() {
-
-    return new Predicate<FeatureType>() {
-
-      @Override
-      public boolean apply(FeatureType featureType) {
-        return !TYPES_WITH_RAW_SEQUENCE_DATA.contains(featureType);
-      }
-
-    };
+    return not(in(TYPES_WITH_RAW_SEQUENCE_DATA));
   }
 
   private static Predicate<FeatureType> hasSequencingStrategy() {
-
-    return new Predicate<FeatureType>() {
-
-      @Override
-      public boolean apply(FeatureType featureType) {
-        return !TYPES_WITH_SEQUENCING_STRATEGY.contains(featureType);
-      }
-
-    };
+    return not(in(TYPES_WITH_SEQUENCING_STRATEGY));
   }
-
 }
