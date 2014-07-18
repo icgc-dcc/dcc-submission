@@ -25,6 +25,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
@@ -47,6 +48,9 @@ import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Buffer;
@@ -76,6 +80,7 @@ import com.google.common.base.Supplier;
 /**
  * Useful sub-assemblies.
  */
+@Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public class SubAssemblies {
 
@@ -100,7 +105,7 @@ public class SubAssemblies {
 
   }
 
-  public static class Nester extends BaseOperation<Void> implements Function<Void> {
+  public static class Nester extends BaseFunction<Void> {
 
     public Nester(HasSingleResultField subAssembly) {
       super(checkFieldsCardinalityOne(subAssembly.getResultField()));
@@ -121,51 +126,42 @@ public class SubAssemblies {
   }
 
   /**
-   * TODO
+   * Prints JSON representation of {@link Tuple}s.
    */
   public static class TupleEntriesLogger extends SubAssembly {
 
     public TupleEntriesLogger(Pipe pipe) {
-      this(Optional.<String> absent(), pipe);
+      this(ABSENT_STRING, pipe);
     }
 
     public TupleEntriesLogger(String prefix, Pipe pipe) {
       this(Optional.of(prefix), pipe);
     }
 
-    /**
-     * TODO
-     */
-    private TupleEntriesLogger(Optional<String> prefix, Pipe pipe) {
-      setTails(new Each(pipe, new Nonce(prefix)));
-    }
+    private TupleEntriesLogger(final Optional<String> prefix, Pipe pipe) {
+      setTails(new Each(
+          pipe,
+          new BaseFunction<Void>(ARGS) {
 
-    @Slf4j
-    private static class Nonce extends BaseOperation<Void> implements cascading.operation.Function<Void> {
+            @Override
+            public void operate(
+                @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+                FunctionCall<Void> functionCall) {
+              val entry = functionCall.getArguments();
+              log.info(
 
-      private final Optional<String> prefix;
+                  // Optionally prefix it
+                  (prefix.isPresent() ? prefix.get() : EMPTY_STRING)
 
-      public Nonce(Optional<String> prefix) {
-        super(ARGS);
-        this.prefix = prefix;
-      }
+                      // Pretty json string
+                      + toJson(entry));
 
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-        val entry = functionCall.getArguments();
-        log.info(
+              functionCall.getOutputCollector().add(entry);
+            }
 
-            // Optionally prefix it
-            (prefix.isPresent() ? prefix.get() : EMPTY_STRING)
+          }
 
-                // Pretty json string
-                + toJson(entry));
-
-        functionCall.getOutputCollector().add(entry);
-      }
-
+      ));
     }
 
   }
