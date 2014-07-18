@@ -87,6 +87,10 @@ public final class Fields2 {
     return new Fields(toStringArray(fieldNames));
   }
 
+  public static Fields field(String fieldName) {
+    return new Fields(fieldName);
+  }
+
   public static Fields fields(String... fieldNames) {
     return new Fields(fieldNames);
   }

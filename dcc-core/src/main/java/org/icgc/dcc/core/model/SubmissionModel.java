@@ -127,7 +127,7 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
 
   @Override
   @JsonIgnore
-  public boolean isControlled(FileType fileType, String fieldName) {
+  public boolean isControlledField(FileType fileType, String fieldName) {
     return getFields(fileType).get(fieldName).controlled;
   }
 

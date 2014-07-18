@@ -18,11 +18,7 @@
 package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
-
-import java.util.Collection;
-
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import com.google.common.base.Predicate;
 
@@ -31,18 +27,5 @@ import com.google.common.base.Predicate;
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class Predicates2 {
-
-  public final static <T> Predicate<T> contains(
-      @NonNull final Collection<T> collection) {
-
-    return new Predicate<T>() {
-
-      @Override
-      public boolean apply(T t) {
-        return collection.contains(t);
-      }
-
-    };
-  }
 
 }

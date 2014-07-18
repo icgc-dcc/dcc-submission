@@ -24,6 +24,6 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
  */
 public interface ControlFieldsReference {
 
-  boolean isControlled(FileType fileType, String fieldName);
+  boolean isControlledField(FileType fileType, String fieldName);
 
 }
