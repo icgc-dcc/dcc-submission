@@ -1,6 +1,7 @@
 package org.icgc.dcc.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
+import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
@@ -69,8 +70,7 @@ public class Table2 extends SubAssembly {
 
     // Remove this after DCC-2399 is done
     builder.add(NULL_REPLACEMENT);
-    builder.add(SpecialValue.MISSING_CODE1);
-    builder.add(SpecialValue.MISSING_CODE2);
+    builder.addAll(MISSING_CODES);
 
     return builder.build();
   }

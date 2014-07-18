@@ -15,46 +15,71 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.util.resolver;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
-import static org.icgc.dcc.core.util.Resolver.Resolvers.getContent;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import static org.icgc.dcc.core.util.FormatUtils._;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.val;
 
-import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+import org.icgc.dcc.core.util.Optionals;
+import org.icgc.dcc.core.util.resolver.Resolver.DictionaryResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
 
-@AllArgsConstructor
-@NoArgsConstructor
-public class RestfulDictionaryResolver implements DictionaryResolver {
+public class ArtifactoryDictionaryResolver implements DictionaryResolver {
 
-  private String url = DEFAULT_DICTIONARY_URL;
+  private static String getDefaultVersion() {
+    return "0.8a";
+  }
 
   @Override
-  @SneakyThrows
   public ObjectNode getDictionary() {
-    return getDictionary(Optional.<String> absent());
+    return getDictionary(Optional.of(getDefaultVersion()));
+  }
+
+  public ObjectNode getDictionary(@NonNull final String version) {
+    return getDictionary(Optional.of(version));
   }
 
   @Override
   @SneakyThrows
   public ObjectNode getDictionary(Optional<String> version) {
-    return new ObjectMapper().readValue(
-        getContent(
-        getFullUrl(version)),
-        ObjectNode.class);
+    // Resolve
+    @Cleanup
+    val zip = new ZipInputStream(getDictionaryUrl(version).openStream());
+    ZipEntry entry;
+
+    val entryName = "org/icgc/dcc/resources/Dictionary.json";
+    do {
+      entry = zip.getNextEntry();
+    } while (!entryName.equals(entry.getName()));
+
+    return new ObjectMapper().readValue(zip, ObjectNode.class);
+  }
+
+  protected static URL getDictionaryUrl(Optional<String> optionalVersion) throws MalformedURLException {
+    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
+    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
+    val version = Optionals.defaultValue(optionalVersion, getDefaultVersion());
+    URL url = new URL(_(template, basePath, version, version));
+
+    return url;
   }
 
   @Override
-  public String getFullUrl(Optional<String> version) {
-    return url + (version.isPresent() ?
-        PATH.join(DictionaryResolver.PATH_SPECIFIC, version.get()) :
-        DictionaryResolver.PATH_CURRENT);
+  public String getFullUrl(Optional<String> qualifier) {
+    // This is not applicable to artifactory (does not need the granularity)
+    throw new UnsupportedOperationException();
   }
 
 }

@@ -104,7 +104,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     List<String> adjustedValues = new ArrayList<String>(values.size());
     for (int i = 0; i < values.size(); i++) {
       String value = values.get(i);
-      if (SpecialValue.MISSING_CODES.contains(value)) {
+      if (SpecialValue.FULL_MISSING_CODES.contains(value)) {
         adjustedValues.add((String) SpecialValue.NO_VALUE);
 
         // Mark field as originally using a missing code

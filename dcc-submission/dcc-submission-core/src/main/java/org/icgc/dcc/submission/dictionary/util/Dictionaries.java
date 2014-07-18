@@ -37,8 +37,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Jackson;
-import org.icgc.dcc.core.util.RestfulCodeListsResolver;
-import org.icgc.dcc.core.util.RestfulDictionaryResolver;
+import org.icgc.dcc.core.util.resolver.RestfulCodeListsResolver;
+import org.icgc.dcc.core.util.resolver.RestfulDictionaryResolver;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;

@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.util.resolver;
 
 import static com.google.common.net.HttpHeaders.ACCEPT;
 
@@ -31,6 +31,8 @@ import com.google.common.base.Optional;
 
 public interface Resolver {
 
+  String DEFAULT_SCHEME = "http://";
+  String DEFAULT_HOST = "***REMOVED***";
   int DEFAULT_PORT = 5380;
   String PATH_BASE = "/ws";
 
@@ -43,7 +45,7 @@ public interface Resolver {
 
     String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
     String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
-    String DEFAULT_DICTIONARY_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH_CURRENT;
+    String DEFAULT_DICTIONARY_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH_CURRENT;
 
     /**
      * Resolves the current version of the dictionary.
@@ -67,7 +69,7 @@ public interface Resolver {
   public interface CodeListsResolver extends Resolver {
 
     String PATH = PATH_BASE + "/codeLists";
-    String DEFAULT_CODELISTS_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH;
+    String DEFAULT_CODELISTS_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH;
 
     /**
      * Resolves the codelists.

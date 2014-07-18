@@ -15,40 +15,46 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.util.resolver;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.core.util.Jackson.DEFAULT;
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.resolver.Resolver.Resolvers.getContent;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.util.Resolver.CodeListsResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.DictionaryResolver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class RestfulCodeListsResolver implements CodeListsResolver {
+public class RestfulDictionaryResolver implements DictionaryResolver {
 
-  private String url = CodeListsResolver.DEFAULT_CODELISTS_URL;
+  private String url = DEFAULT_DICTIONARY_URL;
 
-  @SneakyThrows
   @Override
-  public ArrayNode getCodeLists() {
-    return new ObjectMapper().readValue(
-        Resolvers.getContent(
-            getFullUrl(
-            Optional.<String> absent())),
-        ArrayNode.class);
+  @SneakyThrows
+  public ObjectNode getDictionary() {
+    return getDictionary(Optional.<String> absent());
   }
 
   @Override
-  public String getFullUrl(Optional<String> qualifier) {
-    checkArgument(!qualifier.isPresent(),
-        "Code lists can not be qualified, '%s' provided", qualifier);
-    return url + CodeListsResolver.PATH;
+  @SneakyThrows
+  public ObjectNode getDictionary(Optional<String> version) {
+    return DEFAULT.readValue(
+        getContent(
+        getFullUrl(version)),
+        ObjectNode.class);
+  }
+
+  @Override
+  public String getFullUrl(Optional<String> version) {
+    return url + (version.isPresent() ?
+        PATH.join(DictionaryResolver.PATH_SPECIFIC, version.get()) :
+        DictionaryResolver.PATH_CURRENT);
   }
 
 }

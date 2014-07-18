@@ -15,71 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.util.resolver;
 
-import static org.icgc.dcc.core.util.FormatUtils._;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import lombok.Cleanup;
-import lombok.NonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.core.util.Jackson.DEFAULT;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
 
-import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.CodeListsResolver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Optional;
 
-public class ArtifactoryDictionaryResolver implements DictionaryResolver {
+@AllArgsConstructor
+@NoArgsConstructor
+public class RestfulCodeListsResolver implements CodeListsResolver {
 
-  private static String getDefaultVersion() {
-    return "0.8a";
-  }
+  private String url = CodeListsResolver.DEFAULT_CODELISTS_URL;
 
-  @Override
-  public ObjectNode getDictionary() {
-    return getDictionary(Optional.of(getDefaultVersion()));
-  }
-
-  public ObjectNode getDictionary(
-      @NonNull final String version) {
-
-    return getDictionary(Optional.of(version));
-  }
-
-  @Override
   @SneakyThrows
-  public ObjectNode getDictionary(Optional<String> version) {
-    // Resolve
-    @Cleanup
-    val zip = new ZipInputStream(getDictionaryUrl(version).openStream());
-    ZipEntry entry;
-
-    val entryName = "org/icgc/dcc/resources/Dictionary.json";
-    do {
-      entry = zip.getNextEntry();
-    } while (!entryName.equals(entry.getName()));
-
-    return new ObjectMapper().readValue(zip, ObjectNode.class);
-  }
-
-  protected static URL getDictionaryUrl(Optional<String> optionalVersion) throws MalformedURLException {
-    val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
-    val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
-    val version = optionalVersion.isPresent() ? optionalVersion.get() : getDefaultVersion();
-    URL url = new URL(_(template, basePath, version, version));
-
-    return url;
+  @Override
+  public ArrayNode getCodeLists() {
+    return DEFAULT.readValue(
+        Resolvers.getContent(
+            getFullUrl(
+            Optional.<String> absent())),
+        ArrayNode.class);
   }
 
   @Override
   public String getFullUrl(Optional<String> qualifier) {
-    throw new UnsupportedOperationException();
+    checkArgument(!qualifier.isPresent(),
+        "Code lists can not be qualified, '%s' provided", qualifier);
+    return url + CodeListsResolver.PATH;
   }
 
 }

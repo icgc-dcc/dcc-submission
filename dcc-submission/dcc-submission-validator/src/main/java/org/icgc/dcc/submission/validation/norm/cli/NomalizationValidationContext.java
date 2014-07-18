@@ -39,7 +39,7 @@ import lombok.val;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.util.ArtifactoryDictionaryResolver;
+import org.icgc.dcc.core.util.resolver.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;

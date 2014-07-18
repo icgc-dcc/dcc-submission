@@ -2,7 +2,7 @@ package org.icgc.dcc.core.meta;
 
 import lombok.val;
 
-import org.icgc.dcc.core.util.RestfulDictionaryResolver;
+import org.icgc.dcc.core.util.resolver.RestfulDictionaryResolver;
 import org.junit.Ignore;
 import org.junit.Test;
 

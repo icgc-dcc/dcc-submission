@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.icgc.dcc.core.model.FileTypes.FileSubType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
@@ -46,16 +47,46 @@ public class Optionals {
   public static final Optional<FileType> ABSENT_FILE_TYPE = Optional.absent();
   public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
 
-  public final static <T, T2> Optional<T2> ofPredicate(Predicate<T> predicate, T t, Supplier<T2> supplier) {
+  public final static <T> T defaultValue(
+      @NonNull final Optional<T> optional,
+      @NonNull final T defaultValue) {
+    return defaultValue(
+        optional,
+        new Supplier<T>() {
+
+          @Override
+          public T get() {
+            return defaultValue;
+          }
+
+        });
+  }
+
+  public final static <T> T defaultValue(
+      @NonNull final Optional<T> optional,
+      @NonNull final Supplier<T> supplier) {
+    return optional.isPresent() ?
+        optional.get() :
+        supplier.get();
+  }
+
+  public final static <T, T2> Optional<T2> ofPredicate(
+      @NonNull final Predicate<T> predicate,
+      @NonNull final T t,
+      @NonNull final Supplier<T2> supplier) {
     return ofCondition(predicate.apply(t), supplier);
   }
 
-  public final static <T> Optional<T> ofProposition(Proposition proposition, Supplier<T> supplier) {
+  public final static <T> Optional<T> ofProposition(
+      @NonNull final Proposition proposition,
+      @NonNull final Supplier<T> supplier) {
     return ofCondition(proposition.evaluate(), supplier);
   }
 
-  public final static <T> Optional<T> ofCondition(boolean b, Supplier<T> supplier) {
-    return b ?
+  public final static <T> Optional<T> ofCondition(
+      final boolean condition,
+      @NonNull final Supplier<T> supplier) {
+    return condition ?
         Optional.of(supplier.get()) :
         Optional.<T> absent();
   }

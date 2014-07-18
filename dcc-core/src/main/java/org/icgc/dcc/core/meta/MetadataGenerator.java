@@ -24,7 +24,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.DictionaryResolver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

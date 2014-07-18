@@ -19,7 +19,12 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collection;
 import java.util.List;
+
+import lombok.NonNull;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Values with a special meaning.
@@ -42,14 +47,35 @@ public class SpecialValue {
   /**
    * Values representing absent values.
    * <p>
-   * "-999" has been deprecated {@link ForbiddenValuesFunction}
+   * "-999" has been deprecated ForbiddenValuesFunction.
    */
-  public static final List<String> MISSING_CODES =
-      newArrayList(MISSING_CODE1, MISSING_CODE2, LEGACY_CODE);
+  public static final Collection<String> MISSING_CODES = ImmutableList.of(
+      MISSING_CODE1,
+      MISSING_CODE2);
+
+  /**
+   * Values representing absent values as well as the legacy code.
+   */
+  public static final Collection<String> FULL_MISSING_CODES = ImmutableList.<String> builder()
+      .addAll(MISSING_CODES)
+      .add(LEGACY_CODE)
+      .build();
 
   /**
    * Value used to represent "nothing" in cascading {@link Tuple}s.
    */
   public static final Object NO_VALUE = null;
+
+  public static boolean isMissingCode(@NonNull final String value) {
+    return MISSING_CODES.contains(value);
+  }
+
+  public static boolean isFullMissingCode(@NonNull final String value) {
+    return FULL_MISSING_CODES.contains(value);
+  }
+
+  public static boolean isDeprecatedValue(@NonNull final String value) {
+    return DEPRECATED_VALUES.contains(value);
+  }
 
 }
