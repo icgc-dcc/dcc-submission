@@ -48,7 +48,7 @@ public class Optionals {
   public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
 
   public final static <T> T defaultValue(
-      @NonNull final Optional<? extends T> optional,
+      @NonNull final Optional<T> optional,
       @NonNull final T defaultValue) {
     return defaultValue(
         optional,
@@ -63,29 +63,29 @@ public class Optionals {
   }
 
   public final static <T> T defaultValue(
-      @NonNull final Optional<? extends T> optional,
-      @NonNull final Supplier<? extends T> supplier) {
+      @NonNull final Optional<T> optional,
+      @NonNull final Supplier<T> supplier) {
     return optional.isPresent() ?
         optional.get() :
         supplier.get();
   }
 
-  public final static <T, U> Optional<? extends U> ofPredicate(
-      @NonNull final Predicate<? super T> predicate,
+  public final static <T, U> Optional<U> ofPredicate(
+      @NonNull final Predicate<T> predicate,
       @NonNull final T t,
-      @NonNull final Supplier<? extends U> supplier) {
+      @NonNull final Supplier<U> supplier) {
     return ofCondition(predicate.apply(t), supplier);
   }
 
-  public final static <T> Optional<? extends T> ofProposition(
+  public final static <T> Optional<T> ofProposition(
       @NonNull final Proposition proposition,
-      @NonNull final Supplier<? extends T> supplier) {
+      @NonNull final Supplier<T> supplier) {
     return ofCondition(proposition.evaluate(), supplier);
   }
 
-  public final static <T> Optional<? extends T> ofCondition(
+  public final static <T> Optional<T> ofCondition(
       final boolean condition,
-      @NonNull final Supplier<? extends T> supplier) {
+      @NonNull final Supplier<T> supplier) {
     return condition ?
         Optional.of(supplier.get()) :
         Optional.<T> absent();
