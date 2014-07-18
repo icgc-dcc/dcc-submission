@@ -35,7 +35,7 @@ public class MetadataGenerator {
   private final DictionaryResolver resolver;
 
   public String generate() {
-    val dictionary = resolver.getDictionary();
+    val dictionary = resolver.get();
 
     StringBuilder b = new StringBuilder();
     b.append("package org.icgc.dcc.core.meta\n\n");

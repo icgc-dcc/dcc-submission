@@ -17,28 +17,9 @@
  */
 package org.icgc.dcc.core.util;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-
-import com.google.common.base.Function;
+import com.google.common.base.Supplier;
 
 /**
- * Util methods for {@link Function}.
+ * Combines basic {@link Supplier} with complement {@link Supplier2}.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class Functions2 {
-
-  public final static <T, Constant> Function<T, Constant> constant(@NonNull final Constant constant) {
-
-    return new Function<T, Constant>() {
-
-      @Override
-      public Constant apply(T t) {
-        return constant;
-      }
-
-    };
-
-  }
-}
+public interface Supplier3<T, U> extends Supplier<T>, Supplier2<T, U> {}

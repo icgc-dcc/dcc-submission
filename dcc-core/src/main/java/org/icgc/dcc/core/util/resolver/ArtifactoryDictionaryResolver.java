@@ -25,7 +25,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import lombok.Cleanup;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -43,17 +42,17 @@ public class ArtifactoryDictionaryResolver implements DictionaryResolver {
   }
 
   @Override
-  public ObjectNode getDictionary() {
+  public ObjectNode get() {
     return getDictionary(Optional.of(getDefaultVersion()));
   }
 
-  public ObjectNode getDictionary(@NonNull final String version) {
-    return getDictionary(Optional.of(version));
+  @Override
+  public ObjectNode get(Optional<String> version) {
+    return getDictionary(version);
   }
 
-  @Override
   @SneakyThrows
-  public ObjectNode getDictionary(Optional<String> version) {
+  private static ObjectNode getDictionary(Optional<String> version) {
     // Resolve
     @Cleanup
     val zip = new ZipInputStream(getDictionaryUrl(version).openStream());
@@ -74,12 +73,6 @@ public class ArtifactoryDictionaryResolver implements DictionaryResolver {
     URL url = new URL(_(template, basePath, version, version));
 
     return url;
-  }
-
-  @Override
-  public String getFullUrl(Optional<String> qualifier) {
-    // This is not applicable to artifactory (does not need the granularity)
-    throw new UnsupportedOperationException();
   }
 
 }

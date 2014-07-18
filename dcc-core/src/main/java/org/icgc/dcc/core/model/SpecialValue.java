@@ -36,8 +36,15 @@ public class SpecialValue {
    */
   public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
 
-  public static final String MISSING_CODE1 = "-777";
-  public static final String MISSING_CODE2 = "-888";
+  /**
+   * See http://docs.icgc.org/dcc-data-element-specifications.
+   */
+  public static final String VERIFIED_UNKNOWN_CODE = "-777";
+
+  /**
+   * See http://docs.icgc.org/dcc-data-element-specifications.
+   */
+  public static final String NOT_APPLICABLE_CODE = "-888";
 
   /**
    * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
@@ -50,8 +57,8 @@ public class SpecialValue {
    * "-999" has been deprecated ForbiddenValuesFunction.
    */
   public static final Collection<String> MISSING_CODES = ImmutableList.of(
-      MISSING_CODE1,
-      MISSING_CODE2);
+      VERIFIED_UNKNOWN_CODE,
+      NOT_APPLICABLE_CODE);
 
   /**
    * Values representing absent values as well as the legacy code.

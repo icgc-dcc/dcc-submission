@@ -25,58 +25,48 @@ import java.net.URL;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import org.icgc.dcc.core.util.Supplier3;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 
 public interface Resolver {
-
-  String DEFAULT_SCHEME = "http://";
-  String DEFAULT_HOST = "***REMOVED***";
-  int DEFAULT_PORT = 5380;
-  String PATH_BASE = "/ws";
-
-  String getFullUrl(Optional<String> qualifier);
 
   /**
    * Abstraction that resolves the content of the most current dictionary.
    */
-  public interface DictionaryResolver extends Resolver {
-
-    String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
-    String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
-    String DEFAULT_DICTIONARY_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH_CURRENT;
-
-    /**
-     * Resolves the current version of the dictionary.
-     * 
-     * @return the current dictionary
-     */
-    ObjectNode getDictionary();
-
-    /**
-     * Resolves version {@code version} of the dictionary.
-     * 
-     * @return the requested dictionary
-     */
-    ObjectNode getDictionary(Optional<String> version);
-
-  }
+  public interface DictionaryResolver extends Supplier3<ObjectNode, Optional<String>> {}
 
   /**
    * Abstraction that resolves the content of the code lists.
    */
-  public interface CodeListsResolver extends Resolver {
+  public interface CodeListsResolver extends Supplier<ArrayNode> {}
 
-    String PATH = PATH_BASE + "/codeLists";
-    String DEFAULT_CODELISTS_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH;
+  interface SubmissionSystemResolber extends Resolver {
 
-    /**
-     * Resolves the codelists.
-     * 
-     * @return the code lists
-     */
-    ArrayNode getCodeLists();
+    String DEFAULT_SCHEME = "http://";
+    String DEFAULT_HOST = "***REMOVED***";
+    int DEFAULT_PORT = 5380;
+    String PATH_BASE = "/ws";
+
+    String getSubmissionSystemUrl(Optional<String> qualifier);
+
+    interface SubmissionSystemDictionaryResolver extends DictionaryResolver, SubmissionSystemResolber {
+
+      String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
+      String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
+      String DEFAULT_DICTIONARY_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH_CURRENT;
+
+    }
+
+    interface SubmissionSystemCodeListsResolver extends CodeListsResolver, SubmissionSystemResolber {
+
+      String PATH = PATH_BASE + "/codeLists";
+      String DEFAULT_CODELISTS_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH;
+
+    }
 
   }
 

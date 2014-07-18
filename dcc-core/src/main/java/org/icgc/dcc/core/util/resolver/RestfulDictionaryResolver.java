@@ -24,37 +24,40 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.util.resolver.Resolver.DictionaryResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolber.SubmissionSystemDictionaryResolver;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class RestfulDictionaryResolver implements DictionaryResolver {
+public class RestfulDictionaryResolver implements SubmissionSystemDictionaryResolver {
 
   private String url = DEFAULT_DICTIONARY_URL;
 
   @Override
-  @SneakyThrows
-  public ObjectNode getDictionary() {
-    return getDictionary(Optional.<String> absent());
+  public ObjectNode get() {
+    return get(Optional.<String> absent());
   }
 
   @Override
+  public ObjectNode get(Optional<String> version) {
+    return getDictionary(version);
+  }
+
   @SneakyThrows
-  public ObjectNode getDictionary(Optional<String> version) {
+  private ObjectNode getDictionary(Optional<String> version) {
     return DEFAULT.readValue(
         getContent(
-        getFullUrl(version)),
+        getSubmissionSystemUrl(version)),
         ObjectNode.class);
   }
 
   @Override
-  public String getFullUrl(Optional<String> version) {
+  public String getSubmissionSystemUrl(Optional<String> version) {
     return url + (version.isPresent() ?
-        PATH.join(DictionaryResolver.PATH_SPECIFIC, version.get()) :
-        DictionaryResolver.PATH_CURRENT);
+        PATH.join(PATH_SPECIFIC, version.get()) :
+        PATH_CURRENT);
   }
 
 }

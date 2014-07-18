@@ -23,32 +23,36 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.util.resolver.Resolver.CodeListsResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolber.SubmissionSystemCodeListsResolver;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class RestfulCodeListsResolver implements CodeListsResolver {
+public class RestfulCodeListsResolver implements SubmissionSystemCodeListsResolver {
 
-  private String url = CodeListsResolver.DEFAULT_CODELISTS_URL;
+  private String url = DEFAULT_CODELISTS_URL;
+
+  @Override
+  public ArrayNode get() {
+    return getCodeList();
+  }
 
   @SneakyThrows
-  @Override
-  public ArrayNode getCodeLists() {
+  private ArrayNode getCodeList() {
     return DEFAULT.readValue(
         Resolvers.getContent(
-            getFullUrl(
+            getSubmissionSystemUrl(
             Optional.<String> absent())),
         ArrayNode.class);
   }
 
   @Override
-  public String getFullUrl(Optional<String> qualifier) {
+  public String getSubmissionSystemUrl(Optional<String> qualifier) {
     checkArgument(!qualifier.isPresent(),
         "Code lists can not be qualified, '%s' provided", qualifier);
-    return url + CodeListsResolver.PATH;
+    return url + PATH;
   }
 
 }

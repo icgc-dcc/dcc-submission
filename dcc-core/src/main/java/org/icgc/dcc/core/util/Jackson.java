@@ -60,15 +60,15 @@ public final class Jackson {
     return DEFAULT.readTree(file);
   }
 
-  public static <T> JsonNode toJsonNode(T t) {
+  public static <T> JsonNode to(T t) {
     return DEFAULT.convertValue(t, JsonNode.class);
   }
 
-  public static <T> T fromJsonNode(JsonNode jsonNode, Class<T> type) {
+  public static <T> T from(JsonNode jsonNode, Class<T> type) {
     return DEFAULT.convertValue(jsonNode, type);
   }
 
-  public static <T> List<T> fromArrayNode(ArrayNode arrayNode, Class<T> type) {
+  public static <T> List<T> from(ArrayNode arrayNode, Class<T> type) {
     return DEFAULT.convertValue(
         arrayNode,
         new TypeReference<List<T>>() {});

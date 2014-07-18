@@ -53,6 +53,7 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
@@ -140,7 +141,7 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   @SneakyThrows
   public Dictionary getDictionary() {
     // Deserialize
-    val objectNode = new ArtifactoryDictionaryResolver().getDictionary(DICTIONARY_VERSION);
+    val objectNode = new ArtifactoryDictionaryResolver().get(Optional.of(DICTIONARY_VERSION));
     val reader = new ObjectMapper().reader(Dictionary.class);
     Dictionary dictionary = reader.readValue(objectNode);
 

@@ -22,7 +22,7 @@ import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Jackson.DEFAULT;
-import static org.icgc.dcc.core.util.Jackson.fromJsonNode;
+import static org.icgc.dcc.core.util.Jackson.from;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
 import java.io.File;
@@ -99,16 +99,16 @@ public class Dictionaries {
   }
 
   public static Dictionary getDictionary(String submissionWebAppUri, String dictionaryVersion) {
-    return fromJsonNode(
+    return from(
         new RestfulDictionaryResolver(submissionWebAppUri)
-            .getDictionary(Optional.of(dictionaryVersion)),
+            .get(Optional.of(dictionaryVersion)),
         Dictionary.class);
   }
 
   public static List<CodeList> getCodeLists(String submissionWebAppUri) {
     return DEFAULT.<List<CodeList>> convertValue(
         new RestfulCodeListsResolver(submissionWebAppUri)
-            .getCodeLists(),
+            .get(),
         new TypeReference<List<CodeList>>() {});
   }
 
