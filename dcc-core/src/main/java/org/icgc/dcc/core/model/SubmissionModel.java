@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.filterValues;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static lombok.AccessLevel.PUBLIC;
 
 import java.io.Serializable;
 import java.util.List;
@@ -45,7 +44,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * A model of the submission model.
  */
-@RequiredArgsConstructor(access = PUBLIC)
+@RequiredArgsConstructor
 public class SubmissionModel implements Serializable, ControlFieldsReference {
 
   @Getter
@@ -59,13 +58,13 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
   @Getter
   private final Map<String, String> generalMapping;
 
-  @RequiredArgsConstructor(access = PUBLIC)
+  @RequiredArgsConstructor
   public static class FileModel implements Serializable {
 
     private final Pattern pattern;
     private final Map<String, FieldModel> fields;
 
-    @RequiredArgsConstructor(access = PUBLIC)
+    @RequiredArgsConstructor
     public static class FieldModel implements Serializable {
 
       private final ValueType type;
@@ -75,11 +74,11 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
     }
   }
 
-  @RequiredArgsConstructor(access = PUBLIC)
+  @RequiredArgsConstructor
   public static class JoinModel implements Serializable {
 
     private final FileType target;
-    private final boolean innerJoin; // TODO: enum?
+    private final boolean innerJoin;
 
   }
 
