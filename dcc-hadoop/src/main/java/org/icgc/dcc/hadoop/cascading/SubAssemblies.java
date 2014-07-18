@@ -49,6 +49,7 @@ import lombok.val;
 import lombok.experimental.Builder;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.hadoop.cascading.operation.BaseBuffer;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 
 import cascading.flow.FlowProcess;
@@ -177,41 +178,37 @@ public class SubAssemblies {
       setTails(new Each(
           pipe,
           checkFieldsCardinalityOne(targetFields),
-          new Nonce<T>(nullReplacing),
+          getFunction(nullReplacing),
           REPLACE));
+    }
+
+    private static <T> Function<Void> getFunction(final NullReplacing<T> nullReplacing) {
+      return new BaseFunction<Void>(ARGS) {
+
+        @Override
+        public void operate(
+            @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+            FunctionCall<Void> functionCall) {
+          checkFieldsCardinalityOne(functionCall.getArgumentFields());
+          val tuple = functionCall.getArguments().getTuple();
+          functionCall
+              .getOutputCollector()
+              .add(isNullTuple(tuple) ?
+
+                  // Use replacement value
+                  nestValue(checkNotNull(nullReplacing.get())) :
+
+                  // Leave it unchanged
+                  tuple);
+        }
+      };
+
     }
 
     /**
      * Returns a non-null replacement value for nulls. That the value is non-null will be checked for at runtime.
      */
     public static interface NullReplacing<T> extends Supplier<T>, Serializable {}
-
-    private static class Nonce<T> extends BaseOperation<Void> implements cascading.operation.Function<Void> {
-
-      private final NullReplacing<T> nullReplacing;
-
-      public Nonce(NullReplacing<T> nullReplacing) {
-        super(ARGS);
-        this.nullReplacing = nullReplacing;
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-        checkFieldsCardinalityOne(functionCall.getArgumentFields());
-        val tuple = functionCall.getArguments().getTuple();
-        functionCall
-            .getOutputCollector()
-            .add(isNullTuple(tuple) ?
-
-                // Use replacement value
-                nestValue(checkNotNull(nullReplacing.get())) :
-
-                // Leave it unchanged
-                tuple);
-      }
-    }
 
     /**
      * Specialized version of {@link NullReplacer} that replaces nulls with an empty {@link Tuple}.
@@ -354,7 +351,7 @@ public class SubAssemblies {
 
               TEMPORARY_PARTIAL_COUNT_FIELD // Order matters
                   .append(data.countByFields),
-              new Nonce(),
+              getFunction(),
               REPLACE),
 
           data.countByFields,
@@ -364,66 +361,64 @@ public class SubAssemblies {
 
     }
 
-    private static class Nonce extends BaseOperation<HashCountByContext> implements Function<HashCountByContext> {
+    private static Function<HashCountByContext> getFunction() {
+      return new BaseFunction<HashCountByContext>(ARGS) {
 
-      private static long INITIAL_COUNT = 0L;
+        final long INITIAL_COUNT = 0L;
 
-      private Nonce() {
-        super(ARGS);
-      }
+        @Override
+        public void operate(
+            @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+            FunctionCall<HashCountByContext> functionCall) {
 
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          FunctionCall<HashCountByContext> functionCall) {
+          val context = lazyContext(functionCall);
+          val tuple = functionCall.getArguments().getTupleCopy(); // MUST use a copy
+          val counts = context.getCounts();
 
-        val context = lazyContext(functionCall);
-        val tuple = functionCall.getArguments().getTupleCopy(); // MUST use a copy
-        val counts = context.getCounts();
+          counts.put(
+              tuple,
+              (counts.containsKey(tuple) ?
+                  counts.get(tuple) :
+                  INITIAL_COUNT)
+              + 1); // Increment
 
-        counts.put(
-            tuple,
-            (counts.containsKey(tuple) ?
-                counts.get(tuple) :
-                INITIAL_COUNT)
-            + 1); // Increment
-
-        // Emit nothing here (in flush instead)
-      }
-
-      /**
-       * See https://groups.google.com/forum/#!topic/cascading-user/VDdyGY04vlg
-       */
-      @Override
-      public void flush(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          OperationCall<HashCountByContext> operationCall) {
-
-        val context = operationCall.getContext();
-        if (context != null) {
-          for (val entry : context.counts.entrySet()) {
-            context
-                .getOutputCollector() // Cached from #operate()
-                .add(
-                    setFirstLong(
-                        new Tuple(entry.getKey()), // Create copy
-                        entry.getValue()));
-          } // Else emit nothing
-        }
-      }
-
-      private final HashCountByContext lazyContext(
-          @NonNull final FunctionCall<HashCountByContext> functionCall) {
-        HashCountByContext context = functionCall.getContext();
-        if (context == null) {
-          context = new HashCountByContext(
-              functionCall.getOutputCollector());
-          functionCall.setContext(context);
+          // Emit nothing here (in flush instead)
         }
 
-        return context;
-      }
+        /**
+         * See https://groups.google.com/forum/#!topic/cascading-user/VDdyGY04vlg
+         */
+        @Override
+        public void flush(
+            @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+            OperationCall<HashCountByContext> operationCall) {
 
+          val context = operationCall.getContext();
+          if (context != null) {
+            for (val entry : context.counts.entrySet()) {
+              context
+                  .getOutputCollector() // Cached from #operate()
+                  .add(
+                      setFirstLong(
+                          new Tuple(entry.getKey()), // Create copy
+                          entry.getValue()));
+            } // Else emit nothing
+          }
+        }
+
+        private final HashCountByContext lazyContext(
+            @NonNull final FunctionCall<HashCountByContext> functionCall) {
+          HashCountByContext context = functionCall.getContext();
+          if (context == null) {
+            context = new HashCountByContext(
+                functionCall.getOutputCollector());
+            functionCall.setContext(context);
+          }
+
+          return context;
+        }
+
+      };
     }
 
     @Value
@@ -533,29 +528,27 @@ public class SubAssemblies {
       setTails(new Every(
           pipe,
           checkFieldsCardinalityOne(preCountField),
-          new Nonce(),
+          getBuffer(),
           REPLACE));
     }
 
-    class Nonce extends BaseOperation<Void> implements Buffer<Void> {
+    private static BaseBuffer<Void> getBuffer() {
+      return new BaseBuffer<Void>(ARGS) {
 
-      public Nonce() {
-        super(ARGS);
-      }
+        @Override
+        public void operate(
+            @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+            BufferCall<Void> bufferCall) {
 
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          BufferCall<Void> bufferCall) {
-
-        long observationCount = 0;
-        val entries = bufferCall.getArgumentsIterator();
-        while (entries.hasNext()) {
-          observationCount += getFirstInteger(entries.next());
+          long observationCount = 0;
+          val entries = bufferCall.getArgumentsIterator();
+          while (entries.hasNext()) {
+            observationCount += getFirstInteger(entries.next());
+          }
+          bufferCall.getOutputCollector().add(new Tuple(observationCount));
         }
-        bufferCall.getOutputCollector().add(new Tuple(observationCount));
-      }
 
+      };
     }
 
   }
