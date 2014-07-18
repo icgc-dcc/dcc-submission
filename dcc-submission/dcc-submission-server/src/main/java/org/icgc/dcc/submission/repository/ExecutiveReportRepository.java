@@ -17,43 +17,43 @@
  */
 package org.icgc.dcc.submission.repository;
 
-import static org.icgc.submission.summary.QProjectReport.projectReport;
+import static org.icgc.submission.summary.QExecutiveReport.executiveReport;
 
 import java.util.List;
 
 import lombok.NonNull;
 
-import org.icgc.submission.summary.ProjectReport;
-import org.icgc.submission.summary.QProjectReport;
+import org.icgc.submission.summary.ExecutiveReport;
+import org.icgc.submission.summary.QExecutiveReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
 
-public class ProjectReportRepository extends AbstractRepository<ProjectReport, QProjectReport> {
+public class ExecutiveReportRepository extends AbstractRepository<ExecutiveReport, QExecutiveReport> {
 
   @Inject
-  public ProjectReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, projectReport);
+  public ExecutiveReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, executiveReport);
   }
 
-  public List<ProjectReport> findAll() {
+  public List<ExecutiveReport> findAll() {
     return list();
   }
 
-  public List<ProjectReport> find(String releaseName, List<String> projectCodes) {
-    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
+  public List<ExecutiveReport> find(String releaseName) {
+    return list(_.releaseName.eq(releaseName));
   }
 
   public void deleteByRelease(String releaseName) {
     datastore().delete(createQuery().filter("releaseName", releaseName));
   }
 
-  public void upsert(ProjectReport projectReport) {
+  public void upsert(ExecutiveReport executiveReport) {
     // save(projectReport);
     updateFirst(
-        createQuery().filter("releaseName", projectReport.getReleaseName())
-            .filter("projectCode", projectReport.getProjectCode()).filter("type", projectReport.getType()),
-        projectReport, true);
+        createQuery().filter("releaseName", executiveReport.getReleaseName())
+            .filter("projectCode", executiveReport.getProjectCode()),
+        executiveReport, true);
   }
 }

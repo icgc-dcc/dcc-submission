@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,20 +27,35 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.Dictionaries;
+import org.icgc.dcc.core.model.FieldNames;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.reporter.Reporter;
 import org.icgc.dcc.reporter.ReporterGatherer;
+import org.icgc.dcc.submission.repository.ExecutiveReportRepository;
 import org.icgc.dcc.submission.repository.ProjectReportRepository;
+import org.icgc.submission.summary.ExecutiveReport;
 import org.icgc.submission.summary.ProjectReport;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.inject.Inject;
 
 @Slf4j
 public class ExecutiveReportService {
 
+  @NonNull
+  private final ProjectReportRepository projectReportRepository;
+
+  @NonNull
+  private final ExecutiveReportRepository executiveReportRepository;
+
   private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+
   private static final AbstractExecutionThreadService reportService = new AbstractExecutionThreadService() {
 
     @Override
@@ -55,27 +71,49 @@ public class ExecutiveReportService {
   };
 
   @Inject
-  public ExecutiveReportService(@NonNull ProjectReportRepository projectReportRepository) {
+  public ExecutiveReportService(
+      @NonNull ProjectReportRepository projectReportRepository,
+      @NonNull ExecutiveReportRepository executiveReportRepository) {
     this.projectReportRepository = projectReportRepository;
+    this.executiveReportRepository = executiveReportRepository;
     reportService.startAsync();
   }
-
-  @NonNull
-  private final ProjectReportRepository projectReportRepository;
 
   public List<ProjectReport> getProjectReport() {
     return projectReportRepository.findAll();
   }
 
   public List<ProjectReport> getProjectReport(String releaseName, List<String> projectCodes) {
-    log.info("Getting project reports {} {}", projectCodes.size(), projectCodes);
     return projectReportRepository.find(releaseName, projectCodes);
   }
 
-  public void saveProjectReport(ProjectReport projectReport) {
-    projectReportRepository.upsert(projectReport);
+  public void saveProjectReport(ProjectReport report) {
+    projectReportRepository.upsert(report);
   }
 
+  public void deleteProjectReport(final String releaseName) {
+    projectReportRepository.deleteByRelease(releaseName);
+  }
+
+  public List<ExecutiveReport> getExecutiveReport() {
+    return executiveReportRepository.findAll();
+  }
+
+  public List<ExecutiveReport> getExecutiveReport(String releaseName) {
+    return executiveReportRepository.find(releaseName);
+  }
+
+  public void saveExecutiveReport(ExecutiveReport report) {
+    executiveReportRepository.upsert(report);
+  }
+
+  public void deleteExecutiveReport(final String releaseName) {
+    executiveReportRepository.deleteByRelease(releaseName);
+  }
+
+  /**
+   * Generates reports in the background
+   */
   public void generateReport(
       final String releaseName,
       final Set<String> projectKeys,
@@ -89,13 +127,17 @@ public class ExecutiveReportService {
       public void run() {
         Reporter.createReport(releaseName, projectKeys, releasePath, dictionaryNode, codelistNode);
 
+        val mapper = new ObjectMapper();
+        val mappings = Dictionaries.getMapping(dictionaryNode, codelistNode, FileType.SSM_M_TYPE,
+            FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
+
         for (String project : projectKeys) {
           ArrayNode list = ReporterGatherer.getJsonTable1(project);
 
           for (val obj : list) {
             // FIXME: Need to fix order when anthony cleans up reporter
             ProjectReport pr = new ProjectReport();
-            pr.setReleaseName("release1");
+            pr.setReleaseName(releaseName);
             pr.setProjectCode(obj.get("donor_id_count").textValue());
             pr.setType(obj.get("_project_id").textValue());
             pr.setDonorCount(Long.parseLong(obj.get("_type").textValue()));
@@ -104,10 +146,20 @@ public class ExecutiveReportService {
             pr.setObservationCount(Long.parseLong(obj.get("analysis_observation_count").textValue()));
             projectReportRepository.upsert(pr);
           }
+
+          ArrayNode list2 = ReporterGatherer.getJsonTable2(project, mappings.get());
+          for (val r : list2) {
+            ExecutiveReport report = new ExecutiveReport();
+            report.setReleaseName(releaseName);
+            report.setProjectCode(((ObjectNode) r).remove("_project_id").textValue());
+            Map<String, Long> summary = mapper.convertValue(r, new TypeReference<Map<String, Long>>() {});
+            report.setCountSummary(summary);
+            executiveReportRepository.upsert(report);
+          }
+
         }
       }
     });
 
   }
-
 }

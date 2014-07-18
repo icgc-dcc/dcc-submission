@@ -15,45 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.repository;
+package org.icgc.submission.summary;
 
-import static org.icgc.submission.summary.QProjectReport.projectReport;
+import java.util.Map;
 
-import java.util.List;
+import lombok.Data;
+import lombok.ToString;
 
-import lombok.NonNull;
+import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.Property;
 
-import org.icgc.submission.summary.ProjectReport;
-import org.icgc.submission.summary.QProjectReport;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Morphia;
+import com.fasterxml.jackson.annotation.JsonView;
 
-import com.google.inject.Inject;
+@Entity(noClassnameStored = true)
+@ToString
+@Indexes(@Index(name = "release_project", value = "releaseName, projectCode"))
+@Data
+public class ExecutiveReport {
 
-public class ProjectReportRepository extends AbstractRepository<ProjectReport, QProjectReport> {
+  @Id
+  private String id;
 
-  @Inject
-  public ProjectReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, projectReport);
-  }
+  @Property("releaseName")
+  @JsonView(Digest.class)
+  protected String releaseName;
 
-  public List<ProjectReport> findAll() {
-    return list();
-  }
+  @Property("projectCode")
+  @JsonView(Digest.class)
+  protected String projectCode;
 
-  public List<ProjectReport> find(String releaseName, List<String> projectCodes) {
-    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
-  }
+  // Count fields
+  Map<String, Long> countSummary;
 
-  public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter("releaseName", releaseName));
-  }
-
-  public void upsert(ProjectReport projectReport) {
-    // save(projectReport);
-    updateFirst(
-        createQuery().filter("releaseName", projectReport.getReleaseName())
-            .filter("projectCode", projectReport.getProjectCode()).filter("type", projectReport.getType()),
-        projectReport, true);
-  }
 }

@@ -17,74 +17,59 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
-import java.util.Set;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.reporter.Reporter;
-import org.icgc.dcc.reporter.ReporterGatherer;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.repository.CodeListRepository;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.service.ExecutiveReportService;
-import org.icgc.submission.summary.ProjectReport;
+import org.icgc.dcc.submission.service.ReleaseService;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.mongodb.BasicDBObject;
 
-//@Slf4j
+@Slf4j
 @Path("executive_report")
 public class ExecutiveReportResource {
 
   @Inject
   private ExecutiveReportService service;
 
+  // test
+  @Inject
+  private ReleaseService releaseService;
+  @Inject
+  private DictionaryRepository dictionaryRepository;
+  @Inject
+  private CodeListRepository codelistRepository;
+  @Inject
+  private DccFileSystem dccFileSystem;
+
   @GET
   @Path("/test")
   public Response testStuff() {
 
-    new Thread(new Runnable() {
+    ObjectMapper mapper = new ObjectMapper();
+    final String _releaseName = "release1";
+    val _projectKeys = ImmutableSet.<String> of("project.1");
+    val release = releaseService.getReleaseByName("release1");
+    log.info(release.getDictionaryVersion());
 
-      @Override
-      public void run() {
-        // TODO Auto-generated method stub
-        Set<String> testProjects = ImmutableSet.of("project.1", "project.2");
+    val dictionaryNode =
+        mapper.valueToTree(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()));
+    val codelistNode = mapper.valueToTree(codelistRepository.findCodeLists());
+    val releasePath = dccFileSystem.buildReleaseStringPath(_releaseName);
 
-        Reporter.report(
-            "release1",
-            Optional.<Set<String>> of(testProjects),
-            "/Users/dchang/workspace/dcc/dcc-submission/dcc-submission-server/src/test/resources/fixtures/submission/dcc_root_dir/release1"
-            , "/Users/dchang/fake_projects.json", "/Users/dchang/fake_dictionary.json",
-            "/Users/dchang/fake_codelists.json");
-
-        for (String project : testProjects) {
-          ArrayNode list = ReporterGatherer.getJsonTable1(project);
-
-          for (Object obj : list) {
-            val prObj = ((BasicDBObject) obj);
-
-            // FIXME: Need to fix order when anthony cleans up
-            ProjectReport pr = new ProjectReport();
-            pr.setReleaseName("release1");
-            pr.setProjectCode(prObj.getString("donor_id_count"));
-            pr.setType(prObj.getString("_project_id"));
-            pr.setDonorCount(Long.parseLong(prObj.getString("_type")));
-            pr.setSampleCount(Long.parseLong(prObj.getString("_type")));
-            pr.setSpecimenCount(Long.parseLong(prObj.getString("_type")));
-            pr.setObservationCount(Long.parseLong(prObj.getString("_type")));
-
-          }
-        }
-
-      }
-    }).start();
-
+    // This spawns a separate thread
+    service.generateReport(_releaseName, _projectKeys, releasePath, dictionaryNode, codelistNode);
     return Response.ok("Stuff should be running in the background still").build();
   }
 
@@ -103,6 +88,8 @@ public class ExecutiveReportResource {
   @GET
   @Path("{releaseName}")
   public Response test(@PathParam("releaseName") String releaseName) {
-    return Response.ok("Hello!").build();
+    val reports = service.getExecutiveReport(releaseName);
+
+    return Response.ok(reports).build();
   }
 }
