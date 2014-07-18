@@ -332,12 +332,12 @@ public class Dictionaries {
         @NonNull final JsonNode dictionaryRoot,
         @NonNull final JsonNode codeListsRoot) {
 
-      MappingModel rosettaStone = new MappingModel();
+      MappingModel mappingModel = new MappingModel();
 
       for (val fileType : getFileTypes(dictionaryRoot)) {
 
         SchemaMapping schemaMapping = new SchemaMapping();
-        rosettaStone.fileTypeToSchemaMapping.put(fileType, schemaMapping);
+        mappingModel.fileTypeToSchemaMapping.put(fileType, schemaMapping);
 
         for (val fieldName : getFieldNames(dictionaryRoot, fileType)) {
           val optionalCodeListName = getCodeListName(dictionaryRoot, fileType, fieldName);
@@ -353,7 +353,7 @@ public class Dictionaries {
         }
       }
 
-      return rosettaStone;
+      return mappingModel;
     }
 
     /**
