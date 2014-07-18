@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.filterValues;
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static lombok.AccessLevel.PUBLIC;
 
 import java.io.Serializable;
 import java.util.List;
@@ -28,52 +29,57 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.model.SubmissionModelDigest.FileModelDigest.FieldModelDigest;
 import org.icgc.dcc.core.util.Guavas;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 
 /**
- * A digest of the submission model.
+ * A model of the submission model.
  */
-@Value
-public class SubmissionModelDigest implements Serializable {
+@RequiredArgsConstructor(access = PUBLIC)
+public class SubmissionModel implements Serializable, ControlFieldsReference {
 
-  String dictionaryVersion;
-  Map<FileType, FileModelDigest> files;
-  Map<FileType, Join> joins;
-  Map<FileType, List<String>> pks;
-  Map<FileType, List<String>> fks;
-  Map<String, String> generalMapping;
+  @Getter
+  private final String dictionaryVersion;
 
-  @Value
-  public static class FileModelDigest implements Serializable {
+  private final Map<FileType, FileModel> files;
+  private final Map<FileType, JoinModel> joins;
+  private final Map<FileType, List<String>> pks;
+  private final Map<FileType, List<String>> fks;
 
-    Pattern pattern;
-    Map<String, FieldModelDigest> fields;
+  @Getter
+  private final Map<String, String> generalMapping;
 
-    @Value
-    public static class FieldModelDigest implements Serializable {
+  @RequiredArgsConstructor(access = PUBLIC)
+  public static class FileModel implements Serializable {
 
-      ValueType type;
-      boolean controlled;
-      Optional<Map<String, String>> mapping;
+    private final Pattern pattern;
+    private final Map<String, FieldModel> fields;
+
+    @RequiredArgsConstructor(access = PUBLIC)
+    public static class FieldModel implements Serializable {
+
+      private final ValueType type;
+      private final boolean controlled;
+      private final Optional<Map<String, String>> mapping;
 
     }
   }
 
-  @Value
-  public static class Join implements Serializable {
+  @RequiredArgsConstructor(access = PUBLIC)
+  public static class JoinModel implements Serializable {
 
-    FileType target;
-    boolean innerJoin; // TODO: enum?
+    private final FileType target;
+    private final boolean innerJoin; // TODO: enum?
 
   }
 
@@ -105,62 +111,92 @@ public class SubmissionModelDigest implements Serializable {
 
   @JsonIgnore
   public Pattern getPattern(FileType fileType) {
-    return getFiles().get(fileType).getPattern();
+    return files.get(fileType).pattern;
   }
 
   @JsonIgnore
-  public Iterable<String> getFieldNames(FileType fileType) {
-    return getFields(fileType).keySet(); // TODO: cleanup
+  public List<String> getFieldNames(FileType fileType) {
+    return ImmutableList.copyOf(getFields(fileType).keySet()); // TODO: cleanup
   }
 
   @JsonIgnore
   public Set<DataType> getDataTypes() {
     return newLinkedHashSet(transform(
-        getFiles().keySet(), FileType.TO_DATA_TYPE));
+        files.keySet(), FileType.TO_DATA_TYPE));
+  }
+
+  @Override
+  @JsonIgnore
+  public boolean isControlledField(FileType fileType, String fieldName) {
+    return getFields(fileType).get(fieldName).controlled;
   }
 
   @JsonIgnore
-  private Map<String, FieldModelDigest> getFields(final FileType fileType) {
-    return getFiles().get(fileType).getFields();
+  public List<String> getPks(FileType referencedFileType) {
+    return pks.get(referencedFileType);
   }
 
-  private static Predicate<FieldModelDigest> HAS_MAPPING = new Predicate<FieldModelDigest>() {
+  @JsonIgnore
+  public List<String> getFks(FileType referencingFileType) {
+    return fks.get(referencingFileType);
+  }
+
+  @JsonIgnore
+  public FileType getReferencedFileType(FileType referencingFileType) {
+    return getJoin(referencingFileType).target;
+  }
+
+  @JsonIgnore
+  public boolean isInnerJoin(FileType referencingFileType) {
+    return joins.get(referencingFileType).innerJoin;
+  }
+
+  private JoinModel getJoin(FileType referencingFileType) {
+    return joins.get(referencingFileType);
+  }
+
+  @JsonIgnore
+  private Map<String, FileModel.FieldModel> getFields(final FileType fileType) {
+    return files.get(fileType).fields;
+  }
+
+  private static Predicate<FileModel.FieldModel> HAS_MAPPING = new Predicate<FileModel.FieldModel>() {
 
     @Override
-    public boolean apply(FieldModelDigest digest) {
-      return digest.getMapping().isPresent();
+    public boolean apply(FileModel.FieldModel model) {
+      return model.mapping.isPresent();
     }
 
   };
 
-  private static Function<FieldModelDigest, Optional<Map<String, String>>> TO_OPTIONAL_MAP =
-      new Function<FieldModelDigest, Optional<Map<String, String>>>() {
+  private static Function<FileModel.FieldModel, Optional<Map<String, String>>> TO_OPTIONAL_MAP =
+      new Function<FileModel.FieldModel, Optional<Map<String, String>>>() {
 
         @Override
-        public Optional<Map<String, String>> apply(FieldModelDigest digest) {
-          return digest.getMapping();
+        public Optional<Map<String, String>> apply(FileModel.FieldModel model) {
+          return model.mapping;
         }
 
       };
 
-  private static Function<FieldModelDigest, Map<String, String>> TO_PRESENT_MAP =
-      new Function<FieldModelDigest, Map<String, String>>() {
+  private static Function<FileModel.FieldModel, Map<String, String>> TO_PRESENT_MAP =
+      new Function<FileModel.FieldModel, Map<String, String>>() {
 
         @Override
-        public Map<String, String> apply(FieldModelDigest digest) {
-          checkArgument(digest.getMapping().isPresent(),
+        public Map<String, String> apply(FileModel.FieldModel model) {
+          checkArgument(model.mapping.isPresent(),
               "Expecting to find mapping");
-          return digest.getMapping().get();
+          return model.mapping.get();
         }
 
       };
 
-  private static Function<FieldModelDigest, ValueType> TO_VALUE_TYPE =
-      new Function<FieldModelDigest, ValueType>() {
+  private static Function<FileModel.FieldModel, ValueType> TO_VALUE_TYPE =
+      new Function<FileModel.FieldModel, ValueType>() {
 
         @Override
-        public ValueType apply(FieldModelDigest digest) {
-          return digest.getType();
+        public ValueType apply(FileModel.FieldModel model) {
+          return model.type;
         }
 
       };

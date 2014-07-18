@@ -18,10 +18,12 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.core.model.FileTypes.FileType.DONOR_TYPE;
 import lombok.Getter;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileSubType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 /**
  * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
@@ -53,6 +55,11 @@ public enum ClinicalType implements DataType {
   @Override
   public ClinicalType asClinicalType() {
     return this;
+  }
+
+  @Override
+  public FileType getTopLevelFileType() {
+    return DONOR_TYPE;
   }
 
   public boolean isCoreClinicalType() {

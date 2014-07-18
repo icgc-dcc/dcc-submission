@@ -29,6 +29,8 @@ import org.icgc.dcc.core.model.FileTypes.FileSubType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 
 /**
  * Common optionals.
@@ -43,5 +45,19 @@ public class Optionals {
 
   public static final Optional<FileType> ABSENT_FILE_TYPE = Optional.absent();
   public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
+
+  public final static <T, T2> Optional<T2> ofPredicate(Predicate<T> predicate, T t, Supplier<T2> supplier) {
+    return ofCondition(predicate.apply(t), supplier);
+  }
+
+  public final static <T> Optional<T> ofProposition(Proposition proposition, Supplier<T> supplier) {
+    return ofCondition(proposition.evaluate(), supplier);
+  }
+
+  public final static <T> Optional<T> ofCondition(boolean b, Supplier<T> supplier) {
+    return b ?
+        Optional.of(supplier.get()) :
+        Optional.<T> absent();
+  }
 
 }

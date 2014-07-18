@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableSet.of;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
@@ -33,7 +34,9 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.PRIMARY_SUBTYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileSubType.SECONDARY_SUBTYPE;
 import static org.icgc.dcc.core.util.Joiners.UNDERSCORE;
+import static org.icgc.dcc.core.util.Optionals.ABSENT_FILE_TYPE;
 
 import java.util.List;
 import java.util.Set;
@@ -47,6 +50,7 @@ import org.icgc.dcc.core.model.FileTypes.FileSubType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Proposition;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 
@@ -113,6 +117,11 @@ public final class FeatureTypes {
       return this;
     }
 
+    @Override
+    public FileType getTopLevelFileType() {
+      return getPrimaryFileType();
+    }
+
     public boolean isSsm() {
       return this == SSM_TYPE;
     }
@@ -148,7 +157,19 @@ public final class FeatureTypes {
             public boolean apply(FileType fileType) {
               return fileType.getDataType() == dataType;
             }
+
           }));
+    }
+
+    /**
+     * Returns the file sub types corresponding to the feature type.
+     * <p>
+     * TODO: move to {@link FileTypes} rather
+     */
+    public Set<FileSubType> getCorrespondingFileSubTypes() {
+      return newLinkedHashSet(transform(
+          getCorrespondingFileTypes(),
+          FileType.getGetSubTypeFunction()));
     }
 
     /**
@@ -169,6 +190,12 @@ public final class FeatureTypes {
 
     public FileType getPrimaryFileType() {
       return getFileType(PRIMARY_SUBTYPE);
+    }
+
+    public Optional<FileType> getSecondaryFileType() {
+      return getCorrespondingFileSubTypes().contains(SECONDARY_SUBTYPE) ?
+          Optional.of(getFileType(SECONDARY_SUBTYPE)) :
+          ABSENT_FILE_TYPE;
     }
 
     private FileType getFileType(final FileSubType fileSubType) {
