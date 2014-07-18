@@ -29,6 +29,9 @@ import com.google.common.base.Function;
 @NoArgsConstructor(access = PRIVATE)
 public final class Functions2 {
 
+  /**
+   * Somehow guava's forces you to have {@link Object} as input.
+   */
   public final static <T, Constant> Function<T, Constant> constant(@NonNull final Constant constant) {
 
     return new Function<T, Constant>() {
