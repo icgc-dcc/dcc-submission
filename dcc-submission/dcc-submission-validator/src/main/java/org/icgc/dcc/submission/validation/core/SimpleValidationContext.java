@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.core;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.apache.hadoop.fs.Path.SEPARATOR;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
+import static org.icgc.dcc.core.util.FsConfig.FS_URL;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

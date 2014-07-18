@@ -22,11 +22,11 @@ import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.Path.SEPARATOR;
 import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.util.FsConfig.FS_ROOT;
+import static org.icgc.dcc.core.util.FsConfig.FS_URL;
 import static org.icgc.dcc.core.util.Joiners.DOT;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.FS_DEFAULT_FS;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.util.Collection;
 

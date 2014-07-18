@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.fs;
 
+import static org.icgc.dcc.core.util.FsConfig.FS_URL;
 import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

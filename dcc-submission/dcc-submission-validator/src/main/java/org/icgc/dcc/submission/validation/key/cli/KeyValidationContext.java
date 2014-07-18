@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.key.cli;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
+import static org.icgc.dcc.core.util.FsConfig.FS_URL;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.util.List;
 

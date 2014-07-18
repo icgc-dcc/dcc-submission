@@ -15,18 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs;
+package org.icgc.dcc.core.model;
 
-public class FsConfig {
+import lombok.NonNull;
+
+import com.google.common.base.Optional;
+
+/**
+ * Enum representing the states of an observation with regard to sensitive information.
+ */
+public enum Marking {
+  CONTROLLED, OPEN, MASKED;
 
   /**
-   * Root of DCC filesystem
+   * Returns the value to be used in the context of a tuple (to avoid serialization issues).
    */
-  public static final String FS_ROOT = "fs.root";
+  public String getTupleValue() {
+    return name();
+  }
+
+  public boolean isControlled() {
+    return this == CONTROLLED;
+  }
+
+  public boolean isOpen() {
+    return this == OPEN;
+  }
+
+  public boolean isMasked() {
+    return this == MASKED;
+  }
 
   /**
-   * Hadoop's file system scheme: {@code fs.default.name}
+   * Optionally returns a {@link Marking} from a given {@link String}.
    */
-  public static final String FS_URL = "fs.url";
-
+  public static Optional<Marking> from(@NonNull String value) {
+    try {
+      return Optional.<Marking> of(Marking.valueOf(value));
+    } catch (IllegalArgumentException e) {
+      return Optional.absent();
+    }
+  }
 }
