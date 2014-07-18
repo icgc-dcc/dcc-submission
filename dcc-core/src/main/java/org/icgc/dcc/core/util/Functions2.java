@@ -17,70 +17,27 @@
  */
 package org.icgc.dcc.core.util;
 
-import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.collect.Maps.uniqueIndex;
-
-import java.util.Map;
-import java.util.Set;
-
-import lombok.val;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 
 /**
- * Util methods for guava.
+ * Util methods for {@link Function}.
  */
-public class Guavas {
+@NoArgsConstructor(access = PRIVATE)
+public final class Functions2 {
 
-  /**
-   * The missing List&ltT&gt -> Map&ltk(T), v(T)&gt all-in-one conversion.
-   */
-  public static <T, K, V> Map<K, V> transformListToMap(
-      Iterable<T> iterable,
-      Function<T, K> keyFunction,
-      Function<T, V> valueFunction) {
+  public final static <T, Constant> Function<T, Constant> constant(final Constant constant) {
 
-    return transformValues(
-        uniqueIndex(
-            iterable,
-            keyFunction),
-        valueFunction);
-  }
+    return new Function<T, Constant>() {
 
-  public static <K, V1, V2> Map<K, V2> transformValues(
-      Map<K, V1> inputMap,
-      Function<V1, V2> function) {
-    Map<K, V2> map = newLinkedHashMap();
-    for (val entry : inputMap.entrySet()) {
-      map.put(entry.getKey(), function.apply(entry.getValue()));
-    }
-
-    return map;
-  }
-
-  public static <K, V> Map<K, V> asMap(
-      Set<K> inputSet,
-      Function<K, V> function) {
-    Map<K, V> map = newLinkedHashMap();
-    for (val k : inputSet) {
-      map.put(k, function.apply(k));
-    }
-
-    return map;
-  }
-
-  public static <K, V> Map<K, V> filterKeys(
-      Map<K, V> inputMap,
-      Predicate<K> predicate) {
-    Map<K, V> map = newLinkedHashMap();
-    for (val k : inputMap.keySet()) {
-      if (predicate.apply(k)) {
-        map.put(k, inputMap.get(k));
+      @Override
+      public Constant apply(T t) {
+        return constant;
       }
-    }
 
-    return map;
+    };
+
   }
-
 }

@@ -34,7 +34,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Guavas;
+import org.icgc.dcc.core.util.SerializableMaps;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
@@ -86,14 +86,14 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
   @JsonIgnore
   public Map<String, Optional<Map<String, String>>> getFileMapping(FileType fileType) {
 
-    return Guavas.transformValues(
+    return SerializableMaps.transformValues(
         getFields(fileType),
         TO_OPTIONAL_MAP);
   }
 
   @JsonIgnore
   public Map<String, ValueType> getValueTypes(FileType fileType) {
-    return Guavas.transformValues( // TODO: defensive copy
+    return SerializableMaps.transformValues( // TODO: defensive copy
         getFields(fileType),
         TO_VALUE_TYPE);
   }
@@ -102,7 +102,7 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
   public Map<String, Map<String, String>> getMappings(
       @NonNull final FileType fileType) {
 
-    return Guavas.transformValues(
+    return SerializableMaps.transformValues(
         filterValues(
             getFields(fileType),
             HAS_MAPPING),

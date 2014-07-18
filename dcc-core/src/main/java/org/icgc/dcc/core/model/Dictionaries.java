@@ -38,7 +38,7 @@ import lombok.val;
 
 import org.icgc.dcc.core.model.Dictionaries.RosettaStone.SchemaMapping.FieldMapping;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Guavas;
+import org.icgc.dcc.core.util.SerializableMaps;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
@@ -73,7 +73,7 @@ public class Dictionaries {
 
   public static Map<FileType, String> getPatterns(@NonNull final JsonNode dictionaryRoot) {
 
-    return Guavas.<JsonNode, FileType, String> transformListToMap(
+    return SerializableMaps.<JsonNode, FileType, String> transformListToMap(
         dictionaryRoot.path(FILE_SCHEMATA_KEY),
 
         // Key function
@@ -215,7 +215,7 @@ public class Dictionaries {
     val codeListTerms = getCodeListTerms(codeListsRoot, codeListName);
     checkState(codeListTerms.isArray()); // By design
 
-    return Guavas.transformListToMap(
+    return SerializableMaps.transformListToMap(
         codeListTerms,
         new Function<JsonNode, String>() {
 
@@ -364,7 +364,7 @@ public class Dictionaries {
         @NonNull final FileType fileType,
         @NonNull final String... fieldNames) {
 
-      return Guavas.transformValues(
+      return SerializableMaps.transformValues(
           getFieldsMappings(fileType, fieldNames),
           new Function<Optional<Map<String, String>>, Map<String, String>>() {
 
@@ -384,7 +384,7 @@ public class Dictionaries {
         @NonNull final FileType fileType,
         @NonNull final String... fieldNames) {
 
-      return Guavas.asMap(
+      return SerializableMaps.asMap(
           ImmutableSet.<String> copyOf(fieldNames),
           new Function<String, Optional<Map<String, String>>>() {
 
