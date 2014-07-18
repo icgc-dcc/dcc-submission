@@ -333,14 +333,16 @@ public final class FileTypes {
       };
     }
 
-    public static Function<FileType, DataType> TO_DATA_TYPE = new Function<FileType, DataType>() {
+    public static Function<FileType, DataType> toDataType() {
+      return new Function<FileType, DataType>() {
 
-      @Override
-      public DataType apply(FileType fileType) {
-        return fileType.getDataType();
-      }
+        @Override
+        public DataType apply(FileType fileType) {
+          return fileType.getDataType();
+        }
 
-    };
+      };
+    }
 
   }
 
