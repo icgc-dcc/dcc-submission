@@ -139,7 +139,7 @@ public final class FeatureTypes {
     }
 
     public boolean hasSequencingStrategy() {
-      return TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE.apply(this);
+      return FeatureTypes.hasSequencingStrategy(this).evaluate();
     }
 
     /**
@@ -247,52 +247,71 @@ public final class FeatureTypes {
     return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 
-  public static final Set<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = ImmutableSet.<FeatureType> of(
+  private static final Set<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = ImmutableSet.of(
       METH_ARRAY_TYPE,
       EXP_ARRAY_TYPE,
       PEXP_TYPE);
 
-  public static final Set<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
+  private static final Set<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
 
-  private static Predicate<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE = new Predicate<FeatureType>() {
+  public static Iterable<FeatureType> withRawSequenceData(@NonNull final Iterable<FeatureType> items) {
+    return filter(items, hasRawSequenceData());
+  }
 
-    @Override
-    public boolean apply(FeatureType featureType) {
-      return !TYPES_WITH_RAW_SEQUENCE_DATA.contains(featureType);
-    }
+  public static Iterable<FeatureType> withSequencingStrategy(@NonNull final FeatureType[] items) {
+    return withSequencingStrategy(ImmutableSet.copyOf(items));
+  }
 
-  };
+  public static Iterable<FeatureType> withSequencingStrategy(@NonNull final Iterable<FeatureType> items) {
+    return filter(items, hasSequencingStrategy());
+  }
 
-  public static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE =
-      TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE;
-
-  public static final Proposition HAS_RAW_SEQUENCE_DATA(
-      @NonNull final FeatureType featureType) {
+  public static Proposition hasRawSequenceData(@NonNull final FeatureType featureType) {
 
     return new Proposition() {
 
       @Override
       public boolean evaluate() {
-        return TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE.apply(featureType);
+        return hasRawSequenceData().apply(featureType);
       }
 
     };
-
   }
 
-  public static final Proposition HAS_SEQUENCING_STRATEGY(
-      @NonNull final FeatureType featureType) {
+  public static Proposition hasSequencingStrategy(@NonNull final FeatureType featureType) {
 
-    return HAS_RAW_SEQUENCE_DATA(featureType);
+    return new Proposition() {
 
+      @Override
+      public boolean evaluate() {
+        return hasSequencingStrategy().apply(featureType);
+      }
+
+    };
   }
 
-  public static Iterable<FeatureType> withRawSequenceData(@NonNull final Iterable<FeatureType> items) {
-    return filter(items, TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE);
+  private static Predicate<FeatureType> hasRawSequenceData() {
+
+    return new Predicate<FeatureType>() {
+
+      @Override
+      public boolean apply(FeatureType featureType) {
+        return !TYPES_WITH_RAW_SEQUENCE_DATA.contains(featureType);
+      }
+
+    };
   }
 
-  public static Iterable<FeatureType> withSequencingStrategy(@NonNull final Iterable<FeatureType> items) {
-    return filter(items, TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE);
+  private static Predicate<FeatureType> hasSequencingStrategy() {
+
+    return new Predicate<FeatureType>() {
+
+      @Override
+      public boolean apply(FeatureType featureType) {
+        return !TYPES_WITH_SEQUENCING_STRATEGY.contains(featureType);
+      }
+
+    };
   }
 
 }

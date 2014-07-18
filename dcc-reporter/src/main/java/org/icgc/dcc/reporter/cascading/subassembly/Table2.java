@@ -1,6 +1,6 @@
 package org.icgc.dcc.reporter.cascading.subassembly;
 
-import static org.icgc.dcc.core.model.FeatureTypes.TYPES_WITH_SEQUENCING_STRATEGY;
+import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
@@ -15,6 +15,7 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SpecialValue;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
@@ -62,7 +63,7 @@ public class Table2 extends SubAssembly {
       builder.add(iterator.next());
     }
 
-    for (val featureType : TYPES_WITH_SEQUENCING_STRATEGY) {
+    for (val featureType : withSequencingStrategy(FeatureType.values())) {
       builder.add(featureType.getTypeName());
     }
 
