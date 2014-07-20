@@ -15,40 +15,71 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.util.resolver;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import static com.google.common.net.HttpHeaders.ACCEPT;
+
+import java.io.InputStream;
+import java.net.URL;
+
 import lombok.SneakyThrows;
+import lombok.val;
 
-import org.icgc.dcc.core.util.Resolver.CodeListsResolver;
+import org.icgc.dcc.core.util.Supplier3;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 
-@AllArgsConstructor
-@NoArgsConstructor
-public class RestfulCodeListsResolver implements CodeListsResolver {
+public interface Resolver {
 
-  private String url = CodeListsResolver.DEFAULT_CODELISTS_URL;
+  /**
+   * Abstraction that resolves the content of the most current dictionary.
+   */
+  public interface DictionaryResolver extends Supplier3<ObjectNode, Optional<String>> {}
 
-  @SneakyThrows
-  @Override
-  public ArrayNode getCodeLists() {
-    return new ObjectMapper().readValue(
-        Resolvers.getContent(
-            getFullUrl(
-            Optional.<String> absent())),
-        ArrayNode.class);
+  /**
+   * Abstraction that resolves the content of the code lists.
+   */
+  public interface CodeListsResolver extends Supplier<ArrayNode> {}
+
+  interface SubmissionSystemResolber extends Resolver {
+
+    String DEFAULT_SCHEME = "http://";
+    String DEFAULT_HOST = "***REMOVED***";
+    int DEFAULT_PORT = 5380;
+    String PATH_BASE = "/ws";
+
+    String getSubmissionSystemUrl(Optional<String> qualifier);
+
+    interface SubmissionSystemDictionaryResolver extends DictionaryResolver, SubmissionSystemResolber {
+
+      String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
+      String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
+      String DEFAULT_DICTIONARY_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH_CURRENT;
+
+    }
+
+    interface SubmissionSystemCodeListsResolver extends CodeListsResolver, SubmissionSystemResolber {
+
+      String PATH = PATH_BASE + "/codeLists";
+      String DEFAULT_CODELISTS_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH;
+
+    }
+
   }
 
-  @Override
-  public String getFullUrl(Optional<String> qualifier) {
-    checkArgument(!qualifier.isPresent(),
-        "Code lists can not be qualified, '%s' provided", qualifier);
-    return url + CodeListsResolver.PATH;
+  static class Resolvers {
+
+    @SneakyThrows
+    static InputStream getContent(String url) {
+      val connection = new URL(url).openConnection();
+      connection.setRequestProperty(ACCEPT, "application/json");
+
+      return (InputStream) connection.getContent();
+    }
+
   }
 
 }

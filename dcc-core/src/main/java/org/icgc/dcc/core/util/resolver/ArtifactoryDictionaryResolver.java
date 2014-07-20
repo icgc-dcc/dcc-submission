@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.util.resolver;
 
 import static org.icgc.dcc.core.util.FormatUtils._;
 
@@ -25,11 +25,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import lombok.Cleanup;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+import org.icgc.dcc.core.util.Optionals;
+import org.icgc.dcc.core.util.resolver.Resolver.DictionaryResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -42,19 +42,17 @@ public class ArtifactoryDictionaryResolver implements DictionaryResolver {
   }
 
   @Override
-  public ObjectNode getDictionary() {
+  public ObjectNode get() {
     return getDictionary(Optional.of(getDefaultVersion()));
   }
 
-  public ObjectNode getDictionary(
-      @NonNull final String version) {
-
-    return getDictionary(Optional.of(version));
+  @Override
+  public ObjectNode get(Optional<String> version) {
+    return getDictionary(version);
   }
 
-  @Override
   @SneakyThrows
-  public ObjectNode getDictionary(Optional<String> version) {
+  private static ObjectNode getDictionary(Optional<String> version) {
     // Resolve
     @Cleanup
     val zip = new ZipInputStream(getDictionaryUrl(version).openStream());
@@ -71,15 +69,10 @@ public class ArtifactoryDictionaryResolver implements DictionaryResolver {
   protected static URL getDictionaryUrl(Optional<String> optionalVersion) throws MalformedURLException {
     val basePath = "http://seqwaremaven.oicr.on.ca/artifactory";
     val template = "%s/simple/dcc-dependencies/org/icgc/dcc/dcc-resources/%s/dcc-resources-%s.jar";
-    val version = optionalVersion.isPresent() ? optionalVersion.get() : getDefaultVersion();
+    val version = Optionals.defaultValue(optionalVersion, getDefaultVersion());
     URL url = new URL(_(template, basePath, version, version));
 
     return url;
-  }
-
-  @Override
-  public String getFullUrl(Optional<String> qualifier) {
-    throw new UnsupportedOperationException();
   }
 
 }

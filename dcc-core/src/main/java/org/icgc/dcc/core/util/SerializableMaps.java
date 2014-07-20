@@ -17,29 +17,70 @@
  */
 package org.icgc.dcc.core.util;
 
-import lombok.NonNull;
+import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.collect.Maps.uniqueIndex;
 
+import java.util.Map;
+import java.util.Set;
+
+import lombok.val;
+
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
-public interface Proposition {
+/**
+ * Util methods for guava.
+ */
+public class SerializableMaps {
 
-  boolean evaluate();
+  /**
+   * The missing List&ltT&gt -> Map&ltk(T), v(T)&gt all-in-one conversion.
+   */
+  public static <T, K, V> Map<K, V> transformListToMap(
+      Iterable<T> iterable,
+      Function<T, K> keyFunction,
+      Function<T, V> valueFunction) {
 
-  public static class Propositions {
+    return transformValues(
+        uniqueIndex(
+            iterable,
+            keyFunction),
+        valueFunction);
+  }
 
-    public static <T> Proposition from(
-        @NonNull final Predicate<T> predicate,
-        @NonNull final T t) {
-      return new Proposition() {
-
-        @Override
-        public boolean evaluate() {
-          return predicate.apply(t);
-        }
-
-      };
+  public static <K, V1, V2> Map<K, V2> transformValues(
+      Map<K, V1> inputMap,
+      Function<V1, V2> function) {
+    Map<K, V2> map = newLinkedHashMap();
+    for (val entry : inputMap.entrySet()) {
+      map.put(entry.getKey(), function.apply(entry.getValue()));
     }
 
+    return map;
+  }
+
+  public static <K, V> Map<K, V> asMap(
+      Set<K> inputSet,
+      Function<K, V> function) {
+    Map<K, V> map = newLinkedHashMap();
+    for (val k : inputSet) {
+      map.put(k, function.apply(k));
+    }
+
+    return map;
+  }
+
+  public static <K, V> Map<K, V> filterKeys(
+      Map<K, V> inputMap,
+      Predicate<K> predicate) {
+    Map<K, V> map = newLinkedHashMap();
+    for (val k : inputMap.keySet()) {
+      if (predicate.apply(k)) {
+        map.put(k, inputMap.get(k));
+      }
+    }
+
+    return map;
   }
 
 }

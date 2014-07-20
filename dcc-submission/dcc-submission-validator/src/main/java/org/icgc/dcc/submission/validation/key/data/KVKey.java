@@ -45,9 +45,9 @@ public class KVKey implements Comparable<KVKey> {
   private static final Interner<ByteBuffer> VALUE_INTERNER = Interners.newWeakInterner();
 
   private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.wrap("".getBytes(US_ASCII));
-  private static final ByteBuffer MISSING_CODE1_BYTE_BUFFER = ByteBuffer.wrap(SpecialValue.MISSING_CODE1
+  private static final ByteBuffer MISSING_CODE1_BYTE_BUFFER = ByteBuffer.wrap(SpecialValue.VERIFIED_UNKNOWN_CODE
       .getBytes(US_ASCII));
-  private static final ByteBuffer MISSING_CODE2_BYTE_BUFFER = ByteBuffer.wrap(SpecialValue.MISSING_CODE2
+  private static final ByteBuffer MISSING_CODE2_BYTE_BUFFER = ByteBuffer.wrap(SpecialValue.NOT_APPLICABLE_CODE
       .getBytes(US_ASCII));
   private static final List<ByteBuffer> MISSING_CODE_BYTE_BUFFERS = newArrayList(
       MISSING_CODE1_BYTE_BUFFER, MISSING_CODE2_BYTE_BUFFER);

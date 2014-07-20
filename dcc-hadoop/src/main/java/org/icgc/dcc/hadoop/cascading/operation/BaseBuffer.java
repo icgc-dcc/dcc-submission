@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,38 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs;
+package org.icgc.dcc.hadoop.cascading.operation;
 
-import static org.icgc.dcc.core.util.FsConfig.FS_URL;
-import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import cascading.operation.BaseOperation;
+import cascading.operation.Buffer;
+import cascading.tuple.Fields;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
+/**
+ * Base class to help with creating anonymous {@link BaseOperation}/{@link Buffer} classes.
+ */
+public abstract class BaseBuffer<Context> extends BaseOperation<Context> implements Buffer<Context> {
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.typesafe.config.Config;
+  public BaseBuffer(Fields fields) {
+    super(fields);
+  }
 
-@Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
-public class SubmissionFileSystemProvider implements Provider<FileSystem> {
+  public BaseBuffer(int numArgs, Fields fields) {
+    super(numArgs, fields);
+  }
 
-  @NonNull
-  private final Config config;
-  @NonNull
-  private final Configuration configuration;
-
-  @Override
-  public FileSystem get() {
-    log.info("Hadoop configuration = {}", getConfigurationDescription(configuration));
-
-    return getFileSystem(
-        configuration,
-        config.getString(FS_URL));
+  public BaseBuffer(int numArgs) {
+    super(numArgs);
   }
 
 }

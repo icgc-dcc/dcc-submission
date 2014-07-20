@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,72 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.model;
 
-import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.collect.Maps.uniqueIndex;
+import lombok.NonNull;
 
-import java.util.Map;
-import java.util.Set;
-
-import lombok.val;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
+import com.google.common.base.Optional;
 
 /**
- * Util methods for guava.
+ * Enum representing the states of an observation with regard to sensitive information.
  */
-public class Guavas {
+public enum Marking {
+  CONTROLLED, OPEN, MASKED;
 
   /**
-   * The missing List&ltT&gt -> Map&ltk(T), v(T)&gt all-in-one conversion.
+   * Returns the value to be used in the context of a tuple (to avoid serialization issues).
    */
-  public static <T, K, V> Map<K, V> transformListToMap(
-      Iterable<T> iterable,
-      Function<T, K> keyFunction,
-      Function<T, V> valueFunction) {
-
-    return transformValues(
-        uniqueIndex(
-            iterable,
-            keyFunction),
-        valueFunction);
+  public String getTupleValue() {
+    return name();
   }
 
-  public static <K, V1, V2> Map<K, V2> transformValues(
-      Map<K, V1> inputMap,
-      Function<V1, V2> function) {
-    Map<K, V2> map = newLinkedHashMap();
-    for (val entry : inputMap.entrySet()) {
-      map.put(entry.getKey(), function.apply(entry.getValue()));
+  public boolean isControlled() {
+    return this == CONTROLLED;
+  }
+
+  public boolean isOpen() {
+    return this == OPEN;
+  }
+
+  public boolean isMasked() {
+    return this == MASKED;
+  }
+
+  /**
+   * Optionally returns a {@link Marking} from a given {@link String}.
+   */
+  public static Optional<Marking> from(@NonNull String value) {
+    try {
+      return Optional.<Marking> of(Marking.valueOf(value));
+    } catch (IllegalArgumentException e) {
+      return Optional.absent();
     }
-
-    return map;
   }
-
-  public static <K, V> Map<K, V> asMap(
-      Set<K> inputSet,
-      Function<K, V> function) {
-    Map<K, V> map = newLinkedHashMap();
-    for (val k : inputSet) {
-      map.put(k, function.apply(k));
-    }
-
-    return map;
-  }
-
-  public static <K, V> Map<K, V> filterKeys(
-      Map<K, V> inputMap,
-      Predicate<K> predicate) {
-    Map<K, V> map = newLinkedHashMap();
-    for (val k : inputMap.keySet()) {
-      if (predicate.apply(k)) {
-        map.put(k, inputMap.get(k));
-      }
-    }
-
-    return map;
-  }
-
 }

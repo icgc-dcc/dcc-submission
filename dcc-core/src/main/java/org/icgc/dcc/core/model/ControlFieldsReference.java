@@ -20,7 +20,7 @@ package org.icgc.dcc.core.model;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 /**
- * 
+ * Reference to determine if a field is controlled or not.
  */
 public interface ControlFieldsReference {
 

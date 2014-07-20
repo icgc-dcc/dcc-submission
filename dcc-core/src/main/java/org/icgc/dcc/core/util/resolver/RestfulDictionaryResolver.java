@@ -15,79 +15,49 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.util.resolver;
 
-import static com.google.common.net.HttpHeaders.ACCEPT;
-
-import java.io.InputStream;
-import java.net.URL;
-
+import static org.icgc.dcc.core.util.Jackson.DEFAULT;
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.resolver.Resolver.Resolvers.getContent;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolber.SubmissionSystemDictionaryResolver;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
 
-public interface Resolver {
+@AllArgsConstructor
+@NoArgsConstructor
+public class RestfulDictionaryResolver implements SubmissionSystemDictionaryResolver {
 
-  int DEFAULT_PORT = 5380;
-  String PATH_BASE = "/ws";
+  private String url = DEFAULT_DICTIONARY_URL;
 
-  String getFullUrl(Optional<String> qualifier);
-
-  /**
-   * Abstraction that resolves the content of the most current dictionary.
-   */
-  public interface DictionaryResolver extends Resolver {
-
-    String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
-    String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
-    String DEFAULT_DICTIONARY_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH_CURRENT;
-
-    /**
-     * Resolves the current version of the dictionary.
-     * 
-     * @return the current dictionary
-     */
-    ObjectNode getDictionary();
-
-    /**
-     * Resolves version {@code version} of the dictionary.
-     * 
-     * @return the requested dictionary
-     */
-    ObjectNode getDictionary(Optional<String> version);
-
+  @Override
+  public ObjectNode get() {
+    return get(Optional.<String> absent());
   }
 
-  /**
-   * Abstraction that resolves the content of the code lists.
-   */
-  public interface CodeListsResolver extends Resolver {
-
-    String PATH = PATH_BASE + "/codeLists";
-    String DEFAULT_CODELISTS_URL = "http://***REMOVED***:" + DEFAULT_PORT + PATH;
-
-    /**
-     * Resolves the codelists.
-     * 
-     * @return the code lists
-     */
-    ArrayNode getCodeLists();
-
+  @Override
+  public ObjectNode get(Optional<String> version) {
+    return getDictionary(version);
   }
 
-  static class Resolvers {
+  @SneakyThrows
+  private ObjectNode getDictionary(Optional<String> version) {
+    return DEFAULT.readValue(
+        getContent(
+        getSubmissionSystemUrl(version)),
+        ObjectNode.class);
+  }
 
-    @SneakyThrows
-    static InputStream getContent(String url) {
-      val connection = new URL(url).openConnection();
-      connection.setRequestProperty(ACCEPT, "application/json");
-
-      return (InputStream) connection.getContent();
-    }
-
+  @Override
+  public String getSubmissionSystemUrl(Optional<String> version) {
+    return url + (version.isPresent() ?
+        PATH.join(PATH_SPECIFIC, version.get()) :
+        PATH_CURRENT);
   }
 
 }

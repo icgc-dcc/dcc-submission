@@ -359,7 +359,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public List<DataType> getDataTypes() {
     return newArrayList(newLinkedHashSet(transform(
-        getFileTypes(), FileType.TO_DATA_TYPE)));
+        getFileTypes(),
+        FileType.toDataType())));
   }
 
   /**

@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.filterValues;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static lombok.AccessLevel.PUBLIC;
+import static org.icgc.dcc.core.util.SerializableMaps.transformValues;
 
 import java.io.Serializable;
 import java.util.List;
@@ -34,18 +34,18 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Guavas;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * A model of the submission model.
  */
-@RequiredArgsConstructor(access = PUBLIC)
+@RequiredArgsConstructor
 public class SubmissionModel implements Serializable, ControlFieldsReference {
 
   @Getter
@@ -59,13 +59,13 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
   @Getter
   private final Map<String, String> generalMapping;
 
-  @RequiredArgsConstructor(access = PUBLIC)
+  @RequiredArgsConstructor
   public static class FileModel implements Serializable {
 
     private final Pattern pattern;
     private final Map<String, FieldModel> fields;
 
-    @RequiredArgsConstructor(access = PUBLIC)
+    @RequiredArgsConstructor
     public static class FieldModel implements Serializable {
 
       private final ValueType type;
@@ -75,130 +75,136 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
     }
   }
 
-  @RequiredArgsConstructor(access = PUBLIC)
+  @RequiredArgsConstructor
   public static class JoinModel implements Serializable {
 
     private final FileType target;
-    private final boolean innerJoin; // TODO: enum?
+    private final boolean innerJoin;
 
   }
 
   @JsonIgnore
-  public Map<String, Optional<Map<String, String>>> getFileMapping(FileType fileType) {
-
-    return Guavas.transformValues(
+  public Map<String, Optional<Map<String, String>>> getFileMapping(@NonNull final FileType fileType) {
+    return ImmutableMap.copyOf(transformValues(
         getFields(fileType),
-        TO_OPTIONAL_MAP);
+        toOptionalMap()));
   }
 
   @JsonIgnore
-  public Map<String, ValueType> getValueTypes(FileType fileType) {
-    return Guavas.transformValues( // TODO: defensive copy
-        getFields(fileType),
-        TO_VALUE_TYPE);
-  }
-
-  @JsonIgnore
-  public Map<String, Map<String, String>> getMappings(
-      @NonNull final FileType fileType) {
-
-    return Guavas.transformValues(
+  public Map<String, Map<String, String>> getMappings(@NonNull final FileType fileType) {
+    return ImmutableMap.copyOf(transformValues(
         filterValues(
             getFields(fileType),
-            HAS_MAPPING),
-        TO_PRESENT_MAP);
+            hasMapping()),
+        toPresentMap()));
   }
 
   @JsonIgnore
-  public Pattern getPattern(FileType fileType) {
+  public Map<String, ValueType> getValueTypes(@NonNull final FileType fileType) {
+    return ImmutableMap.copyOf(transformValues(
+        getFields(fileType),
+        toValueType()));
+  }
+
+  @JsonIgnore
+  public Pattern getPattern(@NonNull final FileType fileType) {
     return files.get(fileType).pattern;
   }
 
   @JsonIgnore
-  public List<String> getFieldNames(FileType fileType) {
-    return ImmutableList.copyOf(getFields(fileType).keySet()); // TODO: cleanup
+  public List<String> getFieldNames(@NonNull final FileType fileType) {
+    return ImmutableList.copyOf(getFields(fileType).keySet());
   }
 
   @JsonIgnore
   public Set<DataType> getDataTypes() {
     return newLinkedHashSet(transform(
-        files.keySet(), FileType.TO_DATA_TYPE));
+        files.keySet(),
+        FileType.toDataType()));
   }
 
   @Override
   @JsonIgnore
-  public boolean isControlledField(FileType fileType, String fieldName) {
+  public boolean isControlledField(
+      @NonNull final FileType fileType,
+      @NonNull final String fieldName) {
     return getFields(fileType).get(fieldName).controlled;
   }
 
   @JsonIgnore
-  public List<String> getPks(FileType referencedFileType) {
+  public List<String> getPks(@NonNull final FileType referencedFileType) {
     return pks.get(referencedFileType);
   }
 
   @JsonIgnore
-  public List<String> getFks(FileType referencingFileType) {
+  public List<String> getFks(@NonNull final FileType referencingFileType) {
     return fks.get(referencingFileType);
   }
 
   @JsonIgnore
-  public FileType getReferencedFileType(FileType referencingFileType) {
+  public FileType getReferencedFileType(@NonNull final FileType referencingFileType) {
     return getJoin(referencingFileType).target;
   }
 
   @JsonIgnore
-  public boolean isInnerJoin(FileType referencingFileType) {
+  public boolean isInnerJoin(@NonNull final FileType referencingFileType) {
     return joins.get(referencingFileType).innerJoin;
   }
 
-  private JoinModel getJoin(FileType referencingFileType) {
+  private JoinModel getJoin(@NonNull final FileType referencingFileType) {
     return joins.get(referencingFileType);
   }
 
   @JsonIgnore
-  private Map<String, FileModel.FieldModel> getFields(final FileType fileType) {
+  private Map<String, FileModel.FieldModel> getFields(@NonNull final FileType fileType) {
     return files.get(fileType).fields;
   }
 
-  private static Predicate<FileModel.FieldModel> HAS_MAPPING = new Predicate<FileModel.FieldModel>() {
+  private static Predicate<FileModel.FieldModel> hasMapping() {
+    return new Predicate<FileModel.FieldModel>() {
 
-    @Override
-    public boolean apply(FileModel.FieldModel model) {
-      return model.mapping.isPresent();
-    }
+      @Override
+      public boolean apply(FileModel.FieldModel model) {
+        return model.mapping.isPresent();
+      }
 
-  };
+    };
+  }
 
-  private static Function<FileModel.FieldModel, Optional<Map<String, String>>> TO_OPTIONAL_MAP =
-      new Function<FileModel.FieldModel, Optional<Map<String, String>>>() {
+  private static Function<FileModel.FieldModel, Optional<Map<String, String>>> toOptionalMap() {
+    return new Function<FileModel.FieldModel, Optional<Map<String, String>>>() {
 
-        @Override
-        public Optional<Map<String, String>> apply(FileModel.FieldModel model) {
-          return model.mapping;
-        }
+      @Override
+      public Optional<Map<String, String>> apply(FileModel.FieldModel model) {
+        return model.mapping;
+      }
 
-      };
+    };
+  }
 
-  private static Function<FileModel.FieldModel, Map<String, String>> TO_PRESENT_MAP =
-      new Function<FileModel.FieldModel, Map<String, String>>() {
+  private static Function<FileModel.FieldModel, Map<String, String>> toPresentMap() {
+    return new Function<FileModel.FieldModel, Map<String, String>>() {
 
-        @Override
-        public Map<String, String> apply(FileModel.FieldModel model) {
-          checkArgument(model.mapping.isPresent(),
-              "Expecting to find mapping");
-          return model.mapping.get();
-        }
+      @Override
+      public Map<String, String> apply(FileModel.FieldModel model) {
+        checkArgument(model.mapping.isPresent(),
+            "Expecting to find mapping");
 
-      };
+        return model.mapping.get();
+      }
 
-  private static Function<FileModel.FieldModel, ValueType> TO_VALUE_TYPE =
-      new Function<FileModel.FieldModel, ValueType>() {
+    };
+  }
 
-        @Override
-        public ValueType apply(FileModel.FieldModel model) {
-          return model.type;
-        }
+  private static Function<FileModel.FieldModel, ValueType> toValueType() {
+    return new Function<FileModel.FieldModel, ValueType>() {
 
-      };
+      @Override
+      public ValueType apply(FileModel.FieldModel model) {
+        return model.type;
+      }
+
+    };
+  }
 
 }

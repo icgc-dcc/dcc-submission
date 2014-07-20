@@ -19,7 +19,12 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collection;
 import java.util.List;
+
+import lombok.NonNull;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Values with a special meaning.
@@ -31,8 +36,15 @@ public class SpecialValue {
    */
   public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
 
-  public static final String MISSING_CODE1 = "-777";
-  public static final String MISSING_CODE2 = "-888";
+  /**
+   * See http://docs.icgc.org/dcc-data-element-specifications.
+   */
+  public static final String VERIFIED_UNKNOWN_CODE = "-777";
+
+  /**
+   * See http://docs.icgc.org/dcc-data-element-specifications.
+   */
+  public static final String NOT_APPLICABLE_CODE = "-888";
 
   /**
    * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
@@ -42,14 +54,35 @@ public class SpecialValue {
   /**
    * Values representing absent values.
    * <p>
-   * "-999" has been deprecated {@link ForbiddenValuesFunction}
+   * "-999" has been deprecated ForbiddenValuesFunction.
    */
-  public static final List<String> MISSING_CODES =
-      newArrayList(MISSING_CODE1, MISSING_CODE2, LEGACY_CODE);
+  public static final Collection<String> MISSING_CODES = ImmutableList.of(
+      VERIFIED_UNKNOWN_CODE,
+      NOT_APPLICABLE_CODE);
+
+  /**
+   * Values representing absent values as well as the legacy code.
+   */
+  public static final Collection<String> FULL_MISSING_CODES = ImmutableList.<String> builder()
+      .addAll(MISSING_CODES)
+      .add(LEGACY_CODE)
+      .build();
 
   /**
    * Value used to represent "nothing" in cascading {@link Tuple}s.
    */
   public static final Object NO_VALUE = null;
+
+  public static boolean isMissingCode(@NonNull final String value) {
+    return MISSING_CODES.contains(value);
+  }
+
+  public static boolean isFullMissingCode(@NonNull final String value) {
+    return FULL_MISSING_CODES.contains(value);
+  }
+
+  public static boolean isDeprecatedValue(@NonNull final String value) {
+    return DEPRECATED_VALUES.contains(value);
+  }
 
 }

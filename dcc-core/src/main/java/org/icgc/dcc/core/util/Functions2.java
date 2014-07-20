@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,38 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs;
+package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.core.util.FsConfig.FS_URL;
-import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
+import com.google.common.base.Function;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.typesafe.config.Config;
+/**
+ * Util methods for {@link Function}.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class Functions2 {
 
-@Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
-public class SubmissionFileSystemProvider implements Provider<FileSystem> {
+  /**
+   * Somehow guava's forces you to have {@link Object} as input.
+   */
+  public final static <T, Constant> Function<T, Constant> constant(@NonNull final Constant constant) {
 
-  @NonNull
-  private final Config config;
-  @NonNull
-  private final Configuration configuration;
+    return new Function<T, Constant>() {
 
-  @Override
-  public FileSystem get() {
-    log.info("Hadoop configuration = {}", getConfigurationDescription(configuration));
+      @Override
+      public Constant apply(T t) {
+        return constant;
+      }
 
-    return getFileSystem(
-        configuration,
-        config.getString(FS_URL));
+    };
+
   }
-
 }

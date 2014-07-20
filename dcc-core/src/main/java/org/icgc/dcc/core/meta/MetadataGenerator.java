@@ -24,7 +24,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.DictionaryResolver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -35,7 +35,7 @@ public class MetadataGenerator {
   private final DictionaryResolver resolver;
 
   public String generate() {
-    val dictionary = resolver.getDictionary();
+    val dictionary = resolver.get();
 
     StringBuilder b = new StringBuilder();
     b.append("package org.icgc.dcc.core.meta\n\n");

@@ -22,11 +22,11 @@ import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.Path.SEPARATOR;
 import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.util.FsConfig.FS_ROOT;
+import static org.icgc.dcc.core.util.FsConfig.FS_URL;
 import static org.icgc.dcc.core.util.Joiners.DOT;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.FS_DEFAULT_FS;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.util.Collection;
 
@@ -39,7 +39,7 @@ import lombok.val;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.util.ArtifactoryDictionaryResolver;
+import org.icgc.dcc.core.util.resolver.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -53,6 +53,7 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
@@ -140,7 +141,7 @@ public class NomalizationValidationContext extends AbstractValidationContext {
   @SneakyThrows
   public Dictionary getDictionary() {
     // Deserialize
-    val objectNode = new ArtifactoryDictionaryResolver().getDictionary(DICTIONARY_VERSION);
+    val objectNode = new ArtifactoryDictionaryResolver().get(Optional.of(DICTIONARY_VERSION));
     val reader = new ObjectMapper().reader(Dictionary.class);
     Dictionary dictionary = reader.readValue(objectNode);
 

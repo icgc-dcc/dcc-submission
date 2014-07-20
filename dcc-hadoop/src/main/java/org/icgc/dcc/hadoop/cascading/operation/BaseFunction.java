@@ -15,46 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.hadoop.cascading.operation;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
-import static org.icgc.dcc.core.util.Resolver.Resolvers.getContent;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.tuple.Fields;
 
-import org.icgc.dcc.core.util.Resolver.DictionaryResolver;
+/**
+ * Base class to help with creating anonymous {@link BaseOperation}/{@link Function} classes.
+ */
+public abstract class BaseFunction<Context> extends BaseOperation<Context> implements Function<Context> {
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Optional;
-
-@AllArgsConstructor
-@NoArgsConstructor
-public class RestfulDictionaryResolver implements DictionaryResolver {
-
-  private String url = DEFAULT_DICTIONARY_URL;
-
-  @Override
-  @SneakyThrows
-  public ObjectNode getDictionary() {
-    return getDictionary(Optional.<String> absent());
+  public BaseFunction(Fields fields) {
+    super(fields);
   }
 
-  @Override
-  @SneakyThrows
-  public ObjectNode getDictionary(Optional<String> version) {
-    return new ObjectMapper().readValue(
-        getContent(
-        getFullUrl(version)),
-        ObjectNode.class);
+  public BaseFunction(int numArgs, Fields fields) {
+    super(numArgs, fields);
   }
 
-  @Override
-  public String getFullUrl(Optional<String> version) {
-    return url + (version.isPresent() ?
-        PATH.join(DictionaryResolver.PATH_SPECIFIC, version.get()) :
-        DictionaryResolver.PATH_CURRENT);
+  public BaseFunction(int numArgs) {
+    super(numArgs);
   }
 
 }

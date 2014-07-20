@@ -28,7 +28,7 @@ import javax.validation.Valid;
 import lombok.ToString;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.core.util.Guavas;
+import org.icgc.dcc.core.util.SerializableMaps;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.mongodb.morphia.annotations.Entity;
@@ -100,7 +100,7 @@ public class CodeList extends BaseEntity implements HasName {
 
   @JsonIgnore
   public Map<String, String> asMap() {
-    return Guavas.<Term, String, String> transformListToMap(
+    return SerializableMaps.<Term, String, String> transformListToMap(
         terms,
         new Function<Term, String>() {
 
