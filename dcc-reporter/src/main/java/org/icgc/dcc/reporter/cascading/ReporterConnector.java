@@ -47,8 +47,8 @@ public class ReporterConnector {
 
   private static final String CONCURRENCY = String.valueOf(5);
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
-  private static final String nn = Main.isLocal() ? "file://localhost" : "***REMOVED***";
-  private static final String jt = Main.isLocal() ? "localhost" : "***REMOVED***";
+  private static final String NAMENODE = Main.isLocal() ? "file://localhost" : "***REMOVED***";
+  private static final String JOB_TRACKER = Main.isLocal() ? "localhost" : "***REMOVED***";
   
   @SneakyThrows
   public static FileSystem getLocalFileSystem() {
@@ -102,8 +102,8 @@ public class ReporterConnector {
     flowProperties = HadoopProperties.enableIntermediateMapOutputCompression(
         HadoopProperties.setAvailableCodecs(flowProperties),
         HadoopConstants.LZO_CODEC_PROPERTY_VALUE);
-    flowProperties.put("fs.defaultFS", nn);
-    flowProperties.put("mapred.job.tracker", jt);
+    flowProperties.put("fs.defaultFS", NAMENODE);
+    flowProperties.put("mapred.job.tracker", JOB_TRACKER);
     flowProperties.put("mapred.child.java.opts", "-Xmx6g");
     flowProperties.put("io.sort.mb", "2000");
     flowProperties.put("io.sort.factor", "20");

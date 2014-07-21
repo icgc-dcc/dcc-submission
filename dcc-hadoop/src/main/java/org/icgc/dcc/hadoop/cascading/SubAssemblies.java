@@ -637,8 +637,8 @@ public class SubAssemblies {
 
     public ReorderFields(
         @NonNull final Pipe pipe,
-        @NonNull final Fields unorderedFields) {
-      setTails(process(pipe, unorderedFields));
+        @NonNull final Fields orderedFields) {
+      setTails(process(pipe, orderedFields));
     }
 
     private static Each process(

@@ -38,6 +38,7 @@ import cascading.pipe.assembly.AggregateBy;
 import cascading.pipe.assembly.SumBy;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 public class Table1ClinicalProcessing extends SubAssembly {
@@ -68,7 +69,7 @@ public class Table1ClinicalProcessing extends SubAssembly {
   private static Iterable<AggregateBy> getSumBys(@NonNull final Pipe clinicalPipe) {
     return ImmutableList.copyOf(transform(
         TABLE1_COUNT_FIELDS,
-        new com.google.common.base.Function<Fields, AggregateBy>() {
+        new Function<Fields, AggregateBy>() {
 
           @Override
           public AggregateBy apply(Fields countField) {
