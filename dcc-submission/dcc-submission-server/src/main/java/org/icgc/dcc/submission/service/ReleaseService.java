@@ -625,14 +625,7 @@ public class ReleaseService extends AbstractService {
     releaseRepository.updateRelease(releaseName, release);
   }
 
-  // @Synchronized
   public void resetSubmissions() {
-    /*
-     * val release = getNextRelease(); val filePatternToTypeMap =
-     * dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
-     * 
-     * for (val projectKey : release.getProjectKeys()) { resetSubmission(release, projectKey, filePatternToTypeMap); }
-     */
     val projectKeys = ImmutableList.<String> copyOf(getNextRelease().getProjectKeys());
     resetSubmissions(projectKeys.toArray(new String[0]));
   }

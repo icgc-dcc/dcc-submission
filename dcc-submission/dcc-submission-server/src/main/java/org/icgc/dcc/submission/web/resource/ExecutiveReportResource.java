@@ -23,65 +23,24 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.repository.CodeListRepository;
-import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.service.ExecutiveReportService;
-import org.icgc.dcc.submission.service.ReleaseService;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-@Slf4j
 @Path("executive_report")
 public class ExecutiveReportResource {
 
   @Inject
   private ExecutiveReportService service;
 
-  // test
-  @Inject
-  private ReleaseService releaseService;
-  @Inject
-  private DictionaryRepository dictionaryRepository;
-  @Inject
-  private CodeListRepository codelistRepository;
-  @Inject
-  private DccFileSystem dccFileSystem;
-
-  @GET
-  @Path("/test")
-  public Response testStuff() {
-
-    ObjectMapper mapper = new ObjectMapper();
-    final String _releaseName = "release1";
-    val _projectKeys = ImmutableSet.<String> of("project.1");
-    val release = releaseService.getReleaseByName("release1");
-    log.info(release.getDictionaryVersion());
-
-    val dictionaryNode =
-        mapper.valueToTree(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()));
-    val codelistNode = mapper.valueToTree(codelistRepository.findCodeLists());
-    val releasePath = dccFileSystem.buildReleaseStringPath(_releaseName);
-
-    // This spawns a separate thread
-    service.generateReport(_releaseName, _projectKeys, releasePath, dictionaryNode, codelistNode);
-    return Response.ok("Stuff should be running in the background still").build();
-  }
-
   @GET
   @Path("{releaseName}/{project}")
-  public Response getReport(
-      @PathParam("releaseName") String releaseName,
-      @PathParam("project") String projects
-      ) {
-
-    // FIXME: probably want a more roboust splitter
-    val reports = service.getProjectReport(releaseName, Lists.newArrayList(projects.split(",")));
+  public Response getReport(@PathParam("releaseName") String releaseName, @PathParam("project") String projects) {
+    val splitter = Splitter.on(",").trimResults();
+    val reports = service.getProjectReport(releaseName, Lists.newArrayList(splitter.split(projects)));
     return Response.ok(reports).build();
   }
 
@@ -89,7 +48,6 @@ public class ExecutiveReportResource {
   @Path("{releaseName}")
   public Response test(@PathParam("releaseName") String releaseName) {
     val reports = service.getExecutiveReport(releaseName);
-
     return Response.ok(reports).build();
   }
 }
