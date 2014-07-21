@@ -665,10 +665,10 @@ public class SubAssemblies {
                 @NonNull final TupleEntry entry,
                 @NonNull final Fields orderedFields) {
               val tuple = new Tuple();
-              for (Comparable<?> fieldsComparable : orderedFields) {
-                checkState(contains(entry, fieldsComparable),
-                    "Expecting field '%s' to be present within '%s'", fieldsComparable, entry);
-                tuple.add(entry.getObject(fieldsComparable));
+              for (val fieldName : getFieldNames(orderedFields)) {
+                checkState(contains(entry, fieldName),
+                    "Expecting field '%s' to be present within '%s'", fieldName, entry);
+                tuple.add(entry.getObject(fieldName));
               }
 
               return tuple;

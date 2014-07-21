@@ -93,7 +93,7 @@ public final class TupleEntries {
    * See {@link #contains(TupleEntry, Fields)}.
    */
   public static boolean contains(TupleEntry entry, String fieldName) {
-    return contains(entry, fieldName);
+    return contains(entry, (Comparable<?>) fieldName);
   }
 
   /**
