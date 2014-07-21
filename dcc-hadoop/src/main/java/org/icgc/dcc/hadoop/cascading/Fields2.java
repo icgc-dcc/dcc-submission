@@ -79,6 +79,12 @@ public final class Fields2 {
     return fields;
   }
 
+  public static Fields getField(Comparable<?> fieldComparable) {
+    return fieldComparable instanceof Fields ?
+        (Fields) fieldComparable :
+        new Fields(fieldComparable);
+  }
+
   public static Fields fields(Iterable<String> fieldNames) {
     return fields(newArrayList(fieldNames));
   }

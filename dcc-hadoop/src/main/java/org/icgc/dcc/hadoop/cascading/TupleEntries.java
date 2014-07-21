@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getField;
 
 import java.util.List;
 
@@ -89,12 +90,19 @@ public final class TupleEntries {
   }
 
   /**
-   * Checks whether a {@link TupleEntry} contains a given {@link Fields}, based on the field name.
+   * See {@link #contains(TupleEntry, Fields)}.
+   */
+  public static boolean contains(TupleEntry entry, String fieldName) {
+    return contains(entry, fieldName);
+  }
+
+  /**
+   * Checks whether a {@link TupleEntry} contains a given field {@link Comparable}.
    * <p>
    * There doesn't seem to be a built-in way to do that in cascading as of version 2.1.5.
    */
-  public static boolean contains(TupleEntry entry, String fieldName) {
-    return entry.getFields().contains(new Fields(fieldName));
+  public static boolean contains(TupleEntry entry, Comparable<?> fieldsComparable) {
+    return entry.getFields().contains(getField(fieldsComparable));
   }
 
   /**

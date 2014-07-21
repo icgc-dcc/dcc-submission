@@ -24,42 +24,33 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.TABLE1_COUNT_FIELDS;
+import static org.icgc.dcc.reporter.ReporterFields.TABLE1_RESULT_FIELDS;
 import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
-
-import java.util.List;
-
 import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.AggregateBy;
-import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.SumBy;
 import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
 
 import com.google.common.collect.ImmutableList;
 
 public class Table1ClinicalProcessing extends SubAssembly {
 
-  Table1ClinicalProcessing(Pipe preComputationTable) {
+  Table1ClinicalProcessing(@NonNull final Pipe preComputationTable) {
     setTails(process(preComputationTable));
   }
 
-  private static Pipe process(Pipe preComputationTable) {
+  private static Pipe process(@NonNull final Pipe preComputationTable) {
     val clinicalPipe = new Pipe(
         CLINICAL_CORE_TYPE.getTypeName(),
         preComputationTable);
 
-    return new ReorderFields(
+    return new SubAssemblies.ReorderFields(
         new SubAssemblies.Insert(
             keyValuePair(
                 TYPE_FIELD,
@@ -69,10 +60,11 @@ public class Table1ClinicalProcessing extends SubAssembly {
                 PROJECT_ID_FIELD,
                 toArray(
                     getSumBys(clinicalPipe),
-                    AggregateBy.class))));
+                    AggregateBy.class))),
+        TABLE1_RESULT_FIELDS);
   }
 
-  private static List<AggregateBy> getSumBys(@NonNull final Pipe clinicalPipe) {
+  private static Iterable<AggregateBy> getSumBys(@NonNull final Pipe clinicalPipe) {
     return ImmutableList.copyOf(transform(
         TABLE1_COUNT_FIELDS,
         new com.google.common.base.Function<Fields, AggregateBy>() {
@@ -88,80 +80,6 @@ public class Table1ClinicalProcessing extends SubAssembly {
           }
 
         }));
-  }
-
-  static class ReorderFields extends SubAssembly {
-
-    public ReorderFields(Pipe pipe) {
-      setTails(process(pipe));
-    }
-
-    private static Each process(Pipe p1) {
-      return new Each(
-          new Rename(p1,
-              new Fields(
-                  "donor_id_count",
-                  "specimen_id_count",
-                  "analyzed_sample_id_count",
-                  "_project_id",
-                  "analysis_observation_count",
-                  "_type"
-              ),
-              new Fields(
-                  "tmp.donor_id_count",
-                  "tmp.specimen_id_count",
-                  "tmp.analyzed_sample_id_count",
-                  "tmp._project_id",
-                  "tmp.analysis_observation_count",
-                  "tmp._type"
-              )),
-          new Fields(
-              "tmp.donor_id_count",
-              "tmp.specimen_id_count",
-              "tmp.analyzed_sample_id_count",
-              "tmp._project_id",
-              "tmp.analysis_observation_count",
-              "tmp._type"
-          ),
-          new MyFunction(),
-          Fields.RESULTS);
-    }
-
-    private static class MyFunction extends BaseOperation<Void> implements Function<Void> {
-
-      MyFunction() {
-        super(new Fields(
-
-            "donor_id_count",
-            "specimen_id_count",
-            "analyzed_sample_id_count",
-            "analysis_observation_count",
-            "_project_id",
-            "_type"
-            ));
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-        val entry = functionCall.getArguments();
-        // Do something
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(
-
-                entry.getObject("tmp.donor_id_count"),
-                entry.getObject("tmp.specimen_id_count"),
-                entry.getObject("tmp.analyzed_sample_id_count"),
-                entry.getObject("tmp.analysis_observation_count"),
-                entry.getObject("tmp._project_id"),
-                entry.getObject("tmp._type")
-
-                ));
-      }
-
-    }
   }
 
 }

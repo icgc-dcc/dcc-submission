@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.reporter;
 
+import static cascading.tuple.Fields.NONE;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
@@ -65,6 +66,18 @@ public class ReporterFields {
       SPECIMEN_UNIQUE_COUNT_FIELD,
       SAMPLE_UNIQUE_COUNT_FIELD,
       _ANALYSIS_OBSERVATION_COUNT_FIELD);
+
+  /**
+   * Order matters.
+   */
+  public static final Fields TABLE1_RESULT_FIELDS =
+      NONE
+          .append(DONOR_UNIQUE_COUNT_FIELD)
+          .append(SPECIMEN_UNIQUE_COUNT_FIELD)
+          .append(SAMPLE_UNIQUE_COUNT_FIELD)
+          .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+          .append(PROJECT_ID_FIELD)
+          .append(TYPE_FIELD);
 
   public static Fields getTemporaryCountByFields(OutputType outputType) {
     return getTemporaryField(outputType, PROJECT_ID_FIELD)
