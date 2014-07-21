@@ -35,6 +35,8 @@ public enum ClinicalType implements DataType {
   CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
   CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
 
+  public static String CLINICAL = "clinical";
+
   private ClinicalType(String typeName) {
     this.typeName = typeName;
   }

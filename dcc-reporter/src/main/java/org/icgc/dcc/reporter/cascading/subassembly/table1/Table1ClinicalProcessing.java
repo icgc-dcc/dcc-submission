@@ -19,6 +19,7 @@ package org.icgc.dcc.reporter.cascading.subassembly.table1;
 
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
@@ -54,7 +55,7 @@ public class Table1ClinicalProcessing extends SubAssembly {
         new SubAssemblies.Insert(
             keyValuePair(
                 TYPE_FIELD,
-                CLINICAL_CORE_TYPE.getTypeName()),
+                CLINICAL),
             new AggregateBy(
                 clinicalPipe,
                 PROJECT_ID_FIELD,
