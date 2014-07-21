@@ -24,11 +24,14 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
+import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import cascading.tuple.Fields;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Fields pertaining to the reporter.
@@ -54,5 +57,22 @@ public class ReporterFields {
   public static final Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
   public static final Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
   public static final Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
+
+  public static final Fields COUNT_BY_FIELDS = PROJECT_ID_FIELD.append(TYPE_FIELD);
+
+  public static final Iterable<Fields> TABLE1_COUNT_FIELDS = ImmutableList.of(
+      DONOR_UNIQUE_COUNT_FIELD,
+      SPECIMEN_UNIQUE_COUNT_FIELD,
+      SAMPLE_UNIQUE_COUNT_FIELD,
+      _ANALYSIS_OBSERVATION_COUNT_FIELD);
+
+  public static Fields getTemporaryCountByFields(OutputType outputType) {
+    return getTemporaryField(outputType, PROJECT_ID_FIELD)
+        .append(getTemporaryField(outputType, TYPE_FIELD));
+  }
+
+  public static Fields getTemporaryField(OutputType outputType, Fields field) {
+    return getRedundantFieldCounterpart(outputType, checkFieldsCardinalityOne(field));
+  }
 
 }

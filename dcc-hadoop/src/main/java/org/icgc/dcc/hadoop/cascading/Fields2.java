@@ -163,6 +163,18 @@ public final class Fields2 {
     return new Fields(ADD_REDUNDANT_PREFIX.apply(fieldName));
   }
 
+  public static Fields getRedundantFieldCounterpart(
+      @NonNull final Enum<?> type,
+      @NonNull final Fields field) {
+    return getRedundantFieldCounterpart(type, getFieldName(checkFieldsCardinalityOne(field)));
+  }
+
+  public static Fields getRedundantFieldCounterpart(
+      @NonNull final Enum<?> type,
+      @NonNull final String fieldName) {
+    return new Fields(ADD_REDUNDANT_PREFIX.apply(UNDERSCORE.join(type.name().toLowerCase(), fieldName)));
+  }
+
   /**
    * There does not seem to be a built-in way...
    */

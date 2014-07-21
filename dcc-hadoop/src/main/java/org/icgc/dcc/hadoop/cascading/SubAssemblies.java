@@ -263,7 +263,7 @@ public class SubAssemblies {
    */
   public static class Insert extends SubAssembly {
 
-    public Insert(Entry<Fields, Object> keyValuePair, Pipe pipe) {
+    public Insert(Entry<Fields, Object> keyValuePair, Pipe pipe) { // TODO: vararg entries
       setTails(
 
       //

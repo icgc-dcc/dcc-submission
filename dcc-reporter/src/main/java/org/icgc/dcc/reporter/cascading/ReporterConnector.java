@@ -47,7 +47,9 @@ public class ReporterConnector {
 
   private static final String CONCURRENCY = String.valueOf(5);
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
-
+  private static final String nn = Main.isLocal() ? "file://localhost" : "***REMOVED***";
+  private static final String jt = Main.isLocal() ? "localhost" : "***REMOVED***";
+  
   @SneakyThrows
   public static FileSystem getLocalFileSystem() {
     return FileSystem.get(new URI("file:///"), new Configuration());
@@ -80,6 +82,7 @@ public class ReporterConnector {
     return new CascadeConnector().connect(cascadeDef);
   }
 
+  
   /**
    * TODO: refactoring with the other components.
    */
@@ -96,12 +99,11 @@ public class ReporterConnector {
     AppProps.setApplicationJarClass(flowProperties, Reporter.CLASS);
     AppProps.setApplicationName(flowProperties, Reporter.CLASS.getSimpleName());
     AppProps.setApplicationVersion(flowProperties, getCommitId());
-    // setMaxConcurrentSteps(flowProperties, CONCURRENCY);
     flowProperties = HadoopProperties.enableIntermediateMapOutputCompression(
         HadoopProperties.setAvailableCodecs(flowProperties),
         HadoopConstants.LZO_CODEC_PROPERTY_VALUE);
-    flowProperties.put("fs.defaultFS", "***REMOVED***");
-    flowProperties.put("mapred.job.tracker", "***REMOVED***");
+    flowProperties.put("fs.defaultFS", nn);
+    flowProperties.put("mapred.job.tracker", jt);
     flowProperties.put("mapred.child.java.opts", "-Xmx6g");
     flowProperties.put("io.sort.mb", "2000");
     flowProperties.put("io.sort.factor", "20");

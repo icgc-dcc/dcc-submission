@@ -3,12 +3,14 @@ package org.icgc.dcc.reporter.cascading.subassembly;
 import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
 import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.reporter.OutputType.DONOR;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.REDUNDANT_PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.getTemporaryField;
 
 import java.util.List;
 import java.util.Set;
@@ -17,7 +19,6 @@ import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SpecialValue;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
@@ -96,12 +97,13 @@ public class Table2 extends SubAssembly {
         new SumBy(
             new Retain(
                 pipe,
-                PROJECT_ID_FIELD.append(DONOR_UNIQUE_COUNT_FIELD)),
-            PROJECT_ID_FIELD,
+                getTemporaryField(DONOR, PROJECT_ID_FIELD)
+                    .append(DONOR_UNIQUE_COUNT_FIELD)),
+            getTemporaryField(DONOR, PROJECT_ID_FIELD),
             DONOR_UNIQUE_COUNT_FIELD,
             DONOR_UNIQUE_COUNT_FIELD,
             long.class),
-        PROJECT_ID_FIELD,
+        getTemporaryField(DONOR, PROJECT_ID_FIELD),
         REDUNDANT_PROJECT_ID_FIELD);
   }
 
