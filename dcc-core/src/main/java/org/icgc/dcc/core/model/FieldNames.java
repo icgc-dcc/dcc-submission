@@ -19,9 +19,8 @@ package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_MATCHED_SAMPLE_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.FormatUtils._;
 import lombok.NoArgsConstructor;
 
@@ -124,12 +123,13 @@ public final class FieldNames {
     public static final String GENE_ID = "_gene_id";
     public static final String TRANSCRIPT_ID = "_transcript_id";
 
-    // Arrays
-    public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
-    public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
     public static final String OBSERVATION_ARRAY_NAME = "observation";
 
+    public static final String AVAILABLE_RAW_SEQUENCE_DATA = "available_raw_sequence_data";
+    public static final String SUMMARY = "_summary";
+
+    public static final String SURROGATE_MATCHED_SAMPLE_ID = _("_%s", SUBMISSION_MATCHED_SAMPLE_ID);
   }
 
   /**
@@ -174,7 +174,7 @@ public final class FieldNames {
    */
   public static final String DONOR_ID = IdentifierFieldNames.SURROGATE_DONOR_ID;
 
-  public static final String DONOR_SUMMARY = "_summary";
+  public static final String DONOR_SUMMARY = LoaderFieldNames.SUMMARY;
   public static final String DONOR_SUMMARY_REPOSITORY = "repository";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS_SAMPLE_COUNTS =
@@ -192,9 +192,8 @@ public final class FieldNames {
   public static final String DONOR_SPECIMEN_ID = IdentifierFieldNames.SURROGATE_SPECIMEN_ID;
   public static final String DONOR_SAMPLE = "sample"; // TODO: reuse loader's
   public static final String DONOR_SAMPLE_ID = IdentifierFieldNames.SURROGATE_SAMPLE_ID;
-  public static final String DONOR_CONTROL_SAMPLE_ID = "_matched_sample_id";
   public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
-  public static final String DONOR_SAMPLE_SEQUENCE_DATA = "available_raw_sequence_data";
+  public static final String DONOR_SAMPLE_SEQUENCE_DATA = LoaderFieldNames.AVAILABLE_RAW_SEQUENCE_DATA;
 
   /**
    * CGHub field names.
@@ -239,7 +238,7 @@ public final class FieldNames {
    */
   public static final String OBSERVATION_ID = MONGO_INTERNAL_ID;
   public static final String OBSERVATION_MUTATION_ID = IdentifierFieldNames.SURROGATE_MUTATION_ID;
-  public static final String OBSERVATION_TYPE = "_type";
+  public static final String OBSERVATION_TYPE = LoaderFieldNames.OBSERVATION_TYPE;
   public static final String OBSERVATION_DONOR = "donor";
   public static final String OBSERVATION_DONOR_ID = IdentifierFieldNames.SURROGATE_DONOR_ID;
   public static final String OBSERVATION_PROJECT = "project";

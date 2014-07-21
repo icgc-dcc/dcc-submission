@@ -36,7 +36,7 @@ import org.icgc.dcc.core.model.FieldNames.LoaderFieldNames;
  */
 @RequiredArgsConstructor
 @Getter
-public enum ReleaseCollection {
+public enum ReleaseCollection implements Identifiable {
 
   RELEASE_COLLECTION("Release", newArrayList(RELEASE_ID)),
   PROJECT_COLLECTION("Project", newArrayList(LoaderFieldNames.PROJECT_ID)),
@@ -51,7 +51,7 @@ public enum ReleaseCollection {
   /**
    * The name of the collection.
    */
-  private final String name;
+  private final String name; // TODO: replace with "id"
 
   /**
    * The primary key of the collection.
@@ -73,6 +73,11 @@ public enum ReleaseCollection {
 
   private String getFirstKey() {
     return primaryKey.get(0);
+  }
+
+  @Override
+  public String getId() {
+    return getName();
   }
 
   @Override

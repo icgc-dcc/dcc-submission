@@ -22,13 +22,16 @@ import static org.icgc.dcc.core.util.Joiners.INDENT;
 import static org.icgc.dcc.core.util.Splitters.NEWLINE;
 
 import java.io.File;
+import java.util.List;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Common object mappers.
@@ -39,13 +42,12 @@ public final class Jackson {
   public static final ObjectMapper DEFAULT = new ObjectMapper();
   public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
 
-  @SneakyThrows
-  public static String toJsonPrettyString(String jsonString) {
-    return PRETTY_WRITTER.writeValueAsString(DEFAULT.readTree(jsonString));
+  public static String formatPrettyJson(String jsonString) {
+    return formatPrettyJson(toJsonNode(jsonString));
   }
 
   @SneakyThrows
-  public static String toJsonPrettyString(Object object) {
+  public static String formatPrettyJson(Object object) {
     return PRETTY_WRITTER.writeValueAsString(object);
   }
 
@@ -58,8 +60,18 @@ public final class Jackson {
     return DEFAULT.readTree(file);
   }
 
-  public static <T> JsonNode toJsonNode(T t) {
+  public static <T> JsonNode to(T t) {
     return DEFAULT.convertValue(t, JsonNode.class);
+  }
+
+  public static <T> T from(JsonNode jsonNode, Class<T> type) {
+    return DEFAULT.convertValue(jsonNode, type);
+  }
+
+  public static <T> List<T> from(ArrayNode arrayNode, Class<T> type) {
+    return DEFAULT.convertValue(
+        arrayNode,
+        new TypeReference<List<T>>() {});
   }
 
   public static <T> String formatPrettyLog(String message, T t) {
@@ -67,7 +79,12 @@ public final class Jackson {
         message,
         INDENT.join(
             NEWLINE.split(
-                toJsonPrettyString(t))));
+                formatPrettyJson(t))));
+  }
+
+  @SneakyThrows
+  private static JsonNode toJsonNode(String jsonString) {
+    return DEFAULT.readTree(jsonString);
   }
 
 }

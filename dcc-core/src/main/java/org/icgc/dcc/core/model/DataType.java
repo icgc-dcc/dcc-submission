@@ -64,6 +64,8 @@ public interface DataType {
 
   FeatureType asFeatureType();
 
+  FileType getTopLevelFileType();
+
   public static class DataTypes {
 
     /**
@@ -167,7 +169,7 @@ public interface DataType {
     /**
      * Checks whether a particular schema is small enough to be stored in mongodb.
      */
-    public static boolean isMongoSinkable(DataType type) {
+    public static boolean isMongoSinkable(DataType type) { // TODO: non-static
       return MONGO_LOADED_FEATURE_TYPES.contains(type);
     }
 
@@ -189,7 +191,7 @@ public interface DataType {
     /**
      * Determines whether the type provided is one that is experimental and aggregated, or not.
      */
-    public static boolean isAggregatedType(DataType dataType) {
+    public static boolean isAggregatedType(DataType dataType) { // TODO: non-static
       return dataType.isFeatureType() &&
           FeatureTypes.isAggregatedType(dataType.asFeatureType());
     }

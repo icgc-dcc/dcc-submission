@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.validation.first;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.ValueType.INTEGER;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
-import static org.icgc.dcc.submission.dictionary.model.ValueType.INTEGER;
 import static org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType.BZIP2;
 import static org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType.GZIP;
 import static org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType.PLAIN_TEXT;

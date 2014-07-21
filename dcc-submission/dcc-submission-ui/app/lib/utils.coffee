@@ -203,6 +203,8 @@ found on host #{host}"
         "<span class='error'>" + "<i class='icon-exclamation-sign'></i> " + state + "</span>"
       when "NOT VALIDATED"
         "<span><i class='icon-question-sign'></i> " + state + "</span>"
+      when "SIGNED OFF"
+        "<span class='valid'><i class='icon-lock'></i> " + state + "</span>"
       else
         state
 

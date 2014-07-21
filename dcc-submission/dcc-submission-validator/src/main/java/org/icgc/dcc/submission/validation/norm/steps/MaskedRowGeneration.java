@@ -21,8 +21,7 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.normalization.Marking.CONTROLLED;
-import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
+import static org.icgc.dcc.core.model.Marking.CONTROLLED;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MASKED;
 import static org.icgc.dcc.submission.validation.norm.steps.PreMarking.MARKING_FIELD;
@@ -34,8 +33,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.Marking;
+import org.icgc.dcc.core.model.SpecialValue;
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
-import org.icgc.dcc.submission.normalization.Marking;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
@@ -113,8 +113,8 @@ public final class MaskedRowGeneration implements NormalizationStep, OptionalSte
     private Tuple mask(TupleEntry copy, String referenceGenomeAllele) {
 
       // Empty the two genotype fields
-      copy.set(CONTROL_GENOTYPE_FIELD, NO_VALUE);
-      copy.set(TUMOUR_GENOTYPE_FIELD, NO_VALUE);
+      copy.set(CONTROL_GENOTYPE_FIELD, SpecialValue.NO_VALUE);
+      copy.set(TUMOUR_GENOTYPE_FIELD, SpecialValue.NO_VALUE);
 
       copy.setString(MUTATED_FROM_ALLELE_FIELD, referenceGenomeAllele);
       copy.set(MARKING_FIELD, Marking.MASKED.getTupleValue());

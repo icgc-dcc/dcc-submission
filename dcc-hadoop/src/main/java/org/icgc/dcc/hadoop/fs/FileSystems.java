@@ -21,7 +21,6 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -34,13 +33,17 @@ public final class FileSystems {
 
   @SneakyThrows
   public static FileSystem getFileSystem(String fsUrl) {
-    return FileSystem.get(getHadoopConfig(fsUrl));
+    return getFileSystem(new Configuration(), fsUrl);
   }
 
-  private static Configuration getHadoopConfig(String fsUrl) {
-    val configuration = new Configuration();
-    configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
-    return configuration;
+  @SneakyThrows
+  public static FileSystem getFileSystem(Configuration config, String fsUrl) {
+    return FileSystem.get(setFsUrl(config, fsUrl));
+  }
+
+  private static Configuration setFsUrl(Configuration config, String fsUrl) {
+    config.set(FS_DEFAULT_NAME_KEY, fsUrl);
+    return config;
   }
 
 }

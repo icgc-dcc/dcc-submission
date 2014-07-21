@@ -116,6 +116,7 @@ public class ReporterInput {
       paths = newLinkedHashSet();
       data.put(projectKey, fileType, paths);
     }
+    
     paths.add(path);
   }
 
