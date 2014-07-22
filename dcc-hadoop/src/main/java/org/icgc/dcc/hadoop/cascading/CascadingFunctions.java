@@ -25,8 +25,10 @@ import java.io.Serializable;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
+
 import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
 import cascading.operation.NoOp;
@@ -44,7 +46,7 @@ public final class CascadingFunctions {
    * {@link Function} that emits no {@link Tuple}s. It is different than {@link NoOp} because it still preserves the
    * schema (TODO: unusure why NoOp doesn't, figure it out..).
    */
-  public static final class EmitNothing extends BaseOperation<Void> implements Function<Void> {
+  public static final class EmitNothing extends BaseFunction<Void> {
 
     public EmitNothing() {
       super(ARGS);
@@ -60,7 +62,7 @@ public final class CascadingFunctions {
   /**
    * TODO
    */
-  public static final class Counter extends BaseOperation<Void> implements Function<Void> {
+  public static final class Counter extends BaseFunction<Void> {
 
     private final Enum<?> counter;
     private final long increment;
@@ -89,7 +91,7 @@ public final class CascadingFunctions {
    * <p>
    * TODO: rename to account for other types of Transformable
    */
-  public static class CloneField extends BaseOperation<Void> implements Function<Void> {
+  public static class CloneField extends BaseFunction<Void> {
 
     /**
      * Very basic for now, possibly offer more overloadings for transform()

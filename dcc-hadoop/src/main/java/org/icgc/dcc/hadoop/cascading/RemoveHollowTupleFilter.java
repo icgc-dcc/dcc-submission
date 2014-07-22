@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import org.icgc.dcc.hadoop.cascading.operation.BaseFilter;
+
 import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Filter;
 import cascading.operation.FilterCall;
 import cascading.tuple.Tuple;
 
@@ -29,7 +29,7 @@ import cascading.tuple.Tuple;
  * "hollow" because "empty" would be ambiguous with regard to whether the {@code Tuple} has elements or not, whereas we
  * care whether those elements are null or not instead.
  */
-public class RemoveHollowTupleFilter extends BaseOperation<Void> implements Filter<Void> {
+public class RemoveHollowTupleFilter extends BaseFilter<Void> {
 
   @Override
   public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
