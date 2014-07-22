@@ -360,14 +360,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   public List<DataType> getDataTypes() {
     return newArrayList(newLinkedHashSet(transform(
         getFileTypes(),
-        new Function<FileType, DataType>() {
-
-          @Override
-          public DataType apply(FileType fileType) {
-            return fileType.getDataType();
-          }
-
-        })));
+        FileType.toDataType())));
   }
 
   /**

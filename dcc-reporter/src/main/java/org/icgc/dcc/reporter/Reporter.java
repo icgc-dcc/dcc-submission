@@ -26,8 +26,9 @@ import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
-import org.icgc.dcc.reporter.cascading.subassembly.Table1;
+import org.icgc.dcc.reporter.cascading.subassembly.ProcessClinicalType;
 import org.icgc.dcc.reporter.cascading.subassembly.Table2;
+import org.icgc.dcc.reporter.cascading.subassembly.table1.Table1;
 
 import cascading.pipe.Pipe;
 
@@ -92,7 +93,7 @@ public class Reporter {
       val table1 = new Table1(preComputationTable);
       val table2 = new Table2(
           preComputationTable,
-          Table1.processDonors(preComputationTable),
+          ProcessClinicalType.donor(preComputationTable),
           mapping.keySet());
 
       table1s.put(projectKey, table1);

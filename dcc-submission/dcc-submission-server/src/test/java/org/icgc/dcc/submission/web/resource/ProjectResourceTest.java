@@ -31,10 +31,10 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.elasticsearch.common.collect.Lists;
-import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Rule;

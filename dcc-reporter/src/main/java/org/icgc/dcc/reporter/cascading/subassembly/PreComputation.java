@@ -1,7 +1,6 @@
 package org.icgc.dcc.reporter.cascading.subassembly;
 
-import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.HAS_SEQUENCING_STRATEGY;
+import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
@@ -19,6 +18,7 @@ import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
@@ -27,8 +27,6 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.HashCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
@@ -49,35 +47,22 @@ public class PreComputation extends SubAssembly {
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
 
   public PreComputation(String releaseName, String projectKey, ReporterInput inputData) {
-    setTails(process(releaseName, projectKey, inputData));
+    setTails(processProject(inputData, releaseName, projectKey));
   }
 
-  private static Pipe process(final String releaseName, final String projectKey, final ReporterInput inputData) {
+  /**
+   * Joins the clinical and observation pipes.
+   */
+  private static Pipe processProject(
+      @NonNull final ReporterInput inputData,
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
     return
 
-    // Insert release name
     new Insert(
 
         // Field/value to be inserted
         keyValuePair(RELEASE_NAME, releaseName),
-
-        //
-        processProject(inputData, projectKey));
-  }
-
-  private static Pipe processProject(final ReporterInput inputData, final String projectKey) {
-    return
-
-    new NullReplacer<String>(
-        TYPE_FIELD,
-        new NullReplacing<String>() {
-
-          @Override
-          public String get() {
-            return getValue(CLINICAL_CORE_TYPE);
-          }
-
-        },
 
         // Insert project ID
         new Insert(
@@ -171,7 +156,7 @@ public class PreComputation extends SubAssembly {
     new Insert(
 
         // Fields to insert
-        keyValuePair(TYPE_FIELD, getValue(featureType)),
+        keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
 
         //
         new ReadableHashJoin(
@@ -195,7 +180,7 @@ public class PreComputation extends SubAssembly {
                             inputData, projectKey, featureType.getMetaFileType(),
                             appendIfApplicable(
                                 META_PK_FIELDS,
-                                HAS_SEQUENCING_STRATEGY(featureType),
+                                hasSequencingStrategy(featureType),
                                 SEQUENCING_STRATEGY_FIELD))))
                 .rightJoinFields(META_PK_FIELDS)
 
@@ -280,9 +265,9 @@ public class PreComputation extends SubAssembly {
   }
 
   /**
-   * TODO: explain!
+   * Must use the {@link String} value because {@link DataType} is not a real enum (rather a composite thereof).
    */
-  private static String getValue(final DataType dataType) {
+  private static String getDataTypeValue(@NonNull final DataType dataType) {
     return dataType.getTypeName();
   }
 

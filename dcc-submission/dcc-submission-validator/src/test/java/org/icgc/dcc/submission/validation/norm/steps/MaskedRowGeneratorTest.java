@@ -21,11 +21,8 @@ import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.ch
 
 import java.util.Iterator;
 
-import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.core.model.Marking;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
-import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
-import org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;

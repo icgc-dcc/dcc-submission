@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.http;
 
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.icgc.dcc.submission.core.AbstractDccModule;
+import org.icgc.dcc.submission.service.AbstractDccModule;
 
 public class HttpModule extends AbstractDccModule {
 

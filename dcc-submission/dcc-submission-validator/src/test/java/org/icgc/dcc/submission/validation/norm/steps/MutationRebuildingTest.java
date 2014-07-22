@@ -22,7 +22,6 @@ import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.ch
 import java.util.Iterator;
 
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
-import org.icgc.dcc.submission.validation.norm.steps.MutationRebuilding;
 import org.junit.Test;
 
 import cascading.operation.Function;

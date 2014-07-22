@@ -19,11 +19,11 @@ package org.icgc.dcc.submission.validation.cascading;
 
 import static cascading.tuple.Fields.ARGS;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.submission.core.report.ErrorType.FORBIDDEN_VALUE_ERROR;
 
 import java.util.List;
 
+import org.icgc.dcc.core.model.SpecialValue;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 
@@ -47,11 +47,6 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
   public static final String NAME = "forbidden";
 
   /**
-   * Former reserved values that must not appear in required data anymore.
-   */
-  public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
-
-  /**
    * Fields having a required restriction set on them (whether scrict or not).
    */
   private final List<String> requiredFieldnames;
@@ -70,7 +65,7 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
       // Only check for required fields (irrespective of whether it is a strict or non-strict requirement
       if(requiredFieldnames.contains(fieldName.toString())) {
         String value = entry.getString(fieldName);
-        if(DEPRECATED_VALUES.contains(value)) {
+        if(SpecialValue.DEPRECATED_VALUES.contains(value)) {
           state.reportError(FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
         }
       }

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static org.icgc.dcc.submission.dictionary.model.RestrictionType.CODELIST;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +29,12 @@ import lombok.ToString;
 import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.model.ValueType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -131,6 +135,7 @@ public class Field implements DictionaryElement, Serializable {
   /**
    * FIXME: https://jira.oicr.on.ca/browse/DCC-2087
    */
+  @JsonIgnore
   public Optional<Restriction> getRestriction(final RestrictionType type) {
     return Iterables.tryFind(this.restrictions, new Predicate<Restriction>() {
 
@@ -140,6 +145,11 @@ public class Field implements DictionaryElement, Serializable {
       }
 
     });
+  }
+
+  @JsonIgnore
+  public Optional<Restriction> getCodeListRestriction() {
+    return getRestriction(CODELIST);
   }
 
   public boolean removeRestriction(Restriction restriction) {

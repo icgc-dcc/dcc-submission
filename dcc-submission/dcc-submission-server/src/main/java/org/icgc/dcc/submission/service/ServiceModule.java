@@ -1,7 +1,5 @@
 package org.icgc.dcc.submission.service;
 
-import org.icgc.dcc.submission.core.AbstractDccModule;
-
 import com.google.inject.Singleton;
 
 public class ServiceModule extends AbstractDccModule {

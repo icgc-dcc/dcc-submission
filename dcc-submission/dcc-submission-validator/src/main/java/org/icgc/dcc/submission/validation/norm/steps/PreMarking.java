@@ -21,7 +21,7 @@ import static cascading.tuple.Fields.ALL;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.core.model.Marking;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 

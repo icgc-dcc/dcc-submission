@@ -16,8 +16,8 @@ import javax.ws.rs.core.Response;
 
 import lombok.val;
 
-import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;

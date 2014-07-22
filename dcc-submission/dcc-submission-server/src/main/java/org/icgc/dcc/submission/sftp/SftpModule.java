@@ -24,7 +24,7 @@ import java.io.Serializable;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.SshServer;
-import org.icgc.dcc.submission.core.AbstractDccModule;
+import org.icgc.dcc.submission.service.AbstractDccModule;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Singleton;
