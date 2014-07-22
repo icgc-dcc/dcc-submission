@@ -102,4 +102,9 @@ public interface ValidationContext extends ReportContext {
    */
   PlatformStrategy getPlatformStrategy();
 
+  /**
+   * Temporarily here (see DCC-2431).
+   */
+  String getOutputDirPath();
+
 }

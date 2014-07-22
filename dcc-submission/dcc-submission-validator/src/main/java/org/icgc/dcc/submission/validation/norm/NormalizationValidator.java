@@ -25,9 +25,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.Component.NORMALIZER;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_END;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_START;
@@ -98,11 +98,6 @@ public final class NormalizationValidator implements Validator {
    */
   public static final String ANALYSIS_ID = SUBMISSION_OBSERVATION_ANALYSIS_ID;
 
-  /**
-   * Name of the uncompressed single output file.
-   */
-  public static final String OUTPUT_FILE_NAME = "ssm_p.txt";
-
   private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
   private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
   private static final String START_PIPE_NAME = format("%s-start", COMPONENT_NAME);
@@ -172,9 +167,10 @@ public final class NormalizationValidator implements Validator {
   @Override
   public void validate(ValidationContext context) {
     // Selective validation filtering
-    val requested = context.getDataTypes().contains(SSM_TYPE);
+    val requested = context.getDataTypes().contains(FOCUS_TYPE.getDataType());
     if (!requested) {
-      log.info("SSM validation not requested for '{}'. Skipping...", context.getProjectKey());
+      log.info("'{}' validation not requested for '{}'. Skipping...",
+          FOCUS_TYPE.getDataType(), context.getProjectKey());
 
       return;
     }
@@ -206,7 +202,8 @@ public final class NormalizationValidator implements Validator {
         pipes,
         context.getPlatformStrategy(),
         context.getRelease().getName(),
-        context.getProjectKey());
+        context.getProjectKey(),
+        getOutputDirPath(context));
 
     // Checks validator wasn't interrupted
     checkInterrupted(getName());
@@ -219,7 +216,7 @@ public final class NormalizationValidator implements Validator {
 
     // Report results (error or stats)s
     val checker = NormalizationReporter.createNormalizationOutcomeChecker(
-        config, connectedCascade, OUTPUT_FILE_NAME);
+        config, connectedCascade, FOCUS_TYPE.getHarmonizedOutputFileName());
 
     // Report errors or statistics
     if (checker.isLikelyErroneous()) {
@@ -228,8 +225,23 @@ public final class NormalizationValidator implements Validator {
     } else {
       log.info("No errors were encountered during normalization");
       internalStatisticsReport(connectedCascade);
-      externalStatisticsReport(OUTPUT_FILE_NAME, connectedCascade, context);
+      externalStatisticsReport(FOCUS_TYPE.getHarmonizedOutputFileName(), connectedCascade, context);
     }
+  }
+
+  private String getOutputDirPath(ValidationContext context) {
+    String outputDirPath = null;
+    try {
+      outputDirPath = context.getOutputDirPath();
+      log.info("Using provided output dir path: '{}'", outputDirPath);
+    } catch (UnsupportedOperationException e) { // See DCC-2431
+      outputDirPath = dccFileSystem2.getNormalizationSsmDataOutputFile(
+          context.getRelease().getName(),
+          context.getProjectKey());
+      log.info("Falling back on file system abstraction: '{}'", outputDirPath);
+    }
+
+    return outputDirPath;
   }
 
   /**
@@ -259,10 +271,11 @@ public final class NormalizationValidator implements Validator {
    * Connects the cascade to the input and output.
    */
   private ConnectedCascade connectCascade(
-      @NonNull Pipes pipes,
-      @NonNull PlatformStrategy platform,
-      @NonNull String releaseName,
-      @NonNull String projectKey) {
+      @NonNull final Pipes pipes,
+      @NonNull final PlatformStrategy platform,
+      @NonNull final String releaseName,
+      @NonNull final String projectKey,
+      @NonNull final String outputDirPath) {
 
     // Define a flow
     val flowDef = flowDef().setName(FLOW_NAME);
@@ -280,7 +293,7 @@ public final class NormalizationValidator implements Validator {
     log.info("Connecting tail");
     flowDef.addTailSink(
         pipes.getEndPipe(),
-        getSinkTap(releaseName, projectKey));
+        getSinkTap(outputDirPath));
 
     // Connect flow
     Flow<?> flow = platform // TODO: not re-using the submission's platform strategy
@@ -347,7 +360,7 @@ public final class NormalizationValidator implements Validator {
 
   private List<String> getSsmPrimaryFiles(ValidationContext context) {
     return newArrayList(transform(
-        context.getFiles(SSM_P_TYPE),
+        context.getFiles(FOCUS_TYPE),
         new Function<Path, String>() {
 
           @Override
@@ -387,8 +400,9 @@ public final class NormalizationValidator implements Validator {
   /**
    * Returns the output tap for the cascade.
    */
-  private Tap<?, ?, ?> getSinkTap(String releaseName, String projectKey) {
-    return dccFileSystem2.getNormalizationDataOutputTap(releaseName, projectKey);
+  private Tap<?, ?, ?> getSinkTap(String outputDirPath) {
+    return dccFileSystem2.getNormalizationDataOutputTap(
+        PATH.join(outputDirPath, FOCUS_TYPE.getHarmonizedOutputFileName()));
   }
 
   /**
