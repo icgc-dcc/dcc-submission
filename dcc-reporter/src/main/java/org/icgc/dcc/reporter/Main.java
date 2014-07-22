@@ -26,14 +26,14 @@ public class Main {
 
     Reporter.report(
         releaseName,
-        foo(projectKeys),
+        getProjectKeys(projectKeys),
         defaultParentDataDir,
         projectsJsonFilePath,
         dictionaryFilePath,
         codeListsFilePath);
   }
 
-  private static final Optional<Set<String>> foo(String projectKeys) {
+  private static final Optional<Set<String>> getProjectKeys(String projectKeys) {
     return isAllProjects(projectKeys) ?
         Optional.<Set<String>> absent() :
         Optional.<Set<String>> of(newLinkedHashSet(COMMA.split(projectKeys)));
@@ -48,7 +48,7 @@ public class Main {
 
   @SneakyThrows
   public static boolean isLocal() {
-    return "acroslt".equals(InetAddress.getLocalHost().getHostName()); // FIXME
+    return !InetAddress.getLocalHost().getHostName().startsWith("hproxy"); // FIXME
   }
 
 }
