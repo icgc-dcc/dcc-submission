@@ -26,6 +26,10 @@ import cascading.tuple.Fields;
  */
 public abstract class BaseBuffer<Context> extends BaseOperation<Context> implements Buffer<Context> {
 
+  public BaseBuffer() {
+    super();
+  }
+
   public BaseBuffer(Fields fields) {
     super(fields);
   }

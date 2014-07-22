@@ -55,8 +55,6 @@ import org.icgc.dcc.hadoop.cascading.operation.BaseBuffer;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 
 import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
@@ -565,7 +563,7 @@ public class SubAssemblies {
 
   }
 
-  public static class TransposeBuffer<T> extends BaseOperation<Void> implements Buffer<Void> {
+  public static class TransposeBuffer<T> extends BaseBuffer<Void> {
 
     private final Fields futureFieldsField;
     private final Fields futureValuesField;
