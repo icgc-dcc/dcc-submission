@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -27,11 +26,15 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.elasticsearch.common.collect.Sets;
 import org.icgc.dcc.core.model.Dictionaries;
 import org.icgc.dcc.core.model.FieldNames;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.reporter.Reporter;
 import org.icgc.dcc.reporter.ReporterGatherer;
+import org.icgc.dcc.reporter.ReporterInput;
+import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.repository.ExecutiveReportRepository;
 import org.icgc.dcc.submission.repository.ProjectReportRepository;
 import org.icgc.submission.summary.ExecutiveReport;
@@ -54,6 +57,9 @@ public class ExecutiveReportService {
   @NonNull
   private final ExecutiveReportRepository executiveReportRepository;
 
+  @NonNull
+  private final DccFileSystem dccFileSystem;
+
   private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
 
   private static final AbstractExecutionThreadService reportService = new AbstractExecutionThreadService() {
@@ -73,9 +79,11 @@ public class ExecutiveReportService {
   @Inject
   public ExecutiveReportService(
       @NonNull ProjectReportRepository projectReportRepository,
-      @NonNull ExecutiveReportRepository executiveReportRepository) {
+      @NonNull ExecutiveReportRepository executiveReportRepository,
+      @NonNull DccFileSystem dccFileSystem) {
     this.projectReportRepository = projectReportRepository;
     this.executiveReportRepository = executiveReportRepository;
+    this.dccFileSystem = dccFileSystem;
     reportService.startAsync();
   }
 
@@ -116,7 +124,7 @@ public class ExecutiveReportService {
    */
   public void generateReport(
       final String releaseName,
-      final Set<String> projectKeys,
+      final List<String> projectKeys,
       final String releasePath,
       final JsonNode dictionaryNode,
       final JsonNode codelistNode) {
@@ -125,22 +133,28 @@ public class ExecutiveReportService {
 
       @Override
       public void run() {
-        Reporter.createReport(releaseName, projectKeys, releasePath, dictionaryNode, codelistNode);
 
-        val mapper = new ObjectMapper();
+        val patterns = Dictionaries.getPatterns(dictionaryNode);
+        val matchingFiles = SubmissionInputData.getMatchingFiles(
+            dccFileSystem.getFileSystem(), releasePath, projectKeys,
+            patterns);
         val mappings = Dictionaries.getMapping(dictionaryNode, codelistNode, FileType.SSM_M_TYPE,
             FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
+        val reporterInput = ReporterInput.from(matchingFiles);
+        val projectKeysSet = Sets.<String> newHashSet(projectKeys);
 
+        Reporter.process(releaseName, projectKeysSet, reporterInput, mappings.get());
+
+        val mapper = new ObjectMapper();
         for (String project : projectKeys) {
           ArrayNode list = ReporterGatherer.getJsonTable1(project);
 
           for (val obj : list) {
-            // FIXME: Need to fix order when anthony cleans up reporter
             ProjectReport pr = new ProjectReport();
             pr.setReleaseName(releaseName);
-            pr.setProjectCode(obj.get("donor_id_count").textValue());
-            pr.setType(obj.get("_project_id").textValue());
-            pr.setDonorCount(Long.parseLong(obj.get("_type").textValue()));
+            pr.setProjectCode(obj.get("_project_id").textValue());
+            pr.setType(obj.get("_type").textValue());
+            pr.setDonorCount(Long.parseLong(obj.get("donor_id_count").textValue()));
             pr.setSampleCount(Long.parseLong(obj.get("analyzed_sample_id_count").textValue()));
             pr.setSpecimenCount(Long.parseLong(obj.get("specimen_id_count").textValue()));
             pr.setObservationCount(Long.parseLong(obj.get("analysis_observation_count").textValue()));

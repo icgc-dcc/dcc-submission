@@ -47,6 +47,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -83,6 +84,24 @@ public class SubmissionInputData {
         projectKeys, projectDescriptions, patterns, fileSystem, defaultParentDataDir);
     log.info("projectToFiles: '{}'", getDisplayString(projectToFiles));
     return projectToFiles;
+  }
+
+  /**
+   * This is called form submission-server where there is no access to to the projects json file.
+   * 
+   * FIXME: should really factor out the projectDescriptions stuff in the main getMatchingFiles
+   */
+  public static Map<String, Map<FileType, List<Path>>> getMatchingFiles(
+      FileSystem fileSystem,
+      String defaultParentDataDir,
+      List<String> projectKeys,
+      Map<FileType, String> patterns) {
+
+    val projectsJson = JsonNodeFactory.instance.objectNode();
+    for (val projectKey : projectKeys) {
+      projectsJson.with(projectKey);
+    }
+    return getMatchingFiles(projectKeys, projectsJson, patterns, fileSystem, defaultParentDataDir);
   }
 
   /**

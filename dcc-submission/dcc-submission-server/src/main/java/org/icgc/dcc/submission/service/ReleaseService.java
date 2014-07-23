@@ -329,7 +329,6 @@ public class ReleaseService extends AbstractService {
       submission.signOff(submissionFiles);
     }
 
-    // Test
     ObjectMapper mapper = new ObjectMapper();
     final String _releaseName = releaseName;
     val _projectKeys = ImmutableSet.<String> copyOf(projectKeys);
@@ -339,7 +338,10 @@ public class ReleaseService extends AbstractService {
     val releasePath = dccFileSystem.buildReleaseStringPath(_releaseName);
 
     // This spawns a separate thread
-    executiveReportService.generateReport(_releaseName, _projectKeys, releasePath, dictionaryNode, codelistNode);
+    executiveReportService.generateReport(_releaseName,
+        ImmutableList.<String> copyOf(projectKeys),
+        releasePath,
+        dictionaryNode, codelistNode);
     releaseRepository.updateRelease(releaseName, release);
 
     // Remove validation files in the ".validation" folder (leave normalization files untouched)

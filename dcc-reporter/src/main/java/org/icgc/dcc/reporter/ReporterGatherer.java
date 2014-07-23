@@ -21,6 +21,8 @@ import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.core.util.Separators;
 import org.icgc.dcc.reporter.presentation.DataTypeCountsReportTable;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.io.Files;
@@ -87,41 +89,39 @@ public class ReporterGatherer {
     return sb.toString();
   }
 
-  public static void getJsonTable1(
+  public static ArrayNode getJsonTable1(
       @NonNull final String projectKey) {
 
-    getJsonTable(projectKey, OutputType.DONOR, ABSENT_MAPPING);
+    return getJsonTable(projectKey, OutputType.DONOR, ABSENT_MAPPING);
   }
 
-  public static void getJsonTable2(
+  public static ArrayNode getJsonTable2(
       @NonNull final String projectKey,
       @NonNull final Map<String, String> mapping) {
 
-    getJsonTable(projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
+    return getJsonTable(projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
   }
 
-  private static void getJsonTable(final String projectKey, OutputType outputType, Optional<Map<String, String>> mapping) {
+  private static ArrayNode getJsonTable(final String projectKey, OutputType outputType, Optional<Map<String, String>> mapping) {
     val outputFilePath = Reporter.getOuputFileFusePath(outputType, projectKey);
     val headerLine = readFirstLine(outputFilePath);
     val headers = newArrayList(TAB.split(headerLine));
     val headerSize = headers.size();
 
-    val documents = new BasicDBList();
+    val documents = JsonNodeFactory.instance.arrayNode();
     for (val line : readRemainingLines(outputFilePath)) {
       val values = newArrayList(TAB.split(line));
       checkState(headerSize == values.size());
 
-      val builder = new BasicDBObjectBuilder();
+      //val builder = new BasicDBObjectBuilder();
+      val node = JsonNodeFactory.instance.objectNode();
       for (int i = 0; i < headerSize; i++) {
-        builder.add(
-            getHeader(
-                headers.get(i),
-                mapping),
-            values.get(i));
+    	  node.put(getHeader(headers.get(i), mapping), values.get(i));
       }
-      documents.add(builder.get());
+      documents.add(node);
     }
-    log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents.toString()));
+    log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents));
+    return documents;
   }
 
   private static String getHeader(String header, Optional<Map<String, String>> mapping) {
