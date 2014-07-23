@@ -246,7 +246,7 @@
     </dependency>
     <dependency>
     	<groupId>${project.groupId}</groupId>
-    	<artifactId>dcc-reporter</artifactId>
+    	<artifactId>dcc-submission-reporter</artifactId>
     	<version>${project.version}</version>
     </dependency>
   </dependencies>

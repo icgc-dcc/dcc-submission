@@ -4,11 +4,12 @@
 
   <parent>
     <groupId>org.icgc.dcc</groupId>
-    <artifactId>dcc</artifactId>
+    <artifactId>dcc-submission</artifactId>
     <version>3.4.2-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dcc-reporter</artifactId>
+  <artifactId>dcc-submission-reporter</artifactId>
   
   <name>${project.artifactId}</name>
   <description>${project.name}</description>

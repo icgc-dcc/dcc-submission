@@ -645,8 +645,8 @@ public class ReleaseService extends AbstractService {
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
 
     // Clear all existing reports associated with the release
-    executiveReportService.deleteProjectReport(release.getName());
-    executiveReportService.deleteExecutiveReport(release.getName());
+    executiveReportService.deleteProjectDatatypeReport(release.getName());
+    executiveReportService.deleteProjectSequencingStrategyReport(release.getName());
 
     for (val projectKey : projects) {
       resetSubmission(release, projectKey, filePatternToTypeMap);

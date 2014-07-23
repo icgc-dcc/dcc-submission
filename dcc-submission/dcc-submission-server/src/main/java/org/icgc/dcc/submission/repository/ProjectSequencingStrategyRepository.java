@@ -30,10 +30,10 @@ import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
 
-public class ExecutiveReportRepository extends AbstractRepository<ExecutiveReport, QExecutiveReport> {
+public class ProjectSequencingStrategyRepository extends AbstractRepository<ExecutiveReport, QExecutiveReport> {
 
   @Inject
-  public ExecutiveReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+  public ProjectSequencingStrategyRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, executiveReport);
   }
 
@@ -41,8 +41,11 @@ public class ExecutiveReportRepository extends AbstractRepository<ExecutiveRepor
     return list();
   }
 
-  public List<ExecutiveReport> find(String releaseName) {
-    return list(_.releaseName.eq(releaseName));
+  public List<ExecutiveReport> find(String releaseName, List<String> projects) {
+    if (projects.isEmpty()) {
+      return list(_.releaseName.eq(releaseName));
+    }
+    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projects)));
   }
 
   public void deleteByRelease(String releaseName) {

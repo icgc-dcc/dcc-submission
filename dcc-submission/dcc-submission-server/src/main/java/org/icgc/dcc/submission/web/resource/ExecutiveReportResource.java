@@ -17,37 +17,47 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.service.ExecutiveReportService;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
+@Slf4j
 @Path("executiveReports")
+@Produces("application/json")
 public class ExecutiveReportResource {
 
   @Inject
   private ExecutiveReportService service;
 
   @GET
-  @Path("{releaseName}/{project}")
-  public Response getReport(@PathParam("releaseName") String releaseName, @PathParam("project") String projects) {
-    val splitter = Splitter.on(",").trimResults();
-    val reports = service.getProjectReport(releaseName, Lists.newArrayList(splitter.split(projects)));
+  @Path("projectDatatype/{releaseName}")
+  public Response getReport(
+      @PathParam("releaseName") String releaseName,
+      @QueryParam("projects") List<String> projects) {
+
+    log.info("Projects are {}", projects);
+    val reports = service.getProjectDatatypeReport(releaseName, projects);
     return Response.ok(reports).build();
   }
 
   @GET
-  @Path("{releaseName}")
-  public Response test(@PathParam("releaseName") String releaseName) {
-    val reports = service.getExecutiveReport(releaseName);
+  @Path("projectSequencingStrategy/{releaseName}")
+  public Response test(
+      @PathParam("releaseName") String releaseName,
+      @QueryParam("projects") List<String> projects) {
+    val reports = service.getProjectSequencingStrategyReport(releaseName, projects);
     return Response.ok(reports).build();
   }
 }

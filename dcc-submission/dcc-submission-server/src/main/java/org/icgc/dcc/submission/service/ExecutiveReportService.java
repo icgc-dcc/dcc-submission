@@ -36,8 +36,8 @@ import org.icgc.dcc.reporter.Reporter;
 import org.icgc.dcc.reporter.ReporterGatherer;
 import org.icgc.dcc.reporter.ReporterInput;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.repository.ExecutiveReportRepository;
-import org.icgc.dcc.submission.repository.ProjectReportRepository;
+import org.icgc.dcc.submission.repository.ProjectSequencingStrategyRepository;
+import org.icgc.dcc.submission.repository.ProjectDatatypeRepository;
 import org.icgc.submission.summary.ExecutiveReport;
 import org.icgc.submission.summary.ProjectReport;
 
@@ -54,10 +54,10 @@ import com.google.inject.Inject;
 public class ExecutiveReportService extends AbstractExecutionThreadService {
 
   @NonNull
-  private final ProjectReportRepository projectReportRepository;
+  private final ProjectDatatypeRepository projectDatatypeRepository;
 
   @NonNull
-  private final ExecutiveReportRepository executiveReportRepository;
+  private final ProjectSequencingStrategyRepository projectSequencingStrategyRepository;
 
   @NonNull
   private final DccFileSystem dccFileSystem;
@@ -75,36 +75,36 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     }
   }
 
-  public List<ProjectReport> getProjectReport() {
-    return projectReportRepository.findAll();
+  public List<ProjectReport> getProjectDatatypeReport() {
+    return projectDatatypeRepository.findAll();
   }
 
-  public List<ProjectReport> getProjectReport(String releaseName, List<String> projectCodes) {
-    return projectReportRepository.find(releaseName, projectCodes);
+  public List<ProjectReport> getProjectDatatypeReport(String releaseName, List<String> projectCodes) {
+    return projectDatatypeRepository.find(releaseName, projectCodes);
   }
 
-  public void saveProjectReport(ProjectReport report) {
-    projectReportRepository.upsert(report);
+  public void saveProjectDatatypeReport(ProjectReport report) {
+    projectDatatypeRepository.upsert(report);
   }
 
-  public void deleteProjectReport(final String releaseName) {
-    projectReportRepository.deleteByRelease(releaseName);
+  public void deleteProjectDatatypeReport(final String releaseName) {
+    projectDatatypeRepository.deleteByRelease(releaseName);
   }
 
-  public List<ExecutiveReport> getExecutiveReport() {
-    return executiveReportRepository.findAll();
+  public List<ExecutiveReport> getProjectSequencingStrategyReport() {
+    return projectSequencingStrategyRepository.findAll();
   }
 
-  public List<ExecutiveReport> getExecutiveReport(String releaseName) {
-    return executiveReportRepository.find(releaseName);
+  public List<ExecutiveReport> getProjectSequencingStrategyReport(String releaseName, List<String> projects) {
+    return projectSequencingStrategyRepository.find(releaseName, projects);
   }
 
-  public void saveExecutiveReport(ExecutiveReport report) {
-    executiveReportRepository.upsert(report);
+  public void saveProjectSequencingStrategyReport(ExecutiveReport report) {
+    projectSequencingStrategyRepository.upsert(report);
   }
 
-  public void deleteExecutiveReport(final String releaseName) {
-    executiveReportRepository.deleteByRelease(releaseName);
+  public void deleteProjectSequencingStrategyReport(final String releaseName) {
+    projectSequencingStrategyRepository.deleteByRelease(releaseName);
   }
 
   private ProjectReport getProjectReport(JsonNode report, String releaseName) {
@@ -160,12 +160,12 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
           ArrayNode projectReports = ReporterGatherer.getJsonTable1(project);
 
           for (val report : projectReports) {
-            projectReportRepository.upsert(getProjectReport(report, releaseName));
+            projectDatatypeRepository.upsert(getProjectReport(report, releaseName));
           }
 
           ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(project, mappings.get());
           for (val report : sequencingStrategyReports) {
-            executiveReportRepository.upsert(getExecutiveReport(report, releaseName));
+            projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
           }
 
         }

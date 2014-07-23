@@ -30,10 +30,10 @@ import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
 
-public class ProjectReportRepository extends AbstractRepository<ProjectReport, QProjectReport> {
+public class ProjectDatatypeRepository extends AbstractRepository<ProjectReport, QProjectReport> {
 
   @Inject
-  public ProjectReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+  public ProjectDatatypeRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, projectReport);
   }
 
@@ -42,6 +42,9 @@ public class ProjectReportRepository extends AbstractRepository<ProjectReport, Q
   }
 
   public List<ProjectReport> find(String releaseName, List<String> projectCodes) {
+    if (projectCodes.isEmpty()) {
+      return list(_.releaseName.eq(releaseName));
+    }
     return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
   }
 
