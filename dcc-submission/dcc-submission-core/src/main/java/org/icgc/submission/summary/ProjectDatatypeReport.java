@@ -15,48 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.repository;
+package org.icgc.submission.summary;
 
-import static org.icgc.submission.summary.QExecutiveReport.executiveReport;
+import lombok.Data;
+import lombok.ToString;
 
-import java.util.List;
+import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
 
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonView;
 
-import org.icgc.submission.summary.ExecutiveReport;
-import org.icgc.submission.summary.QExecutiveReport;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Morphia;
+@Entity(noClassnameStored = true)
+@ToString
+@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, type"))
+@Data
+public class ProjectDatatypeReport {
 
-import com.google.inject.Inject;
+  @Id
+  private String id;
 
-public class ProjectSequencingStrategyRepository extends AbstractRepository<ExecutiveReport, QExecutiveReport> {
+  @JsonView(Digest.class)
+  protected String releaseName;
 
-  @Inject
-  public ProjectSequencingStrategyRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
-    super(morphia, datastore, executiveReport);
-  }
+  @JsonView(Digest.class)
+  protected String projectCode;
 
-  public List<ExecutiveReport> findAll() {
-    return list();
-  }
+  @JsonView(Digest.class)
+  protected String type;
 
-  public List<ExecutiveReport> find(String releaseName, List<String> projects) {
-    if (projects.isEmpty()) {
-      return list(_.releaseName.eq(releaseName));
-    }
-    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projects)));
-  }
+  @JsonView(Digest.class)
+  protected long donorCount;
 
-  public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter(_.releaseName.toString(), releaseName));
-  }
+  @JsonView(Digest.class)
+  protected long specimenCount;
 
-  public void upsert(ExecutiveReport executiveReport) {
-    updateFirst(
-        createQuery()
-            .filter(_.releaseName.toString(), executiveReport.getReleaseName())
-            .filter(_.projectCode.toString(), executiveReport.getProjectCode()),
-        executiveReport, true);
-  }
+  @JsonView(Digest.class)
+  protected long sampleCount;
+
+  @JsonView(Digest.class)
+  protected long observationCount;
+
 }

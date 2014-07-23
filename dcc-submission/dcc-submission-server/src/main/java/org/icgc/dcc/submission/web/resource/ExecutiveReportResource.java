@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.service.ExecutiveReportService;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Slf4j
@@ -43,21 +45,22 @@ public class ExecutiveReportResource {
 
   @GET
   @Path("projectDatatype/{releaseName}")
-  public Response getReport(
+  public Response getProjectDatatypeReport(
       @PathParam("releaseName") String releaseName,
       @QueryParam("projects") List<String> projects) {
 
-    log.info("Projects are {}", projects);
-    val reports = service.getProjectDatatypeReport(releaseName, projects);
+    val reports = service.getProjectDatatypeReport(releaseName,
+        Objects.firstNonNull(projects, Lists.<String> newArrayList()));
     return Response.ok(reports).build();
   }
 
   @GET
   @Path("projectSequencingStrategy/{releaseName}")
-  public Response test(
+  public Response getProjectSequencingStrategyReport(
       @PathParam("releaseName") String releaseName,
       @QueryParam("projects") List<String> projects) {
-    val reports = service.getProjectSequencingStrategyReport(releaseName, projects);
+    val reports = service.getProjectSequencingStrategyReport(releaseName,
+        Objects.firstNonNull(projects, Lists.<String> newArrayList()));
     return Response.ok(reports).build();
   }
 }

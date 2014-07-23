@@ -15,40 +15,49 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.submission.summary;
+package org.icgc.dcc.submission.repository;
 
-import java.util.Map;
+import static org.icgc.submission.summary.QProjectSequencingStrategyReport.projectSequencingStrategyReport;
 
-import lombok.Data;
-import lombok.ToString;
+import java.util.List;
 
-import org.icgc.dcc.submission.core.model.Views.Digest;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Index;
-import org.mongodb.morphia.annotations.Indexes;
-import org.mongodb.morphia.annotations.Property;
+import lombok.NonNull;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import org.icgc.submission.summary.ProjectSequencingStrategyReport;
+import org.icgc.submission.summary.QProjectSequencingStrategyReport;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-@Entity(noClassnameStored = true)
-@ToString
-@Indexes(@Index(name = "release_project", value = "releaseName, projectCode"))
-@Data
-public class ExecutiveReport {
+import com.google.inject.Inject;
 
-  @Id
-  private String id;
+public class ProjectSequencingStrategyReportRepository extends
+    AbstractRepository<ProjectSequencingStrategyReport, QProjectSequencingStrategyReport> {
 
-  @Property("releaseName")
-  @JsonView(Digest.class)
-  protected String releaseName;
+  @Inject
+  public ProjectSequencingStrategyReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, projectSequencingStrategyReport);
+  }
 
-  @Property("projectCode")
-  @JsonView(Digest.class)
-  protected String projectCode;
+  public List<ProjectSequencingStrategyReport> findAll() {
+    return list();
+  }
 
-  // Count fields
-  Map<String, Long> countSummary;
+  public List<ProjectSequencingStrategyReport> find(String releaseName, List<String> projects) {
+    if (projects.isEmpty()) {
+      return list(_.releaseName.eq(releaseName));
+    }
+    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projects)));
+  }
 
+  public void deleteByRelease(String releaseName) {
+    datastore().delete(createQuery().filter(fieldName(_.releaseName), releaseName));
+  }
+
+  public void upsert(ProjectSequencingStrategyReport projectSequencingStrategyReport) {
+    updateFirst(
+        createQuery()
+            .filter(fieldName(_.releaseName), projectSequencingStrategyReport.getReleaseName())
+            .filter(fieldName(_.projectCode), projectSequencingStrategyReport.getProjectCode()),
+        projectSequencingStrategyReport, true);
+  }
 }

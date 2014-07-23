@@ -15,51 +15,50 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.submission.summary;
+package org.icgc.dcc.submission.repository;
 
-import lombok.Data;
-import lombok.ToString;
+import static org.icgc.submission.summary.QProjectDatatypeReport.projectDatatypeReport;
 
-import org.icgc.dcc.submission.core.model.Views.Digest;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Index;
-import org.mongodb.morphia.annotations.Indexes;
-import org.mongodb.morphia.annotations.Property;
+import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
-@Entity(noClassnameStored = true)
-@ToString
-@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, type"))
-@Data
-public class ProjectReport {
+import org.icgc.submission.summary.ProjectDatatypeReport;
+import org.icgc.submission.summary.QProjectDatatypeReport;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-  @Id
-  private String id;
+import com.google.inject.Inject;
 
-  @Property("releaseName")
-  @JsonView(Digest.class)
-  protected String releaseName;
+@Slf4j
+public class ProjectDatatypeReportRepository extends AbstractRepository<ProjectDatatypeReport, QProjectDatatypeReport> {
 
-  @Property("projectCode")
-  @JsonView(Digest.class)
-  protected String projectCode;
+  @Inject
+  public ProjectDatatypeReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, projectDatatypeReport);
+  }
 
-  @Property("type")
-  @JsonView(Digest.class)
-  protected String type;
+  public List<ProjectDatatypeReport> findAll() {
+    return list();
+  }
 
-  @JsonView(Digest.class)
-  protected long donorCount;
+  public List<ProjectDatatypeReport> find(String releaseName, List<String> projectCodes) {
+    if (projectCodes.isEmpty()) {
+      return list(_.releaseName.eq(releaseName));
+    }
+    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
+  }
 
-  @JsonView(Digest.class)
-  protected long specimenCount;
+  public void deleteByRelease(String releaseName) {
+    datastore().delete(createQuery().filter(fieldName(_.releaseName), releaseName));
+  }
 
-  @JsonView(Digest.class)
-  protected long sampleCount;
-
-  @JsonView(Digest.class)
-  protected long observationCount;
-
+  public void upsert(ProjectDatatypeReport projectDatatypeReport) {
+    updateFirst(createQuery()
+        .filter(fieldName(_.releaseName), projectDatatypeReport.getReleaseName())
+        .filter(fieldName(_.projectCode), projectDatatypeReport.getProjectCode())
+        .filter(fieldName(_.type), projectDatatypeReport.getType()),
+        projectDatatypeReport, true);
+  }
 }

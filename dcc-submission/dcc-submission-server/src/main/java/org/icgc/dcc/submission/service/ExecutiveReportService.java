@@ -36,10 +36,10 @@ import org.icgc.dcc.reporter.Reporter;
 import org.icgc.dcc.reporter.ReporterGatherer;
 import org.icgc.dcc.reporter.ReporterInput;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.repository.ProjectSequencingStrategyRepository;
-import org.icgc.dcc.submission.repository.ProjectDatatypeRepository;
-import org.icgc.submission.summary.ExecutiveReport;
-import org.icgc.submission.summary.ProjectReport;
+import org.icgc.dcc.submission.repository.ProjectDatatypeReportRepository;
+import org.icgc.dcc.submission.repository.ProjectSequencingStrategyReportRepository;
+import org.icgc.submission.summary.ProjectDatatypeReport;
+import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,10 +54,10 @@ import com.google.inject.Inject;
 public class ExecutiveReportService extends AbstractExecutionThreadService {
 
   @NonNull
-  private final ProjectDatatypeRepository projectDatatypeRepository;
+  private final ProjectDatatypeReportRepository projectDatatypeRepository;
 
   @NonNull
-  private final ProjectSequencingStrategyRepository projectSequencingStrategyRepository;
+  private final ProjectSequencingStrategyReportRepository projectSequencingStrategyRepository;
 
   @NonNull
   private final DccFileSystem dccFileSystem;
@@ -75,15 +75,15 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     }
   }
 
-  public List<ProjectReport> getProjectDatatypeReport() {
+  public List<ProjectDatatypeReport> getProjectDatatypeReport() {
     return projectDatatypeRepository.findAll();
   }
 
-  public List<ProjectReport> getProjectDatatypeReport(String releaseName, List<String> projectCodes) {
+  public List<ProjectDatatypeReport> getProjectDatatypeReport(String releaseName, List<String> projectCodes) {
     return projectDatatypeRepository.find(releaseName, projectCodes);
   }
 
-  public void saveProjectDatatypeReport(ProjectReport report) {
+  public void saveProjectDatatypeReport(ProjectDatatypeReport report) {
     projectDatatypeRepository.upsert(report);
   }
 
@@ -91,15 +91,16 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     projectDatatypeRepository.deleteByRelease(releaseName);
   }
 
-  public List<ExecutiveReport> getProjectSequencingStrategyReport() {
+  public List<ProjectSequencingStrategyReport> getProjectSequencingStrategyReport() {
     return projectSequencingStrategyRepository.findAll();
   }
 
-  public List<ExecutiveReport> getProjectSequencingStrategyReport(String releaseName, List<String> projects) {
+  public List<ProjectSequencingStrategyReport> getProjectSequencingStrategyReport(String releaseName,
+      List<String> projects) {
     return projectSequencingStrategyRepository.find(releaseName, projects);
   }
 
-  public void saveProjectSequencingStrategyReport(ExecutiveReport report) {
+  public void saveProjectSequencingStrategyReport(ProjectSequencingStrategyReport report) {
     projectSequencingStrategyRepository.upsert(report);
   }
 
@@ -107,26 +108,26 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     projectSequencingStrategyRepository.deleteByRelease(releaseName);
   }
 
-  private ProjectReport getProjectReport(JsonNode report, String releaseName) {
-    ProjectReport projectReport = new ProjectReport();
-    projectReport.setReleaseName(releaseName);
-    projectReport.setProjectCode(report.get("_project_id").textValue());
-    projectReport.setType(report.get("_type").textValue());
-    projectReport.setDonorCount(Long.parseLong(report.get("donor_id_count").textValue()));
-    projectReport.setSampleCount(Long.parseLong(report.get("analyzed_sample_id_count").textValue()));
-    projectReport.setSpecimenCount(Long.parseLong(report.get("specimen_id_count").textValue()));
-    projectReport.setObservationCount(Long.parseLong(report.get("analysis_observation_count").textValue()));
-    return projectReport;
+  private ProjectDatatypeReport getProjectReport(JsonNode report, String releaseName) {
+    ProjectDatatypeReport projectDatatypeReport = new ProjectDatatypeReport();
+    projectDatatypeReport.setReleaseName(releaseName);
+    projectDatatypeReport.setProjectCode(report.get("_project_id").textValue());
+    projectDatatypeReport.setType(report.get("_type").textValue());
+    projectDatatypeReport.setDonorCount(Long.parseLong(report.get("donor_id_count").textValue()));
+    projectDatatypeReport.setSampleCount(Long.parseLong(report.get("analyzed_sample_id_count").textValue()));
+    projectDatatypeReport.setSpecimenCount(Long.parseLong(report.get("specimen_id_count").textValue()));
+    projectDatatypeReport.setObservationCount(Long.parseLong(report.get("analysis_observation_count").textValue()));
+    return projectDatatypeReport;
   }
 
-  private ExecutiveReport getExecutiveReport(JsonNode report, String releaseName) {
+  private ProjectSequencingStrategyReport getExecutiveReport(JsonNode report, String releaseName) {
     val mapper = Jackson.DEFAULT;
-    ExecutiveReport executiveReport = new ExecutiveReport();
-    executiveReport.setReleaseName(releaseName);
-    executiveReport.setProjectCode(((ObjectNode) report).remove("_project_id").textValue());
+    ProjectSequencingStrategyReport projectSequencingStrategyReport = new ProjectSequencingStrategyReport();
+    projectSequencingStrategyReport.setReleaseName(releaseName);
+    projectSequencingStrategyReport.setProjectCode(((ObjectNode) report).remove("_project_id").textValue());
     Map<String, Long> summary = mapper.convertValue(report, new TypeReference<Map<String, Long>>() {});
-    executiveReport.setCountSummary(summary);
-    return executiveReport;
+    projectSequencingStrategyReport.setCountSummary(summary);
+    return projectSequencingStrategyReport;
   }
 
   /**
