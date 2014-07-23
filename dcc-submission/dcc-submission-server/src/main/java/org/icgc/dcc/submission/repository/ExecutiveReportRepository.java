@@ -46,14 +46,14 @@ public class ExecutiveReportRepository extends AbstractRepository<ExecutiveRepor
   }
 
   public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter("releaseName", releaseName));
+    datastore().delete(createQuery().filter(_.releaseName.toString(), releaseName));
   }
 
   public void upsert(ExecutiveReport executiveReport) {
-    // save(projectReport);
     updateFirst(
-        createQuery().filter("releaseName", executiveReport.getReleaseName())
-            .filter("projectCode", executiveReport.getProjectCode()),
+        createQuery()
+            .filter(_.releaseName.toString(), executiveReport.getReleaseName())
+            .filter(_.projectCode.toString(), executiveReport.getProjectCode()),
         executiveReport, true);
   }
 }

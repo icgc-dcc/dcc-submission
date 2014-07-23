@@ -46,14 +46,15 @@ public class ProjectReportRepository extends AbstractRepository<ProjectReport, Q
   }
 
   public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter("releaseName", releaseName));
+    datastore().delete(createQuery().filter(_.releaseName.toString(), releaseName));
   }
 
   public void upsert(ProjectReport projectReport) {
-    // save(projectReport);
     updateFirst(
-        createQuery().filter("releaseName", projectReport.getReleaseName())
-            .filter("projectCode", projectReport.getProjectCode()).filter("type", projectReport.getType()),
+        createQuery()
+            .filter(_.releaseName.toString(), projectReport.getReleaseName())
+            .filter(_.projectCode.toString(), projectReport.getProjectCode())
+            .filter(_.type.toString(), projectReport.getType()),
         projectReport, true);
   }
 }

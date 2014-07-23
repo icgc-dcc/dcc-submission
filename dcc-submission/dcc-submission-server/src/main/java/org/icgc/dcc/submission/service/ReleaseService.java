@@ -627,8 +627,7 @@ public class ReleaseService extends AbstractService {
   }
 
   public void resetSubmissions() {
-    val projectKeys = ImmutableList.<String> copyOf(getNextRelease().getProjectKeys());
-    resetSubmissions(projectKeys.toArray(new String[0]));
+    resetSubmissions(getNextRelease().getProjectKeys());
   }
 
   @Synchronized
@@ -641,7 +640,7 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void resetSubmissions(String... projectKeys) {
+  public void resetSubmissions(Iterable<String> projects) {
     val release = getNextRelease();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
 
@@ -649,7 +648,7 @@ public class ReleaseService extends AbstractService {
     executiveReportService.deleteProjectReport(release.getName());
     executiveReportService.deleteExecutiveReport(release.getName());
 
-    for (val projectKey : projectKeys) {
+    for (val projectKey : projects) {
       resetSubmission(release, projectKey, filePatternToTypeMap);
     }
   }
