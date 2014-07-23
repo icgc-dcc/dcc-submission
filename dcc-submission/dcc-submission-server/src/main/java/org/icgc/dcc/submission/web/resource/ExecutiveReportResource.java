@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -32,35 +33,35 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.service.ExecutiveReportService;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Slf4j
 @Path("executiveReports")
-@Produces("application/json")
 public class ExecutiveReportResource {
 
   @Inject
   private ExecutiveReportService service;
 
   @GET
-  @Path("projectDatatype/{releaseName}")
-  public Response getProjectDatatypeReport(
+  @Path("projectDataType/{releaseName}")
+  @Produces("application/json")
+  public Response getProjectDataTypeReport(
       @PathParam("releaseName") String releaseName,
       @QueryParam("projects") List<String> projects) {
 
-    val reports = service.getProjectDatatypeReport(releaseName,
-        Objects.firstNonNull(projects, Lists.<String> newArrayList()));
+    val reports = service.getProjectDataTypeReport(releaseName,
+        Objects.firstNonNull(projects, Collections.<String> emptyList()));
     return Response.ok(reports).build();
   }
 
   @GET
   @Path("projectSequencingStrategy/{releaseName}")
+  @Produces("application/json")
   public Response getProjectSequencingStrategyReport(
       @PathParam("releaseName") String releaseName,
       @QueryParam("projects") List<String> projects) {
     val reports = service.getProjectSequencingStrategyReport(releaseName,
-        Objects.firstNonNull(projects, Lists.<String> newArrayList()));
+        Objects.firstNonNull(projects, Collections.<String> emptyList()));
     return Response.ok(reports).build();
   }
 }

@@ -36,9 +36,9 @@ import org.icgc.dcc.reporter.Reporter;
 import org.icgc.dcc.reporter.ReporterGatherer;
 import org.icgc.dcc.reporter.ReporterInput;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.repository.ProjectDatatypeReportRepository;
+import org.icgc.dcc.submission.repository.ProjectDataTypeReportRepository;
 import org.icgc.dcc.submission.repository.ProjectSequencingStrategyReportRepository;
-import org.icgc.submission.summary.ProjectDatatypeReport;
+import org.icgc.submission.summary.ProjectDataTypeReport;
 import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -54,7 +54,7 @@ import com.google.inject.Inject;
 public class ExecutiveReportService extends AbstractExecutionThreadService {
 
   @NonNull
-  private final ProjectDatatypeReportRepository projectDatatypeRepository;
+  private final ProjectDataTypeReportRepository projectDataTypeRepository;
 
   @NonNull
   private final ProjectSequencingStrategyReportRepository projectSequencingStrategyRepository;
@@ -62,7 +62,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
   @NonNull
   private final DccFileSystem dccFileSystem;
 
-  private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+  private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
 
   @Override
   protected void run() throws Exception {
@@ -75,20 +75,20 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     }
   }
 
-  public List<ProjectDatatypeReport> getProjectDatatypeReport() {
-    return projectDatatypeRepository.findAll();
+  public List<ProjectDataTypeReport> getProjectDataTypeReport() {
+    return projectDataTypeRepository.findAll();
   }
 
-  public List<ProjectDatatypeReport> getProjectDatatypeReport(String releaseName, List<String> projectCodes) {
-    return projectDatatypeRepository.find(releaseName, projectCodes);
+  public List<ProjectDataTypeReport> getProjectDataTypeReport(String releaseName, List<String> projectCodes) {
+    return projectDataTypeRepository.find(releaseName, projectCodes);
   }
 
-  public void saveProjectDatatypeReport(ProjectDatatypeReport report) {
-    projectDatatypeRepository.upsert(report);
+  public void saveProjectDataTypeReport(ProjectDataTypeReport report) {
+    projectDataTypeRepository.upsert(report);
   }
 
-  public void deleteProjectDatatypeReport(final String releaseName) {
-    projectDatatypeRepository.deleteByRelease(releaseName);
+  public void deleteProjectDataTypeReport(final String releaseName) {
+    projectDataTypeRepository.deleteByRelease(releaseName);
   }
 
   public List<ProjectSequencingStrategyReport> getProjectSequencingStrategyReport() {
@@ -108,16 +108,16 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     projectSequencingStrategyRepository.deleteByRelease(releaseName);
   }
 
-  private ProjectDatatypeReport getProjectReport(JsonNode report, String releaseName) {
-    ProjectDatatypeReport projectDatatypeReport = new ProjectDatatypeReport();
-    projectDatatypeReport.setReleaseName(releaseName);
-    projectDatatypeReport.setProjectCode(report.get("_project_id").textValue());
-    projectDatatypeReport.setType(report.get("_type").textValue());
-    projectDatatypeReport.setDonorCount(Long.parseLong(report.get("donor_id_count").textValue()));
-    projectDatatypeReport.setSampleCount(Long.parseLong(report.get("analyzed_sample_id_count").textValue()));
-    projectDatatypeReport.setSpecimenCount(Long.parseLong(report.get("specimen_id_count").textValue()));
-    projectDatatypeReport.setObservationCount(Long.parseLong(report.get("analysis_observation_count").textValue()));
-    return projectDatatypeReport;
+  private ProjectDataTypeReport getProjectReport(JsonNode report, String releaseName) {
+    ProjectDataTypeReport projectDataTypeReport = new ProjectDataTypeReport();
+    projectDataTypeReport.setReleaseName(releaseName);
+    projectDataTypeReport.setProjectCode(report.get("_project_id").textValue());
+    projectDataTypeReport.setType(report.get("_type").textValue());
+    projectDataTypeReport.setDonorCount(Long.parseLong(report.get("donor_id_count").textValue()));
+    projectDataTypeReport.setSampleCount(Long.parseLong(report.get("analyzed_sample_id_count").textValue()));
+    projectDataTypeReport.setSpecimenCount(Long.parseLong(report.get("specimen_id_count").textValue()));
+    projectDataTypeReport.setObservationCount(Long.parseLong(report.get("analysis_observation_count").textValue()));
+    return projectDataTypeReport;
   }
 
   private ProjectSequencingStrategyReport getExecutiveReport(JsonNode report, String releaseName) {
@@ -134,11 +134,11 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
    * Generates reports in the background
    */
   public void generateReport(
-      final String releaseName,
-      final List<String> projectKeys,
-      final String releasePath,
-      final JsonNode dictionaryNode,
-      final JsonNode codelistNode) {
+      @NonNull final String releaseName,
+      @NonNull final List<String> projectKeys,
+      @NonNull final String releasePath,
+      @NonNull final JsonNode dictionaryNode,
+      @NonNull final JsonNode codeListsNode) {
 
     log.info("Generating reports for {}", projectKeys);
     queue.add(new Runnable() {
@@ -150,7 +150,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
         val matchingFiles = SubmissionInputData.getMatchingFiles(
             dccFileSystem.getFileSystem(), releasePath, projectKeys,
             patterns);
-        val mappings = Dictionaries.getMapping(dictionaryNode, codelistNode, FileType.SSM_M_TYPE,
+        val mappings = Dictionaries.getMapping(dictionaryNode, codeListsNode, FileType.SSM_M_TYPE,
             FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
         val reporterInput = ReporterInput.from(matchingFiles);
         val projectKeysSet = Sets.<String> newHashSet(projectKeys);
@@ -161,7 +161,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
           ArrayNode projectReports = ReporterGatherer.getJsonTable1(project);
 
           for (val report : projectReports) {
-            projectDatatypeRepository.upsert(getProjectReport(report, releaseName));
+            projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
           }
 
           ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(project, mappings.get());
