@@ -35,17 +35,13 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.cascading.taps.Taps;
 
 import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
-import cascading.tap.local.FileTap;
 
 /**
  * Very basic replacement for {@link DccFileSystem}, as discussed with @Bob Tiernay around 13/11/07 (see DCC-1876). This
  * is a temporary solution until a proper re-modelling of the file operations related objects can happen.
- * <p>
- * Requirements:<br/>
- * - Junjun's tool to re-write specimen file<br/>
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -55,15 +51,12 @@ public class DccFileSystem2 {
   private final String rootDir;
   private final boolean hadoopMode;
 
-  public Tap<?, ?, ?> getNormalizationDataOutputTap(String releaseName, String projectKey) {
-    String path = getNormalizationSsmDataOutputFile(releaseName, projectKey);
-    return getTap(path);
+  private Taps getTapMode() {
+    return hadoopMode ? Taps.HADOOP : Taps.LOCAL;
   }
 
-  private Tap<?, ?, ?> getTap(String path) {
-    return hadoopMode ?
-        new Hfs(new cascading.scheme.hadoop.TextDelimited(true, "\t"), path) :
-        new FileTap(new cascading.scheme.local.TextDelimited(true, "\t"), path);
+  public Tap<?, ?, ?> getNormalizationDataOutputTap(String path) {
+    return getTapMode().getNoCompressionTsvWithHeader(path);
   }
 
   /**

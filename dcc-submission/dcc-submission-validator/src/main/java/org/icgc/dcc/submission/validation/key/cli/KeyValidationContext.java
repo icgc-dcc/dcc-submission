@@ -142,4 +142,9 @@ public class KeyValidationContext extends AbstractValidationContext {
         new Submission(projectKey, projectKey, releaseName));
   }
 
+  @Override
+  public String getOutputDirPath() {
+    throw new UnsupportedOperationException("See DCC-2431");
+  }
+
 }
