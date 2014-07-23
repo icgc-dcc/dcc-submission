@@ -30,7 +30,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-@Path("executive_report")
+@Path("executiveReports")
 public class ExecutiveReportResource {
 
   @Inject

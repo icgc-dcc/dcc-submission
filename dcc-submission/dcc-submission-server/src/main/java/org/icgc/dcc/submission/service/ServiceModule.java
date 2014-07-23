@@ -12,7 +12,8 @@ public class ServiceModule extends AbstractDccModule {
     bind(DictionaryService.class).in(Singleton.class);
     bind(SystemService.class).in(Singleton.class);
     bind(MailService.class).in(Singleton.class);
-    bind(ExecutiveReportService.class).in(Singleton.class);
+
+    bindService(ExecutiveReportService.class);
     bindService(ValidationService.class);
   }
 

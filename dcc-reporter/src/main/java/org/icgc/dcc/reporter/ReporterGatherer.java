@@ -113,13 +113,13 @@ public class ReporterGatherer {
       val values = newArrayList(TAB.split(line));
       checkState(headerSize == values.size());
 
-      //val builder = new BasicDBObjectBuilder();
       val node = JsonNodeFactory.instance.objectNode();
       for (int i = 0; i < headerSize; i++) {
     	  node.put(getHeader(headers.get(i), mapping), values.get(i));
       }
       documents.add(node);
     }
+
     log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents));
     return documents;
   }

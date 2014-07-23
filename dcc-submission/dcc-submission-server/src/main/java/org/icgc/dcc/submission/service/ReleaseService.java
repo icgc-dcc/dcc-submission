@@ -53,6 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
@@ -83,7 +84,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -329,9 +329,8 @@ public class ReleaseService extends AbstractService {
       submission.signOff(submissionFiles);
     }
 
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = Jackson.DEFAULT;
     final String _releaseName = releaseName;
-    val _projectKeys = ImmutableSet.<String> copyOf(projectKeys);
     val dictionaryNode =
         mapper.valueToTree(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()));
     val codelistNode = mapper.valueToTree(codelistRepository.findCodeLists());
