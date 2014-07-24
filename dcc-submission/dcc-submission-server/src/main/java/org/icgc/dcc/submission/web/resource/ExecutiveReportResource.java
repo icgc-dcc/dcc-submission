@@ -59,7 +59,7 @@ public class ExecutiveReportResource {
         Objects.firstNonNull(projects, Collections.<String> emptyList()));
 
     List<String> header = ImmutableList.<String> builder().add(
-        "Release", "Project Id", "Type").build();
+        "Release", "Project Id", "Type", "Donor Count", "Specimen Count", "Sample Count", "Observation Count").build();
 
     val result = new StringBuilder();
 
@@ -71,6 +71,10 @@ public class ExecutiveReportResource {
       line.add(report.getReleaseName());
       line.add(report.getProjectCode());
       line.add(report.getType());
+      line.add(String.valueOf(report.getDonorCount()));
+      line.add(String.valueOf(report.getSpecimenCount()));
+      line.add(String.valueOf(report.getSampleCount()));
+      line.add(String.valueOf(report.getObservationCount()));
       result.append(joiner.join(line));
       result.append("\n");
     }
