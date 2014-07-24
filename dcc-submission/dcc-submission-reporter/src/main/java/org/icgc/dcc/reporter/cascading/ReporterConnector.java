@@ -48,12 +48,7 @@ public class ReporterConnector {
   private static final String CONCURRENCY = String.valueOf(5);
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
   private static final String NAMENODE = Main.isLocal() ? "file://localhost" : "***REMOVED***";
-  private static final String JOB_TRACKER = Main.isLocal() ? "localhost" : "***REMOVED***";
-  
-  @SneakyThrows
-  public static FileSystem getLocalFileSystem() {
-    return FileSystem.get(new URI("file:///"), new Configuration());
-  }
+  private static final String JOB_TRACKER = Main.isLocal() ? "localhost" : "***REMOVED***";   
 
   public static Cascade connectCascade(
       @NonNull final ReporterInput reporterInput,

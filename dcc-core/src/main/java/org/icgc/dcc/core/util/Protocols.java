@@ -15,44 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.fs;
+package org.icgc.dcc.core.util;
 
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-
-import java.net.URI;
-
-import lombok.AccessLevel;
+import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.util.Protocols;
 
 /**
- * Util methods for {@link FileSystem}.
+ * Constants for protocols.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FileSystems {
+@NoArgsConstructor(access = PRIVATE)
+public class Protocols {
 
-  @SneakyThrows
-  public static FileSystem getLocalFileSystem() {
-    return FileSystem.get(new URI(Protocols.LOCAL_FILE + "/"), new Configuration());
-  }
+  private static final String SUFFIX = "://";
 
-  @SneakyThrows
-  public static FileSystem getFileSystem(String fsUrl) {
-    return getFileSystem(new Configuration(), fsUrl);
-  }
-
-  @SneakyThrows
-  public static FileSystem getFileSystem(Configuration config, String fsUrl) {
-    return FileSystem.get(setFsUrl(config, fsUrl));
-  }
-
-  private static Configuration setFsUrl(Configuration config, String fsUrl) {
-    config.set(FS_DEFAULT_NAME_KEY, fsUrl);
-    return config;
-  }
+  public static final String LOCAL_FILE = "file" + SUFFIX;
+  public static final String HTTP = "http" + SUFFIX;
+  public static final String HTTPS = "https" + SUFFIX;
 
 }

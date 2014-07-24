@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
+import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.reporter.cascading.subassembly.ProcessClinicalType;
@@ -62,7 +63,7 @@ public class Reporter {
 
     val reporterInput = ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
-            ReporterConnector.getLocalFileSystem(),
+            FileSystems.getLocalFileSystem(),
             defaultParentDataDir,
             projectsJsonFilePath,
             getPatterns(dictionaryRoot)));
