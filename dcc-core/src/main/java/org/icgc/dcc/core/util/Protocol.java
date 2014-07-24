@@ -15,27 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.core.util;
 
-import java.util.Map;
-
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Strings2.removeTarget;
 import lombok.NonNull;
-import cascading.flow.FlowConnector;
-import cascading.flow.local.LocalFlowConnector;
+import lombok.RequiredArgsConstructor;
 
-/**
- * 
- */
-class LocalCascadingConnector extends BaseCascadingConnector {
+import org.icgc.dcc.core.model.Identifiable;
+
+@RequiredArgsConstructor(access = PRIVATE)
+public enum Protocol implements Identifiable {
+
+  FILE(Scheme.FILE),
+  HTTP(Scheme.HTTP),
+  HTTPS(Scheme.HTTPS),
+  HDFS(Scheme.HDFS),
+  MONGO(Scheme.MONGO),
+  ES(Scheme.ES),
+  S3(Scheme.S3);
+
+  private static final String PROTOCOL_SUFFIX = "://"; // TODO: existing constant?
+
+  private final Scheme scheme;
 
   @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
+  public String getId() {
+    return scheme.getId() + PROTOCOL_SUFFIX;
   }
 
-  @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
-    return new LocalFlowConnector(toObjectsMap(flowProperties));
+  public boolean isFile() {
+    return this == FILE;
+  }
+
+  public boolean isHdfs() {
+    return this == HDFS;
+  }
+
+  public static Protocol from(@NonNull final String protocol) {
+    return valueOf(removeTarget(protocol, PROTOCOL_SUFFIX).toUpperCase());
   }
 
 }

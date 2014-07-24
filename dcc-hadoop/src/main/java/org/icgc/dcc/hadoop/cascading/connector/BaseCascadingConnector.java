@@ -20,22 +20,35 @@ package org.icgc.dcc.hadoop.cascading.connector;
 import java.util.Map;
 
 import lombok.NonNull;
-import cascading.flow.FlowConnector;
-import cascading.flow.local.LocalFlowConnector;
+import cascading.cascade.CascadeConnector;
 
 /**
  * 
  */
-class LocalCascadingConnector extends BaseCascadingConnector {
+abstract class BaseCascadingConnector implements CascadingConnector {
 
   @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
+  public String describe() {
+    return describe(getClass());
   }
 
   @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
-    return new LocalFlowConnector(toObjectsMap(flowProperties));
+  public CascadeConnector getCascadeConnector() {
+    return new CascadeConnector();
+  }
+
+  @Override
+  public CascadeConnector getCascadeConnector(@NonNull final Map<?, ?> properties) {
+    return new CascadeConnector(toObjectsMap(properties));
+  }
+
+  @SuppressWarnings("unchecked")
+  protected static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {
+    return (Map<Object, Object>) properties;
+  }
+
+  private static String describe(@NonNull final Class<?> type) {
+    return "Using " + type.getSimpleName();
   }
 
 }

@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.util.Scheme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,15 +49,14 @@ public class PlatformStrategyFactoryProvider implements Provider<PlatformStrateg
   public PlatformStrategyFactory get() {
     String fsUrl = fs.getScheme();
 
-    if (fsUrl.equals("file")) {
+    if (Scheme.isFile(fsUrl)) {
       log.info("System configured for local filesystem");
       return new LocalPlatformStrategyFactory();
-    } else if (fsUrl.equals("hdfs")) {
+    } else if (Scheme.isHdfs(fsUrl)) {
       log.info("System configured for Hadoop filesystem");
       return new HadoopPlatformStrategyFactory(config.getConfig(HADOOP_KEY), fs);
     } else {
       throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
     }
   }
-
 }

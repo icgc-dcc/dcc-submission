@@ -19,10 +19,12 @@ package org.icgc.dcc.reporter;
 
 import java.util.Set;
 
-import org.junit.Ignore;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.icgc.dcc.core.util.Protocol;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -43,7 +45,9 @@ public class ReporterTest {
         DEFAULT_PARENT_TEST_DIR,
         TEST_CONF_DIR + "/projects.json",
         TEST_CONF_DIR + "/Dictionary.json",
-        TEST_CONF_DIR + "/CodeList.json");
+        TEST_CONF_DIR + "/CodeList.json",
+        ImmutableMap.<String, String>of(
+            CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, Protocol.FILE.getId()));
 
   }
 

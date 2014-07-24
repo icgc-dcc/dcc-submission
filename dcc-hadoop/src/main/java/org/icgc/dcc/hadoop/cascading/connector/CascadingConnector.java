@@ -19,7 +19,7 @@ package org.icgc.dcc.hadoop.cascading.connector;
 
 import java.util.Map;
 
-import lombok.NonNull;
+import cascading.cascade.CascadeConnector;
 import cascading.flow.FlowConnector;
 
 /**
@@ -28,7 +28,7 @@ import cascading.flow.FlowConnector;
 public interface CascadingConnector {
 
   static LocalCascadingConnector LOCAL = new LocalCascadingConnector();
-  static ClusterCascadingConnectors CLUSTER = new ClusterCascadingConnectors();
+  static ClusterCascadingConnector CLUSTER = new ClusterCascadingConnector();
 
   String describe();
 
@@ -36,17 +36,8 @@ public interface CascadingConnector {
 
   FlowConnector getFlowConnector(Map<?, ?> properties);
 
-  static class Connectors {
+  CascadeConnector getCascadeConnector();
 
-    @SuppressWarnings("unchecked")
-    static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {
-      return (Map<Object, Object>) properties;
-    }
-
-    static String describe(@NonNull final Class<?> type) {
-      return "Using " + type.getSimpleName();
-    }
-
-  }
+  CascadeConnector getCascadeConnector(Map<?, ?> properties);
 
 }

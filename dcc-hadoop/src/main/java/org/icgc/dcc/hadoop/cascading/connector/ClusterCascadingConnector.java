@@ -15,24 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.util.Map;
+
+import lombok.NonNull;
+import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlowConnector;
 
 /**
- * Constants for protocols.
+ * 
  */
-@NoArgsConstructor(access = PRIVATE)
-public class Protocols {
+class ClusterCascadingConnector extends BaseCascadingConnector {
 
-  private static final String SUFFIX = "://";
+  @Override
+  public FlowConnector getFlowConnector() {
+    return new HadoopFlowConnector();
+  }
 
-  public static final String LOCAL_FILE = "file" + SUFFIX;
-  public static final String HTTP = "http" + SUFFIX;
-  public static final String HTTPS = "https" + SUFFIX;
-  public static final String HDFS = "hdfs" + SUFFIX;
-  public static final String MONGO = "mongo" + SUFFIX;
-  public static final String ES = "es" + SUFFIX;
+  @Override
+  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
+    return new HadoopFlowConnector(toObjectsMap(flowProperties));
+  }
 
 }

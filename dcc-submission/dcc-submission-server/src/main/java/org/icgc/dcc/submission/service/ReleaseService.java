@@ -99,13 +99,13 @@ public class ReleaseService extends AbstractService {
 
   @Inject
   public ReleaseService(
-      @NonNull MailService mailService,
-      @NonNull DccFileSystem dccFileSystem,
-      @NonNull ReleaseRepository releaseRepository,
-      @NonNull DictionaryRepository dictionaryRepository,
-      @NonNull ProjectRepository projectRepository,
-      @NonNull CodeListRepository codelistRepository,
-      @NonNull ExecutiveReportService executiveReportService) {
+      @NonNull final MailService mailService,
+      @NonNull final DccFileSystem dccFileSystem,
+      @NonNull final ReleaseRepository releaseRepository,
+      @NonNull final DictionaryRepository dictionaryRepository,
+      @NonNull final ProjectRepository projectRepository,
+      @NonNull final CodeListRepository codelistRepository,
+      @NonNull final ExecutiveReportService executiveReportService) {
     super(mailService);
     this.dccFileSystem = dccFileSystem;
     this.releaseRepository = releaseRepository;

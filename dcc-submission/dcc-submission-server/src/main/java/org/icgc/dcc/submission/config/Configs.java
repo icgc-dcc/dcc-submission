@@ -15,27 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.submission.config;
+
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.transformValues;
 
 import java.util.Map;
 
-import lombok.NonNull;
-import cascading.flow.FlowConnector;
-import cascading.flow.local.LocalFlowConnector;
+import com.google.common.base.Function;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueType;
 
 /**
- * 
+ * TODO: move to core? (would need typesafe config)
  */
-class LocalCascadingConnector extends BaseCascadingConnector {
+public class Configs {
 
-  @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
-  }
+  /**
+   * Does not currently support nesting.
+   */
+  public static Map<String, String> asStringMap(ConfigObject configObject) {
 
-  @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
-    return new LocalFlowConnector(toObjectsMap(flowProperties));
+    return transformValues(
+        configObject,
+        new Function<ConfigValue, String>() {
+
+          @Override
+          public String apply(ConfigValue configValue) {
+            checkState(ConfigValueType.STRING == configValue.valueType());
+            return configValue.toString(); // TODO: no better way than using toString()?
+          }
+
+        });
   }
 
 }

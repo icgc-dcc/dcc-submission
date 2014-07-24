@@ -27,7 +27,7 @@ import lombok.SneakyThrows;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.util.Protocols;
+import org.icgc.dcc.core.util.Protocol;
 
 /**
  * Util methods for {@link FileSystem}.
@@ -37,7 +37,7 @@ public final class FileSystems {
 
   @SneakyThrows
   public static FileSystem getLocalFileSystem() {
-    return FileSystem.get(new URI(Protocols.LOCAL_FILE + "/"), new Configuration());
+    return FileSystem.get(new URI(Protocol.FILE + "/"), new Configuration());
   }
 
   @SneakyThrows

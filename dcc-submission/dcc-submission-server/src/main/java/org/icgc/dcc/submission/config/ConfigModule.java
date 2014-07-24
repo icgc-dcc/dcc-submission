@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.config;
 
+import static com.google.inject.name.Names.named;
+import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
+import static org.icgc.dcc.core.util.FsConfig.FS_URL;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +38,16 @@ public class ConfigModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(Config.class).toInstance(config);
+    bind(TypeLiterals.STRING_MAP)
+        .annotatedWith(
+            named(HADOOP_KEY))
+        .toInstance(
+            Configs.asStringMap(
+                config.getObject(HADOOP_KEY)));
+    // bind(Boolean.class)
+    // .annotatedWith(named(RELEASE_MONGO_URI_KEY))
+    // .toInstance(releaseMongoUri);
+    String string = config.getString(FS_URL);
   }
 
 }

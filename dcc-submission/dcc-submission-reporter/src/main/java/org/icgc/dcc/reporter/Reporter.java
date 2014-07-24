@@ -1,6 +1,8 @@
 package org.icgc.dcc.reporter;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.io.Files.createTempDir;
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -9,11 +11,8 @@ import static org.icgc.dcc.core.util.Jackson.getJsonRoot;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.FIRST_PLAIN_MR_PART_FILE_NAME;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,6 +21,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Jackson;
+import org.icgc.dcc.core.util.Protocol;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
@@ -42,21 +43,14 @@ public class Reporter {
 
   public static final Class<Reporter> CLASS = Reporter.class;
 
-  /**
-   * TODO: from config
-   */
-  private static final String FUSE_MOUTPOINT_PREFIX = "/hdfs/dcc";
-
-  static String OUTPUT_DIR = "/tmp/reports";
-  static String TIMESTAMP = new SimpleDateFormat("yyMMddHHmm").format(new Date()); // TODO
-
   public static void report(
       @NonNull final String releaseName,
       @NonNull final Optional<Set<String>> projectKeys,
       @NonNull final String defaultParentDataDir,
       @NonNull final String projectsJsonFilePath,
       @NonNull final String dictionaryFilePath,
-      @NonNull final String codeListsFilePath) {
+      @NonNull final String codeListsFilePath,
+      @NonNull final Map<String, String> hadoopProperties) {
 
     val dictionaryRoot = getJsonRoot(dictionaryFilePath);
     val codeListsRoot = getJsonRoot(codeListsFilePath);
@@ -76,16 +70,18 @@ public class Reporter {
         reporterInput,
         getSequencingStrategyMapping(
             dictionaryRoot,
-            codeListsRoot));
+            codeListsRoot),
+            hadoopProperties);
   }
 
   public static void process(
-      @NonNull String releaseName,
-      @NonNull Set<String> projectKeys,
-      @NonNull ReporterInput reporterInput,
-      @NonNull Map<String, String> mapping) {
+      @NonNull final String releaseName,
+      @NonNull final Set<String> projectKeys,
+      @NonNull final ReporterInput reporterInput,
+      @NonNull final Map<String, String> mapping,
+      @NonNull final Map<String, String> hadoopProperties) {
     log.info("Gathering reports: '{}' ('{}')", reporterInput, mapping);
-
+    
     // Main processing
     val table1s = Maps.<String, Pipe> newLinkedHashMap();
     val table2s = Maps.<String, Pipe> newLinkedHashMap();
@@ -101,48 +97,41 @@ public class Reporter {
       table2s.put(projectKey, table2);
     }
 
-    ReporterConnector.connectCascade(
-        reporterInput,
-        table1s,
-        table2s)
+    val outputDir = createTempDir();
+    new ReporterConnector(
+          isLocal(hadoopProperties),
+          outputDir.getAbsolutePath())
+        .connectCascade(
+            reporterInput,
+            table1s,
+            table2s,
+            hadoopProperties)
         .complete();
 
     for (val projectKey : projectKeys) {
-      ReporterGatherer.getJsonTable1(projectKey);
+      val documents = ReporterGatherer.getJsonTable1(outputDir.getAbsolutePath(), projectKey);
+      log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents));
     }
     for (val projectKey : projectKeys) {
-      ReporterGatherer.getJsonTable2(projectKey, mapping);
-    }
-    System.out.println(ReporterGatherer.getTsvTable1(projectKeys));
-    System.out.println(ReporterGatherer.getTsvTable2(projectKeys, mapping));
-    // log.info(table.getCsvRepresentation());
-    // Gatherer.writeCsvFile(table);
+      val documents = ReporterGatherer.getJsonTable2(outputDir.getAbsolutePath(), projectKey, mapping);
+      log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents));
+    }   
+    
+    outputDir.delete();    
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
     return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
   }
 
-  public static String getOuputFileFusePath(OutputType output, String projectKey) {
-    String outputFilePath = Reporter.getOutputFilePath(output, projectKey);
-    if (!Main.isLocal()) {
-      outputFilePath = PATH.join(
-          FUSE_MOUTPOINT_PREFIX,
-          outputFilePath,
-          FIRST_PLAIN_MR_PART_FILE_NAME);
-    }
-    return outputFilePath;
+  public static String getOutputFilePath(String outputDirPath, OutputType output, String projectKey) {
+    return PATH.join(outputDirPath, getOutputFileName(output, projectKey));
   }
 
-  public static String getOutputFilePath(OutputType output, String projectKey) {
-    return PATH.join(OUTPUT_DIR, getOutputFileName(output, projectKey));
-  }
-
-  private static String getOutputFileName(OutputType output, String projectKey) {
+  public static String getOutputFileName(OutputType output, String projectKey) {
     return EXTENSION.join(
         output.name().toLowerCase(),
         projectKey,
-        TIMESTAMP,
         TSV);
   }
 
@@ -159,6 +148,11 @@ public class Reporter {
         SSM_M_TYPE, SEQUENCING_STRATEGY_FIELD);
 
     return sequencingStrategyMapping.get();
+  }
+
+  private static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
+    checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
+    return Protocol.from(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
   }
 
 }

@@ -15,27 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.submission.config;
 
 import java.util.Map;
 
-import lombok.NonNull;
-import cascading.flow.FlowConnector;
-import cascading.flow.local.LocalFlowConnector;
+import com.google.inject.TypeLiteral;
 
 /**
  * 
  */
-class LocalCascadingConnector extends BaseCascadingConnector {
+public class TypeLiterals {
 
-  @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
-  }
-
-  @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
-    return new LocalFlowConnector(toObjectsMap(flowProperties));
-  }
+  /**
+   * TODO: move to core? (would need guice)
+   */
+  public static final TypeLiteral<Map<String, String>> STRING_MAP =
+      new TypeLiteral<Map<String, String>>() {};
 
 }

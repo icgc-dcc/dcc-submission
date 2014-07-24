@@ -19,6 +19,7 @@ package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utils methods for {@link String}.
@@ -33,6 +34,24 @@ public class Strings2 {
 
   public static String removeTrailingS(String s) {
     return s.replaceAll("s$", "");
+  }
+
+  /**
+   * Not appropriate for very big {@link String}s.
+   */
+  public static boolean isLowerCase(@NonNull final String s) {
+    return s.equals(s.toLowerCase());
+  }
+
+  /**
+   * Not appropriate for very big {@link String}s.
+   */
+  public static boolean isUpperCase(@NonNull final String s) {
+    return s.equals(s.toUpperCase());
+  }
+
+  public static String removeTarget(String s, String target) {
+    return s.replace(target, EMPTY_STRING);
   }
 
 }

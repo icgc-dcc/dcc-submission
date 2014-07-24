@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.service;
 
+import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -45,9 +47,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
@@ -61,6 +65,10 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
 
   @NonNull
   private final DccFileSystem dccFileSystem;
+
+  @NonNull
+  @Named(HADOOP_KEY)
+  private final Map<String, String> hadoopProperties;
 
   private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
 
@@ -155,7 +163,8 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
         val reporterInput = ReporterInput.from(matchingFiles);
         val projectKeysSet = Sets.<String> newHashSet(projectKeys);
 
-        Reporter.process(releaseName, projectKeysSet, reporterInput, mappings.get());
+        Reporter.process(
+            releaseName, projectKeysSet, reporterInput, mappings.get(), ImmutableMap.copyOf(hadoopProperties));
 
         for (val project : projectKeys) {
           ArrayNode projectReports = ReporterGatherer.getJsonTable1(project);

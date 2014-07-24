@@ -15,34 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.hadoop.cascading.connector.CascadingConnector.Connectors.toObjectsMap;
-
-import java.util.Map;
-
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Strings2.isLowerCase;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
 
-/**
- * 
- */
-class ClusterCascadingConnectors implements CascadingConnector {
+import org.icgc.dcc.core.model.Identifiable;
+
+@NoArgsConstructor(access = PRIVATE)
+public enum Scheme implements Identifiable {
+
+  FILE,
+  HTTP,
+  HTTPS,
+  HDFS,
+  MONGO,
+  ES,
+  S3;
 
   @Override
-  public String describe() {
-    return Connectors.describe(this.getClass());
+  public String getId() {
+    return name();
   }
 
-  @Override
-  public FlowConnector getFlowConnector() {
-    return new HadoopFlowConnector();
+  public boolean isFile() {
+    return this == FILE;
   }
 
-  @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
-    return new HadoopFlowConnector(toObjectsMap(flowProperties));
+  public boolean isHdfs() {
+    return this == HDFS;
+  }
+
+  public static Scheme from(@NonNull final String scheme) {
+    return valueOf(scheme.toUpperCase());
+  }
+
+  public static boolean isFile(@NonNull final String scheme) {
+    return is(scheme, FILE);
+  }
+
+  public static boolean isHdfs(@NonNull final String scheme) {
+    return is(scheme, HDFS);
+  }
+
+  private static boolean is(
+      @NonNull final String schemeString,
+      @NonNull final Scheme scheme) {
+    return isLowerCase(schemeString)
+        && from(schemeString) == scheme;
   }
 
 }
