@@ -32,13 +32,13 @@ import lombok.val;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.ValueType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
-import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.junit.Before;

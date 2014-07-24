@@ -54,8 +54,8 @@ public class PseudoNormalizer {
 
     new PseudoNormalizer(
         fileSystem,
-        platformStrategy.getFilePath(SGV_P_TYPE.getHarmonizedOutputFileName()),
-        new Path(outputFilePath))
+        getInputFilePath(platformStrategy),
+        getOutputFilePath(outputFilePath))
         .normalize();
   }
 
@@ -93,6 +93,14 @@ public class PseudoNormalizer {
   @SneakyThrows
   private PrintWriter getWriter() {
     return new PrintWriter(fileSystem.create(outputFile));
+  }
+
+  private static Path getInputFilePath(final PlatformStrategy platformStrategy) {
+    return platformStrategy.getFilePath(SGV_P_TYPE.getHarmonizedOutputFileName());
+  }
+
+  private static Path getOutputFilePath(final String outputFilePath) {
+    return new Path(outputFilePath);
   }
 
 }

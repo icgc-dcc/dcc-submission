@@ -19,9 +19,12 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.ImmutableSet.of;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
@@ -33,7 +36,10 @@ import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.PRIMARY_SUBTYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileSubType.SECONDARY_SUBTYPE;
 import static org.icgc.dcc.core.util.Joiners.UNDERSCORE;
+import static org.icgc.dcc.core.util.Optionals.ABSENT_FILE_TYPE;
+import static org.icgc.dcc.core.util.Proposition.Propositions.from;
 
 import java.util.List;
 import java.util.Set;
@@ -47,6 +53,7 @@ import org.icgc.dcc.core.model.FileTypes.FileSubType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Proposition;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 
@@ -113,6 +120,11 @@ public final class FeatureTypes {
       return this;
     }
 
+    @Override
+    public FileType getTopLevelFileType() {
+      return getPrimaryFileType();
+    }
+
     public boolean isSsm() {
       return this == SSM_TYPE;
     }
@@ -130,7 +142,7 @@ public final class FeatureTypes {
     }
 
     public boolean hasSequencingStrategy() {
-      return TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE.apply(this);
+      return FeatureTypes.hasSequencingStrategy(this).evaluate();
     }
 
     /**
@@ -148,7 +160,19 @@ public final class FeatureTypes {
             public boolean apply(FileType fileType) {
               return fileType.getDataType() == dataType;
             }
+
           }));
+    }
+
+    /**
+     * Returns the file sub types corresponding to the feature type.
+     * <p>
+     * TODO: move to {@link FileTypes} rather
+     */
+    public Set<FileSubType> getCorrespondingFileSubTypes() {
+      return newLinkedHashSet(transform(
+          getCorrespondingFileTypes(),
+          FileType.getGetSubTypeFunction()));
     }
 
     /**
@@ -169,6 +193,12 @@ public final class FeatureTypes {
 
     public FileType getPrimaryFileType() {
       return getFileType(PRIMARY_SUBTYPE);
+    }
+
+    public Optional<FileType> getSecondaryFileType() {
+      return getCorrespondingFileSubTypes().contains(SECONDARY_SUBTYPE) ?
+          Optional.of(getFileType(SECONDARY_SUBTYPE)) :
+          ABSENT_FILE_TYPE;
     }
 
     private FileType getFileType(final FileSubType fileSubType) {
@@ -220,52 +250,38 @@ public final class FeatureTypes {
     return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 
-  public static final Set<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = ImmutableSet.<FeatureType> of(
+  private static final Set<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = ImmutableSet.of(
       METH_ARRAY_TYPE,
       EXP_ARRAY_TYPE,
       PEXP_TYPE);
 
-  public static final Set<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
-
-  private static Predicate<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE = new Predicate<FeatureType>() {
-
-    @Override
-    public boolean apply(FeatureType featureType) {
-      return !TYPES_WITH_RAW_SEQUENCE_DATA.contains(featureType);
-    }
-
-  };
-
-  public static Predicate<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE =
-      TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE;
-
-  public static final Proposition HAS_RAW_SEQUENCE_DATA(
-      @NonNull final FeatureType featureType) {
-
-    return new Proposition() {
-
-      @Override
-      public boolean evaluate() {
-        return TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE.apply(featureType);
-      }
-
-    };
-
-  }
-
-  public static final Proposition HAS_SEQUENCING_STRATEGY(
-      @NonNull final FeatureType featureType) {
-
-    return HAS_RAW_SEQUENCE_DATA(featureType);
-
-  }
+  private static final Set<FeatureType> TYPES_WITH_SEQUENCING_STRATEGY = TYPES_WITH_RAW_SEQUENCE_DATA;
 
   public static Iterable<FeatureType> withRawSequenceData(@NonNull final Iterable<FeatureType> items) {
-    return filter(items, TYPES_WITH_RAW_SEQUENCE_DATA_PREDICATE);
+    return filter(items, hasRawSequenceData());
+  }
+
+  public static Iterable<FeatureType> withSequencingStrategy(@NonNull final FeatureType[] items) {
+    return withSequencingStrategy(ImmutableSet.copyOf(items));
   }
 
   public static Iterable<FeatureType> withSequencingStrategy(@NonNull final Iterable<FeatureType> items) {
-    return filter(items, TYPES_WITH_SEQUENCING_STRATEGY_PREDICATE);
+    return filter(items, hasSequencingStrategy());
   }
 
+  public static Proposition hasRawSequenceData(@NonNull final FeatureType featureType) {
+    return from(hasRawSequenceData(), featureType);
+  }
+
+  public static Proposition hasSequencingStrategy(@NonNull final FeatureType featureType) {
+    return from(hasSequencingStrategy(), featureType);
+  }
+
+  private static Predicate<FeatureType> hasRawSequenceData() {
+    return not(in(TYPES_WITH_RAW_SEQUENCE_DATA));
+  }
+
+  private static Predicate<FeatureType> hasSequencingStrategy() {
+    return not(in(TYPES_WITH_SEQUENCING_STRATEGY));
+  }
 }

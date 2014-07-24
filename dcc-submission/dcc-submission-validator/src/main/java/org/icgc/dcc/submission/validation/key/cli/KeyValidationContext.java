@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.key.cli;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
+import static org.icgc.dcc.core.util.FsConfig.FS_URL;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
-import static org.icgc.dcc.submission.fs.FsConfig.FS_URL;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.util.ArtifactoryDictionaryResolver;
+import org.icgc.dcc.core.util.resolver.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -49,6 +49,7 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
@@ -94,7 +95,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   @SneakyThrows
   protected Dictionary createDictionary() {
     // Deserialize
-    val objectNode = new ArtifactoryDictionaryResolver().getDictionary(DICTIONARY_VERSION);
+    val objectNode = new ArtifactoryDictionaryResolver().get(Optional.of(DICTIONARY_VERSION));
     val reader = new ObjectMapper().reader(Dictionary.class);
     Dictionary dictionary = reader.readValue(objectNode);
 
@@ -139,6 +140,11 @@ public class KeyValidationContext extends AbstractValidationContext {
         getRelease(),
         getProjectKey(),
         new Submission(projectKey, projectKey, releaseName));
+  }
+
+  @Override
+  public String getOutputDirPath() {
+    throw new UnsupportedOperationException("See DCC-2431");
   }
 
 }

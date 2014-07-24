@@ -17,8 +17,29 @@
  */
 package org.icgc.dcc.core.util;
 
+import lombok.NonNull;
+
+import com.google.common.base.Predicate;
+
 public interface Proposition {
 
   boolean evaluate();
+
+  public static class Propositions {
+
+    public static <T> Proposition from(
+        @NonNull final Predicate<T> predicate,
+        @NonNull final T t) {
+      return new Proposition() {
+
+        @Override
+        public boolean evaluate() {
+          return predicate.apply(t);
+        }
+
+      };
+    }
+
+  }
 
 }

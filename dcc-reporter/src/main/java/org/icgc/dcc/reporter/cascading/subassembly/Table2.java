@@ -1,15 +1,16 @@
 package org.icgc.dcc.reporter.cascading.subassembly;
 
-import static org.icgc.dcc.core.model.FeatureTypes.TYPES_WITH_SEQUENCING_STRATEGY;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
+import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
+import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.reporter.OutputType.DONOR;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.REDUNDANT_PROJECT_ID_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
 import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.reporter.ReporterFields.getTemporaryField;
 
 import java.util.List;
 import java.util.Set;
@@ -17,6 +18,7 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
@@ -63,14 +65,13 @@ public class Table2 extends SubAssembly {
       builder.add(iterator.next());
     }
 
-    for (val featureType : TYPES_WITH_SEQUENCING_STRATEGY) {
+    for (val featureType : withSequencingStrategy(FeatureType.values())) {
       builder.add(featureType.getTypeName());
     }
 
     // Remove this after DCC-2399 is done
     builder.add(NULL_REPLACEMENT);
-    builder.add(MISSING_CODE1);
-    builder.add(MISSING_CODE2);
+    builder.addAll(MISSING_CODES);
 
     return builder.build();
   }
@@ -96,12 +97,13 @@ public class Table2 extends SubAssembly {
         new SumBy(
             new Retain(
                 pipe,
-                PROJECT_ID_FIELD.append(DONOR_UNIQUE_COUNT_FIELD)),
-            PROJECT_ID_FIELD,
+                getTemporaryField(DONOR, PROJECT_ID_FIELD)
+                    .append(DONOR_UNIQUE_COUNT_FIELD)),
+            getTemporaryField(DONOR, PROJECT_ID_FIELD),
             DONOR_UNIQUE_COUNT_FIELD,
             DONOR_UNIQUE_COUNT_FIELD,
             long.class),
-        PROJECT_ID_FIELD,
+        getTemporaryField(DONOR, PROJECT_ID_FIELD),
         REDUNDANT_PROJECT_ID_FIELD);
   }
 

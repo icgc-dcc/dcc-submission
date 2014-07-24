@@ -21,6 +21,8 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -28,6 +30,8 @@ import lombok.val;
 import cascading.operation.BaseOperation;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Utility class to help with the {@link Tuple} object from cascading.
@@ -175,4 +179,14 @@ public final class Tuples2 {
     }
     return true;
   }
+
+  public static Set<Tuple> sortTuples(Tuple tuple) {
+    val tuples = new TreeSet<Tuple>();
+    for (val object : tuple) {
+      tuples.add(((TupleEntry) object).getTuple()); // By design
+    }
+
+    return ImmutableSet.<Tuple> copyOf(tuples);
+  }
+
 }

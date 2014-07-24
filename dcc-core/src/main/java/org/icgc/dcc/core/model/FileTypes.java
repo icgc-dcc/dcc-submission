@@ -24,6 +24,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_OPTIONAL_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileSubType.SECONDARY_SUBTYPE;
 import static org.icgc.dcc.core.util.FormatUtils._;
 
 import java.util.List;
@@ -98,6 +99,14 @@ public final class FileTypes {
 
     public boolean isMetaSubType() {
       return this == META_SUBTYPE;
+    }
+
+    public boolean isPrimarySubType() {
+      return this == PRIMARY_SUBTYPE;
+    }
+
+    public boolean isSecondarySubType() {
+      return this == SECONDARY_SUBTYPE;
     }
 
     public boolean isSystemSubType() {
@@ -247,8 +256,20 @@ public final class FileTypes {
     @Getter
     private final FileSubType subType;
 
+    public boolean isSsmP() {
+      return this == SSM_P_TYPE;
+    }
+
     public boolean isSsmS() {
       return this == SSM_S_TYPE;
+    }
+
+    public boolean isDonor() {
+      return this == DONOR_TYPE;
+    }
+
+    public boolean isSpecimen() {
+      return this == SPECIMEN_TYPE;
     }
 
     public boolean isSample() {
@@ -261,6 +282,10 @@ public final class FileTypes {
 
     public boolean isSimpleSecondary() {
       return isSsmS() || isSgvS();
+    }
+
+    public boolean isSecondary() {
+      return getSubType() == SECONDARY_SUBTYPE;
     }
 
     public boolean isOptional() {
@@ -296,14 +321,28 @@ public final class FileTypes {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 
-    public static Function<FileType, FileSubType> GET_SUB_TYPE = new Function<FileType, FileSubType>() {
+    public static Function<FileType, FileSubType> getGetSubTypeFunction() {
 
-      @Override
-      public FileSubType apply(FileType fileType) {
-        return fileType.getSubType();
-      }
+      return new Function<FileType, FileSubType>() {
 
-    };
+        @Override
+        public FileSubType apply(FileType fileType) {
+          return fileType.getSubType();
+        }
+
+      };
+    }
+
+    public static Function<FileType, DataType> toDataType() {
+      return new Function<FileType, DataType>() {
+
+        @Override
+        public DataType apply(FileType fileType) {
+          return fileType.getDataType();
+        }
+
+      };
+    }
 
   }
 

@@ -85,6 +85,11 @@ public class DefaultValidationContext implements ValidationContext {
   private PlatformStrategy platform;
 
   @Override
+  public String getOutputDirPath() {
+    throw new UnsupportedOperationException("See DCC-2431");
+  }
+
+  @Override
   public String getProjectKey() {
     return projectKey;
   }

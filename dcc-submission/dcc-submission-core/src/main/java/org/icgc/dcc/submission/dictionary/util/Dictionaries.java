@@ -21,6 +21,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Jackson.DEFAULT;
+import static org.icgc.dcc.core.util.Jackson.from;
 import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
 import java.io.File;
@@ -35,11 +37,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Jackson;
+import org.icgc.dcc.core.util.resolver.RestfulCodeListsResolver;
+import org.icgc.dcc.core.util.resolver.RestfulDictionaryResolver;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Optional;
 
 @NoArgsConstructor(access = PRIVATE)
 @Slf4j
@@ -90,6 +96,20 @@ public class Dictionaries {
   @SneakyThrows
   public static void writeDictionary(Dictionary dictionary, File file) {
     Jackson.PRETTY_WRITTER.writeValue(file, dictionary);
+  }
+
+  public static Dictionary getDictionary(String submissionWebAppUri, String dictionaryVersion) {
+    return from(
+        new RestfulDictionaryResolver(submissionWebAppUri)
+            .get(Optional.of(dictionaryVersion)),
+        Dictionary.class);
+  }
+
+  public static List<CodeList> getCodeLists(String submissionWebAppUri) {
+    return DEFAULT.<List<CodeList>> convertValue(
+        new RestfulCodeListsResolver(submissionWebAppUri)
+            .get(),
+        new TypeReference<List<CodeList>>() {});
   }
 
 }

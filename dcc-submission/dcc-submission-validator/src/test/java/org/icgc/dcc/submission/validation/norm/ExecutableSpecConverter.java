@@ -39,7 +39,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.normalization.Marking;
+import org.icgc.dcc.core.model.Marking;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;

@@ -20,14 +20,14 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Charsets.US_ASCII;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE1;
-import static org.icgc.dcc.core.model.MissingCodes.MISSING_CODE2;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
 import lombok.Value;
 import lombok.val;
+
+import org.icgc.dcc.core.model.SpecialValue;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -45,8 +45,10 @@ public class KVKey implements Comparable<KVKey> {
   private static final Interner<ByteBuffer> VALUE_INTERNER = Interners.newWeakInterner();
 
   private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.wrap("".getBytes(US_ASCII));
-  private static final ByteBuffer MISSING_CODE1_BYTE_BUFFER = ByteBuffer.wrap(MISSING_CODE1.getBytes(US_ASCII));
-  private static final ByteBuffer MISSING_CODE2_BYTE_BUFFER = ByteBuffer.wrap(MISSING_CODE2.getBytes(US_ASCII));
+  private static final ByteBuffer MISSING_CODE1_BYTE_BUFFER = ByteBuffer.wrap(SpecialValue.VERIFIED_UNKNOWN_CODE
+      .getBytes(US_ASCII));
+  private static final ByteBuffer MISSING_CODE2_BYTE_BUFFER = ByteBuffer.wrap(SpecialValue.NOT_APPLICABLE_CODE
+      .getBytes(US_ASCII));
   private static final List<ByteBuffer> MISSING_CODE_BYTE_BUFFERS = newArrayList(
       MISSING_CODE1_BYTE_BUFFER, MISSING_CODE2_BYTE_BUFFER);
 

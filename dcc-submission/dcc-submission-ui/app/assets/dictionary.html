@@ -85,7 +85,7 @@ a {
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <span class="navbar-brand">
-          <img src="https://dcc.icgc.org/styles/images/icgc-logo.png" width="20px"></img> 
+          <img src="https://dcc.icgc.org/styles/images/icgc-logo.png" width="20px"></img>
           <span style="font-size:1.7rem; vertical-align:middle">
               <span style="color:#777777">ICGC</span>
               <span> Dictionary Viewer</span>
@@ -94,14 +94,14 @@ a {
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse"> 
-      <form class="navbar-form navbar-left" role="search">
+    <div class="collapse navbar-collapse">
+      <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
           <input class="form-control" id="filter" type="text" size="25" onKeyUp="doFilter()" placeholder="Search:"></input>
         </div>
-      </form>
+      </div>
 
-      <form class="navbar-form navbar-left" role="search">
+      <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
            <select class="form-control" id="version_from" onChange="switchDictionary()" style="width:6em"></select>
         </div>
@@ -109,9 +109,9 @@ a {
         <div class="form-group">
            <select class="form-control" id="version_to" onChange="switchDictionary()" style="width:6em"></select>
         </div>
-      </form>
+      </div>
 
-      <form class="navbar-form navbar-left"> 
+      <div class="navbar-form navbar-left">
          <button class="btn btn-default">
              <div id="viewReport">
                  <span id="viewReportLabel">View Report</span> (
@@ -119,10 +119,10 @@ a {
                  <span id="counterChanged"></span> )
              </div>
          </button>
-      </form>
-      <form class="navbar-form navbar-right"> 
+      </div>
+      <div class="navbar-form navbar-right">
           <button class="btn btn-default" id="viewToggle"></button>
-      </form>
+      </div>
     </div>
 
   </div>
@@ -192,7 +192,7 @@ function getSelect(elem) {
 
 function switchDictionary() {
    render();
-   generateChangeList(); 
+   generateChangeList();
 }
 
 function doFilter() {

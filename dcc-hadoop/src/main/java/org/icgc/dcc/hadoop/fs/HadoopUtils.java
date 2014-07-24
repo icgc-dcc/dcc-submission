@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -67,14 +66,17 @@ public class HadoopUtils {
   public static final String FIRST_PLAIN_MR_PART_FILE_NAME = Joiner.on(MR_PART_FILE_SEPARATOR)
       .join(MR_PART_FILE_NAME_BASE, MR_PART_FILE_NAME_FIRST_INDEX);
 
-  public static String getConfigurationDescription(Configuration configuration) throws IOException {
-    final Writer writer = new StringWriter();
-    final PrintWriter printWriter = new PrintWriter(writer);
+  public static String getConfigurationDescription(Configuration configuration) {
+    @Cleanup
+    val printWriter = new PrintWriter(new StringWriter());
+    dumpConfiguration(configuration, printWriter);
+
+    return printWriter.toString();
+  }
+
+  @SneakyThrows
+  private static void dumpConfiguration(Configuration configuration, PrintWriter printWriter) {
     Configuration.dumpConfiguration(configuration, printWriter);
-    String content = writer.toString();
-    printWriter.close();
-    writer.close();
-    return content;
   }
 
   public static void mkdirs(FileSystem fileSystem, String stringPath) {
