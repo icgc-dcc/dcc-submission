@@ -22,7 +22,6 @@ import static org.icgc.submission.summary.QProjectDataTypeReport.projectDataType
 import java.util.List;
 
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.submission.summary.ProjectDataTypeReport;
 import org.icgc.submission.summary.QProjectDataTypeReport;
@@ -31,7 +30,6 @@ import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
 
-@Slf4j
 public class ProjectDataTypeReportRepository extends AbstractRepository<ProjectDataTypeReport, QProjectDataTypeReport> {
 
   @Inject

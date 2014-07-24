@@ -28,7 +28,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.service.ExecutiveReportService;
 
@@ -39,7 +38,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-@Slf4j
 @Path("executiveReports")
 public class ExecutiveReportResource {
 
