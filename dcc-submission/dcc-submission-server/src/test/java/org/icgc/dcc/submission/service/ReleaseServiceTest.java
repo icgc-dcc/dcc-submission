@@ -83,7 +83,7 @@ public class ReleaseServiceTest {
   @Mock
   private ExecutiveReportService executiveReportService;
 
-  private final static String testDbName = "dcc-test";
+  private final static String TEST_DB_NAME = "dcc-test";
 
   @Before
   public void setUp() {
@@ -91,7 +91,7 @@ public class ReleaseServiceTest {
       // use local host as test MongoDB for now
       Mongo mongo = new MongoClient("localhost");
       Morphia morphia = new Morphia();
-      datastore = morphia.createDatastore(mongo, testDbName);
+      datastore = morphia.createDatastore(mongo, TEST_DB_NAME);
 
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));

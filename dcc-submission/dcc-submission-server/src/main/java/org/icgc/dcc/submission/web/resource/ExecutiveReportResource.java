@@ -23,20 +23,27 @@ import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.util.Joiners;
+import org.icgc.dcc.core.util.Strings2;
 import org.icgc.dcc.submission.service.ExecutiveReportService;
+import org.icgc.submission.summary.ProjectDataTypeReport;
+import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 import com.google.inject.Inject;
 
 @Slf4j
@@ -46,88 +53,134 @@ public class ExecutiveReportResource {
   @Inject
   private ExecutiveReportService service;
 
-  private final Joiner joiner = Joiner.on("\t");
+  private static final Ordering<ProjectDataTypeReport> PROJECT_DATATYPE = new Ordering<ProjectDataTypeReport>() {
+
+    @Override
+    public int compare(ProjectDataTypeReport left, ProjectDataTypeReport right) {
+      val result = left.getProjectCode().compareTo(right.getProjectCode());
+      if (result == 0) {
+        return left.getType().compareTo(right.getType());
+      }
+      return result;
+    }
+  };
+
+  @SneakyThrows
+  private void addTSVRow(Appendable appendable, Object... objects) {
+    Joiners.TAB.appendTo(appendable, objects);
+    appendable.append(Strings2.UNIX_NEW_LINE);
+  }
 
   @GET
   @Path("projectDataType/{releaseName}")
-  @Produces("text/plain")
   public Response getProjectDataTypeReport(
       @PathParam("releaseName") String releaseName,
-      @QueryParam("projects") List<String> projects) {
+      @QueryParam("projects") List<String> projects,
+      @Context HttpHeaders httpHeaders) {
 
     val reports = service.getProjectDataTypeReport(releaseName,
         Objects.firstNonNull(projects, Collections.<String> emptyList()));
 
-    List<String> header = ImmutableList.<String> builder().add(
-        "Release", "Project Id", "Type", "Donor Count", "Specimen Count", "Sample Count", "Observation Count").build();
+    val header = ImmutableList.<String> builder().add(
+        "Release", "Project Id", "Type", "Donor Count", "Specimen Count", "Sample Count", "Observation Count");
 
-    val result = new StringBuilder();
+    val dataTypeTotals = Maps.<String, ProjectDataTypeReport> newHashMap();
 
-    result.append(joiner.join(header));
-    result.append("\n");
-
+    // Compute totals
     for (val report : reports) {
-      val line = Lists.<String> newArrayList();
-      line.add(report.getReleaseName());
-      line.add(report.getProjectCode());
-      line.add(report.getType());
-      line.add(String.valueOf(report.getDonorCount()));
-      line.add(String.valueOf(report.getSpecimenCount()));
-      line.add(String.valueOf(report.getSampleCount()));
-      line.add(String.valueOf(report.getObservationCount()));
-      result.append(joiner.join(line));
-      result.append("\n");
+      if (!dataTypeTotals.containsKey(report.getType())) {
+        dataTypeTotals.put(report.getType(), new ProjectDataTypeReport(releaseName, "Total", report.getType()));
+      }
+      val typeTotalReport = dataTypeTotals.get(report.getType());
+      typeTotalReport.setDonorCount(typeTotalReport.getDonorCount() + report.getDonorCount());
+      typeTotalReport.setSpecimenCount(typeTotalReport.getSpecimenCount() + report.getSpecimenCount());
+      typeTotalReport.setSampleCount(typeTotalReport.getSampleCount() + report.getSampleCount());
+      typeTotalReport.setObservationCount(typeTotalReport.getObservationCount() + report.getObservationCount());
     }
 
-    return Response.ok(result.toString()).build();
+    // Order by project, then by data type. Totals always go last
+    val sortedReports = PROJECT_DATATYPE.sortedCopy(reports);
+    val sortedTotal = PROJECT_DATATYPE.sortedCopy(dataTypeTotals.values());
+    sortedReports.addAll(sortedTotal);
+
+    // Returns either JSON or TSV
+    if (httpHeaders.getHeaderString("Accept").equals(MediaType.APPLICATION_JSON)) {
+      return Response.ok(sortedReports).type(MediaType.APPLICATION_JSON).build();
+    } else {
+      val result = new StringBuilder();
+      addTSVRow(result, header.build().toArray());
+      for (val report : sortedReports) {
+        addTSVRow(result, report.getReleaseName(),
+            report.getProjectCode(),
+            report.getType(),
+            String.valueOf(report.getDonorCount()),
+            String.valueOf(report.getSpecimenCount()),
+            String.valueOf(report.getSampleCount()),
+            String.valueOf(report.getObservationCount()));
+      }
+      return Response.ok(result.toString()).type(MediaType.TEXT_PLAIN).build();
+    }
+
   }
 
   @GET
   @Path("projectSequencingStrategy/{releaseName}")
-  @Produces("text/plain")
   public Response getProjectSequencingStrategyReport(
       @PathParam("releaseName") String releaseName,
-      @QueryParam("projects") List<String> projects) {
+      @QueryParam("projects") List<String> projects,
+      @Context HttpHeaders httpHeaders) {
 
     val reports = service.getProjectSequencingStrategyReport(releaseName,
         Objects.firstNonNull(projects, Collections.<String> emptyList()));
     val staticHeader = ImmutableList.<String> of("Release", "Project Id");
 
-    val result = new StringBuilder();
-
     // Headers may vary across releases, but within a specific release we expect to have
     // the same header for all its projects since they use the same dictionary and codelists.
     // If not, we have bigger problems...
+    val dynamicHeader = ImmutableSortedSet.<String> naturalOrder();
+
+    val reportBuilder = ImmutableList.<ProjectSequencingStrategyReport> builder();
     if (!reports.isEmpty()) {
-      val dynamicHeader =
-          ImmutableSortedSet.<String> naturalOrder().addAll(reports.get(0).getCountSummary().keySet()).build();
-      val header = ImmutableList.<String> builder().addAll(staticHeader).addAll(dynamicHeader).build();
-      result.append(joiner.join(header));
-      result.append("\n");
+      val total = Maps.<String, Long> newHashMap();
+      dynamicHeader.addAll(reports.get(0).getCountSummary().keySet());
 
+      // Calculate overall total
+      val keys = dynamicHeader.build();
       for (val report : reports) {
-        List<String> line = Lists.newArrayList();
-
-        // Handle static
-        line.add(report.getReleaseName());
-        line.add(report.getProjectCode());
-
-        // Handle dynamic
-        for (val key : dynamicHeader) {
-          line.add(report.getCountSummary().get(key).toString());
+        for (val key : keys.toArray(new String[keys.size()])) {
+          val count = report.getCountSummary().get(key);
+          if (!total.containsKey(key)) {
+            total.put(key, 0L);
+          }
+          total.put(key, total.get(key) + count.longValue());
         }
-        result.append(joiner.join(line));
-        result.append("\n");
       }
-
-    } else {
-      result.append(joiner.join(staticHeader));
-      result.append("\n");
+      ProjectSequencingStrategyReport totalReport = new ProjectSequencingStrategyReport();
+      totalReport.setReleaseName(releaseName);
+      totalReport.setProjectCode("Total");
+      totalReport.setCountSummary(total);
+      reportBuilder.addAll(reports).add(totalReport);
     }
 
-    // reports.get(0).getCountSummary().keySet()
-    // List<String> dynamicHeader =
+    // Returns either JSON or TSV
+    if (httpHeaders.getHeaderString("Accept").equals(MediaType.APPLICATION_JSON)) {
+      return Response.ok(reportBuilder.build()).type(MediaType.APPLICATION_JSON).build();
+    } else {
+      val result = new StringBuilder();
+      val header = ImmutableList.<String> builder().addAll(staticHeader).addAll(dynamicHeader.build()).build();
+      addTSVRow(result, header.toArray());
 
-    return Response.ok(result.toString()).build();
+      val keys = dynamicHeader.build();
+      for (val report : reportBuilder.build()) {
+        val detail = ImmutableList.<String> builder();
+        detail.add(report.getReleaseName(), report.getProjectCode());
+        for (val key : keys.toArray(new String[keys.size()])) {
+          detail.add(report.getCountSummary().get(key).toString());
+        }
+        addTSVRow(result, detail.build().toArray());
+      }
+      return Response.ok(result.toString()).type(MediaType.TEXT_PLAIN).build();
+    }
+
   }
 }
