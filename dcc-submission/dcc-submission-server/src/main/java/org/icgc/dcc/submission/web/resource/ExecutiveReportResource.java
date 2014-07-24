@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.core.util.Strings2;
@@ -46,7 +45,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.inject.Inject;
 
-@Slf4j
 @Path("executiveReports")
 public class ExecutiveReportResource {
 

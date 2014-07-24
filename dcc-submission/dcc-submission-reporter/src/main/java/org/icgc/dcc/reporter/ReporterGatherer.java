@@ -26,8 +26,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.io.Files;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObjectBuilder;
 
 @Slf4j
 public class ReporterGatherer {
@@ -102,7 +100,8 @@ public class ReporterGatherer {
     return getJsonTable(projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
   }
 
-  private static ArrayNode getJsonTable(final String projectKey, OutputType outputType, Optional<Map<String, String>> mapping) {
+  private static ArrayNode getJsonTable(final String projectKey, OutputType outputType,
+      Optional<Map<String, String>> mapping) {
     val outputFilePath = Reporter.getOuputFileFusePath(outputType, projectKey);
     val headerLine = readFirstLine(outputFilePath);
     val headers = newArrayList(TAB.split(headerLine));
@@ -115,7 +114,7 @@ public class ReporterGatherer {
 
       val node = JsonNodeFactory.instance.objectNode();
       for (int i = 0; i < headerSize; i++) {
-    	  node.put(getHeader(headers.get(i), mapping), values.get(i));
+        node.put(getHeader(headers.get(i), mapping), values.get(i));
       }
       documents.add(node);
     }
