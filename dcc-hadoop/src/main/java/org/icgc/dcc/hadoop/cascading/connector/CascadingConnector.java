@@ -15,35 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import java.util.Set;
+import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
+import cascading.flow.FlowConnector;
 
 /**
- * TODO: add checks
+ * 
  */
-public class ReporterTest {
+public interface CascadingConnector {
 
-  private static final String TEST_RELEASE_NAME = "reporter-release-name";
-  private static final String DEFAULT_PARENT_TEST_DIR = "src/test/resources/data";
-  private static final String TEST_CONF_DIR = "src/test/resources/conf";
+  static LocalCascadingConnector LOCAL = new LocalCascadingConnector();
+  static ClusterCascadingConnectors CLUSTER = new ClusterCascadingConnectors();
 
-  @Test
-  public void test_reporter() {
+  String describe();
 
-    Reporter.report(
-        TEST_RELEASE_NAME,
-        Optional.<Set<String>> of(ImmutableSet.of("p1", "p2")),
-        DEFAULT_PARENT_TEST_DIR,
-        TEST_CONF_DIR + "/projects.json",
-        TEST_CONF_DIR + "/Dictionary.json",
-        TEST_CONF_DIR + "/CodeList.json");
+  FlowConnector getFlowConnector();
+
+  FlowConnector getFlowConnector(Map<?, ?> properties);
+
+  static class Connectors {
+
+    @SuppressWarnings("unchecked")
+    static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {
+      return (Map<Object, Object>) properties;
+    }
+
+    static String describe(@NonNull final Class<?> type) {
+      return "Using " + type.getSimpleName();
+    }
 
   }
 

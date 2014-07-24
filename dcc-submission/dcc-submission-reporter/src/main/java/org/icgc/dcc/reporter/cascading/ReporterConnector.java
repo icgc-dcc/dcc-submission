@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
 import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.cascading.taps.Taps;
@@ -41,12 +42,14 @@ import cascading.property.AppProps;
 import cascading.tap.Tap;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 @Slf4j
 public class ReporterConnector {
 
   private static final String CONCURRENCY = String.valueOf(5);
   private static final Taps TAPS = Main.isLocal() ? Taps.LOCAL : Taps.HADOOP;
+  private static final CascadingConnector CONNECTOR = Main.isLocal() ? CascadingConnector.LOCAL : CascadingConnector.CLUSTER;
   private static final String NAMENODE = Main.isLocal() ? "file://localhost" : "***REMOVED***";
   private static final String JOB_TRACKER = Main.isLocal() ? "localhost" : "***REMOVED***";   
 
@@ -82,15 +85,18 @@ public class ReporterConnector {
    * TODO: refactoring with the other components.
    */
   private static FlowConnector getFlowConnector() {
-
-    if (isLocal()) {
-      log.info("Using local mode");
-      return new LocalFlowConnector();
-    }
-    log.info("Using hadoop mode");
-
-    HadoopProperties.setHadoopUserNameProperty();
+    log.info(CONNECTOR.describe());
+    
     Map<Object, Object> flowProperties = newHashMap();
+    if (!Main.isLocal()) {
+      HadoopProperties.setHadoopUserNameProperty();
+      flowProperties = getClusterFlowProperties(flowProperties);
+    }
+    
+    return CONNECTOR.getFlowConnector(flowProperties);
+  }
+
+  private static Map<Object, Object> getClusterFlowProperties(Map<Object, Object> flowProperties) {
     AppProps.setApplicationJarClass(flowProperties, Reporter.CLASS);
     AppProps.setApplicationName(flowProperties, Reporter.CLASS.getSimpleName());
     AppProps.setApplicationVersion(flowProperties, getCommitId());
@@ -102,8 +108,7 @@ public class ReporterConnector {
     flowProperties.put("mapred.child.java.opts", "-Xmx6g");
     flowProperties.put("io.sort.mb", "2000");
     flowProperties.put("io.sort.factor", "20");
-
-    return new HadoopFlowConnector(flowProperties);
+    return flowProperties;
   }
 
   /**

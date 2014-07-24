@@ -31,5 +31,8 @@ public class Protocols {
   public static final String LOCAL_FILE = "file" + SUFFIX;
   public static final String HTTP = "http" + SUFFIX;
   public static final String HTTPS = "https" + SUFFIX;
+  public static final String HDFS = "hdfs" + SUFFIX;
+  public static final String MONGO = "mongo" + SUFFIX;
+  public static final String ES = "es" + SUFFIX;
 
 }

@@ -15,36 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import java.util.Set;
+import static org.icgc.dcc.hadoop.cascading.connector.CascadingConnector.Connectors.toObjectsMap;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import java.util.Map;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
+import cascading.flow.FlowConnector;
+import cascading.flow.local.LocalFlowConnector;
 
 /**
- * TODO: add checks
+ * 
  */
-public class ReporterTest {
+class LocalCascadingConnector implements CascadingConnector {
 
-  private static final String TEST_RELEASE_NAME = "reporter-release-name";
-  private static final String DEFAULT_PARENT_TEST_DIR = "src/test/resources/data";
-  private static final String TEST_CONF_DIR = "src/test/resources/conf";
+  @Override
+  public String describe() {
+    return Connectors.describe(this.getClass());
+  }
 
-  @Test
-  public void test_reporter() {
+  @Override
+  public FlowConnector getFlowConnector() {
+    return new LocalFlowConnector();
+  }
 
-    Reporter.report(
-        TEST_RELEASE_NAME,
-        Optional.<Set<String>> of(ImmutableSet.of("p1", "p2")),
-        DEFAULT_PARENT_TEST_DIR,
-        TEST_CONF_DIR + "/projects.json",
-        TEST_CONF_DIR + "/Dictionary.json",
-        TEST_CONF_DIR + "/CodeList.json");
-
+  @Override
+  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
+    return new LocalFlowConnector(toObjectsMap(flowProperties));
   }
 
 }
