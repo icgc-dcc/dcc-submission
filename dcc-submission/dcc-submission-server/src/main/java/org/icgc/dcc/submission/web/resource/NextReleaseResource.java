@@ -68,6 +68,7 @@ import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -257,7 +258,7 @@ public class NextReleaseResource {
     }
 
     try {
-      releaseService.resetSubmissions(projectKey);
+      releaseService.resetSubmissions(ImmutableList.<String> of(projectKey));
     } catch (Throwable t) {
       log.error("Error resetting state for '" + projectKey + "':", t);
       throw t;

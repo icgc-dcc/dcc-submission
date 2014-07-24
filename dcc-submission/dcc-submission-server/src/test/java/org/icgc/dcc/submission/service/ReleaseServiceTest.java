@@ -80,6 +80,9 @@ public class ReleaseServiceTest {
   @Mock
   private MailService mailService;
 
+  @Mock
+  private ExecutiveReportService executiveReportService;
+
   private final static String testDbName = "dcc-test";
 
   @Before
@@ -125,8 +128,9 @@ public class ReleaseServiceTest {
       val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore));
       val codeListRepository = spy(new CodeListRepository(morphia, datastore));
       val projectRepository = spy(new ProjectRepository(morphia, datastore));
+
       releaseService = new ReleaseService(mailService, dccFileSystem,
-          releaseRepository, dictionaryRepository, projectRepository);
+          releaseRepository, dictionaryRepository, projectRepository, codeListRepository, executiveReportService);
 
       dictionaryService = new DictionaryService(releaseService, dictionaryRepository, codeListRepository);
       dictionaryService.addDictionary(dictionary);

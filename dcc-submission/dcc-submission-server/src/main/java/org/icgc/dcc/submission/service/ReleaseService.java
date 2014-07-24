@@ -53,6 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
@@ -73,11 +74,13 @@ import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.dcc.submission.web.InvalidNameException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -91,6 +94,8 @@ public class ReleaseService extends AbstractService {
   private final ReleaseRepository releaseRepository;
   private final DictionaryRepository dictionaryRepository;
   private final ProjectRepository projectRepository;
+  private final CodeListRepository codelistRepository;
+  private final ExecutiveReportService executiveReportService;
 
   @Inject
   public ReleaseService(
@@ -98,12 +103,16 @@ public class ReleaseService extends AbstractService {
       @NonNull DccFileSystem dccFileSystem,
       @NonNull ReleaseRepository releaseRepository,
       @NonNull DictionaryRepository dictionaryRepository,
-      @NonNull ProjectRepository projectRepository) {
+      @NonNull ProjectRepository projectRepository,
+      @NonNull CodeListRepository codelistRepository,
+      @NonNull ExecutiveReportService executiveReportService) {
     super(mailService);
     this.dccFileSystem = dccFileSystem;
     this.releaseRepository = releaseRepository;
     this.dictionaryRepository = dictionaryRepository;
     this.projectRepository = projectRepository;
+    this.codelistRepository = codelistRepository;
+    this.executiveReportService = executiveReportService;
   }
 
   /**
@@ -320,6 +329,18 @@ public class ReleaseService extends AbstractService {
       submission.signOff(submissionFiles);
     }
 
+    ObjectMapper mapper = Jackson.DEFAULT;
+    final String _releaseName = releaseName;
+    val dictionaryNode =
+        mapper.valueToTree(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()));
+    val codelistNode = mapper.valueToTree(codelistRepository.findCodeLists());
+    val releasePath = dccFileSystem.buildReleaseStringPath(_releaseName);
+
+    // This spawns a separate thread
+    executiveReportService.generateReport(_releaseName,
+        ImmutableList.<String> copyOf(projectKeys),
+        releasePath,
+        dictionaryNode, codelistNode);
     releaseRepository.updateRelease(releaseName, release);
 
     // Remove validation files in the ".validation" folder (leave normalization files untouched)
@@ -605,14 +626,8 @@ public class ReleaseService extends AbstractService {
     releaseRepository.updateRelease(releaseName, release);
   }
 
-  @Synchronized
   public void resetSubmissions() {
-    val release = getNextRelease();
-    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
-
-    for (val projectKey : release.getProjectKeys()) {
-      resetSubmission(release, projectKey, filePatternToTypeMap);
-    }
+    resetSubmissions(getNextRelease().getProjectKeys());
   }
 
   @Synchronized
@@ -625,10 +640,15 @@ public class ReleaseService extends AbstractService {
   }
 
   @Synchronized
-  public void resetSubmissions(String... projectKeys) {
+  public void resetSubmissions(Iterable<String> projects) {
     val release = getNextRelease();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
-    for (val projectKey : projectKeys) {
+
+    // Clear all existing reports associated with the release
+    executiveReportService.deleteProjectDataTypeReport(release.getName());
+    executiveReportService.deleteProjectSequencingStrategyReport(release.getName());
+
+    for (val projectKey : projects) {
       resetSubmission(release, projectKey, filePatternToTypeMap);
     }
   }
