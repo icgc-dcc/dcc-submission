@@ -55,7 +55,7 @@ public class ExecutiveReportResource {
 
     @Override
     public int compare(ProjectDataTypeReport left, ProjectDataTypeReport right) {
-      val result = left.getProjectCode().compareTo(right.getProjectCode());
+      int result = left.getProjectCode().compareTo(right.getProjectCode());
       if (result == 0) {
         return left.getType().compareTo(right.getType());
       }
