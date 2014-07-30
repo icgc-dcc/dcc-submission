@@ -334,12 +334,10 @@ public class ReleaseService extends AbstractService {
     val dictionaryNode =
         mapper.valueToTree(dictionaryRepository.findDictionaryByVersion(release.getDictionaryVersion()));
     val codelistNode = mapper.valueToTree(codelistRepository.findCodeLists());
-    val releasePath = dccFileSystem.buildReleaseStringPath(_releaseName);
 
     // This spawns a separate thread
     executiveReportService.generateReport(_releaseName,
         ImmutableList.<String> copyOf(projectKeys),
-        releasePath,
         dictionaryNode, codelistNode);
     releaseRepository.updateRelease(releaseName, release);
 

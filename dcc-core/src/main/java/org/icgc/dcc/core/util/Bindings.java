@@ -15,40 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.config;
+package org.icgc.dcc.core.util;
 
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Maps.transformValues;
-
-import java.util.Map;
-
-import com.google.common.base.Function;
-import com.typesafe.config.ConfigObject;
-import com.typesafe.config.ConfigValue;
-import com.typesafe.config.ConfigValueType;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 /**
- * TODO: move to core? (would need typesafe config)
+ * 
  */
-public class Configs {
+@NoArgsConstructor(access = PRIVATE)
+public class Bindings {
 
-  /**
-   * Does not currently support nesting.
-   */
-  public static Map<String, String> asStringMap(ConfigObject configObject) {
-    return copyOf(transformValues(
-        configObject,
-        new Function<ConfigValue, String>() {
-
-          @Override
-          public String apply(ConfigValue configValue) {
-            checkState(ConfigValueType.OBJECT != configValue.valueType()
-                && ConfigValueType.LIST != configValue.valueType());
-            return String.valueOf(configValue.unwrapped());
-          }
-
-        }));
-  }
+  public static final String HADOOP_PROPERTIES = "hadoop_properties";
 
 }

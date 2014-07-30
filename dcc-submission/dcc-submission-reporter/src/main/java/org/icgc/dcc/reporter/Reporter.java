@@ -142,7 +142,7 @@ public class Reporter {
 
   private static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
     checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
-    return Protocol.from(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
+    return Protocol.fromURL(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
   }
 
 }
