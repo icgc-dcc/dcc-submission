@@ -149,31 +149,33 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
       @NonNull final JsonNode codeListsNode) {
 
     log.info("Generating reports for {}", projectKeys);
+
+    val patterns = Dictionaries.getPatterns(dictionaryNode);
+    val mappings = Dictionaries.getMapping(dictionaryNode, codeListsNode, FileType.SSM_M_TYPE,
+        FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
+
     queue.add(new Runnable() {
 
       @Override
       public void run() {
 
-        val patterns = Dictionaries.getPatterns(dictionaryNode);
         val matchingFiles = SubmissionInputData.getMatchingFiles(
             dccFileSystem.getFileSystem(), releasePath, projectKeys,
             patterns);
-        val mappings = Dictionaries.getMapping(dictionaryNode, codeListsNode, FileType.SSM_M_TYPE,
-            FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
         val reporterInput = ReporterInput.from(matchingFiles);
         val projectKeysSet = Sets.<String> newHashSet(projectKeys);
 
-        Reporter.process(
+        val outputDirPath = Reporter.process(
             releaseName, projectKeysSet, reporterInput, mappings.get(), ImmutableMap.copyOf(hadoopProperties));
 
         for (val project : projectKeys) {
-          ArrayNode projectReports = ReporterGatherer.getJsonTable1(project);
+          ArrayNode projectReports = ReporterGatherer.getJsonTable1(outputDirPath, project);
 
           for (val report : projectReports) {
             projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
           }
 
-          ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(project, mappings.get());
+          ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(outputDirPath, project, mappings.get());
           for (val report : sequencingStrategyReports) {
             projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
           }

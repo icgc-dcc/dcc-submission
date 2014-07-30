@@ -17,7 +17,12 @@
  */
 package org.icgc.dcc.reporter;
 
+import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
+
 import java.util.Set;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.icgc.dcc.core.util.Protocol;
@@ -30,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * TODO: add checks
  */
+@Slf4j
 public class ReporterTest {
 
   private static final String TEST_RELEASE_NAME = "reporter-release-name";
@@ -38,16 +44,27 @@ public class ReporterTest {
 
   @Test
   public void test_reporter() {
-
-    Reporter.report(
+    val projectKeys = ImmutableSet.of("p1", "p2");    
+    val outputDirPath = Reporter.report(
         TEST_RELEASE_NAME,
-        Optional.<Set<String>> of(ImmutableSet.of("p1", "p2")),
+        Optional.<Set<String>> of(projectKeys),
         DEFAULT_PARENT_TEST_DIR,
         TEST_CONF_DIR + "/projects.json",
         TEST_CONF_DIR + "/Dictionary.json",
         TEST_CONF_DIR + "/CodeList.json",
         ImmutableMap.<String, String>of(
             CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, Protocol.FILE.getId()));
+    
+
+    for (val projectKey : projectKeys) {
+      val documents = ReporterGatherer.getJsonTable1(outputDirPath, projectKey);
+      log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
+    }
+    for (val projectKey : projectKeys) {
+      val documents = ReporterGatherer.getJsonTable2(outputDirPath, projectKey, ImmutableMap.<String, String>of());
+      log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
+    }   
+    
 
   }
 

@@ -30,20 +30,13 @@ public class ReporterInput {
 
   private final Table<String, FileType, Set<String>> data = HashBasedTable.create();
 
-  /**
-   * TODO: necessary?
-   */
   public static ReporterInput from(Map<String, Map<FileType, List<Path>>> matchingFiles) {
     val inputData = new ReporterInput();
     for (val projectKey : matchingFiles.keySet()) {
       val projectFiles = matchingFiles.get(projectKey);
       for (val fileType : projectFiles.keySet()) {
         for (val path : projectFiles.get(fileType)) {
-          inputData.addFile(projectKey, fileType, path.toUri().getPath()
-
-              // TODO: improve when it's decided whether we go the NFS or HDFS route
-              .replace("/hdfs/dcc", "")
-              .replace("/nfs/dcc_secure/dcc/etl/icgc16/migration", "/icgc/dcc_root_dir/ICGC16/migration"));
+          inputData.addFile(projectKey, fileType, path.toUri().getPath());
         }
       }
     }

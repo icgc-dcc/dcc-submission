@@ -21,7 +21,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.core.util.Protocol;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
@@ -43,7 +42,7 @@ public class Reporter {
 
   public static final Class<Reporter> CLASS = Reporter.class;
 
-  public static void report(
+  public static String report(
       @NonNull final String releaseName,
       @NonNull final Optional<Set<String>> projectKeys,
       @NonNull final String defaultParentDataDir,
@@ -62,7 +61,7 @@ public class Reporter {
             projectsJsonFilePath,
             getPatterns(dictionaryRoot)));
 
-    process(
+    return process(
         releaseName,
         projectKeys.isPresent() ?
             projectKeys.get() :
@@ -74,7 +73,7 @@ public class Reporter {
             hadoopProperties);
   }
 
-  public static void process(
+  public static String process(
       @NonNull final String releaseName,
       @NonNull final Set<String> projectKeys,
       @NonNull final ReporterInput reporterInput,
@@ -107,17 +106,8 @@ public class Reporter {
             table2s,
             hadoopProperties)
         .complete();
-
-    for (val projectKey : projectKeys) {
-      val documents = ReporterGatherer.getJsonTable1(outputDir.getAbsolutePath(), projectKey);
-      log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents));
-    }
-    for (val projectKey : projectKeys) {
-      val documents = ReporterGatherer.getJsonTable2(outputDir.getAbsolutePath(), projectKey, mapping);
-      log.info("Content for '{}': '{}'", projectKey, Jackson.formatPrettyJson(documents));
-    }   
     
-    outputDir.delete();    
+    return outputDir.getAbsolutePath();
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
