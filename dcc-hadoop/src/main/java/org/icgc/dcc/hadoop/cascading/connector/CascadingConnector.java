@@ -19,11 +19,13 @@ package org.icgc.dcc.hadoop.cascading.connector;
 
 import java.util.Map;
 
+import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
+import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 
 /**
- * 
+ * Interface to connect {@link Flow}s and {@link Cascade}s.
  */
 public interface CascadingConnector {
 

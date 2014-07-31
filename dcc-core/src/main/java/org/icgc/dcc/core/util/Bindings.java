@@ -21,7 +21,7 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 /**
- * 
+ * Names for bindings.
  */
 @NoArgsConstructor(access = PRIVATE)
 public class Bindings {

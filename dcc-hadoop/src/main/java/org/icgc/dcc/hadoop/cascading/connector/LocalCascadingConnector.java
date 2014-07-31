@@ -23,9 +23,6 @@ import lombok.NonNull;
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
 
-/**
- * 
- */
 class LocalCascadingConnector extends BaseCascadingConnector {
 
   @Override

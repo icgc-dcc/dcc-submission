@@ -23,9 +23,6 @@ import lombok.NonNull;
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
 
-/**
- * 
- */
 class ClusterCascadingConnector extends BaseCascadingConnector {
 
   @Override

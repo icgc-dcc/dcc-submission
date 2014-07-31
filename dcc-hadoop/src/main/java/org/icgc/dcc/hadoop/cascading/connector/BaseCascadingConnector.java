@@ -22,9 +22,6 @@ import java.util.Map;
 import lombok.NonNull;
 import cascading.cascade.CascadeConnector;
 
-/**
- * 
- */
 abstract class BaseCascadingConnector implements CascadingConnector {
 
   @Override
