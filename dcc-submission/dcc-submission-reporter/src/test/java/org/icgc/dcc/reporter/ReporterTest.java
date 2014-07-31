@@ -57,11 +57,11 @@ public class ReporterTest {
     
 
     for (val projectKey : projectKeys) {
-      val documents = ReporterGatherer.getJsonTable1(outputDirPath, projectKey);
+      val documents = ReporterGatherer.getJsonTable1(outputDirPath, TEST_RELEASE_NAME, projectKey);
       log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
     }
     for (val projectKey : projectKeys) {
-      val documents = ReporterGatherer.getJsonTable2(outputDirPath, projectKey, ImmutableMap.<String, String>of());
+      val documents = ReporterGatherer.getJsonTable2(outputDirPath, TEST_RELEASE_NAME, projectKey, ImmutableMap.<String, String>of());
       log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
     }   
     

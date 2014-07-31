@@ -17,10 +17,14 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
+import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
+
 import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -28,9 +32,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.core.util.Strings2;
@@ -40,11 +46,13 @@ import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.inject.Inject;
 
+@Slf4j
 @Path("executiveReports")
 public class ExecutiveReportResource {
 
@@ -67,6 +75,47 @@ public class ExecutiveReportResource {
   private void addTSVRow(Appendable appendable, Object... objects) {
     Joiners.TAB.appendTo(appendable, objects);
     appendable.append(Strings2.UNIX_NEW_LINE);
+  }
+
+  /**
+   * Generates executive reports for the given release.
+   */
+  @POST
+  // TODO: best verb (see DCC-2445)?
+  @Path("/generate/{releaseName}")
+  public Response generateExecutiveReport(
+      @Context SecurityContext securityContext,
+      @PathParam("releaseName") String releaseName) {
+
+    log.info("Generating reports for '{}'...", releaseName);
+    if (!isSuperUser(securityContext)) {
+      return unauthorizedResponse();
+    }
+
+    service.generateReport(releaseName);
+
+    return Response.ok().build();
+  }
+
+  /**
+   * Generates executive reports for the given release/project combination.
+   */
+  @POST
+  // TODO: best verb (see DCC-2445)?
+  @Path("/generate/{releaseName}/{projectKey}")
+  public Response generateExecutiveReport(
+      @Context SecurityContext securityContext,
+      @PathParam("releaseName") String releaseName,
+      @PathParam("projectKey") String projectKey) {
+
+    log.info("Generating reports for '{}.{}'...", releaseName, projectKey);
+    if (!isSuperUser(securityContext)) {
+      return unauthorizedResponse();
+    }
+
+    service.generateReport(releaseName, ImmutableSet.of(projectKey));
+
+    return Response.ok().build();
   }
 
   @GET

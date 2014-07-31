@@ -84,6 +84,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -337,7 +338,7 @@ public class ReleaseService extends AbstractService {
 
     // This spawns a separate thread
     executiveReportService.generateReport(_releaseName,
-        ImmutableList.<String> copyOf(projectKeys),
+        ImmutableSet.copyOf(projectKeys),
         dictionaryNode, codelistNode);
     releaseRepository.updateRelease(releaseName, release);
 
@@ -642,13 +643,19 @@ public class ReleaseService extends AbstractService {
     val release = getNextRelease();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
 
-    // Clear all existing reports associated with the release
-    executiveReportService.deleteProjectDataTypeReport(release.getName());
-    executiveReportService.deleteProjectSequencingStrategyReport(release.getName());
+    resetExecutiveReports(release.getName());
 
     for (val projectKey : projects) {
       resetSubmission(release, projectKey, filePatternToTypeMap);
     }
+  }
+
+  /**
+   * Clear all existing reports associated with the release
+   */
+  private void resetExecutiveReports(@NonNull final String releaseName) {
+    executiveReportService.deleteProjectDataTypeReport(releaseName);
+    executiveReportService.deleteProjectSequencingStrategyReport(releaseName);
   }
 
   @Synchronized

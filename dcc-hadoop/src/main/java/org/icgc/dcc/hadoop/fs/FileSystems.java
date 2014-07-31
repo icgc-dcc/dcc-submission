@@ -17,12 +17,15 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 
 import java.net.URI;
+import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.conf.Configuration;
@@ -53,6 +56,11 @@ public final class FileSystems {
   private static Configuration setFsUrl(Configuration config, String fsUrl) {
     config.set(FS_DEFAULT_NAME_KEY, fsUrl);
     return config;
+  }
+
+  public static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
+    checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
+    return Protocol.fromURL(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
   }
 
 }

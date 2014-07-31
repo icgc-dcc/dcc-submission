@@ -53,6 +53,7 @@ public class ReporterConnector {
   
   public Cascade connectCascade(
       @NonNull final ReporterInput reporterInput,
+      @NonNull final String releaseName,
       @NonNull final Map<String, Pipe> table1s,
       @NonNull final Map<String, Pipe> table2s,
       @NonNull final Map<String, String> hadoopProperties) {
@@ -72,10 +73,10 @@ public class ReporterConnector {
             .addSources(getRawInputTaps(reporterInput, projectKey))
             .addTailSink(
                 table1,
-                getRawOutputTable1Tap(table1.getName(), projectKey))
+                getRawOutputTable1Tap(table1.getName(), releaseName, projectKey))
             .addTailSink(
                 table2,
-                getRawOutputTable2Tap(table2.getName(), projectKey))
+                getRawOutputTable2Tap(table2.getName(), releaseName, projectKey))
             .setName(Flows.getName(Reporter.CLASS, projectKey))));
     }
 
@@ -150,25 +151,37 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private Tap getRawOutputTable1Tap(String tailName, String projectKey) {
-    return GenericTaps.RAW_CASTER.apply(getOutputTable1Tap(tailName, projectKey));
+  private Tap getRawOutputTable1Tap(
+      @NonNull final String tailName,
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    return GenericTaps.RAW_CASTER.apply(getOutputTable1Tap(tailName, releaseName, projectKey));
   }
 
   /**
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private Tap getRawOutputTable2Tap(String tailName, String projectKey) {
-    return GenericTaps.RAW_CASTER.apply(getOutputTable2Tap(tailName, projectKey));
+  private Tap getRawOutputTable2Tap(
+      @NonNull final String tailName,
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    return GenericTaps.RAW_CASTER.apply(getOutputTable2Tap(tailName, releaseName, projectKey));
   }
 
-  private Tap<?, ?, ?> getOutputTable1Tap(String tailName, String projectKey) {
-    val outputFilePath = getOutputFilePath(outputDirPath, OutputType.DONOR, projectKey);
+  private Tap<?, ?, ?> getOutputTable1Tap(
+      @NonNull final String tailName,
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    val outputFilePath = getOutputFilePath(outputDirPath, OutputType.DONOR, releaseName, projectKey);
     return taps.getNoCompressionTsvWithHeader(outputFilePath);
   }
 
-  private Tap<?, ?, ?> getOutputTable2Tap(String tailName, String projectKey) {
-    val outputFilePath = getOutputFilePath(outputDirPath, OutputType.SEQUENCING_STRATEGY, projectKey);
+  private Tap<?, ?, ?> getOutputTable2Tap(
+      @NonNull final String tailName,
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    val outputFilePath = getOutputFilePath(outputDirPath, OutputType.SEQUENCING_STRATEGY, releaseName, projectKey);
     return taps.getNoCompressionTsvWithHeader(outputFilePath);
   }
 

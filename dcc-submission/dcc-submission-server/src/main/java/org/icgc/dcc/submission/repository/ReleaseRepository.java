@@ -18,16 +18,21 @@
 package org.icgc.dcc.submission.repository;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableSet.copyOf;
+import static com.google.common.collect.Iterables.transform;
 import static java.lang.String.format;
+import static org.icgc.dcc.core.model.Identifiable.Identifiables.getId;
 import static org.icgc.dcc.submission.release.model.QRelease.release;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.core.model.Identifiable;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -79,6 +84,23 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   public Release findReleaseByName(@NonNull String releaseName) {
     return uniqueResult(_.name.eq(releaseName));
+  }
+
+  public String findDictionaryVersion(@NonNull String releaseName) {
+    return findReleaseByName(releaseName).getDictionaryVersion();
+  }
+
+  /**
+   * Returns the {@link Submission} ID as implemented from {@link Identifiable}.
+   */
+  public Set<String> findSubmissionIds(@NonNull String releaseName) {
+    return copyOf(transform(
+        findReleaseByName(releaseName).getSubmissions(),
+        getId()));
+  }
+
+  public Set<String> findProjectKeys(@NonNull String releaseName) {
+    return Submission.getProjectKeys(findSubmissionIds(releaseName));
   }
 
   public Release findReleaseSummaryByName(@NonNull String releaseName) {

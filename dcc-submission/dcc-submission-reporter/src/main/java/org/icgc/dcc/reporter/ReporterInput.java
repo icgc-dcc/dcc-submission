@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -70,8 +71,7 @@ public class ReporterInput {
         });
   }
 
-  public Map<String, String> getPipeNameToFilePath(
-      final java.lang.String projectKey) {
+  public Map<String, String> getPipeNameToFilePath(@NonNull final String projectKey) {
     val pipeNameToFilePath = new ImmutableMap.Builder<String, String>();
 
     pipeNameToFilePath.putAll(getPipeNameToFilePath(projectKey, SPECIMEN_TYPE));

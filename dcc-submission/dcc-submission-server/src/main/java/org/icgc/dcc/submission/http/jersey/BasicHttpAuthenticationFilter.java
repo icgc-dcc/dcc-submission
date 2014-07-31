@@ -81,7 +81,8 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
       "/nextRelease/dictionary",
       "/codeLists",
       "/dictionaries",
-      "/executiveReports"
+      "/executiveReports/projectDataType",
+      "/executiveReports/projectSequencingStrategy"
       );
 
   /**
