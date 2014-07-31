@@ -27,6 +27,7 @@ import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
 
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -34,8 +35,9 @@ import lombok.SneakyThrows;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
+import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -48,6 +50,9 @@ import cascading.tuple.Fields;
 import com.google.common.io.LineReader;
 
 public abstract class BasePlatformStrategy implements PlatformStrategy {
+
+  private final Taps taps;
+  private final CascadingConnector connectors;
 
   protected final FileSystem fileSystem;
   private final Path submissionDir;
@@ -63,19 +68,32 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     this.submissionDir = input;
     this.validationOutputDir = output;
     this.system = system;
+    this.taps = getTaps();
+    this.connectors = getConnectors();
   }
+
+  protected abstract Taps getTaps();
+
+  protected abstract CascadingConnector getConnectors();
 
   @Override
   public FlowConnector getFlowConnector() {
     return getFlowConnector(emptyMap());
   }
 
+  @Override
+  public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides) {
+    return connectors.getFlowConnector(augmentProperties(propertyOverrides));
+  }
+
+  protected abstract Map<?, ?> augmentProperties(Map<?, ?> properties);
+
   /**
    * TODO: phase out in favour of {@link #getSourceTap(FileType)}; Temporary: see DCC-1876
    */
   @Override
-  public Tap<?, ?, ?> getSourceTap2(String fileName) {
-    return tapSource2(getFilePath(fileName));
+  public Tap<?, ?, ?> getNormalizerSourceTap(String fileName) {
+    return taps.getDecompressingTsvWithHeader(getFilePath(fileName));
   }
 
   @Override
@@ -113,17 +131,12 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   protected abstract Tap<?, ?, ?> tap(Path path, Fields fields);
 
-  /**
-   * See {@link #getSourceTap(FileSchema)} comment
-   */
-  protected abstract Tap<?, ?, ?> tapSource2(Path path);
-
   @Override
   @SneakyThrows
   public Fields getFileHeader(String fileName) {
     @Cleanup
     InputStreamReader isr = new InputStreamReader(
-        fileSystem.open(getFilePath(fileName)),
+        fileSystem.open(getFile(fileName)),
         UTF_8);
     return fields(FIELD_SPLITTER.split(new LineReader(isr).readLine()));
   }
@@ -139,8 +152,12 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   }
 
   @Override
-  public Path getFilePath(String fileName) {
+  public Path getFile(String fileName) {
     return new Path(submissionDir, fileName);
+  }
+
+  private String getFilePath(String fileName) {
+    return getFile(fileName).toUri().toString();
   }
 
 }

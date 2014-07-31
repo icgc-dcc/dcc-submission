@@ -96,7 +96,7 @@ public class PseudoNormalizer {
   }
 
   private static Path getInputFilePath(final PlatformStrategy platformStrategy) {
-    return platformStrategy.getFilePath(SGV_P_TYPE.getHarmonizedOutputFileName());
+    return platformStrategy.getFile(SGV_P_TYPE.getHarmonizedOutputFileName());
   }
 
   private static Path getOutputFilePath(final String outputFilePath) {

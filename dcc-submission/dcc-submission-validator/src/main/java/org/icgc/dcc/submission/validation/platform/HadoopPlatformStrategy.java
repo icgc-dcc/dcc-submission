@@ -39,13 +39,13 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
+import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
-import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
@@ -70,29 +70,40 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector(Map<Object, Object> properties) {
-    Map<Object, Object> flowProperties = newHashMap();
+  protected Taps getTaps() {
+    return Taps.HADOOP;
+  }
+
+  @Override
+  protected CascadingConnector getConnectors() {
+    return CascadingConnector.CLUSTER;
+  }
+
+  @Override
+  protected Map<?, ?> augmentProperties(Map<?, ?> properties) {
+    Map<Object, Object> newProperties = newHashMap();
 
     // Custom serialization
-    TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
+    TupleSerializationProps.addSerialization(newProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
     for (val configEntry : hadoopConfig.entrySet()) {
-      flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
+      newProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
     // M/R job entry point
-    AppProps.setApplicationJarClass(flowProperties, this.getClass());
+    AppProps.setApplicationJarClass(newProperties, this.getClass());
 
-    flowProperties =
+    newProperties =
         enableJobOutputCompression(
             enableIntermediateMapOutputCompression(
-                setAvailableCodecs(flowProperties),
+                setAvailableCodecs(newProperties),
                 SNAPPY_CODEC_PROPERTY_VALUE),
             GZIP_CODEC_PROPERTY_VALUE);
 
-    flowProperties.putAll(properties);
-    return new HadoopFlowConnector(flowProperties);
+    newProperties.putAll(properties);
+
+    return newProperties;
   }
 
   @Override
@@ -158,21 +169,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     scheme.setSinkCompression(Compress.ENABLE);
     return new Hfs(
         scheme,
-        getFilePath(fileName).toUri().getPath());
-  }
-
-  /**
-   * Temporary: see DCC-1876
-   */
-  @Override
-  protected Tap<?, ?, ?> tapSource2(Path path) {
-    val scheme = new TextDelimited(
-        true, // headers
-        FIELD_SEPARATOR);
-    scheme.setSinkCompression(Compress.ENABLE);
-    return new Hfs(
-        scheme,
-        path.toUri().getPath());
+        getFile(fileName).toUri().getPath());
   }
 
   @SneakyThrows

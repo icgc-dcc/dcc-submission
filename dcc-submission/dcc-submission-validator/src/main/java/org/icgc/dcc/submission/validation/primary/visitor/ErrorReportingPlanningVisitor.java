@@ -132,7 +132,7 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
             }
           }
 
-          context.reportLineNumbers(platform.getFilePath(fileName));
+          context.reportLineNumbers(platform.getFile(fileName));
         } catch (FileNotFoundException fnfe) {
           // There were no errors
         } catch (Exception e) {

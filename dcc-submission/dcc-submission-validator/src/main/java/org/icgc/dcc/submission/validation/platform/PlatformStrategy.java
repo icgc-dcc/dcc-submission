@@ -49,7 +49,7 @@ public interface PlatformStrategy {
   FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides);
 
   /**
-   * TODO: Adapt submission code to use {@link #getSourceTap2(FileSchema)} since we can now assume the header is known
+   * TODO: Adapt submission code to use {@link #getNormalizerSourceTap(FileSchema)} since we can now assume the header is known
    * (and therefore we should use {@link TextDelimited} rather than {@link TextLine}.
    */
   Tap<?, ?, ?> getSourceTap(String fileName);
@@ -57,7 +57,7 @@ public interface PlatformStrategy {
   /**
    * See comment in {@link #getSourceTap(String)}.
    */
-  Tap<?, ?, ?> getSourceTap2(String fileName);
+  Tap<?, ?, ?> getNormalizerSourceTap(String fileName);
 
   Tap<?, ?, ?> getTrimmedTap(Key key);
 
@@ -77,7 +77,7 @@ public interface PlatformStrategy {
   /**
    * TODO
    */
-  Path getFilePath(String fileName);
+  Path getFile(String fileName);
 
   /**
    * TODO: merge with {@link ValidationContext#getSsmPrimaryFiles()}?
