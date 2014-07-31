@@ -34,6 +34,16 @@ import com.fasterxml.jackson.annotation.JsonView;
 @Data
 public class ProjectDataTypeReport {
 
+  public ProjectDataTypeReport(String releaseName, String projectCode, String type) {
+    this.releaseName = releaseName;
+    this.projectCode = projectCode;
+    this.type = type;
+    donorCount = specimenCount = sampleCount = observationCount = 0;
+  }
+
+  public ProjectDataTypeReport() {
+  }
+
   @Id
   private String id;
 
