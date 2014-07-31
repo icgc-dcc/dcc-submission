@@ -107,9 +107,6 @@ public class ReporterConnector {
             HadoopProperties.enableIntermediateMapOutputCompression(
               HadoopProperties.setAvailableCodecs(flowProperties),
               HadoopConstants.LZO_CODEC_PROPERTY_VALUE))
-        
-        .put(HadoopConstants.IO_SORT_MB, "2000")
-        .put(HadoopConstants.IO_SORT_FACTOR, "20")
     
         .build();
     
