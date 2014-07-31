@@ -30,7 +30,6 @@ import com.google.common.base.Splitter;
 public class Splitters {
 
   public static final Splitter WHITESPACE = on(Separators.WHITESPACE);
-  public static final Splitter EMPTY_STRING = on(Separators.EMPTY_STRING);
   public static final Splitter TAB = on(Separators.TAB);
   public static final Splitter NEWLINE = on(Separators.NEWLINE);
   public static final Splitter SLASH = on(Separators.SLASH);
@@ -40,6 +39,7 @@ public class Splitters {
   public static final Splitter COLON = on(Separators.COLON);
   public static final Splitter COMMA = on(Separators.COMMA);
   public static final Splitter SEMICOLON = on(Separators.SEMICOLON);
+  public static final Splitter HASHTAG = on(Separators.HASHTAG);
 
   // Aliases
   public static final Splitter PATH = SLASH;
@@ -52,8 +52,6 @@ public class Splitters {
   public static final Joiner getCorrespondingJoiner(@NonNull final Splitter splitter) {
     if (splitter.equals(WHITESPACE)) {
       return Joiners.WHITESPACE;
-    } else if (splitter.equals(EMPTY_STRING)) {
-      return Joiners.EMPTY_STRING;
     } else if (splitter.equals(SLASH) || splitter.equals(PATH)) {
       return Joiners.SLASH;
     } else if (splitter.equals(TAB)) {
@@ -72,8 +70,8 @@ public class Splitters {
       return Joiners.COLON;
     } else if (splitter.equals(SEMICOLON)) {
       return Joiners.SEMICOLON;
-    } else if (splitter.equals(PATH)) {
-      return Joiners.PATH;
+    } else if (splitter.equals(HASHTAG)) {
+      return Joiners.HASHTAG;
     } else {
       throw new UnsupportedOperationException(_("Unsupported yet: '%s'", splitter));
     }

@@ -43,6 +43,7 @@ public final class Joiners {
   public static final Joiner COMMA = on(Separators.COMMA);
   public static final Joiner COLON = on(Separators.COLON);
   public static final Joiner SEMICOLON = on(Separators.SEMICOLON);
+  public static final Joiner HASHTAG = on(Separators.HASHTAG);
 
   // Aliases
   public static final Joiner PATH = SLASH;
@@ -59,7 +60,7 @@ public final class Joiners {
     if (joiner.equals(WHITESPACE)) {
       return Splitters.WHITESPACE;
     } else if (joiner.equals(EMPTY_STRING)) {
-      return Splitters.EMPTY_STRING;
+      throw new IllegalStateException(_("Cannot split using '{}'", EMPTY_STRING));
     } else if (joiner.equals(SLASH) || joiner.equals(PATH)) {
       return Splitters.SLASH;
     } else if (joiner.equals(TAB)) {
@@ -78,8 +79,8 @@ public final class Joiners {
       return Splitters.COLON;
     } else if (joiner.equals(SEMICOLON)) {
       return Splitters.SEMICOLON;
-    } else if (joiner.equals(PATH)) {
-      return Splitters.PATH;
+    } else if (joiner.equals(HASHTAG)) {
+      return Splitters.HASHTAG;
     } else {
       throw new UnsupportedOperationException(_("Unsupported yet: '%s'", joiner));
     }

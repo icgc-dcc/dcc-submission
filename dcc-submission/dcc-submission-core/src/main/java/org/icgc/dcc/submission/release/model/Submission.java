@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.release.model;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Iterables.transform;
-import static org.icgc.dcc.core.util.Joiners.DOT;
 import static org.icgc.dcc.submission.release.model.SubmissionState.getDefaultState;
 
 import java.io.Serializable;
@@ -65,7 +64,7 @@ import com.google.common.collect.ImmutableSet;
 @EqualsAndHashCode(of = "projectKey")
 public class Submission implements Serializable, Identifiable {
 
-  private static final Joiner ID_JOINER = DOT;
+  private static final Joiner ID_JOINER = Joiners.HASHTAG;
 
   @NotBlank
   @JsonView(Digest.class)
