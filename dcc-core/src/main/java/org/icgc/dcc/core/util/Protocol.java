@@ -18,40 +18,55 @@
 package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static org.icgc.dcc.core.util.Strings2.removeTarget;
+
+import java.net.URL;
+
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
-/**
- * Utils methods for {@link String}.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+import org.icgc.dcc.core.model.Identifiable;
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
+@RequiredArgsConstructor(access = PRIVATE)
+public enum Protocol implements Identifiable {
 
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
+  FILE(Scheme.FILE),
+  HTTP(Scheme.HTTP),
+  HTTPS(Scheme.HTTPS),
+  HDFS(Scheme.HDFS),
+  MONGO(Scheme.MONGO),
+  ES(Scheme.ES),
+  S3(Scheme.S3);
+
+  private static final String PROTOCOL_SUFFIX = "://"; // TODO: existing constant?
+
+  private final Scheme scheme;
+
+  @Override
+  public String getId() {
+    return scheme.getId() + PROTOCOL_SUFFIX;
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
+  public boolean isFile() {
+    return this == FILE;
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
+  public boolean isHdfs() {
+    return this == HDFS;
   }
 
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
+  public static Protocol from(@NonNull final String protocol) {
+    return valueOf(removeTarget(protocol, PROTOCOL_SUFFIX).toUpperCase());
+  }
+
+  @SneakyThrows
+  public static Protocol fromURL(@NonNull final String url) {
+    return fromURL(new URL(url));
+  }
+
+  public static Protocol fromURL(@NonNull final URL url) {
+    return from(url.getProtocol());
   }
 
 }

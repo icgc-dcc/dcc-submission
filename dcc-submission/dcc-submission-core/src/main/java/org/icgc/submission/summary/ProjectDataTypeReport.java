@@ -15,43 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.submission.summary;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.Data;
+import lombok.ToString;
 
-/**
- * Utils methods for {@link String}.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
+import com.fasterxml.jackson.annotation.JsonView;
 
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
+@Entity(noClassnameStored = true)
+@ToString
+@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, type"))
+@Data
+public class ProjectDataTypeReport {
+
+  public ProjectDataTypeReport(String releaseName, String projectCode, String type) {
+    this.releaseName = releaseName;
+    this.projectCode = projectCode;
+    this.type = type;
+    donorCount = specimenCount = sampleCount = observationCount = 0;
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
+  public ProjectDataTypeReport() {
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
+  @Id
+  private String id;
 
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
-  }
+  @JsonView(Digest.class)
+  protected String releaseName;
+
+  @JsonView(Digest.class)
+  protected String projectCode;
+
+  @JsonView(Digest.class)
+  protected String type;
+
+  @JsonView(Digest.class)
+  protected long donorCount;
+
+  @JsonView(Digest.class)
+  protected long specimenCount;
+
+  @JsonView(Digest.class)
+  protected long sampleCount;
+
+  @JsonView(Digest.class)
+  protected long observationCount;
 
 }

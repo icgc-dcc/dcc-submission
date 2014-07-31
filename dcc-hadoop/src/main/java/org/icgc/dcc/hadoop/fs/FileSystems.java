@@ -18,18 +18,27 @@
 package org.icgc.dcc.hadoop.fs;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+
+import java.net.URI;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.util.Protocol;
 
 /**
  * Util methods for {@link FileSystem}.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileSystems {
+
+  @SneakyThrows
+  public static FileSystem getLocalFileSystem() {
+    return FileSystem.get(new URI(Protocol.FILE + "/"), new Configuration());
+  }
 
   @SneakyThrows
   public static FileSystem getFileSystem(String fsUrl) {

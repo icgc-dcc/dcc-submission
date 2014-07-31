@@ -15,43 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.util.Map;
+
+import cascading.cascade.Cascade;
+import cascading.cascade.CascadeConnector;
+import cascading.flow.Flow;
+import cascading.flow.FlowConnector;
 
 /**
- * Utils methods for {@link String}.
+ * Interface to connect {@link Flow}s and {@link Cascade}s.
  */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+public interface CascadingConnector {
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
+  static LocalCascadingConnector LOCAL = new LocalCascadingConnector();
+  static ClusterCascadingConnector CLUSTER = new ClusterCascadingConnector();
 
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
-  }
+  String describe();
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
-  }
+  FlowConnector getFlowConnector();
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
+  FlowConnector getFlowConnector(Map<?, ?> properties);
 
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
-  }
+  CascadeConnector getCascadeConnector();
+
+  CascadeConnector getCascadeConnector(Map<?, ?> properties);
 
 }

@@ -15,43 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.submission.config;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableMap.copyOf;
+import static com.google.common.collect.Maps.transformValues;
+
+import java.util.Map;
+
+import com.google.common.base.Function;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueType;
 
 /**
- * Utils methods for {@link String}.
+ * TODO: move to core? (would need typesafe config)
  */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
-
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
-
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
-  }
+public class Configs {
 
   /**
-   * Not appropriate for very big {@link String}s.
+   * Does not currently support nesting.
    */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
-  }
+  public static Map<String, String> asStringMap(ConfigObject configObject) {
+    return copyOf(transformValues(
+        configObject,
+        new Function<ConfigValue, String>() {
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
+          @Override
+          public String apply(ConfigValue configValue) {
+            checkState(ConfigValueType.OBJECT != configValue.valueType()
+                && ConfigValueType.LIST != configValue.valueType());
+            return String.valueOf(configValue.unwrapped());
+          }
 
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
+        }));
   }
 
 }

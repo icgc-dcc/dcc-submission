@@ -15,43 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.submission.repository;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static org.icgc.submission.summary.QProjectDataTypeReport.projectDataTypeReport;
+
+import java.util.List;
+
 import lombok.NonNull;
 
-/**
- * Utils methods for {@link String}.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+import org.icgc.submission.summary.ProjectDataTypeReport;
+import org.icgc.submission.summary.QProjectDataTypeReport;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
+import com.google.inject.Inject;
 
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
+public class ProjectDataTypeReportRepository extends AbstractRepository<ProjectDataTypeReport, QProjectDataTypeReport> {
+
+  @Inject
+  public ProjectDataTypeReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+    super(morphia, datastore, projectDataTypeReport);
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
+  public List<ProjectDataTypeReport> findAll() {
+    return list();
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
+  public List<ProjectDataTypeReport> find(String releaseName, List<String> projectCodes) {
+    if (projectCodes.isEmpty()) {
+      return list(_.releaseName.eq(releaseName));
+    }
+    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
   }
 
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
+  public void deleteByRelease(String releaseName) {
+    datastore().delete(createQuery().filter(fieldName(_.releaseName), releaseName));
   }
 
+  public void upsert(ProjectDataTypeReport projectDataTypeReport) {
+    updateFirst(createQuery()
+        .filter(fieldName(_.releaseName), projectDataTypeReport.getReleaseName())
+        .filter(fieldName(_.projectCode), projectDataTypeReport.getProjectCode())
+        .filter(fieldName(_.type), projectDataTypeReport.getType()),
+        projectDataTypeReport, true);
+  }
 }

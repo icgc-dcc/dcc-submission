@@ -19,39 +19,13 @@ package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 /**
- * Utils methods for {@link String}.
+ * Names for bindings.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+public class Bindings {
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
-
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
-  }
-
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
-  }
-
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
-
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
-  }
+  public static final String HADOOP_PROPERTIES = "hadoop_properties";
 
 }

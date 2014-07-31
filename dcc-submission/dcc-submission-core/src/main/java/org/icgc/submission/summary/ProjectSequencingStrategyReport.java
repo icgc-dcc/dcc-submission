@@ -15,43 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.submission.summary;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.util.Map;
 
-/**
- * Utils methods for {@link String}.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+import lombok.Data;
+import lombok.ToString;
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
+import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.Property;
 
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
-  }
+import com.fasterxml.jackson.annotation.JsonView;
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
-  }
+@Entity(noClassnameStored = true)
+@ToString
+@Indexes(@Index(name = "release_project", value = "releaseName, projectCode"))
+@Data
+public class ProjectSequencingStrategyReport {
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
+  @Id
+  private String id;
 
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
-  }
+  @Property("releaseName")
+  @JsonView(Digest.class)
+  protected String releaseName;
+
+  @Property("projectCode")
+  @JsonView(Digest.class)
+  protected String projectCode;
+
+  // Count fields
+  Map<String, Long> countSummary;
 
 }

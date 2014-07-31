@@ -20,6 +20,7 @@
     <module>dcc-submission-core</module>
     <module>dcc-submission-validator</module>
     <module>dcc-submission-server</module>
+    <module>dcc-submission-reporter</module>
   </modules>
 
   <repositories>

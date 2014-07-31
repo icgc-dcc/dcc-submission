@@ -17,8 +17,13 @@
  */
 package org.icgc.dcc.submission.config;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.inject.name.Names.named;
+import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.core.util.Bindings;
 
 import com.google.inject.AbstractModule;
 import com.typesafe.config.Config;
@@ -35,6 +40,13 @@ public class ConfigModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(Config.class).toInstance(config);
+
+    // Bind hadoop properties for use in reporter
+    checkState(config.hasPath(HADOOP_KEY));
+    bind(TypeLiterals.STRING_MAP)
+        .annotatedWith(
+            named(Bindings.HADOOP_PROPERTIES))
+        .toInstance(Configs.asStringMap(config.getObject(HADOOP_KEY)));
   }
 
 }

@@ -15,43 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.submission.config;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.util.Map;
+
+import com.google.inject.TypeLiteral;
 
 /**
- * Utils methods for {@link String}.
+ * 
  */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
-
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
-
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
-  }
+public class TypeLiterals {
 
   /**
-   * Not appropriate for very big {@link String}s.
+   * TODO: move to core? (would need guice)
    */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
-  }
-
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
-
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
-  }
+  public static final TypeLiteral<Map<String, String>> STRING_MAP =
+      new TypeLiteral<Map<String, String>>() {};
 
 }

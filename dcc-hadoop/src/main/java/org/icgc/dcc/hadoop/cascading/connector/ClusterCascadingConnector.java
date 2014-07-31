@@ -15,43 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.util.Map;
+
 import lombok.NonNull;
+import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlowConnector;
 
-/**
- * Utils methods for {@link String}.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+class ClusterCascadingConnector extends BaseCascadingConnector {
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
-
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
+  @Override
+  public FlowConnector getFlowConnector() {
+    return new HadoopFlowConnector();
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
-  }
-
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
-
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
+  @Override
+  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
+    return new HadoopFlowConnector(toObjectsMap(flowProperties));
   }
 
 }

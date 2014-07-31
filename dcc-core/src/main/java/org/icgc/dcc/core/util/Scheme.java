@@ -18,40 +18,53 @@
 package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Strings2.isLowerCase;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-/**
- * Utils methods for {@link String}.
- */
+import org.icgc.dcc.core.model.Identifiable;
+
 @NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+public enum Scheme implements Identifiable {
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
+  FILE,
+  HTTP,
+  HTTPS,
+  HDFS,
+  MONGO,
+  ES,
+  S3;
 
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
+  @Override
+  public String getId() {
+    return name();
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
+  public boolean isFile() {
+    return this == FILE;
   }
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
+  public boolean isHdfs() {
+    return this == HDFS;
   }
 
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
+  public static Scheme from(@NonNull final String scheme) {
+    return valueOf(scheme.toUpperCase());
+  }
+
+  public static boolean isFile(@NonNull final String scheme) {
+    return is(scheme, FILE);
+  }
+
+  public static boolean isHdfs(@NonNull final String scheme) {
+    return is(scheme, HDFS);
+  }
+
+  private static boolean is(
+      @NonNull final String schemeString,
+      @NonNull final Scheme scheme) {
+    return isLowerCase(schemeString)
+        && from(schemeString) == scheme;
   }
 
 }

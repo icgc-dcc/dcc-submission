@@ -15,43 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.reporter;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
+
+import java.util.Set;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.icgc.dcc.core.util.Protocol;
+import org.junit.Test;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
- * Utils methods for {@link String}.
+ * TODO: add checks
  */
-@NoArgsConstructor(access = PRIVATE)
-public class Strings2 {
+@Slf4j
+public class ReporterTest {
 
-  public static final String DOT = ".";
-  public static final String EMPTY_STRING = "";
-  public static final String TAB = "\t";
-  public static final String UNIX_NEW_LINE = "\n";
+  private static final String TEST_RELEASE_NAME = "reporter-release-name";
+  private static final String DEFAULT_PARENT_TEST_DIR = "src/test/resources/data";
+  private static final String TEST_CONF_DIR = "src/test/resources/conf";
 
-  public static String removeTrailingS(String s) {
-    return s.replaceAll("s$", "");
-  }
+  @Test
+  public void test_reporter() {
+    val projectKeys = ImmutableSet.of("p1", "p2");    
+    val outputDirPath = Reporter.report(
+        TEST_RELEASE_NAME,
+        Optional.<Set<String>> of(projectKeys),
+        DEFAULT_PARENT_TEST_DIR,
+        TEST_CONF_DIR + "/projects.json",
+        TEST_CONF_DIR + "/Dictionary.json",
+        TEST_CONF_DIR + "/CodeList.json",
+        ImmutableMap.<String, String>of(
+            CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, Protocol.FILE.getId()));
+    
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isLowerCase(@NonNull final String s) {
-    return s.equals(s.toLowerCase());
-  }
+    for (val projectKey : projectKeys) {
+      val documents = ReporterGatherer.getJsonTable1(outputDirPath, projectKey);
+      log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
+    }
+    for (val projectKey : projectKeys) {
+      val documents = ReporterGatherer.getJsonTable2(outputDirPath, projectKey, ImmutableMap.<String, String>of());
+      log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
+    }   
+    
 
-  /**
-   * Not appropriate for very big {@link String}s.
-   */
-  public static boolean isUpperCase(@NonNull final String s) {
-    return s.equals(s.toUpperCase());
-  }
-
-  public static String removeTarget(String s, String target) {
-    return s.replace(target, EMPTY_STRING);
   }
 
 }
