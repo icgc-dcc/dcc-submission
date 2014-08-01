@@ -41,6 +41,7 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
@@ -80,6 +81,8 @@ public class ReleaseServiceNextReleaseTest {
 
   @Mock
   DictionaryService dictionaryService;
+  @Mock
+  ExecutiveReportService executiveReportService;
 
   @Mock
   ReleaseRepository releaseRepository;
@@ -87,6 +90,8 @@ public class ReleaseServiceNextReleaseTest {
   DictionaryRepository dictionaryRepository;
   @Mock
   ProjectRepository projectRepository;
+  @Mock
+  CodeListRepository codelistRepository;
 
   static final String FIRST_RELEASE_NAME = "release1";
   static final String NEXT_RELEASE_NAME = "release2";
