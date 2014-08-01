@@ -2,7 +2,6 @@ package org.icgc.dcc.reporter;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.createTempDir;
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -21,7 +20,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Protocol;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
