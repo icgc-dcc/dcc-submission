@@ -44,6 +44,11 @@
       <artifactId>dcc-submission-ui</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+    	<groupId>${project.groupId}</groupId>
+    	<artifactId>dcc-submission-reporter</artifactId>
+    	<version>${project.version}</version>
+    </dependency>
 
     <!-- REST -->
     <dependency>
@@ -239,15 +244,6 @@
           <artifactId>activation</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-    	<groupId>org.jongo</groupId>
-    	<artifactId>jongo</artifactId>
-    </dependency>
-    <dependency>
-    	<groupId>${project.groupId}</groupId>
-    	<artifactId>dcc-submission-reporter</artifactId>
-    	<version>${project.version}</version>
     </dependency>
   </dependencies>
 

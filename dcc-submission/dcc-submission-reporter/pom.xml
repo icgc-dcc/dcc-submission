@@ -88,18 +88,7 @@
     <dependency>
       <groupId>cascading</groupId>
       <artifactId>cascading-hadoop</artifactId>
-    </dependency>
-
-    <!-- Mongo --><!-- move up? -->
-    
+    </dependency>    
   </dependencies>
-
-  <build>   
-    <plugins>
-      <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
     
 </project>
