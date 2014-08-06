@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.platform;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
@@ -45,6 +44,7 @@ import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
+import com.google.common.collect.Maps;
 import com.google.common.io.LineReader;
 
 public abstract class BasePlatformStrategy implements PlatformStrategy {
@@ -67,7 +67,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   @Override
   public FlowConnector getFlowConnector() {
-    return getFlowConnector(emptyMap());
+    return getFlowConnector(Maps.<String, String> newLinkedHashMap());
   }
 
   /**

@@ -15,39 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.core.util;
+
+import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Map;
 
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import org.icgc.dcc.core.util.Maps2;
+/**
+ * Util methods for {@link Map}s.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class Maps2 {
 
-import cascading.cascade.CascadeConnector;
-
-abstract class BaseCascadingConnector implements CascadingConnector {
-
-  @Override
-  public String describe() {
-    return describe(getClass());
-  }
-
-  @Override
-  public CascadeConnector getCascadeConnector() {
-    return new CascadeConnector();
-  }
-
-  @Override
-  public CascadeConnector getCascadeConnector(@NonNull final Map<?, ?> properties) {
-    return new CascadeConnector(toObjectsMap(properties));
-  }
-
-  protected static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {
-    return Maps2.toObjectsMap(properties);
-  }
-
-  private static String describe(@NonNull final Class<?> type) {
-    return "Using " + type.getSimpleName();
+  @SuppressWarnings("unchecked")
+  public static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> map) {
+    return (Map<Object, Object>) map;
   }
 
 }

@@ -46,7 +46,7 @@ public interface PlatformStrategy {
 
   FlowConnector getFlowConnector();
 
-  FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides);
+  FlowConnector getFlowConnector(final Map<String, String> propertyOverrides);
 
   /**
    * TODO: Adapt submission code to use {@link #getSourceTap2(FileSchema)} since we can now assume the header is known

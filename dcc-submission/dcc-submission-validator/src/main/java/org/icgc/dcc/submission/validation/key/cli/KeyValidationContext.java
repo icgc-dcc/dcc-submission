@@ -117,8 +117,8 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   private Config createConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
-        "hadoop.mapred.job.tracker", jobTracker,
-        "hadoop.fs.defaultFS", fsUrl,
+        "hadoop.\"mapred.job.tracker\"", jobTracker,
+        "hadoop.\"fs.defaultFS\"", fsUrl,
 
         "fs.root", fsRoot,
         "fs.url", fsUrl

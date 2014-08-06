@@ -40,13 +40,13 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
@@ -62,6 +62,7 @@ import com.google.common.io.InputSupplier;
 @Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
+  private static final CascadingConnector connector = CascadingConnector.CLUSTER;
   private final Map<String, String> hadoopProperties;
 
   public HadoopPlatformStrategy(
@@ -75,7 +76,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  public FlowConnector getFlowConnector(Map<Object, Object> properties) {
+  public FlowConnector getFlowConnector(@NonNull final Map<String, String> properties) {
     Map<Object, Object> flowProperties = newHashMap();
 
     // Custom serialization
@@ -95,7 +96,8 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
             GZIP_CODEC_PROPERTY_VALUE);
 
     flowProperties.putAll(properties);
-    return new HadoopFlowConnector(flowProperties);
+
+    return connector.getFlowConnector(flowProperties);
   }
 
   @Override
