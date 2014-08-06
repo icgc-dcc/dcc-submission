@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 ################################################################################
 # merge all files from a input directory with a single header
