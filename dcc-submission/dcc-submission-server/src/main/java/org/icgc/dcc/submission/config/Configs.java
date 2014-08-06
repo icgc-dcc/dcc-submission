@@ -19,14 +19,16 @@ package org.icgc.dcc.submission.config;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Maps.transformValues;
+import static org.icgc.dcc.core.util.Strings2.unquote;
 
 import java.util.Map;
 
+import lombok.NonNull;
+
+import org.icgc.dcc.core.util.SerializableMaps;
+
 import com.google.common.base.Function;
 import com.typesafe.config.ConfigObject;
-import com.typesafe.config.ConfigValue;
-import com.typesafe.config.ConfigValueType;
 
 /**
  * TODO: move to core? (would need typesafe config)
@@ -37,18 +39,25 @@ public class Configs {
    * Does not currently support nesting.
    */
   public static Map<String, String> asStringMap(ConfigObject configObject) {
-    return copyOf(transformValues(
-        configObject,
-        new Function<ConfigValue, String>() {
+    return copyOf(SerializableMaps.transformMap(
+        configObject.unwrapped(),
+        new Function<String, String>() {
 
           @Override
-          public String apply(ConfigValue configValue) {
-            checkState(ConfigValueType.OBJECT != configValue.valueType()
-                && ConfigValueType.LIST != configValue.valueType());
-            return String.valueOf(configValue.unwrapped());
+          public String apply(@NonNull final String configKey) {
+            return unquote(configKey);
+          }
+
+        },
+        new Function<Object, String>() {
+
+          @Override
+          public String apply(@NonNull final Object configValue) {
+            checkState(configValue instanceof String
+                || configValue instanceof Number, configValue);
+            return String.valueOf(configValue);
           }
 
         }));
   }
-
 }

@@ -33,6 +33,16 @@ import com.google.common.base.Predicate;
  */
 public class SerializableMaps {
 
+  public static <K1, V1, K2, V2> Map<K2, V2> transformMap(
+      Map<K1, V1> map,
+      Function<K1, K2> keyFunction,
+      Function<V1, V2> valueFunction) {
+
+    return transformValues(
+        transformKeys(map, keyFunction),
+        valueFunction);
+  }
+
   /**
    * The missing List&ltT&gt -> Map&ltk(T), v(T)&gt all-in-one conversion.
    */
@@ -46,6 +56,17 @@ public class SerializableMaps {
             iterable,
             keyFunction),
         valueFunction);
+  }
+
+  public static <K1, K2, V> Map<K2, V> transformKeys(
+      Map<K1, V> inputMap,
+      Function<K1, K2> function) {
+    Map<K2, V> map = newLinkedHashMap();
+    for (val entry : inputMap.entrySet()) {
+      map.put(function.apply(entry.getKey()), entry.getValue());
+    }
+
+    return map;
   }
 
   public static <K, V1, V2> Map<K, V2> transformValues(

@@ -42,7 +42,7 @@ public class SubmissionFileSystemProvider implements Provider<FileSystem> {
 
   @Override
   public FileSystem get() {
-    log.info("Hadoop configuration = {}", getConfigurationDescription(configuration));
+    log.info("Hadoop configuration: '{}'", getConfigurationDescription(configuration));
 
     return getFileSystem(
         configuration,
