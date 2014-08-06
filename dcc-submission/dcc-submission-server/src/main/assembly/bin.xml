@@ -48,7 +48,7 @@
       <outputDirectory>/conf</outputDirectory>
     </file>
     <file>
-      <source>src/main/conf/application.conf</source>
+      <source>src/test/conf/application.conf</source>
       <outputDirectory>/conf</outputDirectory>
     </file>
   </files>
