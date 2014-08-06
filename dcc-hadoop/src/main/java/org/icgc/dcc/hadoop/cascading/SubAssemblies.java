@@ -20,6 +20,7 @@ package org.icgc.dcc.hadoop.cascading;
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
+import static cascading.tuple.Fields.RESULTS;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.toArray;
@@ -30,6 +31,7 @@ import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
+import static org.icgc.dcc.hadoop.cascading.TupleEntries.contains;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.isNullTuple;
@@ -53,8 +55,6 @@ import org.icgc.dcc.hadoop.cascading.operation.BaseBuffer;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 
 import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
@@ -263,7 +263,7 @@ public class SubAssemblies {
    */
   public static class Insert extends SubAssembly {
 
-    public Insert(Entry<Fields, Object> keyValuePair, Pipe pipe) {
+    public Insert(Entry<Fields, Object> keyValuePair, Pipe pipe) { // TODO: vararg entries
       setTails(
 
       //
@@ -563,7 +563,7 @@ public class SubAssemblies {
 
   }
 
-  public static class TransposeBuffer<T> extends BaseOperation<Void> implements Buffer<Void> {
+  public static class TransposeBuffer<T> extends BaseBuffer<Void> {
 
     private final Fields futureFieldsField;
     private final Fields futureValuesField;
@@ -627,6 +627,53 @@ public class SubAssemblies {
       checkState(!counts.containsKey(key));
 
       return key;
+    }
+
+  }
+
+  public static class ReorderFields extends SubAssembly {
+
+    public ReorderFields(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields orderedFields) {
+      setTails(process(pipe, orderedFields));
+    }
+
+    private static Each process(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields orderedFields) {
+      return new Each(
+          pipe,
+          new BaseFunction<Void>(orderedFields) {
+
+            @Override
+            public void operate(
+                @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+                FunctionCall<Void> functionCall) {
+              val entry = functionCall.getArguments();
+
+              functionCall
+                  .getOutputCollector()
+                  .add(getReorderedTuple(
+                      entry,
+                      getFieldDeclaration()));
+            }
+
+            private Tuple getReorderedTuple(
+                @NonNull final TupleEntry entry,
+                @NonNull final Fields orderedFields) {
+              val tuple = new Tuple();
+              for (val fieldName : getFieldNames(orderedFields)) {
+                checkState(contains(entry, fieldName),
+                    "Expecting field '%s' to be present within '%s'", fieldName, entry);
+                tuple.add(entry.getObject(fieldName));
+              }
+
+              return tuple;
+            }
+
+          },
+          RESULTS);
     }
 
   }

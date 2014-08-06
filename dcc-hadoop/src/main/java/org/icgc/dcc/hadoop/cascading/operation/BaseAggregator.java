@@ -17,28 +17,28 @@
  */
 package org.icgc.dcc.hadoop.cascading.operation;
 
+import cascading.operation.Aggregator;
 import cascading.operation.BaseOperation;
-import cascading.operation.Buffer;
 import cascading.tuple.Fields;
 
 /**
- * Base class to help with creating anonymous {@link BaseOperation}/{@link Buffer} classes.
+ * Base class to help with creating anonymous {@link BaseOperation}/{@link Aggregator} classes.
  */
-public abstract class BaseBuffer<Context> extends BaseOperation<Context> implements Buffer<Context> {
+public abstract class BaseAggregator<Context> extends BaseOperation<Context> implements Aggregator<Context> {
 
-  public BaseBuffer() {
+  public BaseAggregator() {
     super();
   }
 
-  public BaseBuffer(Fields fields) {
+  public BaseAggregator(Fields fields) {
     super(fields);
   }
 
-  public BaseBuffer(int numArgs, Fields fields) {
+  public BaseAggregator(int numArgs, Fields fields) {
     super(numArgs, fields);
   }
 
-  public BaseBuffer(int numArgs) {
+  public BaseAggregator(int numArgs) {
     super(numArgs);
   }
 

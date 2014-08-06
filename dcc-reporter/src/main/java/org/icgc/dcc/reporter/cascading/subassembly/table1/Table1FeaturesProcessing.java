@@ -15,31 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.operation;
+package org.icgc.dcc.reporter.cascading.subassembly.table1;
 
-import cascading.operation.BaseOperation;
-import cascading.operation.Buffer;
-import cascading.tuple.Fields;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
 
-/**
- * Base class to help with creating anonymous {@link BaseOperation}/{@link Buffer} classes.
- */
-public abstract class BaseBuffer<Context> extends BaseOperation<Context> implements Buffer<Context> {
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
-  public BaseBuffer() {
-    super();
+import cascading.operation.expression.ExpressionFilter;
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
+import cascading.pipe.SubAssembly;
+
+public class Table1FeaturesProcessing extends SubAssembly {
+
+  private static final String EXCLUDE_CLINICAL_ONLY_TYPE = getFieldName(TYPE_FIELD) + " == null";
+
+  Table1FeaturesProcessing(Pipe preComputationTable) {
+    setTails(getFeatureTypes(preComputationTable));
   }
 
-  public BaseBuffer(Fields fields) {
-    super(fields);
-  }
-
-  public BaseBuffer(int numArgs, Fields fields) {
-    super(numArgs, fields);
-  }
-
-  public BaseBuffer(int numArgs) {
-    super(numArgs);
+  private static Pipe getFeatureTypes(Pipe preComputationTable) {
+    return new Each(
+        new Pipe(
+            FeatureType.class.getSimpleName(),
+            preComputationTable),
+        new ExpressionFilter(
+            EXCLUDE_CLINICAL_ONLY_TYPE,
+            String.class));
   }
 
 }

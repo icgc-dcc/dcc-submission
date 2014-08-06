@@ -75,7 +75,7 @@ public class NormalizationValidatorTest {
   private static final String RELEASE_NAME = "dummy_release";
   private static final String PROJECT_NAME = "dummy_project";
 
-  private static final String FILE_NAME = "ssm_p.txt";
+  private static final String FILE_NAME = SSM_P_TYPE.getHarmonizedOutputFileName();
   private static final String INPUT = "input";
   private static final String OUTPUT = "output";
   private static final String REFERENCE = "reference";
@@ -151,6 +151,8 @@ public class NormalizationValidatorTest {
         .thenReturn(DataTypes.values());
     when(mockValidationContext.getPlatformStrategy())
         .thenReturn(mockPlatformStrategy);
+    when(mockValidationContext.getOutputDirPath())
+        .thenReturn(FILE_NAME);
     when(mockSubmissionDirectory.getSampleToDonorMap(mockDictionary)).thenReturn(
         new ImmutableMap.Builder<String, String>()
             .put("00302", "dr1")
@@ -264,7 +266,7 @@ public class NormalizationValidatorTest {
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
   private void mockOutputTap(String outputFile) {
-    when(mockDccFileSystem2.getNormalizationDataOutputTap(RELEASE_NAME, PROJECT_NAME))
+    when(mockDccFileSystem2.getNormalizationDataOutputTap(Mockito.anyString()))
         .thenReturn(getOutputTap(outputFile));
   }
 

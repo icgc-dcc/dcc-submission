@@ -79,6 +79,12 @@ public final class Fields2 {
     return fields;
   }
 
+  public static Fields getField(Comparable<?> fieldComparable) {
+    return fieldComparable instanceof Fields ?
+        (Fields) fieldComparable :
+        new Fields(fieldComparable);
+  }
+
   public static Fields fields(Iterable<String> fieldNames) {
     return fields(newArrayList(fieldNames));
   }
@@ -161,6 +167,18 @@ public final class Fields2 {
 
   public static Fields getRedundantFieldCounterpart(String fieldName) {
     return new Fields(ADD_REDUNDANT_PREFIX.apply(fieldName));
+  }
+
+  public static Fields getRedundantFieldCounterpart(
+      @NonNull final Enum<?> type,
+      @NonNull final Fields field) {
+    return getRedundantFieldCounterpart(type, getFieldName(checkFieldsCardinalityOne(field)));
+  }
+
+  public static Fields getRedundantFieldCounterpart(
+      @NonNull final Enum<?> type,
+      @NonNull final String fieldName) {
+    return new Fields(ADD_REDUNDANT_PREFIX.apply(UNDERSCORE.join(type.name().toLowerCase(), fieldName)));
   }
 
   /**

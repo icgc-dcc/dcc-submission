@@ -20,6 +20,9 @@ package org.icgc.dcc.submission.validation.norm.cli;
 import static com.google.common.base.Preconditions.checkState;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,21 +51,19 @@ public class Main {
   public static void main(String... args) throws InterruptedException {
     log.info("Starting normalization...");
 
-    // Resolve configuration @formatter:off
+    // Resolve configuration
     int i = 0;
-    val parentInputDirName = args.length >= ++i ? args[i - 1] : "1_concatenator";
-    val projectKey   = args.length >= ++i ? args[i - 1] : "project.1";
-    val overarchDirName       = args.length >= ++i ? args[i - 1] : "/.../intermediate"; // TODO: make first
-    val fsUrl        = args.length >= ++i ? args[i - 1] : "file:///"; // or like "hdfs://hname-dev.res:8020"
-    val jobTracker   = args.length >= ++i ? args[i - 1] : "localhost"; // or like "hcn51.res:8021"
+    val overarchDirName = args.length >= ++i ? args[i - 1] : "[...]/[...]/intermediate";
+    val projectKey = args.length >= ++i ? args[i - 1] : "my_project";
+    val fsUrl = args.length >= ++i ? args[i - 1] : "file:///"; // or like "hdfs://hname-dev.res:8020"
+    val jobTracker = args.length >= ++i ? args[i - 1] : "localhost"; // or like "hcn51.res:8021"
     val fileTypeName = args.length >= ++i ? args[i - 1] : SSM_TYPE.getTypeName(); // or "sgv"
-    // @formatter:on
 
     val fileType = FeatureType.from(fileTypeName);
     checkState(fileType.isSimple());
 
     // Execute
-    val context = getValidationContext(overarchDirName, parentInputDirName, projectKey, fsUrl, jobTracker);
+    val context = getValidationContext(overarchDirName, projectKey, fsUrl, jobTracker);
     if (fileType.isSsm()) {
       val validator = getValidator(context);
       validator.validate(context);
@@ -70,28 +71,21 @@ public class Main {
       PseudoNormalizer.process(
           context.getFileSystem(),
           context.getPlatformStrategy(),
-          getDccFileSystem2(context) // Not very clean but is consistent with the SSM normalizer
-              .getNormalizationSgvDataOutputFile(
-                  parentInputDirName,
-                  projectKey));
+          getSgvPOutpputFilePath(overarchDirName, projectKey));
     }
 
     log.info("Finished normalization.");
   }
 
-  private static ValidationContext getValidationContext(String overarchDirName, String parentInputDirName,
-      String projectKey, String fsUrl, String jobTracker) {
-    // @formatter:off
-    log.info("overarchDirName:    {}", overarchDirName);
-    log.info("parentInputDirName: {}", parentInputDirName);
-    log.info("projectKey:  {}", projectKey);
-    log.info("fsUrl:       {}", fsUrl);
-    log.info("jobTracker:  {}", jobTracker);
-    log.info("input:       {}", overarchDirName + "/" + parentInputDirName + "/" + projectKey + "/" + "{ssmP}");
-    log.info("output:      {}", overarchDirName + "/" + parentInputDirName + "/" + projectKey + "/" + ".validation/normalization");
-    // @formatter:on
+  private static ValidationContext getValidationContext(
+      String overarchDirName, String projectKey, String fsUrl, String jobTracker) {
 
-    return new NomalizationValidationContext(overarchDirName, parentInputDirName, projectKey, fsUrl, jobTracker);
+    log.info("overarchDirName:     {}", overarchDirName);
+    log.info("projectKey:          {}", projectKey);
+    log.info("fsUrl:               {}", fsUrl);
+    log.info("jobTracker:          {}", jobTracker);
+
+    return new StandAloneNomalizationValidationContext(overarchDirName, projectKey, fsUrl, jobTracker);
   }
 
   private static NormalizationValidator getValidator(ValidationContext context) {
@@ -113,6 +107,19 @@ public class Main {
         "masks.enabled", true,
         "duplicates.enabled", true
         ));
+  }
+
+  /**
+   * Hack: see DCC-2431.
+   */
+  private static String getSgvPOutpputFilePath(
+      @NonNull final String overarchDirName,
+      @NonNull final String projectKey) {
+    return PATH.join(
+        overarchDirName,
+        StandAloneNomalizationValidationContext.getFakeOutputReleaseName(),
+        projectKey,
+        SGV_P_TYPE.getHarmonizedOutputFileName());
   }
 
 }

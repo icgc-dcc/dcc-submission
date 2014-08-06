@@ -26,6 +26,10 @@ import cascading.tuple.Fields;
  */
 public abstract class BaseFunction<Context> extends BaseOperation<Context> implements Function<Context> {
 
+  public BaseFunction() {
+    super();
+  }
+
   public BaseFunction(Fields fields) {
     super(fields);
   }
