@@ -71,7 +71,7 @@ public class Main {
       PseudoNormalizer.process(
           context.getFileSystem(),
           context.getPlatformStrategy(),
-          getSgvPOutpputFilePath(overarchDirName));
+          getSgvPOutpputFilePath(overarchDirName, projectKey));
     }
 
     log.info("Finished normalization.");
@@ -112,10 +112,13 @@ public class Main {
   /**
    * Hack: see DCC-2431.
    */
-  private static String getSgvPOutpputFilePath(@NonNull final String overarchDirName) {
+  private static String getSgvPOutpputFilePath(
+      @NonNull final String overarchDirName,
+      @NonNull final String projectKey) {
     return PATH.join(
         overarchDirName,
         StandAloneNomalizationValidationContext.getFakeOutputReleaseName(),
+        projectKey,
         SGV_P_TYPE.getHarmonizedOutputFileName());
   }
 
