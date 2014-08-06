@@ -17,16 +17,20 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
+
 import org.apache.hadoop.fs.Path;
 
-/**
- * 
- */
+@RequiredArgsConstructor
 public class LocalPlatformStrategyFactory implements PlatformStrategyFactory {
+
+  private final Map<String, String> hadoopProperties;
 
   @Override
   public PlatformStrategy get(Path input, Path output, Path system) {
-    return new LocalPlatformStrategy(input, output, system);
+    return new LocalPlatformStrategy(hadoopProperties, input, output, system);
   }
 
 }

@@ -21,6 +21,7 @@ import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.core.util.FsConfig.FS_URL;
+import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 
 import java.util.List;
@@ -125,7 +126,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   }
 
   private PlatformStrategy createPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
+    val provider = new PlatformStrategyFactoryProvider(getHadoopProperties(getConfig()), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

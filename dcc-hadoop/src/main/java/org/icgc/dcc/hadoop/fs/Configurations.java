@@ -15,49 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.config;
+package org.icgc.dcc.hadoop.fs;
 
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableMap.copyOf;
-import static org.icgc.dcc.core.util.Strings2.unquote;
+import static lombok.AccessLevel.PRIVATE;
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import lombok.NoArgsConstructor;
 
-import java.util.Map;
-
-import lombok.NonNull;
-
-import org.icgc.dcc.core.util.SerializableMaps;
-
-import com.google.common.base.Function;
-import com.typesafe.config.ConfigObject;
+import org.apache.hadoop.conf.Configuration;
 
 /**
- * TODO: move to core? (would need typesafe config)
+ * Util methods for {@link Configuration}.
  */
-public class Configs {
+@NoArgsConstructor(access = PRIVATE)
+public final class Configurations {
 
-  /**
-   * Does not currently support nesting.
-   */
-  public static Map<String, String> asStringMap(ConfigObject configObject) {
-    return copyOf(SerializableMaps.transformMap(
-        configObject.unwrapped(),
-        new Function<String, String>() {
-
-          @Override
-          public String apply(@NonNull final String configKey) {
-            return unquote(configKey);
-          }
-
-        },
-        new Function<Object, String>() {
-
-          @Override
-          public String apply(@NonNull final Object configValue) {
-            checkState(configValue instanceof String
-                || configValue instanceof Number, configValue);
-            return String.valueOf(configValue);
-          }
-
-        }));
+  public static Configuration addFsDefault(Configuration config, String fsUrl) {
+    config.set(FS_DEFAULT_NAME_KEY, fsUrl);
+    return config;
   }
+
 }

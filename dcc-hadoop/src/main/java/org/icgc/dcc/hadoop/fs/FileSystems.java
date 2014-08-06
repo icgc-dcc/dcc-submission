@@ -44,18 +44,13 @@ public final class FileSystems {
   }
 
   @SneakyThrows
-  public static FileSystem getFileSystem(String fsUrl) {
-    return getFileSystem(new Configuration(), fsUrl);
+  public static FileSystem getFileSystem(@NonNull final String fsUrl) {
+    return getFileSystem(Configurations.addFsDefault(new Configuration(), fsUrl));
   }
 
   @SneakyThrows
-  public static FileSystem getFileSystem(Configuration config, String fsUrl) {
-    return FileSystem.get(setFsUrl(config, fsUrl));
-  }
-
-  private static Configuration setFsUrl(Configuration config, String fsUrl) {
-    config.set(FS_DEFAULT_NAME_KEY, fsUrl);
-    return config;
+  public static FileSystem getFileSystem(@NonNull final Configuration config) {
+    return FileSystem.get(config);
   }
 
   public static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {

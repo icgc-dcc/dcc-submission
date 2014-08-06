@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -43,12 +44,20 @@ import cascading.tuple.Fields;
 @Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
-  public LocalPlatformStrategy(Path source, Path output, Path system) {
+  private final Map<String, String> hadoopProperties;
+
+  public LocalPlatformStrategy(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final Path source,
+      @NonNull final Path output,
+      @NonNull final Path system) {
     super(localFileSystem(), source, output, system);
+    this.hadoopProperties = hadoopProperties;
   }
 
   @Override
   public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides) {
+    propertyOverrides.putAll(hadoopProperties);
     return new LocalFlowConnector(propertyOverrides);
   }
 

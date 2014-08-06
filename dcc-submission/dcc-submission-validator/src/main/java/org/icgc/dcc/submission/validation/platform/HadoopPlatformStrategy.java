@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -57,16 +58,20 @@ import cascading.tuple.hadoop.TupleSerializationProps;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
-import com.typesafe.config.Config;
 
 @Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
-  private final Config hadoopConfig;
+  private final Map<String, String> hadoopProperties;
 
-  public HadoopPlatformStrategy(Config hadoopConfig, FileSystem fileSystem, Path source, Path output, Path system) {
+  public HadoopPlatformStrategy(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path source,
+      @NonNull final Path output,
+      @NonNull final Path system) {
     super(fileSystem, source, output, system);
-    this.hadoopConfig = hadoopConfig;
+    this.hadoopProperties = hadoopProperties;
   }
 
   @Override
@@ -77,9 +82,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
-    for (val configEntry : hadoopConfig.entrySet()) {
-      flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
-    }
+    flowProperties.putAll(hadoopProperties);
 
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, this.getClass());

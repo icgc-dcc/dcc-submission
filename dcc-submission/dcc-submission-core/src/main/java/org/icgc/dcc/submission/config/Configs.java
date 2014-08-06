@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,47 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.platform;
+package org.icgc.dcc.submission.config;
+
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableMap.copyOf;
+import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
+import static org.icgc.dcc.core.util.Strings2.unquote;
 
 import java.util.Map;
 
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.util.Bindings;
-import org.icgc.dcc.core.util.Scheme;
+import org.icgc.dcc.core.util.SerializableMaps;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.name.Named;
+import com.google.common.base.Function;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigObject;
 
-@Slf4j
-public class PlatformStrategyFactoryProvider implements Provider<PlatformStrategyFactory> {
+/**
+ * TODO: move to core? (would need typesafe config)
+ */
+public class Configs {
 
-  private final FileSystem fs;
-  private final Map<String, String> hadoopProperties;
+  /**
+   * Does not currently support nesting.
+   */
+  public static Map<String, String> asStringMap(ConfigObject configObject) {
+    return copyOf(SerializableMaps.transformMap(
+        configObject.unwrapped(),
+        new Function<String, String>() {
 
-  @Inject
-  public PlatformStrategyFactoryProvider(
-      @Named(Bindings.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties,
-      @NonNull final FileSystem fs) {
-    this.fs = fs;
-    this.hadoopProperties = hadoopProperties;
+          @Override
+          public String apply(@NonNull final String configKey) {
+            return unquote(configKey);
+          }
+
+        },
+        new Function<Object, String>() {
+
+          @Override
+          public String apply(@NonNull final Object configValue) {
+            checkState(configValue instanceof String
+                || configValue instanceof Number, configValue);
+            return String.valueOf(configValue);
+          }
+
+        }));
   }
 
-  @Override
-  public PlatformStrategyFactory get() {
-    String fsUrl = fs.getScheme();
-
-    if (Scheme.isFile(fsUrl)) {
-      log.info("System configured for local filesystem");
-      return new LocalPlatformStrategyFactory(hadoopProperties);
-    } else if (Scheme.isHdfs(fsUrl)) {
-      log.info("System configured for Hadoop filesystem");
-      return new HadoopPlatformStrategyFactory(hadoopProperties, fs);
-    } else {
-      throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
-    }
+  public static Map<String, String> getHadoopProperties(@NonNull final Config config) {
+    return Configs.asStringMap(config.getObject(HADOOP_KEY));
   }
+
 }
