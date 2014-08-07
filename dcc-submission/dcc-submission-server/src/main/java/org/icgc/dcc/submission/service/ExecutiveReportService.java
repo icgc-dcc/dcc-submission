@@ -223,7 +223,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
               fileSystem, outputDirPath, releaseName, project);
 
           for (val report : projectReports) {
-            log.info("Persisting executive report for '{}.{}': '{}'",
+            log.info("Persisting data type executive report for '{}.{}': '{}'",
                 new Object[] { releaseName, project, report });
             projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
           }
@@ -231,7 +231,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
           ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(
               fileSystem, outputDirPath, releaseName, project, mappings.get());
           for (val report : sequencingStrategyReports) {
-            log.info("Persisting executive report for '{}.{}': '{}'",
+            log.info("Persisting sequencing strategy executive report for '{}.{}': '{}'",
                 new Object[] { releaseName, project, report });
             projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
           }
