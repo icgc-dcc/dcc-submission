@@ -11,6 +11,7 @@ import java.util.Map;
 
 import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.base.Optional;
 
+@Slf4j
 public class ReporterGatherer {
 
   public static ArrayNode getJsonTable1(
@@ -52,11 +54,12 @@ public class ReporterGatherer {
     val iterator = readSmallTextFile(fileSystem, new Path(outputFilePath)).iterator();
     val headerLine = iterator.next();
     val headers = getTsvHeaders(headerLine);
+    log.info("Headers: '{}'", headers);
     val headerSize = headers.size();
 
     val documents = JsonNodeFactory.instance.arrayNode();
     while (iterator.hasNext()) {
-      String line = headerLine;
+      String line = iterator.next();
       if (!line.equals(headerLine)) {
         val values = newArrayList(TAB.split(line));
         checkState(headerSize == values.size());
