@@ -365,6 +365,7 @@ public class SubAssemblies {
       return new BaseFunction<HashCountByContext>(ARGS) {
 
         final long INITIAL_COUNT = 0L;
+        boolean flushed = false;
 
         @Override
         public void operate(
@@ -392,6 +393,15 @@ public class SubAssemblies {
         public void flush(
             @SuppressWarnings("rawtypes") FlowProcess flowProcess,
             OperationCall<HashCountByContext> operationCall) {
+
+          // Safety net to ensure flush() only happens once
+          if (!flushed) {
+            log.info("First flushing");
+            flushed = true;
+          } else {
+            log.warn("Flushing is only expected to happen once...");
+            return;
+          }
 
           val context = operationCall.getContext();
           if (context != null) {

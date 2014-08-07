@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -39,13 +40,13 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
@@ -57,29 +58,32 @@ import cascading.tuple.hadoop.TupleSerializationProps;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
-import com.typesafe.config.Config;
 
 @Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
-  private final Config hadoopConfig;
+  private static final CascadingConnector connector = CascadingConnector.CLUSTER;
+  private final Map<String, String> hadoopProperties;
 
-  public HadoopPlatformStrategy(Config hadoopConfig, FileSystem fileSystem, Path source, Path output, Path system) {
+  public HadoopPlatformStrategy(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path source,
+      @NonNull final Path output,
+      @NonNull final Path system) {
     super(fileSystem, source, output, system);
-    this.hadoopConfig = hadoopConfig;
+    this.hadoopProperties = hadoopProperties;
   }
 
   @Override
-  public FlowConnector getFlowConnector(Map<Object, Object> properties) {
+  public FlowConnector getFlowConnector(@NonNull final Map<String, String> properties) {
     Map<Object, Object> flowProperties = newHashMap();
 
     // Custom serialization
     TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
-    for (val configEntry : hadoopConfig.entrySet()) {
-      flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
-    }
+    flowProperties.putAll(hadoopProperties);
 
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, this.getClass());
@@ -92,7 +96,8 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
             GZIP_CODEC_PROPERTY_VALUE);
 
     flowProperties.putAll(properties);
-    return new HadoopFlowConnector(flowProperties);
+
+    return connector.getFlowConnector(flowProperties);
   }
 
   @Override

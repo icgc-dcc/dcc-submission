@@ -44,6 +44,11 @@
       <artifactId>dcc-submission-ui</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+    	<groupId>${project.groupId}</groupId>
+    	<artifactId>dcc-submission-reporter</artifactId>
+    	<version>${project.version}</version>
+    </dependency>
 
     <!-- REST -->
     <dependency>

@@ -17,46 +17,45 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
+import java.util.Map;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.icgc.dcc.core.util.Bindings;
+import org.icgc.dcc.core.util.Scheme;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.typesafe.config.Config;
+import com.google.inject.name.Named;
 
+@Slf4j
 public class PlatformStrategyFactoryProvider implements Provider<PlatformStrategyFactory> {
 
-  private static final Logger log = LoggerFactory.getLogger(PlatformStrategyFactoryProvider.class);
-
   private final FileSystem fs;
-
-  private final Config config;
+  private final Map<String, String> hadoopProperties;
 
   @Inject
-  public PlatformStrategyFactoryProvider(Config config, FileSystem fs) {
-    checkArgument(fs != null);
-    checkArgument(config != null);
+  public PlatformStrategyFactoryProvider(
+      @Named(Bindings.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final FileSystem fs) {
     this.fs = fs;
-    this.config = config;
+    this.hadoopProperties = hadoopProperties;
   }
 
   @Override
   public PlatformStrategyFactory get() {
     String fsUrl = fs.getScheme();
 
-    if (fsUrl.equals("file")) {
+    if (Scheme.isFile(fsUrl)) {
       log.info("System configured for local filesystem");
-      return new LocalPlatformStrategyFactory();
-    } else if (fsUrl.equals("hdfs")) {
+      return new LocalPlatformStrategyFactory(hadoopProperties);
+    } else if (Scheme.isHdfs(fsUrl)) {
       log.info("System configured for Hadoop filesystem");
-      return new HadoopPlatformStrategyFactory(config.getConfig(HADOOP_KEY), fs);
+      return new HadoopPlatformStrategyFactory(hadoopProperties, fs);
     } else {
       throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
     }
   }
-
 }

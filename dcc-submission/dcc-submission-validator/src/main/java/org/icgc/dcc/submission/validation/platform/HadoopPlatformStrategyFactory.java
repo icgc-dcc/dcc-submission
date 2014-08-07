@@ -17,25 +17,28 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import java.util.Map;
+
+import lombok.NonNull;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
-import com.typesafe.config.Config;
 
 public class HadoopPlatformStrategyFactory implements PlatformStrategyFactory {
 
   private final FileSystem fileSystem;
+  private final Map<String, String> hadoopProperties;
 
-  private final Config hadoopConfig;
-
-  public HadoopPlatformStrategyFactory(Config hadoopConfig, FileSystem fs) {
+  public HadoopPlatformStrategyFactory(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final FileSystem fs) {
+    this.hadoopProperties = hadoopProperties;
     this.fileSystem = fs;
-    this.hadoopConfig = hadoopConfig;
   }
 
   @Override
   public PlatformStrategy get(Path input, Path output, Path system) {
-    return new HadoopPlatformStrategy(hadoopConfig, fileSystem, input, output, system);
+    return new HadoopPlatformStrategy(hadoopProperties, fileSystem, input, output, system);
   }
 
 }

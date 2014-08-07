@@ -18,4 +18,5 @@ Sub-system modules:
 - [Submission Core](dcc-submission-core/README.md)
 - [Submission Server](dcc-submission-server/README.md)
 - [Submission Validator](dcc-submission-validator/README.md)
+- [Submission Reporter](dcc-submission-reporter/README.md)
 - [Submission UI](dcc-submission-ui/README.md)

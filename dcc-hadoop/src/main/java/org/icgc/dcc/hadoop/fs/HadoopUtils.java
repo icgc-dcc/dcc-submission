@@ -20,6 +20,7 @@ package org.icgc.dcc.hadoop.fs;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.io.ByteStreams.copy;
+import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Separators.DASH;
 import static org.icgc.dcc.core.util.Splitters.TAB;
@@ -67,16 +68,17 @@ public class HadoopUtils {
       .join(MR_PART_FILE_NAME_BASE, MR_PART_FILE_NAME_FIRST_INDEX);
 
   public static String getConfigurationDescription(Configuration configuration) {
+    val stringWriter = new StringWriter();
     @Cleanup
-    val printWriter = new PrintWriter(new StringWriter());
-    dumpConfiguration(configuration, printWriter);
+    val printWriter = new PrintWriter(stringWriter);
+    dumpConfiguration(configuration, stringWriter);
 
-    return printWriter.toString();
+    return formatPrettyJson(stringWriter.toString());
   }
 
   @SneakyThrows
-  private static void dumpConfiguration(Configuration configuration, PrintWriter printWriter) {
-    Configuration.dumpConfiguration(configuration, printWriter);
+  private static void dumpConfiguration(Configuration configuration, StringWriter writer) {
+    Configuration.dumpConfiguration(configuration, writer);
   }
 
   public static void mkdirs(FileSystem fileSystem, String stringPath) {

@@ -35,6 +35,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +48,10 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 
 /**
@@ -86,10 +88,28 @@ public class SubmissionInputData {
   }
 
   /**
+   * This is called form submission-server where there is no access to to the projects json file.
+   * 
+   * FIXME: should really factor out the projectDescriptions stuff in the main getMatchingFiles
+   */
+  public static Map<String, Map<FileType, List<Path>>> getMatchingFiles(
+      FileSystem fileSystem,
+      String defaultParentDataDir,
+      Set<String> projectKeys,
+      Map<FileType, String> patterns) {
+
+    val projectsJson = JsonNodeFactory.instance.objectNode();
+    for (val projectKey : projectKeys) {
+      projectsJson.with(projectKey);
+    }
+    return getMatchingFiles(projectKeys, projectsJson, patterns, fileSystem, defaultParentDataDir);
+  }
+
+  /**
    * Returns the mapping of matching files on a per project/per file type basis.
    */
   private static Map<String, Map<FileType, List<Path>>> getMatchingFiles(
-      List<String> projectKeys, ObjectNode projectDescriptions, Map<FileType, String> patterns,
+      Set<String> projectKeys, ObjectNode projectDescriptions, Map<FileType, String> patterns,
       FileSystem fileSystem, String defaultParentDataDir) {
 
     val matchingFiles = new LinkedHashMap<String, Map<FileType, List<Path>>>();
@@ -144,8 +164,8 @@ public class SubmissionInputData {
     return (ObjectNode) new ObjectMapper().readTree(new File(projectsJsonFilePath));
   }
 
-  private static List<String> getProjectKeys(ObjectNode projectDescriptions) {
-    val projectKeys = new ImmutableList.Builder<String>();
+  private static Set<String> getProjectKeys(ObjectNode projectDescriptions) {
+    val projectKeys = new ImmutableSet.Builder<String>();
     val entries = projectDescriptions.fields();
     while (entries.hasNext()) {
       val entry = entries.next();
@@ -155,7 +175,7 @@ public class SubmissionInputData {
     return projectKeys.build();
   }
 
-  private static void checkSanity(ObjectNode projectDescriptions, List<String> projectKeys) {
+  private static void checkSanity(ObjectNode projectDescriptions, Set<String> projectKeys) {
     for (val projectKey : projectKeys) {
       val projectDescription = projectDescriptions.get(projectKey);
       val parameters = newArrayList(projectDescription.fieldNames());

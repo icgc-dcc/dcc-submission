@@ -23,6 +23,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.getDefaultSt
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -38,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.report.Report;
@@ -47,8 +50,11 @@ import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 
 @Slf4j
 @Data
@@ -56,7 +62,9 @@ import com.google.common.base.Function;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "projectKey")
-public class Submission implements Serializable {
+public class Submission implements Serializable, Identifiable {
+
+  private static final Joiner ID_JOINER = Joiners.HASHTAG;
 
   @NotBlank
   @JsonView(Digest.class)
@@ -96,6 +104,35 @@ public class Submission implements Serializable {
     this.releaseName = releaseName;
     this.state = state;
     this.lastUpdated = new Date();
+  }
+
+  @Override
+  @JsonIgnore
+  public String getId() {
+    return ID_JOINER.join(releaseName, projectKey);
+  }
+
+  /**
+   * See {@link #getId()}.
+   */
+  @JsonIgnore
+  public static ImmutableSet<String> getProjectKeys(Set<String> submissionsIds) {
+    return ImmutableSet.copyOf(transform(
+        submissionsIds,
+        new Function<String, String>() {
+
+          @Override
+          public String apply(@NonNull final String submissionId) {
+            return getProjectKeyFromId(submissionId);
+          }
+
+          private String getProjectKeyFromId(@NonNull final String id) {
+            val iterator = Joiners.getCorrespondingSplitter(ID_JOINER).split(id).iterator();
+            iterator.next();
+            return iterator.next();
+          }
+
+        }));
   }
 
   //

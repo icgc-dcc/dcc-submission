@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -28,13 +29,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
 import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
-import cascading.flow.local.LocalFlowConnector;
 import cascading.scheme.local.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
@@ -43,13 +44,22 @@ import cascading.tuple.Fields;
 @Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
-  public LocalPlatformStrategy(Path source, Path output, Path system) {
+  private static final CascadingConnector connector = CascadingConnector.LOCAL;
+  private final Map<String, String> hadoopProperties;
+
+  public LocalPlatformStrategy(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final Path source,
+      @NonNull final Path output,
+      @NonNull final Path system) {
     super(localFileSystem(), source, output, system);
+    this.hadoopProperties = hadoopProperties;
   }
 
   @Override
-  public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides) {
-    return new LocalFlowConnector(propertyOverrides);
+  public FlowConnector getFlowConnector(@NonNull final Map<String, String> propertyOverrides) {
+    propertyOverrides.putAll(hadoopProperties);
+    return connector.getFlowConnector(propertyOverrides);
   }
 
   @Override

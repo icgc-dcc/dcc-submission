@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -213,7 +214,8 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
     Path systemDir = SYSTEM_DIR;
 
     val dataTypes = DataTypes.values();
-    val platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
+    val platformStrategy = new LocalPlatformStrategy(
+        Collections.<String, String> emptyMap(), rootDir, outputDir, systemDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
     plan.connect();
