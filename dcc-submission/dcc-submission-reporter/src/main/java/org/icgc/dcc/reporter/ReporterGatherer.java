@@ -1,64 +1,67 @@
 package org.icgc.dcc.reporter;
 
-import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.io.Files.readLines;
 import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING_MAP;
 import static org.icgc.dcc.core.util.Splitters.TAB;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
 
-import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
+
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.io.Files;
 
 public class ReporterGatherer {
 
   public static ArrayNode getJsonTable1(
+      @NonNull final FileSystem fileSystem,
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
-
-    return getJsonTable(outputDirPath, releaseName, projectKey, OutputType.DONOR, ABSENT_STRING_MAP);
+    return getJsonTable(
+        fileSystem, outputDirPath, releaseName, projectKey, OutputType.DONOR, ABSENT_STRING_MAP);
   }
 
   public static ArrayNode getJsonTable2(
+      @NonNull final FileSystem fileSystem,
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
       @NonNull final String projectKey,
       @NonNull final Map<String, String> mapping) {
-
-    return getJsonTable(outputDirPath, releaseName, projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
+    return getJsonTable(
+        fileSystem, outputDirPath, releaseName, projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
   }
 
   private static ArrayNode getJsonTable(
+      @NonNull final FileSystem fileSystem,
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
       @NonNull final String projectKey,
       @NonNull final OutputType outputType,
       @NonNull final Optional<Map<String, String>> mapping) {
+
     val outputFilePath = Reporter.getOutputFilePath(outputDirPath, outputType, releaseName, projectKey);
-    val headerLine = readFirstLine(outputFilePath);
-    val headers = newArrayList(TAB.split(headerLine));
+    val iterator = readSmallTextFile(fileSystem, new Path(outputFilePath)).iterator();
+    val headers = getTsvHeaders(iterator.next());
     val headerSize = headers.size();
 
     val documents = JsonNodeFactory.instance.arrayNode();
-    for (val line : readRemainingLines(outputFilePath)) {
+    while (iterator.hasNext()) {
+      String line = iterator.next();
       val values = newArrayList(TAB.split(line));
       checkState(headerSize == values.size());
 
       val node = JsonNodeFactory.instance.objectNode();
       for (int i = 0; i < headerSize; i++) {
-        node.put(getHeader(headers.get(i), mapping), values.get(i));
+        node.put(getJsonHeader(headers.get(i), mapping), values.get(i));
       }
       documents.add(node);
     }
@@ -66,7 +69,11 @@ public class ReporterGatherer {
     return documents;
   }
 
-  private static String getHeader(String header, Optional<Map<String, String>> mapping) {
+  private static List<String> getTsvHeaders(String headerLine) {
+    return newArrayList(TAB.split(headerLine));
+  }
+
+  private static String getJsonHeader(String header, Optional<Map<String, String>> mapping) {
     return mapping.isPresent() ?
         tryTranslate(
             mapping.get(),
@@ -80,30 +87,6 @@ public class ReporterGatherer {
 
     return mapping.containsKey(code) ?
         mapping.get(code) : code;
-  }
-
-  @SneakyThrows
-  private static String readFirstLine(String filePath) {
-    return Files.readFirstLine(
-        new File(filePath),
-        UTF_8);
-  }
-
-  @SneakyThrows
-  private static Iterable<String> readRemainingLines(String filePath) {
-    return filter(readLines(
-        new File(filePath),
-        UTF_8),
-        new Predicate<String>() {
-
-          int lineNumber;
-
-          @Override
-          public boolean apply(String line) {
-            return lineNumber++ != 0;
-          }
-
-        });
   }
 
 }

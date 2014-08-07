@@ -198,6 +198,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
 
     log.info("Generating reports for {}", projectKeys);
 
+    val fileSystem = dccFileSystem.getFileSystem();
     val patterns = getPatterns(dictionaryNode);
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
         FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
@@ -210,7 +211,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
             releaseName,
             projectKeys,
             getReporterInput(
-                dccFileSystem.getFileSystem(),
+                fileSystem,
                 projectKeys,
                 getReleasePath(releaseName),
                 patterns),
@@ -219,7 +220,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
 
         for (val project : projectKeys) {
           ArrayNode projectReports = ReporterGatherer.getJsonTable1(
-              outputDirPath, releaseName, project);
+              fileSystem, outputDirPath, releaseName, project);
 
           for (val report : projectReports) {
             log.info("Persisting executive report for '{}.{}': '{}'",
@@ -228,7 +229,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
           }
 
           ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(
-              outputDirPath, releaseName, project, mappings.get());
+              fileSystem, outputDirPath, releaseName, project, mappings.get());
           for (val report : sequencingStrategyReports) {
             log.info("Persisting executive report for '{}.{}': '{}'",
                 new Object[] { releaseName, project, report });
