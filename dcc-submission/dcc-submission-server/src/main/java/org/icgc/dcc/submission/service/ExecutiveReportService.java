@@ -196,8 +196,6 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
       @NonNull final JsonNode dictionaryNode,
       @NonNull final JsonNode codeListsNode) {
 
-    log.info("Generating reports for {}", projectKeys);
-
     val fileSystem = dccFileSystem.getFileSystem();
     val patterns = getPatterns(dictionaryNode);
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
@@ -207,6 +205,8 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
 
       @Override
       public void run() {
+        log.info("Starting generating reports for '{}.{}'", releaseName, projectKeys);
+
         val outputDirPath = Reporter.process(
             releaseName,
             projectKeys,
@@ -237,6 +237,8 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
           }
 
         }
+
+        log.info("Finished generating reports for '{}.{}'", releaseName, projectKeys);
       }
 
       private String getReleasePath(@NonNull final String releaseName) {
