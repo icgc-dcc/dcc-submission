@@ -55,7 +55,7 @@ public final class FileSystems {
 
   public static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
     checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
-    return Protocol.fromURL(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
+    return Protocol.fromURI(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
   }
 
 }

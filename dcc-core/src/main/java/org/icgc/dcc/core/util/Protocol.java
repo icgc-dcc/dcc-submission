@@ -20,6 +20,7 @@ package org.icgc.dcc.core.util;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Strings2.removeTarget;
 
+import java.net.URI;
 import java.net.URL;
 
 import lombok.NonNull;
@@ -61,8 +62,8 @@ public enum Protocol implements Identifiable {
   }
 
   @SneakyThrows
-  public static Protocol fromURL(@NonNull final String url) {
-    return fromURL(new URL(url));
+  public static Protocol fromURI(@NonNull final String uri) {
+    return from(new URI(uri).getScheme());
   }
 
   public static Protocol fromURL(@NonNull final URL url) {
