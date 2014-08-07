@@ -50,20 +50,23 @@ public class ReporterGatherer {
 
     val outputFilePath = Reporter.getOutputFilePath(outputDirPath, outputType, releaseName, projectKey);
     val iterator = readSmallTextFile(fileSystem, new Path(outputFilePath)).iterator();
-    val headers = getTsvHeaders(iterator.next());
+    val headerLine = iterator.next();
+    val headers = getTsvHeaders(headerLine);
     val headerSize = headers.size();
 
     val documents = JsonNodeFactory.instance.arrayNode();
     while (iterator.hasNext()) {
-      String line = iterator.next();
-      val values = newArrayList(TAB.split(line));
-      checkState(headerSize == values.size());
+      String line = headerLine;
+      if (!line.equals(headerLine)) {
+        val values = newArrayList(TAB.split(line));
+        checkState(headerSize == values.size());
 
-      val node = JsonNodeFactory.instance.objectNode();
-      for (int i = 0; i < headerSize; i++) {
-        node.put(getJsonHeader(headers.get(i), mapping), values.get(i));
+        val node = JsonNodeFactory.instance.objectNode();
+        for (int i = 0; i < headerSize; i++) {
+          node.put(getJsonHeader(headers.get(i), mapping), values.get(i));
+        }
+        documents.add(node);
       }
-      documents.add(node);
     }
 
     return documents;
