@@ -37,7 +37,7 @@ public enum Scheme implements Identifiable {
 
   @Override
   public String getId() {
-    return name();
+    return name().toLowerCase();
   }
 
   public boolean isFile() {
