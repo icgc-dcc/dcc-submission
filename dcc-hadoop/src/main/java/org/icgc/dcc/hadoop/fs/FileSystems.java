@@ -19,8 +19,8 @@ package org.icgc.dcc.hadoop.fs;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import static org.icgc.dcc.hadoop.fs.Configurations.newConfiguration;
 
-import java.net.URI;
 import java.util.Map;
 
 import lombok.AccessLevel;
@@ -40,12 +40,12 @@ public final class FileSystems {
 
   @SneakyThrows
   public static FileSystem getLocalFileSystem() {
-    return FileSystem.get(new URI(Protocol.FILE + "/"), new Configuration());
+    return FileSystem.getLocal(newConfiguration());
   }
 
   @SneakyThrows
-  public static FileSystem getFileSystem(@NonNull final String fsUrl) {
-    return getFileSystem(Configurations.addFsDefault(new Configuration(), fsUrl));
+  public static FileSystem getFileSystem(@NonNull final String fsDefault) {
+    return getFileSystem(newConfiguration(fsDefault));
   }
 
   @SneakyThrows

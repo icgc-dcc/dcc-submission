@@ -20,6 +20,7 @@ package org.icgc.dcc.hadoop.fs;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -29,8 +30,19 @@ import org.apache.hadoop.conf.Configuration;
 @NoArgsConstructor(access = PRIVATE)
 public final class Configurations {
 
-  public static Configuration addFsDefault(Configuration config, String fsUrl) {
-    config.set(FS_DEFAULT_NAME_KEY, fsUrl);
+  public static Configuration newConfiguration() {
+    return new Configuration();
+  }
+
+  public static Configuration newConfiguration(@NonNull final String fsDefault) {
+    return addFsDefault(newConfiguration(), fsDefault);
+  }
+
+  public static Configuration addFsDefault(
+      @NonNull final Configuration config,
+      @NonNull final String fsDefault) {
+    config.set(FS_DEFAULT_NAME_KEY, fsDefault);
+
     return config;
   }
 

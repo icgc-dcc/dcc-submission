@@ -394,7 +394,7 @@ public final class NormalizationValidator implements Validator {
    * formatted TSV file.
    */
   private Tap<?, ?, ?> getSourceTap(PlatformStrategy platform, String fileName) {
-    return platform.getSourceTap2(fileName);
+    return platform.getNormalizerSourceTap(fileName);
   }
 
   /**

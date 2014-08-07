@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import java.io.IOException;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
+
 import java.io.InputStream;
 import java.util.Map;
 
@@ -26,8 +27,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
 import org.icgc.dcc.hadoop.cascading.taps.Taps;
@@ -35,7 +34,6 @@ import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
-import cascading.flow.FlowConnector;
 import cascading.scheme.local.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
@@ -44,22 +42,27 @@ import cascading.tuple.Fields;
 @Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
-  private static final CascadingConnector connector = CascadingConnector.LOCAL;
-  private final Map<String, String> hadoopProperties;
-
   public LocalPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final Path source,
       @NonNull final Path output,
       @NonNull final Path system) {
-    super(localFileSystem(), source, output, system);
-    this.hadoopProperties = hadoopProperties;
+    super(hadoopProperties, getLocalFileSystem(), source, output, system);
   }
 
   @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<String, String> propertyOverrides) {
-    propertyOverrides.putAll(hadoopProperties);
-    return connector.getFlowConnector(propertyOverrides);
+  protected Taps getTaps() {
+    return Taps.LOCAL;
+  }
+
+  @Override
+  protected CascadingConnector getConnectors() {
+    return CascadingConnector.LOCAL;
+  }
+
+  @Override
+  protected Map<?, ?> augmentFlowProperties(@NonNull final Map<?, ?> properties) {
+    return properties; // Nothing to add in local mode
   }
 
   @Override
@@ -88,28 +91,9 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   @Override
   public Tap<?, ?, ?> getSourceTap(String fileName) {
     return Taps.LOCAL.getDecompressingLinesNoHeader(
-        getFilePath(fileName).toUri().toString(),
+        getFile(fileName).toUri().toString(),
         new Fields(ValidationFields.OFFSET_FIELD_NAME),
         new Fields("line"));
   }
 
-  /**
-   * Temporary: see DCC-1876
-   */
-  @Override
-  protected Tap<?, ?, ?> tapSource2(Path path) {
-    return new FileTap(
-        new TextDelimited(
-            true, // headers
-            FIELD_SEPARATOR),
-        path.toUri().getPath());
-  }
-
-  static FileSystem localFileSystem() {
-    try {
-      return FileSystem.getLocal(new Configuration());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
 }

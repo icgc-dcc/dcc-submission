@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.platform;
 
 import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.core.util.Maps2.toObjectsMap;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.MR_PART_FILE_NAME_BASE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
@@ -41,12 +42,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
+import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
-import cascading.flow.FlowConnector;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
@@ -62,42 +63,46 @@ import com.google.common.io.InputSupplier;
 @Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
-  private static final CascadingConnector connector = CascadingConnector.CLUSTER;
-  private final Map<String, String> hadoopProperties;
-
   public HadoopPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final FileSystem fileSystem,
       @NonNull final Path source,
       @NonNull final Path output,
       @NonNull final Path system) {
-    super(fileSystem, source, output, system);
-    this.hadoopProperties = hadoopProperties;
+    super(hadoopProperties, fileSystem, source, output, system);
   }
 
   @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<String, String> properties) {
-    Map<Object, Object> flowProperties = newHashMap();
+  protected Taps getTaps() {
+    return Taps.HADOOP;
+  }
+
+  @Override
+  protected CascadingConnector getConnectors() {
+    return CascadingConnector.CLUSTER;
+  }
+
+  @Override
+  protected Map<?, ?> augmentFlowProperties(@NonNull final Map<?, ?> flowProperties) {
+    Map<Object, Object> additionalFlowProperties = newHashMap();
 
     // Custom serialization
-    TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
-
-    // From external application configuration file
-    flowProperties.putAll(hadoopProperties);
+    TupleSerializationProps.addSerialization(additionalFlowProperties, TupleStateSerialization.class.getName());
 
     // M/R job entry point
-    AppProps.setApplicationJarClass(flowProperties, this.getClass());
+    AppProps.setApplicationJarClass(additionalFlowProperties, this.getClass());
 
-    flowProperties =
+    additionalFlowProperties =
         enableJobOutputCompression(
             enableIntermediateMapOutputCompression(
-                setAvailableCodecs(flowProperties),
+                setAvailableCodecs(additionalFlowProperties),
                 SNAPPY_CODEC_PROPERTY_VALUE),
             GZIP_CODEC_PROPERTY_VALUE);
 
-    flowProperties.putAll(properties);
+    toObjectsMap(flowProperties)
+        .putAll(additionalFlowProperties);
 
-    return connector.getFlowConnector(flowProperties);
+    return flowProperties;
   }
 
   @Override
@@ -163,21 +168,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     scheme.setSinkCompression(Compress.ENABLE);
     return new Hfs(
         scheme,
-        getFilePath(fileName).toUri().getPath());
-  }
-
-  /**
-   * Temporary: see DCC-1876
-   */
-  @Override
-  protected Tap<?, ?, ?> tapSource2(Path path) {
-    val scheme = new TextDelimited(
-        true, // headers
-        FIELD_SEPARATOR);
-    scheme.setSinkCompression(Compress.ENABLE);
-    return new Hfs(
-        scheme,
-        path.toUri().getPath());
+        getFile(fileName).toUri().getPath());
   }
 
   @SneakyThrows

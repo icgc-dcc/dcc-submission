@@ -17,10 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static java.lang.String.format;
-import static org.icgc.dcc.core.util.Maps2.toObjectsMap;
-import static org.icgc.dcc.submission.validation.primary.core.Plan.MAX_CONCURRENT_FLOW_STEPS;
 
 import java.util.List;
 import java.util.Map;
@@ -135,11 +132,9 @@ public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
   }
 
   private Flow<?> connect(PlatformStrategy platform, FlowDef flowDef) {
-    val propertyOverrides = Maps.<String, String> newHashMap();
-    setMaxConcurrentSteps(toObjectsMap(propertyOverrides), MAX_CONCURRENT_FLOW_STEPS);
-    val flowConnector = platform.getFlowConnector(propertyOverrides);
-
-    return flowConnector.connect(flowDef);
+    return platform
+        .getFlowConnector()
+        .connect(flowDef);
   }
 
   @Override

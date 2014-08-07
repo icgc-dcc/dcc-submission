@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -46,18 +45,16 @@ public interface PlatformStrategy {
 
   FlowConnector getFlowConnector();
 
-  FlowConnector getFlowConnector(final Map<String, String> propertyOverrides);
-
   /**
-   * TODO: Adapt submission code to use {@link #getSourceTap2(FileSchema)} since we can now assume the header is known
-   * (and therefore we should use {@link TextDelimited} rather than {@link TextLine}.
+   * TODO: Adapt submission code to use {@link #getNormalizerSourceTap(FileSchema)} since we can now assume the header
+   * is known (and therefore we should use {@link TextDelimited} rather than {@link TextLine}.
    */
   Tap<?, ?, ?> getSourceTap(String fileName);
 
   /**
    * See comment in {@link #getSourceTap(String)}.
    */
-  Tap<?, ?, ?> getSourceTap2(String fileName);
+  Tap<?, ?, ?> getNormalizerSourceTap(String fileName);
 
   Tap<?, ?, ?> getTrimmedTap(Key key);
 
@@ -77,7 +74,7 @@ public interface PlatformStrategy {
   /**
    * TODO
    */
-  Path getFilePath(String fileName);
+  Path getFile(String fileName);
 
   /**
    * TODO: merge with {@link ValidationContext#getSsmPrimaryFiles()}?

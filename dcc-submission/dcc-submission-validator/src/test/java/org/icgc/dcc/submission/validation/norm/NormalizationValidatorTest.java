@@ -259,7 +259,7 @@ public class NormalizationValidatorTest {
   @SuppressWarnings("unchecked")
   private void mockInputTap(String inputFile) {
     val fileName = new File(inputFile).getName();
-    when(mockPlatformStrategy.getSourceTap2(fileName))
+    when(mockPlatformStrategy.getNormalizerSourceTap(fileName))
         .thenReturn(getInputTap(inputFile));
   }
 
