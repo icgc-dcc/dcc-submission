@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.platform;
 import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.core.util.Maps2.toObjectsMap;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.MR_PART_FILE_NAME_BASE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.isPartFile;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopProperties.enableIntermediateMapOutputCompression;
@@ -126,7 +126,8 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     for (val fileStatus : fileSystem.listStatus(reportPath)) {
       val filePath = fileStatus.getPath();
 
-      if (fileStatus.isFile() && filePath.getName().startsWith(MR_PART_FILE_NAME_BASE)) {
+      if (fileStatus.isFile()
+          && isPartFile(filePath)) {
         InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
 
           @Override

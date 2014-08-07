@@ -18,8 +18,13 @@
 package org.icgc.dcc.hadoop.fs;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.toArray;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.ByteStreams.copy;
+import static org.icgc.dcc.core.util.Collections3.sort;
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Separators.DASH;
@@ -30,8 +35,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -41,6 +48,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
@@ -52,20 +60,35 @@ import cascading.tuple.Fields;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.LineReader;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
+ * <p>
+ * TODO: merge {@link FileOperations} here?
  */
 public class HadoopUtils {
 
-  public static final String MR_PART_FILE_NAME_BASE = "part";
-  public static final String MR_PART_FILE_SEPARATOR = DASH;
-  public static final String MR_PART_FILE_NAME_FIRST_INDEX = "00000";
-  public static final String FIRST_PLAIN_MR_PART_FILE_NAME = Joiner.on(MR_PART_FILE_SEPARATOR)
-      .join(MR_PART_FILE_NAME_BASE, MR_PART_FILE_NAME_FIRST_INDEX);
+  private static final String MR_PART_FILE_NAME_BASE = "part";
+  private static final Joiner on = Joiner.on(DASH);
+  private static final int MR_PART_FILE_NAME_FIRST_INDEX = 0;
+  private static final String MR_PART_FILE_INDEX_PADDING = "%05d";
+  private static final String FIRST_PLAIN_MR_PART_FILE_NAME = getFirstPlainMrPartFileName();
+
+  private static String getFirstPlainMrPartFileName() {
+    return getPlainMrPartFileName(MR_PART_FILE_NAME_FIRST_INDEX);
+  }
+
+  private static String getPlainMrPartFileName(int index) {
+    return on.join(MR_PART_FILE_NAME_BASE, formatPartIndex(index));
+  }
+
+  private static String formatPartIndex(int index) {
+    return String.format(MR_PART_FILE_INDEX_PADDING, index);
+  }
 
   public static String getConfigurationDescription(Configuration configuration) {
     val stringWriter = new StringWriter();
@@ -74,6 +97,13 @@ public class HadoopUtils {
     dumpConfiguration(configuration, stringWriter);
 
     return formatPrettyJson(stringWriter.toString());
+  }
+
+  @SneakyThrows
+  private static FSDataInputStream open(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path path) {
+    return fileSystem.open(path);
   }
 
   @SneakyThrows
@@ -306,21 +336,14 @@ public class HadoopUtils {
   }
 
   /**
-   * See {@link #readSmallTextFile(FileSystem, Path)}.
-   */
-  public static List<String> catSmallTextFile(FileSystem fileSystem, Path path) {
-    return readSmallTextFile(fileSystem, path);
-  }
-
-  /**
    * Intended for small files only.
    */
   @SneakyThrows
   public static List<String> readSmallTextFile(FileSystem fileSystem, Path path) {
     @Cleanup
-    BufferedReader br = new BufferedReader(new InputStreamReader(fileSystem.open(path)));
+    BufferedReader reader = new BufferedReader(getReader(fileSystem, path));
     val lines = Lists.<String> newArrayList();
-    for (String line; (line = br.readLine()) != null;) {
+    for (String line; (line = reader.readLine()) != null;) {
       lines.add(line);
     }
     return lines;
@@ -355,6 +378,122 @@ public class HadoopUtils {
     return PATH.join(
         filePath,
         FIRST_PLAIN_MR_PART_FILE_NAME);
+  }
+
+  public static boolean isPartFile(@NonNull final Path filePath) {
+    return isPartFilePredicate().apply(filePath);
+  }
+
+  private static Predicate<Path> isPartFilePredicate() {
+    return new Predicate<Path>() {
+
+      @Override
+      public boolean apply(@NonNull final Path filePath) {
+        return filePath.getName().startsWith(MR_PART_FILE_NAME_BASE);
+      }
+
+    };
+  }
+
+  /**
+   * Get reader for the given {@link Path}, which can be either a file or an directory contains MR part files. In the
+   * latter case the reader returned will allow reading all part files at once.
+   */
+  private static Reader getReader(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path path) {
+
+    if (isDirectory(fileSystem, path)) {
+      return new PartFilesReader(fileSystem, path); // TODO: closed properly?
+    } else {
+      return new InputStreamReader(open(fileSystem, path));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  // TODO: how to get rid of that warning?
+  private static List<Path> getSortedPartFiles(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path inputDir) {
+    checkArgument(isDirectory(fileSystem, inputDir));
+
+    return ImmutableList.copyOf(sort(newArrayList(
+        filter(
+            lsFile(fileSystem, inputDir),
+            isPartFilePredicate()))));
+  }
+
+  public static void main(String[] args) {
+    System.out.println(readSmallTextFile(FileSystems.getLocalFileSystem(), new Path("/home/tony/tmp/part/plain")));
+    System.out.println(readSmallTextFile(FileSystems.getLocalFileSystem(), new Path("/home/tony/tmp/part/mr")));
+  }
+
+  /**
+   * {@link Reader} that allows reading MR part files as if they were one entity.
+   */
+  private static final class PartFilesReader extends Reader {
+
+    private static final int END_OF_STREAM = -1;
+
+    private final List<InputStreamReader> inputStreamReaders;
+    private final Iterator<InputStreamReader> iterator;
+    private InputStreamReader currentInputStreamReader;
+
+    private PartFilesReader(
+        @NonNull final FileSystem fileSystem,
+        @NonNull final Path inputDir) {
+      super();
+      val partFiles = getSortedPartFiles(fileSystem, inputDir);
+      checkState(!partFiles.isEmpty(),
+          "Expecting at least one '{}' file to exists for '{}', instead got: '{}'",
+          MR_PART_FILE_NAME_BASE, inputDir, lsAll(fileSystem, inputDir));
+
+      this.inputStreamReaders = getInputStreamReaders(fileSystem, partFiles);
+      this.iterator = inputStreamReaders.iterator();
+      this.currentInputStreamReader = iterator.next();
+    }
+
+    private final List<InputStreamReader> getInputStreamReaders(
+        @NonNull final FileSystem fileSystem,
+        @NonNull final List<Path> partFiles) {
+      val builder = new ImmutableList.Builder<InputStreamReader>();
+      for (val partFilePath : partFiles) {
+        builder.add(
+            new InputStreamReader(
+                open(fileSystem, partFilePath)));
+      }
+
+      return builder.build();
+    }
+
+    @Override
+    public int read(char[] cbuf, int offset, int length) throws IOException {
+
+      // Read from current reader
+      val count = currentInputStreamReader.read(cbuf, offset, length);
+
+      // If reached end of current reader, try next one if exists
+      if (count == END_OF_STREAM
+          && iterator.hasNext()) {
+        currentInputStreamReader = iterator.next();
+        return read(cbuf, offset, length);
+      }
+
+      // Else return whatever was read (either data or -1 if this was the last reader)
+      else {
+        return count;
+      }
+    }
+
+    @Override
+    public void close() throws IOException {
+
+      // Close all readers
+      for (val inputStreamReader : inputStreamReaders) {
+        inputStreamReader.close();
+      }
+    }
+
   }
 
 }
