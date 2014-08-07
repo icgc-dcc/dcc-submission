@@ -19,9 +19,12 @@ package org.icgc.dcc.core.util;
 
 import static com.google.common.base.Joiner.on;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.FormatUtils._;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 
 /**
  * Common joiners.
@@ -31,18 +34,56 @@ public final class Joiners {
 
   public static final Joiner WHITESPACE = on(Separators.WHITESPACE);
   public static final Joiner EMPTY_STRING = on(Separators.EMPTY_STRING);
-  public static final Joiner SLASH = on('/');
+  public static final Joiner SLASH = on(Separators.SLASH);
   public static final Joiner TAB = on(Separators.TAB);
   public static final Joiner NEWLINE = on(Separators.NEWLINE);
-  public static final Joiner DOT = on(".");
-  public static final Joiner DASH = on("-");
-  public static final Joiner UNDERSCORE = on("_");
+  public static final Joiner DOT = on(Separators.DOT);
+  public static final Joiner DASH = on(Separators.DASH);
+  public static final Joiner UNDERSCORE = on(Separators.UNDERSCORE);
   public static final Joiner COMMA = on(Separators.COMMA);
-  public static final Joiner COLON = on(':');
-  public static final Joiner SEMICOLON = on(';');
+  public static final Joiner COLON = on(Separators.COLON);
+  public static final Joiner SEMICOLON = on(Separators.SEMICOLON);
+  public static final Joiner HASHTAG = on(Separators.HASHTAG);
+
+  // Aliases
   public static final Joiner PATH = SLASH;
   public static final Joiner EXTENSION = DOT;
-  public static final Joiner INDENT = on(Separators.INDENT);
   public static final Joiner CREDENTIALS = COLON;
+
+  // Formatting
+  public static final Joiner INDENT = on(Separators.INDENT);
+
+  /**
+   * TODO: consider enum rather?
+   */
+  public static final Splitter getCorrespondingSplitter(@NonNull final Joiner joiner) {
+    if (joiner.equals(WHITESPACE)) {
+      return Splitters.WHITESPACE;
+    } else if (joiner.equals(EMPTY_STRING)) {
+      throw new IllegalStateException(_("Cannot split using '{}'", EMPTY_STRING));
+    } else if (joiner.equals(SLASH) || joiner.equals(PATH)) {
+      return Splitters.SLASH;
+    } else if (joiner.equals(TAB)) {
+      return Splitters.TAB;
+    } else if (joiner.equals(NEWLINE)) {
+      return Splitters.NEWLINE;
+    } else if (joiner.equals(DOT) || joiner.equals(EXTENSION)) {
+      return Splitters.DOT;
+    } else if (joiner.equals(DASH)) {
+      return Splitters.DASH;
+    } else if (joiner.equals(UNDERSCORE)) {
+      return Splitters.UNDERSCORE;
+    } else if (joiner.equals(COMMA)) {
+      return Splitters.COMMA;
+    } else if (joiner.equals(COLON) || joiner.equals(CREDENTIALS)) {
+      return Splitters.COLON;
+    } else if (joiner.equals(SEMICOLON)) {
+      return Splitters.SEMICOLON;
+    } else if (joiner.equals(HASHTAG)) {
+      return Splitters.HASHTAG;
+    } else {
+      throw new UnsupportedOperationException(_("Unsupported yet: '%s'", joiner));
+    }
+  }
 
 }

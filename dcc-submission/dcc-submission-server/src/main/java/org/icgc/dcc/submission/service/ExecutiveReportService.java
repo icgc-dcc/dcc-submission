@@ -24,6 +24,7 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -41,8 +42,11 @@ import org.icgc.dcc.reporter.Reporter;
 import org.icgc.dcc.reporter.ReporterGatherer;
 import org.icgc.dcc.reporter.ReporterInput;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.repository.CodeListRepository;
+import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectDataTypeReportRepository;
 import org.icgc.dcc.submission.repository.ProjectSequencingStrategyReportRepository;
+import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.submission.summary.ProjectDataTypeReport;
 import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
@@ -50,7 +54,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -58,14 +61,24 @@ import com.google.inject.name.Named;
 @Slf4j
 public class ExecutiveReportService extends AbstractExecutionThreadService {
 
+  private final ReleaseRepository releaseRepository;
+  private final DictionaryRepository dictionaryRepository;
+  private final CodeListRepository codeListRepository;
+
   @Inject
   public ExecutiveReportService(
       @NonNull final ProjectDataTypeReportRepository projectDataTypeRepository,
       @NonNull final ProjectSequencingStrategyReportRepository projectSequencingStrategyRepository,
+      @NonNull final ReleaseRepository releaseRepository,
+      @NonNull final DictionaryRepository dictionaryRepository,
+      @NonNull final CodeListRepository codeListRepository,
       @NonNull final DccFileSystem dccFileSystem,
       @Named(Bindings.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties) {
     this.projectDataTypeRepository = projectDataTypeRepository;
     this.projectSequencingStrategyRepository = projectSequencingStrategyRepository;
+    this.releaseRepository = releaseRepository;
+    this.dictionaryRepository = dictionaryRepository;
+    this.codeListRepository = codeListRepository;
     this.dccFileSystem = dccFileSystem;
     this.hadoopProperties = hadoopProperties;
   }
@@ -150,12 +163,36 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     return projectSequencingStrategyReport;
   }
 
+  public void generateReport(String releaseName) {
+    generateReport(
+        releaseName,
+        releaseRepository.findProjectKeys(releaseName));
+  }
+
+  /**
+   * TODO: see DCC-2445
+   */
+  public void generateReport(
+      @NonNull final String releaseName,
+      @NonNull final Set<String> projectKeys) {
+
+    // TODO: check state: VALID or SIGNED_OFF only + no reports already
+
+    val dictionaryNode = Jackson.DEFAULT.valueToTree(
+        dictionaryRepository.findDictionaryByVersion(
+            releaseRepository.findDictionaryVersion(releaseName)));
+    val codeListsNode = Jackson.DEFAULT.valueToTree(
+        codeListRepository.findCodeLists());
+
+    generateReport(releaseName, projectKeys, dictionaryNode, codeListsNode);
+  }
+
   /**
    * Generates reports in the background
    */
   public void generateReport(
       @NonNull final String releaseName,
-      @NonNull final List<String> projectKeys,
+      @NonNull final Set<String> projectKeys,
       @NonNull final JsonNode dictionaryNode,
       @NonNull final JsonNode codeListsNode) {
 
@@ -164,7 +201,6 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     val patterns = getPatterns(dictionaryNode);
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
         FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
-    val projectKeysSet = Sets.<String> newHashSet(projectKeys);
 
     queue.add(new Runnable() {
 
@@ -172,7 +208,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
       public void run() {
         val outputDirPath = Reporter.process(
             releaseName,
-            projectKeysSet,
+            projectKeys,
             getReporterInput(
                 dccFileSystem.getFileSystem(),
                 projectKeys,
@@ -182,14 +218,20 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
             copyOf(hadoopProperties));
 
         for (val project : projectKeys) {
-          ArrayNode projectReports = ReporterGatherer.getJsonTable1(outputDirPath, project);
+          ArrayNode projectReports = ReporterGatherer.getJsonTable1(
+              outputDirPath, releaseName, project);
 
           for (val report : projectReports) {
+            log.info("Persisting executive report for '{}.{}': '{}'",
+                new Object[] { releaseName, project, report });
             projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
           }
 
-          ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(outputDirPath, project, mappings.get());
+          ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(
+              outputDirPath, releaseName, project, mappings.get());
           for (val report : sequencingStrategyReports) {
+            log.info("Persisting executive report for '{}.{}': '{}'",
+                new Object[] { releaseName, project, report });
             projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
           }
 
@@ -206,7 +248,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
 
   private static ReporterInput getReporterInput(
       @NonNull final FileSystem fileSystem,
-      @NonNull final List<String> projectKeys,
+      @NonNull final Set<String> projectKeys,
       @NonNull final String releasePath,
       @NonNull final Map<FileType, String> patterns) {
     return ReporterInput.from(

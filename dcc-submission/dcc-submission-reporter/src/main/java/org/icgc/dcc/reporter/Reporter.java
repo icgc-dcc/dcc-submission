@@ -2,7 +2,6 @@ package org.icgc.dcc.reporter;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.createTempDir;
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
@@ -21,7 +20,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Protocol;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
@@ -79,7 +77,8 @@ public class Reporter {
       @NonNull final ReporterInput reporterInput,
       @NonNull final Map<String, String> mapping,
       @NonNull final Map<String, String> hadoopProperties) {
-    log.info("Gathering reports: '{}' ('{}')", reporterInput, mapping);
+    log.info("Gathering reports for '{}.{}': '{}' ('{}')",
+        new Object[] {releaseName, projectKeys, reporterInput, mapping});
     
     // Main processing
     val table1s = Maps.<String, Pipe> newLinkedHashMap();
@@ -98,10 +97,11 @@ public class Reporter {
 
     val outputDir = createTempDir();
     new ReporterConnector(
-          isLocal(hadoopProperties),
+          FileSystems.isLocal(hadoopProperties),
           outputDir.getAbsolutePath())
         .connectCascade(
             reporterInput,
+            releaseName,
             table1s,
             table2s,
             hadoopProperties)
@@ -114,13 +114,15 @@ public class Reporter {
     return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
   }
 
-  public static String getOutputFilePath(String outputDirPath, OutputType output, String projectKey) {
-    return PATH.join(outputDirPath, getOutputFileName(output, projectKey));
+  public static String getOutputFilePath(
+      String outputDirPath, OutputType output, String releaseName, String projectKey) {
+    return PATH.join(outputDirPath, getOutputFileName(output, releaseName, projectKey));
   }
 
-  public static String getOutputFileName(OutputType output, String projectKey) {
+  public static String getOutputFileName(OutputType output, String releaseName, String projectKey) {
     return EXTENSION.join(
         output.name().toLowerCase(),
+        releaseName,
         projectKey,
         TSV);
   }
@@ -138,11 +140,6 @@ public class Reporter {
         SSM_M_TYPE, SEQUENCING_STRATEGY_FIELD);
 
     return sequencingStrategyMapping.get();
-  }
-
-  private static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
-    checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
-    return Protocol.fromURL(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
   }
 
 }

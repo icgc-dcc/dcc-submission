@@ -47,9 +47,9 @@ public class PreComputation extends SubAssembly {
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
 
   public PreComputation(String releaseName, String projectKey, ReporterInput inputData) {
-    setTails(processProject(inputData, releaseName, projectKey));
+    setTails(processProject(inputData, releaseName, projectKey)); 
   }
-
+  
   /**
    * Joins the clinical and observation pipes.
    */

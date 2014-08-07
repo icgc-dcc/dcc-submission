@@ -15,39 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.submission.config;
+
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableMap.copyOf;
+import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
+import static org.icgc.dcc.core.util.Strings2.unquote;
 
 import java.util.Map;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.util.Maps2;
+import org.icgc.dcc.core.util.SerializableMaps;
 
-import cascading.cascade.CascadeConnector;
+import com.google.common.base.Function;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigObject;
 
-abstract class BaseCascadingConnector implements CascadingConnector {
+/**
+ * TODO: move to core? (would need typesafe config)
+ */
+public class Configs {
 
-  @Override
-  public String describe() {
-    return describe(getClass());
+  /**
+   * Does not currently support nesting.
+   */
+  public static Map<String, String> asStringMap(ConfigObject configObject) {
+    return copyOf(SerializableMaps.transformMap(
+        configObject.unwrapped(),
+        new Function<String, String>() {
+
+          @Override
+          public String apply(@NonNull final String configKey) {
+            return unquote(configKey);
+          }
+
+        },
+        new Function<Object, String>() {
+
+          @Override
+          public String apply(@NonNull final Object configValue) {
+            checkState(configValue instanceof String
+                || configValue instanceof Number, configValue);
+            return String.valueOf(configValue);
+          }
+
+        }));
   }
 
-  @Override
-  public CascadeConnector getCascadeConnector() {
-    return new CascadeConnector();
-  }
-
-  @Override
-  public CascadeConnector getCascadeConnector(@NonNull final Map<?, ?> properties) {
-    return new CascadeConnector(toObjectsMap(properties));
-  }
-
-  protected static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {
-    return Maps2.toObjectsMap(properties);
-  }
-
-  private static String describe(@NonNull final Class<?> type) {
-    return "Using " + type.getSimpleName();
+  public static Map<String, String> getHadoopProperties(@NonNull final Config config) {
+    return Configs.asStringMap(config.getObject(HADOOP_KEY));
   }
 
 }

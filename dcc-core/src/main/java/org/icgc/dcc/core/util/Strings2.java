@@ -31,8 +31,10 @@ public class Strings2 {
   public static final String EMPTY_STRING = "";
   public static final String TAB = "\t";
   public static final String UNIX_NEW_LINE = "\n";
+  public static final String DOUBLE_QUOTE = "\"";
+  public static final String SINGLE_QUOTE = "'";
 
-  public static String removeTrailingS(String s) {
+  public static String removeTrailingS(@NonNull final String s) {
     return s.replaceAll("s$", "");
   }
 
@@ -50,8 +52,14 @@ public class Strings2 {
     return s.equals(s.toUpperCase());
   }
 
-  public static String removeTarget(String s, String target) {
+  public static String removeTarget(@NonNull final String s, @NonNull final String target) {
     return s.replace(target, EMPTY_STRING);
+  }
+
+  public static String unquote(@NonNull final String s) {
+    return s
+        .replaceAll(DOUBLE_QUOTE, EMPTY_STRING)
+        .replaceAll(SINGLE_QUOTE, EMPTY_STRING);
   }
 
 }

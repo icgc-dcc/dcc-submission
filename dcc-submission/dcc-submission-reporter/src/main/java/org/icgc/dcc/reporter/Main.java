@@ -6,11 +6,9 @@ import static org.icgc.dcc.core.util.Splitters.COMMA;
 
 import java.util.Set;
 
-import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.icgc.dcc.core.util.Protocol;
-import org.icgc.dcc.hadoop.util.HadoopConstants;
-
 import lombok.val;
+
+import org.icgc.dcc.core.util.Protocol;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;

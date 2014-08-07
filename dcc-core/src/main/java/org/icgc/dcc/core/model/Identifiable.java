@@ -17,8 +17,42 @@
  */
 package org.icgc.dcc.core.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+
 public interface Identifiable {
 
   String getId();
+
+  @NoArgsConstructor(access = PRIVATE)
+  public static class Identifiables {
+
+    public static Function<Identifiable, String> getId() {
+      return new Function<Identifiable, String>() {
+
+        @Override
+        public String apply(@NonNull final Identifiable identifiable) {
+          return identifiable.getId();
+        }
+
+      };
+    }
+
+    public static Predicate<Identifiable> matches(@NonNull final String id) {
+      return new Predicate<Identifiable>() {
+
+        @Override
+        public boolean apply(@NonNull final Identifiable identifiable) {
+          return id.equals(identifiable.getId());
+        }
+
+      };
+    }
+
+  }
 
 }

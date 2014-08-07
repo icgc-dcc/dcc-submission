@@ -17,13 +17,20 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import static org.icgc.dcc.hadoop.fs.Configurations.newConfiguration;
+
+import java.util.Map;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.util.Protocol;
 
 /**
  * Util methods for {@link FileSystem}.
@@ -31,26 +38,24 @@ import org.apache.hadoop.fs.FileSystem;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileSystems {
 
-  private static final Configuration EMPTY_CONFIGURATION = new Configuration();
-
   @SneakyThrows
   public static FileSystem getLocalFileSystem() {
-    return FileSystem.getLocal(EMPTY_CONFIGURATION);
+    return FileSystem.getLocal(newConfiguration());
   }
 
   @SneakyThrows
-  public static FileSystem getFileSystem(String fsUrl) {
-    return getFileSystem(EMPTY_CONFIGURATION, fsUrl);
+  public static FileSystem getFileSystem(@NonNull final String fsDefault) {
+    return getFileSystem(newConfiguration(fsDefault));
   }
 
   @SneakyThrows
-  public static FileSystem getFileSystem(Configuration config, String fsUrl) {
-    return FileSystem.get(setFsUrl(config, fsUrl));
+  public static FileSystem getFileSystem(@NonNull final Configuration config) {
+    return FileSystem.get(config);
   }
 
-  private static Configuration setFsUrl(Configuration config, String fsUrl) {
-    config.set(FS_DEFAULT_NAME_KEY, fsUrl);
-    return config;
+  public static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
+    checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
+    return Protocol.fromURI(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
   }
 
 }

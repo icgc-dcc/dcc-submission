@@ -25,25 +25,28 @@ public class ReporterGatherer {
 
   public static ArrayNode getJsonTable1(
       @NonNull final String outputDirPath,
+      @NonNull final String releaseName,
       @NonNull final String projectKey) {
 
-    return getJsonTable(outputDirPath, projectKey, OutputType.DONOR, ABSENT_STRING_MAP);
+    return getJsonTable(outputDirPath, releaseName, projectKey, OutputType.DONOR, ABSENT_STRING_MAP);
   }
 
   public static ArrayNode getJsonTable2(
       @NonNull final String outputDirPath,
+      @NonNull final String releaseName,
       @NonNull final String projectKey,
       @NonNull final Map<String, String> mapping) {
 
-    return getJsonTable(outputDirPath, projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
+    return getJsonTable(outputDirPath, releaseName, projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
   }
 
   private static ArrayNode getJsonTable(
       @NonNull final String outputDirPath,
+      @NonNull final String releaseName,
       @NonNull final String projectKey,
       @NonNull final OutputType outputType,
       @NonNull final Optional<Map<String, String>> mapping) {
-    val outputFilePath = Reporter.getOutputFilePath(outputDirPath, outputType, projectKey);
+    val outputFilePath = Reporter.getOutputFilePath(outputDirPath, outputType, releaseName, projectKey);
     val headerLine = readFirstLine(outputFilePath);
     val headers = newArrayList(TAB.split(headerLine));
     val headerSize = headers.size();

@@ -30,6 +30,7 @@ import static org.icgc.dcc.core.util.Joiners.DOT;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.FS_DEFAULT_FS;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
+import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 
 import java.util.Collection;
 
@@ -131,7 +132,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
   @Override
   public PlatformStrategy getPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(param.getAppConfig(), getFileSystem());
+    val provider = new PlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

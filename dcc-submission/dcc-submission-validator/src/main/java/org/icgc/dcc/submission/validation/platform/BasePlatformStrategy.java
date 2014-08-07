@@ -17,19 +17,22 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
+import static org.icgc.dcc.submission.validation.primary.core.Plan.MAX_CONCURRENT_FLOW_STEPS;
 
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -55,6 +58,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
   private final CascadingConnector connectors;
 
   protected final FileSystem fileSystem;
+  private final Map<String, String> hadoopProperties;
   private final Path submissionDir;
   private final Path validationOutputDir;
 
@@ -63,7 +67,13 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
    */
   private final Path system;
 
-  protected BasePlatformStrategy(FileSystem fileSystem, Path input, Path output, Path system) {
+  protected BasePlatformStrategy(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path input,
+      @NonNull final Path output,
+      @NonNull final Path system) {
+    this.hadoopProperties = hadoopProperties;
     this.fileSystem = fileSystem;
     this.submissionDir = input;
     this.validationOutputDir = output;
@@ -78,15 +88,17 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
 
   @Override
   public FlowConnector getFlowConnector() {
-    return getFlowConnector(emptyMap());
+    Map<Object, Object> flowProperties = newHashMap();
+
+    // From external application configuration file
+    flowProperties.putAll(hadoopProperties);
+
+    setMaxConcurrentSteps(flowProperties, MAX_CONCURRENT_FLOW_STEPS);
+
+    return connectors.getFlowConnector(augmentFlowProperties(flowProperties));
   }
 
-  @Override
-  public FlowConnector getFlowConnector(Map<Object, Object> propertyOverrides) {
-    return connectors.getFlowConnector(augmentProperties(propertyOverrides));
-  }
-
-  protected abstract Map<?, ?> augmentProperties(Map<?, ?> properties);
+  protected abstract Map<?, ?> augmentFlowProperties(final Map<?, ?> flowProperties);
 
   /**
    * TODO: phase out in favour of {@link #getSourceTap(FileType)}; Temporary: see DCC-1876

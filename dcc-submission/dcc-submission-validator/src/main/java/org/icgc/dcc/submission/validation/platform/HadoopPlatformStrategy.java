@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.platform;
 
 import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.core.util.Maps2.toObjectsMap;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.MR_PART_FILE_NAME_BASE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
@@ -31,6 +32,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -57,16 +59,17 @@ import cascading.tuple.hadoop.TupleSerializationProps;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
-import com.typesafe.config.Config;
 
 @Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
-  private final Config hadoopConfig;
-
-  public HadoopPlatformStrategy(Config hadoopConfig, FileSystem fileSystem, Path source, Path output, Path system) {
-    super(fileSystem, source, output, system);
-    this.hadoopConfig = hadoopConfig;
+  public HadoopPlatformStrategy(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path source,
+      @NonNull final Path output,
+      @NonNull final Path system) {
+    super(hadoopProperties, fileSystem, source, output, system);
   }
 
   @Override
@@ -80,30 +83,26 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  protected Map<?, ?> augmentProperties(Map<?, ?> properties) {
-    Map<Object, Object> newProperties = newHashMap();
+  protected Map<?, ?> augmentFlowProperties(@NonNull final Map<?, ?> flowProperties) {
+    Map<Object, Object> additionalFlowProperties = newHashMap();
 
     // Custom serialization
-    TupleSerializationProps.addSerialization(newProperties, TupleStateSerialization.class.getName());
-
-    // From external application configuration file
-    for (val configEntry : hadoopConfig.entrySet()) {
-      newProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
-    }
+    TupleSerializationProps.addSerialization(additionalFlowProperties, TupleStateSerialization.class.getName());
 
     // M/R job entry point
-    AppProps.setApplicationJarClass(newProperties, this.getClass());
+    AppProps.setApplicationJarClass(additionalFlowProperties, this.getClass());
 
-    newProperties =
+    additionalFlowProperties =
         enableJobOutputCompression(
             enableIntermediateMapOutputCompression(
-                setAvailableCodecs(newProperties),
+                setAvailableCodecs(additionalFlowProperties),
                 SNAPPY_CODEC_PROPERTY_VALUE),
             GZIP_CODEC_PROPERTY_VALUE);
 
-    newProperties.putAll(properties);
+    toObjectsMap(flowProperties)
+        .putAll(additionalFlowProperties);
 
-    return newProperties;
+    return flowProperties;
   }
 
   @Override

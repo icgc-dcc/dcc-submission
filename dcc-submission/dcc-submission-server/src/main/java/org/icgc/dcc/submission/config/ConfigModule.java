@@ -22,6 +22,8 @@ import static com.google.inject.name.Names.named;
 import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.util.Bindings;
 
@@ -31,6 +33,7 @@ import com.typesafe.config.Config;
 /**
  * Makes {@code Config} injectable instead of accessible as a singleton.
  */
+@Slf4j
 @RequiredArgsConstructor
 public class ConfigModule extends AbstractModule {
 
@@ -43,10 +46,12 @@ public class ConfigModule extends AbstractModule {
 
     // Bind hadoop properties for use in reporter
     checkState(config.hasPath(HADOOP_KEY));
+    val hadoopProperties = Configs.asStringMap(config.getObject(HADOOP_KEY));
+    log.info("Hadoop properties: '{}'", hadoopProperties);
     bind(TypeLiterals.STRING_MAP)
         .annotatedWith(
             named(Bindings.HADOOP_PROPERTIES))
-        .toInstance(Configs.asStringMap(config.getObject(HADOOP_KEY)));
+        .toInstance(hadoopProperties);
   }
 
 }

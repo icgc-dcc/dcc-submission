@@ -15,40 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.config;
+package org.icgc.dcc.hadoop.fs;
 
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Maps.transformValues;
+import static lombok.AccessLevel.PRIVATE;
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
-import java.util.Map;
-
-import com.google.common.base.Function;
-import com.typesafe.config.ConfigObject;
-import com.typesafe.config.ConfigValue;
-import com.typesafe.config.ConfigValueType;
+import org.apache.hadoop.conf.Configuration;
 
 /**
- * TODO: move to core? (would need typesafe config)
+ * Util methods for {@link Configuration}.
  */
-public class Configs {
+@NoArgsConstructor(access = PRIVATE)
+public final class Configurations {
 
-  /**
-   * Does not currently support nesting.
-   */
-  public static Map<String, String> asStringMap(ConfigObject configObject) {
-    return copyOf(transformValues(
-        configObject,
-        new Function<ConfigValue, String>() {
+  public static Configuration newConfiguration() {
+    return new Configuration();
+  }
 
-          @Override
-          public String apply(ConfigValue configValue) {
-            checkState(ConfigValueType.OBJECT != configValue.valueType()
-                && ConfigValueType.LIST != configValue.valueType());
-            return String.valueOf(configValue.unwrapped());
-          }
+  public static Configuration newConfiguration(@NonNull final String fsDefault) {
+    return addFsDefault(newConfiguration(), fsDefault);
+  }
 
-        }));
+  public static Configuration addFsDefault(
+      @NonNull final Configuration config,
+      @NonNull final String fsDefault) {
+    config.set(FS_DEFAULT_NAME_KEY, fsDefault);
+
+    return config;
   }
 
 }

@@ -22,6 +22,7 @@ import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
 import java.io.InputStream;
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -41,8 +42,12 @@ import cascading.tuple.Fields;
 @Slf4j
 public class LocalPlatformStrategy extends BasePlatformStrategy {
 
-  public LocalPlatformStrategy(Path source, Path output, Path system) {
-    super(getLocalFileSystem(), source, output, system);
+  public LocalPlatformStrategy(
+      @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final Path source,
+      @NonNull final Path output,
+      @NonNull final Path system) {
+    super(hadoopProperties, getLocalFileSystem(), source, output, system);
   }
 
   @Override
@@ -56,8 +61,8 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  protected Map<?, ?> augmentProperties(Map<?, ?> properties) {
-    return properties; // Not adding anything
+  protected Map<?, ?> augmentFlowProperties(@NonNull final Map<?, ?> properties) {
+    return properties; // Nothing to add in local mode
   }
 
   @Override
