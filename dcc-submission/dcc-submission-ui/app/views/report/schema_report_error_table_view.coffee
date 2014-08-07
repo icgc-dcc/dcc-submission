@@ -185,8 +185,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
         Expected charset is <code>#{source.parameters?.EXPECTED}</code>
         with no control characters except for <code>tab</code> as field
-        delimiter. Lines must be terminated with a <code>\n</code> only and
-        not <code>\r, \r\n or \n\r</code>. Line terminator must be present at
+        delimiter. Lines must be terminated with a <code>\\n</code> only and
+        not <code>\\r</code>, <code>\\r\\n</code> or <code>\\n\\r</code>. Line terminator must be present at
         the end of every line, includeing the last line.
         Offending lines:
         """

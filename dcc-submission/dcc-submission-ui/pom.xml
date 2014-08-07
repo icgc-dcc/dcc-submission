@@ -51,8 +51,7 @@
             <configuration>
               <executable>brunch</executable>
               <arguments>
-                <argument>b</argument>
-                <argument>-o</argument>
+                <argument>build</argument>
               </arguments>
             </configuration>
           </execution>
