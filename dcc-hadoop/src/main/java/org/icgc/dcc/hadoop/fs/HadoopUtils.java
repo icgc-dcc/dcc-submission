@@ -19,7 +19,6 @@ package org.icgc.dcc.hadoop.fs;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Lists.newArrayList;
@@ -35,10 +34,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -63,6 +60,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.InputSupplier;
 import com.google.common.io.LineReader;
 
 /**
@@ -341,11 +340,14 @@ public class HadoopUtils {
   @SneakyThrows
   public static List<String> readSmallTextFile(FileSystem fileSystem, Path path) {
     @Cleanup
-    BufferedReader reader = new BufferedReader(getReader(fileSystem, path));
+    BufferedReader reader = new BufferedReader(
+        new InputStreamReader(
+            getInputStream(fileSystem, path)));
     val lines = Lists.<String> newArrayList();
     for (String line; (line = reader.readLine()) != null;) {
       lines.add(line);
     }
+
     return lines;
   }
 
@@ -395,19 +397,42 @@ public class HadoopUtils {
     };
   }
 
-  /**
-   * Get reader for the given {@link Path}, which can be either a file or an directory contains MR part files. In the
-   * latter case the reader returned will allow reading all part files at once.
-   */
-  private static Reader getReader(
+  @SneakyThrows
+  public static InputStream getInputStream(
       @NonNull final FileSystem fileSystem,
       @NonNull final Path path) {
 
-    if (isDirectory(fileSystem, path)) {
-      return new PartFilesReader(fileSystem, path); // TODO: closed properly?
+    if (isFile(fileSystem, path)) {
+      return getFileInputStream(fileSystem, path);
     } else {
-      return new InputStreamReader(open(fileSystem, path));
+      val inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
+      for (val partFile : getSortedPartFiles(fileSystem, path)) {
+        inputSuppliers.add(new InputSupplier<InputStream>() {
+
+          @Override
+          public InputStream getInput() throws IOException {
+            return getFileInputStream(fileSystem, partFile);
+          }
+        });
+      }
+
+      return ByteStreams.join(inputSuppliers).getInput();
     }
+  }
+
+  @SneakyThrows
+  private static InputStream getFileInputStream(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path path) {
+    val factory = new CompressionCodecFactory(fileSystem.getConf());
+
+    val resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+    val codec = factory.getCodec(path);
+    val inputStream = open(fileSystem, resolvedPath);
+
+    return codec == null ?
+        inputStream :
+        codec.createInputStream(inputStream);
   }
 
   @SuppressWarnings("unchecked")
@@ -421,79 +446,6 @@ public class HadoopUtils {
         filter(
             lsFile(fileSystem, inputDir),
             isPartFilePredicate()))));
-  }
-
-  public static void main(String[] args) {
-    System.out.println(readSmallTextFile(FileSystems.getLocalFileSystem(), new Path("/home/tony/tmp/part/plain")));
-    System.out.println(readSmallTextFile(FileSystems.getLocalFileSystem(), new Path("/home/tony/tmp/part/mr")));
-  }
-
-  /**
-   * {@link Reader} that allows reading MR part files as if they were one entity.
-   */
-  private static final class PartFilesReader extends Reader {
-
-    private static final int END_OF_STREAM = -1;
-
-    private final List<InputStreamReader> inputStreamReaders;
-    private final Iterator<InputStreamReader> iterator;
-    private InputStreamReader currentInputStreamReader;
-
-    private PartFilesReader(
-        @NonNull final FileSystem fileSystem,
-        @NonNull final Path inputDir) {
-      super();
-      val partFiles = getSortedPartFiles(fileSystem, inputDir);
-      checkState(!partFiles.isEmpty(),
-          "Expecting at least one '{}' file to exists for '{}', instead got: '{}'",
-          MR_PART_FILE_NAME_BASE, inputDir, lsAll(fileSystem, inputDir));
-
-      this.inputStreamReaders = getInputStreamReaders(fileSystem, partFiles);
-      this.iterator = inputStreamReaders.iterator();
-      this.currentInputStreamReader = iterator.next();
-    }
-
-    private final List<InputStreamReader> getInputStreamReaders(
-        @NonNull final FileSystem fileSystem,
-        @NonNull final List<Path> partFiles) {
-      val builder = new ImmutableList.Builder<InputStreamReader>();
-      for (val partFilePath : partFiles) {
-        builder.add(
-            new InputStreamReader(
-                open(fileSystem, partFilePath)));
-      }
-
-      return builder.build();
-    }
-
-    @Override
-    public int read(char[] cbuf, int offset, int length) throws IOException {
-
-      // Read from current reader
-      val count = currentInputStreamReader.read(cbuf, offset, length);
-
-      // If reached end of current reader, try next one if exists
-      if (count == END_OF_STREAM
-          && iterator.hasNext()) {
-        currentInputStreamReader = iterator.next();
-        return read(cbuf, offset, length);
-      }
-
-      // Else return whatever was read (either data or -1 if this was the last reader)
-      else {
-        return count;
-      }
-    }
-
-    @Override
-    public void close() throws IOException {
-
-      // Close all readers
-      for (val inputStreamReader : inputStreamReaders) {
-        inputStreamReader.close();
-      }
-    }
-
   }
 
 }
