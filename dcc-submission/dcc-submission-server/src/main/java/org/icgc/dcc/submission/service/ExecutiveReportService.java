@@ -217,6 +217,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
                 patterns),
             mappings.get(),
             copyOf(hadoopProperties));
+        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, projectKeys);
 
         for (val project : projectKeys) {
           ArrayNode projectReports = ReporterGatherer.getJsonTable1(
