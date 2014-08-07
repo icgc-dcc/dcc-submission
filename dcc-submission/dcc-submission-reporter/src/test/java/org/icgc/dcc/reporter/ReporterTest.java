@@ -18,6 +18,7 @@
 package org.icgc.dcc.reporter;
 
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
 
 import java.util.Set;
 
@@ -57,13 +58,14 @@ public class ReporterTest {
             CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY,
             Protocol.FILE.getId() + Separators.PATH));
 
+    val fileSystem = getLocalFileSystem();
     for (val projectKey : projectKeys) {
-      val documents = ReporterGatherer.getJsonTable1(outputDirPath, TEST_RELEASE_NAME, projectKey);
+      val documents = ReporterGatherer.getJsonTable1(fileSystem, outputDirPath, TEST_RELEASE_NAME, projectKey);
       log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
     }
     for (val projectKey : projectKeys) {
       val documents =
-          ReporterGatherer.getJsonTable2(outputDirPath, TEST_RELEASE_NAME, projectKey,
+          ReporterGatherer.getJsonTable2(fileSystem, outputDirPath, TEST_RELEASE_NAME, projectKey,
               ImmutableMap.<String, String> of());
       log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
     }

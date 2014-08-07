@@ -18,8 +18,12 @@
 package org.icgc.dcc.hadoop.fs;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.toArray;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.ByteStreams.copy;
+import static org.icgc.dcc.core.util.Collections3.sort;
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Separators.DASH;
@@ -41,6 +45,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
@@ -52,20 +57,37 @@ import cascading.tuple.Fields;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.InputSupplier;
 import com.google.common.io.LineReader;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
+ * <p>
+ * TODO: merge {@link FileOperations} here?
  */
 public class HadoopUtils {
 
-  public static final String MR_PART_FILE_NAME_BASE = "part";
-  public static final String MR_PART_FILE_SEPARATOR = DASH;
-  public static final String MR_PART_FILE_NAME_FIRST_INDEX = "00000";
-  public static final String FIRST_PLAIN_MR_PART_FILE_NAME = Joiner.on(MR_PART_FILE_SEPARATOR)
-      .join(MR_PART_FILE_NAME_BASE, MR_PART_FILE_NAME_FIRST_INDEX);
+  private static final String MR_PART_FILE_NAME_BASE = "part";
+  private static final Joiner on = Joiner.on(DASH);
+  private static final int MR_PART_FILE_NAME_FIRST_INDEX = 0;
+  private static final String MR_PART_FILE_INDEX_PADDING = "%05d";
+  private static final String FIRST_PLAIN_MR_PART_FILE_NAME = getFirstPlainMrPartFileName();
+
+  private static String getFirstPlainMrPartFileName() {
+    return getPlainMrPartFileName(MR_PART_FILE_NAME_FIRST_INDEX);
+  }
+
+  private static String getPlainMrPartFileName(int index) {
+    return on.join(MR_PART_FILE_NAME_BASE, formatPartIndex(index));
+  }
+
+  private static String formatPartIndex(int index) {
+    return String.format(MR_PART_FILE_INDEX_PADDING, index);
+  }
 
   public static String getConfigurationDescription(Configuration configuration) {
     val stringWriter = new StringWriter();
@@ -74,6 +96,13 @@ public class HadoopUtils {
     dumpConfiguration(configuration, stringWriter);
 
     return formatPrettyJson(stringWriter.toString());
+  }
+
+  @SneakyThrows
+  private static FSDataInputStream open(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path path) {
+    return fileSystem.open(path);
   }
 
   @SneakyThrows
@@ -306,23 +335,19 @@ public class HadoopUtils {
   }
 
   /**
-   * See {@link #readSmallTextFile(FileSystem, Path)}.
-   */
-  public static List<String> catSmallTextFile(FileSystem fileSystem, Path path) {
-    return readSmallTextFile(fileSystem, path);
-  }
-
-  /**
    * Intended for small files only.
    */
   @SneakyThrows
   public static List<String> readSmallTextFile(FileSystem fileSystem, Path path) {
     @Cleanup
-    BufferedReader br = new BufferedReader(new InputStreamReader(fileSystem.open(path)));
+    BufferedReader reader = new BufferedReader(
+        new InputStreamReader(
+            getInputStream(fileSystem, path)));
     val lines = Lists.<String> newArrayList();
-    for (String line; (line = br.readLine()) != null;) {
+    for (String line; (line = reader.readLine()) != null;) {
       lines.add(line);
     }
+
     return lines;
   }
 
@@ -355,6 +380,72 @@ public class HadoopUtils {
     return PATH.join(
         filePath,
         FIRST_PLAIN_MR_PART_FILE_NAME);
+  }
+
+  public static boolean isPartFile(@NonNull final Path filePath) {
+    return isPartFilePredicate().apply(filePath);
+  }
+
+  private static Predicate<Path> isPartFilePredicate() {
+    return new Predicate<Path>() {
+
+      @Override
+      public boolean apply(@NonNull final Path filePath) {
+        return filePath.getName().startsWith(MR_PART_FILE_NAME_BASE);
+      }
+
+    };
+  }
+
+  @SneakyThrows
+  public static InputStream getInputStream(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path path) {
+
+    if (isFile(fileSystem, path)) {
+      return getFileInputStream(fileSystem, path);
+    } else {
+      val inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
+      for (val partFile : getSortedPartFiles(fileSystem, path)) {
+        inputSuppliers.add(new InputSupplier<InputStream>() {
+
+          @Override
+          public InputStream getInput() throws IOException {
+            return getFileInputStream(fileSystem, partFile);
+          }
+        });
+      }
+
+      return ByteStreams.join(inputSuppliers).getInput();
+    }
+  }
+
+  @SneakyThrows
+  private static InputStream getFileInputStream(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path path) {
+    val factory = new CompressionCodecFactory(fileSystem.getConf());
+
+    val resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+    val codec = factory.getCodec(path);
+    val inputStream = open(fileSystem, resolvedPath);
+
+    return codec == null ?
+        inputStream :
+        codec.createInputStream(inputStream);
+  }
+
+  @SuppressWarnings("unchecked")
+  // TODO: how to get rid of that warning?
+  private static List<Path> getSortedPartFiles(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path inputDir) {
+    checkArgument(isDirectory(fileSystem, inputDir));
+
+    return ImmutableList.copyOf(sort(newArrayList(
+        filter(
+            lsFile(fileSystem, inputDir),
+            isPartFilePredicate()))));
   }
 
 }

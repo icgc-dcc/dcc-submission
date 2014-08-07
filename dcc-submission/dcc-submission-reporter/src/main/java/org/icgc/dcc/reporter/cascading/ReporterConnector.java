@@ -3,7 +3,7 @@ package org.icgc.dcc.reporter.cascading;
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Objects.firstNonNull;
-import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.transformValues;
 import static org.icgc.dcc.reporter.Reporter.getOutputFilePath;
 
@@ -37,11 +37,11 @@ import com.google.common.collect.ImmutableMap;
 public class ReporterConnector {
 
   private static final String CONCURRENCY = String.valueOf(5);
-  
-  private final Taps taps; 
-  private final CascadingConnector connector;   
+
+  private final Taps taps;
+  private final CascadingConnector connector;
   private final String outputDirPath;
-  
+
   public ReporterConnector(
       final boolean local,
       @NonNull final String outputDirPath) {
@@ -50,17 +50,18 @@ public class ReporterConnector {
     this.outputDirPath = outputDirPath;
     log.info(connector.describe());
   }
-  
+
   public Cascade connectCascade(
       @NonNull final ReporterInput reporterInput,
       @NonNull final String releaseName,
       @NonNull final Map<String, Pipe> table1s,
       @NonNull final Map<String, Pipe> table2s,
       @NonNull final Map<String, String> hadoopProperties) {
-    
+
     val maxConcurrentFlows = getConcurrency();
     log.info("maxConcurrentFlows: '{}'", maxConcurrentFlows);
-    
+    log.info("hadoopProperties: '{}'", hadoopProperties);
+
     val cascadeDef = cascadeDef()
         .setName(Cascades.getName(Reporter.CLASS))
         .setMaxConcurrentFlows(maxConcurrentFlows);
@@ -69,17 +70,19 @@ public class ReporterConnector {
       val table1 = table1s.get(projectKey);
       val table2 = table2s.get(projectKey);
       cascadeDef.addFlow(
-          getFlowConnector().connect(flowDef()
-            .addSources(getRawInputTaps(reporterInput, projectKey))
-            .addTailSink(
-                table1,
-                getRawOutputTable1Tap(table1.getName(), releaseName, projectKey))
-            .addTailSink(
-                table2,
-                getRawOutputTable2Tap(table2.getName(), releaseName, projectKey))
-            .setName(Flows.getName(Reporter.CLASS, projectKey))));
+          getFlowConnector(hadoopProperties)
+              .connect(flowDef()
+                  .addSources(getRawInputTaps(reporterInput, projectKey))
+                  .addTailSink(
+                      table1,
+                      getRawOutputTable1Tap(table1.getName(), releaseName, projectKey))
+                  .addTailSink(
+                      table2,
+                      getRawOutputTable2Tap(table2.getName(), releaseName, projectKey))
+                  .setName(Flows.getName(Reporter.CLASS, projectKey))));
     }
 
+    HadoopProperties.setHadoopUserNameProperty();
     return connector
         .getCascadeConnector(hadoopProperties)
         .connect(cascadeDef);
@@ -92,25 +95,16 @@ public class ReporterConnector {
         CONCURRENCY));
   }
 
-  private FlowConnector getFlowConnector() {    
-    Map<Object, Object> flowProperties = newHashMap();
-    HadoopProperties.setHadoopUserNameProperty();
-    flowProperties = getClusterFlowProperties(flowProperties);
-    
-    return connector.getFlowConnector(flowProperties);
-  }
+  private FlowConnector getFlowConnector(@NonNull final Map<String, String> hadoopProperties) {
+    return connector.getFlowConnector(ImmutableMap.builder()
 
-  private static Map<Object, Object> getClusterFlowProperties(@NonNull final Map<Object, Object> flowProperties) {
-    return ImmutableMap.builder()
-        
-        .putAll(flowProperties)
+        .putAll(hadoopProperties)
         .putAll(
             HadoopProperties.enableIntermediateMapOutputCompression(
-              HadoopProperties.setAvailableCodecs(flowProperties),
-              HadoopConstants.LZO_CODEC_PROPERTY_VALUE))
-    
-        .build();
-    
+                HadoopProperties.setAvailableCodecs(newLinkedHashMap()),
+                HadoopConstants.LZO_CODEC_PROPERTY_VALUE))
+
+        .build());
   }
 
   /**

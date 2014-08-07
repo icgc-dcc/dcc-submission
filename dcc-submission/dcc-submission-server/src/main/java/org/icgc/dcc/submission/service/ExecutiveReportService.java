@@ -196,8 +196,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
       @NonNull final JsonNode dictionaryNode,
       @NonNull final JsonNode codeListsNode) {
 
-    log.info("Generating reports for {}", projectKeys);
-
+    val fileSystem = dccFileSystem.getFileSystem();
     val patterns = getPatterns(dictionaryNode);
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
         FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
@@ -206,36 +205,46 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
 
       @Override
       public void run() {
+        log.info("Starting generating reports for '{}.{}'", releaseName, projectKeys);
+
         val outputDirPath = Reporter.process(
             releaseName,
             projectKeys,
             getReporterInput(
-                dccFileSystem.getFileSystem(),
+                fileSystem,
                 projectKeys,
                 getReleasePath(releaseName),
                 patterns),
             mappings.get(),
             copyOf(hadoopProperties));
+        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, projectKeys);
 
         for (val project : projectKeys) {
           ArrayNode projectReports = ReporterGatherer.getJsonTable1(
-              outputDirPath, releaseName, project);
+              fileSystem, outputDirPath, releaseName, project);
+          log.info("Persisting data type executive reports for '{}.{}': '{}'",
+              new Object[] { releaseName, project, projectReports });
 
           for (val report : projectReports) {
-            log.info("Persisting executive report for '{}.{}': '{}'",
+            log.info("Persisting data type executive report for '{}.{}': '{}'",
                 new Object[] { releaseName, project, report });
             projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
           }
 
           ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(
-              outputDirPath, releaseName, project, mappings.get());
+              fileSystem, outputDirPath, releaseName, project, mappings.get());
+          log.info("Persisting sequencing strategy executive reports for '{}.{}': '{}'",
+              new Object[] { releaseName, project, sequencingStrategyReports });
+
           for (val report : sequencingStrategyReports) {
-            log.info("Persisting executive report for '{}.{}': '{}'",
+            log.info("Persisting sequencing strategy executive report for '{}.{}': '{}'",
                 new Object[] { releaseName, project, report });
             projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
           }
 
         }
+
+        log.info("Finished generating reports for '{}.{}'", releaseName, projectKeys);
       }
 
       private String getReleasePath(@NonNull final String releaseName) {

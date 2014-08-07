@@ -20,16 +20,14 @@ package org.icgc.dcc.submission.validation.platform;
 import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.core.util.Maps2.toObjectsMap;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.MR_PART_FILE_NAME_BASE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.getInputStream;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopProperties.enableIntermediateMapOutputCompression;
 import static org.icgc.dcc.hadoop.util.HadoopProperties.enableJobOutputCompression;
 import static org.icgc.dcc.hadoop.util.HadoopProperties.setAvailableCodecs;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Map;
 
 import lombok.NonNull;
@@ -37,10 +35,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
 import org.icgc.dcc.hadoop.cascading.taps.Taps;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
@@ -56,9 +52,6 @@ import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
-
-import com.google.common.io.ByteStreams;
-import com.google.common.io.InputSupplier;
 
 @Slf4j
 public class HadoopPlatformStrategy extends BasePlatformStrategy {
@@ -117,31 +110,9 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   @Override
   @SneakyThrows
   public InputStream readReportTap(String fileName, FlowType type, String reportName) {
-    val reportPath = getReportPath(fileName, type, reportName);
-    if (fileSystem.isFile(reportPath)) {
-      return getInputStream(reportPath);
-    }
-
-    val inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
-    for (val fileStatus : fileSystem.listStatus(reportPath)) {
-      val filePath = fileStatus.getPath();
-
-      if (fileStatus.isFile() && filePath.getName().startsWith(MR_PART_FILE_NAME_BASE)) {
-        InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
-
-          @Override
-          public InputStream getInput() throws IOException {
-            return getInputStream(filePath);
-          }
-        };
-
-        inputSuppliers.add(inputSupplier);
-      }
-    }
-
-    val combinedInputStream = ByteStreams.join(inputSuppliers).getInput();
-
-    return combinedInputStream;
+    return getInputStream(
+        fileSystem,
+        getReportPath(fileName, type, reportName));
   }
 
   @Override
@@ -169,17 +140,6 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
     return new Hfs(
         scheme,
         getFile(fileName).toUri().getPath());
-  }
-
-  @SneakyThrows
-  private InputStream getInputStream(Path path) {
-    val factory = new CompressionCodecFactory(fileSystem.getConf());
-
-    val resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-    val codec = factory.getCodec(path);
-    val inputStream = fileSystem.open(resolvedPath);
-
-    return codec == null ? inputStream : codec.createInputStream(inputStream);
   }
 
 }
