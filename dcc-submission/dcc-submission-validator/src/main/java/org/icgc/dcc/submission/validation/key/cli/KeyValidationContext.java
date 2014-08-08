@@ -46,8 +46,8 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -91,7 +91,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getDccFileSystem(), getRelease());
   @Getter(lazy = true)
-  private final PlatformStrategy platformStrategy = createPlatformStrategy();
+  private final SubmissionPlatformStrategy platformStrategy = createPlatformStrategy();
 
   @SneakyThrows
   protected Dictionary createDictionary() {
@@ -125,8 +125,8 @@ public class KeyValidationContext extends AbstractValidationContext {
         ));
   }
 
-  private PlatformStrategy createPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(getHadoopProperties(getConfig()), getFileSystem());
+  private SubmissionPlatformStrategy createPlatformStrategy() {
+    val provider = new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(getConfig()), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

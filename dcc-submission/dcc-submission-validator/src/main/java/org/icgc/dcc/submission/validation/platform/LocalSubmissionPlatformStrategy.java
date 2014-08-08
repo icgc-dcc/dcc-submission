@@ -40,9 +40,9 @@ import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 
 @Slf4j
-public class LocalPlatformStrategy extends BasePlatformStrategy {
+public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
 
-  public LocalPlatformStrategy(
+  public LocalSubmissionPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final Path source,
       @NonNull final Path output,

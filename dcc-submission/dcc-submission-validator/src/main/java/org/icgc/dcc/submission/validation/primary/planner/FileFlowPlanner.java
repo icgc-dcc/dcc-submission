@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.primary.planner;
 
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 
@@ -33,8 +33,8 @@ public interface FileFlowPlanner {
 
   void applyReportingPlanElement(ReportingPlanElement element);
 
-  void collectFileReport(PlatformStrategy strategy, ReportContext context);
+  void collectFileReport(SubmissionPlatformStrategy strategy, ReportContext context);
 
-  Flow<?> connect(PlatformStrategy cascadingStrategy);
+  Flow<?> connect(SubmissionPlatformStrategy cascadingStrategy);
 
 }

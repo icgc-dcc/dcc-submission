@@ -27,7 +27,7 @@ import lombok.experimental.Builder;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -43,7 +43,7 @@ public interface NormalizationContext {
   ImmutableMap<String, ImmutableList<String>> getControlledFields();
 
   /**
-   * See {@link PlatformStrategy#getSampleToDonorMap(Dictionary)}
+   * See {@link SubmissionPlatformStrategy#getSampleToDonorMap(Dictionary)}
    */
   Map<String, String> getSampleToDonorMap();
 

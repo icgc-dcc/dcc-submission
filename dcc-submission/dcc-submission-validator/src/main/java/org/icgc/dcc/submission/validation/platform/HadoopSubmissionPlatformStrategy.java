@@ -54,9 +54,9 @@ import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
 
 @Slf4j
-public class HadoopPlatformStrategy extends BasePlatformStrategy {
+public class HadoopSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
 
-  public HadoopPlatformStrategy(
+  public HadoopSubmissionPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final FileSystem fileSystem,
       @NonNull final Path source,

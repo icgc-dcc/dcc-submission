@@ -52,7 +52,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.io.LineReader;
 
-public abstract class BasePlatformStrategy implements PlatformStrategy {
+public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatformStrategy {
 
   private final CascadingTaps taps;
   private final CascadingConnectors connectors;
@@ -67,7 +67,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
    */
   private final Path system;
 
-  protected BasePlatformStrategy(
+  protected BaseSubmissionPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final FileSystem fileSystem,
       @NonNull final Path input,

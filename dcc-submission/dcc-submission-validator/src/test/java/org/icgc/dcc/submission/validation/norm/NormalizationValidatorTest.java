@@ -25,7 +25,7 @@ import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -51,7 +51,7 @@ import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.Normaliz
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGenerationTest;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -108,7 +108,7 @@ public class NormalizationValidatorTest {
   private SubmissionDirectory mockSubmissionDirectory;
 
   @Mock
-  private PlatformStrategy mockPlatformStrategy;
+  private SubmissionPlatformStrategy mockPlatformStrategy;
 
   @Mock
   private DccFileSystem2 mockDccFileSystem2;

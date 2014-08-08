@@ -40,7 +40,7 @@ import org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 
@@ -138,7 +138,7 @@ class DefaultInternalFlowPlanner extends BaseFileFlowPlanner implements Internal
   }
 
   @Override
-  protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy platformStrategy) {
+  protected FlowDef onConnect(FlowDef flowDef, SubmissionPlatformStrategy platformStrategy) {
     flowDef.addSource(
         headPipe,
         platformStrategy.getSourceTap(fileName));
@@ -164,7 +164,7 @@ class DefaultInternalFlowPlanner extends BaseFileFlowPlanner implements Internal
   /**
    * Not maintained anymore and due for deletion.
    */
-  private void connectTrimmedTails(FlowDef flowDef, PlatformStrategy platformStrategy) {
+  private void connectTrimmedTails(FlowDef flowDef, SubmissionPlatformStrategy platformStrategy) {
     for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
       flowDef.addTailSink(e.getValue(), platformStrategy.getTrimmedTap(e.getKey()));
     }

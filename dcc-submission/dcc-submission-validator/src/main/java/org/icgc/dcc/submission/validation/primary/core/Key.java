@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.core;
 
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
 
 import java.io.Serializable;
 

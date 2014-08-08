@@ -63,7 +63,7 @@ import org.icgc.dcc.submission.validation.norm.steps.PreMarking;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking;
 import org.icgc.dcc.submission.validation.norm.steps.UniqueCounting;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -266,7 +266,7 @@ public final class NormalizationValidator implements Validator {
    */
   private ConnectedCascade connectCascade(
       @NonNull final Pipes pipes,
-      @NonNull final PlatformStrategy platform,
+      @NonNull final SubmissionPlatformStrategy platform,
       @NonNull final String releaseName,
       @NonNull final String projectKey,
       @NonNull final String outputDirPath) {
@@ -387,7 +387,7 @@ public final class NormalizationValidator implements Validator {
    * Returns the input tap for the cascade. Well-formedness validation has already ensured that we have a properly
    * formatted TSV file.
    */
-  private Tap<?, ?, ?> getSourceTap(PlatformStrategy platform, String fileName) {
+  private Tap<?, ?, ?> getSourceTap(SubmissionPlatformStrategy platform, String fileName) {
     return platform.getNormalizerSourceTap(fileName);
   }
 

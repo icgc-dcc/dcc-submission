@@ -29,7 +29,7 @@ import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.planner.ExternalFlowPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.FileFlowPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.InternalFlowPlanner;
@@ -64,7 +64,7 @@ public class Plan {
   @NonNull
   private final Dictionary dictionary;
   @NonNull
-  private final PlatformStrategy platform;
+  private final SubmissionPlatformStrategy platform;
 
   /**
    * Metadata.

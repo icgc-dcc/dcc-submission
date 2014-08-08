@@ -19,26 +19,18 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.util.Map;
 
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-public class HadoopPlatformStrategyFactory implements PlatformStrategyFactory {
+@RequiredArgsConstructor
+public class LocalSubmissionPlatformStrategyFactory implements SubmissionPlatformStrategyFactory {
 
-  private final FileSystem fileSystem;
   private final Map<String, String> hadoopProperties;
 
-  public HadoopPlatformStrategyFactory(
-      @NonNull final Map<String, String> hadoopProperties,
-      @NonNull final FileSystem fs) {
-    this.hadoopProperties = hadoopProperties;
-    this.fileSystem = fs;
-  }
-
   @Override
-  public PlatformStrategy get(Path input, Path output, Path system) {
-    return new HadoopPlatformStrategy(hadoopProperties, fileSystem, input, output, system);
+  public SubmissionPlatformStrategy get(Path input, Path output, Path system) {
+    return new LocalSubmissionPlatformStrategy(hadoopProperties, input, output, system);
   }
 
 }

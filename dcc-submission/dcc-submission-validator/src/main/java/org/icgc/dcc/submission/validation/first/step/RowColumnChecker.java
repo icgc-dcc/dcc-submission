@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.first.step;
 
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR_CHAR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR_CHAR;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 

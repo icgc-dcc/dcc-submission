@@ -54,7 +54,7 @@ import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -134,7 +134,7 @@ public class KeyValidatorTest {
     when(submissionDirectory.getSystemDirPath()).thenReturn(
         PATH.join(rootDir.toUri().toString(), RELEASE_NAME, SYSTEM_FILES_DIR_NAME));
 
-    val platformStrategy = mock(PlatformStrategy.class);
+    val platformStrategy = mock(SubmissionPlatformStrategy.class);
     val flowConnectorProperties = newLinkedHashMap(new ImmutableMap.Builder<Object, Object>()
         .put("fs.defaultFS", "file:///")
         .put("mapred.job.tracker", "")

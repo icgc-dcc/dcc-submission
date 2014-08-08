@@ -19,18 +19,43 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.util.Map;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.util.InjectionNames;
+import org.icgc.dcc.core.util.Scheme;
 
-@RequiredArgsConstructor
-public class LocalPlatformStrategyFactory implements PlatformStrategyFactory {
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
 
+@Slf4j
+public class SubmissionPlatformStrategyFactoryProvider implements Provider<SubmissionPlatformStrategyFactory> {
+
+  private final FileSystem fs;
   private final Map<String, String> hadoopProperties;
 
-  @Override
-  public PlatformStrategy get(Path input, Path output, Path system) {
-    return new LocalPlatformStrategy(hadoopProperties, input, output, system);
+  @Inject
+  public SubmissionPlatformStrategyFactoryProvider(
+      @Named(InjectionNames.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties,
+      @NonNull final FileSystem fs) {
+    this.fs = fs;
+    this.hadoopProperties = hadoopProperties;
   }
 
+  @Override
+  public SubmissionPlatformStrategyFactory get() {
+    String fsUrl = fs.getScheme();
+
+    if (Scheme.isFile(fsUrl)) {
+      log.info("System configured for local filesystem");
+      return new LocalSubmissionPlatformStrategyFactory(hadoopProperties);
+    } else if (Scheme.isHdfs(fsUrl)) {
+      log.info("System configured for Hadoop filesystem");
+      return new HadoopSubmissionPlatformStrategyFactory(hadoopProperties, fs);
+    } else {
+      throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
+    }
+  }
 }

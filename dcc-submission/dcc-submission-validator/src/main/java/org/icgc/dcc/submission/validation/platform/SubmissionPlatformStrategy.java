@@ -35,7 +35,7 @@ import cascading.tuple.Fields;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 
-public interface PlatformStrategy {
+public interface SubmissionPlatformStrategy {
 
   public static final String FIELD_SEPARATOR = "\t";
   public static final char FIELD_SEPARATOR_CHAR = '\t';

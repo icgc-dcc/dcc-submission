@@ -34,7 +34,7 @@ import lombok.val;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.PlanExecutionException;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
@@ -49,7 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 
-  public ErrorReportingPlanningVisitor(@NonNull PlatformStrategy platform, @NonNull FlowType type) {
+  public ErrorReportingPlanningVisitor(@NonNull SubmissionPlatformStrategy platform, @NonNull FlowType type) {
     super(platform, type);
   }
 
@@ -108,7 +108,7 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
       private final String fileName;
 
       @Override
-      public void collect(PlatformStrategy platform, ReportContext context) {
+      public void collect(SubmissionPlatformStrategy platform, ReportContext context) {
         try {
           @Cleanup
           val reportInputStream = getReportInputStream(platform);
@@ -141,7 +141,7 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
       }
 
       @SneakyThrows
-      private InputStream getReportInputStream(PlatformStrategy strategy) {
+      private InputStream getReportInputStream(SubmissionPlatformStrategy strategy) {
         return strategy.readReportTap(fileName, getFlowType(), getElementName());
       }
 

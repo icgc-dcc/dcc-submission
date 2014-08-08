@@ -29,7 +29,7 @@ import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.report.FieldStatDigest;
 import org.icgc.dcc.submission.validation.primary.report.FrequencyPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.SummaryPlanElement;
@@ -40,7 +40,7 @@ import com.google.common.collect.ImmutableMap;
 
 public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
 
-  public SummaryReportingPlanningVisitor(@NonNull PlatformStrategy platform) {
+  public SummaryReportingPlanningVisitor(@NonNull SubmissionPlatformStrategy platform) {
     super(platform, INTERNAL);
   }
 

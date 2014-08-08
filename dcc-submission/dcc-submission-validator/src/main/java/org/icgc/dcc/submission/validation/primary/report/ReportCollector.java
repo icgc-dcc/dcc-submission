@@ -18,10 +18,10 @@
 package org.icgc.dcc.submission.validation.primary.report;
 
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 public interface ReportCollector {
 
-  void collect(PlatformStrategy strategy, ReportContext context);
+  void collect(SubmissionPlatformStrategy strategy, ReportContext context);
 
 }
