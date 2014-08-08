@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity;
 
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
@@ -23,10 +23,10 @@ import static org.icgc.dcc.core.model.ClinicalType.CLINICAL;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
-import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS;
-import static org.icgc.dcc.reporter.ReporterFields.PROJECT_DATA_TYPE_ENTITY_RESULT_FIELDS;
-import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS;
+import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_DATA_TYPE_ENTITY_RESULT_FIELDS;
+import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import lombok.NonNull;
 import lombok.val;
 

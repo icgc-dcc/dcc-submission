@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.submission.reporter;
 
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
@@ -28,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.icgc.dcc.core.util.Protocol;
 import org.icgc.dcc.core.util.Separators;
+import org.icgc.dcc.submission.reporter.Reporter;
+import org.icgc.dcc.submission.reporter.ReporterCollector;
 import org.junit.Test;
 
 import com.google.common.base.Optional;

@@ -15,24 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter.cascading.subassembly;
+package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
-import static org.icgc.dcc.reporter.OutputType.DONOR;
-import static org.icgc.dcc.reporter.OutputType.SAMPLE;
-import static org.icgc.dcc.reporter.OutputType.SPECIMEN;
-import static org.icgc.dcc.reporter.ReporterFields.COUNT_BY_FIELDS;
-import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SAMPLE_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.getTemporaryCountByFields;
+import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
+import static org.icgc.dcc.submission.reporter.OutputType.SAMPLE;
+import static org.icgc.dcc.submission.reporter.OutputType.SPECIMEN;
+import static org.icgc.dcc.submission.reporter.ReporterFields.COUNT_BY_FIELDS;
+import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
 import lombok.NonNull;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
-import org.icgc.dcc.reporter.OutputType;
+import org.icgc.dcc.submission.reporter.OutputType;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;

@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity;
 
 import lombok.val;
 import cascading.pipe.Merge;

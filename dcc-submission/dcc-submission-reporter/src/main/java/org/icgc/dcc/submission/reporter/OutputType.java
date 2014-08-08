@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.submission.reporter;
 
 public enum OutputType {
 

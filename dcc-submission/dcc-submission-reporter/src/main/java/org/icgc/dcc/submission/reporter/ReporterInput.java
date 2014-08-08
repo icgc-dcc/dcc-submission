@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Iterables.filter;
@@ -7,7 +7,7 @@ import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.Jackson.PRETTY_WRITTER;
-import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
+import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 
 import java.util.List;
 import java.util.Map;

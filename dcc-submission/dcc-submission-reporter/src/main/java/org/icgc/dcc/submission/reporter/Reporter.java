@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter;
+package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.createTempDir;
@@ -10,7 +10,7 @@ import static org.icgc.dcc.core.util.Jackson.getJsonRoot;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
 import java.util.Map;
 import java.util.Set;
@@ -23,11 +23,11 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
-import org.icgc.dcc.reporter.cascading.ReporterConnector;
-import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
-import org.icgc.dcc.reporter.cascading.subassembly.ProcessClinicalType;
-import org.icgc.dcc.reporter.cascading.subassembly.ProjectSequencingStrategy;
-import org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity.ProjectDataTypeEntity;
+import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.ProcessClinicalType;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
 

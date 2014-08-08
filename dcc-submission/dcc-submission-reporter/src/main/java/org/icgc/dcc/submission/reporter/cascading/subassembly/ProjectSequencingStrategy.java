@@ -1,16 +1,16 @@
-package org.icgc.dcc.reporter.cascading.subassembly;
+package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
 import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
-import static org.icgc.dcc.reporter.OutputType.DONOR;
-import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.REDUNDANT_PROJECT_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.getTemporaryField;
+import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
+import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_PROJECT_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryField;
 
 import java.util.List;
 import java.util.Set;

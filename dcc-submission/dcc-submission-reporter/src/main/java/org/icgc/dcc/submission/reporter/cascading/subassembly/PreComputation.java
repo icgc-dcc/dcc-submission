@@ -1,4 +1,4 @@
-package org.icgc.dcc.reporter.cascading.subassembly;
+package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
@@ -6,18 +6,18 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
-import static org.icgc.dcc.reporter.Reporter.getHeadPipeName;
-import static org.icgc.dcc.reporter.ReporterFields.ANALYSIS_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.DONOR_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.REDUNDANT_ANALYSIS_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.REDUNDANT_SAMPLE_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.REDUNDANT_SPECIMEN_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SAMPLE_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
+import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_ANALYSIS_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SAMPLE_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +30,7 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
-import org.icgc.dcc.reporter.ReporterInput;
+import org.icgc.dcc.submission.reporter.ReporterInput;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;

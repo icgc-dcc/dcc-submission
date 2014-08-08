@@ -1,11 +1,11 @@
-package org.icgc.dcc.reporter.cascading;
+package org.icgc.dcc.submission.reporter.cascading;
 
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.transformValues;
-import static org.icgc.dcc.reporter.Reporter.getOutputFilePath;
+import static org.icgc.dcc.submission.reporter.Reporter.getOutputFilePath;
 
 import java.util.Map;
 
@@ -21,9 +21,9 @@ import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
-import org.icgc.dcc.reporter.OutputType;
-import org.icgc.dcc.reporter.Reporter;
-import org.icgc.dcc.reporter.ReporterInput;
+import org.icgc.dcc.submission.reporter.OutputType;
+import org.icgc.dcc.submission.reporter.Reporter;
+import org.icgc.dcc.submission.reporter.ReporterInput;
 
 import cascading.cascade.Cascade;
 import cascading.flow.FlowConnector;

@@ -15,25 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity;
 
 import static cascading.tuple.Fields.NONE;
 import static com.google.common.collect.Iterables.toArray;
-import static org.icgc.dcc.reporter.OutputType.DONOR;
-import static org.icgc.dcc.reporter.OutputType.OBSERVATION;
-import static org.icgc.dcc.reporter.OutputType.SAMPLE;
-import static org.icgc.dcc.reporter.OutputType.SPECIMEN;
-import static org.icgc.dcc.reporter.ReporterFields.COUNT_BY_FIELDS;
-import static org.icgc.dcc.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SAMPLE_UNIQUE_COUNT_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.SPECIMEN_UNIQUE_COUNT_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.getTemporaryCountByFields;
+import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
+import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
+import static org.icgc.dcc.submission.reporter.OutputType.SAMPLE;
+import static org.icgc.dcc.submission.reporter.OutputType.SPECIMEN;
+import static org.icgc.dcc.submission.reporter.ReporterFields.COUNT_BY_FIELDS;
+import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_UNIQUE_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_UNIQUE_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
-import org.icgc.dcc.reporter.cascading.subassembly.ProcessClinicalType;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.ProcessClinicalType;
 
 import cascading.pipe.HashJoin;
 import cascading.pipe.Pipe;
