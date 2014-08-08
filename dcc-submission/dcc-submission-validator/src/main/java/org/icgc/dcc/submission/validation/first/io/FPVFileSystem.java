@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.first.io;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static java.util.regex.Pattern.compile;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SPLITTER;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SPLITTER;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;

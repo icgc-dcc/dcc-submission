@@ -22,16 +22,16 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 
 public abstract class ReportingPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
 
-  protected final PlatformStrategy platform;
+  protected final SubmissionPlatformStrategy platform;
 
-  public ReportingPlanningVisitor(@NonNull PlatformStrategy platform, @NonNull FlowType type) {
+  public ReportingPlanningVisitor(@NonNull SubmissionPlatformStrategy platform, @NonNull FlowType type) {
     super(type);
     this.platform = platform;
   }

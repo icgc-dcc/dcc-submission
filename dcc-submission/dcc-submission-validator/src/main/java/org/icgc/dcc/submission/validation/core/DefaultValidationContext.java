@@ -40,8 +40,8 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -77,12 +77,12 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final PlatformStrategyFactory platformStrategyFactory;
+  private final SubmissionPlatformStrategyFactory platformStrategyFactory;
 
   /**
    * Lazy-loaded.
    */
-  private PlatformStrategy platform;
+  private SubmissionPlatformStrategy platform;
 
   @Override
   public String getOutputDirPath() {
@@ -141,7 +141,7 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public PlatformStrategy getPlatformStrategy() {
+  public SubmissionPlatformStrategy getPlatformStrategy() {
     if (platform == null) {
       // Round about way to get the inputs and outputs
       Path inputDir = new Path(getSubmissionDirectory().getSubmissionDirPath());

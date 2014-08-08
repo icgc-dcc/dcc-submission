@@ -27,9 +27,10 @@ import lombok.val;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
 
 /**
- * Util methods for guava.
+ * Serializable versions of some guava {@link Maps} methods.
  */
 public class SerializableMaps {
 

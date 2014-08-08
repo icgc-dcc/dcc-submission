@@ -37,7 +37,7 @@ import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.PlanExecutionException;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
@@ -170,7 +170,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
     }
 
     @Override
-    public void collect(PlatformStrategy strategy, ReportContext context) {
+    public void collect(SubmissionPlatformStrategy strategy, ReportContext context) {
       try {
         @Cleanup
         val reportIntputStream = getReportInputStream(strategy, fileName);
@@ -192,7 +192,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
     }
 
     @SneakyThrows
-    private InputStream getReportInputStream(PlatformStrategy strategy, String fileName) {
+    private InputStream getReportInputStream(SubmissionPlatformStrategy strategy, String fileName) {
       return strategy.readReportTap(fileName, getFlowType(), getElementName());
     }
 

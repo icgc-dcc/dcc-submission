@@ -101,7 +101,7 @@ public class Dictionaries {
   public static Dictionary getDictionary(String submissionWebAppUri, String dictionaryVersion) {
     return from(
         new RestfulDictionaryResolver(submissionWebAppUri)
-            .get(Optional.of(dictionaryVersion)),
+            .apply(Optional.of(dictionaryVersion)),
         Dictionary.class);
   }
 

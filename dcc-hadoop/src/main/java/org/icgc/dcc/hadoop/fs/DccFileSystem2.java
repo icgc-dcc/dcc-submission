@@ -35,7 +35,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.cascading.taps.Taps;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 
 import cascading.tap.Tap;
 
@@ -51,8 +51,8 @@ public class DccFileSystem2 {
   private final String rootDir;
   private final boolean hadoopMode;
 
-  private Taps getTapMode() {
-    return hadoopMode ? Taps.HADOOP : Taps.LOCAL;
+  private CascadingTaps getTapMode() {
+    return hadoopMode ? CascadingTaps.DISTRIBUTED : CascadingTaps.LOCAL;
   }
 
   public Tap<?, ?, ?> getNormalizationDataOutputTap(String path) {

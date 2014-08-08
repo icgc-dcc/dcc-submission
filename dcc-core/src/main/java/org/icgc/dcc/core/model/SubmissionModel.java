@@ -84,14 +84,14 @@ public class SubmissionModel implements Serializable, ControlFieldsReference {
   }
 
   @JsonIgnore
-  public Map<String, Optional<Map<String, String>>> getFileMapping(@NonNull final FileType fileType) {
+  public Map<String, Optional<Map<String, String>>> getFileCodeList(@NonNull final FileType fileType) {
     return ImmutableMap.copyOf(transformValues(
         getFields(fileType),
         toOptionalMap()));
   }
 
   @JsonIgnore
-  public Map<String, Map<String, String>> getMappings(@NonNull final FileType fileType) {
+  public Map<String, Map<String, String>> getCodeLists(@NonNull final FileType fileType) {
     return ImmutableMap.copyOf(transformValues(
         filterValues(
             getFields(fileType),

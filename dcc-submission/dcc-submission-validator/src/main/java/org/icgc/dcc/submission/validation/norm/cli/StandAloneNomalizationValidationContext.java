@@ -53,8 +53,8 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -131,8 +131,8 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
   }
 
   @Override
-  public PlatformStrategy getPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
+  public SubmissionPlatformStrategy getPlatformStrategy() {
+    val provider = new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component
@@ -146,7 +146,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
   @SneakyThrows
   public Dictionary getDictionary() {
     // Deserialize
-    val objectNode = new ArtifactoryDictionaryResolver().get(Optional.of(DICTIONARY_VERSION));
+    val objectNode = new ArtifactoryDictionaryResolver().apply(Optional.of(DICTIONARY_VERSION));
     val reader = new ObjectMapper().reader(Dictionary.class);
     Dictionary dictionary = reader.readValue(objectNode);
 

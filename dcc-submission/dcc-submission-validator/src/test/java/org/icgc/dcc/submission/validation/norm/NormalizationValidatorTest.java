@@ -25,8 +25,11 @@ import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
-import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.FOCUS_TYPE;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -48,13 +51,12 @@ import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.Normaliz
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.validation.norm.steps.PrimaryKeyGenerationTest;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -106,7 +108,7 @@ public class NormalizationValidatorTest {
   private SubmissionDirectory mockSubmissionDirectory;
 
   @Mock
-  private PlatformStrategy mockPlatformStrategy;
+  private SubmissionPlatformStrategy mockPlatformStrategy;
 
   @Mock
   private DccFileSystem2 mockDccFileSystem2;
@@ -125,7 +127,7 @@ public class NormalizationValidatorTest {
 
   @Before
   public void setUp() {
-    when(mockConfig.hasPath(Mockito.anyString()))
+    when(mockConfig.hasPath(anyString()))
         .thenReturn(true);
     when(mockConfig.getBoolean("mask.enabled"))
         .thenReturn(true);
@@ -135,8 +137,8 @@ public class NormalizationValidatorTest {
     when(mockRelease.getName())
         .thenReturn(RELEASE_NAME);
     when(mockFileSchema.getFieldNames())
-        .thenReturn(NormalizationTestUtils.getFieldNames(FOCUS_TYPE));
-    when(mockDictionary.getFileSchema(FOCUS_TYPE))
+        .thenReturn(NormalizationTestUtils.getFieldNames(SSM_P_TYPE));
+    when(mockDictionary.getFileSchema(SSM_P_TYPE))
         .thenReturn(mockFileSchema);
 
     when(mockValidationContext.getDictionary())
@@ -177,11 +179,11 @@ public class NormalizationValidatorTest {
     test(BASIC_INPUT_FILE, BASIC_REFERENCE_FILE);
 
     // Check internal report
-    Mockito.verify(mockDccFileSystem2, Mockito.times(1))
+    verify(mockDccFileSystem2, times(1))
         .writeNormalizationReport(
-            Mockito.anyString(),
-            Mockito.anyString(),
-            Mockito.eq(NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
+            anyString(),
+            anyString(),
+            eq(NormalizationReporter.INTERNAL_REPORT_MESSAGE + "\n" +
                 "11\t" + NormalizationCounter.TOTAL_START.getInternalReportDisplayName() + "\n" +
                 "9\t" + NormalizationCounter.UNIQUE_START.getInternalReportDisplayName() + "\n" +
                 "3\t" + NormalizationCounter.MARKED_AS_CONTROLLED.getInternalReportDisplayName() + "\n" +
@@ -266,7 +268,7 @@ public class NormalizationValidatorTest {
   // TODO: Shouldn't have to do that
   @SuppressWarnings("unchecked")
   private void mockOutputTap(String outputFile) {
-    when(mockDccFileSystem2.getNormalizationDataOutputTap(Mockito.anyString()))
+    when(mockDccFileSystem2.getNormalizationDataOutputTap(anyString()))
         .thenReturn(getOutputTap(outputFile));
   }
 

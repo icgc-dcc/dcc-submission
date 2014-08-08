@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -40,7 +40,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
-import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.LocalSubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -173,7 +173,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     Path systemDir = SYSTEM_DIR;
 
     val dataTypes = DataTypes.values();
-    val platformStrategy = new LocalPlatformStrategy(
+    val platformStrategy = new LocalSubmissionPlatformStrategy(
         Collections.<String, String> emptyMap(), rootDir, outputDir, systemDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);

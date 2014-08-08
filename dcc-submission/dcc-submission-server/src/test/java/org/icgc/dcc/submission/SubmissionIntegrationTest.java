@@ -66,7 +66,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -35,13 +35,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.FieldNames;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Bindings;
+import org.icgc.dcc.core.util.InjectionNames;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
-import org.icgc.dcc.reporter.Reporter;
-import org.icgc.dcc.reporter.ReporterGatherer;
-import org.icgc.dcc.reporter.ReporterInput;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.reporter.Reporter;
+import org.icgc.dcc.submission.reporter.ReporterCollector;
+import org.icgc.dcc.submission.reporter.ReporterInput;
 import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectDataTypeReportRepository;
@@ -73,7 +73,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
       @NonNull final DictionaryRepository dictionaryRepository,
       @NonNull final CodeListRepository codeListRepository,
       @NonNull final DccFileSystem dccFileSystem,
-      @Named(Bindings.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties) {
+      @Named(InjectionNames.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties) {
     this.projectDataTypeRepository = projectDataTypeRepository;
     this.projectSequencingStrategyRepository = projectSequencingStrategyRepository;
     this.releaseRepository = releaseRepository;
@@ -220,7 +220,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
         log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, projectKeys);
 
         for (val project : projectKeys) {
-          ArrayNode projectReports = ReporterGatherer.getJsonTable1(
+          ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
               fileSystem, outputDirPath, releaseName, project);
           log.info("Persisting data type executive reports for '{}.{}': '{}'",
               new Object[] { releaseName, project, projectReports });
@@ -231,7 +231,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
             projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
           }
 
-          ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(
+          ArrayNode sequencingStrategyReports = ReporterCollector.getJsonProjectSequencingStrategy(
               fileSystem, outputDirPath, releaseName, project, mappings.get());
           log.info("Persisting sequencing strategy executive reports for '{}.{}': '{}'",
               new Object[] { releaseName, project, sequencingStrategyReports });

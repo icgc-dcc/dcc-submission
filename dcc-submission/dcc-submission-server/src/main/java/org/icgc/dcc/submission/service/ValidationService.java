@@ -51,7 +51,7 @@ import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -85,7 +85,7 @@ public class ValidationService extends AbstractScheduledService {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final PlatformStrategyFactory platformStrategyFactory;
+  private final SubmissionPlatformStrategyFactory platformStrategyFactory;
   @NonNull
   private final Set<Validator> validators;
 

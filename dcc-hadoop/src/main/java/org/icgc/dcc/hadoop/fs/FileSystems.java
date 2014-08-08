@@ -53,6 +53,9 @@ public final class FileSystems {
     return FileSystem.get(config);
   }
 
+  /**
+   * TODO: address issue if property coming from environment.
+   */
   public static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
     checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
     return Protocol.fromURI(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
