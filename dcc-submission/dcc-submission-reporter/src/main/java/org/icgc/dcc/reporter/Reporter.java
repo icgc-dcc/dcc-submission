@@ -26,8 +26,8 @@ import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.reporter.cascading.subassembly.ProcessClinicalType;
-import org.icgc.dcc.reporter.cascading.subassembly.Table2;
-import org.icgc.dcc.reporter.cascading.subassembly.table1.Table1;
+import org.icgc.dcc.reporter.cascading.subassembly.ProjectSequencingStrategy;
+import org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
 
@@ -81,18 +81,18 @@ public class Reporter {
         new Object[] {releaseName, projectKeys, reporterInput, mapping});
     
     // Main processing
-    val table1s = Maps.<String, Pipe> newLinkedHashMap();
-    val table2s = Maps.<String, Pipe> newLinkedHashMap();
+    val projectDataTypeEntities = Maps.<String, Pipe> newLinkedHashMap();
+    val projectSequencingStrategies = Maps.<String, Pipe> newLinkedHashMap();
     for (val projectKey : projectKeys) {
       val preComputationTable = new PreComputation(releaseName, projectKey, reporterInput);
-      val table1 = new Table1(preComputationTable);
-      val table2 = new Table2(
+      val projectDataTypeEntity = new ProjectDataTypeEntity(preComputationTable);
+      val projectSequencingStrategy = new ProjectSequencingStrategy(
           preComputationTable,
           ProcessClinicalType.donor(preComputationTable),
           mapping.keySet());
 
-      table1s.put(projectKey, table1);
-      table2s.put(projectKey, table2);
+      projectDataTypeEntities.put(projectKey, projectDataTypeEntity);
+      projectSequencingStrategies.put(projectKey, projectSequencingStrategy);
     }
 
     val outputDir = createTempDir();
@@ -102,8 +102,8 @@ public class Reporter {
         .connectCascade(
             reporterInput,
             releaseName,
-            table1s,
-            table2s,
+            projectDataTypeEntities,
+            projectSequencingStrategies,
             hadoopProperties)
         .complete();
     

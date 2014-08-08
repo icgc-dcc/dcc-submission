@@ -41,8 +41,8 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
-import org.icgc.dcc.hadoop.cascading.taps.Taps;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
@@ -73,13 +73,13 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  protected Taps getTaps() {
-    return Taps.HADOOP;
+  protected CascadingTaps getTaps() {
+    return CascadingTaps.DISTRIBUTED;
   }
 
   @Override
-  protected CascadingConnector getConnectors() {
-    return CascadingConnector.CLUSTER;
+  protected CascadingConnectors getConnectors() {
+    return CascadingConnectors.DISTRIBUTED;
   }
 
   @Override

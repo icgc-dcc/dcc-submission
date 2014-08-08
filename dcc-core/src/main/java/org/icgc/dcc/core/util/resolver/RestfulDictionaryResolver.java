@@ -37,11 +37,11 @@ public class RestfulDictionaryResolver implements SubmissionSystemDictionaryReso
 
   @Override
   public ObjectNode get() {
-    return get(Optional.<String> absent());
+    return apply(Optional.<String> absent());
   }
 
   @Override
-  public ObjectNode get(Optional<String> version) {
+  public ObjectNode apply(Optional<String> version) {
     return getDictionary(version);
   }
 

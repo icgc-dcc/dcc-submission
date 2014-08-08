@@ -38,8 +38,8 @@ import lombok.SneakyThrows;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
-import org.icgc.dcc.hadoop.cascading.taps.Taps;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -54,8 +54,8 @@ import com.google.common.io.LineReader;
 
 public abstract class BasePlatformStrategy implements PlatformStrategy {
 
-  private final Taps taps;
-  private final CascadingConnector connectors;
+  private final CascadingTaps taps;
+  private final CascadingConnectors connectors;
 
   protected final FileSystem fileSystem;
   private final Map<String, String> hadoopProperties;
@@ -82,9 +82,9 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     this.connectors = getConnectors();
   }
 
-  protected abstract Taps getTaps();
+  protected abstract CascadingTaps getTaps();
 
-  protected abstract CascadingConnector getConnectors();
+  protected abstract CascadingConnectors getConnectors();
 
   @Override
   public FlowConnector getFlowConnector() {
@@ -168,7 +168,7 @@ public abstract class BasePlatformStrategy implements PlatformStrategy {
     return new Path(submissionDir, fileName);
   }
 
-  private String getFilePath(String fileName) {
+  protected String getFilePath(String fileName) {
     return getFile(fileName).toUri().toString();
   }
 

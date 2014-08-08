@@ -23,7 +23,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.util.Bindings;
+import org.icgc.dcc.core.util.InjectionNames;
 import org.icgc.dcc.core.util.Scheme;
 
 import com.google.inject.Inject;
@@ -38,7 +38,7 @@ public class PlatformStrategyFactoryProvider implements Provider<PlatformStrateg
 
   @Inject
   public PlatformStrategyFactoryProvider(
-      @Named(Bindings.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties,
+      @Named(InjectionNames.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties,
       @NonNull final FileSystem fs) {
     this.fs = fs;
     this.hadoopProperties = hadoopProperties;

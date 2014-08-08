@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter.cascading.subassembly.table1;
+package org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity;
 
 import static cascading.tuple.Fields.NONE;
 import static com.google.common.collect.Iterables.toArray;
@@ -46,9 +46,9 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
 
-public class Table1Preprocessing extends SubAssembly {
+public class ProjectDataTypeEntityPreprocessing extends SubAssembly {
 
-  Table1Preprocessing(Pipe preComputationTable) {
+  ProjectDataTypeEntityPreprocessing(Pipe preComputationTable) {
     setTails(process(preComputationTable));
   }
 

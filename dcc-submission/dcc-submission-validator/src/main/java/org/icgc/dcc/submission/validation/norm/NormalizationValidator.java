@@ -45,7 +45,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -87,11 +86,6 @@ import com.typesafe.config.Config;
 public final class NormalizationValidator implements Validator {
 
   static final String COMPONENT_NAME = NORMALIZER.getId();
-
-  /**
-   * Type that is the focus of normalization (there could be more in the future).
-   */
-  public static final FileType FOCUS_TYPE = SSM_P_TYPE;
 
   /**
    * Field used for unique counts.
@@ -167,10 +161,10 @@ public final class NormalizationValidator implements Validator {
   @Override
   public void validate(ValidationContext context) {
     // Selective validation filtering
-    val requested = context.getDataTypes().contains(FOCUS_TYPE.getDataType());
+    val requested = context.getDataTypes().contains(SSM_P_TYPE.getDataType());
     if (!requested) {
       log.info("'{}' validation not requested for '{}'. Skipping...",
-          FOCUS_TYPE.getDataType(), context.getProjectKey());
+          SSM_P_TYPE.getDataType(), context.getProjectKey());
 
       return;
     }
@@ -178,11 +172,11 @@ public final class NormalizationValidator implements Validator {
     // Only perform normalization of there is a file to normalize
     val ssmPFiles = getSsmPrimaryFiles(context);
     if (!ssmPFiles.isEmpty()) {
-      log.info("Starting normalization for {} files: '{}'", FOCUS_TYPE, ssmPFiles);
+      log.info("Starting normalization for {} files: '{}'", SSM_P_TYPE, ssmPFiles);
       normalize(ssmPFiles, context);
-      log.info("Finished normalization for {} files: '{}'", FOCUS_TYPE, ssmPFiles);
+      log.info("Finished normalization for {} files: '{}'", SSM_P_TYPE, ssmPFiles);
     } else {
-      log.info("Skipping normalization for {}, no matching file in submission", FOCUS_TYPE);
+      log.info("Skipping normalization for {}, no matching file in submission", SSM_P_TYPE);
     }
   }
 
@@ -216,7 +210,7 @@ public final class NormalizationValidator implements Validator {
 
     // Report results (error or stats)s
     val checker = NormalizationReporter.createNormalizationOutcomeChecker(
-        config, connectedCascade, FOCUS_TYPE.getHarmonizedOutputFileName());
+        config, connectedCascade, SSM_P_TYPE.getHarmonizedOutputFileName());
 
     // Report errors or statistics
     if (checker.isLikelyErroneous()) {
@@ -225,7 +219,7 @@ public final class NormalizationValidator implements Validator {
     } else {
       log.info("No errors were encountered during normalization");
       internalStatisticsReport(connectedCascade);
-      externalStatisticsReport(FOCUS_TYPE.getHarmonizedOutputFileName(), connectedCascade, context);
+      externalStatisticsReport(SSM_P_TYPE.getHarmonizedOutputFileName(), connectedCascade, context);
     }
   }
 
@@ -360,7 +354,7 @@ public final class NormalizationValidator implements Validator {
 
   private List<String> getSsmPrimaryFiles(ValidationContext context) {
     return newArrayList(transform(
-        context.getFiles(FOCUS_TYPE),
+        context.getFiles(SSM_P_TYPE),
         new Function<Path, String>() {
 
           @Override
@@ -402,7 +396,7 @@ public final class NormalizationValidator implements Validator {
    */
   private Tap<?, ?, ?> getSinkTap(String outputDirPath) {
     return dccFileSystem2.getNormalizationDataOutputTap(
-        PATH.join(outputDirPath, FOCUS_TYPE.getHarmonizedOutputFileName()));
+        PATH.join(outputDirPath, SSM_P_TYPE.getHarmonizedOutputFileName()));
   }
 
   /**

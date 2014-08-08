@@ -47,7 +47,7 @@ public class ArtifactoryDictionaryResolver implements DictionaryResolver {
   }
 
   @Override
-  public ObjectNode get(Optional<String> version) {
+  public ObjectNode apply(Optional<String> version) {
     return getDictionary(version);
   }
 

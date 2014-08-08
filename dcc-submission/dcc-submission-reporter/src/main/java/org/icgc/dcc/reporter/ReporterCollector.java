@@ -1,6 +1,7 @@
 package org.icgc.dcc.reporter;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
@@ -21,26 +22,26 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.io.Files;
 
-public class ReporterGatherer {
+public class ReporterCollector {
 
-  public static ArrayNode getJsonTable1(
+  public static ArrayNode getJsonProjectDataTypeEntity(
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
 
-    return getJsonTable(outputDirPath, releaseName, projectKey, OutputType.DONOR, ABSENT_STRING_MAP);
+    return getJson(outputDirPath, releaseName, projectKey, OutputType.DONOR, ABSENT_STRING_MAP);
   }
 
-  public static ArrayNode getJsonTable2(
+  public static ArrayNode getJsonProjectSequencingStrategy(
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
       @NonNull final String projectKey,
       @NonNull final Map<String, String> mapping) {
 
-    return getJsonTable(outputDirPath, releaseName, projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
+    return getJson(outputDirPath, releaseName, projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
   }
 
-  private static ArrayNode getJsonTable(
+  private static ArrayNode getJson(
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
       @NonNull final String projectKey,
@@ -77,9 +78,7 @@ public class ReporterGatherer {
   private static String tryTranslate(
       @NonNull final Map<String, String> mapping,
       @NonNull final String code) {
-
-    return mapping.containsKey(code) ?
-        mapping.get(code) : code;
+    return firstNonNull(mapping.get(code), code);
   }
 
   @SneakyThrows

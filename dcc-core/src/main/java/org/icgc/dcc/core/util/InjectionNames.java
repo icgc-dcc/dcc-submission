@@ -15,24 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.core.util;
 
-import java.util.Map;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import lombok.NonNull;
-import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
+/**
+ * Names for injection bindings.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class InjectionNames {
 
-class ClusterCascadingConnector extends BaseCascadingConnector {
-
-  @Override
-  public FlowConnector getFlowConnector() {
-    return new HadoopFlowConnector();
-  }
-
-  @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
-    return new HadoopFlowConnector(toObjectsMap(flowProperties));
-  }
+  public static final String HADOOP_PROPERTIES = "hadoop_properties";
 
 }

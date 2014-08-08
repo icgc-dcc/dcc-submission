@@ -15,11 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import com.google.common.base.Supplier;
+import java.util.Map;
 
-/**
- * Combines basic {@link Supplier} with complement {@link Supplier2}.
- */
-public interface Supplier3<T, U> extends Supplier<T>, Supplier2<T, U> {}
+import lombok.NonNull;
+
+import org.icgc.dcc.core.util.Maps2;
+
+import cascading.cascade.CascadeConnector;
+
+abstract class BaseConnectors implements CascadingConnectors {
+
+  @Override
+  public String describe() {
+    return describe(getClass());
+  }
+
+  @Override
+  public CascadeConnector getCascadeConnector() {
+    return new CascadeConnector();
+  }
+
+  @Override
+  public CascadeConnector getCascadeConnector(@NonNull final Map<?, ?> properties) {
+    return new CascadeConnector(toObjectsMap(properties));
+  }
+
+  protected static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {
+    return Maps2.toObjectsMap(properties);
+  }
+
+  private static String describe(@NonNull final Class<?> type) {
+    return "Using " + type.getSimpleName();
+  }
+
+}

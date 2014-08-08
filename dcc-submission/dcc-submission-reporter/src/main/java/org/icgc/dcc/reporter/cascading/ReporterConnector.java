@@ -15,10 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.Cascades;
 import org.icgc.dcc.hadoop.cascading.Flows;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
-import org.icgc.dcc.hadoop.cascading.taps.Taps;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
 import org.icgc.dcc.reporter.OutputType;
@@ -38,15 +38,15 @@ public class ReporterConnector {
 
   private static final String CONCURRENCY = String.valueOf(5);
   
-  private final Taps taps; 
-  private final CascadingConnector connector;   
+  private final CascadingTaps taps; 
+  private final CascadingConnectors connector;   
   private final String outputDirPath;
   
   public ReporterConnector(
       final boolean local,
       @NonNull final String outputDirPath) {
-    this.taps = local ? Taps.LOCAL : Taps.HADOOP;
-    this.connector = local ? CascadingConnector.LOCAL : CascadingConnector.CLUSTER;
+    this.taps = local ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
+    this.connector = local ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
     this.outputDirPath = outputDirPath;
     log.info(connector.describe());
   }
@@ -54,8 +54,8 @@ public class ReporterConnector {
   public Cascade connectCascade(
       @NonNull final ReporterInput reporterInput,
       @NonNull final String releaseName,
-      @NonNull final Map<String, Pipe> table1s,
-      @NonNull final Map<String, Pipe> table2s,
+      @NonNull final Map<String, Pipe> projectDataTypeEntities,
+      @NonNull final Map<String, Pipe> projectSequencingStrategies,
       @NonNull final Map<String, String> hadoopProperties) {
     
     val maxConcurrentFlows = getConcurrency();
@@ -66,17 +66,17 @@ public class ReporterConnector {
         .setMaxConcurrentFlows(maxConcurrentFlows);
 
     for (val projectKey : reporterInput.getProjectKeys()) {
-      val table1 = table1s.get(projectKey);
-      val table2 = table2s.get(projectKey);
+      val projectDataTypeEntity = projectDataTypeEntities.get(projectKey);
+      val projectSequencingStrategy = projectSequencingStrategies.get(projectKey);
       cascadeDef.addFlow(
           getFlowConnector().connect(flowDef()
             .addSources(getRawInputTaps(reporterInput, projectKey))
             .addTailSink(
-                table1,
-                getRawOutputTable1Tap(table1.getName(), releaseName, projectKey))
+                projectDataTypeEntity,
+                getRawOutputProjectDataTypeEntityTap(projectDataTypeEntity.getName(), releaseName, projectKey))
             .addTailSink(
-                table2,
-                getRawOutputTable2Tap(table2.getName(), releaseName, projectKey))
+                projectSequencingStrategy,
+                getRawOutputProjectSequencingStrategyTap(projectSequencingStrategy.getName(), releaseName, projectKey))
             .setName(Flows.getName(Reporter.CLASS, projectKey))));
     }
 
@@ -151,25 +151,25 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private Tap getRawOutputTable1Tap(
+  private Tap getRawOutputProjectDataTypeEntityTap(
       @NonNull final String tailName,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
-    return GenericTaps.RAW_CASTER.apply(getOutputTable1Tap(tailName, releaseName, projectKey));
+    return GenericTaps.RAW_CASTER.apply(getOutputProjectDataTypeEntityTap(tailName, releaseName, projectKey));
   }
 
   /**
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
-  private Tap getRawOutputTable2Tap(
+  private Tap getRawOutputProjectSequencingStrategyTap(
       @NonNull final String tailName,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
-    return GenericTaps.RAW_CASTER.apply(getOutputTable2Tap(tailName, releaseName, projectKey));
+    return GenericTaps.RAW_CASTER.apply(getOutputProjectSequencingStrategyTap(tailName, releaseName, projectKey));
   }
 
-  private Tap<?, ?, ?> getOutputTable1Tap(
+  private Tap<?, ?, ?> getOutputProjectDataTypeEntityTap(
       @NonNull final String tailName,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
@@ -177,7 +177,7 @@ public class ReporterConnector {
     return taps.getNoCompressionTsvWithHeader(outputFilePath);
   }
 
-  private Tap<?, ?, ?> getOutputTable2Tap(
+  private Tap<?, ?, ?> getOutputProjectSequencingStrategyTap(
       @NonNull final String tailName,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {

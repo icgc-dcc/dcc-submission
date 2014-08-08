@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.util.Bindings;
+import org.icgc.dcc.core.util.InjectionNames;
 
 import com.google.inject.AbstractModule;
 import com.typesafe.config.Config;
@@ -50,7 +50,7 @@ public class ConfigModule extends AbstractModule {
     log.info("Hadoop properties: '{}'", hadoopProperties);
     bind(TypeLiterals.STRING_MAP)
         .annotatedWith(
-            named(Bindings.HADOOP_PROPERTIES))
+            named(InjectionNames.HADOOP_PROPERTIES))
         .toInstance(hadoopProperties);
   }
 

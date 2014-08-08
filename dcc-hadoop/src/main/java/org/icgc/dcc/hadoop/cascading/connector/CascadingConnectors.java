@@ -15,30 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.taps;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Properties;
+import java.util.Map;
 
-import cascading.scheme.Scheme;
-import cascading.tap.Tap;
-import cascading.tuple.Fields;
+import cascading.cascade.Cascade;
+import cascading.cascade.CascadeConnector;
+import cascading.flow.Flow;
+import cascading.flow.FlowConnector;
 
 /**
- * Taps for cascading.
+ * Interface to connect {@link Flow}s and {@link Cascade}s.
  */
-public interface Taps {
+public interface CascadingConnectors {
 
-  static LocalTaps LOCAL = new LocalTaps();
-  static HadoopTaps HADOOP = new HadoopTaps();
+  static LocalConnectors LOCAL = new LocalConnectors();
+  static DistributedConnectors DISTRIBUTED = new DistributedConnectors();
 
-  Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path);
+  String describe();
 
-  Tap<?, ?, ?> getDecompressingTsvWithHeader(String path);
+  FlowConnector getFlowConnector();
 
-  Tap<?, ?, ?> getDecompressingLinesNoHeader(String path, Fields numField, Fields lineField);
+  FlowConnector getFlowConnector(Map<?, ?> properties);
 
-  Tap<?, ?, ?> getDecompressingFileTap(Scheme<Properties, InputStream, OutputStream, ?, ?> scheme, String path);
+  CascadeConnector getCascadeConnector();
+
+  CascadeConnector getCascadeConnector(Map<?, ?> properties);
 
 }

@@ -22,7 +22,7 @@ import java.util.Map;
 import com.google.inject.TypeLiteral;
 
 /**
- * 
+ * Util methods and constants for {@link TypeLiteral}s.
  */
 public class TypeLiterals {
 

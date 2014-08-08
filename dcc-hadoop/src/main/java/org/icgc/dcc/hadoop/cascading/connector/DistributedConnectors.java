@@ -15,34 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter.cascading.subassembly.table1;
+package org.icgc.dcc.hadoop.cascading.connector;
 
-import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
+import java.util.Map;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import lombok.NonNull;
+import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlowConnector;
 
-import cascading.operation.expression.ExpressionFilter;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-import cascading.pipe.SubAssembly;
+class DistributedConnectors extends BaseConnectors {
 
-public class Table1FeaturesProcessing extends SubAssembly {
-
-  private static final String EXCLUDE_CLINICAL_ONLY_TYPE = getFieldName(TYPE_FIELD) + " == null";
-
-  Table1FeaturesProcessing(Pipe preComputationTable) {
-    setTails(getFeatureTypes(preComputationTable));
+  @Override
+  public FlowConnector getFlowConnector() {
+    return new HadoopFlowConnector();
   }
 
-  private static Pipe getFeatureTypes(Pipe preComputationTable) {
-    return new Each(
-        new Pipe(
-            FeatureType.class.getSimpleName(),
-            preComputationTable),
-        new ExpressionFilter(
-            EXCLUDE_CLINICAL_ONLY_TYPE,
-            String.class));
+  @Override
+  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
+    return new HadoopFlowConnector(toObjectsMap(flowProperties));
   }
 
 }

@@ -35,11 +35,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.FieldNames;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Bindings;
+import org.icgc.dcc.core.util.InjectionNames;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.reporter.Reporter;
-import org.icgc.dcc.reporter.ReporterGatherer;
+import org.icgc.dcc.reporter.ReporterCollector;
 import org.icgc.dcc.reporter.ReporterInput;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.repository.CodeListRepository;
@@ -73,7 +73,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
       @NonNull final DictionaryRepository dictionaryRepository,
       @NonNull final CodeListRepository codeListRepository,
       @NonNull final DccFileSystem dccFileSystem,
-      @Named(Bindings.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties) {
+      @Named(InjectionNames.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties) {
     this.projectDataTypeRepository = projectDataTypeRepository;
     this.projectSequencingStrategyRepository = projectSequencingStrategyRepository;
     this.releaseRepository = releaseRepository;
@@ -218,7 +218,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
             copyOf(hadoopProperties));
 
         for (val project : projectKeys) {
-          ArrayNode projectReports = ReporterGatherer.getJsonTable1(
+          ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
               outputDirPath, releaseName, project);
 
           for (val report : projectReports) {
@@ -227,7 +227,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
             projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
           }
 
-          ArrayNode sequencingStrategyReports = ReporterGatherer.getJsonTable2(
+          ArrayNode sequencingStrategyReports = ReporterCollector.getJsonProjectSequencingStrategy(
               outputDirPath, releaseName, project, mappings.get());
           for (val report : sequencingStrategyReports) {
             log.info("Persisting executive report for '{}.{}': '{}'",

@@ -18,6 +18,7 @@
 package org.icgc.dcc.reporter;
 
 import static cascading.tuple.Fields.NONE;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
@@ -28,7 +29,6 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
-import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import cascading.tuple.Fields;
 
@@ -37,8 +37,8 @@ import com.google.common.collect.ImmutableList;
 /**
  * Fields pertaining to the reporter.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ReporterFields {
+@NoArgsConstructor(access = PRIVATE)
+public final class ReporterFields {
 
   public static final Fields TYPE_FIELD = new Fields(OBSERVATION_TYPE);
   public static final Fields PROJECT_ID_FIELD = new Fields(PROJECT_ID);
@@ -61,7 +61,7 @@ public class ReporterFields {
 
   public static final Fields COUNT_BY_FIELDS = PROJECT_ID_FIELD.append(TYPE_FIELD);
 
-  public static final Iterable<Fields> TABLE1_COUNT_FIELDS = ImmutableList.of(
+  public static final Iterable<Fields> PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS = ImmutableList.of(
       DONOR_UNIQUE_COUNT_FIELD,
       SPECIMEN_UNIQUE_COUNT_FIELD,
       SAMPLE_UNIQUE_COUNT_FIELD,
@@ -70,7 +70,7 @@ public class ReporterFields {
   /**
    * Order matters.
    */
-  public static final Fields TABLE1_RESULT_FIELDS =
+  public static final Fields PROJECT_DATA_TYPE_ENTITY_RESULT_FIELDS =
       NONE
           .append(DONOR_UNIQUE_COUNT_FIELD)
           .append(SPECIMEN_UNIQUE_COUNT_FIELD)

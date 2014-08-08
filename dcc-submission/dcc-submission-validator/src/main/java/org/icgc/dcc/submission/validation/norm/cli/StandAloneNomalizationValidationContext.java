@@ -146,7 +146,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
   @SneakyThrows
   public Dictionary getDictionary() {
     // Deserialize
-    val objectNode = new ArtifactoryDictionaryResolver().get(Optional.of(DICTIONARY_VERSION));
+    val objectNode = new ArtifactoryDictionaryResolver().apply(Optional.of(DICTIONARY_VERSION));
     val reader = new ObjectMapper().reader(Dictionary.class);
     Dictionary dictionary = reader.readValue(objectNode);
 

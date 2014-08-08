@@ -45,7 +45,7 @@ import cascading.tuple.TupleEntryIterator;
  * TODO: create interface for local/hadoop
  */
 @NoArgsConstructor(access = PACKAGE)
-public final class LocalTaps implements Taps {
+public final class LocalTaps implements CascadingTaps {
 
   @Override
   public Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path) {

@@ -19,27 +19,20 @@ package org.icgc.dcc.hadoop.cascading.connector;
 
 import java.util.Map;
 
-import cascading.cascade.Cascade;
-import cascading.cascade.CascadeConnector;
-import cascading.flow.Flow;
+import lombok.NonNull;
 import cascading.flow.FlowConnector;
+import cascading.flow.local.LocalFlowConnector;
 
-/**
- * Interface to connect {@link Flow}s and {@link Cascade}s.
- */
-public interface CascadingConnector {
+class LocalConnectors extends BaseConnectors {
 
-  static LocalCascadingConnector LOCAL = new LocalCascadingConnector();
-  static ClusterCascadingConnector CLUSTER = new ClusterCascadingConnector();
+  @Override
+  public FlowConnector getFlowConnector() {
+    return new LocalFlowConnector();
+  }
 
-  String describe();
-
-  FlowConnector getFlowConnector();
-
-  FlowConnector getFlowConnector(Map<?, ?> properties);
-
-  CascadeConnector getCascadeConnector();
-
-  CascadeConnector getCascadeConnector(Map<?, ?> properties);
+  @Override
+  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
+    return new LocalFlowConnector(toObjectsMap(flowProperties));
+  }
 
 }

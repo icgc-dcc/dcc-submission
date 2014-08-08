@@ -28,8 +28,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnector;
-import org.icgc.dcc.hadoop.cascading.taps.Taps;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
@@ -51,13 +51,13 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
   }
 
   @Override
-  protected Taps getTaps() {
-    return Taps.LOCAL;
+  protected CascadingTaps getTaps() {
+    return CascadingTaps.LOCAL;
   }
 
   @Override
-  protected CascadingConnector getConnectors() {
-    return CascadingConnector.LOCAL;
+  protected CascadingConnectors getConnectors() {
+    return CascadingConnectors.LOCAL;
   }
 
   @Override
@@ -90,8 +90,8 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   public Tap<?, ?, ?> getSourceTap(String fileName) {
-    return Taps.LOCAL.getDecompressingLinesNoHeader(
-        getFile(fileName).toUri().toString(),
+    return CascadingTaps.LOCAL.getDecompressingLinesNoHeader(
+        getFilePath(fileName),
         new Fields(ValidationFields.OFFSET_FIELD_NAME),
         new Fields("line"));
   }

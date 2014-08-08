@@ -30,6 +30,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 
 import java.io.File;
 import java.util.List;
@@ -186,7 +187,7 @@ public class ExecutableSpecConverter {
   }
 
   private static List<String> getSubmissionFieldNames() {
-    return NormalizationTestUtils.getFieldNames(NormalizationValidator.FOCUS_TYPE);
+    return NormalizationTestUtils.getFieldNames(SSM_P_TYPE);
   }
 
   private static List<String> getNormalizationFieldNames() {

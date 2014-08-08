@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.reporter.cascading.subassembly.table1;
+package org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity;
 
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
@@ -24,8 +24,8 @@ import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.reporter.ReporterFields.TABLE1_COUNT_FIELDS;
-import static org.icgc.dcc.reporter.ReporterFields.TABLE1_RESULT_FIELDS;
+import static org.icgc.dcc.reporter.ReporterFields.PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS;
+import static org.icgc.dcc.reporter.ReporterFields.PROJECT_DATA_TYPE_ENTITY_RESULT_FIELDS;
 import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
 import lombok.NonNull;
 import lombok.val;
@@ -41,9 +41,9 @@ import cascading.tuple.Fields;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
-public class Table1ClinicalProcessing extends SubAssembly {
+public class ProjectDataTypeEntityClinicalProcessing extends SubAssembly {
 
-  Table1ClinicalProcessing(@NonNull final Pipe preComputationTable) {
+  ProjectDataTypeEntityClinicalProcessing(@NonNull final Pipe preComputationTable) {
     setTails(process(preComputationTable));
   }
 
@@ -63,12 +63,12 @@ public class Table1ClinicalProcessing extends SubAssembly {
                 toArray(
                     getSumBys(clinicalPipe),
                     AggregateBy.class))),
-        TABLE1_RESULT_FIELDS);
+        PROJECT_DATA_TYPE_ENTITY_RESULT_FIELDS);
   }
 
   private static Iterable<AggregateBy> getSumBys(@NonNull final Pipe clinicalPipe) {
     return ImmutableList.copyOf(transform(
-        TABLE1_COUNT_FIELDS,
+        PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS,
         new Function<Fields, AggregateBy>() {
 
           @Override

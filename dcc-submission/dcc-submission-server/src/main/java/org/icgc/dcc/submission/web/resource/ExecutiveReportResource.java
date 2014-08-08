@@ -119,7 +119,7 @@ public class ExecutiveReportResource {
   }
 
   @GET
-  @Path("projectDataType/{releaseName}")
+  @Path("projectDataTypeEntity/{releaseName}")
   public Response getProjectDataTypeReport(
       @PathParam("releaseName") String releaseName,
       @QueryParam("projects") List<String> projects,

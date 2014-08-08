@@ -25,10 +25,9 @@ import java.net.URL;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.core.util.Supplier3;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 
@@ -37,7 +36,7 @@ public interface Resolver {
   /**
    * Abstraction that resolves the content of the most current dictionary.
    */
-  public interface DictionaryResolver extends Supplier3<ObjectNode, Optional<String>> {}
+  public interface DictionaryResolver extends Supplier<ObjectNode>, Function<Optional<String>, ObjectNode> {}
 
   /**
    * Abstraction that resolves the content of the code lists.

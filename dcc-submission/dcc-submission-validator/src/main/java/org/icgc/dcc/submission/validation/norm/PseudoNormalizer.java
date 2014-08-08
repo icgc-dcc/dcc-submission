@@ -95,11 +95,11 @@ public class PseudoNormalizer {
     return new PrintWriter(fileSystem.create(outputFile));
   }
 
-  private static Path getInputFilePath(final PlatformStrategy platformStrategy) {
+  private static Path getInputFilePath(@NonNull final PlatformStrategy platformStrategy) {
     return platformStrategy.getFile(SGV_P_TYPE.getHarmonizedOutputFileName());
   }
 
-  private static Path getOutputFilePath(final String outputFilePath) {
+  private static Path getOutputFilePath(@NonNull final String outputFilePath) {
     return new Path(outputFilePath);
   }
 

@@ -39,13 +39,13 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
 
-public class Table2 extends SubAssembly {
+public class ProjectSequencingStrategy extends SubAssembly {
 
   private static final String NULL_REPLACEMENT = "null";
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
 
-  public Table2(Pipe preComputationTable, Pipe donors, Set<String> codes) {
-    setTails(table2(preComputationTable, donors, getTranspositionFields(codes)));
+  public ProjectSequencingStrategy(Pipe preComputationTable, Pipe donors, Set<String> codes) {
+    setTails(process(preComputationTable, donors, getTranspositionFields(codes)));
   }
 
   private static Fields getTranspositionFields(Set<String> codes) {
@@ -76,7 +76,7 @@ public class Table2 extends SubAssembly {
     return builder.build();
   }
 
-  private static Pipe table2(Pipe preComputationTable, Pipe donors, Fields transpositionFields) {
+  private static Pipe process(Pipe preComputationTable, Pipe donors, Fields transpositionFields) {
 
     return new ReadableHashJoin(JoinData.builder()
 

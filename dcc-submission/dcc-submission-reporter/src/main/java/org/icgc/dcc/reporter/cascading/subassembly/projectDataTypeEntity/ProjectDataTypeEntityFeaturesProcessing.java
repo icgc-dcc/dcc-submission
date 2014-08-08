@@ -15,39 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.reporter.cascading.subassembly.projectDataTypeEntity;
 
-import java.util.Map;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.reporter.ReporterFields.TYPE_FIELD;
 
-import lombok.NonNull;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
-import org.icgc.dcc.core.util.Maps2;
+import cascading.operation.expression.ExpressionFilter;
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
+import cascading.pipe.SubAssembly;
 
-import cascading.cascade.CascadeConnector;
+public class ProjectDataTypeEntityFeaturesProcessing extends SubAssembly {
 
-abstract class BaseCascadingConnector implements CascadingConnector {
+  private static final String EXCLUDE_CLINICAL_ONLY_TYPE = getFieldName(TYPE_FIELD) + " == null";
 
-  @Override
-  public String describe() {
-    return describe(getClass());
+  ProjectDataTypeEntityFeaturesProcessing(Pipe preComputationTable) {
+    setTails(getFeatureTypes(preComputationTable));
   }
 
-  @Override
-  public CascadeConnector getCascadeConnector() {
-    return new CascadeConnector();
-  }
-
-  @Override
-  public CascadeConnector getCascadeConnector(@NonNull final Map<?, ?> properties) {
-    return new CascadeConnector(toObjectsMap(properties));
-  }
-
-  protected static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {
-    return Maps2.toObjectsMap(properties);
-  }
-
-  private static String describe(@NonNull final Class<?> type) {
-    return "Using " + type.getSimpleName();
+  private static Pipe getFeatureTypes(Pipe preComputationTable) {
+    return new Each(
+        new Pipe(
+            FeatureType.class.getSimpleName(),
+            preComputationTable),
+        new ExpressionFilter(
+            EXCLUDE_CLINICAL_ONLY_TYPE,
+            String.class));
   }
 
 }

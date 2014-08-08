@@ -58,12 +58,12 @@ public class ReporterTest {
             Protocol.FILE.getId() + Separators.PATH));
 
     for (val projectKey : projectKeys) {
-      val documents = ReporterGatherer.getJsonTable1(outputDirPath, TEST_RELEASE_NAME, projectKey);
+      val documents = ReporterCollector.getJsonProjectDataTypeEntity(outputDirPath, TEST_RELEASE_NAME, projectKey);
       log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
     }
     for (val projectKey : projectKeys) {
       val documents =
-          ReporterGatherer.getJsonTable2(outputDirPath, TEST_RELEASE_NAME, projectKey,
+          ReporterCollector.getJsonProjectSequencingStrategy(outputDirPath, TEST_RELEASE_NAME, projectKey,
               ImmutableMap.<String, String> of());
       log.info("Content for '{}': '{}'", projectKey, formatPrettyJson(documents));
     }

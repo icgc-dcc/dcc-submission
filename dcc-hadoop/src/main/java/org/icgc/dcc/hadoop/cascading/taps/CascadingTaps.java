@@ -15,17 +15,30 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.hadoop.cascading.taps;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
+
+import cascading.scheme.Scheme;
+import cascading.tap.Tap;
+import cascading.tuple.Fields;
 
 /**
- * Names for bindings.
+ * Taps for cascading.
  */
-@NoArgsConstructor(access = PRIVATE)
-public class Bindings {
+public interface CascadingTaps {
 
-  public static final String HADOOP_PROPERTIES = "hadoop_properties";
+  static LocalTaps LOCAL = new LocalTaps();
+  static DistributedTaps DISTRIBUTED = new DistributedTaps();
+
+  Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path);
+
+  Tap<?, ?, ?> getDecompressingTsvWithHeader(String path);
+
+  Tap<?, ?, ?> getDecompressingLinesNoHeader(String path, Fields numField, Fields lineField);
+
+  Tap<?, ?, ?> getDecompressingFileTap(Scheme<Properties, InputStream, OutputStream, ?, ?> scheme, String path);
 
 }
