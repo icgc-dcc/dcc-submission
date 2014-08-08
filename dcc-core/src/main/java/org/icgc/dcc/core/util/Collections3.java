@@ -15,44 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util.resolver;
+package org.icgc.dcc.core.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.core.util.Jackson.DEFAULT;
-import lombok.AllArgsConstructor;
+import static lombok.AccessLevel.PRIVATE;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.NonNull;
 
-import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolver.SubmissionSystemCodeListsResolver;
+/**
+ * Util methods for {@link Collection}s.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class Collections3 {
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.Optional;
+  public static <T extends Comparable<T>> List<T> sort(@NonNull final List<T> list) {
+    Collections.sort(list);
 
-@AllArgsConstructor
-@NoArgsConstructor
-public class RestfulCodeListsResolver implements SubmissionSystemCodeListsResolver {
-
-  private String url = DEFAULT_CODELISTS_URL;
-
-  @Override
-  public ArrayNode get() {
-    return getCodeList();
-  }
-
-  @SneakyThrows
-  private ArrayNode getCodeList() {
-    return DEFAULT.readValue(
-        Resolvers.getContent(
-            getSubmissionSystemUrl(
-            Optional.<String> absent())),
-        ArrayNode.class);
-  }
-
-  @Override
-  public String getSubmissionSystemUrl(Optional<String> qualifier) {
-    checkArgument(!qualifier.isPresent(),
-        "Code lists can not be qualified, '%s' provided", qualifier);
-    return url + PATH;
+    return list;
   }
 
 }

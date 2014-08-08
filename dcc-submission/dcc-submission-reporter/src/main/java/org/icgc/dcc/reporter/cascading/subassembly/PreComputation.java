@@ -54,7 +54,7 @@ public class PreComputation extends SubAssembly {
    * Joins the clinical and observation pipes.
    */
   private static Pipe processProject(
-      @NonNull final ReporterInput inputData,
+      @NonNull final ReporterInput reporterInput,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
     return
@@ -77,10 +77,10 @@ public class PreComputation extends SubAssembly {
                     // Right-join in order to keep track of clinical data with no observations as well
                     .joiner(new RightJoin())
 
-                    .leftPipe(processFeatureTypes(inputData, projectKey))
+                    .leftPipe(processFeatureTypes(reporterInput, projectKey))
                     .leftJoinFields(SAMPLE_ID_FIELD)
 
-                    .rightPipe(processClinical(inputData, projectKey))
+                    .rightPipe(processClinical(reporterInput, projectKey))
                     .rightJoinFields(SAMPLE_ID_FIELD)
 
                     .resultFields(

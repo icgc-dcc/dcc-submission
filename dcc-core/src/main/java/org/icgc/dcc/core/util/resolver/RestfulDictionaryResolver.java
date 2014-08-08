@@ -24,7 +24,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolber.SubmissionSystemDictionaryResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolver.SubmissionSystemDictionaryResolver;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;

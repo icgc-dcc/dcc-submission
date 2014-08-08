@@ -20,6 +20,7 @@ package org.icgc.dcc.hadoop.fs;
 import static com.google.common.io.Files.getFileExtension;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.isPartFile;
 import static org.icgc.dcc.hadoop.parser.FileParsers.newStringFileParser;
 
 import java.io.IOException;
@@ -42,6 +43,8 @@ import com.google.common.collect.Lists;
 
 /**
  * File level utilities.
+ * <p>
+ * TODO: merge with {@link HadoopUtils}?
  */
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
@@ -129,7 +132,7 @@ public class FileOperations {
     };
 
     for (val file : inputFiles) {
-      if (fStatus.isDirectory() && !file.getName().startsWith(HadoopUtils.MR_PART_FILE_NAME_BASE)) continue;
+      if (fStatus.isDirectory() && !isPartFile(file)) continue;
       parser.parse(file, processor);
     }
     writerHandle.get().close();

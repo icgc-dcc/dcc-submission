@@ -43,7 +43,7 @@ public interface Resolver {
    */
   public interface CodeListsResolver extends Supplier<ArrayNode> {}
 
-  interface SubmissionSystemResolber extends Resolver {
+  interface SubmissionSystemResolver extends Resolver {
 
     String DEFAULT_SCHEME = "http://";
     String DEFAULT_HOST = "***REMOVED***";
@@ -52,7 +52,7 @@ public interface Resolver {
 
     String getSubmissionSystemUrl(Optional<String> qualifier);
 
-    interface SubmissionSystemDictionaryResolver extends DictionaryResolver, SubmissionSystemResolber {
+    interface SubmissionSystemDictionaryResolver extends DictionaryResolver, SubmissionSystemResolver {
 
       String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
       String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
@@ -60,7 +60,7 @@ public interface Resolver {
 
     }
 
-    interface SubmissionSystemCodeListsResolver extends CodeListsResolver, SubmissionSystemResolber {
+    interface SubmissionSystemCodeListsResolver extends CodeListsResolver, SubmissionSystemResolver {
 
       String PATH = PATH_BASE + "/codeLists";
       String DEFAULT_CODELISTS_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH;

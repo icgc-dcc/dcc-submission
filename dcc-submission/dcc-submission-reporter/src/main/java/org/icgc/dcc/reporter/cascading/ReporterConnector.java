@@ -3,7 +3,7 @@ package org.icgc.dcc.reporter.cascading;
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Objects.firstNonNull;
-import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.transformValues;
 import static org.icgc.dcc.reporter.Reporter.getOutputFilePath;
 
@@ -16,9 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.hadoop.cascading.Cascades;
 import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
 import org.icgc.dcc.reporter.OutputType;
@@ -37,11 +37,12 @@ import com.google.common.collect.ImmutableMap;
 public class ReporterConnector {
 
   private static final String CONCURRENCY = String.valueOf(5);
-  
-  private final CascadingTaps taps; 
-  private final CascadingConnectors connector;   
+
+  private final CascadingTaps taps;
+  private final CascadingConnectors connector;
+
   private final String outputDirPath;
-  
+
   public ReporterConnector(
       final boolean local,
       @NonNull final String outputDirPath) {
@@ -50,17 +51,18 @@ public class ReporterConnector {
     this.outputDirPath = outputDirPath;
     log.info(connector.describe());
   }
-  
+
   public Cascade connectCascade(
       @NonNull final ReporterInput reporterInput,
       @NonNull final String releaseName,
       @NonNull final Map<String, Pipe> projectDataTypeEntities,
       @NonNull final Map<String, Pipe> projectSequencingStrategies,
       @NonNull final Map<String, String> hadoopProperties) {
-    
+
     val maxConcurrentFlows = getConcurrency();
     log.info("maxConcurrentFlows: '{}'", maxConcurrentFlows);
-    
+    log.info("hadoopProperties: '{}'", hadoopProperties);
+
     val cascadeDef = cascadeDef()
         .setName(Cascades.getName(Reporter.CLASS))
         .setMaxConcurrentFlows(maxConcurrentFlows);
@@ -69,17 +71,20 @@ public class ReporterConnector {
       val projectDataTypeEntity = projectDataTypeEntities.get(projectKey);
       val projectSequencingStrategy = projectSequencingStrategies.get(projectKey);
       cascadeDef.addFlow(
-          getFlowConnector().connect(flowDef()
-            .addSources(getRawInputTaps(reporterInput, projectKey))
-            .addTailSink(
-                projectDataTypeEntity,
-                getRawOutputProjectDataTypeEntityTap(projectDataTypeEntity.getName(), releaseName, projectKey))
-            .addTailSink(
-                projectSequencingStrategy,
-                getRawOutputProjectSequencingStrategyTap(projectSequencingStrategy.getName(), releaseName, projectKey))
-            .setName(Flows.getName(Reporter.CLASS, projectKey))));
+          getFlowConnector(hadoopProperties).connect(
+              flowDef()
+                  .addSources(getRawInputTaps(reporterInput, projectKey))
+                  .addTailSink(
+                      projectDataTypeEntity,
+                      getRawOutputProjectDataTypeEntityTap(projectDataTypeEntity.getName(), releaseName, projectKey))
+                  .addTailSink(
+                      projectSequencingStrategy,
+                      getRawOutputProjectSequencingStrategyTap(projectSequencingStrategy.getName(), releaseName,
+                          projectKey))
+                  .setName(Flows.getName(Reporter.CLASS, projectKey))));
     }
 
+    HadoopProperties.setHadoopUserNameProperty();
     return connector
         .getCascadeConnector(hadoopProperties)
         .connect(cascadeDef);
@@ -92,25 +97,16 @@ public class ReporterConnector {
         CONCURRENCY));
   }
 
-  private FlowConnector getFlowConnector() {    
-    Map<Object, Object> flowProperties = newHashMap();
-    HadoopProperties.setHadoopUserNameProperty();
-    flowProperties = getClusterFlowProperties(flowProperties);
-    
-    return connector.getFlowConnector(flowProperties);
-  }
+  private FlowConnector getFlowConnector(@NonNull final Map<String, String> hadoopProperties) {
+    return connector.getFlowConnector(ImmutableMap.builder()
 
-  private static Map<Object, Object> getClusterFlowProperties(@NonNull final Map<Object, Object> flowProperties) {
-    return ImmutableMap.builder()
-        
-        .putAll(flowProperties)
+        .putAll(hadoopProperties)
         .putAll(
             HadoopProperties.enableIntermediateMapOutputCompression(
-              HadoopProperties.setAvailableCodecs(flowProperties),
-              HadoopConstants.LZO_CODEC_PROPERTY_VALUE))
-    
-        .build();
-    
+                HadoopProperties.setAvailableCodecs(newLinkedHashMap()),
+                HadoopConstants.LZO_CODEC_PROPERTY_VALUE))
+
+        .build());
   }
 
   /**
