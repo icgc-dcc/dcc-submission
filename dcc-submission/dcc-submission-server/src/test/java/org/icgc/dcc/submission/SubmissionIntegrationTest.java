@@ -99,7 +99,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.sftp.Sftp;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,7 +113,6 @@ import com.jcraft.jsch.SftpException;
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, PersistenceModule.class })
-@Ignore
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
@@ -268,6 +266,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   @After
   @SneakyThrows
   public void tearDown() {
+    if (true) {
+      return;
+    }
+
     log.info(repeat("-", 100));
     log.info("Tearing down ...");
     log.info(repeat("-", 100));

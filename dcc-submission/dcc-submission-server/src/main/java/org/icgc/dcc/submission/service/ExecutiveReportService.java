@@ -102,6 +102,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     while (isRunning()) {
       Runnable runnable = queue.take();
       if (runnable == null) {
+        System.out.println(">>");
         continue;
       }
       runnable.run();
