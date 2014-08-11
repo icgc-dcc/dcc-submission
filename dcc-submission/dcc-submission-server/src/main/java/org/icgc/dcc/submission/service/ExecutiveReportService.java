@@ -18,52 +18,59 @@
 package org.icgc.dcc.submission.service;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
-import static org.icgc.dcc.core.model.Dictionaries.getMapping;
-import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutorService;
 
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.model.FieldNames;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.InjectionNames;
-import org.icgc.dcc.core.util.Jackson;
-import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.reporter.Reporter;
-import org.icgc.dcc.submission.reporter.ReporterCollector;
-import org.icgc.dcc.submission.reporter.ReporterInput;
+import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProto.FileType;
+import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectDataTypeReportRepository;
 import org.icgc.dcc.submission.repository.ProjectSequencingStrategyReportRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
-import org.icgc.submission.summary.ProjectDataTypeReport;
-import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 @Slf4j
-public class ExecutiveReportService extends AbstractExecutionThreadService {
+public class ExecutiveReportService extends AbstractIdleService {
 
+  /**
+   * Dependencies.
+   */
   private final ReleaseRepository releaseRepository;
   private final DictionaryRepository dictionaryRepository;
   private final CodeListRepository codeListRepository;
+  @NonNull
+  private final ProjectDataTypeReportRepository projectDataTypeRepository;
+  @NonNull
+  private final ProjectSequencingStrategyReportRepository projectSequencingStrategyRepository;
+  @NonNull
+  private final DccFileSystem dccFileSystem;
+
+  /**
+   * Configuration.
+   */
+  @NonNull
+  private final Map<String, String> hadoopProperties;
+
+  /**
+   * State.
+   */
+  private final ExecutorService executor = newSingleThreadExecutor();
 
   @Inject
   public ExecutiveReportService(
@@ -83,30 +90,16 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     this.hadoopProperties = hadoopProperties;
   }
 
-  @NonNull
-  private final ProjectDataTypeReportRepository projectDataTypeRepository;
-
-  @NonNull
-  private final ProjectSequencingStrategyReportRepository projectSequencingStrategyRepository;
-
-  @NonNull
-  private final DccFileSystem dccFileSystem;
-
-  @NonNull
-  private final Map<String, String> hadoopProperties;
-
-  private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+  @Override
+  protected void startUp() throws Exception {
+    log.info("Starting up...");
+  }
 
   @Override
-  protected void run() throws Exception {
-    while (isRunning()) {
-      Runnable runnable = queue.take();
-      if (runnable == null) {
-        System.out.println(">>");
-        continue;
-      }
-      runnable.run();
-    }
+  protected void shutDown() throws Exception {
+    log.info("Shutting down executor...");
+    executor.shutdownNow();
+    log.info("Finished shutting down executor");
   }
 
   public List<ProjectDataTypeReport> getProjectDataTypeReport() {
@@ -202,7 +195,7 @@ public class ExecutiveReportService extends AbstractExecutionThreadService {
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
         FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
 
-    queue.add(new Runnable() {
+    executor.execute(new Runnable() {
 
       @Override
       public void run() {
