@@ -45,6 +45,7 @@ import lombok.Cleanup;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.util.MapUtils;
 
@@ -53,10 +54,12 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.code.externalsorting.ExternalSort;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.Files;
 
 /**
  * General test utilities for working with JSON objects.; TODO: rename to MongoUtils
  */
+@Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public final class JsonUtils {
 
@@ -142,7 +145,10 @@ public final class JsonUtils {
   @SuppressWarnings("unchecked")
   @SneakyThrows
   public static void normalizeDumpFile(File file) {
-    File format = new File(file.getAbsolutePath() + ".fmt");
+    log.info("Normalizing file '{}'", file);
+
+    val tempDir = Files.createTempDir();
+    File format = new File(tempDir, file.getName() + ".fmt");
 
     {
       @Cleanup
@@ -163,12 +169,13 @@ public final class JsonUtils {
     }
 
     // Use external file based sorting as to not exhaust memory
-    File sort = new File(file.getAbsolutePath() + ".sort");
+    File sort = new File(tempDir, file.getName() + ".sort");
     ExternalSort.main(new String[] { format.getAbsolutePath(), sort.getAbsolutePath() });
 
     copy(sort, file);
     checkState(format.delete(), "JSON format file not deleted: %s", format);
     checkState(sort.delete(), "JSON sort file not deleted: %s", sort);
+    tempDir.delete();
   }
 
   @SneakyThrows
