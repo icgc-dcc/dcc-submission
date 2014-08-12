@@ -183,6 +183,17 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT7_KEY, INVALID)
           .build();
 
+  private final static Map<String, SubmissionState> POST_REVALIDATION_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, VALID)
+          .put(PROJECT2_KEY, INVALID)
+          .put(PROJECT3_KEY, INVALID)
+          .put(PROJECT4_KEY, INVALID)
+          .put(PROJECT5_KEY, INVALID)
+          .put(PROJECT6_KEY, NOT_VALIDATED)
+          .put(PROJECT7_KEY, INVALID)
+          .build();
+
   private final static Map<String, SubmissionState> POST_RELEASE_STATES =
       new ImmutableMap.Builder<String, SubmissionState>()
           .put(PROJECT1_KEY, NOT_VALIDATED)
@@ -190,7 +201,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT3_KEY, INVALID)
           .put(PROJECT4_KEY, INVALID)
           .put(PROJECT5_KEY, INVALID)
-          .put(PROJECT6_KEY, INVALID)
+          .put(PROJECT6_KEY, NOT_VALIDATED)
           .put(PROJECT7_KEY, INVALID)
           .build();
 
@@ -477,29 +488,29 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     enqueueProjects(PROJECTS_TO_ENQUEUE2, NO_CONTENT);
 
     status("admin", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, STATES.get(PROJECT1_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, POST_REVALIDATION_STATES.get(PROJECT1_KEY));
 
     status("admin", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, STATES.get(PROJECT2_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, POST_REVALIDATION_STATES.get(PROJECT2_KEY));
 
     status("admin", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, STATES.get(PROJECT3_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, POST_REVALIDATION_STATES.get(PROJECT3_KEY));
 
     status("admin", "Checking validated submission 4...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, STATES.get(PROJECT4_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, POST_REVALIDATION_STATES.get(PROJECT4_KEY));
 
     status("admin", "Checking validated submission 5...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, STATES.get(PROJECT5_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, POST_REVALIDATION_STATES.get(PROJECT5_KEY));
 
     status("admin", "Checking validated submission 6...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, STATES.get(PROJECT6_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, POST_REVALIDATION_STATES.get(PROJECT6_KEY));
 
     status("admin", "Checking validated submission 7...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, STATES.get(PROJECT7_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, POST_REVALIDATION_STATES.get(PROJECT7_KEY));
 
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(getStates(STATES)));
+        hasSubmisisonStates(getStates(POST_REVALIDATION_STATES)));
   }
 
   private void adminPerformsRelease() throws Exception {
