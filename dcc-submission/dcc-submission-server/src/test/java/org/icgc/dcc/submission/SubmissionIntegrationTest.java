@@ -75,6 +75,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -107,6 +108,7 @@ import org.mongodb.morphia.Datastore;
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.jcraft.jsch.SftpException;
 
@@ -155,6 +157,16 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT7_KEY = "project.7";
   private static final String PROJECT7 = _("{name:'Project Seven',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT7_KEY);
+
+  static Map<String, SubmissionState> STATES = new ImmutableMap.Builder<String, SubmissionState>()
+      .put(PROJECT1_KEY, VALID)
+      .put(PROJECT2_KEY, INVALID)
+      .put(PROJECT3_KEY, INVALID)
+      .put(PROJECT4_KEY, INVALID)
+      .put(PROJECT5_KEY, INVALID)
+      .put(PROJECT6_KEY, INVALID)
+      .put(PROJECT7_KEY, INVALID)
+      .build();
 
   /**
    * Dictionaries.
@@ -266,10 +278,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   @After
   @SneakyThrows
   public void tearDown() {
-    if (true) {
-      return;
-    }
-
     log.info(repeat("-", 100));
     log.info("Tearing down ...");
     log.info(repeat("-", 100));
@@ -433,29 +441,36 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     enqueueProjects(PROJECTS_TO_ENQUEUE2, NO_CONTENT);
 
     status("admin", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, STATES.get(PROJECT1_KEY));
 
     status("admin", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, STATES.get(PROJECT2_KEY));
 
     status("admin", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, STATES.get(PROJECT3_KEY));
 
     status("admin", "Checking validated submission 4...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, STATES.get(PROJECT4_KEY));
 
     status("admin", "Checking validated submission 5...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, STATES.get(PROJECT5_KEY));
 
     status("admin", "Checking validated submission 6...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, STATES.get(PROJECT6_KEY));
 
     status("admin", "Checking validated submission 7...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, STATES.get(PROJECT7_KEY));
 
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
+        hasSubmisisonStates(
+            STATES.get(PROJECT1_KEY),
+            STATES.get(PROJECT2_KEY),
+            STATES.get(PROJECT3_KEY),
+            STATES.get(PROJECT4_KEY),
+            STATES.get(PROJECT5_KEY),
+            STATES.get(PROJECT6_KEY),
+            STATES.get(PROJECT7_KEY)));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -463,7 +478,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
         hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
+        hasSubmisisonStates(
+            NOT_VALIDATED,
+            STATES.get(PROJECT2_KEY),
+            STATES.get(PROJECT3_KEY),
+            STATES.get(PROJECT4_KEY),
+            STATES.get(PROJECT5_KEY),
+            STATES.get(PROJECT6_KEY),
+            STATES.get(PROJECT7_KEY)));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
@@ -589,7 +611,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
+        hasSubmisisonStates(
+            STATES.get(PROJECT1_KEY),
+            STATES.get(PROJECT2_KEY),
+            STATES.get(PROJECT3_KEY),
+            STATES.get(PROJECT4_KEY),
+            STATES.get(PROJECT5_KEY),
+            STATES.get(PROJECT6_KEY),
+            STATES.get(PROJECT7_KEY)));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -600,7 +629,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, VALID, NOT_VALIDATED));
+        hasSubmisisonStates(
+            STATES.get(PROJECT1_KEY),
+            NOT_VALIDATED,
+            NOT_VALIDATED,
+            NOT_VALIDATED,
+            NOT_VALIDATED,
+            NOT_VALIDATED,
+            NOT_VALIDATED));
   }
 
   private void releaseInitialRelease() {
@@ -676,25 +712,25 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEquals(OK.getStatusCode(), response.getStatus());
 
     status("user", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, STATES.get(PROJECT1_KEY));
 
     status("user", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, STATES.get(PROJECT2_KEY));
 
     status("user", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, STATES.get(PROJECT3_KEY));
 
     status("user", "Checking validated submission 4...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, STATES.get(PROJECT4_KEY));
 
     status("user", "Checking validated submission 5...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, STATES.get(PROJECT5_KEY));
 
     status("user", "Checking validated submission 6...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, STATES.get(PROJECT6_KEY));
 
     status("user", "Checking validated submission 7...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, STATES.get(PROJECT7_KEY));
 
     // TODO: Do the negation of following for the projects the failed primary validation
 

@@ -19,6 +19,9 @@ package org.icgc.dcc.submission.service;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static org.icgc.dcc.core.model.Dictionaries.getMapping;
+import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 
 import java.util.List;
 import java.util.Map;
@@ -29,13 +32,23 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProto.FileType;
-import org.eclipse.jdt.internal.compiler.batch.FileSystem;
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.model.FieldNames;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.InjectionNames;
+import org.icgc.dcc.core.util.Jackson;
+import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.reporter.Reporter;
+import org.icgc.dcc.submission.reporter.ReporterCollector;
+import org.icgc.dcc.submission.reporter.ReporterInput;
 import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectDataTypeReportRepository;
 import org.icgc.dcc.submission.repository.ProjectSequencingStrategyReportRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
+import org.icgc.submission.summary.ProjectDataTypeReport;
+import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
