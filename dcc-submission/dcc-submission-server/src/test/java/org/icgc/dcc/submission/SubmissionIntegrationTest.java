@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -80,6 +82,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -158,15 +161,49 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT7 = _("{name:'Project Seven',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT7_KEY);
 
-  static Map<String, SubmissionState> STATES = new ImmutableMap.Builder<String, SubmissionState>()
-      .put(PROJECT1_KEY, VALID)
-      .put(PROJECT2_KEY, INVALID)
-      .put(PROJECT3_KEY, INVALID)
-      .put(PROJECT4_KEY, INVALID)
-      .put(PROJECT5_KEY, INVALID)
-      .put(PROJECT6_KEY, INVALID)
-      .put(PROJECT7_KEY, INVALID)
-      .build();
+  private final static Map<String, SubmissionState> INITIAL_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, NOT_VALIDATED)
+          .put(PROJECT2_KEY, NOT_VALIDATED)
+          .put(PROJECT3_KEY, NOT_VALIDATED)
+          .put(PROJECT4_KEY, NOT_VALIDATED)
+          .put(PROJECT5_KEY, NOT_VALIDATED)
+          .put(PROJECT6_KEY, NOT_VALIDATED)
+          .put(PROJECT7_KEY, NOT_VALIDATED)
+          .build();
+
+  private final static Map<String, SubmissionState> STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, VALID)
+          .put(PROJECT2_KEY, INVALID)
+          .put(PROJECT3_KEY, INVALID)
+          .put(PROJECT4_KEY, INVALID)
+          .put(PROJECT5_KEY, INVALID)
+          .put(PROJECT6_KEY, INVALID)
+          .put(PROJECT7_KEY, INVALID)
+          .build();
+
+  private final static Map<String, SubmissionState> POST_RELEASE_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, NOT_VALIDATED)
+          .put(PROJECT2_KEY, INVALID)
+          .put(PROJECT3_KEY, INVALID)
+          .put(PROJECT4_KEY, INVALID)
+          .put(PROJECT5_KEY, INVALID)
+          .put(PROJECT6_KEY, INVALID)
+          .put(PROJECT7_KEY, INVALID)
+          .build();
+
+  private final static Map<String, SubmissionState> POST_TERM_ADDITION_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, VALID)
+          .put(PROJECT2_KEY, NOT_VALIDATED)
+          .put(PROJECT3_KEY, NOT_VALIDATED)
+          .put(PROJECT4_KEY, NOT_VALIDATED)
+          .put(PROJECT5_KEY, NOT_VALIDATED)
+          .put(PROJECT6_KEY, NOT_VALIDATED)
+          .put(PROJECT7_KEY, NOT_VALIDATED)
+          .build();
 
   /**
    * Dictionaries.
@@ -347,8 +384,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         INITITAL_RELEASE_NAME,
         FIRST_DICTIONARY_VERSION,
         OPENED,
-        hasSubmisisonStates(
-            NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(getStates(INITIAL_STATES)));
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
@@ -463,14 +499,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(
-            STATES.get(PROJECT1_KEY),
-            STATES.get(PROJECT2_KEY),
-            STATES.get(PROJECT3_KEY),
-            STATES.get(PROJECT4_KEY),
-            STATES.get(PROJECT5_KEY),
-            STATES.get(PROJECT6_KEY),
-            STATES.get(PROJECT7_KEY)));
+        hasSubmisisonStates(getStates(STATES)));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -478,14 +507,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
         hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(
-            NOT_VALIDATED,
-            STATES.get(PROJECT2_KEY),
-            STATES.get(PROJECT3_KEY),
-            STATES.get(PROJECT4_KEY),
-            STATES.get(PROJECT5_KEY),
-            STATES.get(PROJECT6_KEY),
-            STATES.get(PROJECT7_KEY)));
+        hasSubmisisonStates(getStates(POST_RELEASE_STATES)));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
@@ -522,8 +544,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         NEXT_RELEASE_NAME,
         SECOND_DICTIONARY_VERSION,
         OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED,
-            NOT_VALIDATED));
+        hasSubmisisonStates(getStates(INITIAL_STATES)));
   }
 
   private void createInitialRelease() throws Exception {
@@ -611,14 +632,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(
-            STATES.get(PROJECT1_KEY),
-            STATES.get(PROJECT2_KEY),
-            STATES.get(PROJECT3_KEY),
-            STATES.get(PROJECT4_KEY),
-            STATES.get(PROJECT5_KEY),
-            STATES.get(PROJECT6_KEY),
-            STATES.get(PROJECT7_KEY)));
+        hasSubmisisonStates(getStates(STATES)));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -629,14 +643,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(
-            STATES.get(PROJECT1_KEY),
-            NOT_VALIDATED,
-            NOT_VALIDATED,
-            NOT_VALIDATED,
-            NOT_VALIDATED,
-            NOT_VALIDATED,
-            NOT_VALIDATED));
+        hasSubmisisonStates(getStates(POST_TERM_ADDITION_STATES)));
   }
 
   private void releaseInitialRelease() {
@@ -791,6 +798,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private static void status(String phase, String message, Object... args) {
     log.info("[" + phase + "] " + message, args);
+  }
+
+  private SubmissionState[] getStates(@NonNull final Map<String, SubmissionState> states) {
+    checkArgument(!states.isEmpty());
+
+    return toArray(states.values(), SubmissionState.class);
   }
 
 }
