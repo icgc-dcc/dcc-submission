@@ -143,9 +143,9 @@ public class HadoopUtils {
   @SneakyThrows
   public static boolean exists(
       @NonNull final FileSystem fileSystem,
-      @NonNull final Path alternativeFile) {
+      @NonNull final Path path) {
 
-    return fileSystem.exists(alternativeFile);
+    return fileSystem.exists(path);
   }
 
   public static boolean isFile(FileSystem fileSystem, @NonNull String stringPath) {
@@ -199,7 +199,10 @@ public class HadoopUtils {
   public static Path recursivelyDeleteDirectoryIfExists(
       @NonNull final FileSystem fileSystem,
       @NonNull final Path dirPath) {
-    checkArgument(isDirectory(fileSystem, dirPath));
+    checkArgument(
+        !exists(fileSystem, dirPath)
+            || isDirectory(fileSystem, dirPath),
+        dirPath);
 
     // Deleting parent directory if it exists
     if (checkExistence(fileSystem, dirPath)) {
