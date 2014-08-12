@@ -43,6 +43,7 @@ import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -69,6 +70,7 @@ import com.google.common.io.LineReader;
  * <p>
  * TODO: merge {@link FileOperations} here?
  */
+@Slf4j
 public class HadoopUtils {
 
   private static final String MR_PART_FILE_NAME_BASE = "part";
@@ -192,6 +194,23 @@ public class HadoopUtils {
     if (!delete) {
       throw new HdfsException("could not remove " + path);
     }
+  }
+
+  public static Path recursivelyDeleteDirectoryIfExists(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final Path dirPath) {
+    checkArgument(isDirectory(fileSystem, dirPath));
+
+    // Deleting parent directory if it exists
+    if (checkExistence(fileSystem, dirPath)) {
+      log.info("Recursively deleting '{}' (content: {})",
+          dirPath, lsAll(fileSystem, dirPath));
+      rmr(fileSystem, dirPath);
+    } else {
+      log.info("{} did not already exist.", dirPath);
+    }
+
+    return dirPath;
   }
 
   /**
