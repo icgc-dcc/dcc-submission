@@ -172,7 +172,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT7_KEY, NOT_VALIDATED)
           .build();
 
-  private final static Map<String, SubmissionState> STATES =
+  private final static Map<String, SubmissionState> POST_VALIDATION_STATES =
       new ImmutableMap.Builder<String, SubmissionState>()
           .put(PROJECT1_KEY, VALID)
           .put(PROJECT2_KEY, INVALID)
@@ -183,14 +183,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT7_KEY, INVALID)
           .build();
 
-  private final static Map<String, SubmissionState> POST_REVALIDATION_STATES =
+  private final static Map<String, SubmissionState> POST_PARTIAL_REVALIDATION_STATES =
       new ImmutableMap.Builder<String, SubmissionState>()
           .put(PROJECT1_KEY, VALID)
           .put(PROJECT2_KEY, INVALID)
           .put(PROJECT3_KEY, INVALID)
           .put(PROJECT4_KEY, INVALID)
           .put(PROJECT5_KEY, INVALID)
-          .put(PROJECT6_KEY, NOT_VALIDATED)
+          .put(PROJECT6_KEY, NOT_VALIDATED) // This project isn't included in the revalition
           .put(PROJECT7_KEY, INVALID)
           .build();
 
@@ -488,29 +488,29 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     enqueueProjects(PROJECTS_TO_ENQUEUE2, NO_CONTENT);
 
     status("admin", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, POST_REVALIDATION_STATES.get(PROJECT1_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT1_KEY));
 
     status("admin", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, POST_REVALIDATION_STATES.get(PROJECT2_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT2_KEY));
 
     status("admin", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, POST_REVALIDATION_STATES.get(PROJECT3_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT3_KEY));
 
     status("admin", "Checking validated submission 4...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, POST_REVALIDATION_STATES.get(PROJECT4_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT4_KEY));
 
     status("admin", "Checking validated submission 5...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, POST_REVALIDATION_STATES.get(PROJECT5_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT5_KEY));
 
     status("admin", "Checking validated submission 6...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, POST_REVALIDATION_STATES.get(PROJECT6_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT6_KEY));
 
     status("admin", "Checking validated submission 7...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, POST_REVALIDATION_STATES.get(PROJECT7_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT7_KEY));
 
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(getStates(POST_REVALIDATION_STATES)));
+        hasSubmisisonStates(getStates(POST_PARTIAL_REVALIDATION_STATES)));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -643,7 +643,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(getStates(STATES)));
+        hasSubmisisonStates(getStates(POST_VALIDATION_STATES)));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -730,25 +730,25 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEquals(OK.getStatusCode(), response.getStatus());
 
     status("user", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, STATES.get(PROJECT1_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, POST_VALIDATION_STATES.get(PROJECT1_KEY));
 
     status("user", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, STATES.get(PROJECT2_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, POST_VALIDATION_STATES.get(PROJECT2_KEY));
 
     status("user", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, STATES.get(PROJECT3_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, POST_VALIDATION_STATES.get(PROJECT3_KEY));
 
     status("user", "Checking validated submission 4...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, STATES.get(PROJECT4_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, POST_VALIDATION_STATES.get(PROJECT4_KEY));
 
     status("user", "Checking validated submission 5...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, STATES.get(PROJECT5_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, POST_VALIDATION_STATES.get(PROJECT5_KEY));
 
     status("user", "Checking validated submission 6...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, STATES.get(PROJECT6_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, POST_VALIDATION_STATES.get(PROJECT6_KEY));
 
     status("user", "Checking validated submission 7...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, STATES.get(PROJECT7_KEY));
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, POST_VALIDATION_STATES.get(PROJECT7_KEY));
 
     // TODO: Do the negation of following for the projects the failed primary validation
 
