@@ -361,6 +361,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       adminTweaksCodeListAndTerms();
       adminRevalidates();
       adminPerformsRelease();
+
       adminUpdatesDictionary();
       adminUpdatesRelease();
       dumpTestDictionary();
