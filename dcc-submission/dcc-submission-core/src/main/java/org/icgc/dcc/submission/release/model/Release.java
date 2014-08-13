@@ -43,6 +43,7 @@ import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.util.NameValidator;
+import org.icgc.dcc.submission.release.ReleaseException;
 import org.mongodb.morphia.annotations.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -210,21 +211,23 @@ public class Release extends BaseEntity implements HasName {
     return projectKeys.build();
   }
 
+  public void enqueue(@NonNull List<QueuedProject> queuedProjects) {
+    for (val queuedProject : queuedProjects) {
+      enqueue(queuedProject);
+    }
+  }
+
   public void enqueue(@NonNull QueuedProject queuedProject) {
     // Not sure why there is a test / expectation for this, but here it is:
     if (queuedProject.getKey() == null || queuedProject.getKey().isEmpty()) {
       return;
     }
 
-    if (!queue.contains(queuedProject)) {
-      queue.add(queuedProject);
+    if (queue.contains(queuedProject)) {
+      throw new ReleaseException("Project '%s' already exists in queue: '%s'", queuedProject, queue);
     }
-  }
 
-  public void enqueue(@NonNull List<QueuedProject> queuedProjects) {
-    for (val queuedProject : queuedProjects) {
-      enqueue(queuedProject);
-    }
+    queue.add(queuedProject);
   }
 
   public void removeFromQueue(@NonNull final Iterable<String> projectKeys) {
