@@ -29,7 +29,8 @@ public enum Component implements Identifiable {
   CONCATENATOR,
   NORMALIZER,
   ANNOTATOR,
-  LOADER;
+  LOADER,
+  INDEXER;
 
   @Override
   public String getId() {
