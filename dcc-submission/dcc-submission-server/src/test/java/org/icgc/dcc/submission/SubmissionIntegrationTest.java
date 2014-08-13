@@ -774,14 +774,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       assertEquals(OK.getStatusCode(), response.getStatus());
     } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
-    try {
-      assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
-    } catch (Throwable t) {
-      val report = $(get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project + "/report"));
-
-      log.info("Project '{}' has report '{}'", project, report);
-      throw t;
-    }
+    assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
   }
 
   @SuppressWarnings("unused")
