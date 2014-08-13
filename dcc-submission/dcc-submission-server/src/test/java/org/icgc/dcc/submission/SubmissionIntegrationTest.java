@@ -759,6 +759,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + FILE_NAME_SEPARATOR + "errors.json");
   }
 
+  @SneakyThrows
   private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState) {
     DetailedSubmission detailedSubmission;
     do {
@@ -772,7 +773,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       assertEquals(OK.getStatusCode(), response.getStatus());
     } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
-    assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
+    try {
+      assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
+    } catch (Throwable t) {
+      val report = $(get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project + "/report"));
+
+      log.info("Project '{}' has report '{}'", project, report);
+      throw t;
+    }
   }
 
   @SuppressWarnings("unused")
