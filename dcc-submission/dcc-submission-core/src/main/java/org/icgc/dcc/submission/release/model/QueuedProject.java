@@ -33,8 +33,10 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.core.model.Identifiable;
 import org.mongodb.morphia.annotations.Embedded;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 
 @Embedded
@@ -44,7 +46,7 @@ import com.google.common.collect.ImmutableList;
 @ToString
 @AllArgsConstructor
 // TODO: rename as Queued is misleading (also applies to Validating)
-public class QueuedProject {
+public class QueuedProject implements Identifiable {
 
   @NotBlank
   private String key;
@@ -52,6 +54,12 @@ public class QueuedProject {
   private List<String> emails;
   @NotNull
   private List<String> dataTypes;
+
+  @JsonIgnore
+  @Override
+  public String getId() {
+    return key;
+  }
 
   public QueuedProject() {
     this(null, Collections.<String> emptyList(), Collections.<String> emptyList());
