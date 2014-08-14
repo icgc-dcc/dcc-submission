@@ -62,7 +62,7 @@ public final class Tests {
   public static final String PROJECTS_JSON_FILE_NAME = EXTENSION.join("projects", JSON);
 
   public static String getTestJobId(@NonNull final Component component) {
-    return JOB_ID_JOINER.join(component.getId(), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
+    return JOB_ID_JOINER.join(getTestReleasePrefix(component), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
   }
 
   public static String getTestReleasePrefix(@NonNull final Component component) {
