@@ -15,54 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.test;
+package org.icgc.dcc.core;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.util.EtlConventions.JOB_ID_JOINER;
-import static org.icgc.dcc.core.util.Joiners.DASH;
-import static org.icgc.dcc.core.util.Joiners.PATH;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+enum EtlInputGeneration {
+  WRITTING, REWRITTING, GENERATING, NA;
 
-import org.icgc.dcc.core.Component;
-
-/**
- * Utility methods and constants for tests.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class Tests {
-
-  public static final String RELEASE = "release";
-
-  private static final String FIXTURES = "fixtures";
-
-  public static final String INPUT_DIR_NAME = "input";
-  public static final String OUTPUT_DIR_NAME = "output";
-  public static final String REFERENCE_DIR_NAME = "references";
-
-  public static final String FS_DIR_NAME = "fs";
-  public static final String MONGO_DIR_NAME = "mongo";
-
-  public static final String OS_TMP_DIR = "/tmp";
-  public static final String MAVEN_TEST_RESOURCES_DIR = "src/test/resources";
-  public static final String TEST_FIXTURES_DIR = PATH.join(MAVEN_TEST_RESOURCES_DIR, FIXTURES);
-
-  public static final int TEST_PATCH_NUMBER = 0;
-  public static final int TEST_RUN_NUMBER = 0;
-
-  public static final String PROJECT1 = "project1";
-  public static final String PROJECT2 = "project2";
-
-  public static String getTestJobId(@NonNull final Component component) {
-    return JOB_ID_JOINER.join(component.getId(), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
-  }
-
-  public static String getTestReleaseName(@NonNull final Component component) {
-    return DASH.join(component.getId(), RELEASE);
-  }
-
-  public static String getTestWorkingDir(@NonNull final Component component) {
-    return PATH.join(OS_TMP_DIR, component);
+  public boolean isGenerating() {
+    return this != NA;
   }
 
 }
