@@ -29,7 +29,8 @@ import static org.icgc.dcc.test.Tests.MAVEN_TEST_RESOURCES_DIR;
 import static org.icgc.dcc.test.Tests.PROJECT1;
 import static org.icgc.dcc.test.Tests.PROJECT2;
 import static org.icgc.dcc.test.Tests.PROJECTS_JSON_FILE_NAME;
-import static org.icgc.dcc.test.Tests.getTestReleaseName;
+import static org.icgc.dcc.test.Tests.TEST_PATCH_NUMBER;
+import static org.icgc.dcc.test.Tests.getTestReleasePrefix;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +51,7 @@ import com.google.common.collect.ImmutableSet;
 public class ReporterTest {
 
   private static final Component TESTED_COMPONENT = REPORTER;
-  private static final String TEST_RELEASE_NAME = getTestReleaseName(TESTED_COMPONENT);
+  private static final String TEST_RELEASE_NAME = getTestReleasePrefix(TESTED_COMPONENT) + TEST_PATCH_NUMBER;
   private static final String DEFAULT_PARENT_TEST_DIR = PATH.join(MAVEN_TEST_RESOURCES_DIR, DATA_DIR_NAME);
   private static final String TEST_CONF_DIR = PATH.join(MAVEN_TEST_RESOURCES_DIR, CONF_DIR_NAME);
 

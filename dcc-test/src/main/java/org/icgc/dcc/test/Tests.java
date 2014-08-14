@@ -34,6 +34,7 @@ import org.icgc.dcc.core.Component;
 @NoArgsConstructor(access = PRIVATE)
 public final class Tests {
 
+  public static final String TEST = "test";
   public static final String RELEASE = "release";
 
   private static final String FIXTURES = "fixtures";
@@ -51,6 +52,7 @@ public final class Tests {
   public static final String MAVEN_TEST_RESOURCES_DIR = "src/test/resources";
   public static final String TEST_FIXTURES_DIR = PATH.join(MAVEN_TEST_RESOURCES_DIR, FIXTURES);
 
+  public static final int TEST_RELEASE_NUMBER = 17;
   public static final int TEST_PATCH_NUMBER = 0;
   public static final int TEST_RUN_NUMBER = 0;
 
@@ -63,8 +65,8 @@ public final class Tests {
     return JOB_ID_JOINER.join(component.getId(), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
   }
 
-  public static String getTestReleaseName(@NonNull final Component component) {
-    return DASH.join(component.getId(), RELEASE);
+  public static String getTestReleasePrefix(@NonNull final Component component) {
+    return DASH.join(component.getId(), TEST, RELEASE);
   }
 
   public static String getTestWorkingDir(@NonNull final Component component) {
