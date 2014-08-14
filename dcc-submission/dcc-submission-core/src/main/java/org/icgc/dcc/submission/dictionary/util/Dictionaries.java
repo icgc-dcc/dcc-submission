@@ -21,9 +21,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.DccResources.getDictionaryDccResource;
 import static org.icgc.dcc.core.util.Jackson.DEFAULT;
 import static org.icgc.dcc.core.util.Jackson.from;
-import static org.icgc.dcc.submission.core.util.DccResources.getDccResource;
 
 import java.io.File;
 import java.net.URL;
@@ -35,6 +35,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.DccResources;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.core.util.resolver.RestfulCodeListsResolver;
@@ -65,12 +66,12 @@ public class Dictionaries {
 
   @SneakyThrows
   public static Dictionary readDccResourcesDictionary() {
-    return readDictionary(getDccResource("Dictionary.json"));
+    return readDictionary(getDictionaryDccResource());
   }
 
   @SneakyThrows
   public static List<CodeList> readDccResourcesCodeLists() {
-    return readCodeList(getDccResource("CodeList.json"));
+    return readCodeList(DccResources.getCodeListsDccResource());
   }
 
   @SneakyThrows

@@ -15,20 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.core;
 
 import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Extensions.JSON;
+import static org.icgc.dcc.core.util.Joiners.EXTENSION;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 
 import java.net.URL;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class DccResources {
 
-  public static URL getDccResource(String resourceName) {
-    return getResource("org/icgc/dcc/resources/" + resourceName);
+  private static final String DCC_RESOURCES_DIR = "org/icgc/dcc/resources";
+
+  private static final String DICTIONARY_JSON_FILE_NAME = EXTENSION.join("Dictionary", JSON);
+  private static final String CODELISTS_JSON_FILE_NAME = EXTENSION.join("CodeList", JSON);
+
+  public static URL getDictionaryDccResource() {
+    return getResourceUrl(DICTIONARY_JSON_FILE_NAME);
+  }
+
+  public static URL getCodeListsDccResource() {
+    return getResourceUrl(CODELISTS_JSON_FILE_NAME);
+  }
+
+  private static URL getResourceUrl(@NonNull final String fileName) {
+    return getResource(getResourcePath(fileName));
+  }
+
+  private static String getResourcePath(@NonNull final String fileName) {
+    return PATH.join(DCC_RESOURCES_DIR, fileName);
   }
 
 }

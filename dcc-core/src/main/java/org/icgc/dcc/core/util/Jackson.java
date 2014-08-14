@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.core.util;
 
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Joiners.INDENT;
 import static org.icgc.dcc.core.util.Splitters.NEWLINE;
@@ -37,6 +38,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Common object mappers.
@@ -61,18 +64,17 @@ public final class Jackson {
     return PRETTY_WRITTER.writeValueAsString(object);
   }
 
-  public static JsonNode getRootObject(@NonNull final String path) {
-    return getRootObject(new File(path));
+  public static ObjectNode getRootObject(@NonNull final String path) {
+    return getRootObject(URLs.getUrl(path));
   }
 
   @SneakyThrows
-  public static JsonNode getRootObject(@NonNull final File file) {
-    return DEFAULT.readTree(file);
+  public static ObjectNode getRootObject(@NonNull final File file) {
+    return getRootObject(URLs.getUrl(file));
   }
 
-  @SneakyThrows
-  public static JsonNode getRootObject(@NonNull final URL url) {
-    return DEFAULT.readTree(url);
+  public static ObjectNode getRootObject(@NonNull final URL url) {
+    return asObjectNode(getJsonNode(url));
   }
 
   public static ArrayNode getRootArray(@NonNull final String path) {
@@ -115,7 +117,26 @@ public final class Jackson {
   }
 
   @SneakyThrows
-  private static JsonNode toJsonNode(String jsonString) {
+  private static JsonNode getJsonNode(final URL url) {
+    return DEFAULT.readTree(url);
+  }
+
+  public static ObjectNode asObjectNode(@NonNull final JsonNode node) {
+    checkState(node.isObject(),
+        "Expecting a node of type '%s', instead go: '%s'",
+        JsonNodeType.OBJECT, node.getNodeType());
+    return (ObjectNode) node;
+  }
+
+  public static ArrayNode asArrayNode(@NonNull final JsonNode node) {
+    checkState(node.isArray(),
+        "Expecting a node of type '%s', instead go: '%s'",
+        JsonNodeType.ARRAY, node.getNodeType());
+    return (ArrayNode) node;
+  }
+
+  @SneakyThrows
+  private static JsonNode toJsonNode(@NonNull final String jsonString) {
     return DEFAULT.readTree(jsonString);
   }
 

@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.reporter;
 
 import static org.icgc.dcc.core.Component.REPORTER;
+import static org.icgc.dcc.core.DccResources.getCodeListsDccResource;
+import static org.icgc.dcc.core.DccResources.getDictionaryDccResource;
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
@@ -27,8 +29,6 @@ import static org.icgc.dcc.test.Tests.MAVEN_TEST_RESOURCES_DIR;
 import static org.icgc.dcc.test.Tests.PROJECT1;
 import static org.icgc.dcc.test.Tests.PROJECT2;
 import static org.icgc.dcc.test.Tests.PROJECTS_JSON_FILE_NAME;
-import static org.icgc.dcc.test.Tests.getCodeListsDccResource;
-import static org.icgc.dcc.test.Tests.getDictionaryDccResource;
 import static org.icgc.dcc.test.Tests.getTestReleaseName;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;

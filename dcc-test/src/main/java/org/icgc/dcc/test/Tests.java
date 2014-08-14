@@ -17,16 +17,12 @@
  */
 package org.icgc.dcc.test;
 
-import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.EtlConventions.JOB_ID_JOINER;
 import static org.icgc.dcc.core.util.Extensions.JSON;
 import static org.icgc.dcc.core.util.Joiners.DASH;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
-
-import java.net.URL;
-
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -61,19 +57,7 @@ public final class Tests {
   public static final String PROJECT1 = "project1";
   public static final String PROJECT2 = "project2";
 
-  private static final String DCC_RESOURCES_DIR = "org/icgc/dcc/resources";
-  private static final String DICTIONARY_JSON_FILE_NAME = EXTENSION.join("Dictionary", JSON);
-  private static final String CODELISTS_JSON_FILE_NAME = EXTENSION.join("CodeList", JSON);
-
   public static final String PROJECTS_JSON_FILE_NAME = EXTENSION.join("projects", JSON);
-
-  public static URL getDictionaryDccResource() {
-    return getResourceUrl(DICTIONARY_JSON_FILE_NAME);
-  }
-
-  public static URL getCodeListsDccResource() {
-    return getResourceUrl(CODELISTS_JSON_FILE_NAME);
-  }
 
   public static String getTestJobId(@NonNull final Component component) {
     return JOB_ID_JOINER.join(component.getId(), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
@@ -85,14 +69,6 @@ public final class Tests {
 
   public static String getTestWorkingDir(@NonNull final Component component) {
     return PATH.join(OS_TMP_DIR, component);
-  }
-
-  private static URL getResourceUrl(@NonNull final String fileName) {
-    return getResource(getResourcePath(fileName));
-  }
-
-  private static String getResourcePath(@NonNull final String fileName) {
-    return PATH.join(DCC_RESOURCES_DIR, fileName);
   }
 
 }
