@@ -15,37 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core;
+package org.icgc.dcc.test;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
-
-import org.icgc.dcc.core.model.Identifiable;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 /**
- * Represents components in our system.
+ * Utility methods and constants for tests.
  */
-public enum Component implements Identifiable {
+@NoArgsConstructor(access = PRIVATE)
+public final class Tests {
 
-  CONCATENATOR,
-  NORMALIZER,
-  ANNOTATOR,
-  LOADER,
-  INDEXER;
+  public static final String INPUT_DIR_NAME = "input";
+  public static final String OUTPUT_DIR_NAME = "output";
+  public static final String REFERENCE_DIR_NAME = "references";
 
-  @Override
-  public String getId() {
-    return name().toLowerCase();
-  }
-
-  public String getDirName() {
-    return getId();
-  }
-
-  public String getProjectDir(String dataParentDir, String projectKey) {
-    return PATH.join(
-        dataParentDir,
-        getDirName(),
-        projectKey);
-  }
+  public static final String FS_DIR_NAME = "fs";
+  public static final String MONGO_DIR_NAME = "mongo";
 
 }
