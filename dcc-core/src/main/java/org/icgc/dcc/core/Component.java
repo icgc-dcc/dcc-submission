@@ -63,6 +63,7 @@ public enum Component implements Identifiable {
   /**
    * TODO: keep?
    */
+  REPORTER(NA),
   ETL(NA);
 
   /**

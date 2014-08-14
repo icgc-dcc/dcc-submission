@@ -17,8 +17,19 @@
  */
 package org.icgc.dcc.submission.reporter;
 
+import static org.icgc.dcc.core.Component.REPORTER;
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
+import static org.icgc.dcc.test.Tests.CONF_DIR_NAME;
+import static org.icgc.dcc.test.Tests.DATA_DIR_NAME;
+import static org.icgc.dcc.test.Tests.MAVEN_TEST_RESOURCES_DIR;
+import static org.icgc.dcc.test.Tests.PROJECT1;
+import static org.icgc.dcc.test.Tests.PROJECT2;
+import static org.icgc.dcc.test.Tests.CODELISTS_JSON_FILE_NAME;
+import static org.icgc.dcc.test.Tests.DICTIONARY_JSON_FILE_NAME;
+import static org.icgc.dcc.test.Tests.getTestReleaseName;
+import static org.icgc.dcc.test.Tests.PROJECTS_JSON_FILE_NAME;
 
 import java.util.Set;
 
@@ -26,10 +37,9 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.icgc.dcc.core.Component;
 import org.icgc.dcc.core.util.Protocol;
 import org.icgc.dcc.core.util.Separators;
-import org.icgc.dcc.submission.reporter.Reporter;
-import org.icgc.dcc.submission.reporter.ReporterCollector;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
@@ -42,20 +52,22 @@ import com.google.common.collect.ImmutableSet;
 @Slf4j
 public class ReporterTest {
 
-  private static final String TEST_RELEASE_NAME = "reporter-release-name";
-  private static final String DEFAULT_PARENT_TEST_DIR = "src/test/resources/data";
-  private static final String TEST_CONF_DIR = "src/test/resources/conf";
+  private static final Component TESTED_COMPONENT = REPORTER;
+  private static final String TEST_RELEASE_NAME = getTestReleaseName(TESTED_COMPONENT);
+  private static final String DEFAULT_PARENT_TEST_DIR = PATH.join(MAVEN_TEST_RESOURCES_DIR, DATA_DIR_NAME);
+  private static final String TEST_CONF_DIR = PATH.join(MAVEN_TEST_RESOURCES_DIR, CONF_DIR_NAME);
 
   @Test
   public void test_reporter() {
-    val projectKeys = ImmutableSet.of("p1", "p2");
+    val projectKeys = ImmutableSet.of(PROJECT1, PROJECT2);
+
     val outputDirPath = Reporter.report(
         TEST_RELEASE_NAME,
         Optional.<Set<String>> of(projectKeys),
         DEFAULT_PARENT_TEST_DIR,
-        TEST_CONF_DIR + "/projects.json",
-        TEST_CONF_DIR + "/Dictionary.json",
-        TEST_CONF_DIR + "/CodeList.json",
+        PATH.join(TEST_CONF_DIR, PROJECTS_JSON_FILE_NAME),
+        PATH.join(TEST_CONF_DIR, DICTIONARY_JSON_FILE_NAME),
+        PATH.join(TEST_CONF_DIR, CODELISTS_JSON_FILE_NAME),
         ImmutableMap.<String, String> of(
             CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY,
             Protocol.FILE.getId() + Separators.PATH));
