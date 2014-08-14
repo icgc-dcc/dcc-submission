@@ -305,6 +305,7 @@ public final class FieldNames {
    */
   public static final String RELEASE_ID = "_release_id";
   public static final String RELEASE_NAME = "name";
+  public static final String RELEASE_NUMBER = "number";
   public static final String RELEASE_DATE = "date";
   public static final String RELEASE_PROJECT_COUNT = "project_count";
   public static final String RELEASE_PRIMARY_SITE_COUNT = "primary_site_count";
