@@ -19,8 +19,10 @@ package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import lombok.NoArgsConstructor;
@@ -46,6 +48,30 @@ public class Optionals {
 
   public static final Optional<FileType> ABSENT_FILE_TYPE = Optional.absent();
   public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
+
+  public static <K, V> Optional<Map<K, V>> of(@NonNull final Map<K, V> map) {
+    return Optional.of(map);
+  }
+
+  public static <K, V> Optional<Entry<K, V>> of(@NonNull final Entry<K, V> entry) {
+    return Optional.of(entry);
+  }
+
+  public static <T> Optional<Collection<T>> of(@NonNull final Collection<T> collection) {
+    return Optional.of(collection);
+  }
+
+  public static <T> Optional<Iterable<T>> of(@NonNull final Iterable<T> iterable) {
+    return Optional.of(iterable);
+  }
+
+  public static <T> Optional<List<T>> of(@NonNull final List<T> list) {
+    return Optional.of(list);
+  }
+
+  public static <T> Optional<Set<T>> of(@NonNull final Set<T> set) {
+    return Optional.of(set);
+  }
 
   public final static <T> T defaultValue(
       @NonNull final Optional<T> optional,

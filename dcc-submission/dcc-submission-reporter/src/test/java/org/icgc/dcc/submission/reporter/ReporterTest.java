@@ -26,23 +26,20 @@ import static org.icgc.dcc.test.Tests.DATA_DIR_NAME;
 import static org.icgc.dcc.test.Tests.MAVEN_TEST_RESOURCES_DIR;
 import static org.icgc.dcc.test.Tests.PROJECT1;
 import static org.icgc.dcc.test.Tests.PROJECT2;
-import static org.icgc.dcc.test.Tests.CODELISTS_JSON_FILE_NAME;
-import static org.icgc.dcc.test.Tests.DICTIONARY_JSON_FILE_NAME;
-import static org.icgc.dcc.test.Tests.getTestReleaseName;
 import static org.icgc.dcc.test.Tests.PROJECTS_JSON_FILE_NAME;
-
-import java.util.Set;
-
+import static org.icgc.dcc.test.Tests.getCodeListsDccResource;
+import static org.icgc.dcc.test.Tests.getDictionaryDccResource;
+import static org.icgc.dcc.test.Tests.getTestReleaseName;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.icgc.dcc.core.Component;
+import org.icgc.dcc.core.util.Optionals;
 import org.icgc.dcc.core.util.Protocol;
 import org.icgc.dcc.core.util.Separators;
 import org.junit.Test;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -63,12 +60,12 @@ public class ReporterTest {
 
     val outputDirPath = Reporter.report(
         TEST_RELEASE_NAME,
-        Optional.<Set<String>> of(projectKeys),
+        Optionals.of(projectKeys),
         DEFAULT_PARENT_TEST_DIR,
         PATH.join(TEST_CONF_DIR, PROJECTS_JSON_FILE_NAME),
-        PATH.join(TEST_CONF_DIR, DICTIONARY_JSON_FILE_NAME),
-        PATH.join(TEST_CONF_DIR, CODELISTS_JSON_FILE_NAME),
-        ImmutableMap.<String, String> of(
+        getDictionaryDccResource(),
+        getCodeListsDccResource(),
+        ImmutableMap.of(
             CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY,
             Protocol.FILE.getId() + Separators.PATH));
 

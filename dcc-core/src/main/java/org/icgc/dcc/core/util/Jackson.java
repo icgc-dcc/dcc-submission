@@ -22,14 +22,19 @@ import static org.icgc.dcc.core.util.Joiners.INDENT;
 import static org.icgc.dcc.core.util.Splitters.NEWLINE;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.val;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
@@ -42,6 +47,11 @@ public final class Jackson {
   public static final ObjectMapper DEFAULT = new ObjectMapper();
   public static final ObjectWriter PRETTY_WRITTER = DEFAULT.writerWithDefaultPrettyPrinter();
 
+  /**
+   * Do not expose outside of this class, see {@link #getRootArray(URL)}.
+   */
+  private static final ObjectReader JSON_NODE_READER = DEFAULT.reader(JsonNode.class);
+
   public static String formatPrettyJson(String jsonString) {
     return formatPrettyJson(toJsonNode(jsonString));
   }
@@ -51,13 +61,35 @@ public final class Jackson {
     return PRETTY_WRITTER.writeValueAsString(object);
   }
 
-  public static JsonNode getJsonRoot(String path) {
-    return getJsonRoot(new File(path));
+  public static JsonNode getRootObject(@NonNull final String path) {
+    return getRootObject(new File(path));
   }
 
   @SneakyThrows
-  public static JsonNode getJsonRoot(File file) {
+  public static JsonNode getRootObject(@NonNull final File file) {
     return DEFAULT.readTree(file);
+  }
+
+  @SneakyThrows
+  public static JsonNode getRootObject(@NonNull final URL url) {
+    return DEFAULT.readTree(url);
+  }
+
+  public static ArrayNode getRootArray(@NonNull final String path) {
+    return getRootArray(new File(path));
+  }
+
+  public static ArrayNode getRootArray(@NonNull final File file) {
+    return getRootArray(URLs.getUrl(file.toURI()));
+  }
+
+  /**
+   * Jackson doesn't seem to provide a "ArrayMapper" nor an "ObjectMapper#readValues" method, so we use this workaround
+   * instead.
+   */
+  public static ArrayNode getRootArray(@NonNull final URL url) {
+    return getArrayNode(readValues(
+        JSON_NODE_READER, url));
   }
 
   public static <T> JsonNode to(T t) {
@@ -85,6 +117,22 @@ public final class Jackson {
   @SneakyThrows
   private static JsonNode toJsonNode(String jsonString) {
     return DEFAULT.readTree(jsonString);
+  }
+
+  private static ArrayNode getArrayNode(@NonNull final MappingIterator<JsonNode> it) {
+    val array = DEFAULT.createArrayNode();
+    while (it.hasNext()) {
+      array.add(it.next());
+    }
+
+    return array;
+  }
+
+  @SneakyThrows
+  private static MappingIterator<JsonNode> readValues(
+      @NonNull final ObjectReader reader,
+      @NonNull final URL url) {
+    return reader.readValues(url);
   }
 
 }

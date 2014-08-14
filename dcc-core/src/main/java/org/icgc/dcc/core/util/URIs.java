@@ -23,15 +23,17 @@ import static com.google.common.collect.Iterables.toArray;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
 /**
- * Util methods for {@link URI}s.
+ * Utility methods and constants for {@link URI}s.
  * <p>
  * TODO: change to decorator? + write test class
  */
@@ -48,31 +50,31 @@ public final class URIs {
   private static final String DEFAULT_SCHEME = DEFAULT_PROTOCOL + SCHEME_SEPARATOR;
 
   @SneakyThrows
-  public static URI getURI(String value) {
+  public static URI getURI(@NonNull final String value) {
     return new URI(value.contains(SCHEME_SEPARATOR) ?
         value :
         DEFAULT_SCHEME + value);
   }
 
   // TODO: change to optional
-  public static String getHost(URI uri) {
+  public static String getHost(@NonNull final URI uri) {
     return firstNonNull(uri.getHost(), MISSING_INFO);
   }
 
-  public static String getPort(URI uri) {
+  public static String getPort(@NonNull final URI uri) {
     val port = uri.getPort();
     return String.valueOf(port == MISSING_PORT ? MISSING_INFO : port);
   }
 
-  public static String getUsername(URI uri) {
+  public static String getUsername(@NonNull final URI uri) {
     return getCredentials(uri.getUserInfo()).getKey();
   }
 
-  public static String getPassword(URI uri) {
+  public static String getPassword(@NonNull final URI uri) {
     return getCredentials(uri.getUserInfo()).getValue();
   }
 
-  private static Entry<String, String> getCredentials(String userInfo) {
+  private static Entry<String, String> getCredentials(@NonNull final String userInfo) {
     val credentials = toArray(
         Splitters.CREDENTIALS.split(
             firstNonNull(userInfo, MISSING_CREDENTIALS)),
@@ -82,6 +84,11 @@ public final class URIs {
     return new SimpleEntry<String, String>(
         credentials[USERNAME_OFFSET],
         credentials[PASSWORD_OFFSET]);
+  }
+
+  @SneakyThrows
+  public static URI fromUrl(@NonNull final URL url) {
+    return url.toURI();
   }
 
 }
