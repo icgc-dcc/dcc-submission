@@ -361,6 +361,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       adminTweaksCodeListAndTerms();
       adminRevalidates();
       adminPerformsRelease();
+
       adminUpdatesDictionary();
       adminUpdatesRelease();
       dumpTestDictionary();
@@ -759,6 +760,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + FILE_NAME_SEPARATOR + "errors.json");
   }
 
+  @SneakyThrows
   private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) {
     DetailedSubmission detailedSubmission;
     do {
