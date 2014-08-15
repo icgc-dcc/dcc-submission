@@ -80,7 +80,9 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
   private static final List<String> OPEN_ACCESS_PATHS = ImmutableList.of(
       "/nextRelease/dictionary",
       "/codeLists",
-      "/dictionaries"
+      "/dictionaries",
+      "/executiveReports/projectDataType",
+      "/executiveReports/projectSequencingStrategy"
       );
 
   /**

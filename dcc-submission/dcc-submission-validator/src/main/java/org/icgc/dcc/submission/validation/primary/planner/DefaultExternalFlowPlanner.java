@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.ExternalPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Key;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
@@ -78,7 +78,7 @@ class DefaultExternalFlowPlanner extends BaseFileFlowPlanner implements External
   }
 
   @Override
-  protected FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy) {
+  protected FlowDef onConnect(FlowDef flowDef, SubmissionPlatformStrategy strategy) {
     checkState(false, "Should not be used");
     for (Key key : trimmedHeads.keySet()) {
       flowDef.addSource(key.getName(), strategy.getTrimmedTap(key));

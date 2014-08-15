@@ -25,10 +25,9 @@ import java.net.URL;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.core.util.Supplier3;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 
@@ -37,14 +36,14 @@ public interface Resolver {
   /**
    * Abstraction that resolves the content of the most current dictionary.
    */
-  public interface DictionaryResolver extends Supplier3<ObjectNode, Optional<String>> {}
+  public interface DictionaryResolver extends Supplier<ObjectNode>, Function<Optional<String>, ObjectNode> {}
 
   /**
    * Abstraction that resolves the content of the code lists.
    */
   public interface CodeListsResolver extends Supplier<ArrayNode> {}
 
-  interface SubmissionSystemResolber extends Resolver {
+  interface SubmissionSystemResolver extends Resolver {
 
     String DEFAULT_SCHEME = "http://";
     String DEFAULT_HOST = "***REMOVED***";
@@ -53,7 +52,7 @@ public interface Resolver {
 
     String getSubmissionSystemUrl(Optional<String> qualifier);
 
-    interface SubmissionSystemDictionaryResolver extends DictionaryResolver, SubmissionSystemResolber {
+    interface SubmissionSystemDictionaryResolver extends DictionaryResolver, SubmissionSystemResolver {
 
       String PATH_SPECIFIC = PATH_BASE + "/dictionaries";
       String PATH_CURRENT = PATH_BASE + "/nextRelease/dictionary";
@@ -61,7 +60,7 @@ public interface Resolver {
 
     }
 
-    interface SubmissionSystemCodeListsResolver extends CodeListsResolver, SubmissionSystemResolber {
+    interface SubmissionSystemCodeListsResolver extends CodeListsResolver, SubmissionSystemResolver {
 
       String PATH = PATH_BASE + "/codeLists";
       String DEFAULT_CODELISTS_URL = DEFAULT_SCHEME + DEFAULT_HOST + ":" + DEFAULT_PORT + PATH;

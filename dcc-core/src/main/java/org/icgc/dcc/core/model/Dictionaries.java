@@ -36,7 +36,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
 
-import org.icgc.dcc.core.model.Dictionaries.MappingModel.SchemaMapping.FieldMapping;
+import org.icgc.dcc.core.model.Dictionaries.CodeListModel.SchemaMapping.FieldMapping;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.SerializableMaps;
 
@@ -299,7 +299,7 @@ public class Dictionaries {
    * for the field or not.
    */
   @Value
-  public static class MappingModel implements Serializable {
+  public static class CodeListModel implements Serializable {
 
     Map<FileType, SchemaMapping> fileTypeToSchemaMapping = newTreeMap();
 
@@ -328,11 +328,11 @@ public class Dictionaries {
     /**
      * TODO: needs cleanup
      */
-    public static MappingModel getInstance(
+    public static CodeListModel getInstance(
         @NonNull final JsonNode dictionaryRoot,
         @NonNull final JsonNode codeListsRoot) {
 
-      MappingModel mappingModel = new MappingModel();
+      CodeListModel mappingModel = new CodeListModel();
 
       for (val fileType : getFileTypes(dictionaryRoot)) {
 

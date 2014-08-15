@@ -21,12 +21,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
-import org.junit.After;
+import lombok.val;
+
+import org.icgc.dcc.submission.release.ReleaseException;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -54,20 +52,6 @@ public class ReleaseTest {
   private final Release release = new Release();
 
   private static final String EMAIL = "a@a.com";
-
-  /**
-   * @throws java.lang.Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  /**
-   * @throws java.lang.Exception
-   */
-  @After
-  public void tearDown() throws Exception {
-  }
 
   @Test
   public void test_addSubmission() {
@@ -111,6 +95,28 @@ public class ReleaseTest {
     release.enqueue(queuedProjects);
     assertEquals(2, release.getQueuedProjectKeys().size());
     assertEquals("pkey1", release.getQueuedProjectKeys().get(0));
+  }
+
+  @Test(expected = ReleaseException.class)
+  public void test_enqueue_duplicates() {
+    assertEquals(0, release.getQueuedProjectKeys().size());
+    val queuedProjects = Lists.<QueuedProject> newArrayList();
+
+    val queuedProject = new QueuedProject("pkey1", Lists.newArrayList(EMAIL));
+    queuedProjects.add(queuedProject);
+    queuedProjects.add(queuedProject);
+    release.enqueue(queuedProjects);
+  }
+
+  @Test(expected = ReleaseException.class)
+  public void test_enqueue_repeated() {
+    assertEquals(0, release.getQueuedProjectKeys().size());
+    val queuedProjects = Lists.<QueuedProject> newArrayList();
+
+    val queuedProject = new QueuedProject("pkey1", Lists.newArrayList(EMAIL));
+    queuedProjects.add(queuedProject);
+    release.enqueue(queuedProjects);
+    release.enqueue(queuedProjects);
   }
 
   @Test

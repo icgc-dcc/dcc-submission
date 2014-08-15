@@ -35,7 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.hadoop.parser.TsvPartFileProcessor;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 /**
  * "Pseudo" normalizer, simply adds a PK to {@link FeatureType#SGV_TYPE} files.
@@ -49,7 +49,7 @@ public class PseudoNormalizer {
 
   public static void process(
       @NonNull final FileSystem fileSystem,
-      @NonNull final PlatformStrategy platformStrategy,
+      @NonNull final SubmissionPlatformStrategy platformStrategy,
       @NonNull final String outputFilePath) {
 
     new PseudoNormalizer(
@@ -95,11 +95,11 @@ public class PseudoNormalizer {
     return new PrintWriter(fileSystem.create(outputFile));
   }
 
-  private static Path getInputFilePath(final PlatformStrategy platformStrategy) {
-    return platformStrategy.getFilePath(SGV_P_TYPE.getHarmonizedOutputFileName());
+  private static Path getInputFilePath(@NonNull final SubmissionPlatformStrategy platformStrategy) {
+    return platformStrategy.getFile(SGV_P_TYPE.getHarmonizedOutputFileName());
   }
 
-  private static Path getOutputFilePath(final String outputFilePath) {
+  private static Path getOutputFilePath(@NonNull final String outputFilePath) {
     return new Path(outputFilePath);
   }
 

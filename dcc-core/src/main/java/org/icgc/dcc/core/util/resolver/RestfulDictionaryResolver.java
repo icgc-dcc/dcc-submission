@@ -24,7 +24,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolber.SubmissionSystemDictionaryResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolver.SubmissionSystemDictionaryResolver;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
@@ -37,11 +37,11 @@ public class RestfulDictionaryResolver implements SubmissionSystemDictionaryReso
 
   @Override
   public ObjectNode get() {
-    return get(Optional.<String> absent());
+    return apply(Optional.<String> absent());
   }
 
   @Override
-  public ObjectNode get(Optional<String> version) {
+  public ObjectNode apply(Optional<String> version) {
     return getDictionary(version);
   }
 

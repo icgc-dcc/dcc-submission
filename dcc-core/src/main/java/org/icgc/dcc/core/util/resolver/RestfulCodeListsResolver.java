@@ -23,7 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolber.SubmissionSystemCodeListsResolver;
+import org.icgc.dcc.core.util.resolver.Resolver.SubmissionSystemResolver.SubmissionSystemCodeListsResolver;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Optional;

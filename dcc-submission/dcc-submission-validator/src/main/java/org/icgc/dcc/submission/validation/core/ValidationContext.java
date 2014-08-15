@@ -30,7 +30,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 /**
  * The umbilical cord to the rest of the system provided to {@link Validator}s to act as a "façade" that reduces
@@ -100,7 +100,7 @@ public interface ValidationContext extends ReportContext {
   /**
    * Gets the cascading platform strategy for cascading-based {@link Validator}s.
    */
-  PlatformStrategy getPlatformStrategy();
+  SubmissionPlatformStrategy getPlatformStrategy();
 
   /**
    * Temporarily here (see DCC-2431).

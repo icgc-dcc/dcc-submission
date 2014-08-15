@@ -21,6 +21,7 @@ import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.core.util.FsConfig.FS_URL;
+import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 
 import java.util.List;
@@ -45,8 +46,8 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -90,12 +91,12 @@ public class KeyValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getDccFileSystem(), getRelease());
   @Getter(lazy = true)
-  private final PlatformStrategy platformStrategy = createPlatformStrategy();
+  private final SubmissionPlatformStrategy platformStrategy = createPlatformStrategy();
 
   @SneakyThrows
   protected Dictionary createDictionary() {
     // Deserialize
-    val objectNode = new ArtifactoryDictionaryResolver().get(Optional.of(DICTIONARY_VERSION));
+    val objectNode = new ArtifactoryDictionaryResolver().apply(Optional.of(DICTIONARY_VERSION));
     val reader = new ObjectMapper().reader(Dictionary.class);
     Dictionary dictionary = reader.readValue(objectNode);
 
@@ -116,16 +117,16 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   private Config createConfig() {
     return parseMap(ImmutableMap.<String, Object> of(
-        "hadoop.mapred.job.tracker", jobTracker,
-        "hadoop.fs.defaultFS", fsUrl,
+        "hadoop.\"mapred.job.tracker\"", jobTracker,
+        "hadoop.\"fs.defaultFS\"", fsUrl,
 
         "fs.root", fsRoot,
         "fs.url", fsUrl
         ));
   }
 
-  private PlatformStrategy createPlatformStrategy() {
-    val provider = new PlatformStrategyFactoryProvider(getConfig(), getFileSystem());
+  private SubmissionPlatformStrategy createPlatformStrategy() {
+    val provider = new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(getConfig()), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

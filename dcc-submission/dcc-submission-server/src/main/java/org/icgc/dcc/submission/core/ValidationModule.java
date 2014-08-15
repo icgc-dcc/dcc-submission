@@ -36,8 +36,8 @@ import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
@@ -84,7 +84,7 @@ public class ValidationModule extends AbstractDccModule {
   @Override
   protected void configure() {
     requestStaticInjection(ByteOffsetToLineNumber.class);
-    bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
+    bind(SubmissionPlatformStrategyFactory.class).toProvider(SubmissionPlatformStrategyFactoryProvider.class).in(Singleton.class);
     bind(Planner.class).in(Singleton.class);
 
     // Set binder will preserve bind order as iteration order for injectees

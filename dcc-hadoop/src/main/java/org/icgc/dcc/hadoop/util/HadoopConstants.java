@@ -23,6 +23,8 @@ import static java.lang.Boolean.TRUE;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+
 /**
  * Constants for hadoop, do not include any actual hadoop objects in here.
  */
@@ -37,7 +39,16 @@ public final class HadoopConstants {
 
   public static final String JAVA_LIBRARY_PATH_PROPERTY_NAME = "java.library.path";
   public static final String HADOOP_USER_NAME_PROPERTY_NAME = "HADOOP_USER_NAME";
-  public static final String FS_DEFAULT_FS = "fs.defaultFS";
+  
+  /**
+   * TODO: phase out in favor of the {@link CommonConfigurationKeysPublic} one.
+   */
+  public static final String FS_DEFAULT_FS = CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+  
+  @SuppressWarnings("deprecation")
+  public static final String IO_SORT_MB = CommonConfigurationKeysPublic.IO_SORT_MB_KEY;
+  @SuppressWarnings("deprecation")
+  public static final String IO_SORT_FACTOR = CommonConfigurationKeysPublic.IO_SORT_FACTOR_KEY;
   
   /**
    * "A comma-separated list of the compression codec classes that can be used for compression/decompression. In addition to any classes specified with this property (which take precedence), codec classes on the classpath are discovered using a Java ServiceLoader." (http://archive.cloudera.com/cdh4/cdh/4/hadoop/hadoop-project-dist/hadoop-common/core-default.xml)

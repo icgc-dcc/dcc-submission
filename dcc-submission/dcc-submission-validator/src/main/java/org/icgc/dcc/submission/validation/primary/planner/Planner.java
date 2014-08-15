@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
@@ -53,7 +53,7 @@ public class Planner {
   private final Set<RestrictionType> restrictionTypes;
 
   public Plan plan(@NonNull String projectKey, @NonNull Collection<DataType> dataTypes,
-      @NonNull PlatformStrategy platform, @NonNull Dictionary dictionary) {
+      @NonNull SubmissionPlatformStrategy platform, @NonNull Dictionary dictionary) {
     val plan = new Plan(projectKey, dictionary, platform);
 
     log.info("Including flow planners for '{}'", projectKey);
@@ -71,7 +71,7 @@ public class Planner {
 
   private void includeFlowPlanners(
       Plan plan, String projectKey, Collection<DataType> dataTypes,
-      PlatformStrategy platform, Dictionary dictionary) {
+      SubmissionPlatformStrategy platform, Dictionary dictionary) {
 
     // Selective validation filtering
     val fileSchemata = dictionary.getFileSchemata(dataTypes);
@@ -98,7 +98,7 @@ public class Planner {
    * Apply visitors to the {@link Plan}. This means collecting {@link PlanElement} then applying those elements to
    * {@link FileFlowPlanner}s (which means extending the flow planner's {@link Pipe} based on the element).
    */
-  private void applyVisitors(Plan plan, PlatformStrategy platform, String projectKey) {
+  private void applyVisitors(Plan plan, SubmissionPlatformStrategy platform, String projectKey) {
     val visitors = createVisitors(platform, restrictionTypes);
 
     for (val visitor : visitors) {
@@ -108,7 +108,7 @@ public class Planner {
   }
 
   private static List<PlanningVisitor<? extends PlanElement>> createVisitors(
-      PlatformStrategy platform, Set<RestrictionType> restrictionTypes) {
+      SubmissionPlatformStrategy platform, Set<RestrictionType> restrictionTypes) {
     return ImmutableList.of(
         // Internal
         new ValueTypePlanningVisitor(), // Must happen before RangeRestriction

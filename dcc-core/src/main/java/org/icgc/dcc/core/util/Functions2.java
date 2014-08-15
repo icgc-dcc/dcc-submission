@@ -24,7 +24,7 @@ import lombok.NonNull;
 import com.google.common.base.Function;
 
 /**
- * Util methods for {@link Function}.
+ * Utility methods for {@link Function}.
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class Functions2 {

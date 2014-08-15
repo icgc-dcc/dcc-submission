@@ -47,7 +47,7 @@ import org.icgc.dcc.submission.validation.ValidationListener;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,7 +87,7 @@ public class ValidationServiceTest {
   @Mock
   DccFileSystem dccFileSystem;
   @Mock
-  PlatformStrategyFactory platformStrategyFactory;
+  SubmissionPlatformStrategyFactory platformStrategyFactory;
   @Spy
   Set<Validator> validators = newLinkedHashSet();
 

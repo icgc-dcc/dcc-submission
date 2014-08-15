@@ -22,15 +22,25 @@ package org.icgc.dcc.core.util;
  */
 public class Separators {
 
+  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
   public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
   public static final String TAB = Strings2.TAB;
+  public static final String DOT = ".";
   public static final String COMMA = ",";
   public static final String DASH = "-";
+  public static final String UNDERSCORE = "_";
   public static final String SLASH = "/";
   public static final String WHITESPACE = " ";
   public static final String COLON = ":";
-  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
-  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  public static final String SEMICOLON = ";";
+  public static final String HASHTAG = "#";
+
+  // Aliases
   public static final String EXTENSION = Strings2.DOT;
+  public static final String PATH = SLASH;
+  public static final String CREDENTIALS = COLON;
+
+  // Formatting
+  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
 
 }

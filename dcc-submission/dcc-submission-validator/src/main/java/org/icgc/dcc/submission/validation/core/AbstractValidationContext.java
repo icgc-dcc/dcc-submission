@@ -41,7 +41,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 import com.google.common.collect.ImmutableList;
 
@@ -52,7 +52,7 @@ public abstract class AbstractValidationContext implements ValidationContext {
   protected static final String DICTIONARY_VERSION = "0.8a";
 
   @Override
-  public PlatformStrategy getPlatformStrategy() {
+  public SubmissionPlatformStrategy getPlatformStrategy() {
     throw new UnsupportedOperationException();
   }
 

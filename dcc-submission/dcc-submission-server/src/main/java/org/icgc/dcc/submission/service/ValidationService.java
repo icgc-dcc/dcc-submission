@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.service;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.getStackTraceAsString;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.util.concurrent.AbstractScheduledService.Scheduler.newFixedDelaySchedule;
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -51,7 +53,7 @@ import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -85,7 +87,7 @@ public class ValidationService extends AbstractScheduledService {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final PlatformStrategyFactory platformStrategyFactory;
+  private final SubmissionPlatformStrategyFactory platformStrategyFactory;
   @NonNull
   private final Set<Validator> validators;
 
@@ -180,8 +182,11 @@ public class ValidationService extends AbstractScheduledService {
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {
-        log.info("Trying to validate next eligible project in queue: '{}'", nextProject.get());
-        tryValidation(release, nextProject.get());
+        val queue = release.getQueue();
+        val next = nextProject.get();
+        log.info("Trying to validate next eligible project in queue: '{}' ('{}': '{}')",
+            new Object[] { next.getId(), queue.size(), transform(queue, Identifiables.getId()) });
+        tryValidation(release, next);
       }
     } catch (ValidationRejectedException e) {
       // No available slots

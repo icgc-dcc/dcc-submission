@@ -112,6 +112,10 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
     return datastore().createUpdateOperations(getEntityType());
   }
 
+  protected static String fieldName(@NonNull Path<?> path) {
+    return path.getMetadata().getName();
+  }
+
   /**
    * This is currently necessary in order to use the {@code field.$.nestedField} notation in updates. Otherwise one gets
    * an error like:<br>

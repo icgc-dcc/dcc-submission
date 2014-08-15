@@ -17,9 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.validation.primary.core.Plan.MAX_CONCURRENT_FLOW_STEPS;
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
@@ -119,7 +117,7 @@ public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
   }
 
   @Override
-  public Flow<?> connect(PlatformStrategy platform) {
+  public Flow<?> connect(SubmissionPlatformStrategy platform) {
     val flowDef = new FlowDef().setName(getFlowName());
 
     for (Map.Entry<String, Pipe> p : reportPipes.entrySet()) {
@@ -133,16 +131,14 @@ public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
     return hasSourcesAndSinks ? connect(platform, flowDef) : null;
   }
 
-  private Flow<?> connect(PlatformStrategy platform, FlowDef flowDef) {
-    val propertyOverrides = Maps.<Object, Object> newHashMap();
-    setMaxConcurrentSteps(propertyOverrides, MAX_CONCURRENT_FLOW_STEPS);
-    val flowConnector = platform.getFlowConnector(propertyOverrides);
-
-    return flowConnector.connect(flowDef);
+  private Flow<?> connect(SubmissionPlatformStrategy platform, FlowDef flowDef) {
+    return platform
+        .getFlowConnector()
+        .connect(flowDef);
   }
 
   @Override
-  public void collectFileReport(PlatformStrategy strategy, ReportContext context) {
+  public void collectFileReport(SubmissionPlatformStrategy strategy, ReportContext context) {
     for (val reportCollector : collectors.values()) {
       reportCollector.collect(strategy, context);
     }
@@ -152,6 +148,6 @@ public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
 
   protected abstract Pipe getStructurallyInvalidTail();
 
-  protected abstract FlowDef onConnect(FlowDef flowDef, PlatformStrategy strategy);
+  protected abstract FlowDef onConnect(FlowDef flowDef, SubmissionPlatformStrategy strategy);
 
 }
