@@ -17,33 +17,20 @@
  */
 package org.icgc.dcc.core.util;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 
-/**
- * Common separators.
- */
-public class Separators {
+import org.junit.Test;
 
-  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
-  public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
-  public static final String TAB = Strings2.TAB;
-  public static final String DOT = ".";
-  public static final String COMMA = ",";
-  public static final String DASH = "-";
-  public static final String UNDERSCORE = "_";
-  public static final String SLASH = "/";
-  public static final String WHITESPACE = " ";
-  public static final String COLON = ":";
-  public static final String SEMICOLON = ";";
-  public static final String HASHTAG = "#";
+import com.google.common.base.Optional;
 
-  // Aliases
-  public static final String EXTENSION = Strings2.DOT;
-  public static final String PATH = SLASH;
-  public static final String CREDENTIALS = COLON;
-  public static final String HOST_AND_PORT = COLON;
-  public static final String NAMESPACING = DOT;
+public class OptionalsTest {
 
-  // Formatting
-  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  private static final int SOME_INT = 3;
+
+  @Test
+  public static void main(String[] args) {
+    Optional<Number> optional = Optionals.<Number, Integer> cast(Optional.<Integer> of(Integer.valueOf(SOME_INT)));
+    assertThat(optional).isEqualTo(Optional.<Number> of(SOME_INT));
+  }
 
 }

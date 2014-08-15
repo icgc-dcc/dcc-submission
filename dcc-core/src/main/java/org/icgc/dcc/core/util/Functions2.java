@@ -32,12 +32,12 @@ public final class Functions2 {
   /**
    * Somehow guava's forces you to have {@link Object} as input.
    */
-  public final static <T, Constant> Function<T, Constant> constant(@NonNull final Constant constant) {
+  public final static <T, C> Function<T, C> constant(@NonNull final C constant) {
 
-    return new Function<T, Constant>() {
+    return new Function<T, C>() {
 
       @Override
-      public Constant apply(T t) {
+      public C apply(T t) {
         return constant;
       }
 

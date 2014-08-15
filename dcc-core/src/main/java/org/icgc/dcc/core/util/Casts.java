@@ -17,33 +17,22 @@
  */
 package org.icgc.dcc.core.util;
 
+import com.google.common.base.Function;
 
 /**
- * Common separators.
+ * Common cast operations.
  */
-public class Separators {
+public class Casts {
 
-  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
-  public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
-  public static final String TAB = Strings2.TAB;
-  public static final String DOT = ".";
-  public static final String COMMA = ",";
-  public static final String DASH = "-";
-  public static final String UNDERSCORE = "_";
-  public static final String SLASH = "/";
-  public static final String WHITESPACE = " ";
-  public static final String COLON = ":";
-  public static final String SEMICOLON = ";";
-  public static final String HASHTAG = "#";
+  public static <T> Function<T, String> castToString() {
+    return new Function<T, String>() {
 
-  // Aliases
-  public static final String EXTENSION = Strings2.DOT;
-  public static final String PATH = SLASH;
-  public static final String CREDENTIALS = COLON;
-  public static final String HOST_AND_PORT = COLON;
-  public static final String NAMESPACING = DOT;
+      @Override
+      public String apply(T t) {
+        return String.valueOf(t);
+      }
 
-  // Formatting
-  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+    };
+  }
 
 }

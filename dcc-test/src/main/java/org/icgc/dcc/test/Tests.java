@@ -50,6 +50,9 @@ public final class Tests {
   public static final String MONGO_DIR_NAME = "mongo";
 
   public static final String OS_TMP_DIR = "/tmp";
+
+  public static final String LOCALHOST = "localhost";
+
   public static final String MAVEN_TEST_RESOURCES_DIR = "src/test/resources";
   public static final String TEST_FIXTURES_DIR = PATH.join(MAVEN_TEST_RESOURCES_DIR, FIXTURES);
 
