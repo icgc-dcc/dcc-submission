@@ -45,7 +45,10 @@ import com.google.common.collect.Sets;
  */
 public interface DataType {
 
-  String TYPE_SUFFIX = "TYPE";
+  /**
+   * TODO: remove the need for that suffix
+   */
+  String TYPE_SUFFIX = "_TYPE";
 
   /**
    * Not really used anywhere (but here for consistency).

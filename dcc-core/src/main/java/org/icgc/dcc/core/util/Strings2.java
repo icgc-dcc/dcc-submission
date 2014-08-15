@@ -33,6 +33,7 @@ public class Strings2 {
   public static final String UNIX_NEW_LINE = "\n";
   public static final String DOUBLE_QUOTE = "\"";
   public static final String SINGLE_QUOTE = "'";
+  public static final String NOT_APPLICABLE = "N/A";
 
   public static String removeTrailingS(@NonNull final String s) {
     return s.replaceAll("s$", "");
