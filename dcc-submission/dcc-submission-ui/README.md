@@ -18,7 +18,7 @@ Ensure that `brunch` has been added to your `PATH` by typing:
 
 	brunch
 	
-Ensure that `cacke` has been added to your `PATH` by typing:
+Ensure that `cack` has been added to your `PATH` by typing:
 
 	cake
 	
