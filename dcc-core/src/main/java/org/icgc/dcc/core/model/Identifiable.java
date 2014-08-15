@@ -23,6 +23,7 @@ import lombok.NonNull;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 public interface Identifiable {
 
@@ -73,6 +74,10 @@ public interface Identifiable {
         }
 
       };
+    }
+
+    public static Identifiable[] toArray(Iterable<Identifiable> identifiables) {
+      return Iterables.toArray(identifiables, Identifiable.class);
     }
 
   }
