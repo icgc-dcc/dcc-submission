@@ -32,12 +32,13 @@ public interface Identifiable {
   @NoArgsConstructor(access = PRIVATE)
   public static class Identifiables {
 
-    public static Identifiable fromClass(@NonNull final Class<?> type) {
+    @Deprecated
+    public static <T> Identifiable fromClass(@NonNull final Class<T> type) {
       return new Identifiable() {
 
         @Override
         public String getId() {
-          return type.getClass().getSimpleName();
+          return type.getClass().getSimpleName(); // FIXME
         }
 
       };
