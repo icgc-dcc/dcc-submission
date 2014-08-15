@@ -21,6 +21,8 @@ import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.toArray;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.COLON;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 
 import java.net.URI;
 import java.net.URL;
@@ -31,6 +33,8 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
+
+import com.google.common.base.Optional;
 
 /**
  * Utility methods and constants for {@link URI}s.
@@ -48,6 +52,30 @@ public final class URIs {
   private static final String SCHEME_SEPARATOR = "://";
   private static final String DEFAULT_PROTOCOL = "http"; // TODO: make more generic...
   private static final String DEFAULT_SCHEME = DEFAULT_PROTOCOL + SCHEME_SEPARATOR;
+
+  @SneakyThrows
+  public static URI getUri(
+      @NonNull final Protocol protocol,
+      @NonNull final String host,
+      final int port,
+      Optional<String> optionalPath) {
+    return new URI(getUriString(protocol, host, port, optionalPath));
+  }
+
+  public static String getUriString(
+      @NonNull final Protocol protocol,
+      @NonNull final String host,
+      final int port,
+      Optional<String> optionalPath) {
+    val base = protocol.getId() +
+        COLON.join(
+            host,
+            port);
+
+    return optionalPath.isPresent() ?
+        PATH.join(base, optionalPath.get()) :
+        base;
+  }
 
   @SneakyThrows
   public static URI getURI(@NonNull final String value) {

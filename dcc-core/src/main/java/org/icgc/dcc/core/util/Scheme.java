@@ -31,7 +31,7 @@ public enum Scheme implements Identifiable {
   HTTP,
   HTTPS,
   HDFS,
-  MONGO,
+  MONGODB,
   ES,
   S3;
 

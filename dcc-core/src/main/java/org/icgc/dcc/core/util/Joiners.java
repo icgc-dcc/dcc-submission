@@ -48,6 +48,7 @@ public final class Joiners {
   // Aliases
   public static final Joiner PATH = SLASH;
   public static final Joiner EXTENSION = DOT;
+  public static final Joiner NAMESPACING = DOT;
   public static final Joiner CREDENTIALS = COLON;
 
   // Formatting
@@ -67,7 +68,7 @@ public final class Joiners {
       return Splitters.TAB;
     } else if (joiner.equals(NEWLINE)) {
       return Splitters.NEWLINE;
-    } else if (joiner.equals(DOT) || joiner.equals(EXTENSION)) {
+    } else if (joiner.equals(DOT) || joiner.equals(EXTENSION) || joiner.equals(NAMESPACING)) {
       return Splitters.DOT;
     } else if (joiner.equals(DASH)) {
       return Splitters.DASH;

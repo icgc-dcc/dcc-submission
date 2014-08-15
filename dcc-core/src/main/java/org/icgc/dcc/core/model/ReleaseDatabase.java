@@ -17,64 +17,29 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
+/**
+ * Represents a database in the the MongoDB data model.
+ */
+public enum ReleaseDatabase implements Identifiable {
 
-public interface Identifiable {
+  IDENTIFICATION,
+  PROJECT,
+  GENOME,
+  UNDETERMINED;
 
-  String getId();
+  static final String ERROR_MESSAGE = "Cannot get an ID for variable database name (changes based on the job ID)";
 
-  @NoArgsConstructor(access = PRIVATE)
-  public static class Identifiables {
+  private static final String DCC_PREFIX = "dcc-";
 
-    public static Identifiable fromString(@NonNull final String s) {
-      return new Identifiable() {
-
-        @Override
-        public String getId() {
-          return s;
-        }
-
-      };
-    }
-
-    public static Identifiable fromInteger(@NonNull final Integer d) {
-      return new Identifiable() {
-
-        @Override
-        public String getId() {
-          return String.valueOf(d);
-        }
-
-      };
-    }
-
-    public static Function<Identifiable, String> getId() {
-      return new Function<Identifiable, String>() {
-
-        @Override
-        public String apply(@NonNull final Identifiable identifiable) {
-          return identifiable.getId();
-        }
-
-      };
-    }
-
-    public static Predicate<Identifiable> matches(@NonNull final String id) {
-      return new Predicate<Identifiable>() {
-
-        @Override
-        public boolean apply(@NonNull final Identifiable identifiable) {
-          return id.equals(identifiable.getId());
-        }
-
-      };
-    }
-
+  /**
+   * Get the database ID for databases that have a constant name only.
+   */
+  @Override
+  public String getId() {
+    checkState(this != UNDETERMINED, ERROR_MESSAGE);
+    return DCC_PREFIX + name().toLowerCase();
   }
 
 }

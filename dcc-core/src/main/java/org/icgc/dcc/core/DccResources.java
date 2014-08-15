@@ -48,6 +48,14 @@ public final class DccResources {
     return getResource(getResourcePath(fileName));
   }
 
+  public static String getDictionaryResourcePath() {
+    return getResourcePath(DICTIONARY_JSON_FILE_NAME);
+  }
+
+  public static String getCodeListsResourcePath() {
+    return getResourcePath(CODELISTS_JSON_FILE_NAME);
+  }
+
   private static String getResourcePath(@NonNull final String fileName) {
     return PATH.join(DCC_RESOURCES_DIR, fileName);
   }

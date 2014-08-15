@@ -44,6 +44,7 @@ public class Splitters {
   // Aliases
   public static final Splitter PATH = SLASH;
   public static final Splitter EXTENSION = DOT;
+  public static final Splitter NAMESPACING = DOT;
   public static final Splitter CREDENTIALS = COLON;
 
   /**
@@ -58,7 +59,7 @@ public class Splitters {
       return Joiners.TAB;
     } else if (splitter.equals(NEWLINE)) {
       return Joiners.NEWLINE;
-    } else if (splitter.equals(DOT) || splitter.equals(EXTENSION)) {
+    } else if (splitter.equals(DOT) || splitter.equals(EXTENSION) || splitter.equals(NAMESPACING)) {
       return Joiners.DOT;
     } else if (splitter.equals(DASH)) {
       return Joiners.DASH;
@@ -76,5 +77,4 @@ public class Splitters {
       throw new UnsupportedOperationException(_("Unsupported yet: '%s'", splitter));
     }
   }
-
 }

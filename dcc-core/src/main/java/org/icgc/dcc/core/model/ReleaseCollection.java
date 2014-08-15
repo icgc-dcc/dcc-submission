@@ -18,14 +18,18 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FieldNames.MONGO_INTERNAL_ID;
 import static org.icgc.dcc.core.model.FieldNames.PATHWAY_REACTOME_ID;
 import static org.icgc.dcc.core.model.FieldNames.RELEASE_ID;
+import static org.icgc.dcc.core.util.Joiners.NAMESPACING;
 
 import java.util.List;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.FieldNames.IdentifierFieldNames;
@@ -38,15 +42,17 @@ import org.icgc.dcc.core.model.FieldNames.LoaderFieldNames;
 @Getter
 public enum ReleaseCollection implements Identifiable {
 
-  RELEASE_COLLECTION("Release", newArrayList(RELEASE_ID)),
-  PROJECT_COLLECTION("Project", newArrayList(LoaderFieldNames.PROJECT_ID)),
-  DONOR_COLLECTION("Donor", newArrayList(IdentifierFieldNames.SURROGATE_DONOR_ID)),
-  GENE_COLLECTION("Gene", newArrayList(LoaderFieldNames.GENE_ID)),
-  OBSERVATION_COLLECTION("Observation", newArrayList(
+  RELEASE_COLLECTION(ReleaseDatabase.UNDETERMINED, "Release", newArrayList(RELEASE_ID)),
+  PROJECT_COLLECTION(ReleaseDatabase.PROJECT, "Project", newArrayList(LoaderFieldNames.PROJECT_ID)),
+  DONOR_COLLECTION(ReleaseDatabase.UNDETERMINED, "Donor", newArrayList(IdentifierFieldNames.SURROGATE_DONOR_ID)),
+  GENE_COLLECTION(ReleaseDatabase.GENOME, "Gene", newArrayList(LoaderFieldNames.GENE_ID)),
+  OBSERVATION_COLLECTION(ReleaseDatabase.UNDETERMINED, "Observation", newArrayList(
       IdentifierFieldNames.SURROGATE_DONOR_ID,
       IdentifierFieldNames.SURROGATE_MUTATION_ID)),
-  MUTATION_COLLECTION("Mutation", newArrayList(IdentifierFieldNames.SURROGATE_MUTATION_ID)),
-  PATHWAY_COLLECTION("Pathway", newArrayList(PATHWAY_REACTOME_ID));
+  MUTATION_COLLECTION(ReleaseDatabase.UNDETERMINED, "Mutation", newArrayList(IdentifierFieldNames.SURROGATE_MUTATION_ID)),
+  PATHWAY_COLLECTION(ReleaseDatabase.UNDETERMINED, "Pathway", newArrayList(PATHWAY_REACTOME_ID));
+
+  private final ReleaseDatabase parentDatabase;
 
   /**
    * The name of the collection.
@@ -83,6 +89,25 @@ public enum ReleaseCollection implements Identifiable {
   @Override
   public String toString() {
     return name;
+  }
+
+  /**
+   * Get fully qualified collection name for collections with a fixed database name.
+   */
+  public String getFullyQualifiedCollectionName() {
+    checkState(parentDatabase != ReleaseDatabase.UNDETERMINED, ReleaseDatabase.ERROR_MESSAGE);
+    return getFullyQualifiedCollectionName(parentDatabase, this);
+  }
+
+  /**
+   * Get fully qualified collection name using the database name provided.
+   */
+  public String getFullyQualifiedCollectionName(@NonNull final String databaseName) {
+    return getFullyQualifiedCollectionName(Identifiables.fromString(databaseName), this);
+  }
+
+  private static String getFullyQualifiedCollectionName(@NonNull final Identifiable... identifiables) {
+    return NAMESPACING.join(transform(asList(identifiables), Identifiables.getId()));
   }
 
 }

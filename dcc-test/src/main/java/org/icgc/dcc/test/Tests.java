@@ -37,6 +37,7 @@ public final class Tests {
   public static final String TEST = "test";
   public static final String RELEASE = "release";
 
+  public static final String TARGET_DIR_NAME = "target";
   private static final String FIXTURES = "fixtures";
 
   public static final String INPUT_DIR_NAME = "input";
@@ -62,7 +63,11 @@ public final class Tests {
   public static final String PROJECTS_JSON_FILE_NAME = EXTENSION.join("projects", JSON);
 
   public static String getTestJobId(@NonNull final Component component) {
-    return JOB_ID_JOINER.join(getTestReleasePrefix(component), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
+    return JOB_ID_JOINER.join(getTestReleaseName(component), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
+  }
+
+  public static String getTestReleaseName(@NonNull final Component component) {
+    return getTestReleasePrefix(component) + TEST_RELEASE_NUMBER;
   }
 
   public static String getTestReleasePrefix(@NonNull final Component component) {
