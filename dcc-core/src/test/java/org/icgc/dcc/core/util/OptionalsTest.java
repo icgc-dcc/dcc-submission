@@ -18,6 +18,7 @@
 package org.icgc.dcc.core.util;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.util.Casts.castIntegerToString;
 
 import org.junit.Test;
 
@@ -26,11 +27,23 @@ import com.google.common.base.Optional;
 public class OptionalsTest {
 
   private static final int SOME_INT = 3;
+  private static final String SOME_INT_STRING = "3";
+  private static final Optional<Integer> SOME_OPTIONAL_INT = Optional.<Integer> of(SOME_INT);
+  private static final Optional<Number> SOME_OPTIONAL_MATCHING_NUMBER = Optional.<Number> of(SOME_INT);
+  private static final Optional<String> SOME_OPTIONAL_MATCHING_STRING = Optional.<String> of(SOME_INT_STRING);
 
   @Test
-  public static void main(String[] args) {
-    Optional<Number> optional = Optionals.<Number, Integer> cast(Optional.<Integer> of(Integer.valueOf(SOME_INT)));
-    assertThat(optional).isEqualTo(Optional.<Number> of(SOME_INT));
+  public void test_subclass_cast() {
+    Optional<Number> optional = Optionals.<Number, Integer> cast(SOME_OPTIONAL_INT);
+    assertThat(optional).isEqualTo(SOME_OPTIONAL_MATCHING_NUMBER);
+  }
+
+  @Test
+  public void test_castable_cast() {
+    Optional<String> optional = Optionals.<Integer, String> cast(
+        SOME_OPTIONAL_INT,
+        castIntegerToString());
+    assertThat(optional).isEqualTo(SOME_OPTIONAL_MATCHING_STRING);
   }
 
 }

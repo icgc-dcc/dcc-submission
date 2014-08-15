@@ -24,6 +24,10 @@ import com.google.common.base.Function;
  */
 public class Casts {
 
+  public static Function<Integer, String> castIntegerToString() {
+    return Casts.<Integer> castToString();
+  }
+
   public static <T> Function<T, String> castToString() {
     return new Function<T, String>() {
 
