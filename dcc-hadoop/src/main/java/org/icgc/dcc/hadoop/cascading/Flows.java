@@ -44,7 +44,7 @@ public class Flows implements Named {
     return CLASS_NAME;
   }
 
-  public static String getName(Identifiable... identifiables) {
+  public static String getNameFromIdentifiables(Identifiable... identifiables) {
     return getName(transform(asList(identifiables), getId()));
   }
 

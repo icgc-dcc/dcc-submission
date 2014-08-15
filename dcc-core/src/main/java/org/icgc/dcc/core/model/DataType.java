@@ -43,7 +43,7 @@ import com.google.common.collect.Sets;
  * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor", "specimen",
  * "ssm_m", "meth_seq_m", ... They have the clinical ones in common.
  */
-public interface DataType {
+public interface DataType extends Identifiable {
 
   /**
    * TODO: remove the need for these suffices
@@ -59,10 +59,6 @@ public interface DataType {
   String CLINICAL = "clinical";
 
   String name();
-
-  // String getTypeName();
-
-  String getId();
 
   boolean isClinicalType();
 

@@ -31,7 +31,7 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
  * <p>
  * The "donor" name is reused here (which makes things a bit confusing...).
  */
-public enum ClinicalType implements DataType, Identifiable {
+public enum ClinicalType implements DataType {
 
   CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
   CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);

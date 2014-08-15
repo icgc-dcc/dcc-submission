@@ -81,7 +81,7 @@ public final class FeatureTypes {
   /**
    * Represents a type of observation data, see {@link ClinicalType} for the clinical counterpart.
    */
-  public enum FeatureType implements DataType, Identifiable {
+  public enum FeatureType implements DataType {
 
     /** From the ICGC Submission Manual */
     SSM_TYPE(SummaryType.COUNT),
