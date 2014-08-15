@@ -32,7 +32,6 @@ import lombok.NonNull;
 public final class DccResources {
 
   private static final String DCC_RESOURCES_DIR = "org/icgc/dcc/resources";
-
   private static final String DICTIONARY_JSON_FILE_NAME = EXTENSION.join("Dictionary", JSON);
   private static final String CODELISTS_JSON_FILE_NAME = EXTENSION.join("CodeList", JSON);
 
