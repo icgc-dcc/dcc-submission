@@ -113,7 +113,6 @@
   <properties>
     <!-- Versions -->
     <morphia.version>0.105</morphia.version>
-    <!--  https://github.com/mysema/querydsl/issues/671 -->
-    <querydsl.version>3.3.2.BUILD-SNAPSHOT-71bac4</querydsl.version>
+    <querydsl.version>3.3.2</querydsl.version>
   </properties>
 </project>
