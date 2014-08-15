@@ -59,15 +59,15 @@ public class Pipes implements Named {
   }
 
   public static String getName(Identifiable... identifiables) {
-    return getName2(transform(asList(identifiables), getId()));
-  }
-
-  public static String getName2(Object... qualifiers) {
-    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
+    return getName(transform(asList(identifiables), getId()));
   }
 
   public static String getName(Class<?> clazz, Object... qualifiers) {
-    return getName2(clazz.getSimpleName(), getName2(qualifiers));
+    return getName(clazz.getSimpleName(), getName(qualifiers));
+  }
+
+  private static String getName(Object... qualifiers) {
+    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
   }
 
   public static Iterable<String> getTailNames(final Pipe[] tails) {

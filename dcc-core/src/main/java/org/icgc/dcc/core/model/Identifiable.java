@@ -32,6 +32,17 @@ public interface Identifiable {
   @NoArgsConstructor(access = PRIVATE)
   public static class Identifiables {
 
+    public static Identifiable fromClass(@NonNull final Class<?> type) {
+      return new Identifiable() {
+
+        @Override
+        public String getId() {
+          return type.getClass().getSimpleName();
+        }
+
+      };
+    }
+
     public static Identifiable fromString(@NonNull final String s) {
       return new Identifiable() {
 
