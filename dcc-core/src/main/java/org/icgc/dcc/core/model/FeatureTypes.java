@@ -140,14 +140,6 @@ public final class FeatureTypes {
       return UNDERSCORE.join(EMPTY_STRING, this.getId(), summaryType.getId());
     }
 
-    /**
-     * Phase out in favor of {@link #getId()}.
-     */
-    @Override
-    public String getTypeName() {
-      return getId();
-    }
-
     public boolean isSsm() {
       return this == SSM_TYPE;
     }

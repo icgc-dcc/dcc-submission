@@ -113,7 +113,7 @@ public class Reporter {
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
-    return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
+    return Pipes.getName(projectKey, fileType.getId(), fileNumber);
   }
 
   public static String getOutputFilePath(

@@ -46,18 +46,23 @@ import com.google.common.collect.Sets;
 public interface DataType {
 
   /**
-   * TODO: remove the need for that suffix
+   * TODO: remove the need for these suffices
    */
   String TYPE_SUFFIX = "_TYPE";
+  String SUBTYPE_SUFFIX = "_SUBTYPE";
 
   /**
    * Not really used anywhere (but here for consistency).
    */
   String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
 
+  String CLINICAL = "clinical";
+
   String name();
 
-  String getTypeName();
+  // String getTypeName();
+
+  String getId();
 
   boolean isClinicalType();
 
@@ -162,7 +167,7 @@ public interface DataType {
 
         @Override
         public int compare(DataType dataType1, DataType dataType2) {
-          return dataType1.name().compareTo(dataType2.name());
+          return dataType1.getId().compareTo(dataType2.getId());
         }
       });
 

@@ -260,7 +260,7 @@ public final class Fields2 {
   }
 
   public static String prefixedFieldName(FileType fileType, String fieldName) {
-    return prefixedFieldName(fileType.getTypeName(), fieldName);
+    return prefixedFieldName(fileType.getId(), fieldName);
   }
 
   public static String prefixedFieldName(String prefix, String fieldName) {
@@ -268,7 +268,7 @@ public final class Fields2 {
   }
 
   public static String prefixedFieldName(FileType fileType, String sep, String fieldName) {
-    return prefixedFieldName(fileType.getTypeName(), sep, fieldName);
+    return prefixedFieldName(fileType.getId(), sep, fieldName);
   }
 
   public static String prefixedFieldName(String prefix, String sep, String fieldName) {
@@ -280,7 +280,7 @@ public final class Fields2 {
   }
 
   public static Fields prefixedFields(FileType fileType, Fields fields) {
-    return prefixedFields(fileType.getTypeName(), fields);
+    return prefixedFields(fileType.getId(), fields);
   }
 
   public static Fields prefixedFields(String prefix, Fields fields) {

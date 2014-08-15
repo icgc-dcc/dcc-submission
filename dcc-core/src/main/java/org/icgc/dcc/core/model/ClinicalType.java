@@ -20,6 +20,7 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.core.model.FileTypes.FileType.DONOR_TYPE;
 import lombok.Getter;
+import lombok.NonNull;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileSubType;
@@ -30,17 +31,23 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
  * <p>
  * The "donor" name is reused here (which makes things a bit confusing...).
  */
-public enum ClinicalType implements DataType {
+public enum ClinicalType implements DataType, Identifiable {
 
   CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
   CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
 
-  public static String CLINICAL = "clinical";
-
-  private ClinicalType(String typeName) {
+  private ClinicalType(@NonNull final String typeName) {
     this.typeName = typeName;
   }
 
+  @Override
+  public String getId() {
+    return typeName;
+  }
+
+  /**
+   * TODO: phase out in favor of {@link #getId()}
+   */
   @Getter
   private final String typeName;
 
