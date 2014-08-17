@@ -18,6 +18,7 @@
 package org.icgc.dcc.core.util;
 
 import static com.google.common.base.Joiner.on;
+import static com.google.common.collect.ImmutableSet.of;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.FormatUtils._;
 import lombok.NoArgsConstructor;
@@ -48,6 +49,8 @@ public final class Joiners {
   // Aliases
   public static final Joiner PATH = SLASH;
   public static final Joiner EXTENSION = DOT;
+  public static final Joiner NAMESPACING = DOT;
+  public static final Joiner HOST_AND_PORT = COLON;
   public static final Joiner CREDENTIALS = COLON;
 
   // Formatting
@@ -57,31 +60,42 @@ public final class Joiners {
    * TODO: consider enum rather?
    */
   public static final Splitter getCorrespondingSplitter(@NonNull final Joiner joiner) {
+
+    // Basic ones
     if (joiner.equals(WHITESPACE)) {
       return Splitters.WHITESPACE;
-    } else if (joiner.equals(EMPTY_STRING)) {
-      throw new IllegalStateException(_("Cannot split using '{}'", EMPTY_STRING));
-    } else if (joiner.equals(SLASH) || joiner.equals(PATH)) {
-      return Splitters.SLASH;
     } else if (joiner.equals(TAB)) {
       return Splitters.TAB;
     } else if (joiner.equals(NEWLINE)) {
       return Splitters.NEWLINE;
-    } else if (joiner.equals(DOT) || joiner.equals(EXTENSION)) {
-      return Splitters.DOT;
     } else if (joiner.equals(DASH)) {
       return Splitters.DASH;
     } else if (joiner.equals(UNDERSCORE)) {
       return Splitters.UNDERSCORE;
     } else if (joiner.equals(COMMA)) {
       return Splitters.COMMA;
-    } else if (joiner.equals(COLON) || joiner.equals(CREDENTIALS)) {
-      return Splitters.COLON;
     } else if (joiner.equals(SEMICOLON)) {
       return Splitters.SEMICOLON;
     } else if (joiner.equals(HASHTAG)) {
       return Splitters.HASHTAG;
-    } else {
+    }
+
+    // Aliased ones
+    else if (of(DOT, EXTENSION, NAMESPACING).contains(joiner)) {
+      return Splitters.DOT;
+    } else if (of(SLASH, PATH).contains(joiner)) {
+      return Splitters.SLASH;
+    } else if (of(COLON, CREDENTIALS, HOST_AND_PORT).contains(joiner)) {
+      return Splitters.COLON;
+    }
+
+    // Special ones
+    else if (joiner.equals(EMPTY_STRING)) {
+      throw new IllegalStateException(_("Cannot split using '{}'", EMPTY_STRING));
+    }
+
+    // Error
+    else {
       throw new UnsupportedOperationException(_("Unsupported yet: '%s'", joiner));
     }
   }

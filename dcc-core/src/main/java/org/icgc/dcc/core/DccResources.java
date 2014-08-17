@@ -15,35 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core;
 
+import static com.google.common.io.Resources.getResource;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Extensions.JSON;
+import static org.icgc.dcc.core.util.Joiners.EXTENSION;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 
-/**
- * Common separators.
- */
-public class Separators {
+import java.net.URL;
 
-  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
-  public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
-  public static final String TAB = Strings2.TAB;
-  public static final String DOT = ".";
-  public static final String COMMA = ",";
-  public static final String DASH = "-";
-  public static final String UNDERSCORE = "_";
-  public static final String SLASH = "/";
-  public static final String WHITESPACE = " ";
-  public static final String COLON = ":";
-  public static final String SEMICOLON = ";";
-  public static final String HASHTAG = "#";
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
-  // Aliases
-  public static final String EXTENSION = Strings2.DOT;
-  public static final String PATH = SLASH;
-  public static final String CREDENTIALS = COLON;
-  public static final String HOST_AND_PORT = COLON;
-  public static final String NAMESPACING = DOT;
+@NoArgsConstructor(access = PRIVATE)
+public final class DccResources {
 
-  // Formatting
-  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  private static final String DCC_RESOURCES_DIR = "org/icgc/dcc/resources";
+  private static final String DICTIONARY_JSON_FILE_NAME = EXTENSION.join("Dictionary", JSON);
+  private static final String CODELISTS_JSON_FILE_NAME = EXTENSION.join("CodeList", JSON);
+
+  public static URL getDictionaryDccResource() {
+    return getResourceUrl(DICTIONARY_JSON_FILE_NAME);
+  }
+
+  public static URL getCodeListsDccResource() {
+    return getResourceUrl(CODELISTS_JSON_FILE_NAME);
+  }
+
+  private static URL getResourceUrl(@NonNull final String fileName) {
+    return getResource(getResourcePath(fileName));
+  }
+
+  public static String getDictionaryResourcePath() {
+    return getResourcePath(DICTIONARY_JSON_FILE_NAME);
+  }
+
+  public static String getCodeListsResourcePath() {
+    return getResourcePath(CODELISTS_JSON_FILE_NAME);
+  }
+
+  private static String getResourcePath(@NonNull final String fileName) {
+    return PATH.join(DCC_RESOURCES_DIR, fileName);
+  }
 
 }

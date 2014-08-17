@@ -15,35 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkState;
 
 /**
- * Common separators.
+ * Represents a database in the the MongoDB data model.
  */
-public class Separators {
+public enum ReleaseDatabase implements Identifiable {
 
-  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
-  public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
-  public static final String TAB = Strings2.TAB;
-  public static final String DOT = ".";
-  public static final String COMMA = ",";
-  public static final String DASH = "-";
-  public static final String UNDERSCORE = "_";
-  public static final String SLASH = "/";
-  public static final String WHITESPACE = " ";
-  public static final String COLON = ":";
-  public static final String SEMICOLON = ";";
-  public static final String HASHTAG = "#";
+  IDENTIFICATION,
+  PROJECT,
+  GENOME,
+  UNDETERMINED;
 
-  // Aliases
-  public static final String EXTENSION = Strings2.DOT;
-  public static final String PATH = SLASH;
-  public static final String CREDENTIALS = COLON;
-  public static final String HOST_AND_PORT = COLON;
-  public static final String NAMESPACING = DOT;
+  static final String ERROR_MESSAGE = "Cannot get an ID for variable database name (changes based on the job ID)";
 
-  // Formatting
-  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  private static final String DCC_PREFIX = "dcc-";
+
+  /**
+   * Get the database ID for databases that have a constant name only.
+   */
+  @Override
+  public String getId() {
+    checkState(this != UNDETERMINED, ERROR_MESSAGE);
+    return DCC_PREFIX + name().toLowerCase();
+  }
 
 }

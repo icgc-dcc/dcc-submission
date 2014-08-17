@@ -36,7 +36,7 @@ public enum Protocol implements Identifiable {
   HTTP(Scheme.HTTP),
   HTTPS(Scheme.HTTPS),
   HDFS(Scheme.HDFS),
-  MONGO(Scheme.MONGO),
+  MONGODB(Scheme.MONGODB),
   ES(Scheme.ES),
   S3(Scheme.S3);
 
