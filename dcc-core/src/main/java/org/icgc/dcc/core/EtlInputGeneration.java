@@ -15,20 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.core;
 
-import static com.google.common.io.Resources.getResource;
-import static lombok.AccessLevel.PRIVATE;
+enum EtlInputGeneration {
+  WRITTING, REWRITTING, GENERATING, NA;
 
-import java.net.URL;
-
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor(access = PRIVATE)
-public final class DccResources {
-
-  public static URL getDccResource(String resourceName) {
-    return getResource("org/icgc/dcc/resources/" + resourceName);
+  public boolean isGenerating() {
+    return this != NA;
   }
 
 }

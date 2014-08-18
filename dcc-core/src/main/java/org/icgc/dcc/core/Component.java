@@ -17,19 +17,59 @@
  */
 package org.icgc.dcc.core;
 
+import static org.icgc.dcc.core.EtlInputGeneration.GENERATING;
+import static org.icgc.dcc.core.EtlInputGeneration.NA;
+import static org.icgc.dcc.core.EtlInputGeneration.REWRITTING;
+import static org.icgc.dcc.core.EtlInputGeneration.WRITTING;
 import static org.icgc.dcc.core.util.Joiners.PATH;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.core.util.EtlConventions;
 
 /**
  * Represents components in our system.
+ * <p>
+ * TODO: move to {@link EtlConventions}?
  */
+@RequiredArgsConstructor
 public enum Component implements Identifiable {
 
-  CONCATENATOR,
-  NORMALIZER,
-  ANNOTATOR,
-  LOADER;
+  /**
+   * Rewrites all submission files.
+   */
+  CONCATENATOR(WRITTING),
+
+  /**
+   * Rewrites {@link FileType#SSM_P_TYPE} file.
+   */
+  NORMALIZER(REWRITTING),
+
+  /**
+   * Generates {@link FileType#SSM_S_TYPE} file.
+   */
+  ANNOTATOR(GENERATING),
+
+  LOADER(NA),
+  IMPORTER(NA),
+  SUMMARIZER(NA),
+  INDEXER(NA),
+  STATS(NA),
+
+  EXPORTER(NA),
+
+  /**
+   * TODO: keep?
+   */
+  REPORTER(NA),
+  ETL(NA);
+
+  /**
+   * Whether the component writes/rewrites ETL input files.
+   */
+  private final EtlInputGeneration etlInputGeneration;
 
   @Override
   public String getId() {
@@ -40,10 +80,27 @@ public enum Component implements Identifiable {
     return getId();
   }
 
-  public String getProjectDir(String dataParentDir, String projectKey) {
+  public boolean isEtlInputGenerating() {
+    return etlInputGeneration.isGenerating();
+  }
+
+  /**
+   * Do not use outside of {@link EtlConventions}.
+   */
+  public String getComponentDir(@NonNull final String workingDir) {
     return PATH.join(
-        dataParentDir,
-        getDirName(),
+        workingDir,
+        getDirName());
+  }
+
+  /**
+   * Do not use outside of {@link EtlConventions}.
+   */
+  public String getProjectDir(
+      @NonNull final String workingDir,
+      @NonNull final String projectKey) {
+    return PATH.join(
+        getComponentDir(workingDir),
         projectKey);
   }
 

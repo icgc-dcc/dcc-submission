@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -27,6 +29,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.core.util.FsConfig.FS_ROOT;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
@@ -68,6 +71,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
+import static org.icgc.dcc.test.Tests.TEST_FIXTURES_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -75,10 +79,12 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -99,7 +105,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.sftp.Sftp;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -108,13 +113,13 @@ import org.mongodb.morphia.Datastore;
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.jcraft.jsch.SftpException;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, PersistenceModule.class })
-@Ignore
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
@@ -125,9 +130,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   /**
    * Test file system.
    */
-  private static final String INTEGRATION_TEST_DIR = "/fixtures/submission";
+  private static final String SUBMISSION_DIR_NAME = "submission";
   private static final String DESTINATION_DIR_NAME = "dcc_root_dir";
-  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/" + DESTINATION_DIR_NAME;
+  private static final String FS_DIR = PATH.join(TEST_FIXTURES_DIR, SUBMISSION_DIR_NAME, DESTINATION_DIR_NAME);
 
   /**
    * Projects.
@@ -157,6 +162,61 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT7_KEY = "project.7";
   private static final String PROJECT7 = _("{name:'Project Seven',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT7_KEY);
+
+  private final static Map<String, SubmissionState> INITIAL_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, NOT_VALIDATED)
+          .put(PROJECT2_KEY, NOT_VALIDATED)
+          .put(PROJECT3_KEY, NOT_VALIDATED)
+          .put(PROJECT4_KEY, NOT_VALIDATED)
+          .put(PROJECT5_KEY, NOT_VALIDATED)
+          .put(PROJECT6_KEY, NOT_VALIDATED)
+          .put(PROJECT7_KEY, NOT_VALIDATED)
+          .build();
+
+  private final static Map<String, SubmissionState> POST_VALIDATION_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, VALID)
+          .put(PROJECT2_KEY, INVALID)
+          .put(PROJECT3_KEY, INVALID)
+          .put(PROJECT4_KEY, INVALID)
+          .put(PROJECT5_KEY, INVALID)
+          .put(PROJECT6_KEY, INVALID)
+          .put(PROJECT7_KEY, INVALID)
+          .build();
+
+  private final static Map<String, SubmissionState> POST_PARTIAL_REVALIDATION_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, VALID)
+          .put(PROJECT2_KEY, INVALID)
+          .put(PROJECT3_KEY, INVALID)
+          .put(PROJECT4_KEY, INVALID)
+          .put(PROJECT5_KEY, INVALID)
+          .put(PROJECT6_KEY, NOT_VALIDATED) // This project isn't included in the revalition
+          .put(PROJECT7_KEY, INVALID)
+          .build();
+
+  private final static Map<String, SubmissionState> POST_RELEASE_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, NOT_VALIDATED)
+          .put(PROJECT2_KEY, INVALID)
+          .put(PROJECT3_KEY, INVALID)
+          .put(PROJECT4_KEY, INVALID)
+          .put(PROJECT5_KEY, INVALID)
+          .put(PROJECT6_KEY, NOT_VALIDATED)
+          .put(PROJECT7_KEY, INVALID)
+          .build();
+
+  private final static Map<String, SubmissionState> POST_TERM_ADDITION_STATES =
+      new ImmutableMap.Builder<String, SubmissionState>()
+          .put(PROJECT1_KEY, VALID)
+          .put(PROJECT2_KEY, NOT_VALIDATED)
+          .put(PROJECT3_KEY, NOT_VALIDATED)
+          .put(PROJECT4_KEY, NOT_VALIDATED)
+          .put(PROJECT5_KEY, NOT_VALIDATED)
+          .put(PROJECT6_KEY, NOT_VALIDATED)
+          .put(PROJECT7_KEY, NOT_VALIDATED)
+          .build();
 
   /**
    * Dictionaries.
@@ -303,6 +363,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       adminTweaksCodeListAndTerms();
       adminRevalidates();
       adminPerformsRelease();
+
       adminUpdatesDictionary();
       adminUpdatesRelease();
       dumpTestDictionary();
@@ -337,8 +398,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         INITITAL_RELEASE_NAME,
         FIRST_DICTIONARY_VERSION,
         OPENED,
-        hasSubmisisonStates(
-            NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(getStates(INITIAL_STATES)));
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
@@ -431,29 +491,29 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     enqueueProjects(PROJECTS_TO_ENQUEUE2, NO_CONTENT);
 
     status("admin", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
+    checkValidatedSubmission(PROJECT1_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT1_KEY));
 
     status("admin", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+    checkValidatedSubmission(PROJECT2_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT2_KEY));
 
     status("admin", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
+    checkValidatedSubmission(PROJECT3_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT3_KEY));
 
     status("admin", "Checking validated submission 4...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, INVALID);
+    checkValidatedSubmission(PROJECT4_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT4_KEY));
 
     status("admin", "Checking validated submission 5...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
+    checkValidatedSubmission(PROJECT5_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT5_KEY));
 
     status("admin", "Checking validated submission 6...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
+    checkValidatedSubmission(PROJECT6_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT6_KEY));
 
     status("admin", "Checking validated submission 7...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, INVALID);
+    checkValidatedSubmission(PROJECT7_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT7_KEY));
 
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
+        hasSubmisisonStates(getStates(POST_PARTIAL_REVALIDATION_STATES)));
   }
 
   private void adminPerformsRelease() throws Exception {
@@ -461,7 +521,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
         hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
+        hasSubmisisonStates(getStates(POST_RELEASE_STATES)));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
@@ -498,8 +558,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         NEXT_RELEASE_NAME,
         SECOND_DICTIONARY_VERSION,
         OPENED,
-        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED,
-            NOT_VALIDATED));
+        hasSubmisisonStates(getStates(INITIAL_STATES)));
   }
 
   private void createInitialRelease() throws Exception {
@@ -587,7 +646,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID, INVALID, INVALID, VALID, INVALID));
+        hasSubmisisonStates(getStates(POST_VALIDATION_STATES)));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -598,7 +657,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED, VALID, NOT_VALIDATED));
+        hasSubmisisonStates(getStates(POST_TERM_ADDITION_STATES)));
   }
 
   private void releaseInitialRelease() {
@@ -674,25 +733,25 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEquals(OK.getStatusCode(), response.getStatus());
 
     status("user", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
+    checkValidatedSubmission(PROJECT1_KEY, POST_VALIDATION_STATES.get(PROJECT1_KEY));
 
     status("user", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+    checkValidatedSubmission(PROJECT2_KEY, POST_VALIDATION_STATES.get(PROJECT2_KEY));
 
     status("user", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
+    checkValidatedSubmission(PROJECT3_KEY, POST_VALIDATION_STATES.get(PROJECT3_KEY));
 
     status("user", "Checking validated submission 4...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT4_KEY, INVALID);
+    checkValidatedSubmission(PROJECT4_KEY, POST_VALIDATION_STATES.get(PROJECT4_KEY));
 
     status("user", "Checking validated submission 5...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT5_KEY, INVALID);
+    checkValidatedSubmission(PROJECT5_KEY, POST_VALIDATION_STATES.get(PROJECT5_KEY));
 
     status("user", "Checking validated submission 6...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT6_KEY, VALID);
+    checkValidatedSubmission(PROJECT6_KEY, POST_VALIDATION_STATES.get(PROJECT6_KEY));
 
     status("user", "Checking validated submission 7...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT7_KEY, INVALID);
+    checkValidatedSubmission(PROJECT7_KEY, POST_VALIDATION_STATES.get(PROJECT7_KEY));
 
     // TODO: Do the negation of following for the projects the failed primary validation
 
@@ -703,7 +762,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + FILE_NAME_SEPARATOR + "errors.json");
   }
 
-  private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState) {
+  @SneakyThrows
+  private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) {
     DetailedSubmission detailedSubmission;
     do {
       sleepUninterruptibly(2, SECONDS);
@@ -753,6 +813,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private static void status(String phase, String message, Object... args) {
     log.info("[" + phase + "] " + message, args);
+  }
+
+  private SubmissionState[] getStates(@NonNull final Map<String, SubmissionState> states) {
+    checkArgument(!states.isEmpty());
+
+    return toArray(states.values(), SubmissionState.class);
   }
 
 }

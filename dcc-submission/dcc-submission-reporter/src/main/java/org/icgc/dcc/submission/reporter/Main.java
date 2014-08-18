@@ -9,6 +9,7 @@ import java.util.Set;
 import lombok.val;
 
 import org.icgc.dcc.core.util.Protocol;
+import org.icgc.dcc.core.util.URLs;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -31,11 +32,10 @@ public class Main {
         getProjectKeys(projectKeys),
         defaultParentDataDir,
         projectsJsonFilePath,
-        dictionaryFilePath,
-        codeListsFilePath,
-        ImmutableMap.of(
-            FS_DEFAULT_NAME_KEY, Protocol.HDFS.getId(),
-            "", "")); // TODO: read from a config file (if we still support stand-alone)
+        URLs.getUrl(dictionaryFilePath),
+        URLs.getUrl(codeListsFilePath),
+        ImmutableMap.of(FS_DEFAULT_NAME_KEY, Protocol.HDFS.getId())); // TODO: read from a config file (if we still
+                                                                      // support stand-alone)
   }
 
   private static final Optional<Set<String>> getProjectKeys(String projectKeys) {

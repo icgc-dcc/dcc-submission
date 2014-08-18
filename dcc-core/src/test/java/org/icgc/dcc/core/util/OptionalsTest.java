@@ -17,33 +17,33 @@
  */
 package org.icgc.dcc.core.util;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.util.Casts.castIntegerToString;
 
-/**
- * Common separators.
- */
-public class Separators {
+import org.junit.Test;
 
-  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
-  public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
-  public static final String TAB = Strings2.TAB;
-  public static final String DOT = ".";
-  public static final String COMMA = ",";
-  public static final String DASH = "-";
-  public static final String UNDERSCORE = "_";
-  public static final String SLASH = "/";
-  public static final String WHITESPACE = " ";
-  public static final String COLON = ":";
-  public static final String SEMICOLON = ";";
-  public static final String HASHTAG = "#";
+import com.google.common.base.Optional;
 
-  // Aliases
-  public static final String EXTENSION = Strings2.DOT;
-  public static final String PATH = SLASH;
-  public static final String CREDENTIALS = COLON;
-  public static final String HOST_AND_PORT = COLON;
-  public static final String NAMESPACING = DOT;
+public class OptionalsTest {
 
-  // Formatting
-  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  private static final int SOME_INT = 3;
+  private static final String SOME_INT_STRING = "3";
+  private static final Optional<Integer> SOME_OPTIONAL_INT = Optional.<Integer> of(SOME_INT);
+  private static final Optional<Number> SOME_OPTIONAL_MATCHING_NUMBER = Optional.<Number> of(SOME_INT);
+  private static final Optional<String> SOME_OPTIONAL_MATCHING_STRING = Optional.<String> of(SOME_INT_STRING);
+
+  @Test
+  public void test_subclass_cast() {
+    Optional<Number> optional = Optionals.<Number, Integer> cast(SOME_OPTIONAL_INT);
+    assertThat(optional).isEqualTo(SOME_OPTIONAL_MATCHING_NUMBER);
+  }
+
+  @Test
+  public void test_castable_cast() {
+    Optional<String> optional = Optionals.<Integer, String> cast(
+        SOME_OPTIONAL_INT,
+        castIntegerToString());
+    assertThat(optional).isEqualTo(SOME_OPTIONAL_MATCHING_STRING);
+  }
 
 }

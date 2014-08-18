@@ -22,12 +22,14 @@ import static lombok.AccessLevel.PACKAGE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 
+@Slf4j
 @NoArgsConstructor(access = PACKAGE)
 public class ValidatingState extends AbstractCancellableState {
 
@@ -100,10 +102,12 @@ public class ValidatingState extends AbstractCancellableState {
 
   private void handleFailed(StateContext context, Iterable<DataType> dataTypes, Report oldReport) {
     // Use the old report and force a state
-    oldReport.inheritState(SubmissionState.ERROR, dataTypes);
+    val state = SubmissionState.ERROR;
+    log.info("Setting old report state to {}...", state);
+    oldReport.inheritState(state, dataTypes);
 
     // Need to call DCC...
-    context.setState(SubmissionState.ERROR);
+    context.setState(state);
   }
 
 }

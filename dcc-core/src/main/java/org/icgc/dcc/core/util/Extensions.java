@@ -27,5 +27,6 @@ import lombok.NoArgsConstructor;
 public class Extensions {
 
   public static final String TSV = "tsv";
+  public static final String JSON = "json";
 
 }
