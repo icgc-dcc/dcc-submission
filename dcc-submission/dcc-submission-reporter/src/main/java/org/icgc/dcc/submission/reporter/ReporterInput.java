@@ -6,7 +6,6 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.core.util.Jackson.PRETTY_WRITTER;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
@@ -27,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 
+@ToString
 public class ReporterInput {
 
   private final Table<String, FileType, Set<String>> data = HashBasedTable.create();
@@ -97,19 +97,13 @@ public class ReporterInput {
     return pipeNameToFilePath.build();
   }
 
-  @Override
-  @SneakyThrows
-  public String toString() {
-    return PRETTY_WRITTER.writeValueAsString(data);
-  }
-
   private void addFile(String projectKey, FileType fileType, String path) {
     Set<String> paths = data.get(projectKey, fileType);
     if (paths == null) {
       paths = newLinkedHashSet();
       data.put(projectKey, fileType, paths);
     }
-    
+
     paths.add(path);
   }
 

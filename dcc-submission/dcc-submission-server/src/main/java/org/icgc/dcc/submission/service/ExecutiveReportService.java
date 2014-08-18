@@ -23,6 +23,7 @@ import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,7 +174,7 @@ public class ExecutiveReportService extends AbstractIdleService {
   public void generateReport(String releaseName) {
     generateReport(
         releaseName,
-        releaseRepository.findProjectKeys(releaseName));
+        releaseRepository.findSignedOffProjectKeys(releaseName));
   }
 
   /**
@@ -183,6 +184,11 @@ public class ExecutiveReportService extends AbstractIdleService {
       @NonNull final String releaseName,
       @NonNull final Set<String> projectKeys) {
 
+    val s = new LinkedHashSet<String>();
+    s.addAll(projectKeys);
+    s.remove("AML-US");
+    s.remove("WT-US");
+
     // TODO: check state: VALID or SIGNED_OFF only + no reports already
 
     val dictionaryNode = Jackson.DEFAULT.valueToTree(
@@ -191,7 +197,7 @@ public class ExecutiveReportService extends AbstractIdleService {
     val codeListsNode = Jackson.DEFAULT.valueToTree(
         codeListRepository.findCodeLists());
 
-    generateReport(releaseName, projectKeys, dictionaryNode, codeListsNode);
+    generateReport(releaseName, s, dictionaryNode, codeListsNode);
   }
 
   /**

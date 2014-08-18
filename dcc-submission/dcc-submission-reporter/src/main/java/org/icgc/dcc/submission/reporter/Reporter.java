@@ -10,7 +10,9 @@ import static org.icgc.dcc.core.util.Jackson.getRootObject;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 
 import java.net.URL;
 import java.util.Map;
@@ -27,7 +29,7 @@ import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.ProcessClinicalType;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.ClinicalCounts;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity.ProjectDataTypeEntity;
 
@@ -56,7 +58,7 @@ public class Reporter {
 
     val reporterInput = ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
-            FileSystems.getLocalFileSystem(),
+            FileSystems.getFileSystem("file://localhost"),
             defaultParentDataDir,
             projectsJsonFilePath,
             getPatterns(dictionaryRoot)));
@@ -90,15 +92,25 @@ public class Reporter {
       val projectDataTypeEntity = new ProjectDataTypeEntity(preComputationTable);
       val projectSequencingStrategy = new ProjectSequencingStrategy(
           preComputationTable,
-          ProcessClinicalType.donor(preComputationTable),
+          ClinicalCounts.donor(
+              preComputationTable,
+              PROJECT_ID_FIELD.append(TYPE_FIELD)),
           mapping.keySet());
 
       projectDataTypeEntities.put(projectKey, projectDataTypeEntity);
       projectSequencingStrategies.put(projectKey, projectSequencingStrategy);
     }
 
+    System.out.println("===========================================================================");
+    for (val projectKey : projectKeys) {
+      Map<String, String> pipeNameToFilePath = reporterInput.getPipeNameToFilePath(projectKey);
+      System.out.println(projectKey);
+      System.out.println(Jackson.formatPrettyJson(pipeNameToFilePath));
+    }
+    System.out.println("===========================================================================");
+
     val outputDir = createTempDir();
-    new ReporterConnector(
+    val connectCascade = new ReporterConnector(
         FileSystems.isLocal(hadoopProperties),
         outputDir.getAbsolutePath())
         .connectCascade(
@@ -106,8 +118,10 @@ public class Reporter {
             releaseName,
             projectDataTypeEntities,
             projectSequencingStrategies,
-            hadoopProperties)
-        .complete();
+            hadoopProperties);
+
+    log.info("Running cascade");
+    connectCascade.complete();
 
     return outputDir.getAbsolutePath();
   }

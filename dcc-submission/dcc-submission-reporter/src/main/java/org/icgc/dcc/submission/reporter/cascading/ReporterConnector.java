@@ -85,6 +85,8 @@ public class ReporterConnector {
     }
 
     HadoopProperties.setHadoopUserNameProperty();
+
+    log.info("Connecting cascade");
     return connector
         .getCascadeConnector(hadoopProperties)
         .connect(cascadeDef);

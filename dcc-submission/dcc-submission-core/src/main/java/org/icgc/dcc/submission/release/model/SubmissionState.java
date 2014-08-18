@@ -29,6 +29,8 @@ import org.icgc.dcc.submission.core.state.StateContext;
 import org.icgc.dcc.submission.core.state.States;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Canonical set of allowed behavioral states for a submission.
  * <p>
@@ -118,6 +120,11 @@ public enum SubmissionState implements State {
   @Override
   public void reset(StateContext context) {
     delegate.reset(context);
+  }
+
+  @JsonIgnore
+  public boolean isSignedOff() {
+    return this == SIGNED_OFF;
   }
 
 }

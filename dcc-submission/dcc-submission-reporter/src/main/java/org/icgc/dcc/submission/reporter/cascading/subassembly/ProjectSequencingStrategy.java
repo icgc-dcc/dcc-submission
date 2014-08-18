@@ -3,6 +3,7 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly;
 import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
 import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
@@ -92,18 +93,19 @@ public class ProjectSequencingStrategy extends SubAssembly {
   }
 
   private static Pipe postProcessDonors(Pipe pipe) {
+    val temporaryDonorField = getTemporaryField(getFieldName(PROJECT_ID_FIELD), DONOR);
 
     return new Rename(
         new SumBy(
             new Retain(
                 pipe,
-                getTemporaryField(DONOR, PROJECT_ID_FIELD)
+                temporaryDonorField
                     .append(DONOR_UNIQUE_COUNT_FIELD)),
-            getTemporaryField(DONOR, PROJECT_ID_FIELD),
+            temporaryDonorField,
             DONOR_UNIQUE_COUNT_FIELD,
             DONOR_UNIQUE_COUNT_FIELD,
             long.class),
-        getTemporaryField(DONOR, PROJECT_ID_FIELD),
+        temporaryDonorField,
         REDUNDANT_PROJECT_ID_FIELD);
   }
 
