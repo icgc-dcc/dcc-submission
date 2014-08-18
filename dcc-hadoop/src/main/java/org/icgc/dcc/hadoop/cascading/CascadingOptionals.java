@@ -17,43 +17,22 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
-import static com.google.common.collect.Iterables.transform;
-import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.Identifiable.Identifiables.getId;
-import static org.icgc.dcc.core.util.Joiners.DASH;
-import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
 import lombok.NoArgsConstructor;
-
-import org.icgc.dcc.core.model.Identifiable;
-import org.icgc.dcc.core.util.Named;
-
+import cascading.cascade.Cascade;
 import cascading.flow.Flow;
+import cascading.pipe.Pipe;
+
+import com.google.common.base.Optional;
 
 /**
- * Utils methods for {@link Flow}.
+ * Utility methods and constants for {@link Optional}s of cascading objects.
  */
 @NoArgsConstructor(access = PRIVATE)
-public class Flows implements Named {
+public final class CascadingOptionals {
 
-  private static final Flows INTERNAL = new Flows();
-  private static final String CLASS_NAME = removeTrailingS(Flows.class.getSimpleName());
-
-  @Override
-  public String getName() {
-    return CLASS_NAME;
-  }
-
-  public static String getNameFromIdentifiables(Identifiable... identifiables) {
-    return getName(transform(asList(identifiables), getId()));
-  }
-
-  public static String getName(Object... qualifiers) {
-    return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
-  }
-
-  public static String getName(Class<?> clazz, Object... qualifiers) {
-    return getName(clazz.getSimpleName(), getName(qualifiers));
-  }
+  public static final Optional<Pipe> ABSENT_PIPE = Optional.absent();
+  public static final Optional<Flow<?>> ABSENT_FLOW = Optional.<Flow<?>> absent();
+  public static final Optional<Cascade> ABSENT_CASCADE = Optional.absent();
 
 }
