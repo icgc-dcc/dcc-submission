@@ -6,12 +6,13 @@ import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.util.Extensions.TSV;
-import static org.icgc.dcc.core.util.Jackson.getJsonRoot;
+import static org.icgc.dcc.core.util.Jackson.getRootObject;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +21,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
@@ -45,12 +47,12 @@ public class Reporter {
       @NonNull final Optional<Set<String>> projectKeys,
       @NonNull final String defaultParentDataDir,
       @NonNull final String projectsJsonFilePath,
-      @NonNull final String dictionaryFilePath,
-      @NonNull final String codeListsFilePath,
+      @NonNull final URL dictionaryFilePath,
+      @NonNull final URL codeListsFilePath,
       @NonNull final Map<String, String> hadoopProperties) {
 
-    val dictionaryRoot = getJsonRoot(dictionaryFilePath);
-    val codeListsRoot = getJsonRoot(codeListsFilePath);
+    val dictionaryRoot = getRootObject(dictionaryFilePath);
+    val codeListsRoot = Jackson.getRootArray(codeListsFilePath);
 
     val reporterInput = ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
@@ -68,7 +70,7 @@ public class Reporter {
         getSequencingStrategyMapping(
             dictionaryRoot,
             codeListsRoot),
-            hadoopProperties);
+        hadoopProperties);
   }
 
   public static String process(
@@ -78,8 +80,8 @@ public class Reporter {
       @NonNull final Map<String, String> mapping,
       @NonNull final Map<String, String> hadoopProperties) {
     log.info("Gathering reports for '{}.{}': '{}' ('{}')",
-        new Object[] {releaseName, projectKeys, reporterInput, mapping});
-    
+        new Object[] { releaseName, projectKeys, reporterInput, mapping });
+
     // Main processing
     val projectDataTypeEntities = Maps.<String, Pipe> newLinkedHashMap();
     val projectSequencingStrategies = Maps.<String, Pipe> newLinkedHashMap();
@@ -97,8 +99,8 @@ public class Reporter {
 
     val outputDir = createTempDir();
     new ReporterConnector(
-          FileSystems.isLocal(hadoopProperties),
-          outputDir.getAbsolutePath())
+        FileSystems.isLocal(hadoopProperties),
+        outputDir.getAbsolutePath())
         .connectCascade(
             reporterInput,
             releaseName,
@@ -106,7 +108,7 @@ public class Reporter {
             projectSequencingStrategies,
             hadoopProperties)
         .complete();
-    
+
     return outputDir.getAbsolutePath();
   }
 

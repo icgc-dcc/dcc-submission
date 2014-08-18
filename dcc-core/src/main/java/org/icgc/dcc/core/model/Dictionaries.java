@@ -55,6 +55,7 @@ public class Dictionaries {
   /**
    * Do not touch those without modifying their counterparts in the Dictionary/FileSchema object model (in sub-module).
    */
+  private static final String DICTIONARY_VERSION = "version";
   public static final String FILE_SCHEMATA_KEY = "files";
   public static final String FILE_SCHEMA_NAME_KEY = "name";
   public static final String FILE_SCHEMA_PATTERN_KEY = "pattern";
@@ -70,6 +71,10 @@ public class Dictionaries {
   public static final String TERMS_KEY = "terms";
   public static final String CODELIST_VALUE_KEY = "value";
   public static final String CODELIST_CODE_KEY = "code";
+
+  public static String getDictionaryVersion(@NonNull final JsonNode dictionaryRoot) {
+    return getString(dictionaryRoot, DICTIONARY_VERSION);
+  }
 
   public static Map<FileType, String> getPatterns(@NonNull final JsonNode dictionaryRoot) {
 

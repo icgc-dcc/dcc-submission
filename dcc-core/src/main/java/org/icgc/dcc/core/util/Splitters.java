@@ -18,6 +18,7 @@
 package org.icgc.dcc.core.util;
 
 import static com.google.common.base.Splitter.on;
+import static com.google.common.collect.ImmutableSet.of;
 import static org.icgc.dcc.core.util.FormatUtils._;
 import lombok.NonNull;
 
@@ -44,37 +45,51 @@ public class Splitters {
   // Aliases
   public static final Splitter PATH = SLASH;
   public static final Splitter EXTENSION = DOT;
+  public static final Splitter NAMESPACING = DOT;
   public static final Splitter CREDENTIALS = COLON;
 
   /**
    * TODO: consider enum rather?
    */
   public static final Joiner getCorrespondingJoiner(@NonNull final Splitter splitter) {
+
+    // Basics
     if (splitter.equals(WHITESPACE)) {
       return Joiners.WHITESPACE;
-    } else if (splitter.equals(SLASH) || splitter.equals(PATH)) {
-      return Joiners.SLASH;
     } else if (splitter.equals(TAB)) {
       return Joiners.TAB;
     } else if (splitter.equals(NEWLINE)) {
       return Joiners.NEWLINE;
-    } else if (splitter.equals(DOT) || splitter.equals(EXTENSION)) {
-      return Joiners.DOT;
     } else if (splitter.equals(DASH)) {
       return Joiners.DASH;
     } else if (splitter.equals(UNDERSCORE)) {
       return Joiners.UNDERSCORE;
     } else if (splitter.equals(COMMA)) {
       return Joiners.COMMA;
-    } else if (splitter.equals(COLON) || splitter.equals(CREDENTIALS)) {
-      return Joiners.COLON;
     } else if (splitter.equals(SEMICOLON)) {
       return Joiners.SEMICOLON;
     } else if (splitter.equals(HASHTAG)) {
       return Joiners.HASHTAG;
-    } else {
+    } else if (splitter.equals(SLASH)) {
+      return Joiners.SLASH;
+    } else if (splitter.equals(DOT)) {
+      return Joiners.DOT;
+    } else if (splitter.equals(COLON)) {
+      return Joiners.COLON;
+    }
+
+    // Aliases
+    else if (of(PATH).contains(splitter)) {
+      return Joiners.SLASH;
+    } else if (of(EXTENSION, NAMESPACING).contains(splitter)) {
+      return Joiners.DOT;
+    } else if (of(CREDENTIALS).contains(splitter)) {
+      return Joiners.COLON;
+    }
+
+    // Error
+    else {
       throw new UnsupportedOperationException(_("Unsupported yet: '%s'", splitter));
     }
   }
-
 }

@@ -18,70 +18,106 @@
 package org.icgc.dcc.core.util;
 
 import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.toArray;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.util.Joiners.COLON;
+import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import com.google.common.base.Optional;
+
 /**
- * Util methods for {@link URI}s.
+ * Utility methods and constants for {@link URI}s.
  * <p>
  * TODO: change to decorator? + write test class
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class URIs {
 
-  private static final String MISSING_INFO = Strings2.EMPTY_STRING;
   private static final int USERNAME_OFFSET = 0;
   private static final int PASSWORD_OFFSET = USERNAME_OFFSET + 1;
-  private static final int MISSING_PORT = -1;
-  private static final String MISSING_CREDENTIALS = Joiners.CREDENTIALS.join(MISSING_INFO, MISSING_INFO);
   private static final String SCHEME_SEPARATOR = "://";
   private static final String DEFAULT_PROTOCOL = "http"; // TODO: make more generic...
   private static final String DEFAULT_SCHEME = DEFAULT_PROTOCOL + SCHEME_SEPARATOR;
 
   @SneakyThrows
-  public static URI getURI(String value) {
+  public static URI getUri(
+      @NonNull final Protocol protocol,
+      @NonNull final String host,
+      final int port,
+      Optional<String> optionalPath) {
+    return new URI(getUriString(protocol, host, port, optionalPath));
+  }
+
+  public static String getUriString(
+      @NonNull final Protocol protocol,
+      @NonNull final String host,
+      final int port,
+      Optional<String> optionalPath) {
+    val base = protocol.getId() +
+        COLON.join(
+            host,
+            port);
+
+    return optionalPath.isPresent() ?
+        PATH.join(base, optionalPath.get()) :
+        base;
+  }
+
+  @SneakyThrows
+  public static URI getURI(@NonNull final String value) {
     return new URI(value.contains(SCHEME_SEPARATOR) ?
         value :
         DEFAULT_SCHEME + value);
   }
 
-  // TODO: change to optional
-  public static String getHost(URI uri) {
-    return firstNonNull(uri.getHost(), MISSING_INFO);
+  public static Optional<String> getHost(@NonNull final URI uri) {
+    return fromNullable(uri.getHost());
   }
 
-  public static String getPort(URI uri) {
-    val port = uri.getPort();
-    return String.valueOf(port == MISSING_PORT ? MISSING_INFO : port);
+  public static Optional<Integer> getPort(@NonNull final URI uri) {
+    return fromNullable(uri.getPort());
   }
 
-  public static String getUsername(URI uri) {
-    return getCredentials(uri.getUserInfo()).getKey();
+  public static Optional<String> getUsername(@NonNull final URI uri) {
+    return uri.getUserInfo() != null ?
+        Optional.of(getCredentials(uri.getUserInfo()).getKey()) :
+        ABSENT_STRING;
   }
 
-  public static String getPassword(URI uri) {
-    return getCredentials(uri.getUserInfo()).getValue();
+  public static Optional<String> getPassword(@NonNull final URI uri) {
+    return uri.getUserInfo() != null ?
+        Optional.of(getCredentials(uri.getUserInfo()).getValue()) :
+        ABSENT_STRING;
   }
 
-  private static Entry<String, String> getCredentials(String userInfo) {
+  private static Entry<String, String> getCredentials(@NonNull final String userInfo) {
     val credentials = toArray(
         Splitters.CREDENTIALS.split(
-            firstNonNull(userInfo, MISSING_CREDENTIALS)),
+            firstNonNull(userInfo, Separators.CREDENTIALS)),
         String.class);
     checkState(credentials.length == PASSWORD_OFFSET + 1, // TODO: case where only the username is provided possible?
         "Credentials are expected to have 2 components, a username and a password");
     return new SimpleEntry<String, String>(
         credentials[USERNAME_OFFSET],
         credentials[PASSWORD_OFFSET]);
+  }
+
+  @SneakyThrows
+  public static URI fromUrl(@NonNull final URL url) {
+    return url.toURI();
   }
 
 }

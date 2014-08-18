@@ -29,6 +29,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.core.util.FsConfig.FS_ROOT;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
@@ -70,6 +71,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
+import static org.icgc.dcc.test.Tests.TEST_FIXTURES_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -128,9 +130,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   /**
    * Test file system.
    */
-  private static final String INTEGRATION_TEST_DIR = "/fixtures/submission";
+  private static final String SUBMISSION_DIR_NAME = "submission";
   private static final String DESTINATION_DIR_NAME = "dcc_root_dir";
-  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/" + DESTINATION_DIR_NAME;
+  private static final String FS_DIR = PATH.join(TEST_FIXTURES_DIR, SUBMISSION_DIR_NAME, DESTINATION_DIR_NAME);
 
   /**
    * Projects.

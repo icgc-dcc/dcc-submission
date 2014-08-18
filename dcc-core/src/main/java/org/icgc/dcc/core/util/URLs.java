@@ -17,33 +17,33 @@
  */
 package org.icgc.dcc.core.util;
 
+import static lombok.AccessLevel.PRIVATE;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 /**
- * Common separators.
+ * Utility methods and constants for {@link URL}s.
  */
-public class Separators {
+@NoArgsConstructor(access = PRIVATE)
+public final class URLs {
 
-  public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
-  public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
-  public static final String TAB = Strings2.TAB;
-  public static final String DOT = ".";
-  public static final String COMMA = ",";
-  public static final String DASH = "-";
-  public static final String UNDERSCORE = "_";
-  public static final String SLASH = "/";
-  public static final String WHITESPACE = " ";
-  public static final String COLON = ":";
-  public static final String SEMICOLON = ";";
-  public static final String HASHTAG = "#";
+  public static URL getUrl(@NonNull final String path) {
+    return getUrl(new File(path));
+  }
 
-  // Aliases
-  public static final String EXTENSION = Strings2.DOT;
-  public static final String PATH = SLASH;
-  public static final String CREDENTIALS = COLON;
-  public static final String HOST_AND_PORT = COLON;
-  public static final String NAMESPACING = DOT;
+  public static URL getUrl(@NonNull final File file) {
+    return getUrl(file.toURI());
+  }
 
-  // Formatting
-  public static final String INDENT = Separators.NEWLINE + Separators.TAB;
+  @SneakyThrows
+  public static URL getUrl(@NonNull final URI uri) {
+    return uri.toURL();
+  }
 
 }
