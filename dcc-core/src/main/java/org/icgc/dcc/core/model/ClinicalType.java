@@ -31,25 +31,18 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
  * <p>
  * The "donor" name is reused here (which makes things a bit confusing...).
  */
-public enum ClinicalType implements DataType {
+public enum ClinicalType implements DataType, Identifiable {
 
   CLINICAL_CORE_TYPE(FileSubType.DONOR_SUBTYPE.getFullName()),
   CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
 
-  private ClinicalType(@NonNull final String typeName) {
-    this.typeName = typeName;
+  private ClinicalType(@NonNull final String id) {
+    this.id = id;
   }
 
-  @Override
-  public String getId() {
-    return typeName;
-  }
-
-  /**
-   * TODO: phase out in favor of {@link #getId()}
-   */
   @Getter
-  private final String typeName;
+  // @Override
+  private final String id;
 
   @Override
   public boolean isClinicalType() {
@@ -90,10 +83,10 @@ public enum ClinicalType implements DataType {
    * Returns an enum matching the type name provided.
    */
   public static DataType from(String typeName) {
-    if (typeName.equals(CLINICAL_CORE_TYPE.getTypeName())) {
+    if (typeName.equals(CLINICAL_CORE_TYPE.getId())) {
       return CLINICAL_CORE_TYPE;
     }
-    if (typeName.equals(CLINICAL_OPTIONAL_TYPE.getTypeName())) {
+    if (typeName.equals(CLINICAL_OPTIONAL_TYPE.getId())) {
       return CLINICAL_OPTIONAL_TYPE;
     }
 
