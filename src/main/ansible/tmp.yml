@@ -1,8 +1,0 @@
-- name: Portal deployment
-  hosts: ["portal"]
-  gather_facts: no
-  user: ubuntu
-  sudo: yes
-
-  roles:
-    - portal
