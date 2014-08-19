@@ -2,7 +2,6 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeen
 
 import static cascading.tuple.Fields.NONE;
 import static com.google.common.collect.Iterables.toArray;
-import static com.google.common.collect.Maps.newLinkedHashMap;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
@@ -17,15 +16,13 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_UNIQUE_CO
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
-
-import java.util.Map;
-
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
+import org.icgc.dcc.submission.reporter.IntermediateOutputType;
 
 import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
@@ -40,9 +37,6 @@ import com.google.common.collect.ImmutableList;
 
 public class ProjectDataTypeEntity extends SubAssembly {
 
-  public static Map<String, Pipe> preProcessedAlls = newLinkedHashMap();
-  public static Map<String, Pipe> preProcessedFeatureTypess = newLinkedHashMap();
-
   public ProjectDataTypeEntity(
       @NonNull final String releaseName,
       @NonNull final String projectKey,
@@ -55,9 +49,6 @@ public class ProjectDataTypeEntity extends SubAssembly {
         preComputationTable,
         PROJECT_ID_FIELD.append(TYPE_FIELD));
 
-    preProcessedAlls.put(projectKey, Dumps.preProcessingAll(projectKey, preProcessedAll));
-    preProcessedFeatureTypess.put(projectKey, Dumps.preProcessingFeatureTypes(projectKey, preProcessedFeatureTypes));
-
     setTails(new Merge(
 
         // All
@@ -67,12 +58,13 @@ public class ProjectDataTypeEntity extends SubAssembly {
                 keyValuePair(
                     TYPE_FIELD,
                     ALL_TYPES),
-                preProcessedAll)),
+                Dumps.addIntermediateOutputDump(IntermediateOutputType.PRE_PROCESSING_ALL, projectKey, preProcessedAll))),
 
         // Feature types
         new NamingPipe(
             "observations",
-            preProcessedFeatureTypes)));
+            Dumps.addIntermediateOutputDump(IntermediateOutputType.PRE_PROCESSING_FEATURE_TYPES, projectKey,
+                preProcessedFeatureTypes))));
   }
 
   @NoArgsConstructor(access = PRIVATE)

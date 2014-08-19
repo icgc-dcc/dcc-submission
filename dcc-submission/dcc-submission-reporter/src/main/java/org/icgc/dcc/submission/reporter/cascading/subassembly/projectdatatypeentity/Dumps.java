@@ -17,70 +17,37 @@
  */
 package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
-import static cascading.tuple.Fields.NONE;
-import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.RELEASE_NAME_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_UNIQUE_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_UNIQUE_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 import lombok.NonNull;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReorderFields;
-import org.icgc.dcc.submission.reporter.OutputType;
+import org.icgc.dcc.submission.reporter.IntermediateOutputType;
 
 import cascading.pipe.Pipe;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 /**
  * TODO: very ugly, must address ASAP!
  */
 public class Dumps {
 
-  public static Pipe preComputation(
+  public static Table<IntermediateOutputType, String, Pipe> HACK_TABLE = HashBasedTable.create();
+
+  public static Pipe addIntermediateOutputDump(
+      @NonNull final IntermediateOutputType intermediateOutputType,
       @NonNull final String projectKey,
       @NonNull final Pipe pipe) {
-    return new ReorderFields(
-        new Pipe(OutputType.PRE_COMPUTATION + projectKey, pipe),
-        NONE.append(RELEASE_NAME_FIELD)
-            .append(PROJECT_ID_FIELD)
-            .append(TYPE_FIELD)
-            .append(DONOR_ID_FIELD)
-            .append(SPECIMEN_ID_FIELD)
-            .append(SAMPLE_ID_FIELD)
-            .append(ANALYSIS_ID_FIELD)
-            .append(SEQUENCING_STRATEGY_FIELD)
-            .append(_ANALYSIS_OBSERVATION_COUNT_FIELD));
-  }
+    HACK_TABLE.put(
+        intermediateOutputType,
+        projectKey,
 
-  static Pipe preProcessingAll(
-      @NonNull final String projectKey,
-      @NonNull final Pipe pipe) {
-    return new ReorderFields(
-        new Pipe(OutputType.PRE_PROCESSING_ALL + projectKey, pipe),
-        NONE.append(PROJECT_ID_FIELD)
-            .append(DONOR_UNIQUE_COUNT_FIELD)
-            .append(SPECIMEN_UNIQUE_COUNT_FIELD)
-            .append(SAMPLE_UNIQUE_COUNT_FIELD)
-            .append(_ANALYSIS_OBSERVATION_COUNT_FIELD));
-  }
+        new ReorderFields(
+            new Pipe(
+                intermediateOutputType.getPipeName(projectKey),
+                pipe),
+            intermediateOutputType.getReorderedFields()));
 
-  static Pipe preProcessingFeatureTypes(
-      @NonNull final String projectKey,
-      @NonNull final Pipe pipe) {
-    return new ReorderFields(
-        new Pipe(OutputType.PRE_PROCESSING_FEATURE_TYPES + projectKey, pipe),
-        NONE.append(PROJECT_ID_FIELD)
-            .append(TYPE_FIELD)
-            .append(DONOR_UNIQUE_COUNT_FIELD)
-            .append(SPECIMEN_UNIQUE_COUNT_FIELD)
-            .append(SAMPLE_UNIQUE_COUNT_FIELD)
-            .append(_ANALYSIS_OBSERVATION_COUNT_FIELD));
+    return pipe;
   }
-
 }

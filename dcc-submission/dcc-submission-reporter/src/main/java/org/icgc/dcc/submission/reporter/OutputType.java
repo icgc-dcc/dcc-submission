@@ -1,15 +1,18 @@
 package org.icgc.dcc.submission.reporter;
 
-public enum OutputType {
+import org.icgc.dcc.core.model.Identifiable;
 
-  PRE_COMPUTATION,
-  PRE_PROCESSING_ALL,
-  PRE_PROCESSING_FEATURE_TYPES,
+public enum OutputType implements Identifiable {
 
   DONOR,
   SPECIMEN,
   SAMPLE,
   OBSERVATION,
   SEQUENCING_STRATEGY;
+
+  @Override
+  public String getId() {
+    return name().toLowerCase();
+  }
 
 }

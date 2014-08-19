@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.model.Identifiable;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
@@ -134,13 +135,13 @@ public class Reporter {
   }
 
   public static String getOutputFilePath(
-      String outputDirPath, OutputType output, String releaseName, String projectKey) {
-    return PATH.join(outputDirPath, getOutputFileName(output, releaseName, projectKey));
+      String outputDirPath, Identifiable type, String releaseName, String projectKey) {
+    return PATH.join(outputDirPath, getOutputFileName(type, releaseName, projectKey));
   }
 
-  public static String getOutputFileName(OutputType output, String releaseName, String projectKey) {
+  public static String getOutputFileName(Identifiable type, String releaseName, String projectKey) {
     return EXTENSION.join(
-        output.name().toLowerCase(),
+        type.getId(),
         releaseName,
         projectKey,
         TSV);

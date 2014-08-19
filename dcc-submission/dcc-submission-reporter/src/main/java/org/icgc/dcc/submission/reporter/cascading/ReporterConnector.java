@@ -6,6 +6,13 @@ import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.transformValues;
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
+import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION;
+import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_CLINICAL;
+import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_FEATURE_TYPES;
+import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_TMP1;
+import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_TMP2;
+import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_PROCESSING_ALL;
+import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_PROCESSING_FEATURE_TYPES;
 import static org.icgc.dcc.submission.reporter.Reporter.getOutputFilePath;
 
 import java.util.Map;
@@ -22,11 +29,11 @@ import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 import org.icgc.dcc.hadoop.util.HadoopProperties;
+import org.icgc.dcc.submission.reporter.IntermediateOutputType;
 import org.icgc.dcc.submission.reporter.OutputType;
 import org.icgc.dcc.submission.reporter.Reporter;
 import org.icgc.dcc.submission.reporter.ReporterInput;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ProjectDataTypeEntity;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.Dumps;
 
 import cascading.cascade.Cascade;
 import cascading.flow.FlowConnector;
@@ -82,12 +89,27 @@ public class ReporterConnector {
           getFlowConnector(hadoopProperties).connect(
               flowDef()
                   .addSources(getRawInputTaps(reporterInput, projectKey))
-                  .addTailSink(PreComputation.preComputations.get(projectKey),
-                      GenericTaps.RAW_CASTER.apply(gett(OutputType.PRE_COMPUTATION, releaseName, projectKey)))
-                  .addTailSink(ProjectDataTypeEntity.preProcessedAlls.get(projectKey),
-                      GenericTaps.RAW_CASTER.apply(gett(OutputType.PRE_PROCESSING_ALL, releaseName, projectKey)))
-                  .addTailSink(ProjectDataTypeEntity.preProcessedFeatureTypess.get(projectKey),
-                      GenericTaps.RAW_CASTER.apply(gett(OutputType.PRE_PROCESSING_FEATURE_TYPES, releaseName, projectKey)))
+                  .addTailSink(
+                      Dumps.HACK_TABLE.get(PRE_COMPUTATION_CLINICAL, projectKey),
+                      getRawIntermediateOutputTap(releaseName, projectKey, PRE_COMPUTATION_CLINICAL))
+                  .addTailSink(
+                      Dumps.HACK_TABLE.get(PRE_COMPUTATION_FEATURE_TYPES, projectKey),
+                      getRawIntermediateOutputTap(releaseName, projectKey, PRE_COMPUTATION_FEATURE_TYPES))
+                  .addTailSink(
+                      Dumps.HACK_TABLE.get(PRE_COMPUTATION, projectKey),
+                      getRawIntermediateOutputTap(releaseName, projectKey, PRE_COMPUTATION))
+                  .addTailSink(
+                      Dumps.HACK_TABLE.get(PRE_COMPUTATION_TMP1, projectKey),
+                      getRawIntermediateOutputTap(releaseName, projectKey, PRE_COMPUTATION_TMP1))
+                  .addTailSink(
+                      Dumps.HACK_TABLE.get(PRE_COMPUTATION_TMP2, projectKey),
+                      getRawIntermediateOutputTap(releaseName, projectKey, PRE_COMPUTATION_TMP2))
+                  .addTailSink(
+                      Dumps.HACK_TABLE.get(PRE_PROCESSING_ALL, projectKey),
+                      getRawIntermediateOutputTap(releaseName, projectKey, PRE_PROCESSING_ALL))
+                  .addTailSink(
+                      Dumps.HACK_TABLE.get(PRE_PROCESSING_FEATURE_TYPES, projectKey),
+                      getRawIntermediateOutputTap(releaseName, projectKey, PRE_PROCESSING_FEATURE_TYPES))
                   .addTailSink(
                       projectDataTypeEntity,
                       getRawOutputProjectDataTypeEntityTap(projectDataTypeEntity.getName(), releaseName, projectKey))
@@ -174,6 +196,17 @@ public class ReporterConnector {
    * See {@link LocalTaps#RAW_CASTER}.
    */
   @SuppressWarnings("rawtypes")
+  private Tap getRawIntermediateOutputTap(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey,
+      @NonNull final IntermediateOutputType intermediateOutputType) {
+    return GenericTaps.RAW_CASTER.apply(getIntermediateOutputTap(intermediateOutputType, releaseName, projectKey));
+  }
+
+  /**
+   * See {@link LocalTaps#RAW_CASTER}.
+   */
+  @SuppressWarnings("rawtypes")
   private Tap getRawOutputProjectSequencingStrategyTap(
       @NonNull final String tailName,
       @NonNull final String releaseName,
@@ -197,8 +230,9 @@ public class ReporterConnector {
     return taps.getNoCompressionTsvWithHeader(outputFilePath);
   }
 
-  private Tap<?, ?, ?> gett(OutputType outputType, String releaseName, String projectKey) {
-    val outputFilePath = getOutputFilePath(outputDirPath, outputType, releaseName, projectKey);
+  private Tap<?, ?, ?> getIntermediateOutputTap(IntermediateOutputType intermediateOutputType, String releaseName,
+      String projectKey) {
+    val outputFilePath = getOutputFilePath(outputDirPath, intermediateOutputType, releaseName, projectKey);
     return taps.getNoCompressionTsvWithHeader(outputFilePath);
   }
 
