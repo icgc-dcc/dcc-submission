@@ -37,6 +37,7 @@ import lombok.val;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Proposition;
+import org.icgc.dcc.core.util.Separators;
 
 import cascading.tuple.Fields;
 
@@ -55,7 +56,7 @@ public final class Fields2 {
   public static Fields NO_FIELDS = new Fields();
   public static Fields EMPTY_FIELDS = NO_FIELDS;
 
-  private static final String DEFAULT_PREFIX_SEPARATOR = ".";
+  private static final String DEFAULT_FIELD_SEPARATOR = Separators.DOLLAR;
   private static final String COUNT_SUFFIX = "count";
   private static final String REDUNDANT_PREFIX = "redundant";
 
@@ -259,15 +260,15 @@ public final class Fields2 {
   }
 
   public static String prefixedFieldName(FileType fileType, String fieldName) {
-    return prefixedFieldName(fileType.getTypeName(), fieldName);
+    return prefixedFieldName(fileType.getId(), fieldName);
   }
 
   public static String prefixedFieldName(String prefix, String fieldName) {
-    return prefixedFieldName(prefix, DEFAULT_PREFIX_SEPARATOR, fieldName);
+    return prefixedFieldName(prefix, DEFAULT_FIELD_SEPARATOR, fieldName);
   }
 
   public static String prefixedFieldName(FileType fileType, String sep, String fieldName) {
-    return prefixedFieldName(fileType.getTypeName(), sep, fieldName);
+    return prefixedFieldName(fileType.getId(), sep, fieldName);
   }
 
   public static String prefixedFieldName(String prefix, String sep, String fieldName) {
@@ -279,11 +280,11 @@ public final class Fields2 {
   }
 
   public static Fields prefixedFields(FileType fileType, Fields fields) {
-    return prefixedFields(fileType.getTypeName(), fields);
+    return prefixedFields(fileType.getId(), fields);
   }
 
   public static Fields prefixedFields(String prefix, Fields fields) {
-    return prefixedFields(prefix, DEFAULT_PREFIX_SEPARATOR, fields);
+    return prefixedFields(prefix, DEFAULT_FIELD_SEPARATOR, fields);
   }
 
   public static Fields prefixedFields(String prefix, String separator, Fields fields) {
@@ -303,14 +304,26 @@ public final class Fields2 {
     return new Fields(prefixed);
   }
 
+  public static Fields prefixedFields(String prefix, String field) {
+    return prefixedFields(prefix, DEFAULT_FIELD_SEPARATOR, field);
+  }
+
   public static Fields prefixedFields(String prefix, String sep, String field) {
     return new Fields(prefix(prefix, sep, field));
+  }
+
+  public final static String prefix(String prefix, String value) {
+    return prefix(prefix, DEFAULT_FIELD_SEPARATOR, value);
   }
 
   public final static String prefix(String prefix, String sep, String value) {
     checkNotNull(prefix);
     checkNotNull(value);
     return prefix + sep + value;
+  }
+
+  public static Fields unprefixFields(Fields fields) {
+    return unprefixFields(fields, DEFAULT_FIELD_SEPARATOR);
   }
 
   public static Fields unprefixFields(Fields fields, String sep) {
@@ -329,7 +342,7 @@ public final class Fields2 {
   }
 
   public static String getPrefix(String prefixedFieldName) {
-    return getPrefix(prefixedFieldName, DEFAULT_PREFIX_SEPARATOR);
+    return getPrefix(prefixedFieldName, DEFAULT_FIELD_SEPARATOR);
   }
 
   public static String getPrefix(String prefixedFieldName, String sep) {

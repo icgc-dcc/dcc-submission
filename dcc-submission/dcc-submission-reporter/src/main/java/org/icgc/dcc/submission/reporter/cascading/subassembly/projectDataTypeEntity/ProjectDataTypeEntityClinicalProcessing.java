@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEn
 
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
-import static org.icgc.dcc.core.model.ClinicalType.CLINICAL;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
+import static org.icgc.dcc.core.model.DataType.CLINICAL;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS;
@@ -49,7 +49,7 @@ public class ProjectDataTypeEntityClinicalProcessing extends SubAssembly {
 
   private static Pipe process(@NonNull final Pipe preComputationTable) {
     val clinicalPipe = new Pipe(
-        CLINICAL_CORE_TYPE.getTypeName(),
+        CLINICAL_CORE_TYPE.getId(),
         preComputationTable);
 
     return new SubAssemblies.ReorderFields(

@@ -35,6 +35,7 @@ public class Separators {
   public static final String COLON = ":";
   public static final String SEMICOLON = ";";
   public static final String HASHTAG = "#";
+  public static final String DOLLAR = "$";
 
   // Aliases
   public static final String EXTENSION = Strings2.DOT;
