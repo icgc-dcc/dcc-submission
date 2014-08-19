@@ -43,18 +43,22 @@ import com.google.common.collect.Sets;
  * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor", "specimen",
  * "ssm_m", "meth_seq_m", ... They have the clinical ones in common.
  */
-public interface DataType {
+public interface DataType extends Identifiable {
 
-  String TYPE_SUFFIX = "TYPE";
+  /**
+   * TODO: remove the need for these suffices
+   */
+  String TYPE_SUFFIX = "_TYPE";
+  String SUBTYPE_SUFFIX = "_SUBTYPE";
 
   /**
    * Not really used anywhere (but here for consistency).
    */
   String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
 
-  String name();
+  String CLINICAL = "clinical";
 
-  String getTypeName();
+  String name();
 
   boolean isClinicalType();
 
@@ -159,7 +163,7 @@ public interface DataType {
 
         @Override
         public int compare(DataType dataType1, DataType dataType2) {
-          return dataType1.name().compareTo(dataType2.name());
+          return dataType1.getId().compareTo(dataType2.getId());
         }
       });
 

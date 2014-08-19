@@ -66,7 +66,7 @@ public class ProjectSequencingStrategy extends SubAssembly {
     }
 
     for (val featureType : withSequencingStrategy(FeatureType.values())) {
-      builder.add(featureType.getTypeName());
+      builder.add(featureType.getId());
     }
 
     // Remove this after DCC-2399 is done

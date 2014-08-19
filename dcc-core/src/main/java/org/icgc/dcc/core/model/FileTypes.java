@@ -25,7 +25,7 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_OPTIONAL_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.SECONDARY_SUBTYPE;
-import static org.icgc.dcc.core.util.FormatUtils._;
+import static org.icgc.dcc.core.util.Strings2.getFirstCharacter;
 
 import java.util.List;
 import java.util.Set;
@@ -61,7 +61,7 @@ public final class FileTypes {
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
 
-  public enum FileSubType {
+  public enum FileSubType implements Identifiable {
 
     //
     // Clinical
@@ -95,7 +95,24 @@ public final class FileTypes {
 
     SYSTEM_SUBTYPE;
 
-    private static final String SUBTYPE_SUFFIX = "_SUBTYPE";
+    @Override
+    public String getId() {
+      return usedAsAbbrevatiation() ?
+          getAbbreviation() :
+          getFullName();
+    }
+
+    public String getAbbreviation() {
+      checkState(usedAsAbbrevatiation(),
+          "Clinical sub types do not use abbreviations, attempt was made on %s", this);
+      return getFirstCharacter(name()).toLowerCase();
+    }
+
+    public String getFullName() {
+      checkState(!usedAsAbbrevatiation(),
+          "Non-clinical sub types use abbreviations, attempt was made on %s", this);
+      return name().replace(DataType.SUBTYPE_SUFFIX, "").toLowerCase();
+    }
 
     public boolean isMetaSubType() {
       return this == META_SUBTYPE;
@@ -129,22 +146,6 @@ public final class FileTypes {
     private static final List<FileSubType> TYPES_USED_AS_ABBREVIATION =
         newArrayList(META_SUBTYPE, PRIMARY_SUBTYPE, SECONDARY_SUBTYPE);
 
-    public String getAbbreviation() {
-      checkState(usedAsAbbrevatiation(),
-          "Clinical sub types do not use abbreviations, attempt was made on %s", this);
-      return getFirstCharacter().toLowerCase();
-    }
-
-    public String getFullName() {
-      checkState(!usedAsAbbrevatiation(),
-          "Non-clinical sub types use abbreviations, attempt was made on %s", this);
-      return name().replace(SUBTYPE_SUFFIX, "").toLowerCase();
-    }
-
-    private String getFirstCharacter() {
-      return name().substring(0, 1);
-    }
-
     /**
      * Determines whether the sub-type is used as abbreviation for further qualification (for instance "meta" is used as
      * the "_m" suffix) or not (for instance "donor").
@@ -152,9 +153,10 @@ public final class FileTypes {
     private boolean usedAsAbbrevatiation() {
       return TYPES_USED_AS_ABBREVIATION.contains(this);
     }
+
   }
 
-  public enum FileType {
+  public enum FileType implements Identifiable {
 
     //
     // Clinical
@@ -256,6 +258,17 @@ public final class FileTypes {
     @Getter
     private final FileSubType subType;
 
+    @Override
+    public String getId() {
+      if (subType.usedAsAbbrevatiation()) {
+        return JOINER.join(dataType.getId(), subType.getAbbreviation());
+      } else if (subType.isSystemSubType()) {
+        return JOINER.join(dataType.getId(), PROBES);
+      } else {
+        return subType.getFullName();
+      }
+    }
+
     public boolean isSsmP() {
       return this == SSM_P_TYPE;
     }
@@ -298,18 +311,7 @@ public final class FileTypes {
      * fs-convention
      */
     public String getHarmonizedOutputFileName() {
-      return _("%s%s", getTypeName(), FILE_EXTENSION);
-    }
-
-    public String getTypeName() {
-      if (subType.usedAsAbbrevatiation()) {
-        return JOINER.join(dataType.getTypeName(), subType.getAbbreviation());
-      } else if (subType.isSystemSubType()) {
-        return JOINER.join(dataType.getTypeName(), PROBES); // TODO: name to be finalized. consider changing subtype
-                                                            // from "system" to "mani"?)
-      } else {
-        return subType.getFullName();
-      }
+      return getId() + FILE_EXTENSION;
     }
 
     /**

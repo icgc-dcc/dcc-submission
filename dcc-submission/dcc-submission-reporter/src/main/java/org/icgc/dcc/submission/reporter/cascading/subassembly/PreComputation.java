@@ -47,9 +47,9 @@ public class PreComputation extends SubAssembly {
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
 
   public PreComputation(String releaseName, String projectKey, ReporterInput inputData) {
-    setTails(processProject(inputData, releaseName, projectKey)); 
+    setTails(processProject(inputData, releaseName, projectKey));
   }
-  
+
   /**
    * Joins the clinical and observation pipes.
    */
@@ -174,7 +174,7 @@ public class PreComputation extends SubAssembly {
                         featureType.hasSequencingStrategy(),
 
                         // Use feature type as replacement for a sequencing strategy if need be
-                        featureType.getTypeName(),
+                        featureType.getId(),
 
                         processFiles(
                             inputData, projectKey, featureType.getMetaFileType(),
@@ -268,7 +268,7 @@ public class PreComputation extends SubAssembly {
    * Must use the {@link String} value because {@link DataType} is not a real enum (rather a composite thereof).
    */
   private static String getDataTypeValue(@NonNull final DataType dataType) {
-    return dataType.getTypeName();
+    return dataType.getId();
   }
 
 }

@@ -23,6 +23,7 @@ import lombok.NonNull;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 public interface Identifiable {
 
@@ -30,6 +31,18 @@ public interface Identifiable {
 
   @NoArgsConstructor(access = PRIVATE)
   public static class Identifiables {
+
+    @Deprecated
+    public static <T> Identifiable fromClass(@NonNull final Class<T> type) {
+      return new Identifiable() {
+
+        @Override
+        public String getId() {
+          return type.getClass().getSimpleName(); // FIXME
+        }
+
+      };
+    }
 
     public static Identifiable fromString(@NonNull final String s) {
       return new Identifiable() {
@@ -73,6 +86,10 @@ public interface Identifiable {
         }
 
       };
+    }
+
+    public static Identifiable[] toArray(Iterable<Identifiable> identifiables) {
+      return Iterables.toArray(identifiables, Identifiable.class);
     }
 
   }
