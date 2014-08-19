@@ -38,42 +38,42 @@ import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Rename;
 import cascading.tuple.Fields;
 
-public class ClinicalCounts extends SubAssembly {
+public class ClinicalUniqueCounts extends SubAssembly {
 
   /**
    * This one is used in the other table as well (hence the public).
    */
-  public static Pipe donor(
+  public static Pipe donors(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
-    return new ClinicalCounts(
+    return new ClinicalUniqueCounts(
         preComputationTable,
         DONOR,
         countByFields,
         DONOR_ID_FIELD);
   }
 
-  static Pipe specimen(
+  static Pipe specimens(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
-    return new ClinicalCounts(
+    return new ClinicalUniqueCounts(
         preComputationTable,
         SPECIMEN,
         countByFields,
         SPECIMEN_ID_FIELD);
   }
 
-  static Pipe sample(
+  static Pipe samples(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
-    return new ClinicalCounts(
+    return new ClinicalUniqueCounts(
         preComputationTable,
         SAMPLE,
         countByFields,
         SAMPLE_ID_FIELD);
   }
 
-  private ClinicalCounts(
+  private ClinicalUniqueCounts(
       @NonNull final Pipe preComputationTable,
       @NonNull final OutputType outputType,
       @NonNull final Fields countByFields,

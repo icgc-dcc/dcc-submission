@@ -30,7 +30,7 @@ import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
-import cascading.pipe.joiner.InnerJoin;
+import cascading.pipe.joiner.LeftJoin;
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
@@ -66,9 +66,9 @@ public class ProjectDataTypeEntity extends SubAssembly {
                   toArray(
                       ImmutableList.<Pipe> builder()
 
-                          .add(ClinicalCounts.donor(preComputationTable, countByFields))
-                          .add(ClinicalCounts.specimen(preComputationTable, countByFields))
-                          .add(ClinicalCounts.sample(preComputationTable, countByFields))
+                          .add(ClinicalUniqueCounts.donors(preComputationTable, countByFields))
+                          .add(ClinicalUniqueCounts.specimens(preComputationTable, countByFields))
+                          .add(ClinicalUniqueCounts.samples(preComputationTable, countByFields))
 
                           .add(ObservationCounts.observations(preComputationTable, countByFields))
 
@@ -86,7 +86,7 @@ public class ProjectDataTypeEntity extends SubAssembly {
                       .append(SAMPLE_UNIQUE_COUNT_FIELD.append(getTemporaryCountByFields(countByFields, SAMPLE)))
                       .append(_ANALYSIS_OBSERVATION_COUNT_FIELD.append(
                           getTemporaryCountByFields(countByFields, OBSERVATION))),
-                  new InnerJoin()),
+                  new LeftJoin()),
               getTemporaryCountByFields(countByFields, DONOR)
                   .append(DONOR_UNIQUE_COUNT_FIELD)
                   .append(SPECIMEN_UNIQUE_COUNT_FIELD)

@@ -32,7 +32,7 @@ import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ClinicalCounts;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ClinicalUniqueCounts;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
@@ -94,7 +94,7 @@ public class Reporter {
       val projectDataTypeEntity = new ProjectDataTypeEntity(preComputationTable);
       val projectSequencingStrategy = new ProjectSequencingStrategy(
           preComputationTable,
-          ClinicalCounts.donor(
+          ClinicalUniqueCounts.donors(
               preComputationTable,
               PROJECT_ID_FIELD.append(TYPE_FIELD)),
           mapping.keySet());
