@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.reporter.cascading.subassembly;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
@@ -40,6 +40,9 @@ import cascading.tuple.Fields;
 
 public class ClinicalCounts extends SubAssembly {
 
+  /**
+   * This one is used in the other table as well (hence the public).
+   */
   public static Pipe donor(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
@@ -50,7 +53,7 @@ public class ClinicalCounts extends SubAssembly {
         DONOR_ID_FIELD);
   }
 
-  public static Pipe specimen(
+  static Pipe specimen(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
     return new ClinicalCounts(
@@ -60,7 +63,7 @@ public class ClinicalCounts extends SubAssembly {
         SPECIMEN_ID_FIELD);
   }
 
-  public static Pipe sample(
+  static Pipe sample(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
     return new ClinicalCounts(

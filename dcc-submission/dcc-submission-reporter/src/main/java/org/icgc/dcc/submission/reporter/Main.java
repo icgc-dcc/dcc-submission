@@ -7,7 +7,9 @@ import java.util.Set;
 
 import lombok.val;
 
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.icgc.dcc.core.util.URLs;
+import org.icgc.dcc.hadoop.util.HadoopConstants;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -34,10 +36,9 @@ public class Main {
         projectsJsonFilePath,
         URLs.getUrl(dictionaryFilePath),
         URLs.getUrl(codeListsFilePath),
-        ImmutableMap.of(
-            "fs.defaultFS", nameNode, // "hdfs://localhost:8020"
-            "mapred.job.tracker", jobTracker // "localhost:8021"
-            ));
+        ImmutableMap.of( // TODO: allow more params
+            CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, nameNode,
+            HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, jobTracker));
   }
 
   private static final Optional<Set<String>> getProjectKeys(String projectKeys) {

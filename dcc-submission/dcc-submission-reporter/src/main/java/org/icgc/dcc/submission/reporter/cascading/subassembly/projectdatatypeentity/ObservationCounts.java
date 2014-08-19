@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.reporter.cascading.subassembly;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
 import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
@@ -32,7 +32,7 @@ import cascading.tuple.Fields;
 
 public class ObservationCounts extends SubAssembly {
 
-  public static Pipe observations(
+  static Pipe observations(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
 

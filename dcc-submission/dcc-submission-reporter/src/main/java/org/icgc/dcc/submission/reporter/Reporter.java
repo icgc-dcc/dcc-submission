@@ -22,6 +22,8 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.cascading.Pipes;
@@ -29,9 +31,9 @@ import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.ClinicalCounts;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectDataTypeEntity;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ClinicalCounts;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
 
@@ -58,7 +60,7 @@ public class Reporter {
 
     val reporterInput = ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
-            FileSystems.getFileSystem("file://localhost"),
+            getFileSystem(hadoopProperties),
             defaultParentDataDir,
             projectsJsonFilePath,
             getPatterns(dictionaryRoot)));
@@ -101,18 +103,10 @@ public class Reporter {
       projectSequencingStrategies.put(projectKey, projectSequencingStrategy);
     }
 
-    System.out.println("===========================================================================");
-    for (val projectKey : projectKeys) {
-      Map<String, String> pipeNameToFilePath = reporterInput.getPipeNameToFilePath(projectKey);
-      System.out.println(projectKey);
-      System.out.println(Jackson.formatPrettyJson(pipeNameToFilePath));
-    }
-    System.out.println("===========================================================================");
-
-    val outputDir = createTempDir();
+    val tempDirPath = createTempDir().getAbsolutePath();
     val connectCascade = new ReporterConnector(
         FileSystems.isLocal(hadoopProperties),
-        outputDir.getAbsolutePath())
+        tempDirPath)
         .connectCascade(
             reporterInput,
             releaseName,
@@ -123,7 +117,7 @@ public class Reporter {
     log.info("Running cascade");
     connectCascade.complete();
 
-    return outputDir.getAbsolutePath();
+    return tempDirPath;
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
@@ -141,6 +135,11 @@ public class Reporter {
         releaseName,
         projectKey,
         TSV);
+  }
+
+  private static FileSystem getFileSystem(@NonNull final Map<String, String> hadoopProperties) {
+    return FileSystems.getFileSystem(
+        hadoopProperties.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY));
   }
 
   private static Map<String, String> getSequencingStrategyMapping(

@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.reporter.cascading.subassembly;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
 import static cascading.tuple.Fields.NONE;
 import static com.google.common.collect.Iterables.toArray;
@@ -109,7 +109,7 @@ public class ProjectDataTypeEntity extends SubAssembly {
           new Insert(
               keyValuePair(
                   TYPE_FIELD,
-                  NAME),
+                  NAME.toLowerCase()),
               preProcessed));
     }
   }
