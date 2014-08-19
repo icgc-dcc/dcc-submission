@@ -105,27 +105,6 @@ public class ExecutiveReportResource {
 
   /**
    * Generates executive reports for the given release/project combination.
-   */
-  @POST
-  // TODO: best verb (see DCC-2445)?
-  @Path("/generate/{releaseName}/{projectKey}")
-  public Response generateExecutiveReport(
-      @Context SecurityContext securityContext,
-      @PathParam("releaseName") @NonNull String releaseName,
-      @PathParam("projectKey") @NonNull String projectKey) {
-
-    log.info("Generating reports for '{}.{}'...", releaseName, projectKey);
-    if (!isSuperUser(securityContext)) {
-      return unauthorizedResponse();
-    }
-
-    service.generateReport(releaseName, ImmutableSet.of(projectKey));
-
-    return Response.ok().build();
-  }
-
-  /**
-   * Generates executive reports for the given release/project combination.
    * 
    * @param projectKeys Comma-separated list of existing unique project keys.
    */
