@@ -179,8 +179,7 @@ public class ExecutiveReportService extends AbstractIdleService {
   public void generateReport(String releaseName) {
     generateReport(
         releaseName,
-        filterProjects(
-        releaseRepository.findSignedOffProjectKeys(releaseName)));
+        releaseRepository.findSignedOffProjectKeys(releaseName));
   }
 
   /**
@@ -210,6 +209,7 @@ public class ExecutiveReportService extends AbstractIdleService {
       @NonNull final JsonNode dictionaryNode,
       @NonNull final JsonNode codeListsNode) {
 
+    val filteredProjects = filterProjects(projectKeys);
     val fileSystem = dccFileSystem.getFileSystem();
     val patterns = getPatterns(dictionaryNode);
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
@@ -219,21 +219,21 @@ public class ExecutiveReportService extends AbstractIdleService {
 
       @Override
       public void run() {
-        log.info("Starting generating reports for '{}.{}'", releaseName, projectKeys);
+        log.info("Starting generating reports for '{}.{}'", releaseName, filteredProjects);
 
         val outputDirPath = Reporter.process(
             releaseName,
-            projectKeys,
+            filteredProjects,
             getReporterInput(
                 fileSystem,
-                projectKeys,
+                filteredProjects,
                 getReleasePath(releaseName),
                 patterns),
             mappings.get(),
             copyOf(hadoopProperties));
-        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, projectKeys);
+        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, filteredProjects);
 
-        for (val project : projectKeys) {
+        for (val project : filteredProjects) {
           ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
               fileSystem, outputDirPath, releaseName, project);
           log.info("Persisting data type executive reports for '{}.{}': '{}'",
@@ -258,7 +258,7 @@ public class ExecutiveReportService extends AbstractIdleService {
 
         }
 
-        log.info("Finished generating reports for '{}.{}'", releaseName, projectKeys);
+        log.info("Finished generating reports for '{}.{}'", releaseName, filteredProjects);
       }
 
       private String getReleasePath(@NonNull final String releaseName) {
