@@ -1,22 +1,14 @@
 package org.icgc.dcc.submission.reporter;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.core.util.Splitters.COMMA;
 
-import java.io.File;
-import java.util.Map;
 import java.util.Set;
 
-import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.core.util.URLs;
 
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
@@ -32,7 +24,8 @@ public class Main {
     val projectsJsonFilePath = args[3];
     val dictionaryFilePath = args[4];
     val codeListsFilePath = args[5];
-    val configFilePath = args[6];
+    val nameNode = args[6];
+    val jobTracker = args[7];
 
     Reporter.report(
         releaseName,
@@ -42,8 +35,8 @@ public class Main {
         URLs.getUrl(dictionaryFilePath),
         URLs.getUrl(codeListsFilePath),
         ImmutableMap.of(
-            "fs.defaultFS", "hdfs://localhost:8020", //
-            "mapred.job.tracker", "localhost:8021"
+            "fs.defaultFS", nameNode, // "hdfs://localhost:8020"
+            "mapred.job.tracker", jobTracker // "localhost:8021"
             ));
   }
 
@@ -58,12 +51,6 @@ public class Main {
         || projectKeys.isEmpty()
         || ALL_PROJECTS_SHORTHAND1.equalsIgnoreCase(projectKeys)
         || ALL_PROJECTS_SHORTHAND2.equals(projectKeys);
-  }
-
-  private static Map<String, String> getHadoopProperties(@NonNull final String configFilePath) {
-    val config = Jackson.readFile(new File(configFilePath));
-    checkState(config.getNodeType() == JsonNodeType.OBJECT);
-    return Jackson.asMap((ObjectNode) config.path(HADOOP_KEY));
   }
 
 }
