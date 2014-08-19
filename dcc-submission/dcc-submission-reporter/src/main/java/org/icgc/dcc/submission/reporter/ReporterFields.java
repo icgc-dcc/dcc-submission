@@ -67,18 +67,6 @@ public final class ReporterFields {
       SAMPLE_UNIQUE_COUNT_FIELD,
       _ANALYSIS_OBSERVATION_COUNT_FIELD);
 
-  /**
-   * Order matters.
-   */
-  public static final Fields PROJECT_DATA_TYPE_ENTITY_RESULT_FIELDS =
-      NONE
-          .append(DONOR_UNIQUE_COUNT_FIELD)
-          .append(SPECIMEN_UNIQUE_COUNT_FIELD)
-          .append(SAMPLE_UNIQUE_COUNT_FIELD)
-          .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-          .append(PROJECT_ID_FIELD)
-          .append(TYPE_FIELD);
-
   public static Fields getTemporaryCountByFields(
       @NonNull final Fields countByFields,
       @NonNull final OutputType outputType) {
@@ -95,5 +83,16 @@ public final class ReporterFields {
       @NonNull final OutputType outputType) {
     return getRedundantFieldCounterpart(outputType, fieldName);
   }
+
+  /**
+   * Order matters.
+   */
+  public static final Fields ORDERED_RESULT_FIELDS =
+      NONE
+          .append(DONOR_UNIQUE_COUNT_FIELD)
+          .append(SPECIMEN_UNIQUE_COUNT_FIELD)
+          .append(SAMPLE_UNIQUE_COUNT_FIELD)
+          .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+          .append(PROJECT_ID_FIELD);
 
 }
