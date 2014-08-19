@@ -25,6 +25,8 @@ import org.icgc.dcc.hadoop.util.HadoopProperties;
 import org.icgc.dcc.submission.reporter.OutputType;
 import org.icgc.dcc.submission.reporter.Reporter;
 import org.icgc.dcc.submission.reporter.ReporterInput;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ProjectDataTypeEntity;
 
 import cascading.cascade.Cascade;
 import cascading.flow.FlowConnector;
@@ -65,6 +67,8 @@ public class ReporterConnector {
     log.info("hadoopProperties: '{}'", hadoopProperties);
     for (val projectKey : reporterInput.getProjectKeys()) {
       log.info(formatPrettyJson(reporterInput.getPipeNameToFilePath(projectKey)));
+
+      // TODO: same for outputs
     }
 
     val cascadeDef = cascadeDef()
@@ -78,6 +82,12 @@ public class ReporterConnector {
           getFlowConnector(hadoopProperties).connect(
               flowDef()
                   .addSources(getRawInputTaps(reporterInput, projectKey))
+                  .addTailSink(PreComputation.preComputations.get(projectKey),
+                      GenericTaps.RAW_CASTER.apply(gett(OutputType.PRE_COMPUTATION, releaseName, projectKey)))
+                  .addTailSink(ProjectDataTypeEntity.preProcessedAlls.get(projectKey),
+                      GenericTaps.RAW_CASTER.apply(gett(OutputType.PRE_PROCESSING_ALL, releaseName, projectKey)))
+                  .addTailSink(ProjectDataTypeEntity.preProcessedFeatureTypess.get(projectKey),
+                      GenericTaps.RAW_CASTER.apply(gett(OutputType.PRE_PROCESSING_FEATURE_TYPES, releaseName, projectKey)))
                   .addTailSink(
                       projectDataTypeEntity,
                       getRawOutputProjectDataTypeEntityTap(projectDataTypeEntity.getName(), releaseName, projectKey))
@@ -184,6 +194,11 @@ public class ReporterConnector {
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
     val outputFilePath = getOutputFilePath(outputDirPath, OutputType.SEQUENCING_STRATEGY, releaseName, projectKey);
+    return taps.getNoCompressionTsvWithHeader(outputFilePath);
+  }
+
+  private Tap<?, ?, ?> gett(OutputType outputType, String releaseName, String projectKey) {
+    val outputFilePath = getOutputFilePath(outputDirPath, outputType, releaseName, projectKey);
     return taps.getNoCompressionTsvWithHeader(outputFilePath);
   }
 

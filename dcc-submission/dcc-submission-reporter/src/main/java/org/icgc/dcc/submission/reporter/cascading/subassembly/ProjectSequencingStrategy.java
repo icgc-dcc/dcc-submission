@@ -45,11 +45,16 @@ public class ProjectSequencingStrategy extends SubAssembly {
   private static final String NULL_REPLACEMENT = "null";
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
 
-  public ProjectSequencingStrategy(Pipe preComputationTable, Pipe donors, Set<String> codes) {
+  public ProjectSequencingStrategy(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey,
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Pipe donors,
+      @NonNull final Set<String> codes) {
     setTails(process(preComputationTable, donors, getTranspositionFields(codes)));
   }
 
-  private static Fields getTranspositionFields(Set<String> codes) {
+  private static Fields getTranspositionFields(@NonNull final Set<String> codes) {
     Fields transpositionFields = new Fields();
     for (val code : getAugmentedCodes(codes)) {
       transpositionFields = transpositionFields.append(new Fields(code));
@@ -57,8 +62,7 @@ public class ProjectSequencingStrategy extends SubAssembly {
     return transpositionFields;
   }
 
-  private static List<String> getAugmentedCodes(
-      @NonNull final Set<String> codes) {
+  private static List<String> getAugmentedCodes(@NonNull final Set<String> codes) {
 
     val builder = new ImmutableList.Builder<String>();
     val iterator = codes.iterator();

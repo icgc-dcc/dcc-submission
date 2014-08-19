@@ -1,11 +1,17 @@
 package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
+import static cascading.tuple.Fields.ARGS;
+import static cascading.tuple.Fields.NONE;
+import static cascading.tuple.Fields.REPLACE;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
+import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
@@ -18,7 +24,11 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEG
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
+
+import java.util.Map;
+
 import lombok.NonNull;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.DataType;
@@ -30,14 +40,21 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
+import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 import org.icgc.dcc.submission.reporter.ReporterInput;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.Dumps;
 
+import cascading.flow.FlowProcess;
+import cascading.operation.FunctionCall;
+import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Function;
 
@@ -45,11 +62,19 @@ import com.google.common.base.Function;
 public class PreComputation extends SubAssembly {
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
+  private static final int NO_OBSERVATIONS_COUNT = 0;
 
-  public PreComputation(String releaseName, String projectKey, ReporterInput inputData) {
-    setTails(processProject(inputData, releaseName, projectKey)); 
+  public static Map<String, Pipe> preComputations = newLinkedHashMap();
+
+  public PreComputation(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey,
+      @NonNull final ReporterInput inputData) {
+    Pipe processProject = processProject(inputData, releaseName, projectKey);
+    preComputations.put(projectKey, Dumps.preComputation(projectKey, processProject));
+    setTails(processProject);
   }
-  
+
   /**
    * Joins the clinical and observation pipes.
    */
@@ -71,29 +96,78 @@ public class PreComputation extends SubAssembly {
             keyValuePair(PROJECT_ID_FIELD, projectKey),
 
             //
-            new ReadableHashJoin(
-                JoinData.builder()
 
-                    // Right-join in order to keep track of clinical data with no observations as well
-                    .joiner(new RightJoin())
+            new Each(
+                new ReadableHashJoin(
+                    JoinData.builder()
 
-                    .leftPipe(processFeatureTypes(reporterInput, projectKey))
-                    .leftJoinFields(SAMPLE_ID_FIELD)
+                        // Right-join in order to keep track of clinical data with no observations as well
+                        .joiner(new RightJoin())
 
-                    .rightPipe(processClinical(reporterInput, projectKey))
-                    .rightJoinFields(SAMPLE_ID_FIELD)
+                        .leftPipe(processFeatureTypes(reporterInput, projectKey))
+                        .leftJoinFields(SAMPLE_ID_FIELD)
 
-                    .resultFields(
-                        META_PK_FIELDS
-                            .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                            .append(SEQUENCING_STRATEGY_FIELD)
-                            .append(TYPE_FIELD)
-                            .append(DONOR_ID_FIELD)
-                            .append(SPECIMEN_ID_FIELD)
-                            .append(REDUNDANT_SAMPLE_ID_FIELD))
-                    .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
+                        .rightPipe(processClinical(reporterInput, projectKey))
+                        .rightJoinFields(SAMPLE_ID_FIELD)
 
-                    .build())));
+                        .resultFields(
+                            NONE.append(ANALYSIS_ID_FIELD)
+                                .append(REDUNDANT_SAMPLE_ID_FIELD) // Renames it (will be discarded afterwards)
+                                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+                                .append(SEQUENCING_STRATEGY_FIELD)
+                                .append(TYPE_FIELD)
+                                .append(DONOR_ID_FIELD)
+                                .append(SPECIMEN_ID_FIELD)
+                                .append(SAMPLE_ID_FIELD)
+                        )
+                        .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
+
+                        .build()),
+                NONE.append(TYPE_FIELD)
+                    .append(ANALYSIS_ID_FIELD)
+                    .append(SEQUENCING_STRATEGY_FIELD)
+                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
+                new Replacer(),
+                REPLACE)
+        ));
+  }
+
+  private static class Replacer extends BaseFunction<Void> {
+
+    private Replacer() {
+      super(ARGS);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+      functionCall
+          .getOutputCollector()
+          .add(getTuple(functionCall.getArguments()));
+    }
+
+    private static Tuple getTuple(@NonNull final TupleEntry entry) {
+      if (isOrphanSample(entry)) {
+        return new Tuple(
+            ORPHAN_TYPE,
+            NOT_APPLICABLE,
+            NOT_APPLICABLE,
+            NO_OBSERVATIONS_COUNT);
+      } else {
+        return new Tuple(
+            entry.getString(TYPE_FIELD),
+            entry.getString(ANALYSIS_ID_FIELD),
+            entry.getString(SEQUENCING_STRATEGY_FIELD),
+            entry.getString(_ANALYSIS_OBSERVATION_COUNT_FIELD));
+      }
+    }
+
+    private static boolean isOrphanSample(@NonNull final TupleEntry entry) {
+      val featureType = entry.getString(TYPE_FIELD);
+      return featureType == null || featureType.isEmpty();
+    }
+
   }
 
   private static Pipe processClinical(final ReporterInput inputData, String projectKey) {

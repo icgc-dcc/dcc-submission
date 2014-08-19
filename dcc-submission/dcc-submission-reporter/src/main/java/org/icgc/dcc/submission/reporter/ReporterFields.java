@@ -32,6 +32,9 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
+
+import org.icgc.dcc.core.model.FieldNames.ReporterFieldNames;
+
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
@@ -42,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 @NoArgsConstructor(access = PRIVATE)
 public final class ReporterFields {
 
+  public static final Fields RELEASE_NAME_FIELD = new Fields(ReporterFieldNames.RELEASE_NAME);
   public static final Fields TYPE_FIELD = new Fields(OBSERVATION_TYPE);
   public static final Fields PROJECT_ID_FIELD = new Fields(PROJECT_ID);
   public static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
@@ -83,16 +87,5 @@ public final class ReporterFields {
       @NonNull final OutputType outputType) {
     return getRedundantFieldCounterpart(outputType, fieldName);
   }
-
-  /**
-   * Order matters.
-   */
-  public static final Fields ORDERED_RESULT_FIELDS =
-      NONE
-          .append(DONOR_UNIQUE_COUNT_FIELD)
-          .append(SPECIMEN_UNIQUE_COUNT_FIELD)
-          .append(SAMPLE_UNIQUE_COUNT_FIELD)
-          .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-          .append(PROJECT_ID_FIELD);
 
 }

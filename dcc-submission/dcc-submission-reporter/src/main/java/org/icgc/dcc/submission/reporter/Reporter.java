@@ -46,6 +46,13 @@ public class Reporter {
 
   public static final Class<Reporter> CLASS = Reporter.class;
 
+  public static final String ORPHAN_TYPE = "orphan";
+
+  /**
+   * Also encompasses any orphan clinical data there may be.
+   */
+  public static final String ALL_TYPES = "all";
+
   public static String report(
       @NonNull final String releaseName,
       @NonNull final Optional<Set<String>> projectKeys,
@@ -91,8 +98,9 @@ public class Reporter {
     val projectSequencingStrategies = Maps.<String, Pipe> newLinkedHashMap();
     for (val projectKey : projectKeys) {
       val preComputationTable = new PreComputation(releaseName, projectKey, reporterInput);
-      val projectDataTypeEntity = new ProjectDataTypeEntity(preComputationTable);
+      val projectDataTypeEntity = new ProjectDataTypeEntity(releaseName, projectKey, preComputationTable);
       val projectSequencingStrategy = new ProjectSequencingStrategy(
+          releaseName, projectKey,
           preComputationTable,
           ClinicalUniqueCounts.donors(
               preComputationTable,
@@ -117,6 +125,7 @@ public class Reporter {
     log.info("Running cascade");
     connectCascade.complete();
 
+    log.info("Output dir: '{}'", tempDirPath);
     return tempDirPath;
   }
 
