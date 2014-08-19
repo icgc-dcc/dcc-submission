@@ -57,7 +57,7 @@ public class Main {
     val projectKey = args.length >= ++i ? args[i - 1] : "my_project";
     val fsUrl = args.length >= ++i ? args[i - 1] : "file:///"; // or like "hdfs://hname-dev.res:8020"
     val jobTracker = args.length >= ++i ? args[i - 1] : "localhost"; // or like "hcn51.res:8021"
-    val fileTypeName = args.length >= ++i ? args[i - 1] : SSM_TYPE.getTypeName(); // or "sgv"
+    val fileTypeName = args.length >= ++i ? args[i - 1] : SSM_TYPE.getId(); // or "sgv"
 
     val fileType = FeatureType.from(fileTypeName);
     checkState(fileType.isSimple());
