@@ -94,7 +94,7 @@ public class SubAssembliesTest {
     cascadingSerialize(new Insert(keyValuePair(DUMMY_FIELD, ""), null));
     cascadingSerialize(new SubAssemblies.NullReplacer.EmptyTupleNullReplacer(DUMMY_FIELD, null));
     cascadingSerialize(new SubAssemblies.GroupBy(DUMMY_GROUP_BY_DATA));
-    cascadingSerialize(new SubAssemblies.CountBy(DUMMY_COUNT_BY_DATA));
+    cascadingSerialize(new SubAssemblies.ReadableCountBy(DUMMY_COUNT_BY_DATA));
     cascadingSerialize(new SubAssemblies.ReadableHashJoin(DUMMY_JOIN_DATA));
   }
 }

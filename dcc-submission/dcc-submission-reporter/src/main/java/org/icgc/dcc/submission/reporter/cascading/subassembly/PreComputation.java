@@ -38,8 +38,8 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.HashCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
@@ -91,7 +91,7 @@ public class PreComputation extends SubAssembly {
       @NonNull final ReporterInput reporterInput,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
-    Pipe previous2 = foo(reporterInput, projectKey);
+    val join = joinWithAbstraction(reporterInput, projectKey);
     return
 
     new Insert(
@@ -105,11 +105,10 @@ public class PreComputation extends SubAssembly {
             // Field/value to be inserted
             keyValuePair(PROJECT_ID_FIELD, projectKey),
 
-            //
             addIntermediateOutputDump(PRE_COMPUTATION_TMP2, projectKey,
                 new Unique(
                     new Each(
-                        addIntermediateOutputDump(PRE_COMPUTATION_TMP1, projectKey, previous2),
+                        addIntermediateOutputDump(PRE_COMPUTATION_TMP1, projectKey, join),
                         NONE.append(TYPE_FIELD)
                             .append(ANALYSIS_ID_FIELD)
                             .append(SEQUENCING_STRATEGY_FIELD)
@@ -120,7 +119,8 @@ public class PreComputation extends SubAssembly {
         ));
   }
 
-  private static Pipe foo2(final ReporterInput reporterInput, final String projectKey) {
+  @SuppressWarnings("unused")
+  private static Pipe joinWithoutAbstraction(final ReporterInput reporterInput, final String projectKey) {
     return new Discard(
         new HashJoin(
             addIntermediateOutputDump(PRE_COMPUTATION_FEATURE_TYPES, projectKey,
@@ -137,13 +137,8 @@ public class PreComputation extends SubAssembly {
         REDUNDANT_SAMPLE_ID_FIELD);
   }
 
-  /**
-   * @param reporterInput
-   * @param projectKey
-   * @return
-   */
-  private static ReadableHashJoin foo(final ReporterInput reporterInput, final String projectKey) {
-    ReadableHashJoin previous2 = new ReadableHashJoin(JoinData.builder()
+  private static ReadableHashJoin joinWithAbstraction(final ReporterInput reporterInput, final String projectKey) {
+    return new ReadableHashJoin(JoinData.builder()
 
         // Right-join in order to keep track of clinical data with no observations as well
         .joiner(new RightJoin())
@@ -174,7 +169,6 @@ public class PreComputation extends SubAssembly {
         .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
 
         .build());
-    return previous2;
   }
 
   private static class OrphanReplacer extends BaseFunction<Void> {
@@ -249,10 +243,7 @@ public class PreComputation extends SubAssembly {
   }
 
   private static Pipe processFeatureTypes(final ReporterInput reporterInput, final String projectKey) {
-    return
-
-    //
-    new Transformerge<FeatureType>(
+    return new Transformerge<FeatureType>(
         reporterInput.getFeatureTypesWithData(projectKey),
         new Function<FeatureType, Pipe>() {
 
@@ -278,43 +269,62 @@ public class PreComputation extends SubAssembly {
         // Fields to insert
         keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
 
-        //
-        new ReadableHashJoin(
-            JoinData.builder()
+        new ReadableHashJoin(JoinData.builder()
 
-                .joiner(new InnerJoin())
+            .joiner(new InnerJoin())
 
-                .leftPipe(processPrimaryFiles(reporterInput, projectKey, featureType))
-                .leftJoinFields(META_PK_FIELDS)
+            .leftPipe(processPrimaryFiles(reporterInput, projectKey, featureType))
+            .leftJoinFields(META_PK_FIELDS)
 
-                .rightPipe(
+            .rightPipe(processMetaFiles(reporterInput, projectKey, featureType))
+            .rightJoinFields(META_PK_FIELDS)
 
-                    // Meta files
-                    normalizeSequencingStrategies(
-                        processFiles(
-                            reporterInput, projectKey, featureType.getMetaFileType(),
-                            appendIfApplicable(
-                                META_PK_FIELDS,
-                                hasSequencingStrategy(featureType),
-                                SEQUENCING_STRATEGY_FIELD)),
+            .resultFields(
+                META_PK_FIELDS
+                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+                    .append(REDUNDANT_ANALYSIS_ID_FIELD)
+                    .append(REDUNDANT_SAMPLE_ID_FIELD)
+                    .append(SEQUENCING_STRATEGY_FIELD))
+            .discardFields(
+                REDUNDANT_ANALYSIS_ID_FIELD
+                    .append(REDUNDANT_SAMPLE_ID_FIELD))
 
-                        // Use feature type as replacement for a sequencing strategy if need be
-                        featureType.getTypeName(),
+            .build()));
+  }
 
-                        featureType.hasSequencingStrategy()))
-                .rightJoinFields(META_PK_FIELDS)
+  private static Pipe processPrimaryFiles(
+      @NonNull final ReporterInput reporterInput,
+      @NonNull final String projectKey,
+      @NonNull final FeatureType featureType) {
+    return
 
-                .resultFields(
-                    META_PK_FIELDS
-                        .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                        .append(REDUNDANT_ANALYSIS_ID_FIELD)
-                        .append(REDUNDANT_SAMPLE_ID_FIELD)
-                        .append(SEQUENCING_STRATEGY_FIELD))
-                .discardFields(
-                    REDUNDANT_ANALYSIS_ID_FIELD
-                        .append(REDUNDANT_SAMPLE_ID_FIELD))
+    // TODO: move that before the merge to maximum parallelization (optimization)
+    new ReadableCountBy(CountByData.builder()
 
-                .build()));
+        .pipe(processFiles(
+            reporterInput, projectKey, featureType.getPrimaryFileType(),
+            META_PK_FIELDS))
+        .countByFields(META_PK_FIELDS)
+        .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+
+        .build());
+
+  }
+
+  private static Pipe processMetaFiles(final ReporterInput reporterInput, final String projectKey,
+      final FeatureType featureType) {
+    return normalizeSequencingStrategies(
+        processFiles(
+            reporterInput, projectKey, featureType.getMetaFileType(),
+            appendIfApplicable(
+                META_PK_FIELDS,
+                hasSequencingStrategy(featureType),
+                SEQUENCING_STRATEGY_FIELD)),
+
+        // Use feature type as replacement for a sequencing strategy if need be
+        featureType.getTypeName(),
+
+        featureType.hasSequencingStrategy());
   }
 
   /**
@@ -332,25 +342,6 @@ public class PreComputation extends SubAssembly {
             keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
             pipe
         );
-  }
-
-  private static Pipe processPrimaryFiles(
-      @NonNull final ReporterInput reporterInput,
-      @NonNull final String projectKey,
-      @NonNull final FeatureType featureType) {
-    return
-
-    // TODO: move that before the merge to maximum parallelization (optimization)
-    new HashCountBy(CountByData.builder()
-
-        .pipe(processFiles(
-            reporterInput, projectKey, featureType.getPrimaryFileType(),
-            META_PK_FIELDS))
-        .countByFields(META_PK_FIELDS)
-        .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-
-        .build());
-
   }
 
   private static Pipe processFiles(
