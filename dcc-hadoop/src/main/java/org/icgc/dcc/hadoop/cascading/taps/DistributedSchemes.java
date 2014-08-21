@@ -18,19 +18,34 @@
 package org.icgc.dcc.hadoop.cascading.taps;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstObject;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.TSV_DELIMITER;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.withHeader;
+
+import java.io.IOException;
+
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
+import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
+import cascading.scheme.SinkCall;
+import cascading.scheme.SourceCall;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
 import cascading.scheme.hadoop.TextLine.Compress;
+import cascading.tuple.Fields;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * Utility class for working with cascading hadoop {@code Scheme} objects, such as {@code TextDelimited}.
@@ -38,19 +53,58 @@ import cascading.scheme.hadoop.TextLine.Compress;
  * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-class HadoopSchemes {
+class DistributedSchemes {
+
+  static final TextLine getTextLine() {
+    return new TextLine();
+  }
 
   @SuppressWarnings("rawtypes")
-  static Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getDecompressingTsvWithHeader() {
+  static final Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> getDecompressingTsvWithHeader() {
     val textLine = getNoCompressionTsvWithHeader();
     textLine.setSinkCompression(Compress.ENABLE);
     return textLine;
   }
 
-  static TextLine getNoCompressionTsvWithHeader() {
+  static final TextLine getNoCompressionTsvWithHeader() {
     return new TextDelimited(
         withHeader(),
         TSV_DELIMITER);
+  }
+
+  static final TextLine getNoCompressionTsvWithHeader(@NonNull final Fields fields) {
+    return new TextDelimited(
+        fields,
+        withHeader(),
+        TSV_DELIMITER);
+  }
+
+  static final TextLine getJsonScheme() {
+    return new TextLine() {
+
+      private final transient ObjectWriter writer = new ObjectMapper( // TODO: lazy-load?
+          new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
+          .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false).writer();
+
+      @Override
+      @SuppressWarnings("rawtypes")
+      public void sourcePrepare(FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall) {
+        throw new IllegalStateException("JsonScheme cannot be used as a source.");
+      }
+
+      /**
+       * It's ok to use NULL here so the collector does not write anything
+       */
+      @Override
+      @SuppressWarnings({ "unchecked", "rawtypes" })
+      public void sink(FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall)
+          throws IOException {
+        sinkCall.getOutput().collect(
+            null,
+            writer.writeValueAsString(getFirstObject(sinkCall.getOutgoingEntry())));
+      }
+
+    };
   }
 
 }

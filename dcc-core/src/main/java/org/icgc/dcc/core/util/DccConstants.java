@@ -15,52 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.fs;
+package org.icgc.dcc.core.util;
 
-import static com.google.common.base.Preconditions.checkState;
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.hadoop.fs.Configurations.newConfiguration;
-
-import java.util.Map;
-
-import lombok.AccessLevel;
+import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.util.Protocol;
 
 /**
- * Util methods for {@link FileSystem}.
- * <p>
- * TODO: create 2 versions like for taps/schemes
+ * General constants pertaining to DCC applications. Keep to the strict minimum.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FileSystems {
+@NoArgsConstructor(access = PRIVATE)
+public final class DccConstants {
 
-  @SneakyThrows
-  public static FileSystem getLocalFileSystem() {
-    return FileSystem.getLocal(newConfiguration());
-  }
-
-  @SneakyThrows
-  public static FileSystem getFileSystem(@NonNull final String fsDefault) {
-    return getFileSystem(newConfiguration(fsDefault));
-  }
-
-  @SneakyThrows
-  public static FileSystem getFileSystem(@NonNull final Configuration config) {
-    return FileSystem.get(config);
-  }
-
-  /**
-   * TODO: address issue if property coming from environment.
-   */
-  public static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
-    checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
-    return Protocol.fromURI(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
-  }
+  public static final String INPUT_FILES_SEPARATOR = Separators.TAB;
 
 }

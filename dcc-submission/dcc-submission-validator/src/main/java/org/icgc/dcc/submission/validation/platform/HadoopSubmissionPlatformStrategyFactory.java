@@ -37,8 +37,10 @@ public class HadoopSubmissionPlatformStrategyFactory implements SubmissionPlatfo
   }
 
   @Override
-  public SubmissionPlatformStrategy get(Path input, Path output, Path system) {
-    return new HadoopSubmissionPlatformStrategy(hadoopProperties, fileSystem, input, output, system);
+  public SubmissionPlatformStrategy get(
+      @NonNull final Path input,
+      @NonNull final Path output) {
+    return new HadoopSubmissionPlatformStrategy(hadoopProperties, fileSystem, input, output);
   }
 
 }

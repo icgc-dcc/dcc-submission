@@ -80,9 +80,6 @@ class DefaultExternalFlowPlanner extends BaseFileFlowPlanner implements External
   @Override
   protected FlowDef onConnect(FlowDef flowDef, SubmissionPlatformStrategy strategy) {
     checkState(false, "Should not be used");
-    for (Key key : trimmedHeads.keySet()) {
-      flowDef.addSource(key.getName(), strategy.getTrimmedTap(key));
-    }
     return flowDef;
   }
 

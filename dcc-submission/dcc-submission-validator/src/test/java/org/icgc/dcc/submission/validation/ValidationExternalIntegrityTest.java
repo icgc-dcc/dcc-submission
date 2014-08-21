@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -99,12 +99,12 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     assertTrue(content, content.isEmpty());
 
     String donorTrim =
-        getUnsortedFileContent(ROOTDIR, "/.validation/donor" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
+        getUnsortedFileContent(ROOTDIR, "/.validation/donor" + REPORT_FILES_INFO_SEPARATOR + "donor_id-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_donor_trim.tsv");
     assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
-        getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + FILE_NAME_SEPARATOR + "donor_id-offset.tsv");
+        getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + REPORT_FILES_INFO_SEPARATOR + "donor_id-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_specimen_trim.tsv");
     assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
@@ -133,13 +133,13 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     testErrorType("fk_1");
 
     String donorTrim =
-        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + FILE_NAME_SEPARATOR
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + REPORT_FILES_INFO_SEPARATOR
             + "donor_id-fakecolumn-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_donor_trim.tsv");
     assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
-        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + FILE_NAME_SEPARATOR
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + REPORT_FILES_INFO_SEPARATOR
             + "donor_id-fakecolumn-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_specimen_trim.tsv");
     assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
@@ -162,7 +162,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     System.err.println(outputDirString);
-    String errorFileString = outputDirString + "/" + "specimen.external" + FILE_NAME_SEPARATOR + "errors.json";
+    String errorFileString = outputDirString + "/" + "specimen.external" + REPORT_FILES_INFO_SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
@@ -170,11 +170,10 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
-    Path systemDir = SYSTEM_DIR;
 
     val dataTypes = DataTypes.values();
     val platformStrategy = new LocalSubmissionPlatformStrategy(
-        Collections.<String, String> emptyMap(), rootDir, outputDir, systemDir);
+        Collections.<String, String> emptyMap(), rootDir, outputDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
     plan.connect();

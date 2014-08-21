@@ -27,7 +27,6 @@ import static org.icgc.dcc.core.util.Collections3.sort;
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Separators.DASH;
-import static org.icgc.dcc.core.util.Splitters.TAB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,6 +52,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.icgc.dcc.core.util.Separators;
 
 import cascading.tuple.Fields;
 
@@ -374,7 +374,10 @@ public class HadoopUtils {
   }
 
   @SneakyThrows
-  public static Fields getFileHeader(FileSystem fileSystem, String inputFilePath) {
+  public static Fields getFileHeader(
+      @NonNull final FileSystem fileSystem,
+      @NonNull final String inputFilePath,
+      @NonNull final String separator) {
 
     val inputFile = new Path(inputFilePath);
     val codec = new CompressionCodecFactory(fileSystem.getConf()).getCodec(inputFile);
@@ -387,8 +390,10 @@ public class HadoopUtils {
             codec.createInputStream(fileSystem.open(inputFile)),
         UTF_8);
 
+    val splitter = Separators.getCorrespondingSplitter(separator);
+
     return new Fields(toArray(
-        TAB.split(
+        splitter.split(
             new LineReader(reader)
                 .readLine()),
         String.class));

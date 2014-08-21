@@ -19,12 +19,14 @@ package org.icgc.dcc.submission.validation.platform;
 
 import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
-import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.core.util.Joiners.DOT;
+import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
+import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD;
 import static org.icgc.dcc.submission.validation.primary.core.Plan.MAX_CONCURRENT_FLOW_STEPS;
 
 import java.io.InputStreamReader;
@@ -34,17 +36,16 @@ import java.util.Map;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Extensions;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
@@ -52,6 +53,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.io.LineReader;
 
+@Slf4j
 public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatformStrategy {
 
   private final CascadingTaps taps;
@@ -62,22 +64,15 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
   private final Path submissionDir;
   private final Path validationOutputDir;
 
-  /**
-   * TODO: still needed?
-   */
-  private final Path system;
-
   protected BaseSubmissionPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final FileSystem fileSystem,
       @NonNull final Path input,
-      @NonNull final Path output,
-      @NonNull final Path system) {
+      @NonNull final Path output) {
     this.hadoopProperties = hadoopProperties;
     this.fileSystem = fileSystem;
     this.submissionDir = input;
     this.validationOutputDir = output;
-    this.system = system;
     this.taps = getTaps();
     this.connectors = getConnectors();
   }
@@ -85,6 +80,21 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
   protected abstract CascadingTaps getTaps();
 
   protected abstract CascadingConnectors getConnectors();
+
+  @Override
+  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
+    val reportPath = getReportPath(fileName, type, reportName).toUri().getPath();
+    log.info("Streaming through report: '{}'", reportPath);
+
+    return getTaps().getCompressingJson(reportPath);
+  }
+
+  @Override
+  public Tap<?, ?, ?> getSourceTap(String fileName) {
+    return getTaps().getDecompressingLinesNoHeader(
+        getFilePath(fileName),
+        OFFSET_FIELD);
+  }
 
   @Override
   public FlowConnector getFlowConnector() {
@@ -108,42 +118,18 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
     return taps.getDecompressingTsvWithHeader(getFilePath(fileName));
   }
 
-  @Override
-  public Tap<?, ?, ?> getTrimmedTap(Key key) {
-    return tap(trimmedPath(key), new Fields(key.getFields()));
-  }
-
-  protected Path trimmedPath(Key key) {
-    checkState(false, "Should not be used"); // Not maintained anymore and due for deletion
-    if (key.getRole() == FileSchemaRole.SUBMISSION) {
-      return new Path(validationOutputDir, key.getName() + ".tsv");
-    } else if (key.getRole() == FileSchemaRole.SYSTEM) {
-      return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), key.getName() + ".tsv"); // TODO: should use
-                                                                                                   // DccFileSystem
-                                                                                                   // abstraction
-    } else {
-      throw new RuntimeException("Undefined File Schema Role " + key.getRole());
-    }
-  }
-
   protected Path getReportPath(String fileName, FlowType type, String reportName) {
     return new Path(
         validationOutputDir,
-        format("%s.%s%s%s.json",
-            fileName,
-            type,
-            FILE_NAME_SEPARATOR,
-            reportName));
+        EXTENSION.join(
+            DOT.join(
+                fileName,
+                REPORT_FILES_INFO_JOINER.join(
+                    type,
+                    reportName)),
+            Extensions.JSON));
   }
 
-  /**
-   * Returns a tap for the given path.
-   */
-  protected abstract Tap<?, ?, ?> tap(Path path);
-
-  protected abstract Tap<?, ?, ?> tap(Path path, Fields fields);
-
-  @Override
   @SneakyThrows
   public Fields getFileHeader(String fileName) {
     @Cleanup
@@ -155,12 +141,11 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
 
   @Override
   public List<String> listFileNames(String pattern) {
-    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir, compile(pattern)));
+    return toFilenameList(lsFile(fileSystem, submissionDir, compile(pattern)));
   }
 
-  @Override
   public List<String> listFileNames() {
-    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir));
+    return toFilenameList(lsFile(fileSystem, submissionDir));
   }
 
   @Override

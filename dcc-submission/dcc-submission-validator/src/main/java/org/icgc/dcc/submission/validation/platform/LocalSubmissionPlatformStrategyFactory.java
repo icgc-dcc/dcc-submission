@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.util.Map;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.hadoop.fs.Path;
@@ -29,8 +30,10 @@ public class LocalSubmissionPlatformStrategyFactory implements SubmissionPlatfor
   private final Map<String, String> hadoopProperties;
 
   @Override
-  public SubmissionPlatformStrategy get(Path input, Path output, Path system) {
-    return new LocalSubmissionPlatformStrategy(hadoopProperties, input, output, system);
+  public SubmissionPlatformStrategy get(
+      @NonNull final Path input,
+      @NonNull final Path output) {
+    return new LocalSubmissionPlatformStrategy(hadoopProperties, input, output);
   }
 
 }

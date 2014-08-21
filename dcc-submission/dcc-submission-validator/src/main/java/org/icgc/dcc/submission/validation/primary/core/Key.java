@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.core;
 
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
 
 import java.io.Serializable;
 
@@ -54,7 +54,7 @@ public class Key implements Serializable {
   }
 
   public String getName() {
-    return schemaName + FILE_NAME_SEPARATOR + JOINER.join(fields);
+    return schemaName + REPORT_FILES_INFO_SEPARATOR + JOINER.join(fields);
   }
 
   @Override

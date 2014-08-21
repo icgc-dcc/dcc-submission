@@ -165,9 +165,6 @@ class DefaultInternalFlowPlanner extends BaseFileFlowPlanner implements Internal
    * Not maintained anymore and due for deletion.
    */
   private void connectTrimmedTails(FlowDef flowDef, SubmissionPlatformStrategy platformStrategy) {
-    for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
-      flowDef.addTailSink(e.getValue(), platformStrategy.getTrimmedTap(e.getKey()));
-    }
   }
 
   @SuppressWarnings("rawtypes")

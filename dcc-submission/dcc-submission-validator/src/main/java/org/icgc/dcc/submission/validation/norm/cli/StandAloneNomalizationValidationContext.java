@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.norm.cli;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.typesafe.config.ConfigFactory.parseMap;
-import static org.apache.hadoop.fs.Path.SEPARATOR;
 import static org.icgc.dcc.core.Component.CONCATENATOR;
 import static org.icgc.dcc.core.Component.NORMALIZER;
 import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
@@ -132,14 +131,14 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
   @Override
   public SubmissionPlatformStrategy getPlatformStrategy() {
-    val provider = new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
+    val provider =
+        new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component
     val input = new Path(overarchDirName, new Path(getFakeInputReleaseName(), projectKey));
     val output = new Path(overarchDirName, new Path(getFakeOutputReleaseName(), projectKey));
-    val system = new Path(SEPARATOR); // Not used by normalizer
-    return factory.get(input, output, system);
+    return factory.get(input, output);
   }
 
   @Override
