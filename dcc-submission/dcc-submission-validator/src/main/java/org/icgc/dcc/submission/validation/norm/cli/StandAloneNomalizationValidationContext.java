@@ -72,8 +72,8 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
     private final Config getAppConfig() {
       return parseMap(ImmutableMap.<String, Object> of(
-          DOT.join(HADOOP_KEY, MR_JOBTRACKER_ADDRESS_KEY), jobTracker,
-          DOT.join(HADOOP_KEY, FS_DEFAULT_FS), fsUrl,
+          "\"" + DOT.join(HADOOP_KEY, MR_JOBTRACKER_ADDRESS_KEY) + "\"", jobTracker,
+          "\"" + DOT.join(HADOOP_KEY, FS_DEFAULT_FS) + "\"", fsUrl,
           FS_URL, fsUrl,
           FS_ROOT, fsRoot
           ));
@@ -132,7 +132,8 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
   @Override
   public SubmissionPlatformStrategy getPlatformStrategy() {
-    val provider = new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
+    val provider =
+        new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

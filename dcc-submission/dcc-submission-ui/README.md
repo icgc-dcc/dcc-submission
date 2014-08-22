@@ -8,8 +8,8 @@ Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are usin
 
 Install [brunch](http://brunch.io/), [cake](http://coffeescript.org/documentation/docs/cake.html) and required modules:
 
-	sudo npm install -g brunch@1.6.7 
-   	sudo npm install -g coffee-script 
+	sudo npm install -g brunch@1.7.14 
+   	sudo npm install -g coffee-script@1.6.3 
 	cd dcc/dcc-submission/dcc-submission-ui
 	npm install
 	
