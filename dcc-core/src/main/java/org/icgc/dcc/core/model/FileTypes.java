@@ -24,6 +24,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_OPTIONAL_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileSubType.META_SUBTYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileSubType.PRIMARY_SUBTYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileSubType.SECONDARY_SUBTYPE;
 import static org.icgc.dcc.core.util.Strings2.getFirstCharacter;
 
@@ -295,6 +297,14 @@ public final class FileTypes {
 
     public boolean isSimpleSecondary() {
       return isSsmS() || isSgvS();
+    }
+
+    public boolean isMeta() {
+      return getSubType() == META_SUBTYPE;
+    }
+
+    public boolean isPrimary() {
+      return getSubType() == PRIMARY_SUBTYPE;
     }
 
     public boolean isSecondary() {
