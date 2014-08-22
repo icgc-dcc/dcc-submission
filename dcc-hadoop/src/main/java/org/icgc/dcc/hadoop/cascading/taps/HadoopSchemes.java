@@ -53,7 +53,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-class DistributedSchemes {
+class HadoopSchemes {
 
   static final TextLine getTextLine() {
     return new TextLine();

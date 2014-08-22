@@ -31,7 +31,7 @@ import cascading.scheme.Scheme;
 import cascading.tuple.Fields;
 
 /**
- * Prefer {@link GenericSchemes} or {@link LocalSchemes}/{@link DistributedSchemes}.
+ * Prefer {@link GenericSchemes} or {@link LocalSchemes}/{@link HadoopSchemes}.
  */
 public class LegacySchemes {
 

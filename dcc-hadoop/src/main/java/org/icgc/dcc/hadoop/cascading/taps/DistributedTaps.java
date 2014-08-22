@@ -96,7 +96,7 @@ public class DistributedTaps implements CascadingTaps {
         @NonNull final String path,
         @NonNull final SinkMode sinkMode) {
       return new Hfs(
-          DistributedSchemes.getTextLine(),
+          HadoopSchemes.getTextLine(),
           path,
           sinkMode);
     }
@@ -109,13 +109,13 @@ public class DistributedTaps implements CascadingTaps {
 
     public static Tap<?, ?, ?> getDecompressingTsvWithHeader(@NonNull final String path) {
       return new Hfs(
-          DistributedSchemes.getDecompressingTsvWithHeader(),
+          HadoopSchemes.getDecompressingTsvWithHeader(),
           path);
     }
 
     public static Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
       return new Hfs(
-          DistributedSchemes.getNoCompressionTsvWithHeader(),
+          HadoopSchemes.getNoCompressionTsvWithHeader(),
           path);
     }
 
@@ -123,7 +123,7 @@ public class DistributedTaps implements CascadingTaps {
         @NonNull final String path,
         @NonNull final Fields declaredFields) {
       return new Hfs(
-          DistributedSchemes.getNoCompressionTsvWithHeader(declaredFields),
+          HadoopSchemes.getNoCompressionTsvWithHeader(declaredFields),
           path);
     }
 
@@ -147,7 +147,7 @@ public class DistributedTaps implements CascadingTaps {
 
     public static Tap<?, ?, ?> getJsonScheme(@NonNull final String path) {
       return new Hfs(
-          enableSinkCompression(DistributedSchemes.getJsonScheme()),
+          enableSinkCompression(HadoopSchemes.getJsonScheme()),
           path);
     }
 
