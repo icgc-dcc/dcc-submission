@@ -40,8 +40,7 @@ import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -71,6 +70,8 @@ import com.typesafe.config.Config;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PrimaryKeyGeneration.class })
 public class NormalizationValidatorTest {
+
+  private static final CascadingContext ctx = CascadingContext.getLocal();
 
   private static final String RELEASE_NAME = "dummy_release";
   private static final String PROJECT_NAME = "dummy_project";
@@ -163,7 +164,7 @@ public class NormalizationValidatorTest {
             .build());
 
     when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(getConnectors().getFlowConnector());
+        .thenReturn(ctx.getConnectors().getFlowConnector());
   }
 
   @SneakyThrows
@@ -213,7 +214,7 @@ public class NormalizationValidatorTest {
     mockInputTap(inputFile);
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(getConnectors().getFlowConnector());
+        .thenReturn(ctx.getConnectors().getFlowConnector());
     when(mockValidationContext.getFiles(SSM_P_TYPE))
         .thenReturn(newArrayList(new Path(inputFile)));
 
@@ -273,21 +274,13 @@ public class NormalizationValidatorTest {
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
   private Tap getInputTap(String inputFile) {
-    return getTaps().getNoCompressionTsvWithHeader(inputFile);
+    return ctx.getTaps().getNoCompressionTsvWithHeader(inputFile);
   }
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
   private Tap getOutputTap(String outputFile) {
-    return getTaps().getNoCompressionTsvWithHeader(outputFile);
-  }
-
-  private CascadingConnectors getConnectors() {
-    return CascadingConnectors.LOCAL;
-  }
-
-  private CascadingTaps getTaps() {
-    return CascadingTaps.LOCAL;
+    return ctx.getTaps().getNoCompressionTsvWithHeader(outputFile);
   }
 
 }

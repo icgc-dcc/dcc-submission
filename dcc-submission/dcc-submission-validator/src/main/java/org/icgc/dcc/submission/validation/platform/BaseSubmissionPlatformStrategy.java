@@ -43,8 +43,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Extensions;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
@@ -55,9 +54,6 @@ import com.google.common.io.LineReader;
 
 @Slf4j
 public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatformStrategy {
-
-  private final CascadingTaps taps;
-  private final CascadingConnectors connectors;
 
   protected final FileSystem fileSystem;
   private final Map<String, String> hadoopProperties;
@@ -73,27 +69,29 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
     this.fileSystem = fileSystem;
     this.submissionDir = input;
     this.validationOutputDir = output;
-    this.taps = getTaps();
-    this.connectors = getConnectors();
   }
 
-  protected abstract CascadingTaps getTaps();
+  protected abstract CascadingContext getCascadingContext();
 
-  protected abstract CascadingConnectors getConnectors();
+  protected abstract Map<?, ?> augmentFlowProperties(final Map<?, ?> flowProperties);
 
   @Override
   public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
     val reportPath = getReportPath(fileName, type, reportName).toUri().getPath();
     log.info("Streaming through report: '{}'", reportPath);
 
-    return getTaps().getCompressingJson(reportPath);
+    return getCascadingContext()
+        .getTaps()
+        .getCompressingJson(reportPath);
   }
 
   @Override
   public Tap<?, ?, ?> getSourceTap(String fileName) {
-    return getTaps().getDecompressingLinesNoHeader(
-        getFilePath(fileName),
-        OFFSET_FIELD);
+    return getCascadingContext()
+        .getTaps()
+        .getDecompressingLinesNoHeader(
+            getFilePath(fileName),
+            OFFSET_FIELD);
   }
 
   @Override
@@ -105,17 +103,21 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
 
     setMaxConcurrentSteps(flowProperties, MAX_CONCURRENT_FLOW_STEPS);
 
-    return connectors.getFlowConnector(augmentFlowProperties(flowProperties));
+    return getCascadingContext()
+        .getConnectors()
+        .getFlowConnector(
+            augmentFlowProperties(flowProperties));
   }
-
-  protected abstract Map<?, ?> augmentFlowProperties(final Map<?, ?> flowProperties);
 
   /**
    * TODO: phase out in favour of {@link #getSourceTap(FileType)}; Temporary: see DCC-1876
    */
   @Override
   public Tap<?, ?, ?> getNormalizerSourceTap(String fileName) {
-    return taps.getDecompressingTsvWithHeader(getFilePath(fileName));
+    return getCascadingContext()
+        .getTaps()
+        .getDecompressingTsvWithHeader(
+            getFilePath(fileName));
   }
 
   protected Path getReportPath(String fileName, FlowType type, String reportName) {

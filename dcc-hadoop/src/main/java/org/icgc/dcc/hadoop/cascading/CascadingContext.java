@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,48 +15,52 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.platform;
+package org.icgc.dcc.hadoop.cascading;
 
-import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
+import static lombok.AccessLevel.PRIVATE;
 
-import java.io.InputStream;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.CascadingContext;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
+import org.icgc.dcc.hadoop.fs.FileSystems;
 
-@Slf4j
-public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
+@Value
+@RequiredArgsConstructor(access = PRIVATE)
+public class CascadingContext {
 
-  public LocalSubmissionPlatformStrategy(
-      @NonNull final Map<String, String> hadoopProperties,
-      @NonNull final Path source,
-      @NonNull final Path output) {
-    super(hadoopProperties, getLocalFileSystem(), source, output);
+  private static CascadingContext LOCAL_DEFAULT = new CascadingContext(
+      FileSystems.getLocalFileSystem(),
+      CascadingTaps.LOCAL,
+      CascadingConnectors.LOCAL);
+
+  private static CascadingContext DISTRIBUTED_DEFAULT = new CascadingContext(
+      FileSystems.getLocalFileSystem(),
+      CascadingTaps.LOCAL,
+      CascadingConnectors.LOCAL);
+
+  private final FileSystem fs;
+  private final CascadingTaps taps;
+  private final CascadingConnectors connectors;
+
+  public static final CascadingContext getLocal() {
+    return LOCAL_DEFAULT;
   }
 
-  @Override
-  protected CascadingContext getCascadingContext() {
-    return CascadingContext.getLocal();
+  public static final CascadingContext getDistributed() {
+    return DISTRIBUTED_DEFAULT;
   }
 
-  @Override
-  protected Map<?, ?> augmentFlowProperties(@NonNull final Map<?, ?> properties) {
-    return properties; // Nothing to add in local mode
+  public static final CascadingContext getLocal(Map<?, ?> properties) {
+    return LOCAL_DEFAULT;
   }
 
-  @Override
-  @SneakyThrows
-  public InputStream readReportTap(String fileName, FlowType type, String reportName) {
-    val reportPath = getReportPath(fileName, type, reportName);
-    log.info("Streaming through report: '{}'", reportPath);
-    return fileSystem.open(reportPath);
+  public static final CascadingContext getDistributed(Map<?, ?> properties) {
+    return DISTRIBUTED_DEFAULT;
   }
 
 }

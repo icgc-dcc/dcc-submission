@@ -34,8 +34,7 @@ import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
@@ -53,13 +52,8 @@ public class HadoopSubmissionPlatformStrategy extends BaseSubmissionPlatformStra
   }
 
   @Override
-  protected CascadingTaps getTaps() {
-    return CascadingTaps.DISTRIBUTED;
-  }
-
-  @Override
-  protected CascadingConnectors getConnectors() {
-    return CascadingConnectors.DISTRIBUTED;
+  protected CascadingContext getCascadingContext() {
+    return CascadingContext.getDistributed();
   }
 
   @Override
