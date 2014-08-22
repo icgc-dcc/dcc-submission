@@ -27,7 +27,7 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
@@ -50,7 +50,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
-public class CodeListRestriction implements InternalPlanElement {
+public class CodeListRestriction implements RowBasedPlanElement {
 
   /**
    * Name of the restriction.
@@ -120,7 +120,7 @@ public class CodeListRestriction implements InternalPlanElement {
 
     @Override
     public FlowType flowType() {
-      return FlowType.INTERNAL;
+      return FlowType.ROW_BASED;
     }
 
     @Override

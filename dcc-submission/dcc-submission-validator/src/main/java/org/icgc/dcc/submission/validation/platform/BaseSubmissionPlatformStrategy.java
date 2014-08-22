@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.platform;
 
 import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
@@ -41,10 +40,7 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
@@ -62,22 +58,15 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
   private final Path submissionDir;
   private final Path validationOutputDir;
 
-  /**
-   * TODO: still needed?
-   */
-  private final Path system;
-
   protected BaseSubmissionPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final FileSystem fileSystem,
       @NonNull final Path input,
-      @NonNull final Path output,
-      @NonNull final Path system) {
+      @NonNull final Path output) {
     this.hadoopProperties = hadoopProperties;
     this.fileSystem = fileSystem;
     this.submissionDir = input;
     this.validationOutputDir = output;
-    this.system = system;
     this.taps = getTaps();
     this.connectors = getConnectors();
   }
@@ -106,24 +95,6 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
   @Override
   public Tap<?, ?, ?> getNormalizerSourceTap(String fileName) {
     return taps.getDecompressingTsvWithHeader(getFilePath(fileName));
-  }
-
-  @Override
-  public Tap<?, ?, ?> getTrimmedTap(Key key) {
-    return tap(trimmedPath(key), new Fields(key.getFields()));
-  }
-
-  protected Path trimmedPath(Key key) {
-    checkState(false, "Should not be used"); // Not maintained anymore and due for deletion
-    if (key.getRole() == FileSchemaRole.SUBMISSION) {
-      return new Path(validationOutputDir, key.getName() + ".tsv");
-    } else if (key.getRole() == FileSchemaRole.SYSTEM) {
-      return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), key.getName() + ".tsv"); // TODO: should use
-                                                                                                   // DccFileSystem
-                                                                                                   // abstraction
-    } else {
-      throw new RuntimeException("Undefined File Schema Role " + key.getRole());
-    }
   }
 
   protected Path getReportPath(String fileName, FlowType type, String reportName) {

@@ -21,11 +21,16 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * TODO: remove (no longer necessary now that there's only one)
+ */
 @RequiredArgsConstructor(access = PRIVATE)
 public enum FlowType {
 
-  INTERNAL("internal"),
-  EXTERNAL("external");
+  /**
+   * Formerly known as "internal" (terminology still used in test data... TODO)
+   */
+  ROW_BASED("internal");
 
   @NonNull
   private final String type;
