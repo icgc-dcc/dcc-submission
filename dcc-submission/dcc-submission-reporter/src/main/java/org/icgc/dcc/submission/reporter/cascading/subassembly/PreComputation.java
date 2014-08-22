@@ -37,9 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
@@ -91,7 +91,7 @@ public class PreComputation extends SubAssembly {
       @NonNull final ReporterInput reporterInput,
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
-    val join = joinWithAbstraction(reporterInput, projectKey);
+    val join = joinWithoutAbstraction(reporterInput, projectKey);
     return
 
     new Insert(
@@ -119,7 +119,6 @@ public class PreComputation extends SubAssembly {
         ));
   }
 
-  @SuppressWarnings("unused")
   private static Pipe joinWithoutAbstraction(final ReporterInput reporterInput, final String projectKey) {
     return new Discard(
         new HashJoin(
@@ -137,7 +136,8 @@ public class PreComputation extends SubAssembly {
         REDUNDANT_SAMPLE_ID_FIELD);
   }
 
-  private static ReadableHashJoin joinWithAbstraction(final ReporterInput reporterInput, final String projectKey) {
+  @SuppressWarnings("unused")
+  private static Pipe joinWithAbstraction(final ReporterInput reporterInput, final String projectKey) {
     return new ReadableHashJoin(JoinData.builder()
 
         // Right-join in order to keep track of clinical data with no observations as well
@@ -210,24 +210,23 @@ public class PreComputation extends SubAssembly {
   }
 
   private static Pipe processClinical(final ReporterInput reporterInput, String projectKey) {
-    return new ReadableHashJoin(
-        JoinData.builder()
-            .joiner(new InnerJoin())
+    return new ReadableHashJoin(JoinData.builder()
+        .joiner(new InnerJoin())
 
-            .leftPipe(processSpecimenFiles(reporterInput, projectKey))
-            .leftJoinFields(SPECIMEN_ID_FIELD)
+        .leftPipe(processSpecimenFiles(reporterInput, projectKey))
+        .leftJoinFields(SPECIMEN_ID_FIELD)
 
-            .rightPipe(processSampleFiles(reporterInput, projectKey))
-            .rightJoinFields(SPECIMEN_ID_FIELD)
+        .rightPipe(processSampleFiles(reporterInput, projectKey))
+        .rightJoinFields(SPECIMEN_ID_FIELD)
 
-            .resultFields(
-                DONOR_ID_FIELD
-                    .append(REDUNDANT_SPECIMEN_ID_FIELD)
-                    .append(SPECIMEN_ID_FIELD)
-                    .append(SAMPLE_ID_FIELD))
-            .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
+        .resultFields(
+            DONOR_ID_FIELD
+                .append(REDUNDANT_SPECIMEN_ID_FIELD)
+                .append(SPECIMEN_ID_FIELD)
+                .append(SAMPLE_ID_FIELD))
+        .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
 
-            .build());
+        .build());
   }
 
   private static Pipe processSpecimenFiles(
@@ -299,7 +298,7 @@ public class PreComputation extends SubAssembly {
     return
 
     // TODO: move that before the merge to maximum parallelization (optimization)
-    new ReadableCountBy(CountByData.builder()
+    new SubAssemblies.ReadableCountBy(CountByData.builder()
 
         .pipe(processFiles(
             reporterInput, projectKey, featureType.getPrimaryFileType(),
