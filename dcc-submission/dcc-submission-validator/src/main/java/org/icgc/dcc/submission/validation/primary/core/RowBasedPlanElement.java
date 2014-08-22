@@ -15,29 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.visitor;
+package org.icgc.dcc.submission.validation.primary.core;
 
-import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
-import lombok.val;
+import cascading.pipe.Pipe;
 
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.Plan;
+/**
+ * A {@code PlanElement} applicable to a {@code RowBasedFlowPlanner}
+ */
+public interface RowBasedPlanElement extends PlanElement {
 
-public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanElement> {
-
-  public InternalFlowPlanningVisitor() {
-    super(INTERNAL);
-  }
-
-  @Override
-  public void applyPlan(Plan plan) {
-    for (val internalFlowPlanner : plan.getInternalFlows()) {
-      internalFlowPlanner.acceptVisitor(this);
-
-      for (val collectedInternalPlanElement : getCollectedPlanElements()) {
-        internalFlowPlanner.applyInternalPlanElement(collectedInternalPlanElement);
-      }
-    }
-  }
+  /**
+   * Extends a {@code Pipe} and returns the resulting {@code Pipe}. This is analogous to a {@code SubAssembly}.
+   */
+  public Pipe extend(Pipe pipe);
 
 }

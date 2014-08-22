@@ -15,16 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.planner;
+package org.icgc.dcc.submission.validation.primary.visitor;
 
-import org.icgc.dcc.submission.validation.primary.core.ExternalPlanElement;
+import java.util.Set;
 
-public interface ExternalFlowPlanner extends FileFlowPlanner {
+import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.PlanElement;
+import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 
-  /**
-   * Applies an {@code ExternalPlanElement} to this {@code planner}
-   * @param planElement
-   */
-  public void applyExternalPlanElement(ExternalPlanElement planElement);
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
+
+public class RowBasedRestrictionPlanningVisitor extends RowBasedFlowPlanningVisitor {
+
+  private final Set<RestrictionType> restrictionTypes;
+
+  public RowBasedRestrictionPlanningVisitor(Set<RestrictionType> restrictionTypes) {
+    this.restrictionTypes = Sets.filter(restrictionTypes, new Predicate<RestrictionType>() {
+
+      @Override
+      public boolean apply(RestrictionType input) {
+        return input.flowType() == FlowType.ROW_BASED;
+      }
+
+    });
+  }
+
+  @Override
+  public void visit(Restriction restriction) {
+    for (RestrictionType type : restrictionTypes) {
+      if (type.builds(restriction.getType().getId())) {
+        PlanElement element = type.build(getCurrentField(), restriction);
+        collectPlanElement((RowBasedPlanElement) element);
+      }
+    }
+  }
 
 }

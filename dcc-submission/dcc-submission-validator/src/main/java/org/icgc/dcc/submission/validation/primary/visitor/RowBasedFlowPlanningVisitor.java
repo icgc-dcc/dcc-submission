@@ -15,37 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.core;
+package org.icgc.dcc.submission.validation.primary.visitor;
 
-import cascading.pipe.Pipe;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED;
+import lombok.val;
 
-/**
- * A {@code PlanElement} that requires joining before applying a validation.
- */
-public interface ExternalPlanElement extends PlanElement {
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.Plan;
 
-  /**
-   * Returns the fields of the left side of the join
-   */
-  public String[] lhsFields();
+public class RowBasedFlowPlanningVisitor extends PlanningVisitor<RowBasedPlanElement> {
 
-  /**
-   * Returns the fields of the right side of the join
-   */
-  public String[] rhsFields();
+  public RowBasedFlowPlanningVisitor() {
+    super(ROW_BASED);
+  }
 
-  /**
-   * Returns the schema name of the right side of the join
-   */
-  public String rhs();
+  @Override
+  public void applyPlan(Plan plan) {
+    for (val rowBasedFlowPlanner : plan.getRowBasedFlowPlanners()) {
+      rowBasedFlowPlanner.acceptVisitor(this);
 
-  /**
-   * Joins two {@code Pipe}s into a single one.
-   * 
-   * @param lhs left side to join
-   * @param rhs right side to join
-   * @return joined {@code Pipe}
-   */
-  public Pipe join(Pipe lhs, Pipe rhs);
+      for (val collectedRowBasedPlanElement : getCollectedPlanElements()) {
+        rowBasedFlowPlanner.applyRowBasedPlanElement(collectedRowBasedPlanElement);
+      }
+    }
+  }
 
 }
