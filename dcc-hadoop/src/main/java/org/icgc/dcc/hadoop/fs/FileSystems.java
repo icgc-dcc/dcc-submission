@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.hadoop.fs.Configurations.newConfiguration;
 
+import java.net.URI;
 import java.util.Map;
 
 import lombok.AccessLevel;
@@ -31,6 +32,7 @@ import lombok.SneakyThrows;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.util.Protocol;
+import org.icgc.dcc.core.util.URIs;
 
 /**
  * Util methods for {@link FileSystem}.
@@ -45,9 +47,19 @@ public final class FileSystems {
     return FileSystem.getLocal(newConfiguration());
   }
 
+  public static FileSystem getFileSystem(@NonNull final String fsDefaultUri) {
+    return getFileSystem(URIs.getURI(fsDefaultUri));
+  }
+
+  public static FileSystem getFileSystem(@NonNull final URI uri) {
+    return getFileSystem(uri, newConfiguration());
+  }
+
   @SneakyThrows
-  public static FileSystem getFileSystem(@NonNull final String fsDefault) {
-    return getFileSystem(newConfiguration(fsDefault));
+  public static FileSystem getFileSystem(
+      @NonNull final URI uri,
+      @NonNull final Configuration config) {
+    return FileSystem.get(uri, config);
   }
 
   @SneakyThrows

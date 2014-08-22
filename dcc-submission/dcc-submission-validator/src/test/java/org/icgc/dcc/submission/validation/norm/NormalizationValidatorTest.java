@@ -25,7 +25,6 @@ import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -41,6 +40,8 @@ import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -61,10 +62,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import cascading.flow.local.LocalFlowConnector;
-import cascading.scheme.local.TextDelimited;
 import cascading.tap.Tap;
-import cascading.tap.local.FileTap;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
@@ -165,7 +163,7 @@ public class NormalizationValidatorTest {
             .build());
 
     when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(new LocalFlowConnector());
+        .thenReturn(getConnectors().getFlowConnector());
   }
 
   @SneakyThrows
@@ -215,7 +213,7 @@ public class NormalizationValidatorTest {
     mockInputTap(inputFile);
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(new LocalFlowConnector());
+        .thenReturn(getConnectors().getFlowConnector());
     when(mockValidationContext.getFiles(SSM_P_TYPE))
         .thenReturn(newArrayList(new Path(inputFile)));
 
@@ -275,21 +273,21 @@ public class NormalizationValidatorTest {
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
   private Tap getInputTap(String inputFile) {
-    return new FileTap(
-        new TextDelimited(
-            true, // headers
-            FIELD_SEPARATOR),
-        inputFile);
+    return getTaps().getNoCompressionTsvWithHeader(inputFile);
   }
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
   private Tap getOutputTap(String outputFile) {
-    return new FileTap(
-        new TextDelimited(
-            true, // headers
-            FIELD_SEPARATOR),
-        outputFile);
+    return getTaps().getNoCompressionTsvWithHeader(outputFile);
+  }
+
+  private CascadingConnectors getConnectors() {
+    return CascadingConnectors.LOCAL;
+  }
+
+  private CascadingTaps getTaps() {
+    return CascadingTaps.LOCAL;
   }
 
 }

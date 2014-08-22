@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.collect.Iterables.transform;
+import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -66,6 +68,10 @@ public interface Identifiable {
       };
     }
 
+    public static Iterable<Identifiable> fromStrings(@NonNull final String... qualifiers) {
+      return transform(asList(qualifiers), Identifiables.fromStringFunction());
+    }
+
     public static Function<Identifiable, String> getId() {
       return new Function<Identifiable, String>() {
 
@@ -90,6 +96,17 @@ public interface Identifiable {
 
     public static Identifiable[] toArray(Iterable<Identifiable> identifiables) {
       return Iterables.toArray(identifiables, Identifiable.class);
+    }
+
+    public static Function<String, Identifiable> fromStringFunction() {
+      return new Function<String, Identifiable>() {
+
+        @Override
+        public Identifiable apply(@NonNull final String s) {
+          return fromString(s);
+        }
+
+      };
     }
 
   }

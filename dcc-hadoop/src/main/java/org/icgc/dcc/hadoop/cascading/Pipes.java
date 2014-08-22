@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Iterables.transform;
 import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
@@ -28,8 +29,10 @@ import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
 import java.util.Collection;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.core.util.Named;
 
 import cascading.pipe.Pipe;
@@ -44,6 +47,8 @@ public class Pipes implements Named {
 
   private static final Pipes INTERNAL = new Pipes();
   private static final String CLASS_NAME = removeTrailingS(Pipes.class.getSimpleName());
+  private static final Identifiable START_PIPE = Identifiables.fromString("start");
+  private static final Identifiable END_PIPE = Identifiables.fromString("end");
 
   @Override
   public String getName() {
@@ -84,6 +89,41 @@ public class Pipes implements Named {
           }
 
         });
+  }
+
+  public static Pipe getStartPipe(@NonNull final String... qualifiers) {
+    return getStartPipe(toArray(
+        Identifiables.fromStrings(qualifiers),
+        Identifiable.class));
+  }
+
+  public static Pipe getEndPipe(
+      @NonNull final Pipe pipe,
+      @NonNull final String... qualifiers) {
+    return getEndPipe(
+        pipe,
+        toArray(
+            Identifiables.fromStrings(qualifiers),
+            Identifiable.class));
+  }
+
+  public static Pipe getStartPipe(@NonNull final Identifiable... identifiables) {
+    return new Pipe(
+        getName(
+            Identifiables.fromString(
+                getName(identifiables)),
+            START_PIPE));
+  }
+
+  public static Pipe getEndPipe(
+      @NonNull final Pipe pipe,
+      @NonNull final Identifiable... identifiables) {
+    return new Pipe(
+        getName(
+            Identifiables.fromString(
+                getName(identifiables)),
+            END_PIPE),
+        pipe);
   }
 
 }

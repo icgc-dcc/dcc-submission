@@ -24,7 +24,6 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.Component.NORMALIZER;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Joiners.PATH;
@@ -45,6 +44,10 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.Component;
+import org.icgc.dcc.hadoop.cascading.Cascades;
+import org.icgc.dcc.hadoop.cascading.Flows;
+import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -85,17 +88,13 @@ import com.typesafe.config.Config;
 @RequiredArgsConstructor(access = PRIVATE)
 public final class NormalizationValidator implements Validator {
 
-  static final String COMPONENT_NAME = NORMALIZER.getId();
+  static final Component COMPONENT = Component.NORMALIZER;
+  static final String COMPONENT_NAME = COMPONENT.getId();
 
   /**
    * Field used for unique counts.
    */
   public static final String ANALYSIS_ID = SUBMISSION_OBSERVATION_ANALYSIS_ID;
-
-  private static final String CASCADE_NAME = format("%s-cascade", COMPONENT_NAME);
-  private static final String FLOW_NAME = format("%s-flow", COMPONENT_NAME);
-  private static final String START_PIPE_NAME = format("%s-start", COMPONENT_NAME);
-  private static final String END_PIPE_NAME = format("%s-end", COMPONENT_NAME);
 
   /**
    * Abstraction for the file system and related operations (temporary, see DCC-1876).
@@ -242,7 +241,7 @@ public final class NormalizationValidator implements Validator {
    * Plans the normalization cascade. It will iterate over the {@link NormalizationStep}s and, if enabled, will have
    * them extend the main {@link Pipe}.
    */
-  private Pipes planCascade(@NonNull List<String> fileNames, @NonNull NormalizationContext normalizationContext) {
+  private EdgePipes planCascade(@NonNull List<String> fileNames, @NonNull NormalizationContext normalizationContext) {
     checkArgument(!fileNames.isEmpty(),
         "Expecting at least one matching file at this point");
 
@@ -256,23 +255,24 @@ public final class NormalizationValidator implements Validator {
         log.info("Skipping disabled step '{}'", step.shortName());
       }
     }
-    val endPipe = new Pipe(END_PIPE_NAME, pipe);
 
-    return new Pipes(startPipes, endPipe);
+    return new EdgePipes(
+        startPipes,
+        Pipes.getEndPipe(pipe, COMPONENT));
   }
 
   /**
    * Connects the cascade to the input and output.
    */
   private ConnectedCascade connectCascade(
-      @NonNull final Pipes pipes,
+      @NonNull final EdgePipes pipes,
       @NonNull final SubmissionPlatformStrategy platform,
       @NonNull final String releaseName,
       @NonNull final String projectKey,
       @NonNull final String outputDirPath) {
 
     // Define a flow
-    val flowDef = flowDef().setName(FLOW_NAME);
+    val flowDef = flowDef().setName(Flows.getName(COMPONENT));
 
     // Connect start pipes
     for (val entry : pipes.getStartPipes().entrySet()) {
@@ -300,7 +300,7 @@ public final class NormalizationValidator implements Validator {
     val cascade = new CascadeConnector()
         .connect(
         cascadeDef()
-            .setName(CASCADE_NAME)
+            .setName(Cascades.getName(COMPONENT))
             .addFlow(flow));
     cascade.writeDOT(format("/tmp/%s-%s.dot", projectKey, cascade.getName()));
 
@@ -373,14 +373,12 @@ public final class NormalizationValidator implements Validator {
     for (val fileName : fileNames) {
       startPipes.put(
           fileName,
-          new Pipe(
-              getStartPipeName(fileName)));
+          Pipes.getStartPipe(
+              COMPONENT.getId(),
+              fileName));
     }
-    return startPipes.build();
-  }
 
-  private String getStartPipeName(String fileName) {
-    return format("%s-%s", START_PIPE_NAME, fileName);
+    return startPipes.build();
   }
 
   /**
@@ -401,9 +399,11 @@ public final class NormalizationValidator implements Validator {
 
   /**
    * Placeholder for the start and end pipe (to ease future connection as a cascade).
+   * <p>
+   * TODO: consider moving to cascading abstraction?
    */
   @Value
-  private static final class Pipes {
+  private static final class EdgePipes {
 
     private final Map<String, Pipe> startPipes;
     private final Pipe endPipe;
@@ -411,6 +411,8 @@ public final class NormalizationValidator implements Validator {
 
   /**
    * Placeholder for the connected cascade.
+   * <p>
+   * TODO: consider moving to cascading abstraction?
    */
   @Value
   public static final class ConnectedCascade {

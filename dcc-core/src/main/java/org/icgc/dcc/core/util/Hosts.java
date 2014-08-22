@@ -15,34 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.hadoop.cascading.connector;
+package org.icgc.dcc.core.util;
 
-import static org.icgc.dcc.core.util.URIs.LOCAL_ROOT_URI;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import java.util.Map;
+/**
+ * Common hosts.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class Hosts {
 
-import lombok.NonNull;
-
-import org.icgc.dcc.core.util.Hosts;
-
-import cascading.flow.FlowConnector;
-import cascading.flow.local.LocalFlowConnector;
-
-class LocalConnectors extends BaseConnectors {
-
-  @Override
-  public FlowConnector getFlowConnector() {
-    return new LocalFlowConnector();
-  }
-
-  @Override
-  public FlowConnector getTestFlowConnector() {
-    return getFlowConnector(Utils.getProperties(LOCAL_ROOT_URI, Hosts.LOCALHOST));
-  }
-
-  @Override
-  public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
-    return new LocalFlowConnector(toObjectsMap(flowProperties));
-  }
+  public static final String LOCALHOST = "localhost";
+  public static final String EMPTY = Strings2.EMPTY_STRING;
 
 }
