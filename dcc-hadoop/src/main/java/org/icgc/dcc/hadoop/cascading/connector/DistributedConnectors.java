@@ -17,18 +17,25 @@
  */
 package org.icgc.dcc.hadoop.cascading.connector;
 
-import static org.icgc.dcc.core.util.URIs.HDFS_ROOT_URI;
-
 import java.util.Map;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.util.Hosts;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.hadoop.fs.Configurations;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
 
-class DistributedConnectors extends BaseConnectors {
+/**
+ * Do not use outside of {@link CascadingContext}.
+ */
+public class DistributedConnectors extends BaseConnectors {
+
+  @Override
+  public Map<?, ?> getDefaultProperties() {
+    return Configurations.getDefaultDistributedPropertiesMap();
+  }
 
   @Override
   public FlowConnector getFlowConnector() {
@@ -38,11 +45,6 @@ class DistributedConnectors extends BaseConnectors {
   @Override
   public FlowConnector getFlowConnector(@NonNull final Map<?, ?> flowProperties) {
     return new HadoopFlowConnector(toObjectsMap(flowProperties));
-  }
-
-  @Override
-  public FlowConnector getTestFlowConnector() {
-    return getFlowConnector(Utils.getProperties(HDFS_ROOT_URI, Hosts.LOCALHOST));
   }
 
 }

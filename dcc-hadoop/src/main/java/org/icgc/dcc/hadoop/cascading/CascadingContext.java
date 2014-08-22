@@ -18,32 +18,32 @@
 package org.icgc.dcc.hadoop.cascading;
 
 import static lombok.AccessLevel.PRIVATE;
-
-import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.connector.DistributedConnectors;
+import org.icgc.dcc.hadoop.cascading.connector.LocalConnectors;
 import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
-import org.icgc.dcc.hadoop.fs.FileSystems;
+import org.icgc.dcc.hadoop.cascading.taps.DistributedTaps;
+import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 
+/**
+ * TODO: consider adding {@link FileSystem} as well?
+ */
 @Value
 @RequiredArgsConstructor(access = PRIVATE)
 public class CascadingContext {
 
   private static CascadingContext LOCAL_DEFAULT = new CascadingContext(
-      FileSystems.getLocalFileSystem(),
-      CascadingTaps.LOCAL,
-      CascadingConnectors.LOCAL);
+      new LocalTaps(),
+      new LocalConnectors());
 
   private static CascadingContext DISTRIBUTED_DEFAULT = new CascadingContext(
-      FileSystems.getLocalFileSystem(),
-      CascadingTaps.LOCAL,
-      CascadingConnectors.LOCAL);
+      new DistributedTaps(),
+      new DistributedConnectors());
 
-  private final FileSystem fs;
   private final CascadingTaps taps;
   private final CascadingConnectors connectors;
 
@@ -52,14 +52,6 @@ public class CascadingContext {
   }
 
   public static final CascadingContext getDistributed() {
-    return DISTRIBUTED_DEFAULT;
-  }
-
-  public static final CascadingContext getLocal(Map<?, ?> properties) {
-    return LOCAL_DEFAULT;
-  }
-
-  public static final CascadingContext getDistributed(Map<?, ?> properties) {
     return DISTRIBUTED_DEFAULT;
   }
 

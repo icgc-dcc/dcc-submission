@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrat
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final Path source,
       @NonNull final Path output) {
-    super(hadoopProperties, getLocalFileSystem(), source, output);
+    super(hadoopProperties, getDefaultLocalFileSystem(), source, output);
   }
 
   @Override

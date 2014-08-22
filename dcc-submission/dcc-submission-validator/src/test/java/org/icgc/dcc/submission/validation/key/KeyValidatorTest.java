@@ -47,7 +47,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.util.Joiners;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -70,13 +70,15 @@ public class KeyValidatorTest {
   private static final String RELEASE_NAME = "myrelease";
   private static final String PROJECT_NAME = "myproject";
 
+  private static final CascadingContext cascadingContext = CascadingContext.getLocal();
+
   /**
    * Scratch space.
    */
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
 
-  private final FileSystem fileSystem = FileSystems.getLocalFileSystem();
+  private final FileSystem fileSystem = FileSystems.getDefaultLocalFileSystem();
 
   /**
    * Class under test.
@@ -132,7 +134,7 @@ public class KeyValidatorTest {
 
     val platformStrategy = mock(SubmissionPlatformStrategy.class);
     when(platformStrategy.getFlowConnector()).thenReturn(
-        getConnectors().getTestFlowConnector());
+        cascadingContext.getConnectors().getTestFlowConnector());
 
     val context = mock(ValidationContext.class);
     when(context.getProjectKey()).thenReturn("project1");
@@ -160,10 +162,6 @@ public class KeyValidatorTest {
         readLines(
             new File(PATH.join(TEST_DIR, REFERENCE_FILE_NAME)), UTF_8))
         .replace("}\n{", "\n"); // FIXME: not elegant (ideally tuple errors wouldn't all be on one line)
-  }
-
-  private CascadingConnectors getConnectors() {
-    return CascadingConnectors.LOCAL;
   }
 
 }

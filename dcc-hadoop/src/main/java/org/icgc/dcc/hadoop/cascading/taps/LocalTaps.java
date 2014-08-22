@@ -18,8 +18,8 @@
 package org.icgc.dcc.hadoop.cascading.taps;
 
 import static com.google.common.base.Preconditions.checkState;
-import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.core.util.Files2.getCompressionAgnosticInputStream;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericTaps.LINE_FIELD;
@@ -34,6 +34,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import org.apache.tika.Tika;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
@@ -46,9 +47,9 @@ import cascading.tuple.TupleEntryIterator;
 /**
  * Utility class to help with local {@link Tap}s from cascading.
  * <p>
- * TODO: create interface for local/hadoop
+ * Do *not* use constructor outside of {@link CascadingContext}.
  */
-@NoArgsConstructor(access = PACKAGE)
+@NoArgsConstructor(access = PUBLIC)
 public final class LocalTaps implements CascadingTaps {
 
   @Override

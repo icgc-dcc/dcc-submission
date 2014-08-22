@@ -22,8 +22,7 @@ import static org.icgc.dcc.core.DccResources.getCodeListsDccResource;
 import static org.icgc.dcc.core.DccResources.getDictionaryDccResource;
 import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.core.util.Joiners.PATH;
-import static org.icgc.dcc.core.util.URIs.LOCAL_ROOT_URI;
-import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
 import static org.icgc.dcc.test.Tests.CONF_DIR_NAME;
 import static org.icgc.dcc.test.Tests.DATA_DIR_NAME;
 import static org.icgc.dcc.test.Tests.MAVEN_TEST_RESOURCES_DIR;
@@ -37,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.Component;
 import org.icgc.dcc.core.util.Optionals;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -65,9 +64,12 @@ public class ReporterTest {
         PATH.join(TEST_CONF_DIR, PROJECTS_JSON_FILE_NAME),
         getDictionaryDccResource(),
         getCodeListsDccResource(),
-        CascadingConnectors.Utils.getProperties(LOCAL_ROOT_URI));
+        CascadingContext
+            .getLocal()
+            .getConnectors()
+            .getDefaultProperties());
 
-    val fileSystem = getLocalFileSystem();
+    val fileSystem = getDefaultLocalFileSystem();
     for (val projectKey : projectKeys) {
       val documents = ReporterCollector.getJsonProjectDataTypeEntity(
           fileSystem, outputDirPath, TEST_RELEASE_NAME, projectKey);

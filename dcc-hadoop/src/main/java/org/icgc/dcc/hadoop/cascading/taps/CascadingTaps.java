@@ -26,9 +26,6 @@ import cascading.tuple.Fields;
  */
 public interface CascadingTaps {
 
-  static LocalTaps LOCAL = new LocalTaps();
-  static DistributedTaps DISTRIBUTED = new DistributedTaps();
-
   Tap<?, ?, ?> getLines(String path);
 
   Tap<?, ?, ?> getLines(String path, SinkMode sinkMode);

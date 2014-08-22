@@ -50,14 +50,14 @@ public class Reporter {
       @NonNull final String projectsJsonFilePath,
       @NonNull final URL dictionaryFilePath,
       @NonNull final URL codeListsFilePath,
-      @NonNull final Map<String, String> hadoopProperties) {
+      @NonNull final Map<?, ?> hadoopProperties) {
 
     val dictionaryRoot = getRootObject(dictionaryFilePath);
     val codeListsRoot = Jackson.getRootArray(codeListsFilePath);
 
     val reporterInput = ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
-            FileSystems.getLocalFileSystem(),
+            FileSystems.getDefaultLocalFileSystem(),
             defaultParentDataDir,
             projectsJsonFilePath,
             getPatterns(dictionaryRoot)));
@@ -79,7 +79,7 @@ public class Reporter {
       @NonNull final Set<String> projectKeys,
       @NonNull final ReporterInput reporterInput,
       @NonNull final Map<String, String> mapping,
-      @NonNull final Map<String, String> hadoopProperties) {
+      @NonNull final Map<?, ?> hadoopProperties) {
     log.info("Gathering reports for '{}.{}': '{}' ('{}')",
         new Object[] { releaseName, projectKeys, reporterInput, mapping });
 

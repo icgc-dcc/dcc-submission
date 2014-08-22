@@ -17,12 +17,15 @@
  */
 package org.icgc.dcc.hadoop.cascading.taps;
 
-import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericTaps.LINE_FIELD;
 import static org.icgc.dcc.hadoop.cascading.taps.LegacySchemes.newHadoopLooseTsvScheme;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
+
 import cascading.scheme.hadoop.TextLine;
 import cascading.scheme.hadoop.TextLine.Compress;
 import cascading.tap.SinkMode;
@@ -32,8 +35,10 @@ import cascading.tuple.Fields;
 
 /**
  * Utility class to help with hadoop {@link Tap}s from cascading.
+ * <p>
+ * Do *not* use constructor outside fo {@link CascadingContext}.
  */
-@NoArgsConstructor(access = PACKAGE)
+@NoArgsConstructor(access = PUBLIC)
 public class DistributedTaps implements CascadingTaps {
 
   @Override

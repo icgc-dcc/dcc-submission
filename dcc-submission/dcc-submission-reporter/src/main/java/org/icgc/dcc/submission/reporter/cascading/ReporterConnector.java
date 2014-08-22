@@ -14,9 +14,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.Cascades;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.hadoop.cascading.Flows;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.cascading.taps.GenericTaps;
 import org.icgc.dcc.hadoop.cascading.taps.LocalTaps;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
@@ -38,18 +37,17 @@ public class ReporterConnector {
 
   private static final String CONCURRENCY = String.valueOf(5);
 
-  private final CascadingTaps taps;
-  private final CascadingConnectors connector;
-
+  private final CascadingContext cascadingContext;
   private final String outputDirPath;
 
   public ReporterConnector(
       final boolean local,
       @NonNull final String outputDirPath) {
-    this.taps = local ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
-    this.connector = local ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
     this.outputDirPath = outputDirPath;
-    log.info(connector.describe());
+    this.cascadingContext = local ?
+        CascadingContext.getLocal() :
+        CascadingContext.getDistributed();
+    log.info(cascadingContext.getConnectors().describe());
   }
 
   public Cascade connectCascade(
@@ -57,7 +55,7 @@ public class ReporterConnector {
       @NonNull final String releaseName,
       @NonNull final Map<String, Pipe> projectDataTypeEntities,
       @NonNull final Map<String, Pipe> projectSequencingStrategies,
-      @NonNull final Map<String, String> hadoopProperties) {
+      @NonNull final Map<?, ?> hadoopProperties) {
 
     val maxConcurrentFlows = getConcurrency();
     log.info("maxConcurrentFlows: '{}'", maxConcurrentFlows);
@@ -85,7 +83,8 @@ public class ReporterConnector {
     }
 
     HadoopProperties.setHadoopUserNameProperty();
-    return connector
+    return cascadingContext
+        .getConnectors()
         .getCascadeConnector(hadoopProperties)
         .connect(cascadeDef);
   }
@@ -97,16 +96,18 @@ public class ReporterConnector {
         CONCURRENCY));
   }
 
-  private FlowConnector getFlowConnector(@NonNull final Map<String, String> hadoopProperties) {
-    return connector.getFlowConnector(ImmutableMap.builder()
+  private FlowConnector getFlowConnector(@NonNull final Map<?, ?> hadoopProperties) {
+    return cascadingContext
+        .getConnectors()
+        .getFlowConnector(ImmutableMap.builder()
 
-        .putAll(hadoopProperties)
-        .putAll(
-            HadoopProperties.enableIntermediateMapOutputCompression(
-                HadoopProperties.setAvailableCodecs(newLinkedHashMap()),
-                HadoopConstants.LZO_CODEC_PROPERTY_VALUE))
+            .putAll(hadoopProperties)
+            .putAll(
+                HadoopProperties.enableIntermediateMapOutputCompression(
+                    HadoopProperties.setAvailableCodecs(newLinkedHashMap()),
+                    HadoopConstants.LZO_CODEC_PROPERTY_VALUE))
 
-        .build());
+            .build());
   }
 
   /**
@@ -137,7 +138,9 @@ public class ReporterConnector {
 
           @Override
           public Tap<?, ?, ?> apply(final String path) {
-            return taps.getDecompressingTsvWithHeader(path);
+            return cascadingContext
+                .getTaps()
+                .getDecompressingTsvWithHeader(path);
           }
 
         });
@@ -170,7 +173,9 @@ public class ReporterConnector {
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
     val outputFilePath = getOutputFilePath(outputDirPath, OutputType.DONOR, releaseName, projectKey);
-    return taps.getNoCompressionTsvWithHeader(outputFilePath);
+    return cascadingContext
+        .getTaps()
+        .getNoCompressionTsvWithHeader(outputFilePath);
   }
 
   private Tap<?, ?, ?> getOutputProjectSequencingStrategyTap(
@@ -178,7 +183,9 @@ public class ReporterConnector {
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
     val outputFilePath = getOutputFilePath(outputDirPath, OutputType.SEQUENCING_STRATEGY, releaseName, projectKey);
-    return taps.getNoCompressionTsvWithHeader(outputFilePath);
+    return cascadingContext
+        .getTaps()
+        .getNoCompressionTsvWithHeader(outputFilePath);
   }
 
 }

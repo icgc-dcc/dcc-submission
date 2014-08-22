@@ -17,27 +17,29 @@
  */
 package org.icgc.dcc.hadoop.cascading.connector;
 
-import static org.icgc.dcc.core.util.URIs.LOCAL_ROOT_URI;
-
 import java.util.Map;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.util.Hosts;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.hadoop.fs.Configurations;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
 
-class LocalConnectors extends BaseConnectors {
+/**
+ * Do not use outside of {@link CascadingContext}.
+ */
+public class LocalConnectors extends BaseConnectors {
+
+  @Override
+  public Map<?, ?> getDefaultProperties() {
+    return Configurations.getDefaultLocalPropertiesMap();
+  }
 
   @Override
   public FlowConnector getFlowConnector() {
     return new LocalFlowConnector();
-  }
-
-  @Override
-  public FlowConnector getTestFlowConnector() {
-    return getFlowConnector(Utils.getProperties(LOCAL_ROOT_URI, Hosts.LOCALHOST));
   }
 
   @Override

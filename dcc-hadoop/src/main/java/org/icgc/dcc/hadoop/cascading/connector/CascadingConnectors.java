@@ -19,28 +19,19 @@ package org.icgc.dcc.hadoop.cascading.connector;
 
 import java.util.Map;
 
-import lombok.NonNull;
-
-import org.apache.hadoop.fs.CommonConfigurationKeys;
-import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.icgc.dcc.hadoop.util.HadoopConstants;
-
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Interface to connect {@link Flow}s and {@link Cascade}s.
  */
 public interface CascadingConnectors {
 
-  LocalConnectors LOCAL = new LocalConnectors();
-  DistributedConnectors DISTRIBUTED = new DistributedConnectors();
-
   String describe();
+
+  Map<?, ?> getDefaultProperties();
 
   /**
    * Do *not* use in production.
@@ -54,21 +45,5 @@ public interface CascadingConnectors {
   CascadeConnector getCascadeConnector();
 
   CascadeConnector getCascadeConnector(Map<?, ?> properties);
-
-  public static class Utils {
-
-    public static Map<String, String> getProperties(@NonNull final String fsDefault) {
-      return ImmutableMap.of(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fsDefault);
-    }
-
-    public static Map<String, String> getProperties(
-        @NonNull final String fsDefault,
-        @NonNull final String jobTracker) {
-      return ImmutableMap.of(
-          CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsDefault,
-          HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, jobTracker);
-    }
-
-  }
 
 }
