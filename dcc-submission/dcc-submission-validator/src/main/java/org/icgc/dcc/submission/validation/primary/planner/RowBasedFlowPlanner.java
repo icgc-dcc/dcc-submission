@@ -15,29 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.visitor;
+package org.icgc.dcc.submission.validation.primary.planner;
 
-import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
-import lombok.val;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.Plan;
+/**
+ * Plans the row-based flow for a particular {@code FileSchema}
+ */
+public interface RowBasedFlowPlanner extends FileFlowPlanner {
 
-public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanElement> {
-
-  public InternalFlowPlanningVisitor() {
-    super(INTERNAL);
-  }
-
-  @Override
-  public void applyPlan(Plan plan) {
-    for (val internalFlowPlanner : plan.getInternalFlows()) {
-      internalFlowPlanner.acceptVisitor(this);
-
-      for (val collectedInternalPlanElement : getCollectedPlanElements()) {
-        internalFlowPlanner.applyInternalPlanElement(collectedInternalPlanElement);
-      }
-    }
-  }
+  /**
+   * Applies an {@code RowBasedPlanElement} to this {@code planner}
+   * @param planElement
+   */
+  public void applyRowBasedPlanElement(RowBasedPlanElement planElement);
 
 }

@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.flow.FlowConnector;
 import cascading.scheme.hadoop.TextDelimited;
@@ -55,8 +54,6 @@ public interface SubmissionPlatformStrategy {
    * See comment in {@link #getSourceTap(String)}.
    */
   Tap<?, ?, ?> getNormalizerSourceTap(String fileName);
-
-  Tap<?, ?, ?> getTrimmedTap(Key key);
 
   Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName);
 

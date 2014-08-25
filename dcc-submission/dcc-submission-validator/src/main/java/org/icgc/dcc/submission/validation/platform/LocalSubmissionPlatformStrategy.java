@@ -47,7 +47,7 @@ public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrat
       @NonNull final Path source,
       @NonNull final Path output,
       @NonNull final Path system) {
-    super(hadoopProperties, getLocalFileSystem(), source, output, system);
+    super(hadoopProperties, getLocalFileSystem(), source, output);
   }
 
   @Override

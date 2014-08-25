@@ -17,49 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.primary.core;
 
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
-
-import java.io.Serializable;
-
-import lombok.NonNull;
-import lombok.Value;
-
-import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
-
-import com.google.common.base.Joiner;
+import cascading.pipe.Pipe;
 
 /**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
+ * A {@code PlanElement} applicable to a {@code RowBasedFlowPlanner}
  */
-@Value
-public class Key implements Serializable {
+public interface RowBasedPlanElement extends PlanElement {
 
   /**
-   * Constants.
+   * Extends a {@code Pipe} and returns the resulting {@code Pipe}. This is analogous to a {@code SubAssembly}.
    */
-  private static final char FIELD_SEPARATOR = '-';
-  private static final Joiner JOINER = Joiner.on(FIELD_SEPARATOR);
-
-  @NonNull
-  private final String schemaName;
-  @NonNull
-  private final FileSchemaRole role;
-  @NonNull
-  private final String[] fields;
-
-  public Key(String schemaName, FileSchemaRole role, String... fields) {
-    this.schemaName = schemaName;
-    this.role = role;
-    this.fields = fields;
-  }
-
-  public String getName() {
-    return schemaName + FILE_NAME_SEPARATOR + JOINER.join(fields);
-  }
-
-  @Override
-  public String toString() {
-    return getName();
-  }
+  public Pipe extend(Pipe pipe);
 
 }

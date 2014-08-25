@@ -62,7 +62,7 @@ public class HadoopSubmissionPlatformStrategy extends BaseSubmissionPlatformStra
       @NonNull final Path source,
       @NonNull final Path output,
       @NonNull final Path system) {
-    super(hadoopProperties, fileSystem, source, output, system);
+    super(hadoopProperties, fileSystem, source, output);
   }
 
   @Override
