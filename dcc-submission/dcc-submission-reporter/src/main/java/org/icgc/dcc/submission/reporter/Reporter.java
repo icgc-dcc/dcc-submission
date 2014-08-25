@@ -98,7 +98,8 @@ public class Reporter {
     val projectDataTypeEntities = Maps.<String, Pipe> newLinkedHashMap();
     val projectSequencingStrategies = Maps.<String, Pipe> newLinkedHashMap();
     for (val projectKey : projectKeys) {
-      val preComputationTable = new PreComputation(releaseName, projectKey, reporterInput);
+      val preComputationTable = new PreComputation(
+          releaseName, projectKey, reporterInput.getMatchingFilePathCounts(projectKey));
       val projectDataTypeEntity = new ProjectDataTypeEntity(releaseName, projectKey, preComputationTable);
       val projectSequencingStrategy = new ProjectSequencingStrategy(
           releaseName, projectKey,

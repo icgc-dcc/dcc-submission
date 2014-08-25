@@ -26,7 +26,7 @@ public class Main {
     val projectsJsonFilePath = args[3];
     val dictionaryFilePath = args[4];
     val codeListsFilePath = args[5];
-    val nameNode = args[6];
+    val nameNodeUri = args[6];
     val jobTracker = args[7];
 
     Reporter.report(
@@ -37,7 +37,7 @@ public class Main {
         URLs.getUrl(dictionaryFilePath),
         URLs.getUrl(codeListsFilePath),
         ImmutableMap.of( // TODO: allow more params
-            CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, nameNode,
+            CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, nameNodeUri,
             HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, jobTracker));
   }
 

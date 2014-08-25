@@ -2,6 +2,7 @@ package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Maps.transformValues;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
@@ -19,6 +20,7 @@ import lombok.val;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Functions2;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;
@@ -41,6 +43,7 @@ public class ReporterInput {
         }
       }
     }
+
     return inputData;
   }
 
@@ -48,10 +51,22 @@ public class ReporterInput {
     return ImmutableSet.copyOf(data.rowKeySet());
   }
 
-  public Set<String> getMatchingFilePaths(String projectKey, FileType fileType) {
+  public Set<String> getMatchingFilePaths(
+      @NonNull final String projectKey,
+      @NonNull final FileType fileType) {
     return ImmutableSet.copyOf(firstNonNull(
-        data.get(projectKey, fileType),
+        getMatchingFilePaths(projectKey).get(fileType),
         ImmutableSet.<String> of()));
+  }
+
+  public Map<FileType, Integer> getMatchingFilePathCounts(@NonNull final String projectKey) {
+    return transformValues(getMatchingFilePaths(projectKey), Functions2.<String> size());
+  }
+
+  public Map<FileType, Set<String>> getMatchingFilePaths(@NonNull final String projectKey) {
+    return ImmutableMap.copyOf(firstNonNull(
+        data.row(projectKey),
+        ImmutableMap.<FileType, Set<String>> of()));
   }
 
   public boolean hasFeatureType(String projectKey, FeatureType featureType) {

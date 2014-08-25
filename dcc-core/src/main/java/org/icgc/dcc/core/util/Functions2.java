@@ -18,6 +18,9 @@
 package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
+
+import java.util.Collection;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -44,4 +47,27 @@ public final class Functions2 {
     };
 
   }
+
+  public static <T> Function<Collection<T>, Integer> size() {
+    return new Function<Collection<T>, Integer>() {
+
+      @Override
+      public Integer apply(@NonNull final Collection<T> array) {
+        return array.size();
+      }
+
+    };
+  }
+
+  public static <T> Function<T[], Integer> length() {
+    return new Function<T[], Integer>() {
+
+      @Override
+      public Integer apply(@NonNull final T[] array) {
+        return array.length;
+      }
+
+    };
+  }
+
 }

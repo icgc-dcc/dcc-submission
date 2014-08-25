@@ -4,18 +4,19 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.NONE;
 import static cascading.tuple.Fields.REPLACE;
+import static com.google.common.collect.Maps.asMap;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
+import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
-import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION;
-import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_CLINICAL;
-import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_FEATURE_TYPES;
-import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_TMP1;
-import static org.icgc.dcc.submission.reporter.IntermediateOutputType.PRE_COMPUTATION_TMP2;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
@@ -29,28 +30,44 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEG
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.Dumps.addIntermediateOutputDump;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.Map;
+
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Functions2;
+import org.icgc.dcc.core.util.Joiners;
+import org.icgc.dcc.core.util.SerializableMaps;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
+import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
-import org.icgc.dcc.submission.reporter.ReporterInput;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.Dumps;
+import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
+import org.icgc.dcc.hadoop.util.HadoopConstants;
 
+import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
+import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.HashJoin;
+import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
@@ -63,35 +80,108 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Files;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
 
-  private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
-  private static final int NO_OBSERVATIONS_COUNT = 0;
+  public static void main(String[] args) {
+
+    // java -cp dcc-submission-server-3.5.2-SNAPSHOT.jar
+    // org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation
+
+    final String PROJECT_KEY = "ALL-US";
+    val fileTypes =
+        ImmutableSet.of(
+            // DONOR_TYPE,
+            EXP_ARRAY_M_TYPE, EXP_ARRAY_P_TYPE, SAMPLE_TYPE, SPECIMEN_TYPE, SSM_M_TYPE,
+            SSM_P_TYPE);
+
+    val preComputation = new PreComputation(
+        "test17",
+        PROJECT_KEY,
+        SerializableMaps.asMap(
+            fileTypes,
+            Functions2.<FileType, Integer> constant(1)));
+    try {
+      HadoopUtil.serializeBase64(preComputation, new JobConf(new Configuration()));
+    } catch (IOException e1) {
+      System.exit(1);
+      e1.printStackTrace();
+    }
+
+    System.out.println(asMap(
+        fileTypes,
+        Functions2.<FileType, Integer> constant(1)));
+
+    boolean LOCAL = false;
+    val taps = LOCAL ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
+    CascadingConnectors connectors = LOCAL ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
+    val flowConnector = connectors.getFlowConnector(LOCAL ?
+        ImmutableMap.of() :
+        ImmutableMap.of(
+            CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "***REMOVED***",
+            HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, "***REMOVED***"));
+
+    val flowDef = FlowDef.flowDef();
+    for (val fileType : fileTypes) {
+      val filePath = "/tmp/" + PROJECT_KEY + "/" + fileType.getHarmonizedOutputFileName();
+      val inputTap = taps.getNoCompressionTsvWithHeader(filePath);
+      val headPipeName = getHeadPipeName(PROJECT_KEY, fileType, 0);
+
+      flowDef.addSource(headPipeName, inputTap);
+    }
+
+    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
+    val outputTap = taps.getNoCompressionTsvWithHeader(outputDirFilePath);
+    flowDef.addTailSink(preComputation.getTails()[0], outputTap);
+
+    flowConnector.connect(flowDef).complete();
+    log.info("done: " + outputDirFilePath);
+    try {
+      val lines =
+          Files.readLines(new File(LOCAL ? outputDirFilePath : "/hdfs/dcc" + outputDirFilePath + "/part-00000"),
+              Charsets.UTF_8);
+      System.out.println(Joiners.INDENT.join(lines.subList(0, 10)));
+      System.out.println();
+      System.out.println(Joiners.INDENT.join(lines.subList(lines.size() - 11, lines.size() - 1)));
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+
+  private Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
+  private final int NO_OBSERVATIONS_COUNT = 0;
+
+  private final String releaseName;
+  private final String projectKey;
+  private final Iterable<FeatureType> featureTypesWithData;
+  private final Map<FileType, Integer> matchingFilePaths;
 
   public PreComputation(
       @NonNull final String releaseName,
       @NonNull final String projectKey,
-      @NonNull final ReporterInput reporterInput) {
-    setTails(Dumps.addIntermediateOutputDump(
-        PRE_COMPUTATION,
-        projectKey,
-        processProject(
-            reporterInput,
-            releaseName,
-            projectKey)));
+      @NonNull final Map<FileType, Integer> matchingFilePathCounts) {
+    this.releaseName = releaseName;
+    this.projectKey = projectKey;
+    this.matchingFilePaths = matchingFilePathCounts;
+    this.featureTypesWithData = newLinkedHashSet( // To make it serializable
+        DataTypes.getFeatureTypes(
+            FileType.getDataTypes(
+                matchingFilePathCounts.keySet())));
+
+    setTails(processProject());
   }
 
   /**
    * Joins the clinical and observation pipes.
    */
-  private static Pipe processProject(
-      @NonNull final ReporterInput reporterInput,
-      @NonNull final String releaseName,
-      @NonNull final String projectKey) {
-    val join = joinWithoutAbstraction(reporterInput, projectKey);
+  private Pipe processProject() {
     return
 
     new Insert(
@@ -105,31 +195,28 @@ public class PreComputation extends SubAssembly {
             // Field/value to be inserted
             keyValuePair(PROJECT_ID_FIELD, projectKey),
 
-            addIntermediateOutputDump(PRE_COMPUTATION_TMP2, projectKey,
-                new Unique(
-                    new Each(
-                        addIntermediateOutputDump(PRE_COMPUTATION_TMP1, projectKey, join),
-                        NONE.append(TYPE_FIELD)
-                            .append(ANALYSIS_ID_FIELD)
-                            .append(SEQUENCING_STRATEGY_FIELD)
-                            .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
-                        new OrphanReplacer(),
-                        REPLACE),
-                    ALL))
+            new Unique(
+                new Each(
+                    joinWithoutAbstraction(),
+                    NONE.append(TYPE_FIELD)
+                        .append(ANALYSIS_ID_FIELD)
+                        .append(SEQUENCING_STRATEGY_FIELD)
+                        .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
+                    new OrphanReplacer(),
+                    REPLACE),
+                ALL)
         ));
   }
 
-  private static Pipe joinWithoutAbstraction(final ReporterInput reporterInput, final String projectKey) {
+  private Pipe joinWithoutAbstraction() {
     return new Discard(
         new HashJoin(
-            addIntermediateOutputDump(PRE_COMPUTATION_FEATURE_TYPES, projectKey,
-                new Rename(
-                    processFeatureTypes(reporterInput, projectKey),
-                    SAMPLE_ID_FIELD,
-                    REDUNDANT_SAMPLE_ID_FIELD)),
+            new Rename(
+                processFeatureTypes(),
+                SAMPLE_ID_FIELD,
+                REDUNDANT_SAMPLE_ID_FIELD),
             REDUNDANT_SAMPLE_ID_FIELD,
-            addIntermediateOutputDump(PRE_COMPUTATION_CLINICAL, projectKey,
-                processClinical(reporterInput, projectKey)),
+            processClinical(),
             SAMPLE_ID_FIELD,
             new RightJoin()
         ),
@@ -137,23 +224,20 @@ public class PreComputation extends SubAssembly {
   }
 
   @SuppressWarnings("unused")
-  private static Pipe joinWithAbstraction(final ReporterInput reporterInput, final String projectKey) {
+  private Pipe joinWithAbstraction() {
     return new ReadableHashJoin(JoinData.builder()
 
         // Right-join in order to keep track of clinical data with no observations as well
         .joiner(new RightJoin())
 
         .leftPipe(
-            addIntermediateOutputDump(PRE_COMPUTATION_FEATURE_TYPES, projectKey,
-                new Rename(
-                    processFeatureTypes(reporterInput, projectKey),
-                    SAMPLE_ID_FIELD,
-                    REDUNDANT_SAMPLE_ID_FIELD)))
+            new Rename(
+                processFeatureTypes(),
+                SAMPLE_ID_FIELD,
+                REDUNDANT_SAMPLE_ID_FIELD))
         .leftJoinFields(REDUNDANT_SAMPLE_ID_FIELD)
 
-        .rightPipe(
-            addIntermediateOutputDump(PRE_COMPUTATION_CLINICAL, projectKey,
-                processClinical(reporterInput, projectKey)))
+        .rightPipe(processClinical())
         .rightJoinFields(SAMPLE_ID_FIELD)
 
         .resultFields(
@@ -171,52 +255,14 @@ public class PreComputation extends SubAssembly {
         .build());
   }
 
-  private static class OrphanReplacer extends BaseFunction<Void> {
-
-    private OrphanReplacer() {
-      super(ARGS);
-    }
-
-    @Override
-    public void operate(
-        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-        FunctionCall<Void> functionCall) {
-      functionCall
-          .getOutputCollector()
-          .add(getUpdatedTuple(functionCall.getArguments()));
-    }
-
-    private static Tuple getUpdatedTuple(@NonNull final TupleEntry entry) {
-      if (isOrphanSample(entry)) {
-        return new Tuple(
-            ORPHAN_TYPE,
-            NOT_APPLICABLE,
-            NOT_APPLICABLE,
-            NO_OBSERVATIONS_COUNT);
-      } else {
-        return new Tuple(
-            entry.getString(TYPE_FIELD),
-            entry.getString(ANALYSIS_ID_FIELD),
-            entry.getString(SEQUENCING_STRATEGY_FIELD),
-            entry.getString(_ANALYSIS_OBSERVATION_COUNT_FIELD));
-      }
-    }
-
-    private static boolean isOrphanSample(@NonNull final TupleEntry entry) {
-      val featureType = entry.getString(TYPE_FIELD);
-      return featureType == null || featureType.isEmpty();
-    }
-
-  }
-
-  private static Pipe processClinical(final ReporterInput reporterInput, String projectKey) {
+  private Pipe processClinical() {
     return new ReadableHashJoin(JoinData.builder()
         .joiner(new InnerJoin())
 
-        .leftPipe(processSpecimenFiles(reporterInput, projectKey))
+        .leftPipe(processSpecimenFiles())
         .leftJoinFields(SPECIMEN_ID_FIELD)
 
-        .rightPipe(processSampleFiles(reporterInput, projectKey))
+        .rightPipe(processSampleFiles())
         .rightJoinFields(SPECIMEN_ID_FIELD)
 
         .resultFields(
@@ -229,35 +275,28 @@ public class PreComputation extends SubAssembly {
         .build());
   }
 
-  private static Pipe processSpecimenFiles(
-      @NonNull final ReporterInput reporterInput,
-      @NonNull final String projectKey) {
-    return processFiles(reporterInput, projectKey, SPECIMEN_TYPE, DONOR_ID_FIELD.append(SPECIMEN_ID_FIELD));
+  private Pipe processSpecimenFiles() {
+    return processFiles(SPECIMEN_TYPE, DONOR_ID_FIELD.append(SPECIMEN_ID_FIELD));
   }
 
-  private static Pipe processSampleFiles(
-      @NonNull final ReporterInput reporterInput,
-      @NonNull final String projectKey) {
-    return processFiles(reporterInput, projectKey, SAMPLE_TYPE, SPECIMEN_ID_FIELD.append(SAMPLE_ID_FIELD));
+  private Pipe processSampleFiles() {
+    return processFiles(SAMPLE_TYPE, SPECIMEN_ID_FIELD.append(SAMPLE_ID_FIELD));
   }
 
-  private static Pipe processFeatureTypes(final ReporterInput reporterInput, final String projectKey) {
+  private Pipe processFeatureTypes() {
     return new Transformerge<FeatureType>(
-        reporterInput.getFeatureTypesWithData(projectKey),
+        featureTypesWithData,
         new Function<FeatureType, Pipe>() {
 
           @Override
           public Pipe apply(FeatureType featureType) {
-            return processFeatureType(reporterInput, projectKey, featureType);
+            return processFeatureType(featureType);
           }
 
         });
   }
 
-  private static Pipe processFeatureType(
-      @NonNull final ReporterInput reporterInput,
-      @NonNull final String projectKey,
-      @NonNull final FeatureType featureType) {
+  private Pipe processFeatureType(@NonNull final FeatureType featureType) {
     log.info("Processing '{}'", featureType);
 
     return
@@ -272,10 +311,10 @@ public class PreComputation extends SubAssembly {
 
             .joiner(new InnerJoin())
 
-            .leftPipe(processPrimaryFiles(reporterInput, projectKey, featureType))
+            .leftPipe(processPrimaryFiles(featureType))
             .leftJoinFields(META_PK_FIELDS)
 
-            .rightPipe(processMetaFiles(reporterInput, projectKey, featureType))
+            .rightPipe(processMetaFiles(featureType))
             .rightJoinFields(META_PK_FIELDS)
 
             .resultFields(
@@ -291,17 +330,14 @@ public class PreComputation extends SubAssembly {
             .build()));
   }
 
-  private static Pipe processPrimaryFiles(
-      @NonNull final ReporterInput reporterInput,
-      @NonNull final String projectKey,
-      @NonNull final FeatureType featureType) {
+  private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {
     return
 
     // TODO: move that before the merge to maximum parallelization (optimization)
     new SubAssemblies.ReadableCountBy(CountByData.builder()
 
         .pipe(processFiles(
-            reporterInput, projectKey, featureType.getPrimaryFileType(),
+            featureType.getPrimaryFileType(),
             META_PK_FIELDS))
         .countByFields(META_PK_FIELDS)
         .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
@@ -310,11 +346,10 @@ public class PreComputation extends SubAssembly {
 
   }
 
-  private static Pipe processMetaFiles(final ReporterInput reporterInput, final String projectKey,
-      final FeatureType featureType) {
+  private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
     return normalizeSequencingStrategies(
         processFiles(
-            reporterInput, projectKey, featureType.getMetaFileType(),
+            featureType.getMetaFileType(),
             appendIfApplicable(
                 META_PK_FIELDS,
                 hasSequencingStrategy(featureType),
@@ -324,6 +359,27 @@ public class PreComputation extends SubAssembly {
         featureType.getTypeName(),
 
         featureType.hasSequencingStrategy());
+  }
+
+  private Pipe processFiles(
+      @NonNull final FileType fileType,
+      @NonNull final Fields retainedFields) {
+    val pipes = new Pipe[matchingFilePaths.get(fileType)];
+    for (int fileNumber = 0; fileNumber < pipes.length; fileNumber++) {
+      pipes[fileNumber] = processFile(fileType, fileNumber, retainedFields);
+    }
+
+    return new Merge(pipes);
+  }
+
+  private Pipe processFile(
+      @NonNull final FileType fileType,
+      final int fileNumber,
+      @NonNull final Fields retainedFields) {
+    return new Retain(
+        new Pipe(
+            getHeadPipeName(projectKey, fileType, fileNumber)),
+        retainedFields);
   }
 
   /**
@@ -343,41 +399,49 @@ public class PreComputation extends SubAssembly {
         );
   }
 
-  private static Pipe processFiles(
-      @NonNull final ReporterInput reporterInput,
-      @NonNull final String projectKey,
-      @NonNull final FileType fileType,
-      @NonNull final Fields retainedFields) {
-    return new Transformerge<String>(
-        reporterInput.getMatchingFilePaths(projectKey, fileType),
-        new Function<String, Pipe>() {
-
-          int fileNumber = 0;
-
-          @Override
-          public Pipe apply(String matchingFilePath) {
-            return processFile(projectKey, fileType, fileNumber++, matchingFilePath, retainedFields);
-          }
-
-        });
-  }
-
-  private static Pipe processFile(
-      @NonNull final String projectKey,
-      @NonNull final FileType fileType,
-      final int fileNumber,
-      @NonNull final String matchingFilePath,
-      @NonNull final Fields retainedFields) {
-    return new Retain(
-        new Pipe(getHeadPipeName(projectKey, fileType, fileNumber)),
-        retainedFields);
-  }
-
   /**
    * Must use the {@link String} value because {@link DataType} is not a real enum (rather a composite thereof).
    */
   private static String getDataTypeValue(@NonNull final DataType dataType) {
     return dataType.getTypeName();
+  }
+
+  private class OrphanReplacer extends BaseFunction<Void> {
+
+    private OrphanReplacer() {
+      super(ARGS);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+      functionCall
+          .getOutputCollector()
+          .add(getUpdatedTuple(functionCall.getArguments()));
+    }
+
+    private Tuple getUpdatedTuple(@NonNull final TupleEntry entry) {
+      if (isOrphanSample(entry)) {
+        return new Tuple(
+            ORPHAN_TYPE,
+            NOT_APPLICABLE,
+            NOT_APPLICABLE,
+            NO_OBSERVATIONS_COUNT);
+      } else {
+        return new Tuple(
+            entry.getString(TYPE_FIELD),
+            entry.getString(ANALYSIS_ID_FIELD),
+            entry.getString(SEQUENCING_STRATEGY_FIELD),
+            entry.getString(_ANALYSIS_OBSERVATION_COUNT_FIELD));
+      }
+    }
+
+    private boolean isOrphanSample(@NonNull final TupleEntry entry) {
+      val featureType = entry.getString(TYPE_FIELD);
+      return featureType == null || featureType.isEmpty();
+    }
+
   }
 
 }

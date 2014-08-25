@@ -20,6 +20,7 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
@@ -32,6 +33,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
@@ -331,6 +333,10 @@ public final class FileTypes {
         }
 
       };
+    }
+
+    public static Iterable<DataType> getDataTypes(@NonNull final Iterable<FileType> fileTypes) {
+      return ImmutableSet.copyOf(transform(fileTypes, toDataType()));
     }
 
     public static Function<FileType, DataType> toDataType() {
