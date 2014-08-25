@@ -6,7 +6,6 @@ import static cascading.tuple.Fields.NONE;
 import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
-import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
@@ -15,7 +14,6 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
-import static org.icgc.dcc.hadoop.cascading.Fields2.field;
 import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
@@ -25,6 +23,7 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_ANALYSIS_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.RELEASE_NAME_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
@@ -227,7 +226,7 @@ public class PreComputation extends SubAssembly {
             new Insert(PROJECT_ID_FIELD, projectKey),
             ALL
         ),
-        new Insert(field(RELEASE_NAME), releaseName),
+        new Insert(RELEASE_NAME_FIELD, releaseName),
         ALL);
   }
 
@@ -423,7 +422,7 @@ public class PreComputation extends SubAssembly {
             entry.getString(TYPE_FIELD),
             entry.getString(ANALYSIS_ID_FIELD),
             entry.getString(SEQUENCING_STRATEGY_FIELD),
-            entry.getString(_ANALYSIS_OBSERVATION_COUNT_FIELD));
+            entry.getInteger(_ANALYSIS_OBSERVATION_COUNT_FIELD));
       }
     }
 
