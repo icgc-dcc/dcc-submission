@@ -26,6 +26,7 @@ import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import org.icgc.dcc.core.model.Identifiable;
 import org.icgc.dcc.core.util.Extensions;
 import org.icgc.dcc.core.util.Named;
 
@@ -42,6 +43,15 @@ public class Flows implements Named {
 
   private static final Flows INTERNAL = new Flows();
   private static final String CLASS_NAME = removeTrailingS(Flows.class.getSimpleName());
+
+  @SuppressWarnings("all")
+  // TODO
+  public static FlowDef getFlowDef(Class<?> type, Identifiable... qualifiers) {
+    return FlowDef
+        .flowDef()
+        .setName(
+            getName(type, qualifiers));
+  }
 
   @Override
   public String getName() {
@@ -63,22 +73,22 @@ public class Flows implements Named {
       @NonNull final FlowConnector flowConnector,
       @NonNull final FlowDef flowDef) {
     Flow<?> flow = flowConnector.connect(flowDef);
-    flow.writeDOT(getFlowDotFilePath("/tmp", flowDef));
-    flow.writeStepsDOT(getFlowStepDotFilePath("/tmp", flowDef));
+    flow.writeDOT(getFlowDotFilePath("/tmp", flowDef.getName()));
+    flow.writeStepsDOT(getFlowStepDotFilePath("/tmp", flowDef.getName()));
 
     return flow;
   }
 
   private static String getFlowDotFilePath(
       @NonNull final String dotDirPath,
-      @NonNull final FlowDef flowDef) {
-    return getDotFilePath(dotDirPath, flowDef.getName(), Flow.class);
+      @NonNull final String flowName) {
+    return getDotFilePath(dotDirPath, flowName, Flow.class);
   }
 
   private static String getFlowStepDotFilePath(
       @NonNull final String dotDirPath,
-      @NonNull FlowDef flowDef) {
-    return getDotFilePath(dotDirPath, flowDef.getName(), FlowStep.class);
+      @NonNull final String flowName) {
+    return getDotFilePath(dotDirPath, flowName, FlowStep.class);
   }
 
   /**
@@ -91,8 +101,9 @@ public class Flows implements Named {
     checkState(type == Flow.class || type == FlowStep.class);
 
     return PATH.join(
-        dotDirPath, EXTENSION.join(
-            PATH.join(
+        dotDirPath,
+        EXTENSION.join(
+            DASH.join(
                 flowName,
                 type.getSimpleName()),
             Extensions.DOT));

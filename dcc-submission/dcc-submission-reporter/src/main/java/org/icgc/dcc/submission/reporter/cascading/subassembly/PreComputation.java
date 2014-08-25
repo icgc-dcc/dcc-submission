@@ -116,7 +116,7 @@ public class PreComputation extends SubAssembly {
 
     public static void main(String[] args) {
       val preComputation = getPipe();
-      val flowDef = FlowDef.flowDef().setName(Flows.getName(PreComputation.class));
+      val flowDef = Flows.getFlowDef(PreComputation.class);
       addSources(flowDef);
       val outputDirFilePath = addSinkTail(
           flowDef,
