@@ -15,7 +15,7 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
-import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
+import static org.icgc.dcc.hadoop.cascading.Fields2.field;
 import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
@@ -53,7 +53,6 @@ import org.icgc.dcc.core.util.SerializableMaps;
 import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
@@ -66,6 +65,7 @@ import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
 import cascading.operation.FunctionCall;
+import cascading.operation.Insert;
 import cascading.pipe.Each;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
@@ -212,31 +212,26 @@ public class PreComputation extends SubAssembly {
   private Pipe processProject() {
     return
 
-    new Insert(
-
-        // Field/value to be inserted
-        keyValuePair(RELEASE_NAME, releaseName),
-
-        // Insert project ID
-        new Insert(
-
-            // Field/value to be inserted
-            keyValuePair(PROJECT_ID_FIELD, projectKey),
-
+    new Each(
+        new Each(
             new Unique(
                 new Each(
-                    joinWithoutAbstraction(),
+                    join(),
                     NONE.append(TYPE_FIELD)
                         .append(ANALYSIS_ID_FIELD)
                         .append(SEQUENCING_STRATEGY_FIELD)
                         .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
                     new OrphanReplacer(),
                     REPLACE),
-                ALL)
-        ));
+                ALL),
+            new Insert(PROJECT_ID_FIELD, projectKey),
+            ALL
+        ),
+        new Insert(field(RELEASE_NAME), releaseName),
+        ALL);
   }
 
-  private Pipe joinWithoutAbstraction() {
+  private Pipe join() {
     return new Discard(
         new HashJoin(
             new Rename(
@@ -249,38 +244,6 @@ public class PreComputation extends SubAssembly {
             new RightJoin()
         ),
         REDUNDANT_SAMPLE_ID_FIELD);
-  }
-
-  @SuppressWarnings("unused")
-  private Pipe joinWithAbstraction() {
-    return new ReadableHashJoin(JoinData.builder()
-
-        // Right-join in order to keep track of clinical data with no observations as well
-        .joiner(new RightJoin())
-
-        .leftPipe(
-            new Rename(
-                processFeatureTypes(),
-                SAMPLE_ID_FIELD,
-                REDUNDANT_SAMPLE_ID_FIELD))
-        .leftJoinFields(REDUNDANT_SAMPLE_ID_FIELD)
-
-        .rightPipe(processClinical())
-        .rightJoinFields(SAMPLE_ID_FIELD)
-
-        .resultFields(
-            NONE.append(ANALYSIS_ID_FIELD)
-                .append(REDUNDANT_SAMPLE_ID_FIELD)
-                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                .append(SEQUENCING_STRATEGY_FIELD)
-                .append(TYPE_FIELD)
-                .append(DONOR_ID_FIELD)
-                .append(SPECIMEN_ID_FIELD)
-                .append(SAMPLE_ID_FIELD)
-        )
-        .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
-
-        .build());
   }
 
   private Pipe processClinical() {
@@ -330,11 +293,7 @@ public class PreComputation extends SubAssembly {
     return
 
     // Insert feature type
-    new Insert(
-
-        // Fields to insert
-        keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
-
+    new Each(
         new ReadableHashJoin(JoinData.builder()
 
             .joiner(new InnerJoin())
@@ -355,7 +314,9 @@ public class PreComputation extends SubAssembly {
                 REDUNDANT_ANALYSIS_ID_FIELD
                     .append(REDUNDANT_SAMPLE_ID_FIELD))
 
-            .build()));
+            .build()),
+        new Insert(TYPE_FIELD, getDataTypeValue(featureType)),
+        ALL);
   }
 
   private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {
@@ -421,9 +382,10 @@ public class PreComputation extends SubAssembly {
         pipe :
 
         // Insert a "fake" sequencing strategy to make it look uniform
-        new Insert(
-            keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
-            pipe
+        new Each(
+            pipe,
+            new Insert(SEQUENCING_STRATEGY_FIELD, replacement),
+            ALL
         );
   }
 
