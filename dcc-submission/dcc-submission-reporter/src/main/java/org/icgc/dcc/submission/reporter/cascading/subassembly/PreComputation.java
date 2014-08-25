@@ -88,6 +88,10 @@ import com.google.common.io.Files;
 @Slf4j
 public class PreComputation extends SubAssembly {
 
+  public static void main(String[] args) {
+    Bug.main(args);
+  }
+
   public static class Bug {
 
     private static final boolean LOCAL = isLocal();
@@ -165,7 +169,10 @@ public class PreComputation extends SubAssembly {
     @SneakyThrows
     private static void print(final String outputDirFilePath) {
       val lines =
-          Files.readLines(new File(LOCAL ? outputDirFilePath : "/hdfs/dcc" + outputDirFilePath + "/part-00000"),
+          Files.readLines(
+              new File(LOCAL ?
+                  outputDirFilePath :
+                  "/hdfs/dcc" + outputDirFilePath + "/part-00000"),
               Charsets.UTF_8);
       System.out.println(Joiners.INDENT.join(lines.subList(0, 10)));
       System.out.println();
