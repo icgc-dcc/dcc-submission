@@ -21,7 +21,7 @@ import org.icgc.dcc.core.model.ValueType;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.core.report.ErrorType;
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.planner.PlanningException;
 
 import cascading.flow.FlowProcess;
@@ -37,7 +37,7 @@ import cascading.tuple.TupleEntry;
 /**
  * Creates {@code PlanElement}s for validating the {@code ValueType} of a {@code Field}.
  */
-public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
+public class ValueTypePlanningVisitor extends RowBasedFlowPlanningVisitor {
 
   public static final String NAME = "valueType";
 
@@ -51,7 +51,7 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
     }
   }
 
-  public static class ValueTypePlanElement implements InternalPlanElement {
+  public static class ValueTypePlanElement implements RowBasedPlanElement {
 
     private final String field;
 

@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 import lombok.SneakyThrows;
@@ -50,22 +49,20 @@ import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestrict
 import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.primary.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 
-public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest {
+public class ValidationRowBasedIntegrityTest extends BaseValidationIntegrityTest {
 
   /**
    * Test data.
    */
-  private static final String ROOT_DIR = "/fixtures/validation/internal";
+  private static final String ROOT_DIR = "/fixtures/validation/internal"; // TODO: rename to "row-based"
   private static final String PROJECT_KEY = "dummyProject";
 
   @Before
@@ -163,16 +160,6 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
     stage.addRestriction(restriction);
 
     testErrorType(RegexRestriction.NAME);
-  }
-
-  // Unique and relation checks have been moved to the KV
-  @Ignore
-  @Test
-  public void test_validate_invalidUniqueFieldsCombination() {
-    FileSchema donor = getFileSchemaByName(dictionary, "donor");
-    donor.setUniqueFields(Arrays.asList("donor_sex", "donor_region_of_residence", "donor_vital_status"));
-
-    testErrorType(UniqueFieldsPlanningVisitor.NAME);
   }
 
   @Test
