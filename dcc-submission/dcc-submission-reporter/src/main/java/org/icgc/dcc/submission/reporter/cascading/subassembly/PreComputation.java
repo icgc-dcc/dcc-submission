@@ -85,12 +85,39 @@ import com.google.common.io.Files;
 public class PreComputation extends SubAssembly {
 
   public static void main(String[] args) {
-    Bug.main(args);
+    Bug2.main(args);
+  }
+
+  public static class Bug2 {
+
+    public static void main(String[] args) {
+      val join = getPipe();
+      val flowDef = Flows.getFlowDef(PreComputation.class);
+      addSources(flowDef);
+      val outputDirFilePath = addSinkTail(
+          flowDef,
+          join.getTails()[0]);
+      connect(flowDef).complete();
+      log.info("done: " + outputDirFilePath);
+      print(outputDirFilePath);
+    }
+
+    private static SubAssembly getPipe() {
+      Pipe featureTypes = new Pipe("feature_types");
+      Pipe clinical = new Pipe("clinical");
+      return new Join(featureTypes, clinical);
+    }
+
+    private static void addSources(final FlowDef flowDef) {
+      val featureTypesTap = getTaps().getNoCompressionTsvWithHeader("/tmp/feature_types.tsv");
+      val clinicalTap = getTaps().getNoCompressionTsvWithHeader("/tmp/clinical.tsv");
+      flowDef.addSource("feature_types", featureTypesTap);
+      flowDef.addSource("clinical", clinicalTap);
+    }
+
   }
 
   public static class Bug {
-
-    private static final boolean LOCAL = isLocal();
 
     @SneakyThrows
     private static boolean isLocal() {
@@ -139,45 +166,52 @@ public class PreComputation extends SubAssembly {
       }
     }
 
-    private static String addSinkTail(
-        final FlowDef flowDef,
-        final Pipe tail) {
-      val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
-      val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
-      flowDef.addTailSink(tail, outputTap);
-      return outputDirFilePath;
-    }
-
-    private static CascadingTaps getTaps() {
-      return LOCAL ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
-    }
-
-    private static Flow<?> connect(final FlowDef flowDef) {
-      CascadingConnectors connectors = LOCAL ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
-      val flowConnector = connectors.getFlowConnector(LOCAL ?
-          ImmutableMap.of() :
-          ImmutableMap.of(
-              CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "***REMOVED***",
-              HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, "***REMOVED***"));
-      return connectFlowDef(flowConnector, flowDef);
-    }
-
-    @SneakyThrows
-    private static void print(final String outputDirFilePath) {
-      val lines =
-          Files.readLines(
-              new File(LOCAL ?
-                  outputDirFilePath :
-                  "/hdfs/dcc" + outputDirFilePath + "/part-00000"),
-              Charsets.UTF_8);
-      System.out.println(Joiners.INDENT.join(lines.subList(0, 10)));
-      System.out.println();
-      System.out.println(Joiners.INDENT.join(lines.subList(lines.size() - 11, lines.size() - 1)));
-    }
-
   }
 
-  private Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
+  private static final boolean LOCAL = isLocal();
+
+  @SneakyThrows
+  private static boolean isLocal() {
+    return "acroslt".equals(InetAddress.getLocalHost().getHostName());
+  }
+
+  private static CascadingTaps getTaps() {
+    return LOCAL ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
+  }
+
+  private static String addSinkTail(
+      final FlowDef flowDef,
+      final Pipe tail) {
+    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
+    val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
+    flowDef.addTailSink(tail, outputTap);
+    return outputDirFilePath;
+  }
+
+  private static Flow<?> connect(final FlowDef flowDef) {
+    CascadingConnectors connectors = LOCAL ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
+    val flowConnector = connectors.getFlowConnector(LOCAL ?
+        ImmutableMap.of() :
+        ImmutableMap.of(
+            CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "***REMOVED***",
+            HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, "***REMOVED***"));
+    return connectFlowDef(flowConnector, flowDef);
+  }
+
+  @SneakyThrows
+  private static void print(final String outputDirFilePath) {
+    val lines =
+        Files.readLines(
+            new File(LOCAL ?
+                outputDirFilePath :
+                "/hdfs/dcc" + outputDirFilePath + "/part-00000"),
+            Charsets.UTF_8);
+    System.out.println(Joiners.INDENT.join(lines.subList(0, 10)));
+    System.out.println();
+    System.out.println(Joiners.INDENT.join(lines.subList(lines.size() - 11, lines.size() - 1)));
+  }
+
+  private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
   private final int NO_OBSERVATIONS_COUNT = 0;
 
   private final String releaseName;
@@ -204,12 +238,16 @@ public class PreComputation extends SubAssembly {
    * Joins the clinical and observation pipes.
    */
   private Pipe processProject() {
+
+    Pipe featureTypes = processFeatureTypes();
+    Pipe clinicalPlain = processClinicalPlain();
+
     return
 
     new Each(
         new Each(
             new Each(
-                plainJoin(),
+                new Join(featureTypes, clinicalPlain),
                 NONE.append(TYPE_FIELD)
                     .append(ANALYSIS_ID_FIELD)
                     .append(SEQUENCING_STRATEGY_FIELD)
@@ -223,19 +261,33 @@ public class PreComputation extends SubAssembly {
         ALL);
   }
 
-  private Pipe plainJoin() {
-    return new Discard(
-        new HashJoin(
-            new Rename(
-                processFeatureTypes(),
-                SAMPLE_ID_FIELD,
-                REDUNDANT_SAMPLE_ID_FIELD),
-            REDUNDANT_SAMPLE_ID_FIELD,
-            processClinicalPlain(),
-            SAMPLE_ID_FIELD,
-            new RightJoin()
-        ),
-        REDUNDANT_SAMPLE_ID_FIELD);
+  public static class Join extends SubAssembly {
+
+    private final Pipe featureTypes;
+    private final Pipe clinicalPlain;
+
+    Join(Pipe featureTypes, Pipe clinicalPlain) {
+      this.featureTypes = featureTypes;
+      this.clinicalPlain = clinicalPlain;
+
+      setTails(plainJoin());
+    }
+
+    private Pipe plainJoin() {
+      return new Discard(
+          new HashJoin(
+              new Rename(
+                  featureTypes,
+                  SAMPLE_ID_FIELD,
+                  REDUNDANT_SAMPLE_ID_FIELD),
+              REDUNDANT_SAMPLE_ID_FIELD,
+              clinicalPlain,
+              SAMPLE_ID_FIELD,
+              new RightJoin()
+          ),
+          REDUNDANT_SAMPLE_ID_FIELD);
+    }
+
   }
 
   private Pipe processClinicalPlain() {
@@ -352,7 +404,7 @@ public class PreComputation extends SubAssembly {
   /**
    * Some feature types don't have a sequencing strategy and require special processing.
    */
-  private static Pipe normalizeSequencingStrategies(
+  private Pipe normalizeSequencingStrategies(
       @NonNull final Pipe pipe,
       @NonNull final String replacement,
       final boolean hasSequencingStrategy) {
@@ -370,7 +422,7 @@ public class PreComputation extends SubAssembly {
   /**
    * Must use the {@link String} value because {@link DataType} is not a real enum (rather a composite thereof).
    */
-  private static String getDataTypeValue(@NonNull final DataType dataType) {
+  private String getDataTypeValue(@NonNull final DataType dataType) {
     return dataType.getTypeName();
   }
 
