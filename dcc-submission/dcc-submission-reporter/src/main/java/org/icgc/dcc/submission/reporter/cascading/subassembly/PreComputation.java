@@ -4,9 +4,9 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.NONE;
 import static cascading.tuple.Fields.REPLACE;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
-import static org.icgc.dcc.core.model.FieldNames.ReporterFieldNames.RELEASE_NAME;
 import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
@@ -15,8 +15,6 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
-import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
-import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
@@ -25,13 +23,16 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_ANALYSIS_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.RELEASE_NAME_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.CascadingJoins.connect;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.CascadingJoins.getTaps;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.CascadingJoins.printbug;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.Map;
@@ -42,61 +43,73 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Functions2;
-import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.core.util.SerializableMaps;
 import org.icgc.dcc.hadoop.cascading.Flows;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
-import org.icgc.dcc.hadoop.util.HadoopConstants;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
 import cascading.operation.FunctionCall;
+import cascading.operation.Insert;
 import cascading.pipe.Each;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
-import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.io.Files;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
 
   public static void main(String[] args) {
-    Bug.main(args);
+    Bug2.main(args);
+  }
+
+  public static class Bug2 {
+
+    public static void main(String[] args) {
+      val join = getPipe();
+      val flowDef = Flows.getFlowDef(PreComputation.class);
+      addSources(flowDef);
+      val outputDirFilePath = addSinkTail(
+          flowDef,
+          join.getTails()[0]);
+      connect(flowDef).complete();
+      log.info("done: " + outputDirFilePath);
+      printbug(outputDirFilePath);
+    }
+
+    private static SubAssembly getPipe() {
+      Pipe featureTypes = new Pipe("feature_types");
+      Pipe clinical = new Pipe("clinical");
+      return new Join(featureTypes, clinical);
+    }
+
+    private static void addSources(final FlowDef flowDef) {
+      val featureTypesTap = getTaps().getNoCompressionTsvWithHeader("/tmp/feature_types.tsv");
+      val clinicalTap = getTaps().getNoCompressionTsvWithHeader("/tmp/clinical.tsv");
+      flowDef.addSource("feature_types", featureTypesTap);
+      flowDef.addSource("clinical", clinicalTap);
+    }
+
   }
 
   public static class Bug {
-
-    private static final boolean LOCAL = isLocal();
 
     @SneakyThrows
     private static boolean isLocal() {
@@ -123,7 +136,7 @@ public class PreComputation extends SubAssembly {
           preComputation.getTails()[0]);
       connect(flowDef).complete();
       log.info("done: " + outputDirFilePath);
-      print(outputDirFilePath);
+      printbug(outputDirFilePath);
     }
 
     private static PreComputation getPipe() {
@@ -145,45 +158,18 @@ public class PreComputation extends SubAssembly {
       }
     }
 
-    private static String addSinkTail(
-        final FlowDef flowDef,
-        final Pipe tail) {
-      val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
-      val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
-      flowDef.addTailSink(tail, outputTap);
-      return outputDirFilePath;
-    }
-
-    private static CascadingTaps getTaps() {
-      return LOCAL ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
-    }
-
-    private static Flow<?> connect(final FlowDef flowDef) {
-      CascadingConnectors connectors = LOCAL ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
-      val flowConnector = connectors.getFlowConnector(LOCAL ?
-          ImmutableMap.of() :
-          ImmutableMap.of(
-              CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "***REMOVED***",
-              HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, "***REMOVED***"));
-      return connectFlowDef(flowConnector, flowDef);
-    }
-
-    @SneakyThrows
-    private static void print(final String outputDirFilePath) {
-      val lines =
-          Files.readLines(
-              new File(LOCAL ?
-                  outputDirFilePath :
-                  "/hdfs/dcc" + outputDirFilePath + "/part-00000"),
-              Charsets.UTF_8);
-      System.out.println(Joiners.INDENT.join(lines.subList(0, 10)));
-      System.out.println();
-      System.out.println(Joiners.INDENT.join(lines.subList(lines.size() - 11, lines.size() - 1)));
-    }
-
   }
 
-  private Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
+  static String addSinkTail(
+      final FlowDef flowDef,
+      final Pipe tail) {
+    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
+    val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
+    flowDef.addTailSink(tail, outputTap);
+    return outputDirFilePath;
+  }
+
+  private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
   private final int NO_OBSERVATIONS_COUNT = 0;
 
   private final String releaseName;
@@ -210,97 +196,75 @@ public class PreComputation extends SubAssembly {
    * Joins the clinical and observation pipes.
    */
   private Pipe processProject() {
+
+    Pipe featureTypes = processFeatureTypes();
+    Pipe clinicalPlain = processClinicalPlain();
+
     return
 
-    new Insert(
-
-        // Field/value to be inserted
-        keyValuePair(RELEASE_NAME, releaseName),
-
-        // Insert project ID
-        new Insert(
-
-            // Field/value to be inserted
-            keyValuePair(PROJECT_ID_FIELD, projectKey),
-
-            new Unique(
-                new Each(
-                    joinWithoutAbstraction(),
-                    NONE.append(TYPE_FIELD)
-                        .append(ANALYSIS_ID_FIELD)
-                        .append(SEQUENCING_STRATEGY_FIELD)
-                        .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
-                    new OrphanReplacer(),
-                    REPLACE),
-                ALL)
-        ));
+    new Each(
+        new Each(
+            new Each(
+                new Join(featureTypes, clinicalPlain),
+                NONE.append(TYPE_FIELD)
+                    .append(ANALYSIS_ID_FIELD)
+                    .append(SEQUENCING_STRATEGY_FIELD)
+                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
+                new OrphanReplacer(),
+                REPLACE),
+            new Insert(PROJECT_ID_FIELD, projectKey),
+            ALL
+        ),
+        new Insert(RELEASE_NAME_FIELD, releaseName),
+        ALL);
   }
 
-  private Pipe joinWithoutAbstraction() {
+  public static class Join extends SubAssembly {
+
+    private final Pipe featureTypes;
+    private final Pipe clinicalPlain;
+
+    Join(Pipe featureTypes, Pipe clinicalPlain) {
+      this.featureTypes = featureTypes;
+      this.clinicalPlain = clinicalPlain;
+
+      setTails(plainJoin());
+    }
+
+    private Pipe plainJoin() {
+      return new Discard(
+          new HashJoin(
+              new Rename(
+                  featureTypes,
+                  SAMPLE_ID_FIELD,
+                  REDUNDANT_SAMPLE_ID_FIELD),
+              REDUNDANT_SAMPLE_ID_FIELD,
+              clinicalPlain,
+              SAMPLE_ID_FIELD,
+              new RightJoin()
+          ),
+          REDUNDANT_SAMPLE_ID_FIELD);
+    }
+
+  }
+
+  private Pipe processClinicalPlain() {
     return new Discard(
         new HashJoin(
-            new Rename(
-                processFeatureTypes(),
-                SAMPLE_ID_FIELD,
-                REDUNDANT_SAMPLE_ID_FIELD),
-            REDUNDANT_SAMPLE_ID_FIELD,
-            processClinical(),
-            SAMPLE_ID_FIELD,
-            new RightJoin()
-        ),
-        REDUNDANT_SAMPLE_ID_FIELD);
-  }
 
-  @SuppressWarnings("unused")
-  private Pipe joinWithAbstraction() {
-    return new ReadableHashJoin(JoinData.builder()
+            processSpecimenFiles(),
+            SPECIMEN_ID_FIELD,
 
-        // Right-join in order to keep track of clinical data with no observations as well
-        .joiner(new RightJoin())
+            processSampleFiles(),
+            SPECIMEN_ID_FIELD,
 
-        .leftPipe(
-            new Rename(
-                processFeatureTypes(),
-                SAMPLE_ID_FIELD,
-                REDUNDANT_SAMPLE_ID_FIELD))
-        .leftJoinFields(REDUNDANT_SAMPLE_ID_FIELD)
-
-        .rightPipe(processClinical())
-        .rightJoinFields(SAMPLE_ID_FIELD)
-
-        .resultFields(
-            NONE.append(ANALYSIS_ID_FIELD)
-                .append(REDUNDANT_SAMPLE_ID_FIELD)
-                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                .append(SEQUENCING_STRATEGY_FIELD)
-                .append(TYPE_FIELD)
-                .append(DONOR_ID_FIELD)
-                .append(SPECIMEN_ID_FIELD)
-                .append(SAMPLE_ID_FIELD)
-        )
-        .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
-
-        .build());
-  }
-
-  private Pipe processClinical() {
-    return new ReadableHashJoin(JoinData.builder()
-        .joiner(new InnerJoin())
-
-        .leftPipe(processSpecimenFiles())
-        .leftJoinFields(SPECIMEN_ID_FIELD)
-
-        .rightPipe(processSampleFiles())
-        .rightJoinFields(SPECIMEN_ID_FIELD)
-
-        .resultFields(
             DONOR_ID_FIELD
                 .append(REDUNDANT_SPECIMEN_ID_FIELD)
                 .append(SPECIMEN_ID_FIELD)
-                .append(SAMPLE_ID_FIELD))
-        .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
+                .append(SAMPLE_ID_FIELD),
 
-        .build());
+            new InnerJoin()),
+        REDUNDANT_SPECIMEN_ID_FIELD);
   }
 
   private Pipe processSpecimenFiles() {
@@ -312,66 +276,51 @@ public class PreComputation extends SubAssembly {
   }
 
   private Pipe processFeatureTypes() {
-    return new Transformerge<FeatureType>(
-        featureTypesWithData,
-        new Function<FeatureType, Pipe>() {
+    Pipe[] array = new Pipe[newArrayList(featureTypesWithData).size()];
+    int i = 0;
+    for (val featureType : featureTypesWithData) {
+      array[i++] = processFeatureTypePlain(featureType);
+    }
 
-          @Override
-          public Pipe apply(FeatureType featureType) {
-            return processFeatureType(featureType);
-          }
-
-        });
+    return new Merge(array);
   }
 
-  private Pipe processFeatureType(@NonNull final FeatureType featureType) {
+  private Pipe processFeatureTypePlain(@NonNull final FeatureType featureType) {
     log.info("Processing '{}'", featureType);
 
     return
 
     // Insert feature type
-    new Insert(
+    new Each(
+        new Discard(
+            new HashJoin(
 
-        // Fields to insert
-        keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
+                processPrimaryFilesPlain(featureType),
+                META_PK_FIELDS,
 
-        new ReadableHashJoin(JoinData.builder()
+                processMetaFiles(featureType),
+                META_PK_FIELDS,
 
-            .joiner(new InnerJoin())
-
-            .leftPipe(processPrimaryFiles(featureType))
-            .leftJoinFields(META_PK_FIELDS)
-
-            .rightPipe(processMetaFiles(featureType))
-            .rightJoinFields(META_PK_FIELDS)
-
-            .resultFields(
                 META_PK_FIELDS
                     .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
                     .append(REDUNDANT_ANALYSIS_ID_FIELD)
                     .append(REDUNDANT_SAMPLE_ID_FIELD)
-                    .append(SEQUENCING_STRATEGY_FIELD))
-            .discardFields(
-                REDUNDANT_ANALYSIS_ID_FIELD
-                    .append(REDUNDANT_SAMPLE_ID_FIELD))
+                    .append(SEQUENCING_STRATEGY_FIELD),
 
-            .build()));
+                new InnerJoin()),
+            REDUNDANT_ANALYSIS_ID_FIELD
+                .append(REDUNDANT_SAMPLE_ID_FIELD)),
+        new Insert(TYPE_FIELD, getDataTypeValue(featureType)),
+        ALL);
   }
 
-  private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {
-    return
-
-    // TODO: move that before the merge to maximum parallelization (optimization)
-    new SubAssemblies.ReadableCountBy(CountByData.builder()
-
-        .pipe(processFiles(
+  private Pipe processPrimaryFilesPlain(@NonNull final FeatureType featureType) {
+    return new CountBy(
+        processFiles(
             featureType.getPrimaryFileType(),
-            META_PK_FIELDS))
-        .countByFields(META_PK_FIELDS)
-        .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-
-        .build());
-
+            META_PK_FIELDS),
+        META_PK_FIELDS,
+        _ANALYSIS_OBSERVATION_COUNT_FIELD);
   }
 
   private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
@@ -384,7 +333,7 @@ public class PreComputation extends SubAssembly {
                 SEQUENCING_STRATEGY_FIELD)),
 
         // Use feature type as replacement for a sequencing strategy if need be
-        featureType.getTypeName(),
+        getDataTypeValue(featureType),
 
         featureType.hasSequencingStrategy());
   }
@@ -413,7 +362,7 @@ public class PreComputation extends SubAssembly {
   /**
    * Some feature types don't have a sequencing strategy and require special processing.
    */
-  private static Pipe normalizeSequencingStrategies(
+  private Pipe normalizeSequencingStrategies(
       @NonNull final Pipe pipe,
       @NonNull final String replacement,
       final boolean hasSequencingStrategy) {
@@ -421,16 +370,17 @@ public class PreComputation extends SubAssembly {
         pipe :
 
         // Insert a "fake" sequencing strategy to make it look uniform
-        new Insert(
-            keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
-            pipe
+        new Each(
+            pipe,
+            new Insert(SEQUENCING_STRATEGY_FIELD, replacement),
+            ALL
         );
   }
 
   /**
    * Must use the {@link String} value because {@link DataType} is not a real enum (rather a composite thereof).
    */
-  private static String getDataTypeValue(@NonNull final DataType dataType) {
+  private String getDataTypeValue(@NonNull final DataType dataType) {
     return dataType.getTypeName();
   }
 
@@ -461,7 +411,7 @@ public class PreComputation extends SubAssembly {
             entry.getString(TYPE_FIELD),
             entry.getString(ANALYSIS_ID_FIELD),
             entry.getString(SEQUENCING_STRATEGY_FIELD),
-            entry.getString(_ANALYSIS_OBSERVATION_COUNT_FIELD));
+            entry.getInteger(_ANALYSIS_OBSERVATION_COUNT_FIELD));
       }
     }
 
