@@ -4,6 +4,7 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.NONE;
 import static cascading.tuple.Fields.REPLACE;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
@@ -50,11 +51,6 @@ import org.icgc.dcc.core.util.Functions2;
 import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.core.util.SerializableMaps;
 import org.icgc.dcc.hadoop.cascading.Flows;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
@@ -70,6 +66,7 @@ import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
@@ -80,7 +77,6 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
@@ -213,7 +209,7 @@ public class PreComputation extends SubAssembly {
     new Each(
         new Each(
             new Each(
-                join(),
+                plainJoin(),
                 NONE.append(TYPE_FIELD)
                     .append(ANALYSIS_ID_FIELD)
                     .append(SEQUENCING_STRATEGY_FIELD)
@@ -227,7 +223,7 @@ public class PreComputation extends SubAssembly {
         ALL);
   }
 
-  private Pipe join() {
+  private Pipe plainJoin() {
     return new Discard(
         new HashJoin(
             new Rename(
@@ -261,26 +257,6 @@ public class PreComputation extends SubAssembly {
         REDUNDANT_SPECIMEN_ID_FIELD);
   }
 
-  private Pipe processClinical() {
-    return new ReadableHashJoin(JoinData.builder()
-        .joiner(new InnerJoin())
-
-        .leftPipe(processSpecimenFiles())
-        .leftJoinFields(SPECIMEN_ID_FIELD)
-
-        .rightPipe(processSampleFiles())
-        .rightJoinFields(SPECIMEN_ID_FIELD)
-
-        .resultFields(
-            DONOR_ID_FIELD
-                .append(REDUNDANT_SPECIMEN_ID_FIELD)
-                .append(SPECIMEN_ID_FIELD)
-                .append(SAMPLE_ID_FIELD))
-        .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
-
-        .build());
-  }
-
   private Pipe processSpecimenFiles() {
     return processFiles(SPECIMEN_TYPE, DONOR_ID_FIELD.append(SPECIMEN_ID_FIELD));
   }
@@ -290,16 +266,13 @@ public class PreComputation extends SubAssembly {
   }
 
   private Pipe processFeatureTypes() {
-    return new Transformerge<FeatureType>(
-        featureTypesWithData,
-        new Function<FeatureType, Pipe>() {
+    Pipe[] array = new Pipe[newArrayList(featureTypesWithData).size()];
+    int i = 0;
+    for (val featureType : featureTypesWithData) {
+      array[i++] = processFeatureTypePlain(featureType);
+    }
 
-          @Override
-          public Pipe apply(FeatureType featureType) {
-            return processFeatureTypePlain(featureType);
-          }
-
-        });
+    return new Merge(array);
   }
 
   private Pipe processFeatureTypePlain(@NonNull final FeatureType featureType) {
@@ -312,7 +285,7 @@ public class PreComputation extends SubAssembly {
         new Discard(
             new HashJoin(
 
-                processPrimaryFiles(featureType),
+                processPrimaryFilesPlain(featureType),
                 META_PK_FIELDS,
 
                 processMetaFiles(featureType),
@@ -331,52 +304,13 @@ public class PreComputation extends SubAssembly {
         ALL);
   }
 
-  private Pipe processFeatureType(@NonNull final FeatureType featureType) {
-    log.info("Processing '{}'", featureType);
-
-    return
-
-    // Insert feature type
-    new Each(
-        new ReadableHashJoin(JoinData.builder()
-
-            .joiner(new InnerJoin())
-
-            .leftPipe(processPrimaryFiles(featureType))
-            .leftJoinFields(META_PK_FIELDS)
-
-            .rightPipe(processMetaFiles(featureType))
-            .rightJoinFields(META_PK_FIELDS)
-
-            .resultFields(
-                META_PK_FIELDS
-                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                    .append(REDUNDANT_ANALYSIS_ID_FIELD)
-                    .append(REDUNDANT_SAMPLE_ID_FIELD)
-                    .append(SEQUENCING_STRATEGY_FIELD))
-            .discardFields(
-                REDUNDANT_ANALYSIS_ID_FIELD
-                    .append(REDUNDANT_SAMPLE_ID_FIELD))
-
-            .build()),
-        new Insert(TYPE_FIELD, getDataTypeValue(featureType)),
-        ALL);
-  }
-
-  private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {
-    return
-
-    // TODO: move that before the merge to maximum parallelization (optimization)
-    new SubAssemblies.ReadableCountBy(CountByData.builder()
-
-        .pipe(processFiles(
+  private Pipe processPrimaryFilesPlain(@NonNull final FeatureType featureType) {
+    return new CountBy(
+        processFiles(
             featureType.getPrimaryFileType(),
-            META_PK_FIELDS))
-        .countByFields(META_PK_FIELDS)
-        .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-
-        .build());
-
+            META_PK_FIELDS),
+        META_PK_FIELDS,
+        _ANALYSIS_OBSERVATION_COUNT_FIELD);
   }
 
   private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
@@ -389,7 +323,7 @@ public class PreComputation extends SubAssembly {
                 SEQUENCING_STRATEGY_FIELD)),
 
         // Use feature type as replacement for a sequencing strategy if need be
-        featureType.getTypeName(),
+        getDataTypeValue(featureType),
 
         featureType.hasSequencingStrategy());
   }
