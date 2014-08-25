@@ -73,7 +73,6 @@ import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
-import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
@@ -213,16 +212,14 @@ public class PreComputation extends SubAssembly {
 
     new Each(
         new Each(
-            new Unique(
-                new Each(
-                    join(),
-                    NONE.append(TYPE_FIELD)
-                        .append(ANALYSIS_ID_FIELD)
-                        .append(SEQUENCING_STRATEGY_FIELD)
-                        .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
-                    new OrphanReplacer(),
-                    REPLACE),
-                ALL),
+            new Each(
+                join(),
+                NONE.append(TYPE_FIELD)
+                    .append(ANALYSIS_ID_FIELD)
+                    .append(SEQUENCING_STRATEGY_FIELD)
+                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
+                new OrphanReplacer(),
+                REPLACE),
             new Insert(PROJECT_ID_FIELD, projectKey),
             ALL
         ),
@@ -238,11 +235,30 @@ public class PreComputation extends SubAssembly {
                 SAMPLE_ID_FIELD,
                 REDUNDANT_SAMPLE_ID_FIELD),
             REDUNDANT_SAMPLE_ID_FIELD,
-            processClinical(),
+            processClinicalPlain(),
             SAMPLE_ID_FIELD,
             new RightJoin()
         ),
         REDUNDANT_SAMPLE_ID_FIELD);
+  }
+
+  private Pipe processClinicalPlain() {
+    return new Discard(
+        new HashJoin(
+
+            processSpecimenFiles(),
+            SPECIMEN_ID_FIELD,
+
+            processSampleFiles(),
+            SPECIMEN_ID_FIELD,
+
+            DONOR_ID_FIELD
+                .append(REDUNDANT_SPECIMEN_ID_FIELD)
+                .append(SPECIMEN_ID_FIELD)
+                .append(SAMPLE_ID_FIELD),
+
+            new InnerJoin()),
+        REDUNDANT_SPECIMEN_ID_FIELD);
   }
 
   private Pipe processClinical() {
@@ -280,10 +296,39 @@ public class PreComputation extends SubAssembly {
 
           @Override
           public Pipe apply(FeatureType featureType) {
-            return processFeatureType(featureType);
+            return processFeatureTypePlain(featureType);
           }
 
         });
+  }
+
+  private Pipe processFeatureTypePlain(@NonNull final FeatureType featureType) {
+    log.info("Processing '{}'", featureType);
+
+    return
+
+    // Insert feature type
+    new Each(
+        new Discard(
+            new HashJoin(
+
+                processPrimaryFiles(featureType),
+                META_PK_FIELDS,
+
+                processMetaFiles(featureType),
+                META_PK_FIELDS,
+
+                META_PK_FIELDS
+                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+                    .append(REDUNDANT_ANALYSIS_ID_FIELD)
+                    .append(REDUNDANT_SAMPLE_ID_FIELD)
+                    .append(SEQUENCING_STRATEGY_FIELD),
+
+                new InnerJoin()),
+            REDUNDANT_ANALYSIS_ID_FIELD
+                .append(REDUNDANT_SAMPLE_ID_FIELD)),
+        new Insert(TYPE_FIELD, getDataTypeValue(featureType)),
+        ALL);
   }
 
   private Pipe processFeatureType(@NonNull final FeatureType featureType) {
