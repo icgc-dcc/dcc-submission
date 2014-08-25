@@ -16,6 +16,7 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
+import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
@@ -49,6 +50,7 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Functions2;
 import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.core.util.SerializableMaps;
+import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
@@ -114,7 +116,7 @@ public class PreComputation extends SubAssembly {
 
     public static void main(String[] args) {
       val preComputation = getPipe();
-      val flowDef = FlowDef.flowDef();
+      val flowDef = FlowDef.flowDef().setName(Flows.getName(PreComputation.class));
       addSources(flowDef);
       val outputDirFilePath = addSinkTail(
           flowDef,
@@ -163,7 +165,7 @@ public class PreComputation extends SubAssembly {
           ImmutableMap.of(
               CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "***REMOVED***",
               HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, "***REMOVED***"));
-      return flowConnector.connect(flowDef);
+      return connectFlowDef(flowConnector, flowDef);
     }
 
     @SneakyThrows

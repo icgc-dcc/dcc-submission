@@ -17,14 +17,22 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Joiners.DASH;
+import static org.icgc.dcc.core.util.Joiners.EXTENSION;
+import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.core.util.Strings2.removeTrailingS;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
+import org.icgc.dcc.core.util.Extensions;
 import org.icgc.dcc.core.util.Named;
 
 import cascading.flow.Flow;
+import cascading.flow.FlowConnector;
+import cascading.flow.FlowDef;
+import cascading.flow.FlowStep;
 
 /**
  * Utils methods for {@link Flow}.
@@ -46,6 +54,48 @@ public class Flows implements Named {
 
   public static String getName(Class<?> clazz, Object... qualifiers) {
     return getName(clazz.getSimpleName(), getName(qualifiers));
+  }
+
+  /**
+   * TODO: /tmp
+   */
+  public static Flow<?> connectFlowDef(
+      @NonNull final FlowConnector flowConnector,
+      @NonNull final FlowDef flowDef) {
+    Flow<?> flow = flowConnector.connect(flowDef);
+    flow.writeDOT(getFlowDotFilePath("/tmp", flowDef));
+    flow.writeStepsDOT(getFlowStepDotFilePath("/tmp", flowDef));
+
+    return flow;
+  }
+
+  private static String getFlowDotFilePath(
+      @NonNull final String dotDirPath,
+      @NonNull final FlowDef flowDef) {
+    return getDotFilePath(dotDirPath, flowDef.getName(), Flow.class);
+  }
+
+  private static String getFlowStepDotFilePath(
+      @NonNull final String dotDirPath,
+      @NonNull FlowDef flowDef) {
+    return getDotFilePath(dotDirPath, flowDef.getName(), FlowStep.class);
+  }
+
+  /**
+   * TODO: add potential additional qualifiers (Identifiable...).
+   */
+  private static String getDotFilePath(
+      @NonNull final String dotDirPath,
+      @NonNull final String flowName,
+      @NonNull final Class<?> type) {
+    checkState(type == Flow.class || type == FlowStep.class);
+
+    return PATH.join(
+        dotDirPath, EXTENSION.join(
+            PATH.join(
+                flowName,
+                type.getSimpleName()),
+            Extensions.DOT));
   }
 
 }
