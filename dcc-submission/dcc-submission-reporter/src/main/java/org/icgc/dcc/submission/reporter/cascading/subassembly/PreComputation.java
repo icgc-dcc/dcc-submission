@@ -1,16 +1,15 @@
 package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
-import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.NONE;
 import static cascading.tuple.Fields.REPLACE;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
+import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
@@ -36,19 +35,20 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.HashCountBy;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.FunctionCall;
-import cascading.operation.Insert;
 import cascading.pipe.Each;
-import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
-import cascading.pipe.assembly.CountBy;
-import cascading.pipe.assembly.Discard;
-import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.RightJoin;
@@ -56,11 +56,13 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Function;
+
 @Slf4j
 public class PreComputation extends SubAssembly {
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
-  private final int NO_OBSERVATIONS_COUNT = 0;
+  private static final int NO_OBSERVATIONS_COUNT = 0;
 
   private final String releaseName;
   private final String projectKey;
@@ -86,75 +88,75 @@ public class PreComputation extends SubAssembly {
    * Joins the clinical and observation pipes.
    */
   private Pipe processProject() {
+    return new Insert(
 
-    Pipe featureTypes = processFeatureTypes();
-    Pipe clinicalPlain = processClinicalPlain();
+        // Field/value to be inserted
+        keyValuePair(RELEASE_NAME_FIELD, releaseName),
 
-    return
+        // Insert project ID
+        new Insert(
 
-    new Each(
-        new Each(
+            // Field/value to be inserted
+            keyValuePair(PROJECT_ID_FIELD, projectKey),
+
             new Each(
-                new Join(featureTypes, clinicalPlain),
+
+                //
+                new ReadableHashJoin(
+                    JoinData.builder()
+
+                        // Right-join in order to keep track of clinical data with no observations as well
+                        .joiner(new RightJoin())
+
+                        .leftPipe(processFeatureTypes())
+                        .leftJoinFields(SAMPLE_ID_FIELD)
+
+                        .rightPipe(processClinical())
+                        .rightJoinFields(SAMPLE_ID_FIELD)
+
+                        .resultFields(
+                            META_PK_FIELDS
+                                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+                                .append(SEQUENCING_STRATEGY_FIELD)
+                                .append(TYPE_FIELD)
+                                .append(DONOR_ID_FIELD)
+                                .append(SPECIMEN_ID_FIELD)
+                                .append(REDUNDANT_SAMPLE_ID_FIELD))
+                        .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
+
+                        .build()),
+
+                // Outer join target fields
                 NONE.append(TYPE_FIELD)
                     .append(ANALYSIS_ID_FIELD)
                     .append(SEQUENCING_STRATEGY_FIELD)
                     .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
-                new OrphanReplacer(),
-                REPLACE),
-            new Insert(PROJECT_ID_FIELD, projectKey),
-            ALL
-        ),
-        new Insert(RELEASE_NAME_FIELD, releaseName),
-        ALL);
+                new OuterJoinNullReplacer(),
+                REPLACE)));
   }
 
-  public static class Join extends SubAssembly {
+  private Pipe processClinical() {
+    return
 
-    private final Pipe featureTypes;
-    private final Pipe clinicalPlain;
+    //
+    new ReadableHashJoin(
+        JoinData.builder()
+            .joiner(new InnerJoin())
 
-    Join(Pipe featureTypes, Pipe clinicalPlain) {
-      this.featureTypes = featureTypes;
-      this.clinicalPlain = clinicalPlain;
+            .leftPipe(processSpecimenFiles())
+            .leftJoinFields(SPECIMEN_ID_FIELD)
 
-      setTails(plainJoin());
-    }
+            .rightPipe(processSampleFiles())
+            .rightJoinFields(SPECIMEN_ID_FIELD)
 
-    private Pipe plainJoin() {
-      return new Discard(
-          new HashJoin(
-              new Rename(
-                  featureTypes,
-                  SAMPLE_ID_FIELD,
-                  REDUNDANT_SAMPLE_ID_FIELD),
-              REDUNDANT_SAMPLE_ID_FIELD,
-              clinicalPlain,
-              SAMPLE_ID_FIELD,
-              new RightJoin()
-          ),
-          REDUNDANT_SAMPLE_ID_FIELD);
-    }
+            .resultFields(
+                DONOR_ID_FIELD
+                    .append(REDUNDANT_SPECIMEN_ID_FIELD)
+                    .append(SPECIMEN_ID_FIELD)
+                    .append(SAMPLE_ID_FIELD))
+            .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
 
-  }
-
-  private Pipe processClinicalPlain() {
-    return new Discard(
-        new HashJoin(
-
-            processSpecimenFiles(),
-            SPECIMEN_ID_FIELD,
-
-            processSampleFiles(),
-            SPECIMEN_ID_FIELD,
-
-            DONOR_ID_FIELD
-                .append(REDUNDANT_SPECIMEN_ID_FIELD)
-                .append(SPECIMEN_ID_FIELD)
-                .append(SAMPLE_ID_FIELD),
-
-            new InnerJoin()),
-        REDUNDANT_SPECIMEN_ID_FIELD);
+            .build());
   }
 
   private Pipe processSpecimenFiles() {
@@ -166,66 +168,84 @@ public class PreComputation extends SubAssembly {
   }
 
   private Pipe processFeatureTypes() {
-    Pipe[] array = new Pipe[newArrayList(featureTypesWithData).size()];
-    int i = 0;
-    for (val featureType : featureTypesWithData) {
-      array[i++] = processFeatureTypePlain(featureType);
-    }
+    return
 
-    return new Merge(array);
+    //
+    new Transformerge<FeatureType>(
+        featureTypesWithData,
+        new Function<FeatureType, Pipe>() {
+
+          @Override
+          public Pipe apply(FeatureType featureType) {
+            return processFeatureType(featureType);
+          }
+
+        });
   }
 
-  private Pipe processFeatureTypePlain(@NonNull final FeatureType featureType) {
+  private Pipe processFeatureType(@NonNull final FeatureType featureType) {
     log.info("Processing '{}'", featureType);
 
     return
 
     // Insert feature type
-    new Each(
-        new Discard(
-            new HashJoin(
+    new Insert(
 
-                processPrimaryFilesPlain(featureType),
-                META_PK_FIELDS,
+        // Fields to insert
+        keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
 
-                processMetaFiles(featureType),
-                META_PK_FIELDS,
+        //
+        new ReadableHashJoin(
+            JoinData.builder()
 
-                META_PK_FIELDS
-                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                    .append(REDUNDANT_ANALYSIS_ID_FIELD)
-                    .append(REDUNDANT_SAMPLE_ID_FIELD)
-                    .append(SEQUENCING_STRATEGY_FIELD),
+                .joiner(new InnerJoin())
 
-                new InnerJoin()),
-            REDUNDANT_ANALYSIS_ID_FIELD
-                .append(REDUNDANT_SAMPLE_ID_FIELD)),
-        new Insert(TYPE_FIELD, getDataTypeValue(featureType)),
-        ALL);
+                .leftPipe(processPrimaryFiles(featureType))
+                .leftJoinFields(META_PK_FIELDS)
+
+                .rightPipe(
+
+                    // Meta files
+                    normalizeSequencingStrategies(
+                        processFiles(featureType.getMetaFileType(),
+                            appendIfApplicable(
+                                META_PK_FIELDS,
+                                hasSequencingStrategy(featureType),
+                                SEQUENCING_STRATEGY_FIELD)),
+
+                        featureType.hasSequencingStrategy(),
+
+                        // Use feature type as replacement for a sequencing strategy if need be
+                        getDataTypeValue(featureType)))
+                .rightJoinFields(META_PK_FIELDS)
+
+                .resultFields(
+                    META_PK_FIELDS
+                        .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
+                        .append(REDUNDANT_ANALYSIS_ID_FIELD)
+                        .append(REDUNDANT_SAMPLE_ID_FIELD)
+                        .append(SEQUENCING_STRATEGY_FIELD))
+                .discardFields(
+                    REDUNDANT_ANALYSIS_ID_FIELD
+                        .append(REDUNDANT_SAMPLE_ID_FIELD))
+
+                .build()));
   }
 
-  private Pipe processPrimaryFilesPlain(@NonNull final FeatureType featureType) {
-    return new CountBy(
-        processFiles(
+  private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {
+    return
+
+    // TODO: move that before the merge to maximum parallelization (optimization)
+    new HashCountBy(CountByData.builder()
+
+        .pipe(processFiles(
             featureType.getPrimaryFileType(),
-            META_PK_FIELDS),
-        META_PK_FIELDS,
-        _ANALYSIS_OBSERVATION_COUNT_FIELD);
-  }
+            META_PK_FIELDS))
+        .countByFields(META_PK_FIELDS)
+        .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
-  private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
-    return normalizeSequencingStrategies(
-        processFiles(
-            featureType.getMetaFileType(),
-            appendIfApplicable(
-                META_PK_FIELDS,
-                hasSequencingStrategy(featureType),
-                SEQUENCING_STRATEGY_FIELD)),
+        .build());
 
-        // Use feature type as replacement for a sequencing strategy if need be
-        getDataTypeValue(featureType),
-
-        featureType.hasSequencingStrategy());
   }
 
   private Pipe processFiles(
@@ -252,31 +272,30 @@ public class PreComputation extends SubAssembly {
   /**
    * Some feature types don't have a sequencing strategy and require special processing.
    */
-  private Pipe normalizeSequencingStrategies(
+  private static Pipe normalizeSequencingStrategies(
       @NonNull final Pipe pipe,
-      @NonNull final String replacement,
-      final boolean hasSequencingStrategy) {
+      final boolean hasSequencingStrategy,
+      @NonNull final String replacement) {
     return hasSequencingStrategy ?
         pipe :
 
         // Insert a "fake" sequencing strategy to make it look uniform
-        new Each(
-            pipe,
-            new Insert(SEQUENCING_STRATEGY_FIELD, replacement),
-            ALL
+        new Insert(
+            keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
+            pipe
         );
   }
 
   /**
    * Must use the {@link String} value because {@link DataType} is not a real enum (rather a composite thereof).
    */
-  private String getDataTypeValue(@NonNull final DataType dataType) {
+  private static String getDataTypeValue(@NonNull final DataType dataType) {
     return dataType.getTypeName();
   }
 
-  private class OrphanReplacer extends BaseFunction<Void> {
+  private static class OuterJoinNullReplacer extends BaseFunction<Void> {
 
-    private OrphanReplacer() {
+    private OuterJoinNullReplacer() {
       super(ARGS);
     }
 

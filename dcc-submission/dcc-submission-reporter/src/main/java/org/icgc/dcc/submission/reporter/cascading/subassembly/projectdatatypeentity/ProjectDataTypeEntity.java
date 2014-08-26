@@ -22,7 +22,6 @@ import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
-import org.icgc.dcc.submission.reporter.IntermediateOutputType;
 
 import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
@@ -58,13 +57,12 @@ public class ProjectDataTypeEntity extends SubAssembly {
                 keyValuePair(
                     TYPE_FIELD,
                     ALL_TYPES),
-                Dumps.addIntermediateOutputDump(IntermediateOutputType.PRE_PROCESSING_ALL, projectKey, preProcessedAll))),
+                preProcessedAll)),
 
         // Feature types
         new NamingPipe(
             "observations",
-            Dumps.addIntermediateOutputDump(IntermediateOutputType.PRE_PROCESSING_FEATURE_TYPES, projectKey,
-                preProcessedFeatureTypes))));
+            preProcessedFeatureTypes)));
   }
 
   @NoArgsConstructor(access = PRIVATE)
