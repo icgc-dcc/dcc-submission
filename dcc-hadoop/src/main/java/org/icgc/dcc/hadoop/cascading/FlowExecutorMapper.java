@@ -66,9 +66,11 @@ public class FlowExecutorMapper implements Mapper<NullWritable, NullWritable, Nu
     val job = readJob();
     log.info("Creating heatbeat...");
     val heartbeat = createHeartbeat(reporter);
+
     try {
       log.info("Starting heartbeat...");
       heartbeat.start();
+
       log.info("Executing job...");
       job.execute(jobConf);
     } catch (Exception e) {
