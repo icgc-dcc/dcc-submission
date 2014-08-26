@@ -17,9 +17,8 @@
  */
 package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
-import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SAMPLE_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -40,8 +39,9 @@ import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Rename;
+import cascading.pipe.joiner.LeftJoin;
 import cascading.pipe.joiner.RightJoin;
+import cascading.tuple.Fields;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -54,34 +54,39 @@ import com.google.common.io.Files;
 public class Bug3 {
 
   public static void main(String[] args) {
-    val join = getPipe();
+    boolean left = "left".equalsIgnoreCase(args[0]);
+    checkState(left || "right".equalsIgnoreCase(args[0]));
+    log.info("Using " + (left ? "left" : "right"));
+
+    String l = args[1]; // "/tmp/feature_types.tsv";
+    String r = args[2]; // "/tmp/clinical.tsv";
+    log.info("l: " + l);
+    log.info("r: " + r);
+
+    Pipe featureTypes = new Pipe("feature_types");
+    Pipe clinical = new Pipe("clinical");
+    Pipe join = new HashJoin(
+        featureTypes,
+        new Fields("analyzed_sample_id"),
+        clinical,
+        new Fields("sample_id"),
+        left ?
+            new LeftJoin() :
+            new RightJoin());
+
     val flowDef = Flows.getFlowDef(PreComputation.class);
-    addSources(flowDef);
-    val outputDirFilePath = addSinkTail(flowDef, join);
+    val featureTypesTap = getTaps().getNoCompressionTsvWithHeader(l);
+    val clinicalTap = getTaps().getNoCompressionTsvWithHeader(r);
+    flowDef.addSource("feature_types", featureTypesTap);
+    flowDef.addSource("clinical", clinicalTap);
+
+    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
+    val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
+    flowDef.addTailSink(join, outputTap);
+
     connect(flowDef).complete();
     log.info("done: " + outputDirFilePath);
     printbug(outputDirFilePath);
-  }
-
-  private static Pipe getPipe() {
-    Pipe featureTypes = new Pipe("feature_types");
-    Pipe clinical = new Pipe("clinical");
-    return new HashJoin(
-        new Rename(
-            featureTypes,
-            SAMPLE_ID_FIELD,
-            REDUNDANT_SAMPLE_ID_FIELD),
-        REDUNDANT_SAMPLE_ID_FIELD,
-        clinical,
-        SAMPLE_ID_FIELD,
-        new RightJoin());
-  }
-
-  private static void addSources(final FlowDef flowDef) {
-    val featureTypesTap = getTaps().getNoCompressionTsvWithHeader("/tmp/feature_types.tsv");
-    val clinicalTap = getTaps().getNoCompressionTsvWithHeader("/tmp/clinical.tsv");
-    flowDef.addSource("feature_types", featureTypesTap);
-    flowDef.addSource("clinical", clinicalTap);
   }
 
   static final boolean LOCAL = isLocal();
@@ -93,15 +98,6 @@ public class Bug3 {
 
   static CascadingTaps getTaps() {
     return LOCAL ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
-  }
-
-  static String addSinkTail(
-      final FlowDef flowDef,
-      final Pipe tail) {
-    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
-    val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
-    flowDef.addTailSink(tail, outputTap);
-    return outputDirFilePath;
   }
 
   static Flow<?> connect(final FlowDef flowDef) {

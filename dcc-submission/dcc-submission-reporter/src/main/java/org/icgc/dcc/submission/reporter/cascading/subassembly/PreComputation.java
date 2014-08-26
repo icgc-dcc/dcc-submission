@@ -29,12 +29,12 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEG
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.addSinkTail;
 import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.connect;
 import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.getTaps;
 import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.printbug;
 
 import java.net.InetAddress;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -158,6 +158,15 @@ public class PreComputation extends SubAssembly {
       }
     }
 
+  }
+
+  static String addSinkTail(
+      final FlowDef flowDef,
+      final Pipe tail) {
+    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
+    val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
+    flowDef.addTailSink(tail, outputTap);
+    return outputDirFilePath;
   }
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
