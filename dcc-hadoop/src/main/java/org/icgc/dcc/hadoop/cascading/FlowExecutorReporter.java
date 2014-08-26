@@ -44,7 +44,9 @@ public final class FlowExecutorReporter {
     try {
       for (val stepStats : flow.getFlowStats().getFlowStepStats()) {
         log.info("*  Step stats: {}", stepStats);
-        if (stepStats instanceof HadoopStepStats) {
+
+        val hadoop = HadoopStepStats.class.isAssignableFrom(stepStats.getClass());
+        if (hadoop) {
           val hadoopStepStats = (HadoopStepStats) stepStats;
           for (val taskStats : hadoopStepStats.getTaskStats().values()) {
             log.info("*  Task stats: {}", taskStats);
