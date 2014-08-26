@@ -7,12 +7,8 @@ import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
-import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_P_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
@@ -29,17 +25,10 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEG
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.cascading.subassembly.CascadingJoins.connect;
-import static org.icgc.dcc.submission.reporter.cascading.subassembly.CascadingJoins.getTaps;
-import static org.icgc.dcc.submission.reporter.cascading.subassembly.CascadingJoins.printbug;
 
-import java.net.InetAddress;
-import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,12 +36,8 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Functions2;
-import org.icgc.dcc.core.util.SerializableMaps;
-import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 
-import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
 import cascading.operation.FunctionCall;
 import cascading.operation.Insert;
@@ -71,103 +56,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-import com.google.common.collect.ImmutableSet;
-
 @Slf4j
 public class PreComputation extends SubAssembly {
-
-  public static void main(String[] args) {
-    Bug2.main(args);
-  }
-
-  public static class Bug2 {
-
-    public static void main(String[] args) {
-      val join = getPipe();
-      val flowDef = Flows.getFlowDef(PreComputation.class);
-      addSources(flowDef);
-      val outputDirFilePath = addSinkTail(
-          flowDef,
-          join.getTails()[0]);
-      connect(flowDef).complete();
-      log.info("done: " + outputDirFilePath);
-      printbug(outputDirFilePath);
-    }
-
-    private static SubAssembly getPipe() {
-      Pipe featureTypes = new Pipe("feature_types");
-      Pipe clinical = new Pipe("clinical");
-      return new Join(featureTypes, clinical);
-    }
-
-    private static void addSources(final FlowDef flowDef) {
-      val featureTypesTap = getTaps().getNoCompressionTsvWithHeader("/tmp/feature_types.tsv");
-      val clinicalTap = getTaps().getNoCompressionTsvWithHeader("/tmp/clinical.tsv");
-      flowDef.addSource("feature_types", featureTypesTap);
-      flowDef.addSource("clinical", clinicalTap);
-    }
-
-  }
-
-  public static class Bug {
-
-    @SneakyThrows
-    private static boolean isLocal() {
-      return "acroslt".equals(InetAddress.getLocalHost().getHostName());
-    }
-
-    private static final String TEST_RELEASE_NAME = "test17";
-    private static final String PROJECT_KEY = "ALL-US";
-    private static final Set<FileType> ALL_US_FILE_TYPES = // Don't include DONOR
-        ImmutableSet.of(
-            SPECIMEN_TYPE,
-            SAMPLE_TYPE,
-            SSM_M_TYPE,
-            SSM_P_TYPE,
-            EXP_ARRAY_M_TYPE,
-            EXP_ARRAY_P_TYPE);
-
-    public static void main(String[] args) {
-      val preComputation = getPipe();
-      val flowDef = Flows.getFlowDef(PreComputation.class);
-      addSources(flowDef);
-      val outputDirFilePath = addSinkTail(
-          flowDef,
-          preComputation.getTails()[0]);
-      connect(flowDef).complete();
-      log.info("done: " + outputDirFilePath);
-      printbug(outputDirFilePath);
-    }
-
-    private static PreComputation getPipe() {
-      return new PreComputation(
-          TEST_RELEASE_NAME,
-          PROJECT_KEY,
-          SerializableMaps.asMap(
-              ALL_US_FILE_TYPES,
-              Functions2.<FileType, Integer> constant(1)));
-    }
-
-    private static void addSources(final FlowDef flowDef) {
-      for (val fileType : ALL_US_FILE_TYPES) {
-        val filePath = "/tmp/" + PROJECT_KEY + "/" + fileType.getHarmonizedOutputFileName();
-        val inputTap = getTaps().getNoCompressionTsvWithHeader(filePath);
-        val headPipeName = getHeadPipeName(PROJECT_KEY, fileType, 0);
-
-        flowDef.addSource(headPipeName, inputTap);
-      }
-    }
-
-  }
-
-  static String addSinkTail(
-      final FlowDef flowDef,
-      final Pipe tail) {
-    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
-    val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
-    flowDef.addTailSink(tail, outputTap);
-    return outputDirFilePath;
-  }
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
   private final int NO_OBSERVATIONS_COUNT = 0;

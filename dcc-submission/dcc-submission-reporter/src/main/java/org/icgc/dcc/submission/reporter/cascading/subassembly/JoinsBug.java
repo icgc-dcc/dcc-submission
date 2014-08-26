@@ -65,7 +65,7 @@ import com.google.common.collect.ImmutableMap;
  * </pre>
  */
 @Slf4j
-public class Joins {
+public class JoinsBug {
 
   enum Environment {
     LOCAL, DISTRIBUTED;
@@ -86,8 +86,6 @@ public class Joins {
     @Getter
     private final Joiner joiner;
   }
-
-  private static final String FUSE_MOUNT_POINT = "/hdfs/dcc";
 
   private static final String LEFT_FILE_PATH = "/tmp/left";
   private static final String RIGHT_FILE_PATH = "/tmp/right";
@@ -125,7 +123,7 @@ public class Joins {
     Pipe join = getJoinPipe(joinType, joinerType);
     CascadingTaps taps = environment.isLocal() ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
 
-    val flowDef = Flows.getFlowDef(Joins.class);
+    val flowDef = Flows.getFlowDef(JoinsBug.class);
     flowDef.addSource(
         LEFT_PIPE_NAME,
         taps.getNoCompressionTsvWithHeader(LEFT_FILE_PATH));
