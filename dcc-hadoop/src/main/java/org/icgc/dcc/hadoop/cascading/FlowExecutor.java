@@ -110,7 +110,7 @@ public class FlowExecutor extends ThreadPoolExecutor {
 
       return flow;
     } catch (FlowException e) {
-      handleFlowException(flow);
+      handleFlowException(flow, e);
 
       throw e;
     }
@@ -268,13 +268,17 @@ public class FlowExecutor extends ThreadPoolExecutor {
     return createUniqueID();
   }
 
-  private static void handleFlowException(Flow<?> flow) {
+  private static void handleFlowException(Flow<?> flow, FlowException e) {
+    log.info("Handling exception for flow: {}", flow);
     try {
       for (val stepStats : flow.getFlowStats().getFlowStepStats()) {
         if (stepStats instanceof HadoopStepStats) {
+          log.info("  Step stats: {}", stepStats);
           val hadoopStepStats = (HadoopStepStats) stepStats;
           for (val taskStats : hadoopStepStats.getTaskStats().values()) {
+            log.info("  Task stats: {}", taskStats);
             for (val hadoopAttempt : taskStats.getAttempts().values()) {
+              log.info("    Hadoop attempt: {}", hadoopAttempt);
               if (hadoopAttempt.getStatusFor() == Status.FAILED) {
                 val logUrl = new StringBuilder(hadoopAttempt.getTaskTrackerHttp());
                 logUrl
@@ -290,8 +294,8 @@ public class FlowExecutor extends ThreadPoolExecutor {
           }
         }
       }
-    } catch (Exception e) {
-      log.error("Error handling flow excpetion:", e);
+    } catch (Throwable t) {
+      log.error("Error handling flow exception: ", t);
     }
   }
 
