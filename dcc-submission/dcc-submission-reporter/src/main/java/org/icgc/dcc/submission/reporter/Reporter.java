@@ -33,8 +33,8 @@ import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ClinicalUniqueCounts;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ProjectDataTypeEntity;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity.ClinicalUniqueCounts;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
 
