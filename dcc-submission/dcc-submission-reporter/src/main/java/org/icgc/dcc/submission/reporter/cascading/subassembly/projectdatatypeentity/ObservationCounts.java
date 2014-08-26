@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
 import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;

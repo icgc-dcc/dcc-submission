@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
 import static cascading.tuple.Fields.NONE;
 import static com.google.common.collect.Iterables.toArray;
