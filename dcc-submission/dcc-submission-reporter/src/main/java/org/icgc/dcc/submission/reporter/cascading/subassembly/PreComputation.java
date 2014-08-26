@@ -51,7 +51,7 @@ import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.joiner.InnerJoin;
-import cascading.pipe.joiner.RightJoin;
+import cascading.pipe.joiner.LeftJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -105,13 +105,13 @@ public class PreComputation extends SubAssembly {
                 new ReadableHashJoin(
                     JoinData.builder()
 
-                        // Right-join in order to keep track of clinical data with no observations as well
-                        .joiner(new RightJoin())
+                        // Left-join in order to keep track of clinical data with no observations as well
+                        .joiner(new LeftJoin())
 
-                        .leftPipe(processFeatureTypes())
+                        .leftPipe(processClinical())
                         .leftJoinFields(SAMPLE_ID_FIELD)
 
-                        .rightPipe(processClinical())
+                        .rightPipe(processFeatureTypes())
                         .rightJoinFields(SAMPLE_ID_FIELD)
 
                         .resultFields(
