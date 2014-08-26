@@ -92,8 +92,8 @@ public class Joins {
   private static final String LEFT_FILE_PATH = "/tmp/left";
   private static final String RIGHT_FILE_PATH = "/tmp/right";
 
-  private static final String LEFT_PIPE_NAME = "l";
-  private static final String RIGHT_PIPE_NAME = "r";
+  private static final String LEFT_PIPE_NAME = "left_input";
+  private static final String RIGHT_PIPE_NAME = "right_input";
 
   private static final Pipe LEFT_PIPE = new Pipe(LEFT_PIPE_NAME);
   private static final Pipe RIGHT_PIPE = new Pipe(RIGHT_PIPE_NAME);
@@ -109,6 +109,7 @@ public class Joins {
   }
 
   public static void main(String[] args) {
+
     for (val environment : Environment.values()) {
       if (environment.isLocal() || HAS_DISTRIBUTED) {
         for (val joinType : JoinType.values()) {
@@ -136,7 +137,15 @@ public class Joins {
     flowDef.addTailSink(join, taps.getNoCompressionTsvWithHeader(outputDirFilePath));
 
     connect(environment, flowDef).complete();
-    printbug(environment, joinType, joinerType, outputDirFilePath);
+    printFile(
+        getLines(environment, LEFT_FILE_PATH),
+        LEFT_PIPE_NAME);
+    printFile(
+        getLines(environment, RIGHT_FILE_PATH),
+        RIGHT_PIPE_NAME);
+    printFile(
+        getLines(environment, outputDirFilePath),
+        getDescription(environment, joinType, joinerType));
     log.info("done: " + outputDirFilePath);
   }
 
@@ -160,16 +169,20 @@ public class Joins {
     return connectFlowDef(flowConnector, flowDef);
   }
 
-  @SneakyThrows
-  static void printbug(Environment environment, JoinType joinType, JoinerType joinerType, final String outputDirFilePath) {
-    val lines =
-        Files.readLines(
-            new File(environment.isLocal() ?
-                outputDirFilePath :
-                FUSE_MOUNT_POINT + outputDirFilePath + "/part-00000"),
-            Charsets.UTF_8);
-    System.out.println("\n\t# " + getDescription(environment, joinType, joinerType)
+  private static void printFile(final java.util.List<java.lang.String> lines, String description) {
+    System.out.println("\n\t# " + description
         + "\n\t" + Joiners.INDENT.join(lines) + "\n" + "\n");
+  }
+
+  @SneakyThrows
+  private static java.util.List<java.lang.String> getLines(
+      Environment environment, final String filePath) {
+    val lines = Files.readLines(
+        new File(environment.isLocal() ?
+            filePath :
+            FUSE_MOUNT_POINT + filePath + "/part-00000"),
+        Charsets.UTF_8);
+    return lines;
   }
 
   private static String getDescription(Environment environment, JoinType joinType, JoinerType joinerType) {
