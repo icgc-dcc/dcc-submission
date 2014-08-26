@@ -39,7 +39,10 @@ import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Pipe;
+import cascading.pipe.joiner.InnerJoin;
+import cascading.pipe.joiner.Joiner;
 import cascading.pipe.joiner.LeftJoin;
+import cascading.pipe.joiner.OuterJoin;
 import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
 
@@ -54,9 +57,8 @@ import com.google.common.io.Files;
 public class Bug3 {
 
   public static void main(String[] args) {
-    boolean left = "left".equalsIgnoreCase(args[0]);
-    checkState(left || "right".equalsIgnoreCase(args[0]));
-    log.info("Using " + (left ? "left" : "right"));
+    String type = args[0];
+    log.info("Using " + type);
 
     String l = args[1]; // "/tmp/feature_types.tsv";
     String r = args[2]; // "/tmp/clinical.tsv";
@@ -70,9 +72,7 @@ public class Bug3 {
         new Fields("analyzed_sample_id"),
         clinical,
         new Fields("sample_id"),
-        left ?
-            new LeftJoin() :
-            new RightJoin());
+        getJoiner(type));
 
     val flowDef = Flows.getFlowDef(PreComputation.class);
     val featureTypesTap = getTaps().getNoCompressionTsvWithHeader(l);
@@ -87,6 +87,21 @@ public class Bug3 {
     connect(flowDef).complete();
     log.info("done: " + outputDirFilePath);
     printbug(outputDirFilePath);
+  }
+
+  private static Joiner getJoiner(String type) {
+    if ("inner".equalsIgnoreCase(type)) {
+      return new InnerJoin();
+    } else if ("left".equalsIgnoreCase(type)) {
+      return new LeftJoin();
+    } else if ("right".equalsIgnoreCase(type)) {
+      return new RightJoin();
+    } else if ("outer".equalsIgnoreCase(type)) {
+      return new OuterJoin();
+    }
+
+    checkState(false, type);
+    return null;
   }
 
   static final boolean LOCAL = isLocal();
