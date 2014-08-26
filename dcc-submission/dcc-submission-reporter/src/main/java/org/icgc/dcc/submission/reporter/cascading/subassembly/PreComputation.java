@@ -15,7 +15,6 @@ import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
-import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
@@ -30,10 +29,12 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEG
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.addSinkTail;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.connect;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.getTaps;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.Bug3.printbug;
 
-import java.io.File;
 import java.net.InetAddress;
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,21 +43,15 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.Functions2;
-import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.core.util.SerializableMaps;
 import org.icgc.dcc.hadoop.cascading.Flows;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
-import org.icgc.dcc.hadoop.util.HadoopConstants;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.flow.FlowProcess;
 import cascading.operation.FunctionCall;
@@ -76,10 +71,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.io.Files;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
@@ -99,7 +91,7 @@ public class PreComputation extends SubAssembly {
           join.getTails()[0]);
       connect(flowDef).complete();
       log.info("done: " + outputDirFilePath);
-      print(outputDirFilePath);
+      printbug(outputDirFilePath);
     }
 
     private static SubAssembly getPipe() {
@@ -144,7 +136,7 @@ public class PreComputation extends SubAssembly {
           preComputation.getTails()[0]);
       connect(flowDef).complete();
       log.info("done: " + outputDirFilePath);
-      print(outputDirFilePath);
+      printbug(outputDirFilePath);
     }
 
     private static PreComputation getPipe() {
@@ -166,49 +158,6 @@ public class PreComputation extends SubAssembly {
       }
     }
 
-  }
-
-  private static final boolean LOCAL = isLocal();
-
-  @SneakyThrows
-  private static boolean isLocal() {
-    return "acroslt".equals(InetAddress.getLocalHost().getHostName());
-  }
-
-  private static CascadingTaps getTaps() {
-    return LOCAL ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
-  }
-
-  private static String addSinkTail(
-      final FlowDef flowDef,
-      final Pipe tail) {
-    val outputDirFilePath = "/tmp/precomputation-" + new Date().getTime();
-    val outputTap = getTaps().getNoCompressionTsvWithHeader(outputDirFilePath);
-    flowDef.addTailSink(tail, outputTap);
-    return outputDirFilePath;
-  }
-
-  private static Flow<?> connect(final FlowDef flowDef) {
-    CascadingConnectors connectors = LOCAL ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
-    val flowConnector = connectors.getFlowConnector(LOCAL ?
-        ImmutableMap.of() :
-        ImmutableMap.of(
-            CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "***REMOVED***",
-            HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, "***REMOVED***"));
-    return connectFlowDef(flowConnector, flowDef);
-  }
-
-  @SneakyThrows
-  private static void print(final String outputDirFilePath) {
-    val lines =
-        Files.readLines(
-            new File(LOCAL ?
-                outputDirFilePath :
-                "/hdfs/dcc" + outputDirFilePath + "/part-00000"),
-            Charsets.UTF_8);
-    System.out.println(Joiners.INDENT.join(lines.subList(0, 10)));
-    System.out.println();
-    System.out.println(Joiners.INDENT.join(lines.subList(lines.size() - 11, lines.size() - 1)));
   }
 
   private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
