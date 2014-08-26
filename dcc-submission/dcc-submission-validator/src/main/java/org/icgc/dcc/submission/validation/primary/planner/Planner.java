@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,8 +35,8 @@ import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.visitor.ErrorReportingPlanningVisitor;
-import org.icgc.dcc.submission.validation.primary.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
+import org.icgc.dcc.submission.validation.primary.visitor.RowBasedRestrictionPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.SummaryReportingPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 
@@ -86,9 +86,7 @@ public class Planner {
               new Object[] { fileName, fileSchema.getName(), projectKey });
           plan.include(
               fileName,
-              new DefaultInternalFlowPlanner(fileSchema, fileName)
-              // new DefaultExternalFlowPlanner(plan, fileSchema)
-              );
+              new DefaultRowBasedFlowPlanner(fileSchema, fileName));
         }
       }
     }
@@ -110,16 +108,9 @@ public class Planner {
   private static List<PlanningVisitor<? extends PlanElement>> createVisitors(
       SubmissionPlatformStrategy platform, Set<RestrictionType> restrictionTypes) {
     return ImmutableList.of(
-        // Internal
         new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
-        new InternalRestrictionPlanningVisitor(restrictionTypes),
+        new RowBasedRestrictionPlanningVisitor(restrictionTypes),
         new SummaryReportingPlanningVisitor(platform),
-        new ErrorReportingPlanningVisitor(platform, INTERNAL)
-
-        // External
-        // Doesn't actually have any EXTERNAL restrictionTypes at the moment
-        // new ExternalRestrictionPlanningVisitor(restrictionTypes),
-        // new ErrorReportingPlanningVisitor(FlowType.EXTERNAL)
-        );
+        new ErrorReportingPlanningVisitor(platform, ROW_BASED));
   }
 }

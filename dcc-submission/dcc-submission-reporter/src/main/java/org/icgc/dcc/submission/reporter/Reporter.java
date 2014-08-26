@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
@@ -132,7 +133,10 @@ public class Reporter {
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
-    return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
+    return Pipes.getName(
+        Identifiables.fromString(projectKey),
+        fileType,
+        Identifiables.fromInteger(fileNumber));
   }
 
   public static String getOutputFilePath(

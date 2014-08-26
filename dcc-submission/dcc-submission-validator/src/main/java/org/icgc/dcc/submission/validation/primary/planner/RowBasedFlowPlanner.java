@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,8 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity;
+package org.icgc.dcc.submission.validation.primary.planner;
 
-public class ProjectDataTypeEntityClinicalProcessing {
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
+
+/**
+ * Plans the row-based flow for a particular {@code FileSchema}
+ */
+public interface RowBasedFlowPlanner extends FileFlowPlanner {
+
+  /**
+   * Applies an {@code RowBasedPlanElement} to this {@code planner}
+   * @param planElement
+   */
+  public void applyRowBasedPlanElement(RowBasedPlanElement planElement);
 
 }

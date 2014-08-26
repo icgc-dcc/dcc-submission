@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.primary.core;
 
-import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.unmodifiableIterable;
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -30,9 +29,8 @@ import lombok.val;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
-import org.icgc.dcc.submission.validation.primary.planner.ExternalFlowPlanner;
 import org.icgc.dcc.submission.validation.primary.planner.FileFlowPlanner;
-import org.icgc.dcc.submission.validation.primary.planner.InternalFlowPlanner;
+import org.icgc.dcc.submission.validation.primary.planner.RowBasedFlowPlanner;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -69,8 +67,7 @@ public class Plan {
   /**
    * Metadata.
    */
-  private final Map<String, InternalFlowPlanner> internalFlowPlanners = newHashMap();
-  private final Map<String, ExternalFlowPlanner> externalFlowPlanners = newHashMap();
+  private final Map<String, RowBasedFlowPlanner> rowBasedFlowPlanners = newHashMap();
 
   /**
    * Transient state
@@ -82,7 +79,7 @@ public class Plan {
         .setName(projectKey + " validation cascade")
         .setMaxConcurrentFlows(MAX_CONCURRENT_FLOWS);
 
-    for (val flowPlanner : getFlowPlanners()) {
+    for (val flowPlanner : rowBasedFlowPlanners.values()) {
       val flow = flowPlanner.connect(platform);
       if (flow != null) {
         flow.writeDOT("/tmp/validation-flow-" + flow.getName() + ".dot");
@@ -96,12 +93,12 @@ public class Plan {
     cascade.writeDOT("/tmp/validation-cascade.dot");
   }
 
-  public void include(String fileName, InternalFlowPlanner internalFlowPlanner) {
-    internalFlowPlanners.put(fileName, internalFlowPlanner);
+  public void include(String fileName, RowBasedFlowPlanner rowBasedFlowPlanner) {
+    rowBasedFlowPlanners.put(fileName, rowBasedFlowPlanner);
   }
 
   public void collectSubmissionReport(ReportContext reportContext) {
-    for (val planner : getFlowPlanners()) {
+    for (val planner : rowBasedFlowPlanners.values()) {
       planner.collectFileReport(platform, reportContext);
     }
   }
@@ -110,42 +107,16 @@ public class Plan {
     return dictionary;
   }
 
-  /**
-   * Not maintained anymore and due for deletion.
-   */
-  public InternalFlowPlanner getInternalFlow(String schema) {
-    return internalFlowPlanners.get(schema);
+  public Iterable<RowBasedFlowPlanner> getRowBasedFlowPlanners() {
+    return unmodifiableIterable(rowBasedFlowPlanners.values());
   }
 
-  public Iterable<InternalFlowPlanner> getInternalFlows() {
-    return unmodifiableIterable(internalFlowPlanners.values());
-  }
-
-  public ExternalFlowPlanner getExternalFlow(String schema) {
-    return externalFlowPlanners.get(schema);
-  }
-
-  public Iterable<ExternalFlowPlanner> getExternalFlows() {
-    return unmodifiableIterable(externalFlowPlanners.values());
-  }
-
-  public Iterable<? extends FileFlowPlanner> getFlows(FlowType type) {
-    switch (type) {
-    case INTERNAL:
-      return unmodifiableIterable(internalFlowPlanners.values());
-    case EXTERNAL:
-      return unmodifiableIterable(externalFlowPlanners.values());
-    default:
-      throw new IllegalArgumentException();
-    }
+  public Iterable<? extends FileFlowPlanner> getFileFlowPlanners(FlowType type) {
+    return unmodifiableIterable(rowBasedFlowPlanners.values());
   }
 
   public Cascade getCascade() {
     return cascade;
-  }
-
-  private Iterable<FileFlowPlanner> getFlowPlanners() {
-    return concat(internalFlowPlanners.values(), externalFlowPlanners.values());
   }
 
 }

@@ -63,4 +63,8 @@ public class Strings2 {
         .replaceAll(SINGLE_QUOTE, EMPTY_STRING);
   }
 
+  public static String getFirstCharacter(@NonNull final String s) {
+    return s.substring(0, 1);
+  }
+
 }

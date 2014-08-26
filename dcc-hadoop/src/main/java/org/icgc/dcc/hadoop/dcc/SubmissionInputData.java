@@ -194,7 +194,7 @@ public class SubmissionInputData {
   }
 
   private static String getKeyName(FileType fileType) {
-    return _("%s_file", fileType.getTypeName());
+    return _("%s_file", fileType.getId());
   }
 
   @SneakyThrows

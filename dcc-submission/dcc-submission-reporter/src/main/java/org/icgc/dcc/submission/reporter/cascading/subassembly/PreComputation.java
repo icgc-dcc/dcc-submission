@@ -290,7 +290,7 @@ public class PreComputation extends SubAssembly {
    * Must use the {@link String} value because {@link DataType} is not a real enum (rather a composite thereof).
    */
   private static String getDataTypeValue(@NonNull final DataType dataType) {
-    return dataType.getTypeName();
+    return dataType.getId();
   }
 
   private static class OuterJoinNullReplacer extends BaseFunction<Void> {
