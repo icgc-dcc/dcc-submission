@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
 import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
 
-import java.io.File;
 import java.net.InetAddress;
 
 import lombok.Getter;
@@ -29,10 +28,13 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.hadoop.cascading.Flows;
 import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
 import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
+import org.icgc.dcc.hadoop.fs.FileSystems;
+import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
 
 import cascading.flow.Flow;
@@ -47,9 +49,7 @@ import cascading.pipe.joiner.OuterJoin;
 import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 
 /**
  * <pre>
@@ -177,12 +177,11 @@ public class Joins {
   @SneakyThrows
   private static java.util.List<java.lang.String> getLines(
       Environment environment, final String filePath) {
-    val lines = Files.readLines(
-        new File(environment.isLocal() ?
-            filePath :
-            FUSE_MOUNT_POINT + filePath + "/part-00000"),
-        Charsets.UTF_8);
-    return lines;
+
+    val fs = environment.isLocal() ?
+        FileSystems.getLocalFileSystem() :
+        FileSystems.getFileSystem("***REMOVED***");
+    return HadoopUtils.readSmallTextFile(fs, new Path(filePath));
   }
 
   private static String getDescription(Environment environment, JoinType joinType, JoinerType joinerType) {
