@@ -91,7 +91,7 @@ public final class Jackson {
   }
 
   public static ObjectNode getRootObject(@NonNull final String path) {
-    return getRootObject(URLs.getUrl(path));
+    return getRootObject(URLs.getUrlFromPath(path));
   }
 
   @SneakyThrows

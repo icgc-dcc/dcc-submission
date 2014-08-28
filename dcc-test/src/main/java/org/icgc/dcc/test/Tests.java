@@ -82,7 +82,7 @@ public final class Tests {
   }
 
   public static String getTestWorkingDir(@NonNull final Component component) {
-    return PATH.join(OS_TMP_DIR, component);
+    return PATH.join(OS_TMP_DIR, component.getId());
   }
 
 }
