@@ -3,6 +3,7 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly;
 import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
 import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
@@ -44,11 +45,16 @@ public class ProjectSequencingStrategy extends SubAssembly {
   private static final String NULL_REPLACEMENT = "null";
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
 
-  public ProjectSequencingStrategy(Pipe preComputationTable, Pipe donors, Set<String> codes) {
+  public ProjectSequencingStrategy(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey,
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Pipe donors,
+      @NonNull final Set<String> codes) {
     setTails(process(preComputationTable, donors, getTranspositionFields(codes)));
   }
 
-  private static Fields getTranspositionFields(Set<String> codes) {
+  private static Fields getTranspositionFields(@NonNull final Set<String> codes) {
     Fields transpositionFields = new Fields();
     for (val code : getAugmentedCodes(codes)) {
       transpositionFields = transpositionFields.append(new Fields(code));
@@ -56,8 +62,7 @@ public class ProjectSequencingStrategy extends SubAssembly {
     return transpositionFields;
   }
 
-  private static List<String> getAugmentedCodes(
-      @NonNull final Set<String> codes) {
+  private static List<String> getAugmentedCodes(@NonNull final Set<String> codes) {
 
     val builder = new ImmutableList.Builder<String>();
     val iterator = codes.iterator();
@@ -92,18 +97,19 @@ public class ProjectSequencingStrategy extends SubAssembly {
   }
 
   private static Pipe postProcessDonors(Pipe pipe) {
+    val temporaryDonorField = getTemporaryField(getFieldName(PROJECT_ID_FIELD), DONOR);
 
     return new Rename(
         new SumBy(
             new Retain(
                 pipe,
-                getTemporaryField(DONOR, PROJECT_ID_FIELD)
+                temporaryDonorField
                     .append(DONOR_UNIQUE_COUNT_FIELD)),
-            getTemporaryField(DONOR, PROJECT_ID_FIELD),
+            temporaryDonorField,
             DONOR_UNIQUE_COUNT_FIELD,
             DONOR_UNIQUE_COUNT_FIELD,
             long.class),
-        getTemporaryField(DONOR, PROJECT_ID_FIELD),
+        temporaryDonorField,
         REDUNDANT_PROJECT_ID_FIELD);
   }
 

@@ -28,5 +28,6 @@ public class Extensions {
 
   public static final String TSV = "tsv";
   public static final String JSON = "json";
+  public static final String DOT = "dot";
 
 }

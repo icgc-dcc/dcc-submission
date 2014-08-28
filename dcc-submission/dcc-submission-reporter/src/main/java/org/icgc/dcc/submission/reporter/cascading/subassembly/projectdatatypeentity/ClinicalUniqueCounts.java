@@ -15,14 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.reporter.cascading.subassembly;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
 import static org.icgc.dcc.submission.reporter.OutputType.SAMPLE;
 import static org.icgc.dcc.submission.reporter.OutputType.SPECIMEN;
-import static org.icgc.dcc.submission.reporter.ReporterFields.COUNT_BY_FIELDS;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
@@ -39,13 +38,54 @@ import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Rename;
 import cascading.tuple.Fields;
 
-public class ProcessClinicalType extends SubAssembly {
+public class ClinicalUniqueCounts extends SubAssembly {
 
-  public ProcessClinicalType(Pipe preComputationTable, OutputType outputType, Fields f) {
-    setTails(process(preComputationTable, outputType, f));
+  /**
+   * This one is used in the other table as well (hence the public).
+   */
+  public static Pipe donors(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields) {
+    return new ClinicalUniqueCounts(
+        preComputationTable,
+        DONOR,
+        countByFields,
+        DONOR_ID_FIELD);
   }
 
-  public static Pipe process(Pipe preComputationTable, OutputType outputType, Fields clinicalIdField) {
+  static Pipe specimens(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields) {
+    return new ClinicalUniqueCounts(
+        preComputationTable,
+        SPECIMEN,
+        countByFields,
+        SPECIMEN_ID_FIELD);
+  }
+
+  static Pipe samples(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields) {
+    return new ClinicalUniqueCounts(
+        preComputationTable,
+        SAMPLE,
+        countByFields,
+        SAMPLE_ID_FIELD);
+  }
+
+  private ClinicalUniqueCounts(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final OutputType outputType,
+      @NonNull final Fields countByFields,
+      @NonNull final Fields clinicalIdField) {
+    setTails(process(preComputationTable, outputType, countByFields, clinicalIdField));
+  }
+
+  private static Pipe process(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final OutputType outputType,
+      @NonNull final Fields countByFields,
+      @NonNull final Fields clinicalIdField) {
     checkFieldsCardinalityOne(clinicalIdField);
 
     return new NamingPipe(
@@ -55,34 +95,13 @@ public class ProcessClinicalType extends SubAssembly {
             new UniqueCountBy(UniqueCountByData.builder()
 
                 .pipe(preComputationTable)
-                .uniqueFields(COUNT_BY_FIELDS.append(clinicalIdField))
-                .countByFields(COUNT_BY_FIELDS)
+                .uniqueFields(countByFields.append(clinicalIdField))
+                .countByFields(countByFields)
                 .resultCountField(getCountFieldCounterpart(clinicalIdField))
 
                 .build()),
-            COUNT_BY_FIELDS,
-            getTemporaryCountByFields(outputType)));
-  }
-
-  public static ProcessClinicalType donor(@NonNull final Pipe preComputationTable) {
-    return new ProcessClinicalType(
-        preComputationTable,
-        DONOR,
-        DONOR_ID_FIELD);
-  }
-
-  public static ProcessClinicalType specimen(@NonNull final Pipe preComputationTable) {
-    return new ProcessClinicalType(
-        preComputationTable,
-        SPECIMEN,
-        SPECIMEN_ID_FIELD);
-  }
-
-  public static ProcessClinicalType sample(@NonNull final Pipe preComputationTable) {
-    return new ProcessClinicalType(
-        preComputationTable,
-        SAMPLE,
-        SAMPLE_ID_FIELD);
+            countByFields,
+            getTemporaryCountByFields(countByFields, outputType)));
   }
 
 }

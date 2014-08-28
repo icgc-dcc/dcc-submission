@@ -26,10 +26,15 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
-import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
+
+import org.icgc.dcc.core.model.FieldNames.ReporterFieldNames;
+
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 @NoArgsConstructor(access = PRIVATE)
 public final class ReporterFields {
 
+  public static final Fields RELEASE_NAME_FIELD = new Fields(ReporterFieldNames.RELEASE_NAME);
   public static final Fields TYPE_FIELD = new Fields(OBSERVATION_TYPE);
   public static final Fields PROJECT_ID_FIELD = new Fields(PROJECT_ID);
   public static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
@@ -59,33 +65,27 @@ public final class ReporterFields {
   public static final Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
   public static final Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
 
-  public static final Fields COUNT_BY_FIELDS = PROJECT_ID_FIELD.append(TYPE_FIELD);
-
   public static final Iterable<Fields> PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS = ImmutableList.of(
       DONOR_UNIQUE_COUNT_FIELD,
       SPECIMEN_UNIQUE_COUNT_FIELD,
       SAMPLE_UNIQUE_COUNT_FIELD,
       _ANALYSIS_OBSERVATION_COUNT_FIELD);
 
-  /**
-   * Order matters.
-   */
-  public static final Fields PROJECT_DATA_TYPE_ENTITY_RESULT_FIELDS =
-      NONE
-          .append(DONOR_UNIQUE_COUNT_FIELD)
-          .append(SPECIMEN_UNIQUE_COUNT_FIELD)
-          .append(SAMPLE_UNIQUE_COUNT_FIELD)
-          .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-          .append(PROJECT_ID_FIELD)
-          .append(TYPE_FIELD);
+  public static Fields getTemporaryCountByFields(
+      @NonNull final Fields countByFields,
+      @NonNull final OutputType outputType) {
+    Fields temporaryCountByFields = NONE;
+    for (val fieldName : getFieldNames(countByFields)) {
+      temporaryCountByFields = temporaryCountByFields.append(getTemporaryField(fieldName, outputType));
+    }
 
-  public static Fields getTemporaryCountByFields(OutputType outputType) {
-    return getTemporaryField(outputType, PROJECT_ID_FIELD)
-        .append(getTemporaryField(outputType, TYPE_FIELD));
+    return temporaryCountByFields;
   }
 
-  public static Fields getTemporaryField(OutputType outputType, Fields field) {
-    return getRedundantFieldCounterpart(outputType, checkFieldsCardinalityOne(field));
+  public static Fields getTemporaryField(
+      @NonNull final String fieldName,
+      @NonNull final OutputType outputType) {
+    return getRedundantFieldCounterpart(outputType, fieldName);
   }
 
 }
