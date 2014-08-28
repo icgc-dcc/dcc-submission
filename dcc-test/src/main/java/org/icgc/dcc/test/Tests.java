@@ -69,8 +69,6 @@ public final class Tests {
   public static final int MONGO_PORT = 27017;
   public static final int ELASTIC_SEARCH_PORT = 9300;
 
-  public static final String LOCAL_SUBMISSION_DATABASE_NAME = "icgc-local";
-
   public static String getTestJobId(@NonNull final Component component) {
     return JOB_ID_JOINER.join(getTestReleaseName(component), TEST_PATCH_NUMBER, TEST_RUN_NUMBER);
   }
@@ -84,7 +82,7 @@ public final class Tests {
   }
 
   public static String getTestWorkingDir(@NonNull final Component component) {
-    return PATH.join(OS_TMP_DIR, component);
+    return PATH.join(OS_TMP_DIR, component.getId());
   }
 
 }
