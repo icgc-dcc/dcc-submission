@@ -24,7 +24,9 @@ import static org.icgc.dcc.core.util.Splitters.NEWLINE;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -40,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Common object mappers.
@@ -55,6 +58,29 @@ public final class Jackson {
    */
   private static final ObjectReader JSON_NODE_READER = DEFAULT.reader(JsonNode.class);
 
+  @SneakyThrows
+  public static JsonNode readFile(@NonNull final File file) {
+    return DEFAULT.readTree(file);
+  }
+
+  /**
+   * TODO: use convert() rather.
+   */
+  public static Map<String, String> asMap(@NonNull final ObjectNode objectNode) {
+    val builder = new ImmutableMap.Builder<String, String>();
+    Iterator<String> fieldNames = objectNode.fieldNames();
+    while (fieldNames.hasNext()) {
+      val fieldName = fieldNames.next();
+      val jsonNode = objectNode.get(fieldName);
+      checkState(jsonNode.getNodeType() != JsonNodeType.OBJECT && jsonNode.getNodeType() != JsonNodeType.ARRAY);
+      builder.put(
+          fieldName,
+          jsonNode.asText());
+    }
+
+    return builder.build();
+  }
+
   public static String formatPrettyJson(String jsonString) {
     return formatPrettyJson(toJsonNode(jsonString));
   }
@@ -65,7 +91,7 @@ public final class Jackson {
   }
 
   public static ObjectNode getRootObject(@NonNull final String path) {
-    return getRootObject(URLs.getUrl(path));
+    return getRootObject(URLs.getUrlFromPath(path));
   }
 
   @SneakyThrows

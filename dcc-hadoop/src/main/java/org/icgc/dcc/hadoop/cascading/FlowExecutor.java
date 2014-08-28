@@ -24,7 +24,7 @@ import static cascading.util.Util.createUniqueID;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.hadoop.cascading.FlowExecutorReporter.reportFailure;
+import static org.icgc.dcc.hadoop.cascading.FlowReporter.reportFlowFailure;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
 
 import java.io.IOException;
@@ -107,7 +107,7 @@ public class FlowExecutor extends ThreadPoolExecutor {
 
       return flow;
     } catch (FlowException e) {
-      reportFailure(flow);
+      reportFlowFailure(flow);
 
       throw e;
     }

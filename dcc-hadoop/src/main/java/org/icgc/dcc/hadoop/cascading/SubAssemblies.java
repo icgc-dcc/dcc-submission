@@ -315,9 +315,9 @@ public class SubAssemblies {
   /**
    * TODO
    */
-  public static class CountBy extends SubAssembly {
+  public static class ReadableCountBy extends SubAssembly {
 
-    public CountBy(CountByData countByData) {
+    public ReadableCountBy(CountByData countByData) {
       // TODO: add checks on cardinalities
       setTails(
 
@@ -449,7 +449,7 @@ public class SubAssemblies {
   public static class UniqueCountBy extends SubAssembly {
 
     public UniqueCountBy(UniqueCountByData data) {
-      setTails(new CountBy(CountByData.builder()
+      setTails(new ReadableCountBy(CountByData.builder()
 
           .pipe(
 

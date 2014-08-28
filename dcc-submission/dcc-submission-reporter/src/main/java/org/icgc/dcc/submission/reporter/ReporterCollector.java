@@ -61,7 +61,7 @@ public class ReporterCollector {
     val documents = JsonNodeFactory.instance.arrayNode();
     while (iterator.hasNext()) {
       String line = iterator.next();
-      if (!line.equals(headerLine)) {
+      if (!line.equals(headerLine)) { // TODO: better handling
         val values = newArrayList(TAB.split(line));
         checkState(headerSize == values.size());
 

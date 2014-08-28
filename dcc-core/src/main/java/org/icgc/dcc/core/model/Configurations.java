@@ -31,7 +31,6 @@ public final class Configurations {
    */
   public static final String FS_URL_KEY = "fs.url";
   public static final String FS_ROOT_KEY = "fs.root";
-  public static final String SUBMISSION_WEB_URI = "http.submission";
   public static final String MONGO_URI_KEY = "mongo.uri";
 
   /**

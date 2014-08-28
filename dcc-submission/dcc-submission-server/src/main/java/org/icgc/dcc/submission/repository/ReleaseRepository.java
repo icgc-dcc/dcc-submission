@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.repository;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableSet.copyOf;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static java.lang.String.format;
 import static org.icgc.dcc.core.model.Identifiable.Identifiables.getId;
@@ -101,6 +102,14 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   public Set<String> findProjectKeys(@NonNull String releaseName) {
     return Submission.getProjectKeys(findSubmissionIds(releaseName));
+  }
+
+  public Set<String> findSignedOffProjectKeys(@NonNull String releaseName) {
+    return copyOf(transform(
+        filter(
+            findReleaseByName(releaseName).getSubmissions(),
+            Submission.isSignedOff()),
+        Submission.getProjectKeyFunction()));
   }
 
   public Release findReleaseSummaryByName(@NonNull String releaseName) {

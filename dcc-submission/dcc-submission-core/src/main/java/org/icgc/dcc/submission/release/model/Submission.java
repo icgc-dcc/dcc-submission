@@ -54,6 +54,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 
 @Slf4j
@@ -302,14 +303,7 @@ public class Submission implements Serializable, Identifiable {
   }
 
   public static Iterable<String> getProjectKeys(@NonNull Iterable<Submission> submissions) {
-    return transform(submissions, new Function<Submission, String>() {
-
-      @Override
-      public String apply(Submission submission) {
-        return submission.getProjectKey();
-      }
-
-    });
+    return transform(submissions, getProjectKeyFunction());
   }
 
   private <Result> Result executeTransition(@NonNull Iterable<SubmissionFile> submissionFiles,
@@ -338,6 +332,30 @@ public class Submission implements Serializable, Identifiable {
 
     abstract Result execute(StateContext context);
 
+  }
+
+  @JsonIgnore
+  public static Function<Submission, String> getProjectKeyFunction() {
+    return new Function<Submission, String>() {
+
+      @Override
+      public String apply(@NonNull final Submission submission) {
+        return submission.getProjectKey();
+      }
+
+    };
+  }
+
+  @JsonIgnore
+  public static Predicate<Submission> isSignedOff() {
+    return new Predicate<Submission>() {
+
+      @Override
+      public boolean apply(@NonNull final Submission submission) {
+        return submission.getState().isSignedOff();
+      }
+
+    };
   }
 
 }
