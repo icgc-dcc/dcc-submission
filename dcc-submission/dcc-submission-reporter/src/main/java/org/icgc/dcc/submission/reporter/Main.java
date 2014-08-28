@@ -34,8 +34,8 @@ public class Main {
         getProjectKeys(projectKeys),
         defaultParentDataDir,
         projectsJsonFilePath,
-        URLs.getUrl(dictionaryFilePath),
-        URLs.getUrl(codeListsFilePath),
+        URLs.getUrlFromPath(dictionaryFilePath),
+        URLs.getUrlFromPath(codeListsFilePath),
         ImmutableMap.of( // TODO: allow more params
             CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, nameNodeUri,
             HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, jobTracker));
