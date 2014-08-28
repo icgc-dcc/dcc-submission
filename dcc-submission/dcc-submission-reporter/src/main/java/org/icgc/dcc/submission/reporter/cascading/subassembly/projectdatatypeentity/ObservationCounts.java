@@ -15,34 +15,52 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity;
+package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity;
 
-import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
+import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
+import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
+import lombok.NonNull;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
 
-import cascading.operation.expression.ExpressionFilter;
-import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.Rename;
+import cascading.pipe.assembly.SumBy;
+import cascading.tuple.Fields;
 
-public class ProjectDataTypeEntityFeaturesProcessing extends SubAssembly {
+public class ObservationCounts extends SubAssembly {
 
-  private static final String EXCLUDE_CLINICAL_ONLY_TYPE = getFieldName(TYPE_FIELD) + " == null";
+  static Pipe observations(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields) {
 
-  ProjectDataTypeEntityFeaturesProcessing(Pipe preComputationTable) {
-    setTails(getFeatureTypes(preComputationTable));
+    return new ObservationCounts(preComputationTable, countByFields);
   }
 
-  private static Pipe getFeatureTypes(Pipe preComputationTable) {
-    return new Each(
-        new Pipe(
-            FeatureType.class.getSimpleName(),
-            preComputationTable),
-        new ExpressionFilter(
-            EXCLUDE_CLINICAL_ONLY_TYPE,
-            String.class));
+  private ObservationCounts(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields) {
+    setTails(process(preComputationTable, countByFields));
+  }
+
+  private static Pipe process(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields) {
+    return new NamingPipe(
+        OBSERVATION,
+
+        new Rename(
+
+            new SumBy(
+                preComputationTable,
+                countByFields,
+                _ANALYSIS_OBSERVATION_COUNT_FIELD,
+                _ANALYSIS_OBSERVATION_COUNT_FIELD,
+                long.class),
+            countByFields,
+            getTemporaryCountByFields(countByFields, OBSERVATION)));
   }
 
 }

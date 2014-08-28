@@ -17,11 +17,16 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.icgc.dcc.core.util.Splitters.COMMA;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -99,23 +105,33 @@ public class ExecutiveReportResource {
 
   /**
    * Generates executive reports for the given release/project combination.
+   * 
+   * @param projectKeys Comma-separated list of existing unique project keys.
    */
   @POST
   // TODO: best verb (see DCC-2445)?
-  @Path("/generate/{releaseName}/{projectKey}")
-  public Response generateExecutiveReport(
+  @Path("/generate/{releaseName}/{projectKeys}")
+  public Response generateExecutiveReports(
       @Context SecurityContext securityContext,
-      @PathParam("releaseName") String releaseName,
-      @PathParam("projectKey") String projectKey) {
+      @PathParam("releaseName") @NonNull String releaseName,
+      @PathParam("projectKeys") @NonNull String projectKeys) {
 
-    log.info("Generating reports for '{}.{}'...", releaseName, projectKey);
+    log.info("Generating reports for '{}.{}'...", releaseName, projectKeys);
     if (!isSuperUser(securityContext)) {
       return unauthorizedResponse();
     }
 
-    service.generateReport(releaseName, ImmutableSet.of(projectKey));
+    service.generateReport(releaseName, getProjectKeys(projectKeys));
 
     return Response.ok().build();
+  }
+
+  private Set<String> getProjectKeys(@NonNull final String projectKeys) {
+    val split = COMMA.split(projectKeys);
+    checkState(newArrayList(split).size() == newLinkedHashSet(split).size(),
+        "Non-unique set of project keys: '%s'", projectKeys);
+
+    return ImmutableSet.copyOf(split);
   }
 
   @GET

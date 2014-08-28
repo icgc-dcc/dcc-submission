@@ -64,6 +64,10 @@ public final class FileSystems {
     return getFileSystem(uri, newConfiguration());
   }
 
+  public static FileSystem getFileSystem(@NonNull final Map<?, ?> properties) {
+    return getFileSystem(Configurations.fromMap(properties));
+  }
+
   @SneakyThrows
   public static FileSystem getFileSystem(
       @NonNull final URI uri,

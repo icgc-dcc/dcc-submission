@@ -17,7 +17,9 @@
  */
 package org.icgc.dcc.submission.service;
 
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.ImmutableMap.copyOf;
+import static com.google.common.collect.Iterables.filter;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
@@ -54,12 +56,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 @Slf4j
 public class ExecutiveReportService extends AbstractIdleService {
+
+  private static final Set<String> NO_OBSERVATIONS_PROJECT_KEYS = ImmutableSet.of("AML-US", "WT-US");
 
   /**
    * Dependencies.
@@ -173,7 +179,7 @@ public class ExecutiveReportService extends AbstractIdleService {
   public void generateReport(String releaseName) {
     generateReport(
         releaseName,
-        releaseRepository.findProjectKeys(releaseName));
+        releaseRepository.findSignedOffProjectKeys(releaseName));
   }
 
   /**
@@ -203,6 +209,7 @@ public class ExecutiveReportService extends AbstractIdleService {
       @NonNull final JsonNode dictionaryNode,
       @NonNull final JsonNode codeListsNode) {
 
+    val filteredProjects = filterProjects(projectKeys);
     val fileSystem = dccFileSystem.getFileSystem();
     val patterns = getPatterns(dictionaryNode);
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
@@ -212,21 +219,21 @@ public class ExecutiveReportService extends AbstractIdleService {
 
       @Override
       public void run() {
-        log.info("Starting generating reports for '{}.{}'", releaseName, projectKeys);
+        log.info("Starting generating reports for '{}.{}'", releaseName, filteredProjects);
 
         val outputDirPath = Reporter.process(
             releaseName,
-            projectKeys,
+            filteredProjects,
             getReporterInput(
                 fileSystem,
-                projectKeys,
+                filteredProjects,
                 getReleasePath(releaseName),
                 patterns),
             mappings.get(),
             copyOf(hadoopProperties));
-        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, projectKeys);
+        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, filteredProjects);
 
-        for (val project : projectKeys) {
+        for (val project : filteredProjects) {
           ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
               fileSystem, outputDirPath, releaseName, project);
           log.info("Persisting data type executive reports for '{}.{}': '{}'",
@@ -251,7 +258,7 @@ public class ExecutiveReportService extends AbstractIdleService {
 
         }
 
-        log.info("Finished generating reports for '{}.{}'", releaseName, projectKeys);
+        log.info("Finished generating reports for '{}.{}'", releaseName, filteredProjects);
       }
 
       private String getReleasePath(@NonNull final String releaseName) {
@@ -270,6 +277,39 @@ public class ExecutiveReportService extends AbstractIdleService {
     return ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
             fileSystem, releasePath, projectKeys, patterns));
+  }
+
+  private Set<String> filterProjects(@NonNull final Set<String> projectKeys) {
+    return ImmutableSet.copyOf(
+        filter(
+            filter(
+                projectKeys,
+                not(isTestProject())),
+            not(hasNoObservations())));
+  }
+
+  private Predicate<String> hasNoObservations() {
+    return new Predicate<String>() {
+
+      @Override
+      public boolean apply(@NonNull final String projectKey) {
+        return NO_OBSERVATIONS_PROJECT_KEYS.contains(projectKey);
+      }
+
+    };
+  }
+
+  private Predicate<String> isTestProject() {
+    return new Predicate<String>() {
+
+      private static final String TEST_PROJECT_PREFIX = "TEST";
+
+      @Override
+      public boolean apply(@NonNull final String projectKey) {
+        return projectKey.startsWith(TEST_PROJECT_PREFIX);
+      }
+
+    };
   }
 
 }

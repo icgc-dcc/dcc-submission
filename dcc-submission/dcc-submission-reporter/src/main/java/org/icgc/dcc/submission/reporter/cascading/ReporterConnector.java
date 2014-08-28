@@ -5,6 +5,7 @@ import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.transformValues;
+import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.submission.reporter.Reporter.getOutputFilePath;
 
 import java.util.Map;
@@ -60,6 +61,11 @@ public class ReporterConnector {
     val maxConcurrentFlows = getConcurrency();
     log.info("maxConcurrentFlows: '{}'", maxConcurrentFlows);
     log.info("hadoopProperties: '{}'", hadoopProperties);
+    for (val projectKey : reporterInput.getProjectKeys()) {
+      log.info(formatPrettyJson(reporterInput.getPipeNameToFilePath(projectKey)));
+
+      // TODO: same for outputs
+    }
 
     val cascadeDef = cascadeDef()
         .setName(Cascades.getName(Reporter.CLASS))
@@ -83,6 +89,8 @@ public class ReporterConnector {
     }
 
     HadoopProperties.setHadoopUserNameProperty();
+
+    log.info("Connecting cascade");
     return cascadingContext
         .getConnectors()
         .getCascadeConnector(hadoopProperties)
