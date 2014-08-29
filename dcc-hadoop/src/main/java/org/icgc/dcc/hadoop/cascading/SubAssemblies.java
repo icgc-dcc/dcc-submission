@@ -578,7 +578,7 @@ public class SubAssemblies {
 
         public JoinDataBuilder rightPipe(@NonNull final Pipe rightPipe) {
           checkState(
-              joinData.leftPipe == null,
+              joinData.rightPipe == null,
               "Right pipe is already set: '%s'", rightPipe);
           joinData.rightPipe = rightPipe;
           return this;
