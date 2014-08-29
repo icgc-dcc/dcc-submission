@@ -185,6 +185,8 @@ public class PreComputation extends SubAssembly {
                 .joinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
 
                 .build()),
+
+            // Outer join target fields
             SAMPLE_TYPE_FIELD.append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
             new OuterJoinControlReplacer(),
             REPLACE));
