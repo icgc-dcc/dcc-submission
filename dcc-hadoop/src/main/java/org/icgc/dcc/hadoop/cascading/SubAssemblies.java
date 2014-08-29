@@ -492,12 +492,12 @@ public class SubAssemblies {
   }
 
   /**
-   * TODO: generalize.
+   * TODO: generalize to CoGroup as well.
    */
   public static class ReadableHashJoin extends SubAssembly {
 
     public ReadableHashJoin(JoinData joinData) {
-      // TODO: add checks on cardinalities
+      // TODO: add checks on fields cardinalities
       validateJoiner(joinData.joiner);
 
       setTails(joinData.hasJoinFieldsCollision() ?
@@ -527,10 +527,10 @@ public class SubAssemblies {
     private void validateJoiner(@NonNull final Joiner joiner) {
       checkArgument(
           !(joiner instanceof RightJoin),
-          "Cannot use a hash join in combination with a right join (see cascading documentation)");
+          "Cannot use a hash join in combination with a right join (see Cascading documentation)");
     }
 
-    public static class JoinData { // TODO: add integrity check (cardinalities, ...)
+    public static class JoinData { // TODO: add integrity check (fields cardinalities, ...)
 
       private Joiner joiner;
 

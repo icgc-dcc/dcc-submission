@@ -59,10 +59,9 @@ public class ProjectSequencingStrategy extends SubAssembly {
             ClinicalUniqueCounts.allDonors(
                 preComputationTable,
                 PROJECT_ID_FIELD))
-        .leftJoinFields(PROJECT_ID_FIELD)
-
         .rightPipe(processSequencingStrategies(preComputationTable, transpositionFields))
-        .rightJoinFields(PROJECT_ID_FIELD)
+
+        .joinFields(PROJECT_ID_FIELD)
 
         .build());
   }

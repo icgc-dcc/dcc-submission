@@ -94,18 +94,15 @@ public class PreComputation extends SubAssembly {
             keyValuePair(PROJECT_ID_FIELD, projectKey),
 
             new Each(
-
-                //
                 new ReadableHashJoin(JoinData.builder()
 
                     // Left-join in order to keep track of clinical data with no observations as well
                     .leftJoin()
 
                     .leftPipe(processClinical())
-                    .leftJoinFields(SAMPLE_ID_FIELD)
-
                     .rightPipe(processFeatureTypes())
-                    .rightJoinFields(SAMPLE_ID_FIELD)
+
+                    .joinFields(SAMPLE_ID_FIELD)
 
                     .build()),
 
@@ -124,10 +121,9 @@ public class PreComputation extends SubAssembly {
         .innerJoin()
 
         .leftPipe(processSpecimenFiles())
-        .leftJoinFields(SPECIMEN_ID_FIELD)
-
         .rightPipe(processSampleFiles())
-        .rightJoinFields(SPECIMEN_ID_FIELD)
+
+        .joinFields(SPECIMEN_ID_FIELD)
 
         .build());
   }
@@ -169,8 +165,6 @@ public class PreComputation extends SubAssembly {
             .innerJoin()
 
             .leftPipe(processPrimaryFiles(featureType))
-            .leftJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
-
             .rightPipe(
 
                 // Meta files
@@ -185,7 +179,8 @@ public class PreComputation extends SubAssembly {
 
                     // Use feature type as replacement for a sequencing strategy if need be
                     getDataTypeValue(featureType)))
-            .rightJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
+
+            .joinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
 
             .build()));
   }
