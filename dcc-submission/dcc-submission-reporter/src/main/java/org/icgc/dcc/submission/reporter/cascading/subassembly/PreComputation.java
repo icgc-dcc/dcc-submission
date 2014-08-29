@@ -3,7 +3,6 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.NONE;
 import static cascading.tuple.Fields.REPLACE;
-import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
@@ -49,6 +48,7 @@ import cascading.pipe.Each;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.LeftJoin;
@@ -57,11 +57,11 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
-
-  private static Fields META_PK_FIELDS = ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD);
+  
   private static final int NO_OBSERVATIONS_COUNT = 0;
 
   private final String releaseName;
@@ -76,7 +76,7 @@ public class PreComputation extends SubAssembly {
     this.releaseName = releaseName;
     this.projectKey = projectKey;
     this.matchingFilePaths = matchingFilePathCounts;
-    this.featureTypesWithData = newLinkedHashSet( // To make it serializable
+    this.featureTypesWithData = ImmutableSet.copyOf( // To make it serializable
         DataTypes.getFeatureTypes(
             FileType.getDataTypes(
                 matchingFilePathCounts.keySet())));
@@ -112,16 +112,8 @@ public class PreComputation extends SubAssembly {
                         .leftJoinFields(SAMPLE_ID_FIELD)
 
                         .rightPipe(processFeatureTypes())
-                        .rightJoinFields(SAMPLE_ID_FIELD)
-
-                        .resultFields(
-                            META_PK_FIELDS
-                                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                                .append(SEQUENCING_STRATEGY_FIELD)
-                                .append(TYPE_FIELD)
-                                .append(DONOR_ID_FIELD)
-                                .append(SPECIMEN_ID_FIELD)
-                                .append(REDUNDANT_SAMPLE_ID_FIELD))
+                        .rightJoinFields(REDUNDANT_SAMPLE_ID_FIELD)
+                        
                         .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
 
                         .build()),
@@ -168,10 +160,7 @@ public class PreComputation extends SubAssembly {
   }
 
   private Pipe processFeatureTypes() {
-    return
-
-    //
-    new Transformerge<FeatureType>(
+    return new Rename(new Transformerge<FeatureType>(
         featureTypesWithData,
         new Function<FeatureType, Pipe>() {
 
@@ -180,7 +169,9 @@ public class PreComputation extends SubAssembly {
             return processFeatureType(featureType);
           }
 
-        });
+        }),
+        SAMPLE_ID_FIELD,
+        REDUNDANT_SAMPLE_ID_FIELD);
   }
 
   private Pipe processFeatureType(@NonNull final FeatureType featureType) {
@@ -201,7 +192,7 @@ public class PreComputation extends SubAssembly {
                 .joiner(new InnerJoin())
 
                 .leftPipe(processPrimaryFiles(featureType))
-                .leftJoinFields(META_PK_FIELDS)
+                .leftJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
 
                 .rightPipe(
 
@@ -209,7 +200,7 @@ public class PreComputation extends SubAssembly {
                     normalizeSequencingStrategies(
                         processFiles(featureType.getMetaFileType(),
                             appendIfApplicable(
-                                META_PK_FIELDS,
+                                ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
                                 hasSequencingStrategy(featureType),
                                 SEQUENCING_STRATEGY_FIELD)),
 
@@ -217,10 +208,11 @@ public class PreComputation extends SubAssembly {
 
                         // Use feature type as replacement for a sequencing strategy if need be
                         getDataTypeValue(featureType)))
-                .rightJoinFields(META_PK_FIELDS)
+                .rightJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
 
                 .resultFields(
-                    META_PK_FIELDS
+                    NONE.append(ANALYSIS_ID_FIELD)
+                        .append(SAMPLE_ID_FIELD)
                         .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
                         .append(REDUNDANT_ANALYSIS_ID_FIELD)
                         .append(REDUNDANT_SAMPLE_ID_FIELD)
@@ -240,8 +232,8 @@ public class PreComputation extends SubAssembly {
 
         .pipe(processFiles(
             featureType.getPrimaryFileType(),
-            META_PK_FIELDS))
-        .countByFields(META_PK_FIELDS)
+            ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD)))
+        .countByFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
         .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
         .build());

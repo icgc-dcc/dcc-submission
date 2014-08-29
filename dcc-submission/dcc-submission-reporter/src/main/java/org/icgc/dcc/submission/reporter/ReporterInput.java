@@ -2,7 +2,7 @@ package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Maps.transformValues;
+import static org.icgc.dcc.core.util.SerializableMaps.transformValues;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
@@ -60,7 +60,9 @@ public class ReporterInput {
   }
 
   public Map<FileType, Integer> getMatchingFilePathCounts(@NonNull final String projectKey) {
-    return transformValues(getMatchingFilePaths(projectKey), Functions2.<String> size());
+    return transformValues(
+        getMatchingFilePaths(projectKey),
+        Functions2.<String> size());
   }
 
   public Map<FileType, Set<String>> getMatchingFilePaths(@NonNull final String projectKey) {
