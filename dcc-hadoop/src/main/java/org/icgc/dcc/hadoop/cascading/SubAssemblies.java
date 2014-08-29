@@ -34,6 +34,7 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.cloneFields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterparts;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
+import static org.icgc.dcc.hadoop.cascading.Fields2.swapTwoFields;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.contains;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
@@ -243,6 +244,8 @@ public class SubAssemblies {
 
   /**
    * TODO: find better name?
+   * <p>
+   * TODO: add automatic ordering/reordering of fields
    */
   public static class Transformerge<T> extends SubAssembly {
 
@@ -745,9 +748,9 @@ public class SubAssemblies {
 
   }
 
-  public static class ReorderFields extends SubAssembly {
+  public static class ReorderAllFields extends SubAssembly {
 
-    public ReorderFields(
+    public ReorderAllFields(
         @NonNull final Pipe pipe,
         @NonNull final Fields orderedFields) {
       setTails(process(pipe, orderedFields));
@@ -756,40 +759,73 @@ public class SubAssemblies {
     private static Each process(
         @NonNull final Pipe pipe,
         @NonNull final Fields orderedFields) {
-      return new Each(
-          pipe,
-          new BaseFunction<Void>(orderedFields) {
-
-            @Override
-            public void operate(
-                @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-                FunctionCall<Void> functionCall) {
-              val entry = functionCall.getArguments();
-
-              functionCall
-                  .getOutputCollector()
-                  .add(getReorderedTuple(
-                      entry,
-                      getFieldDeclaration()));
-            }
-
-            private Tuple getReorderedTuple(
-                @NonNull final TupleEntry entry,
-                @NonNull final Fields orderedFields) {
-              val tuple = new Tuple();
-              for (val fieldName : getFieldNames(orderedFields)) {
-                checkState(contains(entry, fieldName),
-                    "Expecting field '%s' to be present within '%s'", fieldName, entry);
-                tuple.add(entry.getObject(fieldName));
-              }
-
-              return tuple;
-            }
-
-          },
-          RESULTS);
+      return new Each(pipe, orderFields(orderedFields), RESULTS);
     }
 
+  }
+
+  public static class ReorderFields extends SubAssembly {
+
+    public ReorderFields(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields targetFields,
+        @NonNull final Fields orderedFields) {
+      checkArgument(
+          targetFields.size() == orderedFields.size(),
+          "Target fields are expected to have the same size as the re-ordered fields: '%s' != '%s'",
+          targetFields.size(), orderedFields.size());
+      setTails(process(pipe, targetFields, orderedFields));
+    }
+
+    private static Each process(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields targetFields,
+        @NonNull final Fields orderedFields) {
+      return new Each(pipe, targetFields, orderFields(orderedFields), REPLACE);
+    }
+
+  }
+
+  public static class SwapFields extends ReorderFields {
+
+    public SwapFields(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields targetFields) {
+      super(pipe, targetFields, swapTwoFields(targetFields));
+    }
+
+  }
+
+  private static Function<Void> orderFields(@NonNull final Fields orderedFields) {
+    return new BaseFunction<Void>(orderedFields) {
+
+      @Override
+      public void operate(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          FunctionCall<Void> functionCall) {
+        val entry = functionCall.getArguments();
+
+        functionCall
+            .getOutputCollector()
+            .add(getReorderedTuple(
+                entry,
+                getFieldDeclaration()));
+      }
+
+      private Tuple getReorderedTuple(
+          @NonNull final TupleEntry entry,
+          @NonNull final Fields orderedFields) {
+        val tuple = new Tuple();
+        for (val fieldName : getFieldNames(orderedFields)) {
+          checkState(contains(entry, fieldName),
+              "Expecting field '%s' to be present within '%s'", fieldName, entry);
+          tuple.add(entry.getObject(fieldName));
+        }
+
+        return tuple;
+      }
+
+    };
   }
 
 }

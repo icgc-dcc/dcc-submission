@@ -7,12 +7,13 @@ import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
-import static org.icgc.dcc.hadoop.cascading.Fields2.appendIfApplicable;
+import static org.icgc.dcc.hadoop.cascading.Fields2.appendFieldIfApplicable;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.FEATURE_TYPE_COMBINED_FIELDS;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.RELEASE_NAME_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
@@ -21,7 +22,8 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.val;
@@ -36,6 +38,8 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.HashCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReorderAllFields;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies.SwapFields;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Transformerge;
 import org.icgc.dcc.hadoop.cascading.operation.BaseFunction;
 
@@ -50,8 +54,9 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
@@ -59,21 +64,22 @@ public class PreComputation extends SubAssembly {
   private static final int NO_OBSERVATIONS_COUNT = 0;
 
   private final String releaseName;
-  private final String projectKey;
+  private final List<String> projectKeys;
   private final Iterable<FeatureType> featureTypesWithData;
-  private final Map<FileType, Integer> matchingFilePaths;
+  private final Table<String, FileType, Integer> matchingFilePathCounts;
 
   public PreComputation(
       @NonNull final String releaseName,
-      @NonNull final String projectKey,
-      @NonNull final Map<FileType, Integer> matchingFilePathCounts) {
+      @NonNull final Set<String> projectKeys,
+      @NonNull final Table<String, FileType, Integer> matchingFilePathCounts) {
     this.releaseName = releaseName;
-    this.projectKey = projectKey;
-    this.matchingFilePaths = matchingFilePathCounts;
+    this.projectKeys = ImmutableList.copyOf(projectKeys);
+    this.matchingFilePathCounts = matchingFilePathCounts;
     this.featureTypesWithData = ImmutableSet.copyOf( // To make it serializable
         DataTypes.getFeatureTypes(
             FileType.getDataTypes(
-                matchingFilePathCounts.keySet())));
+                matchingFilePathCounts
+                    .columnKeySet())));
 
     setTails(processProject());
   }
@@ -87,32 +93,26 @@ public class PreComputation extends SubAssembly {
         // Field/value to be inserted
         keyValuePair(RELEASE_NAME_FIELD, releaseName),
 
-        // Insert project ID
-        new Insert(
+        new Each(
+            new ReadableHashJoin(JoinData.builder()
 
-            // Field/value to be inserted
-            keyValuePair(PROJECT_ID_FIELD, projectKey),
+                // Left-join in order to keep track of clinical data with no observations as well
+                .leftJoin()
 
-            new Each(
-                new ReadableHashJoin(JoinData.builder()
+                .leftPipe(processClinical())
+                .rightPipe(processFeatureTypes())
 
-                    // Left-join in order to keep track of clinical data with no observations as well
-                    .leftJoin()
+                .joinFields(PROJECT_ID_FIELD.append(SAMPLE_ID_FIELD))
 
-                    .leftPipe(processClinical())
-                    .rightPipe(processFeatureTypes())
+                .build()),
 
-                    .joinFields(SAMPLE_ID_FIELD)
-
-                    .build()),
-
-                // Outer join target fields
-                NONE.append(TYPE_FIELD)
-                    .append(ANALYSIS_ID_FIELD)
-                    .append(SEQUENCING_STRATEGY_FIELD)
-                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
-                new OuterJoinNullReplacer(),
-                REPLACE)));
+            // Outer join target fields
+            NONE.append(TYPE_FIELD)
+                .append(ANALYSIS_ID_FIELD)
+                .append(SEQUENCING_STRATEGY_FIELD)
+                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
+            new OuterJoinNullReplacer(),
+            REPLACE));
   }
 
   private Pipe processClinical() {
@@ -123,7 +123,7 @@ public class PreComputation extends SubAssembly {
         .leftPipe(processSpecimenFiles())
         .rightPipe(processSampleFiles())
 
-        .joinFields(SPECIMEN_ID_FIELD)
+        .joinFields(PROJECT_ID_FIELD.append(SPECIMEN_ID_FIELD))
 
         .build());
   }
@@ -139,11 +139,13 @@ public class PreComputation extends SubAssembly {
   private Pipe processFeatureTypes() {
     return new Transformerge<FeatureType>(
         featureTypesWithData,
-        new Function<FeatureType, Pipe>() {
+        new com.google.common.base.Function<FeatureType, Pipe>() {
 
           @Override
           public Pipe apply(FeatureType featureType) {
-            return processFeatureType(featureType);
+            return new ReorderAllFields( // TODO: move to Transformerge directly
+                processFeatureType(featureType),
+                FEATURE_TYPE_COMBINED_FIELDS);
           }
 
         });
@@ -165,24 +167,28 @@ public class PreComputation extends SubAssembly {
             .innerJoin()
 
             .leftPipe(processPrimaryFiles(featureType))
-            .rightPipe(
+            .rightPipe(processMetaFiles(featureType))
 
-                // Meta files
-                normalizeSequencingStrategies(
-                    processFiles(featureType.getMetaFileType(),
-                        appendIfApplicable(
-                            ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
-                            hasSequencingStrategy(featureType),
-                            SEQUENCING_STRATEGY_FIELD)),
-
-                    featureType.hasSequencingStrategy(),
-
-                    // Use feature type as replacement for a sequencing strategy if need be
-                    getDataTypeValue(featureType)))
-
-            .joinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
+            .joinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(SAMPLE_ID_FIELD))
 
             .build()));
+  }
+
+  private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
+    return normalizeSequencingStrategies(
+        processFiles(
+            featureType.getMetaFileType(),
+
+            // Retained fields
+            appendFieldIfApplicable(
+                ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
+                hasSequencingStrategy(featureType),
+                SEQUENCING_STRATEGY_FIELD)),
+
+        featureType.hasSequencingStrategy(),
+
+        // Use feature type as replacement for a sequencing strategy if need be
+        getDataTypeValue(featureType));
   }
 
   private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {
@@ -194,7 +200,7 @@ public class PreComputation extends SubAssembly {
         .pipe(processFiles(
             featureType.getPrimaryFileType(),
             ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD)))
-        .countByFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
+        .countByFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(SAMPLE_ID_FIELD))
         .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
         .build());
@@ -204,22 +210,30 @@ public class PreComputation extends SubAssembly {
   private Pipe processFiles(
       @NonNull final FileType fileType,
       @NonNull final Fields retainedFields) {
-    val pipes = new Pipe[matchingFilePaths.get(fileType)];
-    for (int fileNumber = 0; fileNumber < pipes.length; fileNumber++) {
-      pipes[fileNumber] = processFile(fileType, fileNumber, retainedFields);
+    val projectPipes = new Pipe[projectKeys.size()];
+    for (int projectNumber = 0; projectNumber < projectPipes.length; projectNumber++) {
+      val projectKey = projectKeys.get(projectNumber);
+
+      val filePipes = new Pipe[matchingFilePathCounts.get(projectKey, fileType)];
+      for (int fileNumber = 0; fileNumber < filePipes.length; fileNumber++) {
+        filePipes[fileNumber] = new Retain(
+            new Pipe(
+                getHeadPipeName(projectKey, fileType, fileNumber)),
+            retainedFields);
+      }
+
+      projectPipes[projectNumber] =
+
+          // Insert project ID
+          new Insert(
+
+              // Field/value to be inserted
+              keyValuePair(PROJECT_ID_FIELD, projectKey),
+
+              new Merge(filePipes));
     }
 
-    return new Merge(pipes);
-  }
-
-  private Pipe processFile(
-      @NonNull final FileType fileType,
-      final int fileNumber,
-      @NonNull final Fields retainedFields) {
-    return new Retain(
-        new Pipe(
-            getHeadPipeName(projectKey, fileType, fileNumber)),
-        retainedFields);
+    return new Merge(projectPipes);
   }
 
   /**
@@ -233,10 +247,11 @@ public class PreComputation extends SubAssembly {
         pipe :
 
         // Insert a "fake" sequencing strategy to make it look uniform
-        new Insert(
-            keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
-            pipe
-        );
+        new SwapFields(
+            new Insert(
+                keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
+                pipe),
+            PROJECT_ID_FIELD.append(SEQUENCING_STRATEGY_FIELD));
   }
 
   /**

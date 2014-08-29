@@ -37,9 +37,11 @@ import com.google.common.collect.ImmutableList;
 public class ProjectDataTypeEntity extends SubAssembly {
 
   public ProjectDataTypeEntity(
+      Pipe p,
       @NonNull final String releaseName,
-      @NonNull final String projectKey,
-      @NonNull final Pipe preComputationTable) {
+      @NonNull final String projectKey) {
+    val preComputationTable = p;
+
     val preProcessedAll = PreProcessing.preProcess(
         preComputationTable,
         PROJECT_ID_FIELD);

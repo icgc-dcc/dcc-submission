@@ -64,14 +64,10 @@ public class Pipes implements Named {
   }
 
   public static String getName(Identifiable... identifiables) {
-    return getName(transform(asList(identifiables), getId()));
+    return getNameInternal(transform(asList(identifiables), getId()));
   }
 
-  public static String getName(Class<?> clazz, Object... qualifiers) {
-    return getName(clazz.getSimpleName(), getName(qualifiers));
-  }
-
-  private static String getName(Object... qualifiers) {
+  private static String getNameInternal(Iterable<String> qualifiers) {
     return DASH.join(INTERNAL.getName(), DASH.join(qualifiers));
   }
 

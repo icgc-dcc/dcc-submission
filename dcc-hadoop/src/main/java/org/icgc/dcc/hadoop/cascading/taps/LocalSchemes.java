@@ -25,6 +25,7 @@ import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstObject;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.TSV_DELIMITER;
+import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.noHeader;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.withHeader;
 
 import java.io.IOException;
@@ -60,6 +61,12 @@ class LocalSchemes {
 
   static final TextLine getTextLine() {
     return new TextLine();
+  }
+
+  static final Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getNoCompressionTsvNoHeader() {
+    return new TextDelimited(
+        noHeader(),
+        TSV_DELIMITER);
   }
 
   static final Scheme<Properties, InputStream, OutputStream, LineNumberReader, PrintWriter> getNoCompressionTsvWithHeader() {

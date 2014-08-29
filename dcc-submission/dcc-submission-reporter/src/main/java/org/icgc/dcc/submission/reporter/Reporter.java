@@ -95,36 +95,51 @@ public class Reporter {
     log.info("Gathering reports for '{}.{}': '{}' ('{}')",
         new Object[] { releaseName, projectKeys, reporterInput, mapping });
 
-    // Main processing
+    val tempDirPath = createTempDir().getAbsolutePath();
+    val connector = new ReporterConnector(FileSystems.isLocal(hadoopProperties), tempDirPath);
+
+    val preComputationCascade = connector.connectPreComputationCascade(
+        reporterInput,
+        releaseName,
+        new PreComputation(
+            releaseName, projectKeys, reporterInput.getMatchingFilePathCounts()),
+        hadoopProperties);
+
+    log.info("Running cascade");
+    preComputationCascade.complete();
+
+    val preComputationTable = getPreComputationTablePipe();
     val projectDataTypeEntities = Maps.<String, Pipe> newLinkedHashMap();
     val projectSequencingStrategies = Maps.<String, Pipe> newLinkedHashMap();
     for (val projectKey : projectKeys) {
-      val preComputationTable = new PreComputation(
-          releaseName, projectKey, reporterInput.getMatchingFilePathCounts(projectKey));
-      val projectDataTypeEntity = new ProjectDataTypeEntity(releaseName, projectKey, preComputationTable);
+      val projectDataTypeEntity = new ProjectDataTypeEntity(preComputationTable, releaseName, projectKey);
       val projectSequencingStrategy = new ProjectSequencingStrategy(
-          releaseName, projectKey, preComputationTable, mapping.keySet());
+          preComputationTable, releaseName, projectKey, mapping.keySet());
 
       projectDataTypeEntities.put(projectKey, projectDataTypeEntity);
       projectSequencingStrategies.put(projectKey, projectSequencingStrategy);
     }
 
-    val tempDirPath = createTempDir().getAbsolutePath();
-    val connectCascade = new ReporterConnector(
-        FileSystems.isLocal(hadoopProperties),
-        tempDirPath)
-        .connectCascade(
-            reporterInput,
-            releaseName,
-            projectDataTypeEntities,
-            projectSequencingStrategies,
-            hadoopProperties);
+    val cascade = connector.connectFinalCascade(
+        releaseName,
+        reporterInput.getProjectKeys(),
+        preComputationTable,
+        projectDataTypeEntities,
+        projectSequencingStrategies,
+        hadoopProperties);
 
     log.info("Running cascade");
-    connectCascade.complete();
+    cascade.complete();
 
     log.info("Output dir: '{}'", tempDirPath);
     return tempDirPath;
+  }
+
+  private static Pipe getPreComputationTablePipe() {
+    return new Pipe(
+        Pipes.getName(
+            Identifiables.fromStrings(
+                PreComputation.class.getSimpleName())));
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
@@ -134,17 +149,22 @@ public class Reporter {
         Identifiables.fromInteger(fileNumber));
   }
 
-  public static String getOutputFilePath(
-      String outputDirPath, Identifiable type, String releaseName, String projectKey) {
-    return PATH.join(outputDirPath, getOutputFileName(type, releaseName, projectKey));
+  public static String getFilePath(
+      String outputDirPath, Identifiable type, String releaseName, Optional<String> projectKey) {
+    return PATH.join(outputDirPath, getFileName(type, releaseName, projectKey));
   }
 
-  public static String getOutputFileName(Identifiable type, String releaseName, String projectKey) {
-    return EXTENSION.join(
-        type.getId(),
-        releaseName,
-        projectKey,
-        TSV);
+  public static String getFileName(Identifiable type, String releaseName, Optional<String> projectKey) {
+    return projectKey.isPresent() ?
+        EXTENSION.join(
+            type.getId(),
+            releaseName,
+            projectKey.get(),
+            TSV) :
+        EXTENSION.join(
+            type.getId(),
+            releaseName,
+            TSV);
   }
 
   private static Map<String, String> getSequencingStrategyMapping(

@@ -59,6 +59,11 @@ public class DistributedTaps implements CascadingTaps {
   }
 
   @Override
+  public Tap<?, ?, ?> getNoCompressionTsvNoHeader(@NonNull final String path) {
+    return Static.getNoCompressionTsvNoHeader(path);
+  }
+
+  @Override
   public Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
     return Static.getNoCompressionTsvWithHeader(path);
   }
@@ -121,6 +126,13 @@ public class DistributedTaps implements CascadingTaps {
     public static Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
       return new Hfs(
           HadoopSchemes.getNoCompressionTsvWithHeader(),
+          path);
+    }
+
+    public static Tap<?, ?, ?> getNoCompressionTsvNoHeader(
+        @NonNull final String path) {
+      return new Hfs(
+          HadoopSchemes.getNoCompressionTsvNoHeader(),
           path);
     }
 

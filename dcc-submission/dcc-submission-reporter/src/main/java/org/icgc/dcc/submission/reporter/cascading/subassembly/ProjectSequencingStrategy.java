@@ -39,17 +39,18 @@ public class ProjectSequencingStrategy extends SubAssembly {
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
 
   public ProjectSequencingStrategy(
+      Pipe p,
       @NonNull final String releaseName,
       @NonNull final String projectKey,
-      @NonNull final Pipe preComputationTable,
       @NonNull final Set<String> codes) {
 
-    setTails(process(preComputationTable, getTranspositionFields(codes)));
+    setTails(process(p, getTranspositionFields(codes)));
   }
 
   private static Pipe process(
-      @NonNull final Pipe preComputationTable,
+      Pipe p,
       @NonNull final Fields transpositionFields) {
+    val preComputationTable = p;
 
     return new ReadableHashJoin(JoinData.builder()
 
@@ -90,9 +91,7 @@ public class ProjectSequencingStrategy extends SubAssembly {
                             PROJECT_ID_FIELD
                                 .append(SEQUENCING_STRATEGY_FIELD)
                                 .append(DONOR_ID_FIELD))
-                        .countByFields(
-                            PROJECT_ID_FIELD
-                                .append(SEQUENCING_STRATEGY_FIELD))
+                        .countByFields(PROJECT_ID_FIELD.append(SEQUENCING_STRATEGY_FIELD))
                         .resultCountField(getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD))
 
                         .build())),

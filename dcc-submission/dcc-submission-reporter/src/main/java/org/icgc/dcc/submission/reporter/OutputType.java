@@ -4,6 +4,7 @@ import org.icgc.dcc.core.model.Identifiable;
 
 public enum OutputType implements Identifiable {
 
+  PRE_COMPUTATION,
   DONOR,
   SPECIMEN,
   SAMPLE,

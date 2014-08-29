@@ -70,6 +70,11 @@ public final class LocalTaps implements CascadingTaps {
   }
 
   @Override
+  public Tap<?, ?, ?> getNoCompressionTsvNoHeader(String path) {
+    return Static.getNoCompressionTsvNoHeader(path);
+  }
+
+  @Override
   public Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
     return Static.getNoCompressionTsvWithHeader(path);
   }
@@ -119,6 +124,12 @@ public final class LocalTaps implements CascadingTaps {
     public static Tap<?, ?, ?> getNoCompressionNoHeaderNonStrictTsv(@NonNull final String path) {
       return new FileTap(
           newLocalLooseTsvScheme(),
+          path);
+    }
+
+    public static Tap<?, ?, ?> getNoCompressionTsvNoHeader(@NonNull final String path) {
+      return new FileTap(
+          LocalSchemes.getNoCompressionTsvNoHeader(),
           path);
     }
 

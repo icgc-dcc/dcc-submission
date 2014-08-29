@@ -51,7 +51,7 @@ public class ReporterCollector {
       @NonNull final OutputType outputType,
       @NonNull final Optional<Map<String, String>> mapping) {
 
-    val outputFilePath = Reporter.getOutputFilePath(outputDirPath, outputType, releaseName, projectKey);
+    val outputFilePath = Reporter.getFilePath(outputDirPath, outputType, releaseName, Optional.of(projectKey));
     val iterator = readSmallTextFile(fileSystem, new Path(outputFilePath)).iterator();
     val headerLine = iterator.next();
     val headers = getTsvHeaders(headerLine);
