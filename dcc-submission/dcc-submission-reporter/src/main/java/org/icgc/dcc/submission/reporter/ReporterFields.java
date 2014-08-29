@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.reporter;
 
-import static cascading.tuple.Fields.NONE;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
@@ -27,11 +26,7 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
 
 import org.icgc.dcc.core.model.FieldNames.ReporterFieldNames;
 
@@ -60,32 +55,10 @@ public final class ReporterFields {
   public static final Fields SEQUENCING_STRATEGY_COUNT_FIELD = getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD);
   public static final Fields _ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart("analysis_observation");
 
-  public static final Fields REDUNDANT_DONOR_ID_FIELD = getTemporaryCountByFields(PROJECT_ID_FIELD, OutputType.DONOR);
-  public static final Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
-  public static final Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
-  public static final Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
-
   public static final Iterable<Fields> PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS = ImmutableList.of(
       DONOR_UNIQUE_COUNT_FIELD,
       SPECIMEN_UNIQUE_COUNT_FIELD,
       SAMPLE_UNIQUE_COUNT_FIELD,
       _ANALYSIS_OBSERVATION_COUNT_FIELD);
-
-  public static Fields getTemporaryCountByFields(
-      @NonNull final Fields countByFields,
-      @NonNull final OutputType outputType) {
-    Fields temporaryCountByFields = NONE;
-    for (val fieldName : getFieldNames(countByFields)) {
-      temporaryCountByFields = temporaryCountByFields.append(getTemporaryField(fieldName, outputType));
-    }
-
-    return temporaryCountByFields;
-  }
-
-  public static Fields getTemporaryField(
-      @NonNull final String fieldName,
-      @NonNull final OutputType outputType) {
-    return getRedundantFieldCounterpart(outputType, fieldName);
-  }
 
 }

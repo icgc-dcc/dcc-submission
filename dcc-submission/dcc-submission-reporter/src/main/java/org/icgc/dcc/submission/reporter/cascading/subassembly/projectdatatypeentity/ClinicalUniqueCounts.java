@@ -26,7 +26,6 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
 import lombok.NonNull;
 import lombok.val;
 
@@ -42,7 +41,6 @@ import cascading.operation.FilterCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
-import cascading.pipe.assembly.Rename;
 import cascading.tuple.Fields;
 
 public class ClinicalUniqueCounts extends SubAssembly {
@@ -102,23 +100,20 @@ public class ClinicalUniqueCounts extends SubAssembly {
       @NonNull final Pipe preComputationTable,
       @NonNull final OutputType outputType,
       @NonNull final Fields countByFields,
-      @NonNull final Fields clinicalIdField) {
-    checkFieldsCardinalityOne(clinicalIdField);
+      @NonNull final Fields clinicalIdCountField) {
+    checkFieldsCardinalityOne(clinicalIdCountField);
 
     return new NamingPipe(
         outputType,
 
-        new Rename(
-            new UniqueCountBy(UniqueCountByData.builder()
+        new UniqueCountBy(UniqueCountByData.builder()
 
-                .pipe(preComputationTable)
-                .uniqueFields(countByFields.append(clinicalIdField))
-                .countByFields(countByFields)
-                .resultCountField(getCountFieldCounterpart(clinicalIdField))
+            .pipe(preComputationTable)
+            .uniqueFields(countByFields.append(clinicalIdCountField))
+            .countByFields(countByFields)
+            .resultCountField(getCountFieldCounterpart(clinicalIdCountField))
 
-                .build()),
-            countByFields,
-            getTemporaryCountByFields(countByFields, outputType)));
+            .build()));
   }
 
   private static Each filterAllTypes(

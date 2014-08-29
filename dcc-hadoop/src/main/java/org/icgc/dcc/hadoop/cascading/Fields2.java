@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static cascading.tuple.Fields.NONE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
@@ -160,6 +161,33 @@ public final class Fields2 {
 
   public static Fields getCountFieldCounterpart(String fieldName) {
     return new Fields(ADD_COUNT_SUFFIX.apply(fieldName));
+  }
+
+  public static Fields getCountFieldCounterpart(
+      @NonNull final Enum<?> type,
+      @NonNull final String fieldName) {
+    return new Fields(ADD_COUNT_SUFFIX.apply(UNDERSCORE.join(type.name().toLowerCase(), fieldName)));
+  }
+
+  public static Fields getTemporaryCountByFields(
+      @NonNull final Fields countByFields,
+      @NonNull final Enum<?> type) {
+    Fields temporaryCountByFields = NONE;
+    for (val fieldName : getFieldNames(countByFields)) {
+      temporaryCountByFields = temporaryCountByFields.append(
+          getCountFieldCounterpart(type, fieldName));
+    }
+
+    return temporaryCountByFields;
+  }
+
+  public static Fields getRedundantFieldCounterparts(Fields fields) {
+    Fields redundantFields = NONE;
+    for (val fieldName : getFieldNames(fields)) {
+      redundantFields = redundantFields.append(getRedundantFieldCounterpart(fieldName));
+    }
+
+    return redundantFields;
   }
 
   public static Fields getRedundantFieldCounterpart(Fields field) {

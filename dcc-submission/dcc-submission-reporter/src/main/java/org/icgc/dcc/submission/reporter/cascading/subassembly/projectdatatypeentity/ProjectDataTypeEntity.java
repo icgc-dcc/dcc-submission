@@ -3,6 +3,7 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeen
 import static cascading.tuple.Fields.NONE;
 import static com.google.common.collect.Iterables.toArray;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getTemporaryCountByFields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
 import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
@@ -15,7 +16,6 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_UNIQUE_COUN
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
@@ -71,6 +71,7 @@ public class ProjectDataTypeEntity extends SubAssembly {
     private static Pipe preProcess(
         @NonNull final Pipe preComputationTable,
         @NonNull final Fields countByFields) {
+
       val temporaryDonorCountByFields = getTemporaryCountByFields(countByFields, DONOR);
       val temporarySpecimenCountByFields = getTemporaryCountByFields(countByFields, SPECIMEN);
       val temporarySampleCountByFields = getTemporaryCountByFields(countByFields, SAMPLE);
@@ -83,11 +84,19 @@ public class ProjectDataTypeEntity extends SubAssembly {
                   toArray(
                       ImmutableList.<Pipe> builder()
 
-                          .add(ClinicalUniqueCounts.donors(preComputationTable, countByFields))
-                          .add(ClinicalUniqueCounts.specimens(preComputationTable, countByFields))
-                          .add(ClinicalUniqueCounts.samples(preComputationTable, countByFields))
+                          .add(new Rename(
+                              ClinicalUniqueCounts.donors(preComputationTable, countByFields),
+                              countByFields, temporaryDonorCountByFields))
+                          .add(new Rename(
+                              ClinicalUniqueCounts.specimens(preComputationTable, countByFields),
+                              countByFields, temporarySpecimenCountByFields))
+                          .add(new Rename(
+                              ClinicalUniqueCounts.samples(preComputationTable, countByFields),
+                              countByFields, temporarySampleCountByFields))
 
-                          .add(ObservationCounts.observations(preComputationTable, countByFields))
+                          .add(new Rename(
+                              ObservationCounts.observations(preComputationTable, countByFields),
+                              countByFields, temporaryObservationCountByFields))
 
                           .build(),
                       Pipe.class),

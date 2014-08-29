@@ -5,7 +5,6 @@ import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
@@ -57,12 +56,10 @@ public class ProjectSequencingStrategy extends SubAssembly {
         .leftPipe(ClinicalUniqueCounts.allDonors(
             preComputationTable,
             PROJECT_ID_FIELD))
-        .leftJoinFields(REDUNDANT_DONOR_ID_FIELD)
+        .leftJoinFields(PROJECT_ID_FIELD)
 
         .rightPipe(processSequencingStrategies(preComputationTable, transpositionFields))
         .rightJoinFields(PROJECT_ID_FIELD)
-
-        .discardFields(REDUNDANT_DONOR_ID_FIELD)
 
         .build());
   }

@@ -30,6 +30,7 @@ import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterparts;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.contains;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
@@ -66,6 +67,7 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.SumBy;
 import cascading.pipe.assembly.Unique;
@@ -490,19 +492,25 @@ public class SubAssemblies {
 
     public ReadableHashJoin(JoinData joinData) {
       // TODO: add checks on cardinalities
-      setTails(
 
-      //
-      new Discard(
-
-          //
+      setTails(joinData.hasJoinFieldsCollision() ?
+          new Discard(
+              new HashJoin(
+                  new Rename(
+                      joinData.leftPipe,
+                      joinData.leftJoinFields,
+                      joinData.getTemporaryLeftJoinFields()),
+                  joinData.getTemporaryLeftJoinFields(),
+                  joinData.rightPipe,
+                  joinData.rightJoinFields,
+                  joinData.joiner),
+              joinData.getTemporaryLeftJoinFields()) :
           new HashJoin(
               joinData.leftPipe,
               joinData.leftJoinFields,
               joinData.rightPipe,
               joinData.rightJoinFields,
-              joinData.joiner),
-          joinData.discardFields));
+              joinData.joiner));
     }
 
     /**
@@ -520,7 +528,13 @@ public class SubAssemblies {
       Pipe rightPipe;
       Fields rightJoinFields;
 
-      Fields discardFields; // TODO: build it in
+      public boolean hasJoinFieldsCollision() {
+        return leftJoinFields.equals(rightJoinFields);
+      }
+
+      public Fields getTemporaryLeftJoinFields() {
+        return getRedundantFieldCounterparts(leftJoinFields);
+      }
 
     }
 

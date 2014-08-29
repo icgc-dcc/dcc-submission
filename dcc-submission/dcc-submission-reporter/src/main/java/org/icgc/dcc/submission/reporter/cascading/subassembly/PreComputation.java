@@ -14,9 +14,6 @@ import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_ANALYSIS_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SAMPLE_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.RELEASE_NAME_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
@@ -48,7 +45,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
-import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.LeftJoin;
@@ -112,9 +108,7 @@ public class PreComputation extends SubAssembly {
                         .leftJoinFields(SAMPLE_ID_FIELD)
 
                         .rightPipe(processFeatureTypes())
-                        .rightJoinFields(REDUNDANT_SAMPLE_ID_FIELD)
-
-                        .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
+                        .rightJoinFields(SAMPLE_ID_FIELD)
 
                         .build()),
 
@@ -136,21 +130,16 @@ public class PreComputation extends SubAssembly {
             .joiner(new InnerJoin())
 
             .leftPipe(processSpecimenFiles())
-            .leftJoinFields(REDUNDANT_SPECIMEN_ID_FIELD)
+            .leftJoinFields(SPECIMEN_ID_FIELD)
 
             .rightPipe(processSampleFiles())
             .rightJoinFields(SPECIMEN_ID_FIELD)
-
-            .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
 
             .build());
   }
 
   private Pipe processSpecimenFiles() {
-    return new Rename(
-        processFiles(SPECIMEN_TYPE, DONOR_ID_FIELD.append(SPECIMEN_ID_FIELD)),
-        SPECIMEN_ID_FIELD,
-        REDUNDANT_SPECIMEN_ID_FIELD);
+    return processFiles(SPECIMEN_TYPE, DONOR_ID_FIELD.append(SPECIMEN_ID_FIELD));
   }
 
   private Pipe processSampleFiles() {
@@ -158,7 +147,7 @@ public class PreComputation extends SubAssembly {
   }
 
   private Pipe processFeatureTypes() {
-    return new Rename(new Transformerge<FeatureType>(
+    return new Transformerge<FeatureType>(
         featureTypesWithData,
         new Function<FeatureType, Pipe>() {
 
@@ -167,9 +156,7 @@ public class PreComputation extends SubAssembly {
             return processFeatureType(featureType);
           }
 
-        }),
-        SAMPLE_ID_FIELD,
-        REDUNDANT_SAMPLE_ID_FIELD);
+        });
   }
 
   private Pipe processFeatureType(@NonNull final FeatureType featureType) {
@@ -206,9 +193,7 @@ public class PreComputation extends SubAssembly {
 
                         // Use feature type as replacement for a sequencing strategy if need be
                         getDataTypeValue(featureType)))
-                .rightJoinFields(REDUNDANT_ANALYSIS_ID_FIELD.append(REDUNDANT_SAMPLE_ID_FIELD))
-
-                .discardFields(REDUNDANT_ANALYSIS_ID_FIELD.append(REDUNDANT_SAMPLE_ID_FIELD))
+                .rightJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
 
                 .build()));
   }
@@ -257,17 +242,14 @@ public class PreComputation extends SubAssembly {
       @NonNull final Pipe pipe,
       final boolean hasSequencingStrategy,
       @NonNull final String replacement) {
-    return new Rename(
-        hasSequencingStrategy ?
-            pipe :
+    return hasSequencingStrategy ?
+        pipe :
 
-            // Insert a "fake" sequencing strategy to make it look uniform
-            new Insert(
-                keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
-                pipe
-            ),
-        ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
-        REDUNDANT_ANALYSIS_ID_FIELD.append(REDUNDANT_SAMPLE_ID_FIELD));
+        // Insert a "fake" sequencing strategy to make it look uniform
+        new Insert(
+            keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
+            pipe
+        );
   }
 
   /**

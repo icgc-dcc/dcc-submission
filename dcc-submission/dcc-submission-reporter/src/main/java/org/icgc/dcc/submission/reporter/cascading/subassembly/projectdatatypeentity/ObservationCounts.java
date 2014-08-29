@@ -19,14 +19,12 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeen
 
 import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
 import lombok.NonNull;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
 
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
-import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.SumBy;
 import cascading.tuple.Fields;
 
@@ -51,16 +49,11 @@ public class ObservationCounts extends SubAssembly {
     return new NamingPipe(
         OBSERVATION,
 
-        new Rename(
-
-            new SumBy(
-                preComputationTable,
-                countByFields,
-                _ANALYSIS_OBSERVATION_COUNT_FIELD,
-                _ANALYSIS_OBSERVATION_COUNT_FIELD,
-                long.class),
+        new SumBy(
+            preComputationTable,
             countByFields,
-            getTemporaryCountByFields(countByFields, OBSERVATION)));
+            _ANALYSIS_OBSERVATION_COUNT_FIELD,
+            _ANALYSIS_OBSERVATION_COUNT_FIELD,
+            long.class));
   }
-
 }
