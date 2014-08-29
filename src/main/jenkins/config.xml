@@ -3,41 +3,20 @@
   <disabledAdministrativeMonitors>
     <string>jenkins.security.RekeySecretAdminMonitor</string>
   </disabledAdministrativeMonitors>
-  <version>1.517</version>
+  <version>1.572</version>
   <numExecutors>1</numExecutors>
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
-  <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy"/>
-  <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.4">
-    <server>ldap://10.0.0.100</server>
-    <rootDN></rootDN>
-    <inhibitInferRootDN>true</inhibitInferRootDN>
-    <userSearchBase>dc=oicr,dc=on,dc=ca</userSearchBase>
-    <userSearch>uid={0}</userSearch>
-    <groupSearchBase>ou=Groups,dc=oicr,dc=on,dc=ca</groupSearchBase>
-    <disableMailAddressResolver>false</disableMailAddressResolver>
-  </securityRealm>
+  <authorizationStrategy class="hudson.security.AuthorizationStrategy$Unsecured"/>
+  <securityRealm class="hudson.security.SecurityRealm$None"/>
+  <disableRememberMe>false</disableRememberMe>
   <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
   <workspaceDir>${ITEM_ROOTDIR}/workspace</workspaceDir>
   <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
-  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter">
+  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter" plugin="antisamy-markup-formatter@1.2">
     <disableSyntaxHighlighting>false</disableSyntaxHighlighting>
   </markupFormatter>
   <jdks>
-    <jdk>
-      <name>Java 6</name>
-      <home></home>
-      <properties>
-        <hudson.tools.InstallSourceProperty>
-          <installers>
-            <hudson.tools.JDKInstaller>
-              <id>jdk-6u38-oth-JPR</id>
-              <acceptLicense>true</acceptLicense>
-            </hudson.tools.JDKInstaller>
-          </installers>
-        </hudson.tools.InstallSourceProperty>
-      </properties>
-    </jdk>
     <jdk>
       <name>Java 7</name>
       <home></home>
@@ -45,7 +24,7 @@
         <hudson.tools.InstallSourceProperty>
           <installers>
             <hudson.tools.JDKInstaller>
-              <id>jdk-7u11-oth-JPR</id>
+              <id>jdk-7u65-oth-JPR</id>
               <acceptLicense>true</acceptLicense>
             </hudson.tools.JDKInstaller>
           </installers>
@@ -58,7 +37,7 @@
   <clouds/>
   <slaves/>
   <quietPeriod>5</quietPeriod>
-  <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+  <scmCheckoutRetryCount>1</scmCheckoutRetryCount>
   <views>
     <hudson.model.AllView>
       <owner class="hudson" reference="../../.."/>
@@ -77,7 +56,7 @@
         <comparator class="hudson.util.CaseInsensitiveComparator"/>
         <string>dcc-develop-branch</string>
         <string>dcc-master-branch</string>
-        <string>dcc-pull-requests</string>
+        <string>dcc-pr</string>
       </jobNames>
       <jobFilters/>
       <columns>
@@ -91,8 +70,68 @@
       </columns>
       <recurse>false</recurse>
     </listView>
+    <hudson.plugins.view.dashboard.Dashboard plugin="dashboard-view@2.9.3">
+      <owner class="hudson" reference="../../.."/>
+      <name>Statistics</name>
+      <description>Displays build stats</description>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames>
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <string>dcc-develop-branch</string>
+        <string>dcc-master-branch</string>
+        <string>dcc-pr</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <recurse>false</recurse>
+      <useCssStyle>false</useCssStyle>
+      <includeStdJobList>false</includeStdJobList>
+      <leftPortletWidth>50%</leftPortletWidth>
+      <rightPortletWidth>50%</rightPortletWidth>
+      <leftPortlets/>
+      <rightPortlets/>
+      <topPortlets>
+        <hudson.plugins.analysis.collector.dashboard.WarningsTablePortlet plugin="analysis-collector@1.41">
+          <id>dashboard_portlet_4367</id>
+          <name>Warnings per project</name>
+          <canHideZeroWarningsProjects>true</canHideZeroWarningsProjects>
+          <useImages>true</useImages>
+          <warningsAggregator>
+            <isCheckStyleActivated>false</isCheckStyleActivated>
+            <isDryActivated>true</isDryActivated>
+            <isFindBugsActivated>false</isFindBugsActivated>
+            <isPmdActivated>true</isPmdActivated>
+            <isOpenTasksActivated>true</isOpenTasksActivated>
+            <isWarningsActivated>true</isWarningsActivated>
+            <hideJobPrefix>false</hideJobPrefix>
+          </warningsAggregator>
+        </hudson.plugins.analysis.collector.dashboard.WarningsTablePortlet>
+        <hudson.plugins.dry.dashboard.WarningsTablePortlet plugin="dry@2.40">
+          <id>dashboard_portlet_7524</id>
+          <name>Duplicate code per project</name>
+          <canHideZeroWarningsProjects>false</canHideZeroWarningsProjects>
+        </hudson.plugins.dry.dashboard.WarningsTablePortlet>
+      </topPortlets>
+      <bottomPortlets>
+        <hudson.plugins.pmd.dashboard.WarningsTablePortlet plugin="pmd@3.38">
+          <id>dashboard_portlet_13604</id>
+          <name>PMD warnings per project</name>
+          <canHideZeroWarningsProjects>false</canHideZeroWarningsProjects>
+        </hudson.plugins.pmd.dashboard.WarningsTablePortlet>
+      </bottomPortlets>
+    </hudson.plugins.view.dashboard.Dashboard>
   </views>
-  <primaryView>All</primaryView>
+  <primaryView>DCC</primaryView>
   <slaveAgentPort>0</slaveAgentPort>
   <label></label>
   <nodeProperties/>
