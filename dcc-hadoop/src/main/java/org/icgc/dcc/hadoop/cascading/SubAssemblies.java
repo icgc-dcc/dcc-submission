@@ -21,6 +21,7 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static cascading.tuple.Fields.RESULTS;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.toArray;
@@ -29,6 +30,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.hadoop.cascading.Fields2.cloneFields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterparts;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
@@ -71,7 +73,11 @@ import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.SumBy;
 import cascading.pipe.assembly.Unique;
+import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.Joiner;
+import cascading.pipe.joiner.LeftJoin;
+import cascading.pipe.joiner.OuterJoin;
+import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -492,6 +498,7 @@ public class SubAssemblies {
 
     public ReadableHashJoin(JoinData joinData) {
       // TODO: add checks on cardinalities
+      validateJoiner(joinData.joiner);
 
       setTails(joinData.hasJoinFieldsCollision() ?
           new Discard(
@@ -514,19 +521,105 @@ public class SubAssemblies {
     }
 
     /**
-     * TODO: offer innerJoin(), leftJoin(), ...?
+     * "Developers should thoroughly understand the limitations of this class"
+     * (http://docs.cascading.org/cascading/2.5/userguide/htmlsingle/#N20276).
      */
-    @Value
-    @Builder
+    private void validateJoiner(@NonNull final Joiner joiner) {
+      checkArgument(
+          !(joiner instanceof RightJoin),
+          "Cannot use a hash join in combination with a right join (see cascading documentation)");
+    }
+
     public static class JoinData { // TODO: add integrity check (cardinalities, ...)
 
-      Joiner joiner;
+      private Joiner joiner;
 
-      Pipe leftPipe;
-      Fields leftJoinFields;
+      private Pipe leftPipe;
+      private Fields leftJoinFields;
 
-      Pipe rightPipe;
-      Fields rightJoinFields;
+      private Pipe rightPipe;
+      private Fields rightJoinFields;
+
+      public static final class JoinDataBuilder {
+
+        private final JoinData joinData = new JoinData();
+
+        public JoinDataBuilder innerJoin() {
+          return setJoiner(new InnerJoin());
+        }
+
+        public JoinDataBuilder leftJoin() {
+          return setJoiner(new LeftJoin());
+        }
+
+        public JoinDataBuilder rightJoin() {
+          return setJoiner(new RightJoin());
+        }
+
+        public JoinDataBuilder outerJoin() {
+          return setJoiner(new OuterJoin());
+        }
+
+        private JoinDataBuilder setJoiner(@NonNull final Joiner joiner) {
+          checkState(
+              joinData.joiner == null,
+              "Joiner is already set: '%s'", joiner);
+          joinData.joiner = joiner;
+          return this;
+        }
+
+        public JoinDataBuilder leftPipe(@NonNull final Pipe leftPipe) {
+          checkState(
+              joinData.leftPipe == null,
+              "Left pipe is already set: '%s'", leftPipe);
+          joinData.leftPipe = leftPipe;
+          return this;
+        }
+
+        public JoinDataBuilder rightPipe(@NonNull final Pipe rightPipe) {
+          checkState(
+              joinData.leftPipe == null,
+              "Right pipe is already set: '%s'", rightPipe);
+          joinData.rightPipe = rightPipe;
+          return this;
+        }
+
+        public JoinDataBuilder joinFields(@NonNull final Fields joinFields) {
+          leftJoinFields(cloneFields(joinFields));
+          rightJoinFields(cloneFields(joinFields));
+          return this;
+        }
+
+        public JoinDataBuilder leftJoinFields(@NonNull final Fields leftJoinFields) {
+          checkState(
+              joinData.leftJoinFields == null,
+              "Left join fields are already set: '%s'", leftJoinFields);
+          joinData.leftJoinFields = leftJoinFields;
+          return this;
+        }
+
+        public JoinDataBuilder rightJoinFields(@NonNull final Fields rightJoinFields) {
+          checkState(
+              joinData.rightJoinFields == null,
+              "Right join fields are already set: '%s'", rightJoinFields);
+          joinData.rightJoinFields = rightJoinFields;
+          return this;
+        }
+
+        public JoinData build() {
+          checkNotNull(joinData.joiner);
+          checkNotNull(joinData.leftPipe);
+          checkNotNull(joinData.leftJoinFields);
+          checkNotNull(joinData.rightPipe);
+          checkNotNull(joinData.rightJoinFields);
+          return joinData;
+        }
+
+      }
+
+      public static final JoinDataBuilder builder() {
+        return new JoinDataBuilder();
+      }
 
       public boolean hasJoinFieldsCollision() {
         return leftJoinFields.equals(rightJoinFields);

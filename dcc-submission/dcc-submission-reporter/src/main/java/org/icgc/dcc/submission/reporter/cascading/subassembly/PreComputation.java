@@ -46,8 +46,6 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Retain;
-import cascading.pipe.joiner.InnerJoin;
-import cascading.pipe.joiner.LeftJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -98,19 +96,18 @@ public class PreComputation extends SubAssembly {
             new Each(
 
                 //
-                new ReadableHashJoin(
-                    JoinData.builder()
+                new ReadableHashJoin(JoinData.builder()
 
-                        // Left-join in order to keep track of clinical data with no observations as well
-                        .joiner(new LeftJoin())
+                    // Left-join in order to keep track of clinical data with no observations as well
+                    .leftJoin()
 
-                        .leftPipe(processClinical())
-                        .leftJoinFields(SAMPLE_ID_FIELD)
+                    .leftPipe(processClinical())
+                    .leftJoinFields(SAMPLE_ID_FIELD)
 
-                        .rightPipe(processFeatureTypes())
-                        .rightJoinFields(SAMPLE_ID_FIELD)
+                    .rightPipe(processFeatureTypes())
+                    .rightJoinFields(SAMPLE_ID_FIELD)
 
-                        .build()),
+                    .build()),
 
                 // Outer join target fields
                 NONE.append(TYPE_FIELD)
@@ -122,20 +119,17 @@ public class PreComputation extends SubAssembly {
   }
 
   private Pipe processClinical() {
-    return
+    return new ReadableHashJoin(JoinData.builder()
 
-    //
-    new ReadableHashJoin(
-        JoinData.builder()
-            .joiner(new InnerJoin())
+        .innerJoin()
 
-            .leftPipe(processSpecimenFiles())
-            .leftJoinFields(SPECIMEN_ID_FIELD)
+        .leftPipe(processSpecimenFiles())
+        .leftJoinFields(SPECIMEN_ID_FIELD)
 
-            .rightPipe(processSampleFiles())
-            .rightJoinFields(SPECIMEN_ID_FIELD)
+        .rightPipe(processSampleFiles())
+        .rightJoinFields(SPECIMEN_ID_FIELD)
 
-            .build());
+        .build());
   }
 
   private Pipe processSpecimenFiles() {
@@ -170,32 +164,30 @@ public class PreComputation extends SubAssembly {
         // Fields to insert
         keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
 
-        //
-        new ReadableHashJoin(
-            JoinData.builder()
+        new ReadableHashJoin(JoinData.builder()
 
-                .joiner(new InnerJoin())
+            .innerJoin()
 
-                .leftPipe(processPrimaryFiles(featureType))
-                .leftJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
+            .leftPipe(processPrimaryFiles(featureType))
+            .leftJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
 
-                .rightPipe(
+            .rightPipe(
 
-                    // Meta files
-                    normalizeSequencingStrategies(
-                        processFiles(featureType.getMetaFileType(),
-                            appendIfApplicable(
-                                ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
-                                hasSequencingStrategy(featureType),
-                                SEQUENCING_STRATEGY_FIELD)),
+                // Meta files
+                normalizeSequencingStrategies(
+                    processFiles(featureType.getMetaFileType(),
+                        appendIfApplicable(
+                            ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
+                            hasSequencingStrategy(featureType),
+                            SEQUENCING_STRATEGY_FIELD)),
 
-                        featureType.hasSequencingStrategy(),
+                    featureType.hasSequencingStrategy(),
 
-                        // Use feature type as replacement for a sequencing strategy if need be
-                        getDataTypeValue(featureType)))
-                .rightJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
+                    // Use feature type as replacement for a sequencing strategy if need be
+                    getDataTypeValue(featureType)))
+            .rightJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
 
-                .build()));
+            .build()));
   }
 
   private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {

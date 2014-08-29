@@ -53,9 +53,12 @@ public class ProjectSequencingStrategy extends SubAssembly {
 
     return new ReadableHashJoin(JoinData.builder()
 
-        .leftPipe(ClinicalUniqueCounts.allDonors(
-            preComputationTable,
-            PROJECT_ID_FIELD))
+        .innerJoin()
+
+        .leftPipe(
+            ClinicalUniqueCounts.allDonors(
+                preComputationTable,
+                PROJECT_ID_FIELD))
         .leftJoinFields(PROJECT_ID_FIELD)
 
         .rightPipe(processSequencingStrategies(preComputationTable, transpositionFields))
