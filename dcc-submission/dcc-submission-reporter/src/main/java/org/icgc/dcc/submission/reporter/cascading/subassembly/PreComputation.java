@@ -8,6 +8,7 @@ import static org.icgc.dcc.core.model.FeatureTypes.hasControlSampleId;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.model.SpecialValue.isMissingCode;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendFieldIfApplicable;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
@@ -69,6 +70,8 @@ import com.google.common.collect.Table;
 @Slf4j
 public class PreComputation extends SubAssembly {
 
+  private static final String CONTROL_SAMPLE_TYPE = "control";
+  private static final String TUMOUR_SAMPLE_TYPE = "tumour";
   private static final int NO_OBSERVATIONS_COUNT = 0;
 
   private final String releaseName;
@@ -114,13 +117,12 @@ public class PreComputation extends SubAssembly {
                 .rightJoinFields(PROJECT_ID_FIELD.append(TUMOUR_SAMPLE_ID_FIELD))
 
                 .build()),
-
             // Outer join target fields
             NONE.append(TYPE_FIELD)
                 .append(ANALYSIS_ID_FIELD)
                 .append(SEQUENCING_STRATEGY_FIELD)
                 .append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
-            new OuterJoinNullReplacer(),
+            new OuterJoinOrphanReplacer(),
             REPLACE));
   }
 
@@ -171,17 +173,21 @@ public class PreComputation extends SubAssembly {
         // Fields to insert
         keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
 
-        new ReadableHashJoin(JoinData.builder()
+        new Each(
+            new ReadableHashJoin(JoinData.builder()
 
-            .innerJoin()
+                // Left join in order to keep the control sample ID
+                .leftJoin()
 
-            .leftPipe(processPrimaryFiles(featureType))
-            .leftJoinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
+                .leftPipe(processMetaFiles(featureType))
+                .rightPipe(processPrimaryFiles(featureType))
 
-            .rightPipe(processMetaFiles(featureType))
-            .rightJoinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(SAMPLE_ID_FIELD))
+                .joinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
 
-            .build()));
+                .build()),
+            SAMPLE_TYPE_FIELD.append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
+            new OuterJoinControlReplacer(),
+            REPLACE));
   }
 
   private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
@@ -206,7 +212,7 @@ public class PreComputation extends SubAssembly {
     return hasControlSampleId(featureType).evaluate() ?
         pivotSamples(metaFiles) :
         new Insert(
-            keyValuePair(SAMPLE_TYPE_FIELD, "tumour"),
+            keyValuePair(SAMPLE_TYPE_FIELD, TUMOUR_SAMPLE_TYPE),
             metaFiles);
   }
 
@@ -240,12 +246,16 @@ public class PreComputation extends SubAssembly {
                     val entry = functionCall.getArguments();
                     val outputCollector = functionCall.getOutputCollector();
 
+                    val controlSampleId = entry.getString(CONTROL_SAMPLE_ID_FIELD);
                     outputCollector.add(new Tuple(
                         entry.getString(TUMOUR_SAMPLE_ID_FIELD),
-                        "tumour"));
-                    outputCollector.add(new Tuple(
-                        entry.getString(CONTROL_SAMPLE_ID_FIELD),
-                        "control"));
+                        TUMOUR_SAMPLE_TYPE));
+
+                    if (!isMissingCode(controlSampleId)) {
+                      outputCollector.add(new Tuple(
+                          controlSampleId,
+                          CONTROL_SAMPLE_TYPE));
+                    }
                   }
 
                 },
@@ -309,9 +319,42 @@ public class PreComputation extends SubAssembly {
     return dataType.getId();
   }
 
-  private static class OuterJoinNullReplacer extends BaseFunction<Void> {
+  private static class OuterJoinControlReplacer extends BaseFunction<Void> {
 
-    private OuterJoinNullReplacer() {
+    private OuterJoinControlReplacer() {
+      super(ARGS);
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+      functionCall
+          .getOutputCollector()
+          .add(getUpdatedTuple(functionCall.getArguments()));
+    }
+
+    private Tuple getUpdatedTuple(@NonNull final TupleEntry entry) {
+      if (isControlSample(entry)) {
+        return new Tuple(
+            CONTROL_SAMPLE_TYPE,
+            NO_OBSERVATIONS_COUNT);
+      } else {
+        return new Tuple(
+            entry.getString(SAMPLE_TYPE_FIELD),
+            entry.getInteger(_ANALYSIS_OBSERVATION_COUNT_FIELD));
+      }
+    }
+
+    private boolean isControlSample(@NonNull final TupleEntry entry) {
+      return CONTROL_SAMPLE_TYPE.equals(entry.getString(SAMPLE_TYPE_FIELD));
+    }
+
+  }
+
+  private static class OuterJoinOrphanReplacer extends BaseFunction<Void> {
+
+    private OuterJoinOrphanReplacer() {
       super(ARGS);
     }
 
