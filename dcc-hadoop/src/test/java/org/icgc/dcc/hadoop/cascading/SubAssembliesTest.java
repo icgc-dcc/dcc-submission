@@ -62,7 +62,6 @@ public class SubAssembliesTest {
           .rightPipe(DUMMY_PIPE)
           .rightJoinFields(DUMMY_FIELD)
           .discardFields(DUMMY_FIELD)
-          .resultFields(DUMMY_FIELD)
           .joiner(DUMMY_JOINER)
           .build();
   private static final GroupByData DUMMY_GROUP_BY_DATA =

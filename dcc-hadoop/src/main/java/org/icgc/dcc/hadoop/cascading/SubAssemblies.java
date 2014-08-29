@@ -501,7 +501,6 @@ public class SubAssemblies {
               joinData.leftJoinFields,
               joinData.rightPipe,
               joinData.rightJoinFields,
-              joinData.resultFields,
               joinData.joiner),
           joinData.discardFields));
     }
@@ -521,9 +520,7 @@ public class SubAssemblies {
       Pipe rightPipe;
       Fields rightJoinFields;
 
-      Fields resultFields;
-      Fields discardFields; // TODO: derive from result fields rather; this can actually be left null (TODO: find more
-                            // elegant way)
+      Fields discardFields; // TODO: build it in
 
     }
 

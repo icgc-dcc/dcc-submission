@@ -136,23 +136,21 @@ public class PreComputation extends SubAssembly {
             .joiner(new InnerJoin())
 
             .leftPipe(processSpecimenFiles())
-            .leftJoinFields(SPECIMEN_ID_FIELD)
+            .leftJoinFields(REDUNDANT_SPECIMEN_ID_FIELD)
 
             .rightPipe(processSampleFiles())
             .rightJoinFields(SPECIMEN_ID_FIELD)
 
-            .resultFields(
-                DONOR_ID_FIELD
-                    .append(REDUNDANT_SPECIMEN_ID_FIELD)
-                    .append(SPECIMEN_ID_FIELD)
-                    .append(SAMPLE_ID_FIELD))
             .discardFields(REDUNDANT_SPECIMEN_ID_FIELD)
 
             .build());
   }
 
   private Pipe processSpecimenFiles() {
-    return processFiles(SPECIMEN_TYPE, DONOR_ID_FIELD.append(SPECIMEN_ID_FIELD));
+    return new Rename(
+        processFiles(SPECIMEN_TYPE, DONOR_ID_FIELD.append(SPECIMEN_ID_FIELD)),
+        SPECIMEN_ID_FIELD,
+        REDUNDANT_SPECIMEN_ID_FIELD);
   }
 
   private Pipe processSampleFiles() {
