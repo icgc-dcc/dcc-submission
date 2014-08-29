@@ -19,6 +19,7 @@ import static org.icgc.dcc.submission.reporter.ReporterFields.RELEASE_NAME_FIELD
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.TUMOUR_SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVATION_COUNT_FIELD;
 
@@ -100,9 +101,10 @@ public class PreComputation extends SubAssembly {
                 .leftJoin()
 
                 .leftPipe(processClinical())
-                .rightPipe(processFeatureTypes())
+                .leftJoinFields(PROJECT_ID_FIELD.append(SAMPLE_ID_FIELD))
 
-                .joinFields(PROJECT_ID_FIELD.append(SAMPLE_ID_FIELD))
+                .rightPipe(processFeatureTypes())
+                .rightJoinFields(PROJECT_ID_FIELD.append(TUMOUR_SAMPLE_ID_FIELD))
 
                 .build()),
 
@@ -169,7 +171,7 @@ public class PreComputation extends SubAssembly {
             .leftPipe(processPrimaryFiles(featureType))
             .rightPipe(processMetaFiles(featureType))
 
-            .joinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(SAMPLE_ID_FIELD))
+            .joinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
 
             .build()));
   }
@@ -181,7 +183,7 @@ public class PreComputation extends SubAssembly {
 
             // Retained fields
             appendFieldIfApplicable(
-                ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
+                ANALYSIS_ID_FIELD.append(TUMOUR_SAMPLE_ID_FIELD),
                 hasSequencingStrategy(featureType),
                 SEQUENCING_STRATEGY_FIELD)),
 
@@ -199,8 +201,8 @@ public class PreComputation extends SubAssembly {
 
         .pipe(processFiles(
             featureType.getPrimaryFileType(),
-            ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD)))
-        .countByFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(SAMPLE_ID_FIELD))
+            ANALYSIS_ID_FIELD.append(TUMOUR_SAMPLE_ID_FIELD)))
+        .countByFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
         .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
         .build());

@@ -24,6 +24,8 @@ import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MATCHED_SAMPLE_ID;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
@@ -47,6 +49,8 @@ public final class ReporterFields {
   public static final Fields DONOR_ID_FIELD = new Fields(SUBMISSION_DONOR_ID);
   public static final Fields SPECIMEN_ID_FIELD = new Fields(SUBMISSION_SPECIMEN_ID);
   public static final Fields SAMPLE_ID_FIELD = new Fields(SUBMISSION_ANALYZED_SAMPLE_ID);
+  public static final Fields TUMOUR_SAMPLE_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID);
+  public static final Fields CONTROL_SAMPLE_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_MATCHED_SAMPLE_ID);
   public static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
   public static final Fields SEQUENCING_STRATEGY_FIELD = new Fields(SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
 
@@ -59,7 +63,7 @@ public final class ReporterFields {
   public static final Fields FEATURE_TYPE_COMBINED_FIELDS =
       NONE.append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
           .append(ANALYSIS_ID_FIELD)
-          .append(SAMPLE_ID_FIELD)
+          .append(TUMOUR_SAMPLE_ID_FIELD)
           .append(SEQUENCING_STRATEGY_FIELD)
           .append(PROJECT_ID_FIELD)
           .append(TYPE_FIELD);
