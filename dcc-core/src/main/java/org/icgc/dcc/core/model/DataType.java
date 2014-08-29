@@ -246,14 +246,6 @@ public interface DataType extends Identifiable {
     }
 
     /**
-     * Determines whether the type provided is one that has a control counterpart or not.
-     */
-    public static boolean hasControlSampleId(DataType dataType) {
-      return dataType.isFeatureType() &&
-          FeatureTypes.hasControlSampleId(dataType.asFeatureType());
-    }
-
-    /**
      * Determines whether the type provided is one that is experimental and aggregated, or not.
      */
     public static boolean isAggregatedType(DataType dataType) { // TODO: non-static

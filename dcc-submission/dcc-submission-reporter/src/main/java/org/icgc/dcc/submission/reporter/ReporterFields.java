@@ -51,6 +51,7 @@ public final class ReporterFields {
   public static final Fields SAMPLE_ID_FIELD = new Fields(SUBMISSION_ANALYZED_SAMPLE_ID);
   public static final Fields TUMOUR_SAMPLE_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID);
   public static final Fields CONTROL_SAMPLE_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_MATCHED_SAMPLE_ID);
+  public static final Fields SAMPLE_TYPE_FIELD = new Fields("sample_type");
   public static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
   public static final Fields SEQUENCING_STRATEGY_FIELD = new Fields(SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY);
 
@@ -63,7 +64,8 @@ public final class ReporterFields {
   public static final Fields FEATURE_TYPE_COMBINED_FIELDS =
       NONE.append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
           .append(ANALYSIS_ID_FIELD)
-          .append(TUMOUR_SAMPLE_ID_FIELD)
+          .append(SAMPLE_ID_FIELD)
+          .append(SAMPLE_TYPE_FIELD)
           .append(SEQUENCING_STRATEGY_FIELD)
           .append(PROJECT_ID_FIELD)
           .append(TYPE_FIELD);

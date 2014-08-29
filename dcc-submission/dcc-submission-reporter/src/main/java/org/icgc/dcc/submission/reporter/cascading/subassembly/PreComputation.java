@@ -1,22 +1,27 @@
 package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
+import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.NONE;
 import static cascading.tuple.Fields.REPLACE;
+import static org.icgc.dcc.core.model.FeatureTypes.hasControlSampleId;
 import static org.icgc.dcc.core.model.FeatureTypes.hasSequencingStrategy;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.util.Strings2.NOT_APPLICABLE;
 import static org.icgc.dcc.hadoop.cascading.Fields2.appendFieldIfApplicable;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.Reporter.ORPHAN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 import static org.icgc.dcc.submission.reporter.ReporterFields.ANALYSIS_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.CONTROL_SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.FEATURE_TYPE_COMBINED_FIELDS;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.RELEASE_NAME_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TUMOUR_SAMPLE_ID_FIELD;
@@ -50,6 +55,8 @@ import cascading.pipe.Each;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.Discard;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
@@ -169,21 +176,25 @@ public class PreComputation extends SubAssembly {
             .innerJoin()
 
             .leftPipe(processPrimaryFiles(featureType))
-            .rightPipe(processMetaFiles(featureType))
+            .leftJoinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
 
-            .joinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
+            .rightPipe(processMetaFiles(featureType))
+            .rightJoinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(SAMPLE_ID_FIELD))
 
             .build()));
   }
 
   private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
-    return normalizeSequencingStrategies(
+    val metaFiles = normalizeSequencingStrategies(
         processFiles(
             featureType.getMetaFileType(),
 
             // Retained fields
             appendFieldIfApplicable(
-                ANALYSIS_ID_FIELD.append(TUMOUR_SAMPLE_ID_FIELD),
+                appendFieldIfApplicable(
+                    ANALYSIS_ID_FIELD.append(TUMOUR_SAMPLE_ID_FIELD),
+                    hasControlSampleId(featureType),
+                    CONTROL_SAMPLE_ID_FIELD),
                 hasSequencingStrategy(featureType),
                 SEQUENCING_STRATEGY_FIELD)),
 
@@ -191,13 +202,17 @@ public class PreComputation extends SubAssembly {
 
         // Use feature type as replacement for a sequencing strategy if need be
         getDataTypeValue(featureType));
+
+    return hasControlSampleId(featureType).evaluate() ?
+        pivotSamples(metaFiles) :
+        new Insert(
+            keyValuePair(SAMPLE_TYPE_FIELD, "tumour"),
+            metaFiles);
   }
 
   private Pipe processPrimaryFiles(@NonNull final FeatureType featureType) {
-    return
-
     // TODO: move that before the merge to maximum parallelization (optimization)
-    new HashCountBy(CountByData.builder()
+    return new HashCountBy(CountByData.builder()
 
         .pipe(processFiles(
             featureType.getPrimaryFileType(),
@@ -206,7 +221,38 @@ public class PreComputation extends SubAssembly {
         .resultCountField(_ANALYSIS_OBSERVATION_COUNT_FIELD)
 
         .build());
+  }
 
+  private Pipe pivotSamples(@NonNull final Pipe pipe) {
+    return new Rename( // TODO: create sub-assembly for this pattern
+        new Discard(
+            new Each(
+                pipe,
+                TUMOUR_SAMPLE_ID_FIELD.append(CONTROL_SAMPLE_ID_FIELD),
+                new BaseFunction<Void>(
+                    2,
+                    getRedundantFieldCounterpart(TUMOUR_SAMPLE_ID_FIELD).append(SAMPLE_TYPE_FIELD)) {
+
+                  @Override
+                  public void operate(
+                      @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+                      FunctionCall<Void> functionCall) {
+                    val entry = functionCall.getArguments();
+                    val outputCollector = functionCall.getOutputCollector();
+
+                    outputCollector.add(new Tuple(
+                        entry.getString(TUMOUR_SAMPLE_ID_FIELD),
+                        "tumour"));
+                    outputCollector.add(new Tuple(
+                        entry.getString(CONTROL_SAMPLE_ID_FIELD),
+                        "control"));
+                  }
+
+                },
+                ALL),
+            TUMOUR_SAMPLE_ID_FIELD.append(CONTROL_SAMPLE_ID_FIELD)),
+        getRedundantFieldCounterpart(TUMOUR_SAMPLE_ID_FIELD),
+        TUMOUR_SAMPLE_ID_FIELD);
   }
 
   private Pipe processFiles(
