@@ -25,14 +25,21 @@ import static org.icgc.dcc.submission.reporter.OutputType.SPECIMEN;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SAMPLE_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SPECIMEN_ID_FIELD;
+import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryCountByFields;
 import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
+import org.icgc.dcc.hadoop.cascading.operation.BaseFilter;
 import org.icgc.dcc.submission.reporter.OutputType;
+import org.icgc.dcc.submission.reporter.Reporter;
 
+import cascading.flow.FlowProcess;
+import cascading.operation.FilterCall;
+import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Rename;
@@ -40,10 +47,20 @@ import cascading.tuple.Fields;
 
 public class ClinicalUniqueCounts extends SubAssembly {
 
+  public static Pipe allDonors(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields) {
+    return donors(
+        filterAllTypes(
+            preComputationTable,
+            TYPE_FIELD),
+        countByFields);
+  }
+
   /**
    * This one is used in the other table as well (hence the public).
    */
-  public static Pipe donors(
+  static Pipe donors(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields) {
     return new ClinicalUniqueCounts(
@@ -102,6 +119,26 @@ public class ClinicalUniqueCounts extends SubAssembly {
                 .build()),
             countByFields,
             getTemporaryCountByFields(countByFields, outputType)));
+  }
+
+  private static Each filterAllTypes(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields typeField) {
+    return new Each(
+        preComputationTable,
+        checkFieldsCardinalityOne(typeField),
+        new BaseFilter<Void>() {
+
+          @Override
+          public boolean isRemove(
+              @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+              FilterCall<Void> filterCall) {
+            val type = filterCall.getArguments().getString(TYPE_FIELD);
+
+            return Reporter.isAllTypes(type);
+          }
+
+        });
   }
 
 }

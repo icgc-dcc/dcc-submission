@@ -11,9 +11,7 @@ import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
 import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
-import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
 
 import java.net.URL;
 import java.util.Map;
@@ -33,7 +31,6 @@ import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ClinicalUniqueCounts;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
@@ -53,6 +50,10 @@ public class Reporter {
    * Also encompasses any orphan clinical data there may be.
    */
   public static final String ALL_TYPES = "all";
+
+  public static boolean isAllTypes(@NonNull final String type) {
+    return ALL_TYPES.equalsIgnoreCase(type);
+  }
 
   public static String report(
       @NonNull final String releaseName,
@@ -102,12 +103,7 @@ public class Reporter {
           releaseName, projectKey, reporterInput.getMatchingFilePathCounts(projectKey));
       val projectDataTypeEntity = new ProjectDataTypeEntity(releaseName, projectKey, preComputationTable);
       val projectSequencingStrategy = new ProjectSequencingStrategy(
-          releaseName, projectKey,
-          preComputationTable,
-          ClinicalUniqueCounts.donors(
-              preComputationTable,
-              PROJECT_ID_FIELD.append(TYPE_FIELD)),
-          mapping.keySet());
+          releaseName, projectKey, preComputationTable, mapping.keySet());
 
       projectDataTypeEntities.put(projectKey, projectDataTypeEntity);
       projectSequencingStrategies.put(projectKey, projectSequencingStrategy);

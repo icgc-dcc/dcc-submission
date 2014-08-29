@@ -60,7 +60,7 @@ public final class ReporterFields {
   public static final Fields SEQUENCING_STRATEGY_COUNT_FIELD = getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD);
   public static final Fields _ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart("analysis_observation");
 
-  public static final Fields REDUNDANT_PROJECT_ID_FIELD = getRedundantFieldCounterpart(PROJECT_ID_FIELD);
+  public static final Fields REDUNDANT_DONOR_ID_FIELD = getTemporaryCountByFields(PROJECT_ID_FIELD, OutputType.DONOR);
   public static final Fields REDUNDANT_SPECIMEN_ID_FIELD = getRedundantFieldCounterpart(SPECIMEN_ID_FIELD);
   public static final Fields REDUNDANT_SAMPLE_ID_FIELD = getRedundantFieldCounterpart(SAMPLE_ID_FIELD);
   public static final Fields REDUNDANT_ANALYSIS_ID_FIELD = getRedundantFieldCounterpart(ANALYSIS_ID_FIELD);
