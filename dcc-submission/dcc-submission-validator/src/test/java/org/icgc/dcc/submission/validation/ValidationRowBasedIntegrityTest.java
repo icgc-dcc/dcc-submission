@@ -21,7 +21,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -190,7 +190,7 @@ public class ValidationRowBasedIntegrityTest extends BaseValidationIntegrityTest
   private String validate(Dictionary dictionary, String submissionFilePath) {
     String rootDirString = this.getClass().getResource(submissionFilePath).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
-    String errorFileString = outputDirString + "/" + "donor.txt.internal" + FILE_NAME_SEPARATOR + "errors.json";
+    String errorFileString = outputDirString + "/" + "donor.txt.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
@@ -198,11 +198,10 @@ public class ValidationRowBasedIntegrityTest extends BaseValidationIntegrityTest
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
-    Path systemDir = SYSTEM_DIR;
 
     val dataTypes = DataTypes.values();
     val platformStrategy = new LocalSubmissionPlatformStrategy(
-        Collections.<String, String> emptyMap(), rootDir, outputDir, systemDir);
+        Collections.<String, String> emptyMap(), rootDir, outputDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
     plan.connect();

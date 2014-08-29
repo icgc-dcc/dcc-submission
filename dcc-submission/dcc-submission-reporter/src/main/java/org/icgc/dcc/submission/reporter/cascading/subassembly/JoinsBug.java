@@ -30,9 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.util.Joiners;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.hadoop.cascading.Flows;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.hadoop.util.HadoopConstants;
@@ -67,12 +66,18 @@ import com.google.common.collect.ImmutableMap;
 @Slf4j
 public class JoinsBug {
 
+  @RequiredArgsConstructor
   enum Environment {
-    LOCAL, DISTRIBUTED;
+    LOCAL(CascadingContext.getLocal()),
+    DISTRIBUTED(CascadingContext.getDistributed());
+
+    @Getter
+    private final CascadingContext context;
 
     public boolean isLocal() {
       return this == LOCAL;
     }
+
   }
 
   enum JoinType {
@@ -121,18 +126,18 @@ public class JoinsBug {
 
   private static void process(Environment environment, JoinType joinType, JoinerType joinerType) {
     Pipe join = getJoinPipe(joinType, joinerType);
-    CascadingTaps taps = environment.isLocal() ? CascadingTaps.LOCAL : CascadingTaps.DISTRIBUTED;
+    CascadingContext context = environment.getContext();
 
     val flowDef = Flows.getFlowDef(JoinsBug.class);
     flowDef.addSource(
         LEFT_PIPE_NAME,
-        taps.getNoCompressionTsvWithHeader(LEFT_FILE_PATH));
+        context.getTaps().getNoCompressionTsvWithHeader(LEFT_FILE_PATH));
     flowDef.addSource(
         RIGHT_PIPE_NAME,
-        taps.getNoCompressionTsvWithHeader(RIGHT_FILE_PATH));
+        context.getTaps().getNoCompressionTsvWithHeader(RIGHT_FILE_PATH));
 
     val outputDirFilePath = "/tmp/joins-" + getDescription(environment, joinType, joinerType);
-    flowDef.addTailSink(join, taps.getNoCompressionTsvWithHeader(outputDirFilePath));
+    flowDef.addTailSink(join, context.getTaps().getNoCompressionTsvWithHeader(outputDirFilePath));
 
     connect(environment, flowDef).complete();
     printFile(
@@ -154,9 +159,7 @@ public class JoinsBug {
   }
 
   static Flow<?> connect(Environment environment, final FlowDef flowDef) {
-    CascadingConnectors connectors =
-        environment.isLocal() ? CascadingConnectors.LOCAL : CascadingConnectors.DISTRIBUTED;
-    val flowConnector = connectors.getFlowConnector(
+    val flowConnector = environment.getContext().getConnectors().getFlowConnector(
         environment.isLocal() ?
             ImmutableMap.of(
                 CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, "file:///",
@@ -173,11 +176,9 @@ public class JoinsBug {
   }
 
   @SneakyThrows
-  private static java.util.List<java.lang.String> getLines(
-      Environment environment, final String filePath) {
-
+  private static java.util.List<java.lang.String> getLines(Environment environment, final String filePath) {
     val fs = environment.isLocal() ?
-        FileSystems.getLocalFileSystem() :
+        FileSystems.getDefaultLocalFileSystem() :
         FileSystems.getFileSystem("***REMOVED***");
     return HadoopUtils.readSmallTextFile(fs, new Path(filePath));
   }

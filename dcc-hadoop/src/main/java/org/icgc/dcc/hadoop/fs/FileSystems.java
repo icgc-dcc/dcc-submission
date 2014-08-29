@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.hadoop.fs.Configurations.newConfiguration;
+import static org.icgc.dcc.hadoop.fs.Configurations.newDefaultDistributedConfiguration;
 
+import java.net.URI;
 import java.util.Map;
 
 import lombok.AccessLevel;
@@ -31,21 +34,45 @@ import lombok.SneakyThrows;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.util.Protocol;
+import org.icgc.dcc.core.util.URIs;
 
 /**
  * Util methods for {@link FileSystem}.
+ * <p>
+ * TODO: create 2 versions like for taps/schemes
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileSystems {
 
   @SneakyThrows
-  public static FileSystem getLocalFileSystem() {
+  public static FileSystem getDefaultLocalFileSystem() {
     return FileSystem.getLocal(newConfiguration());
   }
 
+  /**
+   * To be tested.
+   */
+  public static FileSystem getDefaultDistributedFileSystem() {
+    return getFileSystem(newDefaultDistributedConfiguration());
+  }
+
+  public static FileSystem getFileSystem(@NonNull final String fsDefaultUri) {
+    return getFileSystem(URIs.getURI(fsDefaultUri));
+  }
+
+  public static FileSystem getFileSystem(@NonNull final URI uri) {
+    return getFileSystem(uri, newConfiguration());
+  }
+
+  public static FileSystem getFileSystem(@NonNull final Map<?, ?> properties) {
+    return getFileSystem(Configurations.fromMap(properties));
+  }
+
   @SneakyThrows
-  public static FileSystem getFileSystem(@NonNull final String fsDefault) {
-    return getFileSystem(newConfiguration(fsDefault));
+  public static FileSystem getFileSystem(
+      @NonNull final URI uri,
+      @NonNull final Configuration config) {
+    return FileSystem.get(uri, config);
   }
 
   @SneakyThrows
@@ -56,9 +83,14 @@ public final class FileSystems {
   /**
    * TODO: address issue if property coming from environment.
    */
-  public static boolean isLocal(@NonNull final Map<String, String> hadoopProperties) {
+  public static boolean isLocal(@NonNull final Map<?, ?> hadoopProperties) {
     checkState(hadoopProperties.containsKey(FS_DEFAULT_NAME_KEY));
-    return Protocol.fromURI(hadoopProperties.get(FS_DEFAULT_NAME_KEY)).isFile();
-  }
 
+    return Protocol.fromURI(
+        String.valueOf(checkNotNull(
+            hadoopProperties.get(FS_DEFAULT_NAME_KEY),
+            "Expecting a valid value set, instead got '%s'",
+            hadoopProperties.values())))
+        .isFile();
+  }
 }

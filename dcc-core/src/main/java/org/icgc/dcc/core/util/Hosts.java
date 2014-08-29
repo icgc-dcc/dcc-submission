@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,25 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.platform;
+package org.icgc.dcc.core.util;
 
-import java.util.Map;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+/**
+ * Common hosts.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class Hosts {
 
-import org.apache.hadoop.fs.Path;
-
-@RequiredArgsConstructor
-public class LocalSubmissionPlatformStrategyFactory implements SubmissionPlatformStrategyFactory {
-
-  private final Map<String, String> hadoopProperties;
-
-  @Override
-  public SubmissionPlatformStrategy get(
-      @NonNull final Path input,
-      @NonNull final Path output) {
-    return new LocalSubmissionPlatformStrategy(hadoopProperties, input, output);
-  }
+  public static final String LOCALHOST = "localhost";
+  public static final String EMPTY = Strings2.EMPTY_STRING;
 
 }

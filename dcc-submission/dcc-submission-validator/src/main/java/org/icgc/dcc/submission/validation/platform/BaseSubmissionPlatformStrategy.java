@@ -20,10 +20,13 @@ package org.icgc.dcc.submission.validation.platform;
 import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Maps.newHashMap;
-import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.core.util.Joiners.DOT;
+import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
+import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
+import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD;
 import static org.icgc.dcc.submission.validation.primary.core.Plan.MAX_CONCURRENT_FLOW_STEPS;
 
 import java.io.InputStreamReader;
@@ -33,13 +36,14 @@ import java.util.Map;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.core.util.Extensions;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;
@@ -48,10 +52,8 @@ import cascading.tuple.Fields;
 
 import com.google.common.io.LineReader;
 
+@Slf4j
 public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatformStrategy {
-
-  private final CascadingTaps taps;
-  private final CascadingConnectors connectors;
 
   protected final FileSystem fileSystem;
   private final Map<String, String> hadoopProperties;
@@ -67,13 +69,30 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
     this.fileSystem = fileSystem;
     this.submissionDir = input;
     this.validationOutputDir = output;
-    this.taps = getTaps();
-    this.connectors = getConnectors();
   }
 
-  protected abstract CascadingTaps getTaps();
+  protected abstract CascadingContext getCascadingContext();
 
-  protected abstract CascadingConnectors getConnectors();
+  protected abstract Map<?, ?> augmentFlowProperties(final Map<?, ?> flowProperties);
+
+  @Override
+  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
+    val reportPath = getReportPath(fileName, type, reportName).toUri().getPath();
+    log.info("Streaming through report: '{}'", reportPath);
+
+    return getCascadingContext()
+        .getTaps()
+        .getCompressingJson(reportPath);
+  }
+
+  @Override
+  public Tap<?, ?, ?> getSourceTap(String fileName) {
+    return getCascadingContext()
+        .getTaps()
+        .getDecompressingLinesNoHeader(
+            getFilePath(fileName),
+            OFFSET_FIELD);
+  }
 
   @Override
   public FlowConnector getFlowConnector() {
@@ -84,37 +103,35 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
 
     setMaxConcurrentSteps(flowProperties, MAX_CONCURRENT_FLOW_STEPS);
 
-    return connectors.getFlowConnector(augmentFlowProperties(flowProperties));
+    return getCascadingContext()
+        .getConnectors()
+        .getFlowConnector(
+            augmentFlowProperties(flowProperties));
   }
-
-  protected abstract Map<?, ?> augmentFlowProperties(final Map<?, ?> flowProperties);
 
   /**
    * TODO: phase out in favour of {@link #getSourceTap(FileType)}; Temporary: see DCC-1876
    */
   @Override
   public Tap<?, ?, ?> getNormalizerSourceTap(String fileName) {
-    return taps.getDecompressingTsvWithHeader(getFilePath(fileName));
+    return getCascadingContext()
+        .getTaps()
+        .getDecompressingTsvWithHeader(
+            getFilePath(fileName));
   }
 
   protected Path getReportPath(String fileName, FlowType type, String reportName) {
     return new Path(
         validationOutputDir,
-        format("%s.%s%s%s.json",
-            fileName,
-            type,
-            FILE_NAME_SEPARATOR,
-            reportName));
+        EXTENSION.join(
+            DOT.join(
+                fileName,
+                REPORT_FILES_INFO_JOINER.join(
+                    type,
+                    reportName)),
+            Extensions.JSON));
   }
 
-  /**
-   * Returns a tap for the given path.
-   */
-  protected abstract Tap<?, ?, ?> tap(Path path);
-
-  protected abstract Tap<?, ?, ?> tap(Path path, Fields fields);
-
-  @Override
   @SneakyThrows
   public Fields getFileHeader(String fileName) {
     @Cleanup
@@ -126,12 +143,11 @@ public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatfo
 
   @Override
   public List<String> listFileNames(String pattern) {
-    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir, compile(pattern)));
+    return toFilenameList(lsFile(fileSystem, submissionDir, compile(pattern)));
   }
 
-  @Override
   public List<String> listFileNames() {
-    return toFilenameList(HadoopUtils.lsFile(fileSystem, submissionDir));
+    return toFilenameList(lsFile(fileSystem, submissionDir));
   }
 
   @Override

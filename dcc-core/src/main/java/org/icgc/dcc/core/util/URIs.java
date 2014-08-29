@@ -46,6 +46,9 @@ import com.google.common.base.Optional;
 @NoArgsConstructor(access = PRIVATE)
 public final class URIs {
 
+  public static final String LOCAL_ROOT = Protocol.FILE.getId() + Separators.PATH;
+  public static final String HDFS_ROOT = Protocol.HDFS.getId() + Separators.PATH;
+
   private static final int USERNAME_OFFSET = 0;
   private static final int PASSWORD_OFFSET = USERNAME_OFFSET + 1;
   private static final String SCHEME_SEPARATOR = "://";

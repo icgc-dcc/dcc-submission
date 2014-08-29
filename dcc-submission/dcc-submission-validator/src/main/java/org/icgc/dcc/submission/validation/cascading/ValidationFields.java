@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.cascading;
 
 import static org.icgc.dcc.hadoop.cascading.Fields2.concat;
+import static org.icgc.dcc.hadoop.cascading.Fields2.field;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 
@@ -26,11 +27,12 @@ import cascading.tuple.TupleEntry;
  */
 public class ValidationFields extends Fields {
 
+  // TODO: hide the String version
   public static final String STATE_FIELD_NAME = "_state";
-
   public static final String OFFSET_FIELD_NAME = "offset";
 
-  public static final Fields STATE_FIELD = new Fields(STATE_FIELD_NAME);
+  public static final Fields STATE_FIELD = field(STATE_FIELD_NAME);
+  public static final Fields OFFSET_FIELD = field(OFFSET_FIELD_NAME);
 
   /**
    * Extract the {@code TupleState} field from a {@cude TupleEntry}.

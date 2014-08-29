@@ -10,6 +10,7 @@ import static org.icgc.dcc.core.util.Jackson.getRootObject;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.TYPE_FIELD;
@@ -22,8 +23,6 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.model.Identifiable;
 import org.icgc.dcc.core.model.Identifiable.Identifiables;
@@ -62,7 +61,7 @@ public class Reporter {
       @NonNull final String projectsJsonFilePath,
       @NonNull final URL dictionaryFilePath,
       @NonNull final URL codeListsFilePath,
-      @NonNull final Map<String, String> hadoopProperties) {
+      @NonNull final Map<?, ?> hadoopProperties) {
 
     val dictionaryRoot = getRootObject(dictionaryFilePath);
     val codeListsRoot = Jackson.getRootArray(codeListsFilePath);
@@ -91,7 +90,7 @@ public class Reporter {
       @NonNull final Set<String> projectKeys,
       @NonNull final ReporterInput reporterInput,
       @NonNull final Map<String, String> mapping,
-      @NonNull final Map<String, String> hadoopProperties) {
+      @NonNull final Map<?, ?> hadoopProperties) {
     log.info("Gathering reports for '{}.{}': '{}' ('{}')",
         new Object[] { releaseName, projectKeys, reporterInput, mapping });
 
@@ -150,11 +149,6 @@ public class Reporter {
         releaseName,
         projectKey,
         TSV);
-  }
-
-  private static FileSystem getFileSystem(@NonNull final Map<String, String> hadoopProperties) {
-    return FileSystems.getFileSystem(
-        hadoopProperties.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY));
   }
 
   private static Map<String, String> getSequencingStrategyMapping(

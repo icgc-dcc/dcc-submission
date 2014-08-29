@@ -131,7 +131,7 @@ public class KeyValidationContext extends AbstractValidationContext {
 
     // Reuse primary validation component
     val dummy = new Path("/");
-    return factory.get(dummy, dummy, dummy);
+    return factory.get(dummy, dummy);
   }
 
   private SubmissionDirectory createSubmissionDirectory() {

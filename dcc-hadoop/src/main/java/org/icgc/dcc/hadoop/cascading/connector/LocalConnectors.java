@@ -20,10 +20,22 @@ package org.icgc.dcc.hadoop.cascading.connector;
 import java.util.Map;
 
 import lombok.NonNull;
+
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.hadoop.fs.Configurations;
+
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
 
-class LocalConnectors extends BaseConnectors {
+/**
+ * Do not use outside of {@link CascadingContext}.
+ */
+public class LocalConnectors extends BaseConnectors {
+
+  @Override
+  public Map<?, ?> getDefaultProperties() {
+    return Configurations.getDefaultLocalPropertiesMap();
+  }
 
   @Override
   public FlowConnector getFlowConnector() {

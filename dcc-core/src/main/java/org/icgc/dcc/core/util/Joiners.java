@@ -46,6 +46,9 @@ public final class Joiners {
   public static final Joiner SEMICOLON = on(Separators.SEMICOLON);
   public static final Joiner HASHTAG = on(Separators.HASHTAG);
 
+  // Combinations
+  public static final Joiner DOUBLE_DASH = on(Separators.DOUBLE_DASH);
+
   // Aliases
   public static final Joiner PATH = SLASH;
   public static final Joiner EXTENSION = DOT;
@@ -80,7 +83,12 @@ public final class Joiners {
       return Splitters.HASHTAG;
     }
 
-    // Aliased ones
+    // Combinations
+    else if (joiner.equals(DOUBLE_DASH)) {
+      return Splitters.DOUBLE_DASH;
+    }
+
+    // Aliases
     else if (of(DOT, EXTENSION, NAMESPACING).contains(joiner)) {
       return Splitters.DOT;
     } else if (of(SLASH, PATH).contains(joiner)) {
