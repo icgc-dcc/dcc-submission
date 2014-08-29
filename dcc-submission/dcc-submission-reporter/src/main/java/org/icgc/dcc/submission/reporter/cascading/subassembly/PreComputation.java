@@ -61,7 +61,7 @@ import com.google.common.collect.ImmutableSet;
 
 @Slf4j
 public class PreComputation extends SubAssembly {
-  
+
   private static final int NO_OBSERVATIONS_COUNT = 0;
 
   private final String releaseName;
@@ -113,7 +113,7 @@ public class PreComputation extends SubAssembly {
 
                         .rightPipe(processFeatureTypes())
                         .rightJoinFields(REDUNDANT_SAMPLE_ID_FIELD)
-                        
+
                         .discardFields(REDUNDANT_SAMPLE_ID_FIELD)
 
                         .build()),
@@ -208,18 +208,9 @@ public class PreComputation extends SubAssembly {
 
                         // Use feature type as replacement for a sequencing strategy if need be
                         getDataTypeValue(featureType)))
-                .rightJoinFields(ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD))
+                .rightJoinFields(REDUNDANT_ANALYSIS_ID_FIELD.append(REDUNDANT_SAMPLE_ID_FIELD))
 
-                .resultFields(
-                    NONE.append(ANALYSIS_ID_FIELD)
-                        .append(SAMPLE_ID_FIELD)
-                        .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-                        .append(REDUNDANT_ANALYSIS_ID_FIELD)
-                        .append(REDUNDANT_SAMPLE_ID_FIELD)
-                        .append(SEQUENCING_STRATEGY_FIELD))
-                .discardFields(
-                    REDUNDANT_ANALYSIS_ID_FIELD
-                        .append(REDUNDANT_SAMPLE_ID_FIELD))
+                .discardFields(REDUNDANT_ANALYSIS_ID_FIELD.append(REDUNDANT_SAMPLE_ID_FIELD))
 
                 .build()));
   }
@@ -268,14 +259,17 @@ public class PreComputation extends SubAssembly {
       @NonNull final Pipe pipe,
       final boolean hasSequencingStrategy,
       @NonNull final String replacement) {
-    return hasSequencingStrategy ?
-        pipe :
+    return new Rename(
+        hasSequencingStrategy ?
+            pipe :
 
-        // Insert a "fake" sequencing strategy to make it look uniform
-        new Insert(
-            keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
-            pipe
-        );
+            // Insert a "fake" sequencing strategy to make it look uniform
+            new Insert(
+                keyValuePair(SEQUENCING_STRATEGY_FIELD, replacement),
+                pipe
+            ),
+        ANALYSIS_ID_FIELD.append(SAMPLE_ID_FIELD),
+        REDUNDANT_ANALYSIS_ID_FIELD.append(REDUNDANT_SAMPLE_ID_FIELD));
   }
 
   /**
