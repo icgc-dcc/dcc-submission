@@ -506,15 +506,15 @@ public class SubAssemblies {
       setTails(joinData.hasJoinFieldsCollision() ?
           new Discard(
               new HashJoin(
-                  new Rename(
-                      joinData.leftPipe,
-                      joinData.leftJoinFields,
-                      joinData.getTemporaryLeftJoinFields()),
-                  joinData.getTemporaryLeftJoinFields(),
-                  joinData.rightPipe,
-                  joinData.rightJoinFields,
+                  joinData.leftPipe,
+                  joinData.leftJoinFields,
+                  new Rename( // Rename right side since this could be a left join
+                      joinData.rightPipe,
+                      joinData.rightJoinFields,
+                      joinData.getTemporaryRightJoinFields()),
+                  joinData.getTemporaryRightJoinFields(),
                   joinData.joiner),
-              joinData.getTemporaryLeftJoinFields()) :
+              joinData.getTemporaryRightJoinFields()) :
           new HashJoin(
               joinData.leftPipe,
               joinData.leftJoinFields,
@@ -526,11 +526,13 @@ public class SubAssemblies {
     /**
      * "Developers should thoroughly understand the limitations of this class"
      * (http://docs.cascading.org/cascading/2.5/userguide/htmlsingle/#N20276).
+     * <p>
+     * Note that it does work locally.
      */
     private void validateJoiner(@NonNull final Joiner joiner) {
       checkArgument(
-          !(joiner instanceof RightJoin),
-          "Cannot use a hash join in combination with a right join (see Cascading documentation)");
+          !(joiner instanceof RightJoin || joiner instanceof OuterJoin),
+          "Cannot use a hash join in combination with a right or full outer join (see Cascading documentation)");
     }
 
     public static class JoinData { // TODO: add integrity check (fields cardinalities, ...)
@@ -628,8 +630,8 @@ public class SubAssemblies {
         return leftJoinFields.equals(rightJoinFields);
       }
 
-      public Fields getTemporaryLeftJoinFields() {
-        return getRedundantFieldCounterparts(leftJoinFields);
+      public Fields getTemporaryRightJoinFields() {
+        return getRedundantFieldCounterparts(rightJoinFields);
       }
 
     }

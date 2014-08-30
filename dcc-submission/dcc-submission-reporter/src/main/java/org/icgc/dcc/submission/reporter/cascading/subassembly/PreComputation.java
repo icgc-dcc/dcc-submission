@@ -40,6 +40,7 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.hadoop.cascading.SubAssemblies;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.CountByData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.HashCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
@@ -173,13 +174,13 @@ public class PreComputation extends SubAssembly {
         // Fields to insert
         keyValuePair(TYPE_FIELD, getDataTypeValue(featureType)),
 
-        new Each(
+        new SubAssemblies.TupleEntriesLogger(">primary", new Each(
             new ReadableHashJoin(JoinData.builder()
 
                 // Left join in order to keep the control sample ID
                 .leftJoin()
 
-                .leftPipe(processMetaFiles(featureType))
+                .leftPipe(new SubAssemblies.TupleEntriesLogger(">meta", processMetaFiles(featureType)))
                 .rightPipe(processPrimaryFiles(featureType))
 
                 .joinFields(PROJECT_ID_FIELD.append(ANALYSIS_ID_FIELD).append(TUMOUR_SAMPLE_ID_FIELD))
@@ -189,7 +190,7 @@ public class PreComputation extends SubAssembly {
             // Outer join target fields
             SAMPLE_TYPE_FIELD.append(_ANALYSIS_OBSERVATION_COUNT_FIELD),
             new OuterJoinControlReplacer(),
-            REPLACE));
+            REPLACE)));
   }
 
   private Pipe processMetaFiles(@NonNull final FeatureType featureType) {
@@ -212,7 +213,7 @@ public class PreComputation extends SubAssembly {
         getDataTypeValue(featureType));
 
     return hasControlSampleId(featureType).evaluate() ?
-        pivotSamples(metaFiles) :
+        pivotMetaSamples(metaFiles) :
         new Insert(
             keyValuePair(SAMPLE_TYPE_FIELD, TUMOUR_SAMPLE_TYPE),
             metaFiles);
@@ -231,40 +232,51 @@ public class PreComputation extends SubAssembly {
         .build());
   }
 
-  private Pipe pivotSamples(@NonNull final Pipe pipe) {
-    return new Rename( // TODO: create sub-assembly for this pattern
+  /**
+   * TODO: create sub-assembly for this pattern (cascading can't do a partial replace)
+   */
+  private Pipe pivotMetaSamples(@NonNull final Pipe pipe) {
+    val inputFields = TUMOUR_SAMPLE_ID_FIELD.append(CONTROL_SAMPLE_ID_FIELD);
+    val temporaryResultFields = getRedundantFieldCounterpart(TUMOUR_SAMPLE_ID_FIELD).append(SAMPLE_TYPE_FIELD);
+    val resultFields = TUMOUR_SAMPLE_ID_FIELD.append(SAMPLE_TYPE_FIELD);
+
+    return new Rename(
         new Discard(
-            new Each(
-                pipe,
-                TUMOUR_SAMPLE_ID_FIELD.append(CONTROL_SAMPLE_ID_FIELD),
-                new BaseFunction<Void>(
-                    2,
-                    getRedundantFieldCounterpart(TUMOUR_SAMPLE_ID_FIELD).append(SAMPLE_TYPE_FIELD)) {
+            pivot(pipe, inputFields, temporaryResultFields),
+            inputFields),
+        temporaryResultFields,
+        resultFields);
+  }
 
-                  @Override
-                  public void operate(
-                      @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-                      FunctionCall<Void> functionCall) {
-                    val entry = functionCall.getArguments();
-                    val outputCollector = functionCall.getOutputCollector();
+  private Pipe pivot(final Pipe pipe, Fields inputFields, Fields temporaryResultFields) {
+    return new Each(
+        pipe,
+        inputFields,
+        new BaseFunction<Void>(
+            inputFields.size(),
+            temporaryResultFields) {
 
-                    val controlSampleId = entry.getString(CONTROL_SAMPLE_ID_FIELD);
-                    outputCollector.add(new Tuple(
-                        entry.getString(TUMOUR_SAMPLE_ID_FIELD),
-                        TUMOUR_SAMPLE_TYPE));
+          @Override
+          public void operate(
+              @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+              FunctionCall<Void> functionCall) {
+            val entry = functionCall.getArguments();
+            val outputCollector = functionCall.getOutputCollector();
 
-                    if (!isMissingCode(controlSampleId)) {
-                      outputCollector.add(new Tuple(
-                          controlSampleId,
-                          CONTROL_SAMPLE_TYPE));
-                    }
-                  }
+            val controlSampleId = entry.getString(CONTROL_SAMPLE_ID_FIELD);
+            outputCollector.add(new Tuple(
+                entry.getString(TUMOUR_SAMPLE_ID_FIELD),
+                TUMOUR_SAMPLE_TYPE));
 
-                },
-                ALL),
-            TUMOUR_SAMPLE_ID_FIELD.append(CONTROL_SAMPLE_ID_FIELD)),
-        getRedundantFieldCounterpart(TUMOUR_SAMPLE_ID_FIELD),
-        TUMOUR_SAMPLE_ID_FIELD);
+            if (!isMissingCode(controlSampleId)) {
+              outputCollector.add(new Tuple(
+                  controlSampleId,
+                  CONTROL_SAMPLE_TYPE));
+            }
+          }
+
+        },
+        ALL);
   }
 
   private Pipe processFiles(
