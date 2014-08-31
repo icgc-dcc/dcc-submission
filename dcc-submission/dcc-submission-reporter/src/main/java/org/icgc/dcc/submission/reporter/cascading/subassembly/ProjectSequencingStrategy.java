@@ -3,10 +3,12 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly;
 import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
 import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.submission.reporter.OutputType.SEQUENCING_STRATEGY;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectDataTypeEntity.donorUniqueCountBy;
 
 import java.util.List;
 import java.util.Set;
@@ -22,7 +24,6 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.TransposeBuffer;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ClinicalUniqueCounts;
 
 import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
@@ -39,27 +40,23 @@ public class ProjectSequencingStrategy extends SubAssembly {
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
 
   public ProjectSequencingStrategy(
-      Pipe p,
+      @NonNull final Pipe preComputationTable,
       @NonNull final String releaseName,
-      @NonNull final String projectKey,
       @NonNull final Set<String> codes) {
 
-    setTails(process(p, getTranspositionFields(codes)));
+    setTails(process(
+        preComputationTable,
+        getTranspositionFields(codes)));
   }
 
   private static Pipe process(
-      Pipe p,
+      @NonNull final Pipe preComputationTable,
       @NonNull final Fields transpositionFields) {
-    val preComputationTable = p;
-
     return new ReadableHashJoin(JoinData.builder()
 
         .innerJoin()
 
-        .leftPipe(
-            ClinicalUniqueCounts.allDonors(
-                preComputationTable,
-                PROJECT_ID_FIELD))
+        .leftPipe(donorUniqueCountBy(preComputationTable, PROJECT_ID_FIELD))
         .rightPipe(processSequencingStrategies(preComputationTable, transpositionFields))
 
         .joinFields(PROJECT_ID_FIELD)
@@ -84,7 +81,7 @@ public class ProjectSequencingStrategy extends SubAssembly {
                       }
 
                     },
-                    new UniqueCountBy(UniqueCountByData.builder()
+                    new UniqueCountBy(SEQUENCING_STRATEGY.getId(), UniqueCountByData.builder()
 
                         .pipe(preComputationTable)
                         .uniqueFields(

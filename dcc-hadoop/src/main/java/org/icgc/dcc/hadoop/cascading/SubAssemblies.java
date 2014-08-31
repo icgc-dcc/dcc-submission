@@ -69,6 +69,8 @@ import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.AggregateBy;
+import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
@@ -89,6 +91,8 @@ import com.google.common.base.Supplier;
 
 /**
  * Useful sub-assemblies.
+ * <p>
+ * TODO: separate {@link AggregateBy}s.
  */
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
@@ -326,23 +330,25 @@ public class SubAssemblies {
   /**
    * TODO
    */
-  public static class ReadableCountBy extends SubAssembly {
+  public static class ReadableCountBy extends CountBy {
 
-    public ReadableCountBy(CountByData countByData) {
+    public ReadableCountBy(
+        @NonNull final String name,
+        @NonNull final CountByData countByData) {
       // TODO: add checks on cardinalities
-      setTails(
 
-      //
-      new cascading.pipe.assembly.CountBy(
+      super(
+          name,
           countByData.pipe,
           countByData.countByFields,
-          countByData.resultCountField));
+          countByData.resultCountField);
     }
-
   }
 
   /**
    * For a count by in which there are few groups (fitting in memory and therefore not requiring a sort phase).
+   * <p>
+   * TODO: as {@link AggregateBy}?
    */
   public static class HashCountBy extends SubAssembly {
 
@@ -457,10 +463,12 @@ public class SubAssemblies {
    * <p>
    * TODO: add checks on fields cardinality and field sets (has to be consistent)
    */
-  public static class UniqueCountBy extends SubAssembly {
+  public static class UniqueCountBy extends ReadableCountBy {
 
-    public UniqueCountBy(UniqueCountByData data) {
-      setTails(new ReadableCountBy(CountByData.builder()
+    public UniqueCountBy(
+        @NonNull final String name,
+        @NonNull final UniqueCountByData data) {
+      super(name, CountByData.builder()
 
           .pipe(
 
@@ -477,8 +485,7 @@ public class SubAssemblies {
           .countByFields(data.countByFields)
           .resultCountField(checkFieldsCardinalityOne(data.resultCountField))
 
-          .build()));
-
+          .build());
     }
 
     @Value

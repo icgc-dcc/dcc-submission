@@ -30,30 +30,18 @@ import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectDataTypeEntity;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectdatatypeentity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
-import com.google.common.collect.Maps;
 
 @Slf4j
 public class Reporter {
 
   public static final Class<Reporter> CLASS = Reporter.class;
-
-  public static final String ORPHAN_TYPE = "orphan";
-
-  /**
-   * Also encompasses any orphan clinical data there may be.
-   */
-  public static final String ALL_TYPES = "all";
-
-  public static boolean isAllTypes(@NonNull final String type) {
-    return ALL_TYPES.equalsIgnoreCase(type);
-  }
 
   public static String report(
       @NonNull final String releaseName,
@@ -109,23 +97,13 @@ public class Reporter {
     preComputationCascade.complete();
 
     val preComputationTable = getPreComputationTablePipe();
-    val projectDataTypeEntities = Maps.<String, Pipe> newLinkedHashMap();
-    val projectSequencingStrategies = Maps.<String, Pipe> newLinkedHashMap();
-    for (val projectKey : projectKeys) {
-      val projectDataTypeEntity = new ProjectDataTypeEntity(preComputationTable, releaseName, projectKey);
-      val projectSequencingStrategy = new ProjectSequencingStrategy(
-          preComputationTable, releaseName, projectKey, mapping.keySet());
-
-      projectDataTypeEntities.put(projectKey, projectDataTypeEntity);
-      projectSequencingStrategies.put(projectKey, projectSequencingStrategy);
-    }
-
     val cascade = connector.connectFinalCascade(
         releaseName,
         reporterInput.getProjectKeys(),
         preComputationTable,
-        projectDataTypeEntities,
-        projectSequencingStrategies,
+        new ProjectDataTypeEntity(preComputationTable, releaseName),
+        new ProjectSequencingStrategy(
+            preComputationTable, releaseName, mapping.keySet()),
         hadoopProperties);
 
     log.info("Running cascade");
@@ -150,21 +128,15 @@ public class Reporter {
   }
 
   public static String getFilePath(
-      String outputDirPath, Identifiable type, String releaseName, Optional<String> projectKey) {
-    return PATH.join(outputDirPath, getFileName(type, releaseName, projectKey));
+      String outputDirPath, Identifiable type, String releaseName) {
+    return PATH.join(outputDirPath, getFileName(type, releaseName));
   }
 
-  public static String getFileName(Identifiable type, String releaseName, Optional<String> projectKey) {
-    return projectKey.isPresent() ?
-        EXTENSION.join(
-            type.getId(),
-            releaseName,
-            projectKey.get(),
-            TSV) :
-        EXTENSION.join(
-            type.getId(),
-            releaseName,
-            TSV);
+  public static String getFileName(Identifiable type, String releaseName) {
+    return EXTENSION.join(
+        type.getId(),
+        releaseName,
+        TSV);
   }
 
   private static Map<String, String> getSequencingStrategyMapping(

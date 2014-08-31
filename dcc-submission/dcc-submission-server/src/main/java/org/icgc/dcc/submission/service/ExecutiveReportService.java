@@ -233,29 +233,26 @@ public class ExecutiveReportService extends AbstractIdleService {
             copyOf(hadoopProperties));
         log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, filteredProjects);
 
-        for (val project : filteredProjects) {
-          ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
-              fileSystem, outputDirPath, releaseName, project);
-          log.info("Persisting data type executive reports for '{}.{}': '{}'",
-              new Object[] { releaseName, project, projectReports });
+        ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
+            fileSystem, outputDirPath, releaseName);
+        log.info("Persisting data type executive reports for '{}.{}': '{}'",
+            new Object[] { releaseName, projectReports });
 
-          for (val report : projectReports) {
-            log.info("Persisting data type executive report for '{}.{}': '{}'",
-                new Object[] { releaseName, project, report });
-            projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
-          }
+        for (val report : projectReports) {
+          log.info("Persisting data type executive report for '{}.{}': '{}'",
+              new Object[] { releaseName, report });
+          projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
+        }
 
-          ArrayNode sequencingStrategyReports = ReporterCollector.getJsonProjectSequencingStrategy(
-              fileSystem, outputDirPath, releaseName, project, mappings.get());
-          log.info("Persisting sequencing strategy executive reports for '{}.{}': '{}'",
-              new Object[] { releaseName, project, sequencingStrategyReports });
+        ArrayNode sequencingStrategyReports = ReporterCollector.getJsonProjectSequencingStrategy(
+            fileSystem, outputDirPath, releaseName, mappings.get());
+        log.info("Persisting sequencing strategy executive reports for '{}.{}': '{}'",
+            new Object[] { releaseName, sequencingStrategyReports });
 
-          for (val report : sequencingStrategyReports) {
-            log.info("Persisting sequencing strategy executive report for '{}.{}': '{}'",
-                new Object[] { releaseName, project, report });
-            projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
-          }
-
+        for (val report : sequencingStrategyReports) {
+          log.info("Persisting sequencing strategy executive report for '{}.{}': '{}'",
+              new Object[] { releaseName, report });
+          projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
         }
 
         log.info("Finished generating reports for '{}.{}'", releaseName, filteredProjects);

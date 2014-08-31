@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.reporter;
 
-import static cascading.tuple.Fields.NONE;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_TYPE;
 import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
@@ -60,15 +59,6 @@ public final class ReporterFields {
   public static final Fields SAMPLE_UNIQUE_COUNT_FIELD = getCountFieldCounterpart(SAMPLE_ID_FIELD);
   public static final Fields SEQUENCING_STRATEGY_COUNT_FIELD = getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD);
   public static final Fields _ANALYSIS_OBSERVATION_COUNT_FIELD = getCountFieldCounterpart("analysis_observation");
-
-  public static final Fields FEATURE_TYPE_COMBINED_FIELDS =
-      NONE.append(_ANALYSIS_OBSERVATION_COUNT_FIELD)
-          .append(ANALYSIS_ID_FIELD)
-          .append(SAMPLE_ID_FIELD)
-          .append(SAMPLE_TYPE_FIELD)
-          .append(SEQUENCING_STRATEGY_FIELD)
-          .append(PROJECT_ID_FIELD)
-          .append(TYPE_FIELD);
 
   public static final Iterable<Fields> PROJECT_DATA_TYPE_ENTITY_COUNT_FIELDS = ImmutableList.of(
       DONOR_UNIQUE_COUNT_FIELD,
