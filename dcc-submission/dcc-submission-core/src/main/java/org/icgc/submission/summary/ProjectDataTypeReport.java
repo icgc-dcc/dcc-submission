@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity(noClassnameStored = true)
 @ToString
-@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, type"))
+@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, featureType, sampleType"))
 @Data
 public class ProjectDataTypeReport {
 

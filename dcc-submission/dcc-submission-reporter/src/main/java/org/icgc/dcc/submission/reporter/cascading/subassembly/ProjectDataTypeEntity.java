@@ -36,11 +36,9 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.AggregateBy;
-import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.SumBy;
-import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.tuple.Fields;
 
@@ -57,21 +55,21 @@ public class ProjectDataTypeEntity extends SubAssembly {
 
         normalizeMergePipe(
             ALL_TYPES,
-            preProcessWithAggregateBysNoAbstractions(
+            aggregate(
                 preComputationTable,
                 PROJECT_ID_FIELD,
                 TYPE_FIELD, SAMPLE_TYPE_FIELD)),
 
         normalizeMergePipe(
             getFieldName(SAMPLE_TYPE_FIELD),
-            preProcessWithAggregateBysNoAbstractions(
+            aggregate(
                 preComputationTable,
                 PROJECT_ID_FIELD.append(SAMPLE_TYPE_FIELD),
                 TYPE_FIELD)),
 
         normalizeMergePipe(
             getFieldName(TYPE_FIELD),
-            preProcessWithAggregateBysNoAbstractions(
+            aggregate(
                 preComputationTable,
                 PROJECT_ID_FIELD.append(TYPE_FIELD),
                 SAMPLE_TYPE_FIELD))));
@@ -93,15 +91,15 @@ public class ProjectDataTypeEntity extends SubAssembly {
                 .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)));
   }
 
-  private static Pipe preProcessWithMultipleHashJoin(
+  private static Pipe aggregate(
       @NonNull final Pipe preComputationTable,
-      @NonNull final Fields countByFields,
+      @NonNull final Fields groupByFields,
       @NonNull final Fields... placeholders) {
 
-    val temporaryDonorCountByFields = getTemporaryCountByFields(countByFields, DONOR);
-    val temporarySpecimenCountByFields = getTemporaryCountByFields(countByFields, SPECIMEN);
-    val temporarySampleCountByFields = getTemporaryCountByFields(countByFields, SAMPLE);
-    val temporaryObservationCountByFields = getTemporaryCountByFields(countByFields, OBSERVATION);
+    val temporaryDonorCountByFields = getTemporaryCountByFields(groupByFields, DONOR);
+    val temporarySpecimenCountByFields = getTemporaryCountByFields(groupByFields, SPECIMEN);
+    val temporarySampleCountByFields = getTemporaryCountByFields(groupByFields, SAMPLE);
+    val temporaryObservationCountByFields = getTemporaryCountByFields(groupByFields, OBSERVATION);
 
     Pipe pipe = new Rename(
         new Retain(
@@ -111,18 +109,18 @@ public class ProjectDataTypeEntity extends SubAssembly {
                     ImmutableList.<Pipe> builder()
 
                         .add(new Rename(
-                            donorUniqueCountBy(preComputationTable, countByFields),
-                            countByFields, temporaryDonorCountByFields))
+                            donorUniqueCountBy(preComputationTable, groupByFields),
+                            groupByFields, temporaryDonorCountByFields))
                         .add(new Rename(
-                            specimenUniqueCountBy(preComputationTable, countByFields),
-                            countByFields, temporarySpecimenCountByFields))
+                            specimenUniqueCountBy(preComputationTable, groupByFields),
+                            groupByFields, temporarySpecimenCountByFields))
                         .add(new Rename(
-                            sampleUniqueCountBy(preComputationTable, countByFields),
-                            countByFields, temporarySampleCountByFields))
+                            sampleUniqueCountBy(preComputationTable, groupByFields),
+                            groupByFields, temporarySampleCountByFields))
 
                         .add(new Rename(
-                            observationCountBy(preComputationTable, countByFields),
-                            countByFields, temporaryObservationCountByFields))
+                            observationCountBy(preComputationTable, groupByFields),
+                            groupByFields, temporaryObservationCountByFields))
 
                         .build(),
                     Pipe.class),
@@ -143,100 +141,7 @@ public class ProjectDataTypeEntity extends SubAssembly {
                 .append(SAMPLE_UNIQUE_COUNT_FIELD)
                 .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)),
         temporaryDonorCountByFields,
-        countByFields);
-
-    // Add placeholder fields
-    for (val field : placeholders) {
-      pipe = new Insert(
-          keyValuePair(
-              checkFieldsCardinalityOne(field),
-              ALL_TYPES),
-          pipe);
-    }
-
-    return pipe;
-  }
-
-  /**
-   * TODO: why doesn't this work? cascading bug?
-   */
-  @SuppressWarnings("unused")
-  private static Pipe preProcessWithAggregateBys(
-      @NonNull final Pipe preComputationTable,
-      @NonNull final Fields countByFields,
-      @NonNull final Fields... placeholders) {
-    Pipe pipe = new AggregateBy(
-        preComputationTable,
-        countByFields,
-        new AggregateBy[] {
-            donorUniqueCountBy(preComputationTable, countByFields),
-            specimenUniqueCountBy(preComputationTable, countByFields),
-            sampleUniqueCountBy(preComputationTable, countByFields),
-            observationCountBy(preComputationTable, countByFields) });
-
-    // Add placeholder fields
-    for (val field : placeholders) {
-      pipe = new Insert(
-          keyValuePair(
-              checkFieldsCardinalityOne(field),
-              ALL_TYPES),
-          pipe);
-    }
-
-    return pipe;
-  }
-
-  private static Pipe preProcessWithAggregateBysNoAbstractions(
-      @NonNull final Pipe preComputationTable,
-      @NonNull final Fields countByFields,
-      @NonNull final Fields... placeholders) {
-
-    Pipe pipe = new AggregateBy(
-        preComputationTable,
-        countByFields,
-        new AggregateBy[] {
-
-            new CountBy(
-                DONOR.getId(),
-                new Unique(
-                    new Retain(
-                        preComputationTable,
-                        countByFields
-                            .append(DONOR_ID_FIELD)),
-                    Fields.ALL),
-                countByFields,
-                new Fields("donor_id_count")),
-
-            new CountBy(
-                SPECIMEN.getId(),
-                new Unique(
-                    new Retain(
-                        preComputationTable,
-                        countByFields
-                            .append(SPECIMEN_ID_FIELD)),
-                    Fields.ALL),
-                countByFields,
-                new Fields("specimen_id_count")),
-
-            new CountBy(
-                SAMPLE.getId(),
-                new Unique(
-                    new Retain(
-                        preComputationTable,
-                        countByFields
-                            .append(SAMPLE_ID_FIELD)),
-                    Fields.ALL),
-                countByFields,
-                new Fields("analyzed_sample_id_count")),
-
-            new SumBy(
-                new Retain(
-                    preComputationTable,
-                    countByFields.append(_ANALYSIS_OBSERVATION_COUNT_FIELD)),
-                countByFields,
-                _ANALYSIS_OBSERVATION_COUNT_FIELD,
-                _ANALYSIS_OBSERVATION_COUNT_FIELD,
-                long.class) });
+        groupByFields);
 
     // Add placeholder fields
     for (val field : placeholders) {
@@ -308,12 +213,12 @@ public class ProjectDataTypeEntity extends SubAssembly {
 
   private static AggregateBy observationCountBy(
       @NonNull final Pipe preComputationTable,
-      @NonNull final Fields countByFields) {
+      @NonNull final Fields sumByFields) {
     return new SumBy(
         new Retain(
             preComputationTable,
-            countByFields.append(_ANALYSIS_OBSERVATION_COUNT_FIELD)),
-        countByFields,
+            sumByFields.append(_ANALYSIS_OBSERVATION_COUNT_FIELD)),
+        sumByFields,
         _ANALYSIS_OBSERVATION_COUNT_FIELD,
         _ANALYSIS_OBSERVATION_COUNT_FIELD,
         long.class);

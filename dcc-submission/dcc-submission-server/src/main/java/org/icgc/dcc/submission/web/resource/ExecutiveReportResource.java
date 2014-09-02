@@ -146,7 +146,7 @@ public class ExecutiveReportResource {
 
     val header =
         ImmutableList.<String> builder().add(
-            "Release", "Project Id", "Type", "Sample Type", "Donor Count", "Specimen Count", "Sample Count",
+            "Release", "Project Id", "Feature Type", "Sample Type", "Donor Count", "Specimen Count", "Sample Count",
             "Observation Count");
 
     val dataTypeTotals = Maps.<String, ProjectDataTypeReport> newHashMap();
