@@ -1,11 +1,14 @@
 package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
 import static cascading.tuple.Fields.NONE;
+import static com.google.common.collect.Iterables.toArray;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getTemporaryCountByFields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
+import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.submission.reporter.OutputType.SAMPLE;
 import static org.icgc.dcc.submission.reporter.OutputType.SPECIMEN;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
@@ -28,13 +31,18 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy;
 import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
 import org.icgc.dcc.submission.reporter.OutputType;
 
+import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.AggregateBy;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.SumBy;
+import cascading.pipe.joiner.InnerJoin;
 import cascading.tuple.Fields;
+
+import com.google.common.collect.ImmutableList;
 
 public class ProjectDataTypeEntity extends SubAssembly {
 
@@ -47,21 +55,21 @@ public class ProjectDataTypeEntity extends SubAssembly {
 
         normalizeMergePipe(
             ALL_TYPES,
-            preProcess(
+            preProcessWithMultipleHashJoin(
                 preComputationTable,
                 PROJECT_ID_FIELD,
                 TYPE_FIELD, SAMPLE_TYPE_FIELD)),
 
         normalizeMergePipe(
             getFieldName(SAMPLE_TYPE_FIELD),
-            preProcess(
+            preProcessWithMultipleHashJoin(
                 preComputationTable,
                 PROJECT_ID_FIELD.append(SAMPLE_TYPE_FIELD),
                 TYPE_FIELD)),
 
         normalizeMergePipe(
             getFieldName(TYPE_FIELD),
-            preProcess(
+            preProcessWithMultipleHashJoin(
                 preComputationTable,
                 PROJECT_ID_FIELD.append(TYPE_FIELD),
                 SAMPLE_TYPE_FIELD))));
@@ -83,7 +91,75 @@ public class ProjectDataTypeEntity extends SubAssembly {
                 .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)));
   }
 
-  private static Pipe preProcess(
+  private static Pipe preProcessWithMultipleHashJoin(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields,
+      @NonNull final Fields... placeholders) {
+
+    val temporaryDonorCountByFields = getTemporaryCountByFields(countByFields, DONOR);
+    val temporarySpecimenCountByFields = getTemporaryCountByFields(countByFields, SPECIMEN);
+    val temporarySampleCountByFields = getTemporaryCountByFields(countByFields, SAMPLE);
+    val temporaryObservationCountByFields = getTemporaryCountByFields(countByFields, OBSERVATION);
+
+    Pipe pipe = new Rename(
+        new Retain(
+            new HashJoin(
+                // TODO: create more readable subassembly for multi-joins
+                toArray(
+                    ImmutableList.<Pipe> builder()
+
+                        .add(new Rename(
+                            donorUniqueCountBy(preComputationTable, countByFields),
+                            countByFields, temporaryDonorCountByFields))
+                        .add(new Rename(
+                            specimenUniqueCountBy(preComputationTable, countByFields),
+                            countByFields, temporarySpecimenCountByFields))
+                        .add(new Rename(
+                            sampleUniqueCountBy(preComputationTable, countByFields),
+                            countByFields, temporarySampleCountByFields))
+
+                        .add(new Rename(
+                            observationCountBy(preComputationTable, countByFields),
+                            countByFields, temporaryObservationCountByFields))
+
+                        .build(),
+                    Pipe.class),
+                new Fields[] {
+                    temporaryDonorCountByFields,
+                    temporarySpecimenCountByFields,
+                    temporarySampleCountByFields,
+                    temporaryObservationCountByFields },
+                NONE
+                    .append(DONOR_UNIQUE_COUNT_FIELD).append(temporaryDonorCountByFields)
+                    .append(SPECIMEN_UNIQUE_COUNT_FIELD.append(temporarySpecimenCountByFields))
+                    .append(SAMPLE_UNIQUE_COUNT_FIELD.append(temporarySampleCountByFields))
+                    .append(_ANALYSIS_OBSERVATION_COUNT_FIELD.append(temporaryObservationCountByFields)),
+                new InnerJoin()),
+            temporaryDonorCountByFields // Arbitrarily chosen among the others (renamed further down)
+                .append(DONOR_UNIQUE_COUNT_FIELD)
+                .append(SPECIMEN_UNIQUE_COUNT_FIELD)
+                .append(SAMPLE_UNIQUE_COUNT_FIELD)
+                .append(_ANALYSIS_OBSERVATION_COUNT_FIELD)),
+        temporaryDonorCountByFields,
+        countByFields);
+
+    // Add placeholder fields
+    for (val field : placeholders) {
+      pipe = new Insert(
+          keyValuePair(
+              checkFieldsCardinalityOne(field),
+              ALL_TYPES),
+          pipe);
+    }
+
+    return pipe;
+  }
+
+  /**
+   * TODO: why doesn't this work? cascading bug?
+   */
+  @SuppressWarnings("unused")
+  private static Pipe preProcessWithAggregateBys(
       @NonNull final Pipe preComputationTable,
       @NonNull final Fields countByFields,
       @NonNull final Fields... placeholders) {
@@ -96,6 +172,7 @@ public class ProjectDataTypeEntity extends SubAssembly {
             sampleUniqueCountBy(preComputationTable, countByFields),
             observationCountBy(preComputationTable, countByFields) });
 
+    // Add placeholder fields
     for (val field : placeholders) {
       pipe = new Insert(
           keyValuePair(
@@ -150,15 +227,15 @@ public class ProjectDataTypeEntity extends SubAssembly {
       @NonNull final Pipe preComputationTable,
       @NonNull final OutputType outputType,
       @NonNull final Fields countByFields,
-      @NonNull final Fields clinicalIdCountField) {
+      @NonNull final Fields clinicalIdField) {
     return new UniqueCountBy(
         outputType.getId(),
         UniqueCountByData.builder()
 
             .pipe(preComputationTable)
-            .uniqueFields(countByFields.append(checkFieldsCardinalityOne(clinicalIdCountField)))
+            .uniqueFields(countByFields.append(checkFieldsCardinalityOne(clinicalIdField)))
             .countByFields(countByFields)
-            .resultCountField(getCountFieldCounterpart(clinicalIdCountField))
+            .resultCountField(getCountFieldCounterpart(clinicalIdField))
 
             .build());
   }

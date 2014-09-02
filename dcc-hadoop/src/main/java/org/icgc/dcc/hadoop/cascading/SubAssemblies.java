@@ -334,7 +334,7 @@ public class SubAssemblies {
 
     public ReadableCountBy(
         @NonNull final String name,
-        @NonNull final CountByData countByData) {
+        final CountByData countByData) {
       // TODO: add checks on cardinalities
 
       super(

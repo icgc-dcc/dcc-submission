@@ -177,6 +177,9 @@ public class ReporterTest {
     val referenceFile = new File(PATH.join(tempDir, outputType.getId()));
     val outputLines = Collections3.sort(readLines(outputFile));
     val referenceLines = Collections3.sort(readLines(referenceFile));
+
+    log.info("\n\n" + NEWLINE.join(outputLines) + "\n");
+
     assertThat(NEWLINE.join(outputLines))
         .isEqualTo(NEWLINE.join(referenceLines));
   }
