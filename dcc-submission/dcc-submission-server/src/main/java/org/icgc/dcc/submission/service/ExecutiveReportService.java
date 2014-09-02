@@ -158,7 +158,8 @@ public class ExecutiveReportService extends AbstractIdleService {
     ProjectDataTypeReport projectDataTypeReport = new ProjectDataTypeReport();
     projectDataTypeReport.setReleaseName(releaseName);
     projectDataTypeReport.setProjectCode(report.get("_project_id").textValue());
-    projectDataTypeReport.setType(report.get("_type").textValue());
+    projectDataTypeReport.setFeatureType(report.get("_type").textValue());
+    projectDataTypeReport.setSampleType(report.get("sample_type").textValue());
     projectDataTypeReport.setDonorCount(Long.parseLong(report.get("donor_id_count").textValue()));
     projectDataTypeReport.setSampleCount(Long.parseLong(report.get("analyzed_sample_id_count").textValue()));
     projectDataTypeReport.setSpecimenCount(Long.parseLong(report.get("specimen_id_count").textValue()));

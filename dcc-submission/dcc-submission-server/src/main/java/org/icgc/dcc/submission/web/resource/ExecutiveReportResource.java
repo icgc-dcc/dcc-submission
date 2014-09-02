@@ -71,7 +71,7 @@ public class ExecutiveReportResource {
     public int compare(ProjectDataTypeReport left, ProjectDataTypeReport right) {
       int result = left.getProjectCode().compareTo(right.getProjectCode());
       if (result == 0) {
-        return left.getType().compareTo(right.getType());
+        return left.getFeatureType().compareTo(right.getFeatureType());
       }
       return result;
     }
@@ -144,17 +144,20 @@ public class ExecutiveReportResource {
     val reports = service.getProjectDataTypeReport(releaseName,
         Objects.firstNonNull(projects, Collections.<String> emptyList()));
 
-    val header = ImmutableList.<String> builder().add(
-        "Release", "Project Id", "Type", "Donor Count", "Specimen Count", "Sample Count", "Observation Count");
+    val header =
+        ImmutableList.<String> builder().add(
+            "Release", "Project Id", "Type", "Sample Type", "Donor Count", "Specimen Count", "Sample Count",
+            "Observation Count");
 
     val dataTypeTotals = Maps.<String, ProjectDataTypeReport> newHashMap();
 
     // Compute totals
     for (val report : reports) {
-      if (!dataTypeTotals.containsKey(report.getType())) {
-        dataTypeTotals.put(report.getType(), new ProjectDataTypeReport(releaseName, "Total", report.getType()));
+      if (!dataTypeTotals.containsKey(report.getFeatureType())) {
+        dataTypeTotals.put(report.getFeatureType(),
+            new ProjectDataTypeReport(releaseName, "Total", report.getFeatureType(), report.getSampleType()));
       }
-      val typeTotalReport = dataTypeTotals.get(report.getType());
+      val typeTotalReport = dataTypeTotals.get(report.getFeatureType());
       typeTotalReport.setDonorCount(typeTotalReport.getDonorCount() + report.getDonorCount());
       typeTotalReport.setSpecimenCount(typeTotalReport.getSpecimenCount() + report.getSpecimenCount());
       typeTotalReport.setSampleCount(typeTotalReport.getSampleCount() + report.getSampleCount());
@@ -175,7 +178,8 @@ public class ExecutiveReportResource {
       for (val report : sortedReports) {
         addTSVRow(result, report.getReleaseName(),
             report.getProjectCode(),
-            report.getType(),
+            report.getFeatureType(),
+            report.getSampleType(),
             String.valueOf(report.getDonorCount()),
             String.valueOf(report.getSpecimenCount()),
             String.valueOf(report.getSampleCount()),

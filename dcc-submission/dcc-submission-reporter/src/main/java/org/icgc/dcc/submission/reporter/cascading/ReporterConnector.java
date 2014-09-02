@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableMap;
 @Slf4j
 public class ReporterConnector {
 
-  private static final String CONCURRENCY = String.valueOf(15);
+  private static final String CONCURRENCY = String.valueOf(5);
 
   private final CascadingContext cascadingContext;
   private final String outputDirPath;

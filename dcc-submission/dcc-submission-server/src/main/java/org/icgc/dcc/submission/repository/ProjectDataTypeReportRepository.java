@@ -56,7 +56,8 @@ public class ProjectDataTypeReportRepository extends AbstractRepository<ProjectD
     updateFirst(createQuery()
         .filter(fieldName(_.releaseName), projectDataTypeReport.getReleaseName())
         .filter(fieldName(_.projectCode), projectDataTypeReport.getProjectCode())
-        .filter(fieldName(_.type), projectDataTypeReport.getType()),
+        .filter(fieldName(_.featureType), projectDataTypeReport.getFeatureType())
+        .filter(fieldName(_.sampleType), projectDataTypeReport.getSampleType()),
         projectDataTypeReport, true);
   }
 }
