@@ -34,7 +34,7 @@ public class Main {
     int i = 0;
     val releaseName = args.length >= ++i ? args[i - 1] : "release2";
     val projectKey  = args.length >= ++i ? args[i - 1] : "project.1";
-    val fsRoot      = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
+    val fsRoot      = args.length >= ++i ? args[i - 1] : "/tmp/submission";
     val fsUrl       = args.length >= ++i ? args[i - 1] : "file:///";
     val fastaFile   = args.length >= ++i ? args[i - 1] : "/tmp/GRCh37.fasta";
     // @formatter:on

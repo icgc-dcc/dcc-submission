@@ -32,7 +32,7 @@ INFO  o.i.d.v.s.ValidationService - plan has errors, throwing a FilePresenceExce
 ServerSession - Exception caught
 java.io.IOException: Broken pipe
 java.io.IOException: Connection reset by peer
-FileKeyPairProvider - Unable to write key /tmp/dcc_root_dir/sshd.pem: java.io.FileNotFoundException: /tmp/dcc_root_dir/sshd.pem (No such file or directory)
+FileKeyPairProvider - Unable to write key /tmp/submission/sshd.pem: java.io.FileNotFoundException: /tmp/submission/sshd.pem (No such file or directory)
 ERROR o.i.d.s.HdfsSshFile - File system error
 /.validation is non empty
 org.apache.mina.core.write.WriteToClosedSessionException: null
@@ -43,7 +43,7 @@ java.io.IOException: Connection closed
 
 # ===========================================================================
 # see email "exception/error ignored" from 130220 on the softeng list:
-java.io.FileNotFoundException: File does not exist: /tmp/dcc_root_dir
+java.io.FileNotFoundException: File does not exist: /tmp/submission
 DefaultInternalFlowPlanner - missing corresponding file for
 Plan - no corresponding file for schema
 org.apache.sshd.common.SshException: Too may authentication failures

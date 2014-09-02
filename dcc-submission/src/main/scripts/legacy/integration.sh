@@ -2,7 +2,7 @@
 # mvn exec:java -Dexec.mainClass="org.icgc.dcc.validation.Main" -Dexec.args="release2 project2"
 
 [[ "$PWD" =~ "src/main/resources/integration" ]] || { echo "ERROR: must run the script from src/main/resources/integration"; exit 1; }
-rm -rf /tmp/dcc_root_dir || :
+rm -rf /tmp/submission || :
 
 echo
 read -p "please make sure the server is started first (\"mvn exec:java\")"
@@ -100,7 +100,7 @@ echo
 echo
 read -p "observe expected error"
 echo
-cat /tmp/dcc_root_dir/release2/project2/.validation/donor.internal.tsv
+cat /tmp/submission/release2/project2/.validation/donor.internal.tsv
 echo
 
 echo

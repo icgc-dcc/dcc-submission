@@ -88,11 +88,11 @@ public class NormalizationValidatorTest {
   private static final String BASIC_REFERENCE_FILE =
       getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME)).getFile();
   private static final String SPEC_DERIVED_INPUT_FILE =
-      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, INPUT, FILE_NAME);
+      format("/tmp/submission/%s/%s/%s", COMPONENT_NAME, INPUT, FILE_NAME);
   private static final String SPEC_DERIVED_REFERENCE_FILE =
-      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME);
+      format("/tmp/submission/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME);
   private static final String OUTPUT_FILE =
-      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, OUTPUT, FILE_NAME);
+      format("/tmp/submission/%s/%s/%s", COMPONENT_NAME, OUTPUT, FILE_NAME);
 
   private static final Joiner NEWLINE_JOINER = Joiner.on("\n");
 

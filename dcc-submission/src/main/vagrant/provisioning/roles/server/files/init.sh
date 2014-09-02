@@ -54,9 +54,9 @@ echo "dropping mongo icgc-dev database"
 #/usr/bin/mongo --verbose icgc-dev --eval "db.User.drop()"
 
 # Clean file system, if it exists
-echo "removing /mnt/dcc-portal/dcc_root_dir/*"
-rm -rvf /mnt/dcc-portal/dcc_root_dir/*
-#rm -rvf /tmp/dcc_root_dir/*
+echo "removing /mnt/dcc-portal/submission/*"
+rm -rvf /mnt/dcc-portal/submission/*
+#rm -rvf /tmp/submission/*
 
 # download origin dictionary and ensure state is OPENED
 echo "getting dictionary"
