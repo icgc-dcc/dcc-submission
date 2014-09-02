@@ -50,6 +50,7 @@ public class SubAssembliesTest {
   };
 
   private static final Pipe DUMMY_PIPE = new Pipe("dummypipe");
+  private static final Pipe DUMMY_PIPE2 = new Pipe("dummypipe2");
   private static final String DUMMY_NAME = "dummyname";
   private static final Fields DUMMY_FIELD = new Fields("dummyfield");
   private static final Fields DUMMY_FIELD2 = new Fields("dummyfield2");
@@ -58,7 +59,7 @@ public class SubAssembliesTest {
           .innerJoin()
           .leftPipe(DUMMY_PIPE)
           .leftJoinFields(DUMMY_FIELD)
-          .rightPipe(DUMMY_PIPE)
+          .rightPipe(DUMMY_PIPE2)
           .rightJoinFields(DUMMY_FIELD)
           .build();
   private static final GroupByData DUMMY_GROUP_BY_DATA =

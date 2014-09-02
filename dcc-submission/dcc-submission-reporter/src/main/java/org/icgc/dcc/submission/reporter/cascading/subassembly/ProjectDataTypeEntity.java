@@ -234,7 +234,7 @@ public class ProjectDataTypeEntity extends SubAssembly {
 
             .pipe(preComputationTable)
             .uniqueFields(countByFields.append(checkFieldsCardinalityOne(clinicalIdField)))
-            .countByFields(countByFields)
+            // .countByFields(countByFields)
             .resultCountField(getCountFieldCounterpart(clinicalIdField))
 
             .build());
