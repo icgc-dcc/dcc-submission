@@ -467,7 +467,7 @@ public class SubAssemblies {
 
     public UniqueCountBy(
         @NonNull final String name,
-        @NonNull final UniqueCountByData data) {
+        final UniqueCountByData data) {
       super(name, CountByData.builder()
 
           .pipe(

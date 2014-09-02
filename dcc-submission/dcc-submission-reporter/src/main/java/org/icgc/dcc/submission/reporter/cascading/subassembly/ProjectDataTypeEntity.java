@@ -152,7 +152,8 @@ public class ProjectDataTypeEntity extends SubAssembly {
       @NonNull final Fields countByFields,
       @NonNull final Fields clinicalIdCountField) {
     return new UniqueCountBy(
-        outputType.getId(), UniqueCountByData.builder()
+        outputType.getId(),
+        UniqueCountByData.builder()
 
             .pipe(preComputationTable)
             .uniqueFields(countByFields.append(checkFieldsCardinalityOne(clinicalIdCountField)))
