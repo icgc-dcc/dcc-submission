@@ -472,7 +472,7 @@ public class SubAssemblies {
 
           .pipe(
 
-              //
+              // Remove duplicates *before* count by
               new Unique( // TODO: automatically retains?
 
                   //

@@ -36,9 +36,11 @@ import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.AggregateBy;
+import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.SumBy;
+import cascading.pipe.assembly.Unique;
 import cascading.pipe.joiner.InnerJoin;
 import cascading.tuple.Fields;
 
@@ -55,21 +57,21 @@ public class ProjectDataTypeEntity extends SubAssembly {
 
         normalizeMergePipe(
             ALL_TYPES,
-            preProcessWithMultipleHashJoin(
+            preProcessWithAggregateBysNoAbstractions(
                 preComputationTable,
                 PROJECT_ID_FIELD,
                 TYPE_FIELD, SAMPLE_TYPE_FIELD)),
 
         normalizeMergePipe(
             getFieldName(SAMPLE_TYPE_FIELD),
-            preProcessWithMultipleHashJoin(
+            preProcessWithAggregateBysNoAbstractions(
                 preComputationTable,
                 PROJECT_ID_FIELD.append(SAMPLE_TYPE_FIELD),
                 TYPE_FIELD)),
 
         normalizeMergePipe(
             getFieldName(TYPE_FIELD),
-            preProcessWithMultipleHashJoin(
+            preProcessWithAggregateBysNoAbstractions(
                 preComputationTable,
                 PROJECT_ID_FIELD.append(TYPE_FIELD),
                 SAMPLE_TYPE_FIELD))));
@@ -184,6 +186,70 @@ public class ProjectDataTypeEntity extends SubAssembly {
     return pipe;
   }
 
+  private static Pipe preProcessWithAggregateBysNoAbstractions(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields countByFields,
+      @NonNull final Fields... placeholders) {
+
+    Pipe pipe = new AggregateBy(
+        preComputationTable,
+        countByFields,
+        new AggregateBy[] {
+
+            new CountBy(
+                DONOR.getId(),
+                new Unique(
+                    new Retain(
+                        preComputationTable,
+                        countByFields
+                            .append(DONOR_ID_FIELD)),
+                    Fields.ALL),
+                countByFields,
+                new Fields("donor_id_count")),
+
+            new CountBy(
+                SPECIMEN.getId(),
+                new Unique(
+                    new Retain(
+                        preComputationTable,
+                        countByFields
+                            .append(SPECIMEN_ID_FIELD)),
+                    Fields.ALL),
+                countByFields,
+                new Fields("specimen_id_count")),
+
+            new CountBy(
+                SAMPLE.getId(),
+                new Unique(
+                    new Retain(
+                        preComputationTable,
+                        countByFields
+                            .append(SAMPLE_ID_FIELD)),
+                    Fields.ALL),
+                countByFields,
+                new Fields("analyzed_sample_id_count")),
+
+            new SumBy(
+                new Retain(
+                    preComputationTable,
+                    countByFields.append(_ANALYSIS_OBSERVATION_COUNT_FIELD)),
+                countByFields,
+                _ANALYSIS_OBSERVATION_COUNT_FIELD,
+                _ANALYSIS_OBSERVATION_COUNT_FIELD,
+                long.class) });
+
+    // Add placeholder fields
+    for (val field : placeholders) {
+      pipe = new Insert(
+          keyValuePair(
+              checkFieldsCardinalityOne(field),
+              ALL_TYPES),
+          pipe);
+    }
+
+    return pipe;
+  }
+
   /**
    * This one is used in the other table as well (hence the public).
    */
@@ -224,7 +290,7 @@ public class ProjectDataTypeEntity extends SubAssembly {
   }
 
   private static AggregateBy clinicalUniqueCountBy(
-      @NonNull final Pipe preComputationTable,
+      @NonNull final Pipe trimmedPipe,
       @NonNull final OutputType outputType,
       @NonNull final Fields countByFields,
       @NonNull final Fields clinicalIdField) {
@@ -232,9 +298,9 @@ public class ProjectDataTypeEntity extends SubAssembly {
         outputType.getId(),
         UniqueCountByData.builder()
 
-            .pipe(preComputationTable)
+            .pipe(trimmedPipe)
             .uniqueFields(countByFields.append(checkFieldsCardinalityOne(clinicalIdField)))
-            // .countByFields(countByFields)
+            .countByFields(countByFields)
             .resultCountField(getCountFieldCounterpart(clinicalIdField))
 
             .build());
