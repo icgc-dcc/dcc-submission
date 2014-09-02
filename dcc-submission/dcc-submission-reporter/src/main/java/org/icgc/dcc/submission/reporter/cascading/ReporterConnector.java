@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableMap;
 @Slf4j
 public class ReporterConnector {
 
-  private static final String CONCURRENCY = String.valueOf(5);
+  private static final String DEFAULT_CONCURRENCY = String.valueOf(5);
 
   private final CascadingContext cascadingContext;
   private final String outputDirPath;
@@ -88,6 +88,13 @@ public class ReporterConnector {
         .connect(cascadeDef);
   }
 
+  private Integer getConcurrency() {
+    return Integer.valueOf(firstNonNull(
+        // To ease benchmarking until we find the sweet spot
+        System.getProperty("DCC_REPORT_CONCURRENCY"),
+        DEFAULT_CONCURRENCY));
+  }
+
   public Cascade connectFinalCascade(
       @NonNull final String releaseName,
       @NonNull final Set<String> projectKeys,
@@ -95,14 +102,10 @@ public class ReporterConnector {
       @NonNull final Pipe projectDataTypeEntity,
       @NonNull final Pipe projectSequencingStrategy,
       @NonNull final Map<?, ?> hadoopProperties) {
-
-    val maxConcurrentFlows = getConcurrency();
-    log.info("maxConcurrentFlows: '{}'", maxConcurrentFlows);
     log.info("hadoopProperties: '{}'", hadoopProperties);
 
     val cascadeDef = cascadeDef()
-        .setName(Cascades.getName(Reporter.CLASS))
-        .setMaxConcurrentFlows(maxConcurrentFlows);
+        .setName(Cascades.getName(Reporter.CLASS));
 
     cascadeDef.addFlow(
         getFlowConnector(hadoopProperties).connect(
@@ -124,13 +127,6 @@ public class ReporterConnector {
         .getConnectors()
         .getCascadeConnector(hadoopProperties)
         .connect(cascadeDef);
-  }
-
-  private Integer getConcurrency() {
-    return Integer.valueOf(firstNonNull(
-        // To ease benchmarking until we find the sweet spot
-        System.getProperty("DCC_REPORT_CONCURRENCY"),
-        CONCURRENCY));
   }
 
   private FlowConnector getFlowConnector(@NonNull final Map<?, ?> hadoopProperties) {
