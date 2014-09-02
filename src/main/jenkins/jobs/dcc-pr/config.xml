@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<maven2-moduleset plugin="maven-plugin@2.6">
+<maven2-moduleset plugin="maven-plugin@2.5">
   <actions/>
-  <description></description>
-  <displayName>DCC [Develop]</displayName>
+  <description>Pull Request Watcher for ICGC DCC</description>
+  <displayName>DCC [PR]</displayName>
   <logRotator class="hudson.tasks.LogRotator">
     <daysToKeep>-1</daysToKeep>
     <numToKeep>10</numToKeep>
@@ -14,17 +14,27 @@
     <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.9.1">
       <projectUrl>https://github.com/icgc-dcc/dcc/</projectUrl>
     </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>sha1</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
   </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.5">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.2">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
+        <refspec>+refs/pull/*:refs/remotes/origin/pr/*</refspec>
         <url>git@github.com:icgc-dcc/dcc</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>origin/develop</name>
+        <name>${sha1}</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
@@ -39,33 +49,42 @@
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers>
-    <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.9.1">
-      <spec></spec>
-    </com.cloudbees.jenkins.GitHubPushTrigger>
-    <hudson.triggers.SCMTrigger>
-      <spec>*/1 * * * *</spec>
-      <ignorePostCommitHooks>false</ignorePostCommitHooks>
-    </hudson.triggers.SCMTrigger>
+    <org.jenkinsci.plugins.ghprb.GhprbTrigger plugin="ghprb@1.12">
+      <spec>*/5 * * * *</spec>
+      <adminlist>btiernay chilinglam anthony-cros mwdchang shanewilson vslobodianyk slovit</adminlist>
+      <orgslist></orgslist>
+      <cron>*/5 * * * *</cron>
+      <triggerPhrase></triggerPhrase>
+      <onlyTriggerPhrase>false</onlyTriggerPhrase>
+      <useGitHubHooks>false</useGitHubHooks>
+      <permitAll>false</permitAll>
+      <whitelist></whitelist>
+      <autoCloseFailedPullRequests>false</autoCloseFailedPullRequests>
+      <whiteListTargetBranches>
+        <org.jenkinsci.plugins.ghprb.GhprbBranch>
+          <branch></branch>
+        </org.jenkinsci.plugins.ghprb.GhprbBranch>
+      </whiteListTargetBranches>
+    </org.jenkinsci.plugins.ghprb.GhprbTrigger>
   </triggers>
   <concurrentBuild>false</concurrentBuild>
-  <customWorkspace>/var/lib/jenkins/jobs/dcc-develop-branch/workspace</customWorkspace>
+  <customWorkspace>/var/lib/jenkins/jobs/dcc-pr/workspace</customWorkspace>
   <rootModule>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc</artifactId>
   </rootModule>
-  <goals>-P release -Dmaven.test.failure.ignore=false</goals>
+  <goals>-B -P jenkins clean install -Dmaven.test.failure.ignore=false</goals>
   <defaultGoals>install</defaultGoals>
-  <mavenOpts>-Dm3plugin.lib=/var/lib/jenkins/plugins/artifactory/WEB-INF/lib</mavenOpts>
   <aggregatorStyleBuild>true</aggregatorStyleBuild>
   <incrementalBuild>true</incrementalBuild>
-  <ignoreUpstremChanges>true</ignoreUpstremChanges>
-  <archivingDisabled>true</archivingDisabled>
-  <siteArchivingDisabled>true</siteArchivingDisabled>
+  <ignoreUpstremChanges>false</ignoreUpstremChanges>
+  <archivingDisabled>false</archivingDisabled>
+  <siteArchivingDisabled>false</siteArchivingDisabled>
   <fingerprintingDisabled>false</fingerprintingDisabled>
   <resolveDependencies>false</resolveDependencies>
   <processPlugins>false</processPlugins>
   <mavenValidationLevel>-1</mavenValidationLevel>
-  <runHeadless>true</runHeadless>
+  <runHeadless>false</runHeadless>
   <disableTriggerDownstreamProjects>false</disableTriggerDownstreamProjects>
   <settings class="jenkins.mvn.DefaultSettingsProvider"/>
   <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
@@ -74,21 +93,20 @@
       <recipients>dcc-softeng@lists.oicr.on.ca</recipients>
       <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
       <sendToIndividuals>false</sendToIndividuals>
-      <perModuleEmail>true</perModuleEmail>
+      <perModuleEmail>false</perModuleEmail>
     </hudson.maven.reporters.MavenMailer>
   </reporters>
   <publishers>
-    <org.jfrog.hudson.ArtifactoryRedeployPublisher plugin="artifactory@2.2.4">
+    <org.jfrog.hudson.ArtifactoryRedeployPublisher plugin="artifactory@2.2.3">
       <evenIfUnstable>false</evenIfUnstable>
       <details>
         <artifactoryName>-1722354038@1370461174508</artifactoryName>
-        <repositoryKey>dcc-release</repositoryKey>
-        <snapshotsRepositoryKey>dcc-snapshot</snapshotsRepositoryKey>
+        <repositoryKey>dcc-pr-snapshot</repositoryKey>
+        <snapshotsRepositoryKey>dcc-pr-snapshot</snapshotsRepositoryKey>
         <artifactoryUrl>http://seqwaremaven.oicr.on.ca/artifactory</artifactoryUrl>
         <stagingPlugin>
           <pluginName>None</pluginName>
         </stagingPlugin>
-        <userPluginKey>None</userPluginKey>
       </details>
       <deployArtifacts>true</deployArtifacts>
       <artifactDeploymentPatterns>
@@ -110,12 +128,12 @@
       <discardOldBuilds>false</discardOldBuilds>
       <discardBuildArtifacts>true</discardBuildArtifacts>
       <matrixParams></matrixParams>
-      <enableIssueTrackerIntegration>true</enableIssueTrackerIntegration>
+      <enableIssueTrackerIntegration>false</enableIssueTrackerIntegration>
       <allowPromotionOfNonStagedBuilds>false</allowPromotionOfNonStagedBuilds>
       <filterExcludedArtifactsFromBuild>false</filterExcludedArtifactsFromBuild>
       <deployBuildInfo>true</deployBuildInfo>
       <aggregationBuildStatus>Released</aggregationBuildStatus>
-      <aggregateBuildIssues>true</aggregateBuildIssues>
+      <aggregateBuildIssues>false</aggregateBuildIssues>
       <blackDuckRunChecks>false</blackDuckRunChecks>
       <blackDuckAppName></blackDuckAppName>
       <blackDuckAppVersion></blackDuckAppVersion>
@@ -125,85 +143,14 @@
       <autoCreateMissingComponentRequests>true</autoCreateMissingComponentRequests>
       <autoDiscardStaleComponentRequests>true</autoDiscardStaleComponentRequests>
     </org.jfrog.hudson.ArtifactoryRedeployPublisher>
-    <hudson.plugins.jira.JiraIssueUpdater plugin="jira@1.39"/>
   </publishers>
-  <buildWrappers>
-    <org.jfrog.hudson.release.maven.MavenReleaseWrapper plugin="artifactory@2.2.4">
-      <tagPrefix></tagPrefix>
-      <releaseBranchPrefix></releaseBranchPrefix>
-      <targetRemoteName></targetRemoteName>
-      <alternativeGoals></alternativeGoals>
-      <defaultVersioning>GLOBAL</defaultVersioning>
-    </org.jfrog.hudson.release.maven.MavenReleaseWrapper>
-  </buildWrappers>
+  <buildWrappers/>
   <prebuilders/>
-  <postbuilders>
-    <hudson.plugins.groovy.SystemGroovy plugin="groovy@1.20">
-      <scriptSource class="hudson.plugins.groovy.StringScriptSource">
-        <command>import hudson.model.*;
-import hudson.util.*;
-
-def thr = Thread.currentThread();
-def currentBuild = thr?.executable;
-def mavenVer = currentBuild.getParent().getModules().toArray()[0].getVersion();
-def newParamAction = new hudson.model.ParametersAction(new hudson.model.StringParameterValue(&quot;MAVEN_VERSION&quot;, mavenVer));
-currentBuild.addAction(newParamAction);</command>
-      </scriptSource>
-      <bindings></bindings>
-      <classpath></classpath>
-    </hudson.plugins.groovy.SystemGroovy>
-    <hudson.tasks.Shell>
-      <command>#!/bin/bash
-#
-# Copyright 2014(c) The Ontario Institute for Cancer Research. All rights reserved.
-#
-# Description:
-#   Tags all DCC configuration repositories with build tags.
-#
-# See:
-#   https://github.com/icgc-dcc/dcc/tree/develop/src/main/jenkins
-
-echo &quot;Maven version is ${MAVEN_VERSION}&quot;
-mkdir dcc-config
-cd dcc-config;
-
-git clone git@hproxy-dcc.res.oicr.on.ca:/srv/git/dcc-submission.git;
-cd dcc-submission;
-git tag ${MAVEN_VERSION} -f;
-git push origin :refs/tags/${MAVEN_VERSION};
-git push --tags
-cd ..
-
-git clone git@hproxy-dcc.res.oicr.on.ca:/srv/git/dcc-identifier.git;
-cd dcc-identifier;
-git tag ${MAVEN_VERSION} -f;
-git push origin :refs/tags/${MAVEN_VERSION};
-git push --tags
-cd ..
-
-git clone git@hproxy-dcc.res.oicr.on.ca:/srv/git/dcc-portal.git;
-cd dcc-portal;
-git tag ${MAVEN_VERSION} -f;
-git push origin :refs/tags/${MAVEN_VERSION};
-git push --tags
-cd ..
-
-git clone git@hproxy-dcc.res.oicr.on.ca:/srv/git/dcc-etl.git;
-cd dcc-etl;
-git tag ${MAVEN_VERSION} -f;
-git push origin :refs/tags/${MAVEN_VERSION};
-git push --tags
-cd ..
-
-
-cd ..
-rm -rf dcc-config;</command>
-    </hudson.tasks.Shell>
-  </postbuilders>
+  <postbuilders/>
   <runPostStepsIfResult>
-    <name>SUCCESS</name>
-    <ordinal>0</ordinal>
-    <color>BLUE</color>
+    <name>FAILURE</name>
+    <ordinal>2</ordinal>
+    <color>RED</color>
     <completeBuild>true</completeBuild>
   </runPostStepsIfResult>
 </maven2-moduleset>
