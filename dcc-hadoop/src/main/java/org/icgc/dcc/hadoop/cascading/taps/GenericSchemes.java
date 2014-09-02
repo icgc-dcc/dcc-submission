@@ -38,4 +38,8 @@ class GenericSchemes {
     return true;
   }
 
+  static boolean noHeader() {
+    return !withHeader();
+  }
+
 }

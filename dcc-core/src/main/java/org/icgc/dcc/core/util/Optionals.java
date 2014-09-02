@@ -43,10 +43,9 @@ import com.google.common.base.Supplier;
 public class Optionals {
 
   public static final Optional<String> ABSENT_STRING = Optional.absent();
-  public static final Optional<List<String>> ABSENT_STRING_LIST = Optional.<List<String>> absent();
-  public static final Optional<Set<String>> ABSENT_STRING_SET = Optional.<Set<String>> absent();
-  public static final Optional<Map<String, String>> ABSENT_STRING_MAP = Optional.<Map<String, String>> absent();
-
+  public static final Optional<List<String>> ABSENT_STRING_LIST = Optional.absent();
+  public static final Optional<Set<String>> ABSENT_STRING_SET = Optional.absent();
+  public static final Optional<Map<String, String>> ABSENT_STRING_MAP = Optional.absent();
   public static final Optional<FileType> ABSENT_FILE_TYPE = Optional.absent();
   public static final Optional<FileSubType> ABSENT_FILE_SUB_TYPE = Optional.absent();
 

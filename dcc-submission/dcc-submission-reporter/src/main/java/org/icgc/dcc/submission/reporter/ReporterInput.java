@@ -2,7 +2,6 @@ package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Maps.transformValues;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
@@ -27,6 +26,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
 
 @ToString
 public class ReporterInput {
@@ -59,8 +59,10 @@ public class ReporterInput {
         ImmutableSet.<String> of()));
   }
 
-  public Map<FileType, Integer> getMatchingFilePathCounts(@NonNull final String projectKey) {
-    return transformValues(getMatchingFilePaths(projectKey), Functions2.<String> size());
+  public Table<String, FileType, Integer> getMatchingFilePathCounts() {
+    return Tables.transformValues(
+        data,
+        Functions2.<String> size());
   }
 
   public Map<FileType, Set<String>> getMatchingFilePaths(@NonNull final String projectKey) {

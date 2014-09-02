@@ -24,6 +24,7 @@ import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -63,7 +64,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import cascading.tap.Tap;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
@@ -93,8 +93,6 @@ public class NormalizationValidatorTest {
       format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME);
   private static final String OUTPUT_FILE =
       format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, OUTPUT, FILE_NAME);
-
-  private static final Joiner NEWLINE_JOINER = Joiner.on("\n");
 
   public static final String OBSERVATION_ID_DEFAULT_VALUE = "v1";
 
@@ -228,8 +226,8 @@ public class NormalizationValidatorTest {
         UTF_8);
 
     // Check data output
-    assertThat(NEWLINE_JOINER.join(outputLines))
-        .isEqualTo(NEWLINE_JOINER.join(referenceLines));
+    assertThat(NEWLINE.join(outputLines))
+        .isEqualTo(NEWLINE.join(referenceLines));
   }
 
   /**
