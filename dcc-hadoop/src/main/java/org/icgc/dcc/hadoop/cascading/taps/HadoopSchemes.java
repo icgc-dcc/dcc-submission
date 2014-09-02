@@ -20,6 +20,7 @@ package org.icgc.dcc.hadoop.cascading.taps;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstObject;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.TSV_DELIMITER;
+import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.noHeader;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.withHeader;
 
 import java.io.IOException;
@@ -69,6 +70,12 @@ class HadoopSchemes {
   static final TextLine getNoCompressionTsvWithHeader() {
     return new TextDelimited(
         withHeader(),
+        TSV_DELIMITER);
+  }
+
+  static final TextLine getNoCompressionTsvNoHeader() {
+    return new TextDelimited(
+        noHeader(),
         TSV_DELIMITER);
   }
 

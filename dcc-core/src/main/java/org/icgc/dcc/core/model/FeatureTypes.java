@@ -261,10 +261,6 @@ public final class FeatureTypes {
     return AGGREGATED_FEATURE_TYPES.contains(type);
   }
 
-  public static boolean hasControlSampleId(FeatureType type) {
-    return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
-  }
-
   private static final Set<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = ImmutableSet.of(
       METH_ARRAY_TYPE,
       EXP_ARRAY_TYPE,
@@ -292,6 +288,10 @@ public final class FeatureTypes {
     return from(hasSequencingStrategy(), featureType);
   }
 
+  public static Proposition hasControlSampleId(@NonNull final FeatureType featureType) {
+    return from(hasControlSampleId(), featureType);
+  }
+
   private static Predicate<FeatureType> hasRawSequenceData() {
     return not(in(TYPES_WITH_RAW_SEQUENCE_DATA));
   }
@@ -299,4 +299,9 @@ public final class FeatureTypes {
   private static Predicate<FeatureType> hasSequencingStrategy() {
     return not(in(TYPES_WITH_SEQUENCING_STRATEGY));
   }
+
+  private static Predicate<FeatureType> hasControlSampleId() {
+    return in(CONTROL_SAMPLE_FEATURE_TYPES);
+  }
+
 }

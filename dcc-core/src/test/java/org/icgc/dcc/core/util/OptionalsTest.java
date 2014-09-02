@@ -18,7 +18,7 @@
 package org.icgc.dcc.core.util;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.util.Casts.castIntegerToString;
+import static org.icgc.dcc.core.util.Functions2.castIntegerToString;
 
 import org.junit.Test;
 

@@ -72,7 +72,7 @@ public class SerializableMaps {
 
   public static <K, V1, V2> Map<K, V2> transformValues(
       Map<K, V1> inputMap,
-      Function<V1, V2> function) {
+      Function<? super V1, V2> function) {
     Map<K, V2> map = newLinkedHashMap();
     for (val entry : inputMap.entrySet()) {
       map.put(entry.getKey(), function.apply(entry.getValue()));

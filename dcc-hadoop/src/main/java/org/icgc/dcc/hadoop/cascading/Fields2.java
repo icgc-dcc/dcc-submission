@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import static cascading.tuple.Fields.NONE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
@@ -76,7 +77,7 @@ public final class Fields2 {
     checkState(
         fields.size() == expectedSize,
         "Expecting only '%s' field(s), instead got '%s' ('%s')",
-        fields.size(), fields);
+        expectedSize, fields.size(), fields);
     return fields;
   }
 
@@ -160,6 +161,33 @@ public final class Fields2 {
 
   public static Fields getCountFieldCounterpart(String fieldName) {
     return new Fields(ADD_COUNT_SUFFIX.apply(fieldName));
+  }
+
+  public static Fields getCountFieldCounterpart(
+      @NonNull final Enum<?> type,
+      @NonNull final String fieldName) {
+    return new Fields(ADD_COUNT_SUFFIX.apply(UNDERSCORE.join(type.name().toLowerCase(), fieldName)));
+  }
+
+  public static Fields getTemporaryCountByFields(
+      @NonNull final Fields countByFields,
+      @NonNull final Enum<?> type) {
+    Fields temporaryCountByFields = NONE;
+    for (val fieldName : getFieldNames(countByFields)) {
+      temporaryCountByFields = temporaryCountByFields.append(
+          getCountFieldCounterpart(type, fieldName));
+    }
+
+    return temporaryCountByFields;
+  }
+
+  public static Fields getRedundantFieldCounterparts(Fields fields) {
+    Fields redundantFields = NONE;
+    for (val fieldName : getFieldNames(fields)) {
+      redundantFields = redundantFields.append(getRedundantFieldCounterpart(fieldName));
+    }
+
+    return redundantFields;
   }
 
   public static Fields getRedundantFieldCounterpart(Fields field) {
@@ -356,7 +384,7 @@ public final class Fields2 {
     return checkFieldsCardinalityOne(field).print().replace("['", "").replace("']", "");
   }
 
-  public static Fields appendIfApplicable(
+  public static Fields appendFieldIfApplicable(
       @NonNull final Fields fields, // TODO: decorator around that Fields rather
       @NonNull final Proposition proposition,
       @NonNull final Fields conditionedFields) {
@@ -393,5 +421,12 @@ public final class Fields2 {
     }
 
   };
+
+  public static Fields swapTwoFields(@NonNull final Fields twoFields) {
+    checkFieldsCardinalityTwo(twoFields);
+
+    return getField(twoFields.get(1))
+        .append(getField(twoFields.get(0)));
+  }
 
 }

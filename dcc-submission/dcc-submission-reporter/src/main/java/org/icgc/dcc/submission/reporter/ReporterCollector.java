@@ -27,31 +27,28 @@ public class ReporterCollector {
   public static ArrayNode getJsonProjectDataTypeEntity(
       @NonNull final FileSystem fileSystem,
       @NonNull final String outputDirPath,
-      @NonNull final String releaseName,
-      @NonNull final String projectKey) {
+      @NonNull final String releaseName) {
     return getJson(
-        fileSystem, outputDirPath, releaseName, projectKey, OutputType.DONOR, ABSENT_STRING_MAP);
+        fileSystem, outputDirPath, releaseName, OutputType.DONOR, ABSENT_STRING_MAP);
   }
 
   public static ArrayNode getJsonProjectSequencingStrategy(
       @NonNull final FileSystem fileSystem,
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
-      @NonNull final String projectKey,
       @NonNull final Map<String, String> mapping) {
     return getJson(
-        fileSystem, outputDirPath, releaseName, projectKey, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
+        fileSystem, outputDirPath, releaseName, OutputType.SEQUENCING_STRATEGY, Optional.of(mapping));
   }
 
   private static ArrayNode getJson(
       @NonNull final FileSystem fileSystem,
       @NonNull final String outputDirPath,
       @NonNull final String releaseName,
-      @NonNull final String projectKey,
       @NonNull final OutputType outputType,
       @NonNull final Optional<Map<String, String>> mapping) {
 
-    val outputFilePath = Reporter.getOutputFilePath(outputDirPath, outputType, releaseName, projectKey);
+    val outputFilePath = Reporter.getFilePath(outputDirPath, outputType, releaseName);
     val iterator = readSmallTextFile(fileSystem, new Path(outputFilePath)).iterator();
     val headerLine = iterator.next();
     val headers = getTsvHeaders(headerLine);

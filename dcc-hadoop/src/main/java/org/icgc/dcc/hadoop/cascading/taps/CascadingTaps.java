@@ -30,6 +30,8 @@ public interface CascadingTaps {
 
   Tap<?, ?, ?> getLines(String path, SinkMode sinkMode);
 
+  Tap<?, ?, ?> getNoCompressionTsvNoHeader(String path);
+
   Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path);
 
   Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path, Fields fields);
