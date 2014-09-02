@@ -37,7 +37,10 @@ import com.google.common.collect.ImmutableMap;
 @Slf4j
 public class ReporterConnector {
 
-  private static final String DEFAULT_CONCURRENCY = String.valueOf(1);
+  /**
+   * This requires a high number of open files (the default number on Debian typically doesn't suffice).
+   */
+  private static final String DEFAULT_CONCURRENCY = String.valueOf(15);
 
   private final CascadingContext cascadingContext;
   private final String outputDirPath;

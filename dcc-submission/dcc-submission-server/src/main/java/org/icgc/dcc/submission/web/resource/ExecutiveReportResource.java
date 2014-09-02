@@ -71,8 +71,12 @@ public class ExecutiveReportResource {
     public int compare(ProjectDataTypeReport left, ProjectDataTypeReport right) {
       int result = left.getProjectCode().compareTo(right.getProjectCode());
       if (result == 0) {
-        return left.getFeatureType().compareTo(right.getFeatureType());
+        result = left.getSampleType().compareTo(right.getSampleType());
+        if (result == 0) {
+          return left.getFeatureType().compareTo(right.getFeatureType());
+        }
       }
+
       return result;
     }
   };
