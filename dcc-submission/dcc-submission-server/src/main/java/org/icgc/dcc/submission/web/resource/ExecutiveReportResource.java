@@ -46,9 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.util.Joiners;
 import org.icgc.dcc.core.util.Strings2;
+import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
+import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.service.ExecutiveReportService;
-import org.icgc.submission.summary.ProjectDataTypeReport;
-import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;

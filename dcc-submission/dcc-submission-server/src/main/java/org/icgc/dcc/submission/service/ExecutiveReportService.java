@@ -40,6 +40,8 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.InjectionNames;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
+import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
+import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.reporter.Reporter;
 import org.icgc.dcc.submission.reporter.ReporterCollector;
@@ -49,8 +51,6 @@ import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectDataTypeReportRepository;
 import org.icgc.dcc.submission.repository.ProjectSequencingStrategyReportRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
-import org.icgc.submission.summary.ProjectDataTypeReport;
-import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
