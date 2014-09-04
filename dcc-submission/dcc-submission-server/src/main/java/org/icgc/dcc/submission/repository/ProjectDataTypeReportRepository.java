@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.repository;
 
-import static org.icgc.submission.summary.QProjectDataTypeReport.projectDataTypeReport;
+import static org.icgc.dcc.submission.core.model.QProjectDataTypeReport.projectDataTypeReport;
 
 import java.util.List;
 
 import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
-import org.icgc.submission.summary.QProjectDataTypeReport;
+import org.icgc.dcc.submission.core.model.QProjectDataTypeReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
