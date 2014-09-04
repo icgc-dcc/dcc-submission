@@ -15,7 +15,9 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.submission.summary;
+package org.icgc.dcc.submission.core.model;
+
+import java.util.Map;
 
 import lombok.Data;
 import lombok.ToString;
@@ -25,51 +27,28 @@ import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Index;
 import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.Property;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity(noClassnameStored = true)
 @ToString
-@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, featureType, sampleType"))
+@Indexes(@Index(name = "release_project", value = "releaseName, projectCode"))
 @Data
-public class ProjectDataTypeReport {
-
-  public ProjectDataTypeReport(String releaseName, String projectCode, String featureType, String sampleType) {
-    this.releaseName = releaseName;
-    this.projectCode = projectCode;
-    this.featureType = featureType;
-    this.sampleType = sampleType;
-    donorCount = specimenCount = sampleCount = observationCount = 0;
-  }
-
-  public ProjectDataTypeReport() {
-  }
+public class ProjectSequencingStrategyReport {
 
   @Id
   private String id;
 
+  @Property("releaseName")
   @JsonView(Digest.class)
   protected String releaseName;
 
+  @Property("projectCode")
   @JsonView(Digest.class)
   protected String projectCode;
 
-  @JsonView(Digest.class)
-  protected String featureType;
-
-  @JsonView(Digest.class)
-  protected String sampleType;
-
-  @JsonView(Digest.class)
-  protected long donorCount;
-
-  @JsonView(Digest.class)
-  protected long specimenCount;
-
-  @JsonView(Digest.class)
-  protected long sampleCount;
-
-  @JsonView(Digest.class)
-  protected long observationCount;
+  // Count fields
+  Map<String, Long> countSummary;
 
 }

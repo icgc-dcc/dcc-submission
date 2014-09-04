@@ -23,7 +23,7 @@ import java.util.List;
 
 import lombok.NonNull;
 
-import org.icgc.submission.summary.ProjectSequencingStrategyReport;
+import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.submission.summary.QProjectSequencingStrategyReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
