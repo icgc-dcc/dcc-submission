@@ -48,8 +48,12 @@ public class ProjectDataTypeReportRepository extends AbstractRepository<ProjectD
     return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
   }
 
-  public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter(fieldName(_.releaseName), releaseName));
+  public void deleteBySubmission(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    datastore().delete(createQuery()
+        .filter(fieldName(_.releaseName), releaseName)
+        .filter(fieldName(_.projectCode), projectKey));
   }
 
   public void upsert(ProjectDataTypeReport projectDataTypeReport) {

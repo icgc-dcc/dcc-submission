@@ -51,6 +51,7 @@ import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.service.ExecutiveReportService;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -153,15 +154,16 @@ public class ExecutiveReportResource {
             "Release", "Project Id", "Feature Type", "Sample Type", "Donor Count", "Specimen Count", "Sample Count",
             "Observation Count");
 
-    val dataTypeTotals = Maps.<String, ProjectDataTypeReport> newHashMap();
+    val dataTypeTotals = HashBasedTable.<String, String, ProjectDataTypeReport> create();
 
     // Compute totals
     for (val report : reports) {
-      if (!dataTypeTotals.containsKey(report.getFeatureType())) {
-        dataTypeTotals.put(report.getFeatureType(),
+      if (!dataTypeTotals.contains(report.getFeatureType(), report.getSampleType())) {
+        dataTypeTotals.put(report.getFeatureType(), report.getSampleType(),
             new ProjectDataTypeReport(releaseName, "Total", report.getFeatureType(), report.getSampleType()));
       }
-      val typeTotalReport = dataTypeTotals.get(report.getFeatureType());
+
+      val typeTotalReport = dataTypeTotals.get(report.getFeatureType(), report.getSampleType());
       typeTotalReport.setDonorCount(typeTotalReport.getDonorCount() + report.getDonorCount());
       typeTotalReport.setSpecimenCount(typeTotalReport.getSpecimenCount() + report.getSpecimenCount());
       typeTotalReport.setSampleCount(typeTotalReport.getSampleCount() + report.getSampleCount());

@@ -49,8 +49,12 @@ public class ProjectSequencingStrategyReportRepository extends
     return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projects)));
   }
 
-  public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter(fieldName(_.releaseName), releaseName));
+  public void deleteBySubmission(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    datastore().delete(createQuery()
+        .filter(fieldName(_.releaseName), releaseName)
+        .filter(fieldName(_.projectCode), projectKey));
   }
 
   public void upsert(ProjectSequencingStrategyReport projectSequencingStrategyReport) {

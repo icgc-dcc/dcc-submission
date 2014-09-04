@@ -643,19 +643,9 @@ public class ReleaseService extends AbstractService {
     val release = getNextRelease();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
 
-    resetExecutiveReports(release.getName());
-
     for (val projectKey : projects) {
       resetSubmission(release, projectKey, filePatternToTypeMap);
     }
-  }
-
-  /**
-   * Clear all existing reports associated with the release
-   */
-  private void resetExecutiveReports(@NonNull final String releaseName) {
-    executiveReportService.deleteProjectDataTypeReport(releaseName);
-    executiveReportService.deleteProjectSequencingStrategyReport(releaseName);
   }
 
   @Synchronized
@@ -786,6 +776,10 @@ public class ReleaseService extends AbstractService {
     submission.reset(submissionFiles);
     releaseRepository.updateReleaseSubmission(release.getName(), submission);
     resetValidationFolder(projectKey, release);
+
+    // Clear all existing reports associated with the release/project
+    executiveReportService.deleteProjectDataTypeReport(release.getName(), projectKey);
+    executiveReportService.deleteProjectSequencingStrategyReport(release.getName(), projectKey);
 
     return submission;
   }

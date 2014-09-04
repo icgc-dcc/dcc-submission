@@ -65,6 +65,9 @@ import com.google.inject.name.Named;
 @Slf4j
 public class ExecutiveReportService extends AbstractIdleService {
 
+  /**
+   * TODO: address as part of DCC-2445 (what to do with projects without experimental data?)
+   */
   private static final Set<String> NO_OBSERVATIONS_PROJECT_KEYS = ImmutableSet.of("AML-US", "WT-US");
 
   /**
@@ -133,8 +136,10 @@ public class ExecutiveReportService extends AbstractIdleService {
     projectDataTypeRepository.upsert(report);
   }
 
-  public void deleteProjectDataTypeReport(final String releaseName) {
-    projectDataTypeRepository.deleteByRelease(releaseName);
+  public void deleteProjectDataTypeReport(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    projectDataTypeRepository.deleteBySubmission(releaseName, projectKey);
   }
 
   public List<ProjectSequencingStrategyReport> getProjectSequencingStrategyReport() {
@@ -150,8 +155,10 @@ public class ExecutiveReportService extends AbstractIdleService {
     projectSequencingStrategyRepository.upsert(report);
   }
 
-  public void deleteProjectSequencingStrategyReport(final String releaseName) {
-    projectSequencingStrategyRepository.deleteByRelease(releaseName);
+  public void deleteProjectSequencingStrategyReport(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    projectSequencingStrategyRepository.deleteBySubmission(releaseName, projectKey);
   }
 
   private ProjectDataTypeReport getProjectReport(JsonNode report, String releaseName) {
