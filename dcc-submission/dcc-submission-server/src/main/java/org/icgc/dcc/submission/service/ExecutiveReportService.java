@@ -65,6 +65,9 @@ import com.google.inject.name.Named;
 @Slf4j
 public class ExecutiveReportService extends AbstractIdleService {
 
+  /**
+   * TODO: address as part of DCC-2445 (what to do with projects without experimental data?)
+   */
   private static final Set<String> NO_OBSERVATIONS_PROJECT_KEYS = ImmutableSet.of("AML-US", "WT-US");
 
   /**
