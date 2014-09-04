@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
+import static org.icgc.dcc.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
@@ -29,7 +30,6 @@ import java.io.IOException;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.util.Joiners;
@@ -69,7 +69,7 @@ public class KeyValidatorIntegrationTest {
   @Before
   public void setUp() throws IOException {
     this.validator = new KeyValidator();
-    this.fileSystem = createFileSystem();
+    this.fileSystem = getDefaultLocalFileSystem();
     this.rootDir = new Path(tmp.newFolder().getAbsolutePath());
     log.info("Test root dir: '{}'", rootDir);
 
@@ -106,10 +106,6 @@ public class KeyValidatorIntegrationTest {
       }
 
     };
-  }
-
-  private FileSystem createFileSystem() throws IOException {
-    return FileSystem.get(new Configuration());
   }
 
 }

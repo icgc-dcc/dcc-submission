@@ -18,10 +18,14 @@
 package org.icgc.dcc.hadoop.cascading;
 
 import static lombok.AccessLevel.PRIVATE;
+
+import java.util.Map.Entry;
+
 import lombok.NoArgsConstructor;
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
 import cascading.pipe.Pipe;
+import cascading.tuple.Fields;
 
 import com.google.common.base.Optional;
 
@@ -31,6 +35,8 @@ import com.google.common.base.Optional;
 @NoArgsConstructor(access = PRIVATE)
 public final class CascadingOptionals {
 
+  public static final Optional<Fields> ABSENT_FIELD = Optional.absent();
+  public static final Optional<Entry<Fields, String>> ABSENT_ENTRY = Optional.absent();
   public static final Optional<Pipe> ABSENT_PIPE = Optional.absent();
   public static final Optional<Flow<?>> ABSENT_FLOW = Optional.<Flow<?>> absent();
   public static final Optional<Cascade> ABSENT_CASCADE = Optional.absent();

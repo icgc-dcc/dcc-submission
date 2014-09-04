@@ -21,6 +21,7 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
 import static cascading.tuple.Fields.RESULTS;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.toArray;
@@ -29,8 +30,11 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING;
 import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
 import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.hadoop.cascading.Fields2.cloneFields;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldNames;
+import static org.icgc.dcc.hadoop.cascading.Fields2.getRedundantFieldCounterparts;
 import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
+import static org.icgc.dcc.hadoop.cascading.Fields2.swapTwoFields;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.contains;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstInteger;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.toJson;
@@ -65,11 +69,18 @@ import cascading.pipe.HashJoin;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.AggregateBy;
+import cascading.pipe.assembly.CountBy;
 import cascading.pipe.assembly.Discard;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.pipe.assembly.SumBy;
 import cascading.pipe.assembly.Unique;
+import cascading.pipe.joiner.InnerJoin;
 import cascading.pipe.joiner.Joiner;
+import cascading.pipe.joiner.LeftJoin;
+import cascading.pipe.joiner.OuterJoin;
+import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -80,6 +91,8 @@ import com.google.common.base.Supplier;
 
 /**
  * Useful sub-assemblies.
+ * <p>
+ * TODO: separate {@link AggregateBy}s.
  */
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
@@ -235,6 +248,8 @@ public class SubAssemblies {
 
   /**
    * TODO: find better name?
+   * <p>
+   * TODO: add automatic ordering/reordering of fields
    */
   public static class Transformerge<T> extends SubAssembly {
 
@@ -315,23 +330,25 @@ public class SubAssemblies {
   /**
    * TODO
    */
-  public static class ReadableCountBy extends SubAssembly {
+  public static class ReadableCountBy extends CountBy {
 
-    public ReadableCountBy(CountByData countByData) {
+    public ReadableCountBy(
+        @NonNull final String name,
+        final CountByData countByData) {
       // TODO: add checks on cardinalities
-      setTails(
 
-      //
-      new cascading.pipe.assembly.CountBy(
+      super(
+          name,
           countByData.pipe,
           countByData.countByFields,
-          countByData.resultCountField));
+          countByData.resultCountField);
     }
-
   }
 
   /**
    * For a count by in which there are few groups (fitting in memory and therefore not requiring a sort phase).
+   * <p>
+   * TODO: as {@link AggregateBy}?
    */
   public static class HashCountBy extends SubAssembly {
 
@@ -446,14 +463,16 @@ public class SubAssemblies {
    * <p>
    * TODO: add checks on fields cardinality and field sets (has to be consistent)
    */
-  public static class UniqueCountBy extends SubAssembly {
+  public static class UniqueCountBy extends ReadableCountBy {
 
-    public UniqueCountBy(UniqueCountByData data) {
-      setTails(new ReadableCountBy(CountByData.builder()
+    public UniqueCountBy(
+        @NonNull final String name,
+        final UniqueCountByData data) {
+      super(name, CountByData.builder()
 
           .pipe(
 
-              //
+              // Remove duplicates *before* count by
               new Unique( // TODO: automatically retains?
 
                   //
@@ -466,8 +485,7 @@ public class SubAssemblies {
           .countByFields(data.countByFields)
           .resultCountField(checkFieldsCardinalityOne(data.resultCountField))
 
-          .build()));
-
+          .build());
     }
 
     @Value
@@ -484,46 +502,144 @@ public class SubAssemblies {
   }
 
   /**
-   * TODO: generalize.
+   * TODO: generalize to CoGroup as well.
    */
   public static class ReadableHashJoin extends SubAssembly {
 
     public ReadableHashJoin(JoinData joinData) {
-      // TODO: add checks on cardinalities
-      setTails(
+      // TODO: add checks on fields cardinalities
+      validateJoiner(joinData.joiner);
 
-      //
-      new Discard(
-
-          //
+      setTails(joinData.hasJoinFieldsCollision() ?
+          new Discard(
+              new HashJoin(
+                  joinData.leftPipe,
+                  joinData.leftJoinFields,
+                  new Rename( // Rename right side since this could be a left join
+                      joinData.rightPipe,
+                      joinData.rightJoinFields,
+                      joinData.getTemporaryRightJoinFields()),
+                  joinData.getTemporaryRightJoinFields(),
+                  joinData.joiner),
+              joinData.getTemporaryRightJoinFields()) :
           new HashJoin(
               joinData.leftPipe,
               joinData.leftJoinFields,
               joinData.rightPipe,
               joinData.rightJoinFields,
-              joinData.resultFields,
-              joinData.joiner),
-          joinData.discardFields));
+              joinData.joiner));
     }
 
     /**
-     * TODO: offer innerJoin(), leftJoin(), ...?
+     * "Developers should thoroughly understand the limitations of this class"
+     * (http://docs.cascading.org/cascading/2.5/userguide/htmlsingle/#N20276).
+     * <p>
+     * Note that it does work locally.
      */
-    @Value
-    @Builder
-    public static class JoinData { // TODO: add integrity check (cardinalities, ...)
+    private void validateJoiner(@NonNull final Joiner joiner) {
+      checkArgument(
+          !(joiner instanceof RightJoin || joiner instanceof OuterJoin),
+          "Cannot use a hash join in combination with a right or full outer join (see Cascading documentation)");
+    }
 
-      Joiner joiner;
+    public static class JoinData { // TODO: add integrity check (fields cardinalities, ...)
 
-      Pipe leftPipe;
-      Fields leftJoinFields;
+      private Joiner joiner;
 
-      Pipe rightPipe;
-      Fields rightJoinFields;
+      private Pipe leftPipe;
+      private Fields leftJoinFields;
 
-      Fields resultFields;
-      Fields discardFields; // TODO: derive from result fields rather; this can actually be left null (TODO: find more
-                            // elegant way)
+      private Pipe rightPipe;
+      private Fields rightJoinFields;
+
+      public static final class JoinDataBuilder {
+
+        private final JoinData joinData = new JoinData();
+
+        public JoinDataBuilder innerJoin() {
+          return setJoiner(new InnerJoin());
+        }
+
+        public JoinDataBuilder leftJoin() {
+          return setJoiner(new LeftJoin());
+        }
+
+        public JoinDataBuilder rightJoin() {
+          return setJoiner(new RightJoin());
+        }
+
+        public JoinDataBuilder outerJoin() {
+          return setJoiner(new OuterJoin());
+        }
+
+        private JoinDataBuilder setJoiner(@NonNull final Joiner joiner) {
+          checkState(
+              joinData.joiner == null,
+              "Joiner is already set: '%s'", joiner);
+          joinData.joiner = joiner;
+          return this;
+        }
+
+        public JoinDataBuilder leftPipe(@NonNull final Pipe leftPipe) {
+          checkState(
+              joinData.leftPipe == null,
+              "Left pipe is already set: '%s'", leftPipe);
+          joinData.leftPipe = leftPipe;
+          return this;
+        }
+
+        public JoinDataBuilder rightPipe(@NonNull final Pipe rightPipe) {
+          checkState(
+              joinData.rightPipe == null,
+              "Right pipe is already set: '%s'", rightPipe);
+          joinData.rightPipe = rightPipe;
+          return this;
+        }
+
+        public JoinDataBuilder joinFields(@NonNull final Fields joinFields) {
+          leftJoinFields(cloneFields(joinFields));
+          rightJoinFields(cloneFields(joinFields));
+          return this;
+        }
+
+        public JoinDataBuilder leftJoinFields(@NonNull final Fields leftJoinFields) {
+          checkState(
+              joinData.leftJoinFields == null,
+              "Left join fields are already set: '%s'", leftJoinFields);
+          joinData.leftJoinFields = leftJoinFields;
+          return this;
+        }
+
+        public JoinDataBuilder rightJoinFields(@NonNull final Fields rightJoinFields) {
+          checkState(
+              joinData.rightJoinFields == null,
+              "Right join fields are already set: '%s'", rightJoinFields);
+          joinData.rightJoinFields = rightJoinFields;
+          return this;
+        }
+
+        public JoinData build() {
+          checkNotNull(joinData.joiner);
+          checkNotNull(joinData.leftPipe);
+          checkNotNull(joinData.leftJoinFields);
+          checkNotNull(joinData.rightPipe);
+          checkNotNull(joinData.rightJoinFields);
+          return joinData;
+        }
+
+      }
+
+      public static final JoinDataBuilder builder() {
+        return new JoinDataBuilder();
+      }
+
+      public boolean hasJoinFieldsCollision() {
+        return leftJoinFields.equals(rightJoinFields);
+      }
+
+      public Fields getTemporaryRightJoinFields() {
+        return getRedundantFieldCounterparts(rightJoinFields);
+      }
 
     }
 
@@ -641,9 +757,9 @@ public class SubAssemblies {
 
   }
 
-  public static class ReorderFields extends SubAssembly {
+  public static class ReorderAllFields extends SubAssembly {
 
-    public ReorderFields(
+    public ReorderAllFields(
         @NonNull final Pipe pipe,
         @NonNull final Fields orderedFields) {
       setTails(process(pipe, orderedFields));
@@ -652,40 +768,73 @@ public class SubAssemblies {
     private static Each process(
         @NonNull final Pipe pipe,
         @NonNull final Fields orderedFields) {
-      return new Each(
-          pipe,
-          new BaseFunction<Void>(orderedFields) {
-
-            @Override
-            public void operate(
-                @SuppressWarnings("rawtypes") FlowProcess flowProcess,
-                FunctionCall<Void> functionCall) {
-              val entry = functionCall.getArguments();
-
-              functionCall
-                  .getOutputCollector()
-                  .add(getReorderedTuple(
-                      entry,
-                      getFieldDeclaration()));
-            }
-
-            private Tuple getReorderedTuple(
-                @NonNull final TupleEntry entry,
-                @NonNull final Fields orderedFields) {
-              val tuple = new Tuple();
-              for (val fieldName : getFieldNames(orderedFields)) {
-                checkState(contains(entry, fieldName),
-                    "Expecting field '%s' to be present within '%s'", fieldName, entry);
-                tuple.add(entry.getObject(fieldName));
-              }
-
-              return tuple;
-            }
-
-          },
-          RESULTS);
+      return new Each(pipe, orderFields(orderedFields), RESULTS);
     }
 
+  }
+
+  public static class ReorderFields extends SubAssembly {
+
+    public ReorderFields(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields targetFields,
+        @NonNull final Fields orderedFields) {
+      checkArgument(
+          targetFields.size() == orderedFields.size(),
+          "Target fields are expected to have the same size as the re-ordered fields: '%s' != '%s'",
+          targetFields.size(), orderedFields.size());
+      setTails(process(pipe, targetFields, orderedFields));
+    }
+
+    private static Each process(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields targetFields,
+        @NonNull final Fields orderedFields) {
+      return new Each(pipe, targetFields, orderFields(orderedFields), REPLACE);
+    }
+
+  }
+
+  public static class SwapFields extends ReorderFields {
+
+    public SwapFields(
+        @NonNull final Pipe pipe,
+        @NonNull final Fields targetFields) {
+      super(pipe, targetFields, swapTwoFields(targetFields));
+    }
+
+  }
+
+  private static Function<Void> orderFields(@NonNull final Fields orderedFields) {
+    return new BaseFunction<Void>(orderedFields) {
+
+      @Override
+      public void operate(
+          @SuppressWarnings("rawtypes") FlowProcess flowProcess,
+          FunctionCall<Void> functionCall) {
+        val entry = functionCall.getArguments();
+
+        functionCall
+            .getOutputCollector()
+            .add(getReorderedTuple(
+                entry,
+                getFieldDeclaration()));
+      }
+
+      private Tuple getReorderedTuple(
+          @NonNull final TupleEntry entry,
+          @NonNull final Fields orderedFields) {
+        val tuple = new Tuple();
+        for (val fieldName : getFieldNames(orderedFields)) {
+          checkState(contains(entry, fieldName),
+              "Expecting field '%s' to be present within '%s'", fieldName, entry);
+          tuple.add(entry.getObject(fieldName));
+        }
+
+        return tuple;
+      }
+
+    };
   }
 
 }

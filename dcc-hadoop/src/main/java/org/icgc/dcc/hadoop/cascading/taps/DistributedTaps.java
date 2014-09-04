@@ -59,6 +59,11 @@ public class DistributedTaps implements CascadingTaps {
   }
 
   @Override
+  public Tap<?, ?, ?> getNoCompressionTsvNoHeader(@NonNull final String path) {
+    return Static.getNoCompressionTsvNoHeader(path);
+  }
+
+  @Override
   public Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
     return Static.getNoCompressionTsvWithHeader(path);
   }
@@ -101,7 +106,7 @@ public class DistributedTaps implements CascadingTaps {
         @NonNull final String path,
         @NonNull final SinkMode sinkMode) {
       return new Hfs(
-          HadoopSchemes.getTextLine(),
+          DistributedSchemes.getTextLine(),
           path,
           sinkMode);
     }
@@ -114,13 +119,20 @@ public class DistributedTaps implements CascadingTaps {
 
     public static Tap<?, ?, ?> getDecompressingTsvWithHeader(@NonNull final String path) {
       return new Hfs(
-          HadoopSchemes.getDecompressingTsvWithHeader(),
+          DistributedSchemes.getDecompressingTsvWithHeader(),
           path);
     }
 
     public static Tap<?, ?, ?> getNoCompressionTsvWithHeader(@NonNull final String path) {
       return new Hfs(
-          HadoopSchemes.getNoCompressionTsvWithHeader(),
+          DistributedSchemes.getNoCompressionTsvWithHeader(),
+          path);
+    }
+
+    public static Tap<?, ?, ?> getNoCompressionTsvNoHeader(
+        @NonNull final String path) {
+      return new Hfs(
+          DistributedSchemes.getNoCompressionTsvNoHeader(),
           path);
     }
 
@@ -128,7 +140,7 @@ public class DistributedTaps implements CascadingTaps {
         @NonNull final String path,
         @NonNull final Fields declaredFields) {
       return new Hfs(
-          HadoopSchemes.getNoCompressionTsvWithHeader(declaredFields),
+          DistributedSchemes.getNoCompressionTsvWithHeader(declaredFields),
           path);
     }
 
@@ -152,7 +164,7 @@ public class DistributedTaps implements CascadingTaps {
 
     public static Tap<?, ?, ?> getJsonScheme(@NonNull final String path) {
       return new Hfs(
-          enableSinkCompression(HadoopSchemes.getJsonScheme()),
+          enableSinkCompression(DistributedSchemes.getJsonScheme()),
           path);
     }
 

@@ -20,6 +20,7 @@ package org.icgc.dcc.hadoop.cascading.taps;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.hadoop.cascading.TupleEntries.getFirstObject;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.TSV_DELIMITER;
+import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.noHeader;
 import static org.icgc.dcc.hadoop.cascading.taps.GenericSchemes.withHeader;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * Do <b>not<b/> recycle {@link Schemes2} as they are actually mutated.
  */
 @NoArgsConstructor(access = PRIVATE)
-class HadoopSchemes {
+class DistributedSchemes {
 
   static final TextLine getTextLine() {
     return new TextLine();
@@ -72,6 +73,12 @@ class HadoopSchemes {
         TSV_DELIMITER);
   }
 
+  static final TextLine getNoCompressionTsvNoHeader() {
+    return new TextDelimited(
+        noHeader(),
+        TSV_DELIMITER);
+  }
+
   static final TextLine getNoCompressionTsvWithHeader(@NonNull final Fields fields) {
     return new TextDelimited(
         fields,
@@ -82,9 +89,9 @@ class HadoopSchemes {
   static final TextLine getJsonScheme() {
     return new TextLine() {
 
-      private final transient ObjectWriter writer = new ObjectMapper( // TODO: lazy-load?
-          new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
-          .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false).writer();
+      private transient ObjectMapper mapper;
+
+      private transient ObjectWriter writer;
 
       @Override
       @SuppressWarnings("rawtypes")
@@ -101,7 +108,28 @@ class HadoopSchemes {
           throws IOException {
         sinkCall.getOutput().collect(
             null,
-            writer.writeValueAsString(getFirstObject(sinkCall.getOutgoingEntry())));
+            writer()
+                .writeValueAsString(
+                    getFirstObject(sinkCall.getOutgoingEntry())));
+      }
+
+      private final ObjectMapper mapper() {
+        if (mapper == null) {
+          mapper =
+              new ObjectMapper(new JsonFactory()
+                  .disable(Feature.AUTO_CLOSE_TARGET))
+                  .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        }
+
+        return mapper;
+      }
+
+      private final ObjectWriter writer() {
+        if (writer == null) {
+          writer = mapper().writer();
+        }
+
+        return writer;
       }
 
     };

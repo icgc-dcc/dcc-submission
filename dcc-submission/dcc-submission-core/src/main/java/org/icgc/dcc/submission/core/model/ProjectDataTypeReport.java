@@ -30,14 +30,15 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity(noClassnameStored = true)
 @ToString
-@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, type"))
+@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, featureType, sampleType"))
 @Data
 public class ProjectDataTypeReport {
 
-  public ProjectDataTypeReport(String releaseName, String projectCode, String type) {
+  public ProjectDataTypeReport(String releaseName, String projectCode, String featureType, String sampleType) {
     this.releaseName = releaseName;
     this.projectCode = projectCode;
-    this.type = type;
+    this.featureType = featureType;
+    this.sampleType = sampleType;
     donorCount = specimenCount = sampleCount = observationCount = 0;
   }
 
@@ -54,7 +55,10 @@ public class ProjectDataTypeReport {
   protected String projectCode;
 
   @JsonView(Digest.class)
-  protected String type;
+  protected String featureType;
+
+  @JsonView(Digest.class)
+  protected String sampleType;
 
   @JsonView(Digest.class)
   protected long donorCount;

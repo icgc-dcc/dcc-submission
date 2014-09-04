@@ -52,6 +52,7 @@ public final class FieldNames {
 
     public static final String SUBMISSION_OBSERVATION_ANALYSIS_ID = "analysis_id";
     public static final String SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID = SUBMISSION_ANALYZED_SAMPLE_ID;
+    public static final String SUBMISSION_OBSERVATION_MATCHED_SAMPLE_ID = SUBMISSION_MATCHED_SAMPLE_ID;
 
     public static final String SUBMISSION_OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
 
