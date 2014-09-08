@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.repository;
 
-import static org.icgc.submission.summary.QProjectSequencingStrategyReport.projectSequencingStrategyReport;
+import static org.icgc.dcc.submission.core.model.QProjectSequencingStrategyReport.projectSequencingStrategyReport;
 
 import java.util.List;
 
 import lombok.NonNull;
 
-import org.icgc.submission.summary.ProjectSequencingStrategyReport;
-import org.icgc.submission.summary.QProjectSequencingStrategyReport;
+import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
+import org.icgc.dcc.submission.core.model.QProjectSequencingStrategyReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
@@ -49,8 +49,12 @@ public class ProjectSequencingStrategyReportRepository extends
     return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projects)));
   }
 
-  public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter(fieldName(_.releaseName), releaseName));
+  public void deleteBySubmission(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    datastore().delete(createQuery()
+        .filter(fieldName(_.releaseName), releaseName)
+        .filter(fieldName(_.projectCode), projectKey));
   }
 
   public void upsert(ProjectSequencingStrategyReport projectSequencingStrategyReport) {

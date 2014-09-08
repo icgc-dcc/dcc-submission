@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.repository;
 
-import static org.icgc.submission.summary.QProjectDataTypeReport.projectDataTypeReport;
+import static org.icgc.dcc.submission.core.model.QProjectDataTypeReport.projectDataTypeReport;
 
 import java.util.List;
 
 import lombok.NonNull;
 
-import org.icgc.submission.summary.ProjectDataTypeReport;
-import org.icgc.submission.summary.QProjectDataTypeReport;
+import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
+import org.icgc.dcc.submission.core.model.QProjectDataTypeReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
@@ -48,8 +48,12 @@ public class ProjectDataTypeReportRepository extends AbstractRepository<ProjectD
     return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
   }
 
-  public void deleteByRelease(String releaseName) {
-    datastore().delete(createQuery().filter(fieldName(_.releaseName), releaseName));
+  public void deleteBySubmission(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    datastore().delete(createQuery()
+        .filter(fieldName(_.releaseName), releaseName)
+        .filter(fieldName(_.projectCode), projectKey));
   }
 
   public void upsert(ProjectDataTypeReport projectDataTypeReport) {
