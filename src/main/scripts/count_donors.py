@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# usage: count_donors.py /hdfs/dcc/icgc/dcc_root_dir/ICGC15
+# usage: count_donors.py /hdfs/dcc/icgc/submission/ICGC15
 # ===========================================================================
 import sys, os, glob, re, gzip, bz2
 

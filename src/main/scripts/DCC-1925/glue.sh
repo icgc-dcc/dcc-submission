@@ -6,7 +6,7 @@ ${scripts?}/vep.py \
  /tmp/DCC-1925
 
 ${scripts?}/intra_discarder.py \
- ./dcc-submission/dcc-submission-server/src/test/resources/fixtures/submission/dcc_root_dir/release1/project.6 \
+ ./dcc-submission/dcc-submission-server/src/test/resources/fixtures/submission/submission/release1/project.6 \
  /tmp/DCC-1925
 
 ${scripts?}/inter_discarder.py \

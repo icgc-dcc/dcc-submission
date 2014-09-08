@@ -44,7 +44,7 @@ public class Main {
     int i = 0;
     val releaseName = args.length >= ++i ? args[i - 1] : "release2";
     val projectKey = args.length >= ++i ? args[i - 1] : "project1";
-    val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/dcc_root_dir";
+    val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/submission";
     val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
     val jobTracker = args.length >= ++i ? args[i - 1] : "localhost";
     val context = new KeyValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
