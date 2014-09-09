@@ -27,13 +27,21 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
+
 /**
  * Utility methods and constants for {@link URL}s.
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class URLs {
 
-  public static URL getUrl(@NonNull final String path) {
+  @SneakyThrows
+  public static URL getUrl(@NonNull final String stringRepresentation) {
+    return new URL(stringRepresentation);
+  }
+
+  public static URL getUrlFromPath(@NonNull final String path) {
     return getUrl(new File(path));
   }
 
@@ -44,6 +52,19 @@ public final class URLs {
   @SneakyThrows
   public static URL getUrl(@NonNull final URI uri) {
     return uri.toURL();
+  }
+
+  @SneakyThrows
+  public static String toFile(
+      @NonNull final URL url,
+      @NonNull final String filePath) {
+    Resources
+        .asByteSource(url)
+        .copyTo(
+            Files.asByteSink(
+                new File(filePath)));
+
+    return filePath;
   }
 
 }

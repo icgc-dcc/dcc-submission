@@ -6,7 +6,6 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.core.util.Jackson.PRETTY_WRITTER;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 
 import java.util.List;
@@ -14,19 +13,22 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.util.Functions2;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
 
+@ToString
 public class ReporterInput {
 
   private final Table<String, FileType, Set<String>> data = HashBasedTable.create();
@@ -41,6 +43,7 @@ public class ReporterInput {
         }
       }
     }
+
     return inputData;
   }
 
@@ -48,10 +51,24 @@ public class ReporterInput {
     return ImmutableSet.copyOf(data.rowKeySet());
   }
 
-  public Set<String> getMatchingFilePaths(String projectKey, FileType fileType) {
+  public Set<String> getMatchingFilePaths(
+      @NonNull final String projectKey,
+      @NonNull final FileType fileType) {
     return ImmutableSet.copyOf(firstNonNull(
-        data.get(projectKey, fileType),
+        getMatchingFilePaths(projectKey).get(fileType),
         ImmutableSet.<String> of()));
+  }
+
+  public Table<String, FileType, Integer> getMatchingFilePathCounts() {
+    return Tables.transformValues(
+        data,
+        Functions2.<String> size());
+  }
+
+  public Map<FileType, Set<String>> getMatchingFilePaths(@NonNull final String projectKey) {
+    return ImmutableMap.copyOf(firstNonNull(
+        data.row(projectKey),
+        ImmutableMap.<FileType, Set<String>> of()));
   }
 
   public boolean hasFeatureType(String projectKey, FeatureType featureType) {
@@ -97,19 +114,13 @@ public class ReporterInput {
     return pipeNameToFilePath.build();
   }
 
-  @Override
-  @SneakyThrows
-  public String toString() {
-    return PRETTY_WRITTER.writeValueAsString(data);
-  }
-
   private void addFile(String projectKey, FileType fileType, String path) {
     Set<String> paths = data.get(projectKey, fileType);
     if (paths == null) {
       paths = newLinkedHashSet();
       data.put(projectKey, fileType, paths);
     }
-    
+
     paths.add(path);
   }
 

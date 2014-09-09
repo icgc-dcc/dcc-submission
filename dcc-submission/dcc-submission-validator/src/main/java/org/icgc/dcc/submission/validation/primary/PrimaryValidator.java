@@ -64,8 +64,8 @@ public class PrimaryValidator implements Validator {
     // Plan
     log.info("Planning cascade for project '{}'", projectKey);
     Plan plan = planner.plan(projectKey, dataTypes, platform, dictionary);
-    log.info("Planned cascade for project '{}', # of internal flows: {}, # of external flows: {}",
-        new Object[] { projectKey, size(plan.getInternalFlows()), size(plan.getExternalFlows()) });
+    log.info("Planned cascade for project '{}', # of row-based flow planners: {}",
+        new Object[] { projectKey, size(plan.getRowBasedFlowPlanners()) });
 
     // Connect
     log.info("Connecting cascade for project '{}'", projectKey);
@@ -95,5 +95,4 @@ public class PrimaryValidator implements Validator {
       throw t;
     }
   }
-
 }

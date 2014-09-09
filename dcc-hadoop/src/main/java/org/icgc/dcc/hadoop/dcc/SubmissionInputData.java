@@ -164,7 +164,7 @@ public class SubmissionInputData {
     return (ObjectNode) new ObjectMapper().readTree(new File(projectsJsonFilePath));
   }
 
-  private static Set<String> getProjectKeys(ObjectNode projectDescriptions) {
+  private static Set<String> getProjectKeys(@NonNull final ObjectNode projectDescriptions) {
     val projectKeys = new ImmutableSet.Builder<String>();
     val entries = projectDescriptions.fields();
     while (entries.hasNext()) {
@@ -172,6 +172,7 @@ public class SubmissionInputData {
       val projectKey = entry.getKey();
       projectKeys.add(projectKey);
     }
+
     return projectKeys.build();
   }
 
@@ -193,7 +194,7 @@ public class SubmissionInputData {
   }
 
   private static String getKeyName(FileType fileType) {
-    return _("%s_file", fileType.getTypeName());
+    return _("%s_file", fileType.getId());
   }
 
   @SneakyThrows

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,29 +15,61 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.visitor;
+package org.icgc.dcc.submission.core.model;
 
-import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
-import lombok.val;
+import lombok.Data;
+import lombok.ToString;
 
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.Plan;
+import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
 
-public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanElement> {
+import com.fasterxml.jackson.annotation.JsonView;
 
-  public InternalFlowPlanningVisitor() {
-    super(INTERNAL);
+@Entity(noClassnameStored = true)
+@ToString
+@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, featureType, sampleType"))
+@Data
+public class ProjectDataTypeReport {
+
+  public ProjectDataTypeReport(String releaseName, String projectCode, String featureType, String sampleType) {
+    this.releaseName = releaseName;
+    this.projectCode = projectCode;
+    this.featureType = featureType;
+    this.sampleType = sampleType;
+    donorCount = specimenCount = sampleCount = observationCount = 0;
   }
 
-  @Override
-  public void applyPlan(Plan plan) {
-    for (val internalFlowPlanner : plan.getInternalFlows()) {
-      internalFlowPlanner.acceptVisitor(this);
-
-      for (val collectedInternalPlanElement : getCollectedPlanElements()) {
-        internalFlowPlanner.applyInternalPlanElement(collectedInternalPlanElement);
-      }
-    }
+  public ProjectDataTypeReport() {
   }
+
+  @Id
+  private String id;
+
+  @JsonView(Digest.class)
+  protected String releaseName;
+
+  @JsonView(Digest.class)
+  protected String projectCode;
+
+  @JsonView(Digest.class)
+  protected String featureType;
+
+  @JsonView(Digest.class)
+  protected String sampleType;
+
+  @JsonView(Digest.class)
+  protected long donorCount;
+
+  @JsonView(Digest.class)
+  protected long specimenCount;
+
+  @JsonView(Digest.class)
+  protected long sampleCount;
+
+  @JsonView(Digest.class)
+  protected long observationCount;
 
 }

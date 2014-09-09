@@ -69,7 +69,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.test.Tests.TEST_FIXTURES_DIR;
 import static org.junit.Assert.assertEquals;
@@ -130,9 +130,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   /**
    * Test file system.
    */
-  private static final String SUBMISSION_DIR_NAME = "submission";
-  private static final String DESTINATION_DIR_NAME = "dcc_root_dir";
-  private static final String FS_DIR = PATH.join(TEST_FIXTURES_DIR, SUBMISSION_DIR_NAME, DESTINATION_DIR_NAME);
+  private static final String DESTINATION_DIR_NAME = "submission";
+  private static final String FS_DIR = PATH.join(TEST_FIXTURES_DIR, DESTINATION_DIR_NAME);
 
   /**
    * Projects.
@@ -277,7 +276,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * Submission file system.
    */
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
-  private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
+  private static final String submission = TEST_CONFIG.getString(FS_ROOT);
 
   /**
    * Test utilities.
@@ -300,7 +299,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       fileSystem = FileSystem.get(new Configuration());
 
       status("init", "Deleting local root filesystem...");
-      fileSystem.delete(new Path(DCC_ROOT_DIR), true);
+      fileSystem.delete(new Path(submission), true);
     } else {
       // Setup Hadoop infrastructure
       status("init", "Setting up Hadoop environment...");
@@ -408,7 +407,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   @SneakyThrows
   private void userSubmitsFiles() throws IOException {
     val source = new Path(FS_DIR);
-    val destination = new Path(DCC_ROOT_DIR);
+    val destination = new Path(submission);
     status("user", "SFTP transferring files from '{}' to '{}'...", source, destination);
 
     boolean manipulatedFiles = false;
@@ -535,14 +534,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Adding Script restriction #1 to OPENED dictionary");
     Dictionary dictionary =
-        addScript(dictionary(), FileTypes.FileType.SSM_M_TYPE.getTypeName(),
+        addScript(dictionary(), FileTypes.FileType.SSM_M_TYPE.getId(),
             "note",
             "if (note == null) { return true; } else { return note != \"script_error_here\";}",
             "Note field cannot be 'script_error_here'");
 
     status("admin", "Adding Script restriction #2 to OPENED dictionary");
     dictionary =
-        addScript(dictionary, FileTypes.FileType.SSM_M_TYPE.getTypeName(),
+        addScript(dictionary, FileTypes.FileType.SSM_M_TYPE.getId(),
             "note",
             "if (note == null) { return true; } else { return note.indexOf('_') == -1; }",
             "Note field cannot contain the underscore(_) character");
@@ -757,9 +756,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Project 1
     assertEmptyFile(fileSystem,
-        DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + FILE_NAME_SEPARATOR + "errors.json");
+        submission, PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
     assertEmptyFile(fileSystem,
-        DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + FILE_NAME_SEPARATOR + "errors.json");
+        submission, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
   }
 
   @SneakyThrows

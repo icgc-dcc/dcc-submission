@@ -32,7 +32,7 @@ ARRAY_BASED="29"
 RNASEQ="4"
 
 olddir="/nfs/dcc_secure/dcc/data/ICGC15/exp/migrated"
-newdir="/hdfs/dcc/icgc/dcc_root_dir/ICGC15"
+newdir="/hdfs/dcc/icgc/submission/ICGC15"
 outputdir="/nfs/dcc_secure/dcc/data/ICGC15/exp/final3"
 
 both = ["BLCA-US", "BRCA-US", "CLLE-ES", "COAD-US", "GBM-US", "HNSC-US", "KIRC-US", "KIRP-US", "LAML-US", "LGG-US", "LIHC-US", "LUAD-US", "LUSC-US", "OV-US", "READ-US", "UCEC-US"]

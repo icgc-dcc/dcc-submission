@@ -34,8 +34,6 @@ import org.icgc.dcc.hadoop.cascading.SubAssemblies.TupleEntriesLogger;
 import org.junit.Test;
 
 import cascading.pipe.Pipe;
-import cascading.pipe.joiner.InnerJoin;
-import cascading.pipe.joiner.Joiner;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
@@ -52,18 +50,17 @@ public class SubAssembliesTest {
   };
 
   private static final Pipe DUMMY_PIPE = new Pipe("dummypipe");
+  private static final Pipe DUMMY_PIPE2 = new Pipe("dummypipe2");
+  private static final String DUMMY_NAME = "dummyname";
   private static final Fields DUMMY_FIELD = new Fields("dummyfield");
   private static final Fields DUMMY_FIELD2 = new Fields("dummyfield2");
-  private static final Joiner DUMMY_JOINER = new InnerJoin();
   private static final JoinData DUMMY_JOIN_DATA =
       JoinData.builder()
+          .innerJoin()
           .leftPipe(DUMMY_PIPE)
           .leftJoinFields(DUMMY_FIELD)
-          .rightPipe(DUMMY_PIPE)
+          .rightPipe(DUMMY_PIPE2)
           .rightJoinFields(DUMMY_FIELD)
-          .discardFields(DUMMY_FIELD)
-          .resultFields(DUMMY_FIELD)
-          .joiner(DUMMY_JOINER)
           .build();
   private static final GroupByData DUMMY_GROUP_BY_DATA =
       GroupByData.builder()
@@ -94,7 +91,8 @@ public class SubAssembliesTest {
     cascadingSerialize(new Insert(keyValuePair(DUMMY_FIELD, ""), null));
     cascadingSerialize(new SubAssemblies.NullReplacer.EmptyTupleNullReplacer(DUMMY_FIELD, null));
     cascadingSerialize(new SubAssemblies.GroupBy(DUMMY_GROUP_BY_DATA));
-    cascadingSerialize(new SubAssemblies.CountBy(DUMMY_COUNT_BY_DATA));
+    cascadingSerialize(new SubAssemblies.ReadableCountBy(DUMMY_NAME, DUMMY_COUNT_BY_DATA));
     cascadingSerialize(new SubAssemblies.ReadableHashJoin(DUMMY_JOIN_DATA));
   }
+
 }

@@ -31,6 +31,7 @@ import lombok.val;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import cascading.tuple.Tuples;
 
 import com.google.common.base.Function;
 
@@ -110,6 +111,17 @@ public final class TupleEntries {
    */
   public static List<String> getFieldNames(TupleEntry entry) {
     return Fields2.getFieldNames(entry.getFields());
+  }
+
+  /**
+   * TODO: check if deep copy
+   */
+  public static TupleEntry extract(
+      @NonNull final TupleEntry entry,
+      @NonNull final Fields subFields) {
+    return new TupleEntry(
+        subFields,
+        Tuples.extract(entry, subFields));
   }
 
   /**

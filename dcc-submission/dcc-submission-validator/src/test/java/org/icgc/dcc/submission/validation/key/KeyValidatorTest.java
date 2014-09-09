@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.key;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.io.Files.readLines;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.util.Joiners.NEWLINE;
@@ -44,12 +43,12 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType.DataTypes;
 import org.icgc.dcc.core.util.Joiners;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -62,10 +61,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import cascading.flow.local.LocalFlowConnector;
-
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableMap;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
@@ -74,13 +70,15 @@ public class KeyValidatorTest {
   private static final String RELEASE_NAME = "myrelease";
   private static final String PROJECT_NAME = "myproject";
 
+  private static final CascadingContext cascadingContext = CascadingContext.getLocal();
+
   /**
    * Scratch space.
    */
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
 
-  private final FileSystem fileSystem = createLocalFileSystem();
+  private final FileSystem fileSystem = FileSystems.getDefaultLocalFileSystem();
 
   /**
    * Class under test.
@@ -135,12 +133,8 @@ public class KeyValidatorTest {
         PATH.join(rootDir.toUri().toString(), RELEASE_NAME, SYSTEM_FILES_DIR_NAME));
 
     val platformStrategy = mock(SubmissionPlatformStrategy.class);
-    val flowConnectorProperties = newLinkedHashMap(new ImmutableMap.Builder<Object, Object>()
-        .put("fs.defaultFS", "file:///")
-        .put("mapred.job.tracker", "")
-        .build());
-    val flowConnector = new LocalFlowConnector(flowConnectorProperties);
-    when(platformStrategy.getFlowConnector()).thenReturn(flowConnector);
+    when(platformStrategy.getFlowConnector()).thenReturn(
+        cascadingContext.getConnectors().getTestFlowConnector());
 
     val context = mock(ValidationContext.class);
     when(context.getProjectKey()).thenReturn("project1");
@@ -156,11 +150,6 @@ public class KeyValidatorTest {
     return context;
   }
 
-  @SneakyThrows
-  private LocalFileSystem createLocalFileSystem() {
-    return FileSystem.getLocal(new Configuration());
-  }
-
   private String getActualErrorLines() {
     val actualErrorLines = readSmallTextFile(fileSystem, new Path(validationDir, REPORT_FILE_NAME));
     checkState(actualErrorLines.size() == 1, "Expected to be all one line at the moment (may change later)");
@@ -174,4 +163,5 @@ public class KeyValidatorTest {
             new File(PATH.join(TEST_DIR, REFERENCE_FILE_NAME)), UTF_8))
         .replace("}\n{", "\n"); // FIXME: not elegant (ideally tuple errors wouldn't all be on one line)
   }
+
 }

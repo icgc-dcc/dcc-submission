@@ -17,11 +17,7 @@
  */
 package org.icgc.dcc.hadoop.cascading.taps;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Properties;
-
-import cascading.scheme.Scheme;
+import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
@@ -30,15 +26,27 @@ import cascading.tuple.Fields;
  */
 public interface CascadingTaps {
 
-  static LocalTaps LOCAL = new LocalTaps();
-  static DistributedTaps DISTRIBUTED = new DistributedTaps();
+  Tap<?, ?, ?> getLines(String path);
+
+  Tap<?, ?, ?> getLines(String path, SinkMode sinkMode);
+
+  Tap<?, ?, ?> getNoCompressionTsvNoHeader(String path);
 
   Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path);
 
+  Tap<?, ?, ?> getNoCompressionTsvWithHeader(String path, Fields fields);
+
   Tap<?, ?, ?> getDecompressingTsvWithHeader(String path);
+
+  Tap<?, ?, ?> getDecompressingLinesNoHeader(String path, Fields numField);
 
   Tap<?, ?, ?> getDecompressingLinesNoHeader(String path, Fields numField, Fields lineField);
 
-  Tap<?, ?, ?> getDecompressingFileTap(Scheme<Properties, InputStream, OutputStream, ?, ?> scheme, String path);
+  /**
+   * TODO: compression for local.
+   */
+  Tap<?, ?, ?> getCompressingJson(String path);
+
+  Tap<?, ?, ?> getNoCompressionNoHeaderNonStrictTsv(String path);
 
 }

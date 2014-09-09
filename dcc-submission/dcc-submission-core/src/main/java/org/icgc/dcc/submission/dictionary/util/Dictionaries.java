@@ -59,7 +59,7 @@ public class Dictionaries {
 
   @SneakyThrows
   public static FileSchema readFileSchema(FileType fileType) {
-    val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getTypeName());
+    val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getId());
     log.info("Augmenting dictionary with: '{}'", fileSchemaPath);
     return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
   }

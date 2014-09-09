@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.norm.cli;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.typesafe.config.ConfigFactory.parseMap;
-import static org.apache.hadoop.fs.Path.SEPARATOR;
 import static org.icgc.dcc.core.Component.CONCATENATOR;
 import static org.icgc.dcc.core.Component.NORMALIZER;
 import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
@@ -39,6 +38,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -61,6 +61,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
+@Slf4j
 public class StandAloneNomalizationValidationContext extends AbstractValidationContext {
 
   @Value
@@ -72,8 +73,8 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
     private final Config getAppConfig() {
       return parseMap(ImmutableMap.<String, Object> of(
-          DOT.join(HADOOP_KEY, MR_JOBTRACKER_ADDRESS_KEY), jobTracker,
-          DOT.join(HADOOP_KEY, FS_DEFAULT_FS), fsUrl,
+          DOT.join(HADOOP_KEY, "\"" + MR_JOBTRACKER_ADDRESS_KEY + "\""), jobTracker,
+          DOT.join(HADOOP_KEY, "\"" + FS_DEFAULT_FS + "\""), fsUrl,
           FS_URL, fsUrl,
           FS_ROOT, fsRoot
           ));
@@ -132,14 +133,17 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
   @Override
   public SubmissionPlatformStrategy getPlatformStrategy() {
-    val provider = new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(param.getAppConfig()), getFileSystem());
+    val appConfig = param.getAppConfig();
+    log.info("AppConfig: {}", appConfig);
+
+    val provider =
+        new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(appConfig), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component
     val input = new Path(overarchDirName, new Path(getFakeInputReleaseName(), projectKey));
     val output = new Path(overarchDirName, new Path(getFakeOutputReleaseName(), projectKey));
-    val system = new Path(SEPARATOR); // Not used by normalizer
-    return factory.get(input, output, system);
+    return factory.get(input, output);
   }
 
   @Override

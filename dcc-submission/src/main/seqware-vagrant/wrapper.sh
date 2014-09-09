@@ -146,10 +146,10 @@ _ssh -i ${openstack_key} ubuntu@${server} '/usr/bin/mongo icgc-dev --eval "db.dr
 _ssh -i ${openstack_key} ubuntu@${server} '/usr/bin/mongo icgc-local --eval "db.dropDatabase()"'
 
 
-echo ">>> Removing /tmp/dcc_root_dir/*"
+echo ">>> Removing /tmp/submission/*"
 ssh -i ${openstack_key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${server} <<EOF
-	hadoop fs -rm -r /tmp/dcc_root_dir/*
-	sudo rm -rf /tmp/dcc_root_dir/*
+	hadoop fs -rm -r /tmp/submission/*
+	sudo rm -rf /tmp/submission/*
 EOF
 
 
@@ -232,7 +232,7 @@ do
    echo "copy validation files for ${proj}"
    _ssh -i ${openstack_key} ubuntu@${server} /bin/bash <<EOF
       sudo rm -rf /tmp/${proj}_validation
-      sudo hadoop fs -copyToLocal /tmp/dcc_root_dir/${initial_release_name}/${proj}/.validation /tmp/${proj}_validation
+      sudo hadoop fs -copyToLocal /tmp/submission/${initial_release_name}/${proj}/.validation /tmp/${proj}_validation
 EOF
 
   _scp -r -i ${openstack_key} ubuntu@${server}:/tmp/${proj}_validation logs/${log_folder}/${proj}_validation

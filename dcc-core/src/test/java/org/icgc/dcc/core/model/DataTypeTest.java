@@ -20,7 +20,6 @@ package org.icgc.dcc.core.model;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.DataType.DataTypes.from;
-import static org.icgc.dcc.core.model.DataType.DataTypes.hasControlSampleId;
 import static org.icgc.dcc.core.model.DataType.DataTypes.isAggregatedType;
 import static org.icgc.dcc.core.model.DataType.DataTypes.isMandatoryType;
 import static org.icgc.dcc.core.model.DataType.DataTypes.values;
@@ -48,10 +47,6 @@ public class DataTypeTest {
     assertThat(isAggregatedType(FeatureType.SSM_TYPE)).isTrue();
     assertThat(isAggregatedType(FeatureType.METH_ARRAY_TYPE)).isFalse();
     assertThat(isAggregatedType(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
-
-    assertThat(hasControlSampleId(FeatureType.SSM_TYPE)).isTrue();
-    assertThat(hasControlSampleId(FeatureType.MIRNA_SEQ_TYPE)).isFalse();
-    assertThat(hasControlSampleId(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
   }
 
   @Test(expected = IllegalArgumentException.class)

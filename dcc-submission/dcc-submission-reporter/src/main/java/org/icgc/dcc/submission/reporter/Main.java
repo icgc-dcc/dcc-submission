@@ -1,15 +1,15 @@
 package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.core.util.Splitters.COMMA;
 
 import java.util.Set;
 
 import lombok.val;
 
-import org.icgc.dcc.core.util.Protocol;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.icgc.dcc.core.util.URLs;
+import org.icgc.dcc.hadoop.util.HadoopConstants;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -26,16 +26,19 @@ public class Main {
     val projectsJsonFilePath = args[3];
     val dictionaryFilePath = args[4];
     val codeListsFilePath = args[5];
+    val nameNodeUri = args[6];
+    val jobTracker = args[7];
 
     Reporter.report(
         releaseName,
         getProjectKeys(projectKeys),
         defaultParentDataDir,
         projectsJsonFilePath,
-        URLs.getUrl(dictionaryFilePath),
-        URLs.getUrl(codeListsFilePath),
-        ImmutableMap.of(FS_DEFAULT_NAME_KEY, Protocol.HDFS.getId())); // TODO: read from a config file (if we still
-                                                                      // support stand-alone)
+        URLs.getUrlFromPath(dictionaryFilePath),
+        URLs.getUrlFromPath(codeListsFilePath),
+        ImmutableMap.of( // TODO: allow more params
+            CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, nameNodeUri,
+            HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, jobTracker));
   }
 
   private static final Optional<Set<String>> getProjectKeys(String projectKeys) {

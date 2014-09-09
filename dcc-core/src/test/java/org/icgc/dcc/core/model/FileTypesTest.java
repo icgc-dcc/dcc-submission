@@ -40,23 +40,23 @@ public class FileTypesTest {
 
   @Test
   public void test_SubmissionFileType_valid_clinical() {
-    assertThat(SSM_M_TYPE.getTypeName()).isEqualTo("ssm_m");
+    assertThat(SSM_M_TYPE.getId()).isEqualTo("ssm_m");
     assertThat(SSM_M_TYPE.getDataType()).isEqualTo(FeatureType.SSM_TYPE);
     assertThat(from("ssm_m")).isEqualTo(SSM_M_TYPE);
 
-    assertThat(CNSM_S_TYPE.getTypeName()).isEqualTo("cnsm_s");
+    assertThat(CNSM_S_TYPE.getId()).isEqualTo("cnsm_s");
     assertThat(CNSM_S_TYPE.getDataType()).isEqualTo(FeatureType.CNSM_TYPE);
     assertThat(from("cnsm_s")).isEqualTo(CNSM_S_TYPE);
 
-    assertThat(DONOR_TYPE.getTypeName()).isEqualTo("donor");
+    assertThat(DONOR_TYPE.getId()).isEqualTo("donor");
     assertThat(from("donor")).isEqualTo(DONOR_TYPE);
     assertThat(DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
 
-    assertThat(SPECIMEN_TYPE.getTypeName()).isEqualTo("specimen");
+    assertThat(SPECIMEN_TYPE.getId()).isEqualTo("specimen");
     assertThat(from("specimen")).isEqualTo(SPECIMEN_TYPE);
     assertThat(SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
 
-    assertThat(BIOMARKER_TYPE.getTypeName()).isEqualTo("biomarker");
+    assertThat(BIOMARKER_TYPE.getId()).isEqualTo("biomarker");
     assertThat(from("biomarker")).isEqualTo(BIOMARKER_TYPE);
     assertThat(BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_OPTIONAL_TYPE);
 

@@ -24,8 +24,8 @@ import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
+import static org.icgc.dcc.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -41,6 +41,7 @@ import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -61,18 +62,16 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import cascading.flow.local.LocalFlowConnector;
-import cascading.scheme.local.TextDelimited;
 import cascading.tap.Tap;
-import cascading.tap.local.FileTap;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PrimaryKeyGeneration.class })
 public class NormalizationValidatorTest {
+
+  private static final CascadingContext ctx = CascadingContext.getLocal();
 
   private static final String RELEASE_NAME = "dummy_release";
   private static final String PROJECT_NAME = "dummy_project";
@@ -89,13 +88,11 @@ public class NormalizationValidatorTest {
   private static final String BASIC_REFERENCE_FILE =
       getResource(format("fixtures/validation/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME)).getFile();
   private static final String SPEC_DERIVED_INPUT_FILE =
-      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, INPUT, FILE_NAME);
+      format("/tmp/submission/%s/%s/%s", COMPONENT_NAME, INPUT, FILE_NAME);
   private static final String SPEC_DERIVED_REFERENCE_FILE =
-      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME);
+      format("/tmp/submission/%s/%s/%s", COMPONENT_NAME, REFERENCE, FILE_NAME);
   private static final String OUTPUT_FILE =
-      format("/tmp/dcc_root_dir/%s/%s/%s", COMPONENT_NAME, OUTPUT, FILE_NAME);
-
-  private static final Joiner NEWLINE_JOINER = Joiner.on("\n");
+      format("/tmp/submission/%s/%s/%s", COMPONENT_NAME, OUTPUT, FILE_NAME);
 
   public static final String OBSERVATION_ID_DEFAULT_VALUE = "v1";
 
@@ -165,7 +162,7 @@ public class NormalizationValidatorTest {
             .build());
 
     when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(new LocalFlowConnector());
+        .thenReturn(ctx.getConnectors().getFlowConnector());
   }
 
   @SneakyThrows
@@ -215,7 +212,7 @@ public class NormalizationValidatorTest {
     mockInputTap(inputFile);
     mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
-        .thenReturn(new LocalFlowConnector());
+        .thenReturn(ctx.getConnectors().getFlowConnector());
     when(mockValidationContext.getFiles(SSM_P_TYPE))
         .thenReturn(newArrayList(new Path(inputFile)));
 
@@ -229,8 +226,8 @@ public class NormalizationValidatorTest {
         UTF_8);
 
     // Check data output
-    assertThat(NEWLINE_JOINER.join(outputLines))
-        .isEqualTo(NEWLINE_JOINER.join(referenceLines));
+    assertThat(NEWLINE.join(outputLines))
+        .isEqualTo(NEWLINE.join(referenceLines));
   }
 
   /**
@@ -275,21 +272,13 @@ public class NormalizationValidatorTest {
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
   private Tap getInputTap(String inputFile) {
-    return new FileTap(
-        new TextDelimited(
-            true, // headers
-            FIELD_SEPARATOR),
-        inputFile);
+    return ctx.getTaps().getNoCompressionTsvWithHeader(inputFile);
   }
 
   // TODO: Shouldn't have to do that
   @SuppressWarnings("rawtypes")
   private Tap getOutputTap(String outputFile) {
-    return new FileTap(
-        new TextDelimited(
-            true, // headers
-            FIELD_SEPARATOR),
-        outputFile);
+    return ctx.getTaps().getNoCompressionTsvWithHeader(outputFile);
   }
 
 }

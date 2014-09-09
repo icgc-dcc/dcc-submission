@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,57 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.submission.summary;
+package org.icgc.dcc.submission.validation.primary.visitor;
 
-import lombok.Data;
-import lombok.ToString;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED;
+import lombok.val;
 
-import org.icgc.dcc.submission.core.model.Views.Digest;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Index;
-import org.mongodb.morphia.annotations.Indexes;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.Plan;
 
-import com.fasterxml.jackson.annotation.JsonView;
+public class RowBasedFlowPlanningVisitor extends PlanningVisitor<RowBasedPlanElement> {
 
-@Entity(noClassnameStored = true)
-@ToString
-@Indexes(@Index(name = "release_project_type", value = "releaseName, projectCode, type"))
-@Data
-public class ProjectDataTypeReport {
-
-  public ProjectDataTypeReport(String releaseName, String projectCode, String type) {
-    this.releaseName = releaseName;
-    this.projectCode = projectCode;
-    this.type = type;
-    donorCount = specimenCount = sampleCount = observationCount = 0;
+  public RowBasedFlowPlanningVisitor() {
+    super(ROW_BASED);
   }
 
-  public ProjectDataTypeReport() {
+  @Override
+  public void applyPlan(Plan plan) {
+    for (val rowBasedFlowPlanner : plan.getRowBasedFlowPlanners()) {
+      rowBasedFlowPlanner.acceptVisitor(this);
+
+      for (val collectedRowBasedPlanElement : getCollectedPlanElements()) {
+        rowBasedFlowPlanner.applyRowBasedPlanElement(collectedRowBasedPlanElement);
+      }
+    }
   }
-
-  @Id
-  private String id;
-
-  @JsonView(Digest.class)
-  protected String releaseName;
-
-  @JsonView(Digest.class)
-  protected String projectCode;
-
-  @JsonView(Digest.class)
-  protected String type;
-
-  @JsonView(Digest.class)
-  protected long donorCount;
-
-  @JsonView(Digest.class)
-  protected long specimenCount;
-
-  @JsonView(Digest.class)
-  protected long sampleCount;
-
-  @JsonView(Digest.class)
-  protected long observationCount;
 
 }

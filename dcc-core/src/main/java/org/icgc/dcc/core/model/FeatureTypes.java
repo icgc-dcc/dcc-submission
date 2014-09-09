@@ -40,11 +40,12 @@ import static org.icgc.dcc.core.model.FileTypes.FileSubType.SECONDARY_SUBTYPE;
 import static org.icgc.dcc.core.util.Joiners.UNDERSCORE;
 import static org.icgc.dcc.core.util.Optionals.ABSENT_FILE_TYPE;
 import static org.icgc.dcc.core.util.Proposition.Propositions.from;
+import static org.icgc.dcc.core.util.Strings2.EMPTY_STRING;
+import static org.icgc.dcc.core.util.Strings2.removeTarget;
 
 import java.util.List;
 import java.util.Set;
 
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
@@ -67,36 +68,41 @@ import com.google.common.collect.ImmutableSet;
 @NoArgsConstructor(access = PRIVATE)
 public final class FeatureTypes {
 
+  private enum SummaryType implements Identifiable {
+    COUNT, EXISTS;
+
+    @Override
+    public String getId() {
+      return name().toLowerCase();
+    }
+
+  }
+
   /**
    * Represents a type of observation data, see {@link ClinicalType} for the clinical counterpart.
    */
   public enum FeatureType implements DataType {
 
     /** From the ICGC Submission Manual */
-    SSM_TYPE("ssm", "_ssm_count"),
-    SGV_TYPE("sgv", "_sgv_exists"),
-    CNSM_TYPE("cnsm", "_cnsm_exists"),
-    CNGV_TYPE("cngv", "_cngv_exists"),
-    STSM_TYPE("stsm", "_stsm_exists"),
-    STGV_TYPE("stgv", "_stgv_exists"),
-    METH_ARRAY_TYPE("meth_array", "_meth_array_exists"),
-    METH_SEQ_TYPE("meth_seq", "_meth_seq_exists"),
-    MIRNA_SEQ_TYPE("mirna_seq", "_mirna_seq_exists"),
-    EXP_ARRAY_TYPE("exp_array", "_exp_array_exists"),
-    EXP_SEQ_TYPE("exp_seq", "_exp_seq_exists"),
-    PEXP_TYPE("pexp", "_pexp_exists"),
-    JCN_TYPE("jcn", "_jcn_exists");
+    SSM_TYPE(SummaryType.COUNT),
+    SGV_TYPE(SummaryType.EXISTS),
+    CNSM_TYPE(SummaryType.EXISTS),
+    CNGV_TYPE(SummaryType.EXISTS),
+    STSM_TYPE(SummaryType.EXISTS),
+    STGV_TYPE(SummaryType.EXISTS),
+    METH_ARRAY_TYPE(SummaryType.EXISTS),
+    METH_SEQ_TYPE(SummaryType.EXISTS),
+    MIRNA_SEQ_TYPE(SummaryType.EXISTS),
+    EXP_ARRAY_TYPE(SummaryType.EXISTS),
+    EXP_SEQ_TYPE(SummaryType.EXISTS),
+    PEXP_TYPE(SummaryType.EXISTS),
+    JCN_TYPE(SummaryType.EXISTS);
 
-    private FeatureType(String typeName, String summaryFieldName) {
-      this.typeName = typeName;
-      this.summaryFieldName = summaryFieldName;
+    private FeatureType(@NonNull final SummaryType summaryType) {
+      this.summaryType = summaryType;
     }
 
-    @Getter
-    private final String typeName;
-
-    @Getter
-    private final String summaryFieldName;
+    private final SummaryType summaryType;
 
     @Override
     public boolean isClinicalType() {
@@ -123,6 +129,15 @@ public final class FeatureTypes {
     @Override
     public FileType getTopLevelFileType() {
       return getPrimaryFileType();
+    }
+
+    @Override
+    public String getId() {
+      return removeTarget(name(), TYPE_SUFFIX).toLowerCase();
+    }
+
+    public String getSummaryFieldName() {
+      return UNDERSCORE.join(EMPTY_STRING, this.getId(), summaryType.getId());
     }
 
     public boolean isSsm() {
@@ -218,7 +233,7 @@ public final class FeatureTypes {
      * Returns an enum matching the type like "ssm", "meth_seq", ...
      */
     public static FeatureType from(String typeName) {
-      return valueOf(UNDERSCORE.join(typeName.toUpperCase(), TYPE_SUFFIX));
+      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 
     /**
@@ -244,10 +259,6 @@ public final class FeatureTypes {
 
   public static boolean isAggregatedType(FeatureType type) {
     return AGGREGATED_FEATURE_TYPES.contains(type);
-  }
-
-  public static boolean hasControlSampleId(FeatureType type) {
-    return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 
   private static final Set<FeatureType> TYPES_WITH_RAW_SEQUENCE_DATA = ImmutableSet.of(
@@ -277,6 +288,10 @@ public final class FeatureTypes {
     return from(hasSequencingStrategy(), featureType);
   }
 
+  public static Proposition hasControlSampleId(@NonNull final FeatureType featureType) {
+    return from(hasControlSampleId(), featureType);
+  }
+
   private static Predicate<FeatureType> hasRawSequenceData() {
     return not(in(TYPES_WITH_RAW_SEQUENCE_DATA));
   }
@@ -284,4 +299,9 @@ public final class FeatureTypes {
   private static Predicate<FeatureType> hasSequencingStrategy() {
     return not(in(TYPES_WITH_SEQUENCING_STRATEGY));
   }
+
+  private static Predicate<FeatureType> hasControlSampleId() {
+    return in(CONTROL_SAMPLE_FEATURE_TYPES);
+  }
+
 }

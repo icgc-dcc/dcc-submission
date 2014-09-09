@@ -24,6 +24,7 @@ import lombok.NonNull;
 import org.icgc.dcc.core.util.Maps2;
 
 import cascading.cascade.CascadeConnector;
+import cascading.flow.FlowConnector;
 
 abstract class BaseConnectors implements CascadingConnectors {
 
@@ -40,6 +41,11 @@ abstract class BaseConnectors implements CascadingConnectors {
   @Override
   public CascadeConnector getCascadeConnector(@NonNull final Map<?, ?> properties) {
     return new CascadeConnector(toObjectsMap(properties));
+  }
+
+  @Override
+  public FlowConnector getTestFlowConnector() {
+    return getFlowConnector(getDefaultProperties());
   }
 
   protected static Map<Object, Object> toObjectsMap(@NonNull final Map<?, ?> properties) {

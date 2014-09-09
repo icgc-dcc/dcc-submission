@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
+import static org.icgc.dcc.core.util.Separators.TAB_CHARACTER;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR_CHAR;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +70,7 @@ public class RowColumnChecker extends CompositeRowChecker {
   private int getActualColumnCount(CharSequence line) {
     int separatorCount = 0;
     for (int i = 0; i < line.length(); i++) {
-      if (line.charAt(i) == FIELD_SEPARATOR_CHAR) {
+      if (line.charAt(i) == TAB_CHARACTER) {
         separatorCount++;
       }
     }

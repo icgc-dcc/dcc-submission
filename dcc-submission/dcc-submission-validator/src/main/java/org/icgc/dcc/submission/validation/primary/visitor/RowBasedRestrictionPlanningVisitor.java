@@ -15,51 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.core;
+package org.icgc.dcc.submission.validation.primary.visitor;
 
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
+import java.util.Set;
 
-import java.io.Serializable;
+import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.PlanElement;
+import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 
-import lombok.NonNull;
-import lombok.Value;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
+public class RowBasedRestrictionPlanningVisitor extends RowBasedFlowPlanningVisitor {
 
-import com.google.common.base.Joiner;
+  private final Set<RestrictionType> restrictionTypes;
 
-/**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
- */
-@Value
-public class Key implements Serializable {
+  public RowBasedRestrictionPlanningVisitor(Set<RestrictionType> restrictionTypes) {
+    this.restrictionTypes = Sets.filter(restrictionTypes, new Predicate<RestrictionType>() {
 
-  /**
-   * Constants.
-   */
-  private static final char FIELD_SEPARATOR = '-';
-  private static final Joiner JOINER = Joiner.on(FIELD_SEPARATOR);
+      @Override
+      public boolean apply(RestrictionType input) {
+        return input.flowType() == FlowType.ROW_BASED;
+      }
 
-  @NonNull
-  private final String schemaName;
-  @NonNull
-  private final FileSchemaRole role;
-  @NonNull
-  private final String[] fields;
-
-  public Key(String schemaName, FileSchemaRole role, String... fields) {
-    this.schemaName = schemaName;
-    this.role = role;
-    this.fields = fields;
-  }
-
-  public String getName() {
-    return schemaName + FILE_NAME_SEPARATOR + JOINER.join(fields);
+    });
   }
 
   @Override
-  public String toString() {
-    return getName();
+  public void visit(Restriction restriction) {
+    for (RestrictionType type : restrictionTypes) {
+      if (type.builds(restriction.getType().getId())) {
+        PlanElement element = type.build(getCurrentField(), restriction);
+        collectPlanElement((RowBasedPlanElement) element);
+      }
+    }
   }
 
 }

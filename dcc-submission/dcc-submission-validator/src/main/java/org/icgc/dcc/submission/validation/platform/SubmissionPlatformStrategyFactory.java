@@ -20,5 +20,7 @@ package org.icgc.dcc.submission.validation.platform;
 import org.apache.hadoop.fs.Path;
 
 public interface SubmissionPlatformStrategyFactory {
-  public SubmissionPlatformStrategy get(Path input, Path output, Path system);
+
+  SubmissionPlatformStrategy get(Path input, Path output);
+
 }

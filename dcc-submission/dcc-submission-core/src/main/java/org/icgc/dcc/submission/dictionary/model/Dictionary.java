@@ -142,7 +142,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public FileSchema getFileSchema(@NonNull FileType type) {
-    val optional = getFileSchemaByName(type.getTypeName());
+    val optional = getFileSchemaByName(type.getId());
     checkState(optional.isPresent(), "Coun't find type '%s' in dictionary", type);
     return optional.get();
   }
@@ -227,7 +227,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public String getFilePattern(@NonNull FileType type) {
     for (val fileSchema : files) {
-      val match = type.getTypeName().equals(fileSchema.getName());
+      val match = type.getId().equals(fileSchema.getName());
       if (match) {
         return fileSchema.getPattern();
       }

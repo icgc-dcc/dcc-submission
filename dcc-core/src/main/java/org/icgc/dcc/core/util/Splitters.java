@@ -42,6 +42,9 @@ public class Splitters {
   public static final Splitter SEMICOLON = on(Separators.SEMICOLON);
   public static final Splitter HASHTAG = on(Separators.HASHTAG);
 
+  // Combinations
+  public static final Splitter DOUBLE_DASH = on(Separators.DOUBLE_DASH);
+
   // Aliases
   public static final Splitter PATH = SLASH;
   public static final Splitter EXTENSION = DOT;
@@ -76,6 +79,11 @@ public class Splitters {
       return Joiners.DOT;
     } else if (splitter.equals(COLON)) {
       return Joiners.COLON;
+    }
+
+    // Combinations
+    else if (splitter.equals(DOUBLE_DASH)) {
+      return Joiners.DOUBLE_DASH;
     }
 
     // Aliases

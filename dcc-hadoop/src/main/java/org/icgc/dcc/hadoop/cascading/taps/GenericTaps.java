@@ -24,6 +24,7 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 import cascading.flow.FlowDef;
 import cascading.tap.Tap;
+import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
 
@@ -32,6 +33,8 @@ import com.google.common.base.Function;
  */
 @NoArgsConstructor(access = PRIVATE)
 public class GenericTaps {
+
+  static final Fields LINE_FIELD = new Fields("line");
 
   /**
    * Must suppress warning as cascading unfortunately uses raw types in {@link FlowDef#addSources(Map)}.

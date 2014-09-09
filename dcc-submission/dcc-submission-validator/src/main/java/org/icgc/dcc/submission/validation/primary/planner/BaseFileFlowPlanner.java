@@ -113,7 +113,7 @@ public abstract class BaseFileFlowPlanner implements FileFlowPlanner {
   }
 
   protected Pipe getReportTailPipe(String basename) {
-    return getStructurallyValidTail(); // overwritten in the case of the internal version
+    return getStructurallyValidTail(); // overwritten in the case of the row-based version
   }
 
   @Override

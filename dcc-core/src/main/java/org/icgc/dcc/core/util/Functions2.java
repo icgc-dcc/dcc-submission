@@ -18,6 +18,10 @@
 package org.icgc.dcc.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
+
+import java.util.Collection;
+import java.util.List;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -28,6 +32,32 @@ import com.google.common.base.Function;
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class Functions2 {
+
+  public final static <T> Function<Integer, T> getValueAtIndex(@NonNull final List<T> list) {
+
+    return new Function<Integer, T>() {
+
+      @Override
+      public T apply(@NonNull final Integer d) {
+        return list.get(d);
+      }
+
+    };
+
+  }
+
+  public final static <T> Function<T, Integer> indexOf(@NonNull final List<T> list) {
+
+    return new Function<T, Integer>() {
+
+      @Override
+      public Integer apply(@NonNull final T t) {
+        return list.indexOf(t);
+      }
+
+    };
+
+  }
 
   /**
    * Somehow guava's forces you to have {@link Object} as input.
@@ -44,4 +74,56 @@ public final class Functions2 {
     };
 
   }
+
+  public static <T> Function<Collection<T>, Integer> size() {
+    return new Function<Collection<T>, Integer>() {
+
+      @Override
+      public Integer apply(@NonNull final Collection<T> array) {
+        return array.size();
+      }
+
+    };
+  }
+
+  public static <T> Function<T[], Integer> length() {
+    return new Function<T[], Integer>() {
+
+      @Override
+      public Integer apply(@NonNull final T[] array) {
+        return array.length;
+      }
+
+    };
+  }
+
+  public static Function<Integer, String> castIntegerToString() {
+    return Functions2.<Integer> castToString();
+  }
+
+  public static <T> Function<T, String> castToString() {
+    return new Function<T, String>() {
+
+      @Override
+      public String apply(T t) {
+        return String.valueOf(t);
+      }
+
+    };
+  }
+
+  /**
+   * TODO: how to specify "U super T"?
+   */
+  public static <T, U> Function<T, U> cast(@NonNull final Class<U> type) {
+    return new Function<T, U>() {
+
+      @Override
+      public U apply(T t) {
+        return type.cast(t);
+      }
+
+    };
+  }
+
 }

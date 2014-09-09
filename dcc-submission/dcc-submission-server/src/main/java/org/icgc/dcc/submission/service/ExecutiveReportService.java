@@ -17,7 +17,9 @@
  */
 package org.icgc.dcc.submission.service;
 
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.ImmutableMap.copyOf;
+import static com.google.common.collect.Iterables.filter;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.icgc.dcc.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.core.model.Dictionaries.getPatterns;
@@ -38,6 +40,8 @@ import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.icgc.dcc.core.util.InjectionNames;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
+import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
+import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.reporter.Reporter;
 import org.icgc.dcc.submission.reporter.ReporterCollector;
@@ -47,19 +51,24 @@ import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectDataTypeReportRepository;
 import org.icgc.dcc.submission.repository.ProjectSequencingStrategyReportRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
-import org.icgc.submission.summary.ProjectDataTypeReport;
-import org.icgc.submission.summary.ProjectSequencingStrategyReport;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 @Slf4j
 public class ExecutiveReportService extends AbstractIdleService {
+
+  /**
+   * TODO: address as part of DCC-2445 (what to do with projects without experimental data?)
+   */
+  private static final Set<String> NO_OBSERVATIONS_PROJECT_KEYS = ImmutableSet.of("AML-US", "WT-US");
 
   /**
    * Dependencies.
@@ -127,8 +136,10 @@ public class ExecutiveReportService extends AbstractIdleService {
     projectDataTypeRepository.upsert(report);
   }
 
-  public void deleteProjectDataTypeReport(final String releaseName) {
-    projectDataTypeRepository.deleteByRelease(releaseName);
+  public void deleteProjectDataTypeReport(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    projectDataTypeRepository.deleteBySubmission(releaseName, projectKey);
   }
 
   public List<ProjectSequencingStrategyReport> getProjectSequencingStrategyReport() {
@@ -144,15 +155,18 @@ public class ExecutiveReportService extends AbstractIdleService {
     projectSequencingStrategyRepository.upsert(report);
   }
 
-  public void deleteProjectSequencingStrategyReport(final String releaseName) {
-    projectSequencingStrategyRepository.deleteByRelease(releaseName);
+  public void deleteProjectSequencingStrategyReport(
+      @NonNull final String releaseName,
+      @NonNull final String projectKey) {
+    projectSequencingStrategyRepository.deleteBySubmission(releaseName, projectKey);
   }
 
   private ProjectDataTypeReport getProjectReport(JsonNode report, String releaseName) {
     ProjectDataTypeReport projectDataTypeReport = new ProjectDataTypeReport();
     projectDataTypeReport.setReleaseName(releaseName);
     projectDataTypeReport.setProjectCode(report.get("_project_id").textValue());
-    projectDataTypeReport.setType(report.get("_type").textValue());
+    projectDataTypeReport.setFeatureType(report.get("_type").textValue());
+    projectDataTypeReport.setSampleType(report.get("sample_type").textValue());
     projectDataTypeReport.setDonorCount(Long.parseLong(report.get("donor_id_count").textValue()));
     projectDataTypeReport.setSampleCount(Long.parseLong(report.get("analyzed_sample_id_count").textValue()));
     projectDataTypeReport.setSpecimenCount(Long.parseLong(report.get("specimen_id_count").textValue()));
@@ -173,7 +187,7 @@ public class ExecutiveReportService extends AbstractIdleService {
   public void generateReport(String releaseName) {
     generateReport(
         releaseName,
-        releaseRepository.findProjectKeys(releaseName));
+        releaseRepository.findSignedOffProjectKeys(releaseName));
   }
 
   /**
@@ -203,6 +217,7 @@ public class ExecutiveReportService extends AbstractIdleService {
       @NonNull final JsonNode dictionaryNode,
       @NonNull final JsonNode codeListsNode) {
 
+    val filteredProjects = filterProjects(projectKeys);
     val fileSystem = dccFileSystem.getFileSystem();
     val patterns = getPatterns(dictionaryNode);
     val mappings = getMapping(dictionaryNode, codeListsNode, SSM_M_TYPE,
@@ -212,46 +227,43 @@ public class ExecutiveReportService extends AbstractIdleService {
 
       @Override
       public void run() {
-        log.info("Starting generating reports for '{}.{}'", releaseName, projectKeys);
+        log.info("Starting generating reports for '{}.{}'", releaseName, filteredProjects);
 
         val outputDirPath = Reporter.process(
             releaseName,
-            projectKeys,
+            filteredProjects,
             getReporterInput(
                 fileSystem,
-                projectKeys,
+                filteredProjects,
                 getReleasePath(releaseName),
                 patterns),
             mappings.get(),
             copyOf(hadoopProperties));
-        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, projectKeys);
+        log.info("Finished cascading process for report gathering of '{}.{}'", releaseName, filteredProjects);
 
-        for (val project : projectKeys) {
-          ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
-              fileSystem, outputDirPath, releaseName, project);
-          log.info("Persisting data type executive reports for '{}.{}': '{}'",
-              new Object[] { releaseName, project, projectReports });
+        ArrayNode projectReports = ReporterCollector.getJsonProjectDataTypeEntity(
+            fileSystem, outputDirPath, releaseName);
+        log.info("Persisting data type executive reports for '{}.{}': '{}'",
+            new Object[] { releaseName, projectReports });
 
-          for (val report : projectReports) {
-            log.info("Persisting data type executive report for '{}.{}': '{}'",
-                new Object[] { releaseName, project, report });
-            projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
-          }
-
-          ArrayNode sequencingStrategyReports = ReporterCollector.getJsonProjectSequencingStrategy(
-              fileSystem, outputDirPath, releaseName, project, mappings.get());
-          log.info("Persisting sequencing strategy executive reports for '{}.{}': '{}'",
-              new Object[] { releaseName, project, sequencingStrategyReports });
-
-          for (val report : sequencingStrategyReports) {
-            log.info("Persisting sequencing strategy executive report for '{}.{}': '{}'",
-                new Object[] { releaseName, project, report });
-            projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
-          }
-
+        for (val report : projectReports) {
+          log.info("Persisting data type executive report for '{}.{}': '{}'",
+              new Object[] { releaseName, report });
+          projectDataTypeRepository.upsert(getProjectReport(report, releaseName));
         }
 
-        log.info("Finished generating reports for '{}.{}'", releaseName, projectKeys);
+        ArrayNode sequencingStrategyReports = ReporterCollector.getJsonProjectSequencingStrategy(
+            fileSystem, outputDirPath, releaseName, mappings.get());
+        log.info("Persisting sequencing strategy executive reports for '{}.{}': '{}'",
+            new Object[] { releaseName, sequencingStrategyReports });
+
+        for (val report : sequencingStrategyReports) {
+          log.info("Persisting sequencing strategy executive report for '{}.{}': '{}'",
+              new Object[] { releaseName, report });
+          projectSequencingStrategyRepository.upsert(getExecutiveReport(report, releaseName));
+        }
+
+        log.info("Finished generating reports for '{}.{}'", releaseName, filteredProjects);
       }
 
       private String getReleasePath(@NonNull final String releaseName) {
@@ -270,6 +282,39 @@ public class ExecutiveReportService extends AbstractIdleService {
     return ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
             fileSystem, releasePath, projectKeys, patterns));
+  }
+
+  private Set<String> filterProjects(@NonNull final Set<String> projectKeys) {
+    return ImmutableSet.copyOf(
+        filter(
+            filter(
+                projectKeys,
+                not(isTestProject())),
+            not(hasNoObservations())));
+  }
+
+  private Predicate<String> hasNoObservations() {
+    return new Predicate<String>() {
+
+      @Override
+      public boolean apply(@NonNull final String projectKey) {
+        return NO_OBSERVATIONS_PROJECT_KEYS.contains(projectKey);
+      }
+
+    };
+  }
+
+  private Predicate<String> isTestProject() {
+    return new Predicate<String>() {
+
+      private static final String TEST_PROJECT_PREFIX = "TEST";
+
+      @Override
+      public boolean apply(@NonNull final String projectKey) {
+        return projectKey.startsWith(TEST_PROJECT_PREFIX);
+      }
+
+    };
   }
 
 }

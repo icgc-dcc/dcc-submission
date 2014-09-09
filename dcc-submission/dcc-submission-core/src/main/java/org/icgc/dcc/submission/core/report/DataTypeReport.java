@@ -107,7 +107,7 @@ public class DataTypeReport implements ReportElement, Comparable<DataTypeReport>
 
   @Override
   public int compareTo(@NonNull DataTypeReport other) {
-    return dataType.getTypeName().compareTo(other.dataType.getTypeName());
+    return dataType.getId().compareTo(other.dataType.getId());
   }
 
   public static Set<DataType> getDataTypes(Iterable<DataTypeReport> dataTypeReports) {

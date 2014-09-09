@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import static org.icgc.dcc.hadoop.fs.FileSystems.getLocalFileSystem;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -28,16 +28,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
-import org.icgc.dcc.submission.validation.cascading.LocalJsonScheme;
-import org.icgc.dcc.submission.validation.cascading.ValidationFields;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-
-import cascading.scheme.local.TextDelimited;
-import cascading.tap.Tap;
-import cascading.tap.local.FileTap;
-import cascading.tuple.Fields;
 
 @Slf4j
 public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
@@ -45,19 +37,13 @@ public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrat
   public LocalSubmissionPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final Path source,
-      @NonNull final Path output,
-      @NonNull final Path system) {
-    super(hadoopProperties, getLocalFileSystem(), source, output, system);
+      @NonNull final Path output) {
+    super(hadoopProperties, getDefaultLocalFileSystem(), source, output);
   }
 
   @Override
-  protected CascadingTaps getTaps() {
-    return CascadingTaps.LOCAL;
-  }
-
-  @Override
-  protected CascadingConnectors getConnectors() {
-    return CascadingConnectors.LOCAL;
+  protected CascadingContext getCascadingContext() {
+    return CascadingContext.getLocal();
   }
 
   @Override
@@ -66,34 +52,11 @@ public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrat
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
-    return new FileTap(new LocalJsonScheme(), getReportPath(fileName, type, reportName).toUri().getPath());
-  }
-
-  @Override
   @SneakyThrows
   public InputStream readReportTap(String fileName, FlowType type, String reportName) {
     val reportPath = getReportPath(fileName, type, reportName);
     log.info("Streaming through report: '{}'", reportPath);
     return fileSystem.open(reportPath);
-  }
-
-  @Override
-  protected Tap<?, ?, ?> tap(Path path) {
-    return new FileTap(new TextDelimited(true, FIELD_SEPARATOR), path.toUri().getPath());
-  }
-
-  @Override
-  protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    return new FileTap(new TextDelimited(fields, true, FIELD_SEPARATOR), path.toUri().getPath());
-  }
-
-  @Override
-  public Tap<?, ?, ?> getSourceTap(String fileName) {
-    return CascadingTaps.LOCAL.getDecompressingLinesNoHeader(
-        getFilePath(fileName),
-        new Fields(ValidationFields.OFFSET_FIELD_NAME),
-        new Fields("line"));
   }
 
 }

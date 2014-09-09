@@ -17,11 +17,19 @@
  */
 package org.icgc.dcc.core.util;
 
+import static com.google.common.collect.ImmutableSet.of;
+import static org.icgc.dcc.core.util.FormatUtils._;
+import lombok.NonNull;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 
 /**
  * Common separators.
  */
 public class Separators {
+
+  public static final char TAB_CHARACTER = '\t';
 
   public static final String EMPTY_STRING = Strings2.EMPTY_STRING;
   public static final String NEWLINE = Strings2.UNIX_NEW_LINE;
@@ -35,6 +43,10 @@ public class Separators {
   public static final String COLON = ":";
   public static final String SEMICOLON = ";";
   public static final String HASHTAG = "#";
+  public static final String DOLLAR = "$";
+
+  // Combinations
+  public static final String DOUBLE_DASH = DASH + DASH;
 
   // Aliases
   public static final String EXTENSION = Strings2.DOT;
@@ -46,4 +58,64 @@ public class Separators {
   // Formatting
   public static final String INDENT = Separators.NEWLINE + Separators.TAB;
 
+  public static final Splitter getCorrespondingSplitter(@NonNull final String separator) {
+    return getCorrespondingObject(separator, true);
+  }
+
+  public static final Joiner getCorrespondingJoiner(@NonNull final String separator) {
+    return getCorrespondingObject(separator, false);
+  }
+
+  /**
+   * TODO: write cleaner version
+   */
+  @SuppressWarnings("unchecked")
+  private final static <T> T getCorrespondingObject(
+      @NonNull final String separator,
+      final boolean splitter) {
+
+    // Basic ones
+    if (separator.equals(WHITESPACE)) {
+      return (T) (splitter ? Splitters.WHITESPACE : Joiners.WHITESPACE);
+    } else if (separator.equals(TAB)) {
+      return (T) (splitter ? Splitters.TAB : Joiners.TAB);
+    } else if (separator.equals(NEWLINE)) {
+      return (T) (splitter ? Splitters.NEWLINE : Joiners.NEWLINE);
+    } else if (separator.equals(DASH)) {
+      return (T) (splitter ? Splitters.DASH : Joiners.DASH);
+    } else if (separator.equals(UNDERSCORE)) {
+      return (T) (splitter ? Splitters.UNDERSCORE : Joiners.UNDERSCORE);
+    } else if (separator.equals(COMMA)) {
+      return (T) (splitter ? Splitters.COMMA : Joiners.COMMA);
+    } else if (separator.equals(SEMICOLON)) {
+      return (T) (splitter ? Splitters.SEMICOLON : Joiners.SEMICOLON);
+    } else if (separator.equals(HASHTAG)) {
+      return (T) (splitter ? Splitters.HASHTAG : Joiners.HASHTAG);
+    }
+
+    // Combinations
+    else if (separator.equals(DOUBLE_DASH)) {
+      return (T) (splitter ? Splitters.DOUBLE_DASH : Joiners.DOUBLE_DASH);
+    }
+
+    // Aliased ones
+    else if (of(DOT, EXTENSION, NAMESPACING).contains(separator)) {
+      return (T) (splitter ? Splitters.DOT : Joiners.DOT);
+    } else if (of(SLASH, PATH).contains(separator)) {
+      return (T) (splitter ? Splitters.SLASH : Joiners.SLASH);
+    } else if (of(COLON, CREDENTIALS, HOST_AND_PORT).contains(separator)) {
+      return (T) (splitter ? Splitters.COLON : Joiners.COLON);
+    }
+
+    // Special ones
+    else if (separator.equals(EMPTY_STRING)) {
+      throw new IllegalStateException(_("Cannot split/join using '{}'", EMPTY_STRING)); // TODO: confirm for join
+    }
+
+    // Error
+    else {
+      throw new UnsupportedOperationException(_("Unsupported yet: '%s'", separator));
+    }
+
+  }
 }

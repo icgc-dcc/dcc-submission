@@ -21,13 +21,12 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FILE_NAME_SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 import lombok.SneakyThrows;
@@ -50,22 +49,20 @@ import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestrict
 import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.primary.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 
-public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest {
+public class ValidationRowBasedIntegrityTest extends BaseValidationIntegrityTest {
 
   /**
    * Test data.
    */
-  private static final String ROOT_DIR = "/fixtures/validation/internal";
+  private static final String ROOT_DIR = "/fixtures/validation/internal"; // TODO: rename to "row-based"
   private static final String PROJECT_KEY = "dummyProject";
 
   @Before
@@ -165,16 +162,6 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
     testErrorType(RegexRestriction.NAME);
   }
 
-  // Unique and relation checks have been moved to the KV
-  @Ignore
-  @Test
-  public void test_validate_invalidUniqueFieldsCombination() {
-    FileSchema donor = getFileSchemaByName(dictionary, "donor");
-    donor.setUniqueFields(Arrays.asList("donor_sex", "donor_region_of_residence", "donor_vital_status"));
-
-    testErrorType(UniqueFieldsPlanningVisitor.NAME);
-  }
-
   @Test
   public void test_validate_invalidScriptValues() {
     // Create restrictions
@@ -203,7 +190,7 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
   private String validate(Dictionary dictionary, String submissionFilePath) {
     String rootDirString = this.getClass().getResource(submissionFilePath).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
-    String errorFileString = outputDirString + "/" + "donor.txt.internal" + FILE_NAME_SEPARATOR + "errors.json";
+    String errorFileString = outputDirString + "/" + "donor.txt.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
@@ -211,11 +198,10 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
-    Path systemDir = SYSTEM_DIR;
 
     val dataTypes = DataTypes.values();
     val platformStrategy = new LocalSubmissionPlatformStrategy(
-        Collections.<String, String> emptyMap(), rootDir, outputDir, systemDir);
+        Collections.<String, String> emptyMap(), rootDir, outputDir);
 
     Plan plan = planner.plan(PROJECT_KEY, dataTypes, platformStrategy, dictionary);
     plan.connect();

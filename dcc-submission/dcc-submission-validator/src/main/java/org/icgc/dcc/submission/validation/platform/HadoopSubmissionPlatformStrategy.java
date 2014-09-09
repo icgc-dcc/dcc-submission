@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.core.util.Maps2.toObjectsMap;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.getInputStream;
@@ -32,47 +31,29 @@ import java.util.Map;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.connector.CascadingConnectors;
-import org.icgc.dcc.hadoop.cascading.taps.CascadingTaps;
-import org.icgc.dcc.submission.validation.cascading.HadoopJsonScheme;
+import org.icgc.dcc.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
-import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.property.AppProps;
-import cascading.scheme.hadoop.TextDelimited;
-import cascading.scheme.hadoop.TextLine;
-import cascading.scheme.hadoop.TextLine.Compress;
-import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
-import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
 
-@Slf4j
 public class HadoopSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
 
   public HadoopSubmissionPlatformStrategy(
       @NonNull final Map<String, String> hadoopProperties,
       @NonNull final FileSystem fileSystem,
       @NonNull final Path source,
-      @NonNull final Path output,
-      @NonNull final Path system) {
-    super(hadoopProperties, fileSystem, source, output, system);
+      @NonNull final Path output) {
+    super(hadoopProperties, fileSystem, source, output);
   }
 
   @Override
-  protected CascadingTaps getTaps() {
-    return CascadingTaps.DISTRIBUTED;
-  }
-
-  @Override
-  protected CascadingConnectors getConnectors() {
-    return CascadingConnectors.DISTRIBUTED;
+  protected CascadingContext getCascadingContext() {
+    return CascadingContext.getDistributed();
   }
 
   @Override
@@ -99,47 +80,11 @@ public class HadoopSubmissionPlatformStrategy extends BaseSubmissionPlatformStra
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName) {
-    val reportPath = getReportPath(fileName, type, reportName);
-    log.info("Streaming through report: '{}'", reportPath);
-    val scheme = new HadoopJsonScheme();
-    scheme.setSinkCompression(ENABLE);
-    return new Hfs(scheme, reportPath.toUri().getPath());
-  }
-
-  @Override
   @SneakyThrows
   public InputStream readReportTap(String fileName, FlowType type, String reportName) {
     return getInputStream(
         fileSystem,
         getReportPath(fileName, type, reportName));
-  }
-
-  @Override
-  protected Tap<?, ?, ?> tap(Path path) {
-    val textDelimited = new TextDelimited(true, FIELD_SEPARATOR);
-    textDelimited.setSinkCompression(Compress.ENABLE);
-
-    return new Hfs(textDelimited, path.toUri().getPath());
-  }
-
-  @Override
-  protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    val textDelimited = new TextDelimited(fields, true, FIELD_SEPARATOR);
-    textDelimited.setSinkCompression(Compress.ENABLE);
-
-    return new Hfs(textDelimited, path.toUri().getPath());
-  }
-
-  @Override
-  public Tap<?, ?, ?> getSourceTap(String fileName) {
-    val scheme = new TextLine(
-        new Fields(ValidationFields.OFFSET_FIELD_NAME,
-            "line"));
-    scheme.setSinkCompression(Compress.ENABLE);
-    return new Hfs(
-        scheme,
-        getFile(fileName).toUri().getPath());
   }
 
 }

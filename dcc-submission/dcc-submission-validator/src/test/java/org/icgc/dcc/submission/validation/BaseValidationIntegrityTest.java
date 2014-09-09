@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.io.Files.readLines;
 import static java.util.Collections.sort;
-import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 
 import java.io.File;
 import java.net.URL;
@@ -29,7 +28,6 @@ import java.util.List;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -62,9 +60,6 @@ public abstract class BaseValidationIntegrityTest {
    * Constants.
    */
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  protected static final Path SYSTEM_DIR = new Path(
-      "../dcc-submission-server/src/test/resources/fixtures/submission/dcc_root_dir/release1",
-      SYSTEM_FILES_DIR_NAME);
 
   /**
    * Mocks.

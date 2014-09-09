@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.primary.visitor;
 
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.validation.primary.core.FlowType.INTERNAL;
+import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,7 +41,7 @@ import com.google.common.collect.ImmutableMap;
 public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
 
   public SummaryReportingPlanningVisitor(@NonNull SubmissionPlatformStrategy platform) {
-    super(platform, INTERNAL);
+    super(platform, ROW_BASED);
   }
 
   @Override

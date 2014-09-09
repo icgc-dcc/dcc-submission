@@ -19,6 +19,10 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collections;
@@ -26,11 +30,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -43,18 +49,22 @@ import com.google.common.collect.Sets;
  * Careful not to confuse this with {@link FileType} which represents the ICGC file types, such as "donor", "specimen",
  * "ssm_m", "meth_seq_m", ... They have the clinical ones in common.
  */
-public interface DataType {
+public interface DataType extends Identifiable {
 
-  String TYPE_SUFFIX = "TYPE";
+  /**
+   * TODO: remove the need for these suffices
+   */
+  String TYPE_SUFFIX = "_TYPE";
+  String SUBTYPE_SUFFIX = "_SUBTYPE";
 
   /**
    * Not really used anywhere (but here for consistency).
    */
   String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
 
-  String name();
+  String CLINICAL = "clinical";
 
-  String getTypeName();
+  String name();
 
   boolean isClinicalType();
 
@@ -159,11 +169,66 @@ public interface DataType {
 
         @Override
         public int compare(DataType dataType1, DataType dataType2) {
-          return dataType1.name().compareTo(dataType2.name());
+          return dataType1.getId().compareTo(dataType2.getId());
         }
       });
 
       return Sets.<DataType> newLinkedHashSet(list);
+    }
+
+    public static Iterable<FeatureType> getFeatureTypes(@NonNull final Iterable<DataType> dataTypes) {
+      return transform(
+          filter(
+              dataTypes,
+              filterFeatureTypes()),
+          toFeatureType());
+    }
+
+    public static Iterable<ClinicalType> getClinicalTypes(@NonNull final Iterable<DataType> dataTypes) {
+      return transform(
+          filter(
+              dataTypes,
+              filterClinicalTypes()),
+          toClinicalType());
+    }
+
+    public static Function<DataType, FeatureType> toFeatureType() {
+      return new Function<DataType, FeatureType>() {
+
+        @Override
+        public FeatureType apply(@NonNull final DataType dataType) {
+          checkState(dataType.isFeatureType());
+          return dataType.asFeatureType();
+        }
+
+      };
+    }
+
+    public static Function<DataType, ClinicalType> toClinicalType() {
+      return new Function<DataType, ClinicalType>() {
+
+        @Override
+        public ClinicalType apply(@NonNull final DataType dataType) {
+          checkState(dataType.isClinicalType());
+          return dataType.asClinicalType();
+        }
+
+      };
+    }
+
+    public static Predicate<DataType> filterFeatureTypes() {
+      return new Predicate<DataType>() {
+
+        @Override
+        public boolean apply(@NonNull final DataType dataType) {
+          return dataType.isFeatureType();
+        }
+
+      };
+    }
+
+    public static Predicate<DataType> filterClinicalTypes() {
+      return not(filterFeatureTypes());
     }
 
     /**
@@ -178,14 +243,6 @@ public interface DataType {
      */
     public static boolean isMandatoryType(DataType dataType) {
       return MANDATORY_TYPES.contains(dataType);
-    }
-
-    /**
-     * Determines whether the type provided is one that has a control counterpart or not.
-     */
-    public static boolean hasControlSampleId(DataType dataType) {
-      return dataType.isFeatureType() &&
-          FeatureTypes.hasControlSampleId(dataType.asFeatureType());
     }
 
     /**

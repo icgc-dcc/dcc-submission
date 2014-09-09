@@ -10,6 +10,7 @@ import static org.icgc.dcc.core.util.Jackson.getRootObject;
 import static org.icgc.dcc.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.core.util.Joiners.PATH;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
 import java.net.URL;
@@ -21,21 +22,21 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.core.util.Jackson;
 import org.icgc.dcc.hadoop.cascading.Pipes;
 import org.icgc.dcc.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.ProcessClinicalType;
+import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectDataTypeEntity;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
-import org.icgc.dcc.submission.reporter.cascading.subassembly.projectDataTypeEntity.ProjectDataTypeEntity;
 
 import cascading.pipe.Pipe;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
-import com.google.common.collect.Maps;
 
 @Slf4j
 public class Reporter {
@@ -49,14 +50,14 @@ public class Reporter {
       @NonNull final String projectsJsonFilePath,
       @NonNull final URL dictionaryFilePath,
       @NonNull final URL codeListsFilePath,
-      @NonNull final Map<String, String> hadoopProperties) {
+      @NonNull final Map<?, ?> hadoopProperties) {
 
     val dictionaryRoot = getRootObject(dictionaryFilePath);
     val codeListsRoot = Jackson.getRootArray(codeListsFilePath);
 
     val reporterInput = ReporterInput.from(
         SubmissionInputData.getMatchingFiles(
-            FileSystems.getLocalFileSystem(),
+            getFileSystem(hadoopProperties),
             defaultParentDataDir,
             projectsJsonFilePath,
             getPatterns(dictionaryRoot)));
@@ -78,54 +79,63 @@ public class Reporter {
       @NonNull final Set<String> projectKeys,
       @NonNull final ReporterInput reporterInput,
       @NonNull final Map<String, String> mapping,
-      @NonNull final Map<String, String> hadoopProperties) {
+      @NonNull final Map<?, ?> hadoopProperties) {
     log.info("Gathering reports for '{}.{}': '{}' ('{}')",
         new Object[] { releaseName, projectKeys, reporterInput, mapping });
 
-    // Main processing
-    val projectDataTypeEntities = Maps.<String, Pipe> newLinkedHashMap();
-    val projectSequencingStrategies = Maps.<String, Pipe> newLinkedHashMap();
-    for (val projectKey : projectKeys) {
-      val preComputationTable = new PreComputation(releaseName, projectKey, reporterInput);
-      val projectDataTypeEntity = new ProjectDataTypeEntity(preComputationTable);
-      val projectSequencingStrategy = new ProjectSequencingStrategy(
-          preComputationTable,
-          ProcessClinicalType.donor(preComputationTable),
-          mapping.keySet());
+    val tempDirPath = createTempDir().getAbsolutePath();
+    val connector = new ReporterConnector(FileSystems.isLocal(hadoopProperties), tempDirPath);
 
-      projectDataTypeEntities.put(projectKey, projectDataTypeEntity);
-      projectSequencingStrategies.put(projectKey, projectSequencingStrategy);
-    }
+    val preComputationCascade = connector.connectPreComputationCascade(
+        reporterInput,
+        releaseName,
+        new PreComputation(
+            releaseName, projectKeys, reporterInput.getMatchingFilePathCounts()),
+        hadoopProperties);
 
-    val outputDir = createTempDir();
-    new ReporterConnector(
-        FileSystems.isLocal(hadoopProperties),
-        outputDir.getAbsolutePath())
-        .connectCascade(
-            reporterInput,
-            releaseName,
-            projectDataTypeEntities,
-            projectSequencingStrategies,
-            hadoopProperties)
-        .complete();
+    log.info("Running cascade");
+    preComputationCascade.complete();
 
-    return outputDir.getAbsolutePath();
+    val preComputationTable = getPreComputationTablePipe();
+    val cascade = connector.connectFinalCascade(
+        releaseName,
+        reporterInput.getProjectKeys(),
+        preComputationTable,
+        new ProjectDataTypeEntity(preComputationTable, releaseName),
+        new ProjectSequencingStrategy(
+            preComputationTable, releaseName, mapping.keySet()),
+        hadoopProperties);
+
+    log.info("Running cascade");
+    cascade.complete();
+
+    log.info("Output dir: '{}'", tempDirPath);
+    return tempDirPath;
+  }
+
+  private static Pipe getPreComputationTablePipe() {
+    return new Pipe(
+        Pipes.getName(
+            Identifiables.fromStrings(
+                PreComputation.class.getSimpleName())));
   }
 
   public static String getHeadPipeName(String projectKey, FileType fileType, int fileNumber) {
-    return Pipes.getName(projectKey, fileType.getTypeName(), fileNumber);
+    return Pipes.getName(
+        Identifiables.fromString(projectKey),
+        fileType,
+        Identifiables.fromInteger(fileNumber));
   }
 
-  public static String getOutputFilePath(
-      String outputDirPath, OutputType output, String releaseName, String projectKey) {
-    return PATH.join(outputDirPath, getOutputFileName(output, releaseName, projectKey));
+  public static String getFilePath(
+      String outputDirPath, Identifiable type, String releaseName) {
+    return PATH.join(outputDirPath, getFileName(type, releaseName));
   }
 
-  public static String getOutputFileName(OutputType output, String releaseName, String projectKey) {
+  public static String getFileName(Identifiable type, String releaseName) {
     return EXTENSION.join(
-        output.name().toLowerCase(),
+        type.getId(),
         releaseName,
-        projectKey,
         TSV);
   }
 

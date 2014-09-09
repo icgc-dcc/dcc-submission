@@ -24,7 +24,7 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema;
@@ -46,7 +46,7 @@ import com.mongodb.DBObject;
 /**
  * Must happen after {@link ValueTypePlanningVisitor} to ensure data types are correct to begin with.
  */
-public class RangeFieldRestriction implements InternalPlanElement {
+public class RangeFieldRestriction implements RowBasedPlanElement {
 
   public static final String NAME = "range";
 
@@ -94,7 +94,7 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
     @Override
     public FlowType flowType() {
-      return FlowType.INTERNAL;
+      return FlowType.ROW_BASED;
     }
 
     @Override

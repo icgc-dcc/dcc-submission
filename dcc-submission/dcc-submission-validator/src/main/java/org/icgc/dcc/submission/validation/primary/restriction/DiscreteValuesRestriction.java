@@ -25,7 +25,7 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema;
@@ -45,7 +45,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
-public class DiscreteValuesRestriction implements InternalPlanElement {
+public class DiscreteValuesRestriction implements RowBasedPlanElement {
 
   public static final String NAME = "in";
 
@@ -84,7 +84,7 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     @Override
     public FlowType flowType() {
-      return FlowType.INTERNAL;
+      return FlowType.ROW_BASED;
     }
 
     @Override

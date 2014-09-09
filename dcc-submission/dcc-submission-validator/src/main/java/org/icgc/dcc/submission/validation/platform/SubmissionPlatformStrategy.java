@@ -17,37 +17,38 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
+import static org.icgc.dcc.core.util.Separators.DOUBLE_DASH;
+
 import java.io.InputStream;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.util.DccConstants;
+import org.icgc.dcc.core.util.Separators;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.Key;
 
 import cascading.flow.FlowConnector;
-import cascading.scheme.hadoop.TextDelimited;
-import cascading.scheme.hadoop.TextLine;
 import cascading.tap.Tap;
-import cascading.tuple.Fields;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 
 public interface SubmissionPlatformStrategy {
 
-  public static final String FIELD_SEPARATOR = "\t";
-  public static final char FIELD_SEPARATOR_CHAR = '\t';
-  public static final String FILE_NAME_SEPARATOR = "--";
-  public static final Splitter FIELD_SPLITTER = Splitter.on(FIELD_SEPARATOR);
-  public static final Joiner FIELD_JOINER = Joiner.on(FIELD_SEPARATOR);
+  public static final String FIELD_SEPARATOR = DccConstants.INPUT_FILES_SEPARATOR;
+  public static final Splitter FIELD_SPLITTER = Separators.getCorrespondingSplitter(FIELD_SEPARATOR);
+  public static final Joiner FIELD_JOINER = Separators.getCorrespondingJoiner(FIELD_SEPARATOR);
+
+  public static final String REPORT_FILES_INFO_SEPARATOR = DOUBLE_DASH;
+  public static final Joiner REPORT_FILES_INFO_JOINER = Joiner.on(REPORT_FILES_INFO_SEPARATOR);
 
   FlowConnector getFlowConnector();
 
   /**
    * TODO: Adapt submission code to use {@link #getNormalizerSourceTap(FileSchema)} since we can now assume the header
-   * is known (and therefore we should use {@link TextDelimited} rather than {@link TextLine}.
+   * is known (and therefore we should use TextDelimited rather than TextLine.
    */
   Tap<?, ?, ?> getSourceTap(String fileName);
 
@@ -55,8 +56,6 @@ public interface SubmissionPlatformStrategy {
    * See comment in {@link #getSourceTap(String)}.
    */
   Tap<?, ?, ?> getNormalizerSourceTap(String fileName);
-
-  Tap<?, ?, ?> getTrimmedTap(Key key);
 
   Tap<?, ?, ?> getReportTap(String fileName, FlowType type, String reportName);
 
@@ -67,11 +66,6 @@ public interface SubmissionPlatformStrategy {
   InputStream readReportTap(String fileName, FlowType type, String reportName);
 
   /**
-   * Necessary until DCC-996 is done (IF there is indeed a more elegant alternative).
-   */
-  Fields getFileHeader(String fileName);
-
-  /**
    * TODO
    */
   Path getFile(String fileName);
@@ -80,11 +74,5 @@ public interface SubmissionPlatformStrategy {
    * TODO: merge with {@link ValidationContext#getSsmPrimaryFiles()}?
    */
   List<String> listFileNames(String pattern);
-
-  /**
-   * For log messages and to help debugging, use {@link #listFileNames(String)} for everything else (should be
-   * sufficient).
-   */
-  List<String> listFileNames();
 
 }

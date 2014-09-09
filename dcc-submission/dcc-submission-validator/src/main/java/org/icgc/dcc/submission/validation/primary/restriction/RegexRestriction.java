@@ -27,7 +27,7 @@ import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema;
@@ -44,7 +44,7 @@ import cascading.tuple.TupleEntry;
 
 import com.mongodb.BasicDBObject;
 
-public class RegexRestriction implements InternalPlanElement {
+public class RegexRestriction implements RowBasedPlanElement {
 
   public static final String NAME = "regex"; // TODO: this really should go in an enum
 
@@ -85,7 +85,7 @@ public class RegexRestriction implements InternalPlanElement {
 
     @Override
     public FlowType flowType() {
-      return FlowType.INTERNAL;
+      return FlowType.ROW_BASED;
     }
 
     @Override

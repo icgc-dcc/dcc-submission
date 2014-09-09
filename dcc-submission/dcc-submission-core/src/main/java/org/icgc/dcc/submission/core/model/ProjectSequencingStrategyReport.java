@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,37 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.core;
+package org.icgc.dcc.submission.core.model;
 
-import cascading.pipe.Pipe;
+import java.util.Map;
 
-/**
- * A {@code PlanElement} that requires joining before applying a validation.
- */
-public interface ExternalPlanElement extends PlanElement {
+import lombok.Data;
+import lombok.ToString;
 
-  /**
-   * Returns the fields of the left side of the join
-   */
-  public String[] lhsFields();
+import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.Property;
 
-  /**
-   * Returns the fields of the right side of the join
-   */
-  public String[] rhsFields();
+import com.fasterxml.jackson.annotation.JsonView;
 
-  /**
-   * Returns the schema name of the right side of the join
-   */
-  public String rhs();
+@Entity(noClassnameStored = true)
+@ToString
+@Indexes(@Index(name = "release_project", value = "releaseName, projectCode"))
+@Data
+public class ProjectSequencingStrategyReport {
 
-  /**
-   * Joins two {@code Pipe}s into a single one.
-   * 
-   * @param lhs left side to join
-   * @param rhs right side to join
-   * @return joined {@code Pipe}
-   */
-  public Pipe join(Pipe lhs, Pipe rhs);
+  @Id
+  private String id;
+
+  @Property("releaseName")
+  @JsonView(Digest.class)
+  protected String releaseName;
+
+  @Property("projectCode")
+  @JsonView(Digest.class)
+  protected String projectCode;
+
+  // Count fields
+  Map<String, Long> countSummary;
 
 }

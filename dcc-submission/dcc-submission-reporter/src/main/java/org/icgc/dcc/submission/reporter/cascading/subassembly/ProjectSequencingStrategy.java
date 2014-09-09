@@ -3,14 +3,12 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly;
 import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
 import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
-import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
+import static org.icgc.dcc.submission.reporter.OutputType.SEQUENCING_STRATEGY;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_UNIQUE_COUNT_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.REDUNDANT_PROJECT_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_COUNT_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
-import static org.icgc.dcc.submission.reporter.ReporterFields.getTemporaryField;
+import static org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectDataTypeEntity.donorUniqueCountBy;
 
 import java.util.List;
 import java.util.Set;
@@ -32,9 +30,6 @@ import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Discard;
-import cascading.pipe.assembly.Rename;
-import cascading.pipe.assembly.Retain;
-import cascading.pipe.assembly.SumBy;
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
@@ -44,70 +39,34 @@ public class ProjectSequencingStrategy extends SubAssembly {
   private static final String NULL_REPLACEMENT = "null";
   private static final long TRANSPOSITION_DEFAULT_VALUE = 0L;
 
-  public ProjectSequencingStrategy(Pipe preComputationTable, Pipe donors, Set<String> codes) {
-    setTails(process(preComputationTable, donors, getTranspositionFields(codes)));
-  }
-
-  private static Fields getTranspositionFields(Set<String> codes) {
-    Fields transpositionFields = new Fields();
-    for (val code : getAugmentedCodes(codes)) {
-      transpositionFields = transpositionFields.append(new Fields(code));
-    }
-    return transpositionFields;
-  }
-
-  private static List<String> getAugmentedCodes(
+  public ProjectSequencingStrategy(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final String releaseName,
       @NonNull final Set<String> codes) {
 
-    val builder = new ImmutableList.Builder<String>();
-    val iterator = codes.iterator();
-    for (int i = 0; i < codes.size(); i++) {
-      builder.add(iterator.next());
-    }
-
-    for (val featureType : withSequencingStrategy(FeatureType.values())) {
-      builder.add(featureType.getTypeName());
-    }
-
-    // Remove this after DCC-2399 is done
-    builder.add(NULL_REPLACEMENT);
-    builder.addAll(MISSING_CODES);
-
-    return builder.build();
+    setTails(process(
+        preComputationTable,
+        getTranspositionFields(codes)));
   }
 
-  private static Pipe process(Pipe preComputationTable, Pipe donors, Fields transpositionFields) {
-
+  private static Pipe process(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields transpositionFields) {
     return new ReadableHashJoin(JoinData.builder()
 
-        .leftPipe(postProcessDonors(donors))
-        .leftJoinFields(REDUNDANT_PROJECT_ID_FIELD)
+        .innerJoin()
 
+        .leftPipe(donorUniqueCountBy(preComputationTable, PROJECT_ID_FIELD))
         .rightPipe(processSequencingStrategies(preComputationTable, transpositionFields))
-        .rightJoinFields(PROJECT_ID_FIELD)
 
-        .discardFields(REDUNDANT_PROJECT_ID_FIELD)
+        .joinFields(PROJECT_ID_FIELD)
 
         .build());
   }
 
-  private static Pipe postProcessDonors(Pipe pipe) {
-
-    return new Rename(
-        new SumBy(
-            new Retain(
-                pipe,
-                getTemporaryField(DONOR, PROJECT_ID_FIELD)
-                    .append(DONOR_UNIQUE_COUNT_FIELD)),
-            getTemporaryField(DONOR, PROJECT_ID_FIELD),
-            DONOR_UNIQUE_COUNT_FIELD,
-            DONOR_UNIQUE_COUNT_FIELD,
-            long.class),
-        getTemporaryField(DONOR, PROJECT_ID_FIELD),
-        REDUNDANT_PROJECT_ID_FIELD);
-  }
-
-  private static Pipe processSequencingStrategies(Pipe preComputationTable, Fields transpositionFields) {
+  private static Pipe processSequencingStrategies(
+      @NonNull final Pipe preComputationTable,
+      @NonNull final Fields transpositionFields) {
 
     return new Discard(
         new Every(
@@ -122,16 +81,14 @@ public class ProjectSequencingStrategy extends SubAssembly {
                       }
 
                     },
-                    new UniqueCountBy(UniqueCountByData.builder()
+                    new UniqueCountBy(SEQUENCING_STRATEGY.getId(), UniqueCountByData.builder()
 
                         .pipe(preComputationTable)
                         .uniqueFields(
                             PROJECT_ID_FIELD
                                 .append(SEQUENCING_STRATEGY_FIELD)
                                 .append(DONOR_ID_FIELD))
-                        .countByFields(
-                            PROJECT_ID_FIELD
-                                .append(SEQUENCING_STRATEGY_FIELD))
+                        .countByFields(PROJECT_ID_FIELD.append(SEQUENCING_STRATEGY_FIELD))
                         .resultCountField(getCountFieldCounterpart(SEQUENCING_STRATEGY_FIELD))
 
                         .build())),
@@ -143,6 +100,33 @@ public class ProjectSequencingStrategy extends SubAssembly {
                 TRANSPOSITION_DEFAULT_VALUE)),
         SEQUENCING_STRATEGY_FIELD
             .append(SEQUENCING_STRATEGY_COUNT_FIELD));
+  }
+
+  private static Fields getTranspositionFields(@NonNull final Set<String> codes) {
+    Fields transpositionFields = new Fields();
+    for (val code : getAugmentedCodes(codes)) {
+      transpositionFields = transpositionFields.append(new Fields(code));
+    }
+    return transpositionFields;
+  }
+
+  private static List<String> getAugmentedCodes(@NonNull final Set<String> codes) {
+
+    val builder = new ImmutableList.Builder<String>();
+    val iterator = codes.iterator();
+    for (int i = 0; i < codes.size(); i++) {
+      builder.add(iterator.next());
+    }
+
+    for (val featureType : withSequencingStrategy(FeatureType.values())) {
+      builder.add(featureType.getId());
+    }
+
+    // Remove this after DCC-2399 is done
+    builder.add(NULL_REPLACEMENT);
+    builder.addAll(MISSING_CODES);
+
+    return builder.build();
   }
 
 }

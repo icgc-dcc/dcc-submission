@@ -24,6 +24,8 @@ import static cascading.util.Util.createUniqueID;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import static org.icgc.dcc.hadoop.cascading.FlowReporter.reportFlowFailure;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,12 +41,10 @@ import java.util.concurrent.TimeUnit;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.TaskLog;
 import org.icgc.dcc.hadoop.io.NullInputFormat;
 import org.icgc.dcc.hadoop.io.NullOutputFormat;
 
@@ -54,13 +54,10 @@ import cascading.flow.hadoop.MapReduceFlow;
 import cascading.flow.hadoop.util.JavaObjectSerializer;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.pipe.Each;
-import cascading.stats.CascadingStats.Status;
-import cascading.stats.hadoop.HadoopStepStats;
 import cascading.tap.Tap;
 
 import com.google.common.collect.ImmutableMap;
 
-@Slf4j
 public class FlowExecutor extends ThreadPoolExecutor {
 
   /**
@@ -110,7 +107,7 @@ public class FlowExecutor extends ThreadPoolExecutor {
 
       return flow;
     } catch (FlowException e) {
-      handleFlowException(flow);
+      reportFlowFailure(flow);
 
       throw e;
     }
@@ -254,8 +251,7 @@ public class FlowExecutor extends ThreadPoolExecutor {
   }
 
   private boolean isHadoopLocalMode(JobConf conf) {
-    // TODO: Constants
-    return "local".equals(conf.get("mapred.job.tracker"));
+    return "local".equals(conf.get(MR_JOBTRACKER_ADDRESS_KEY));
   }
 
   private void addProperties(JobConf jobConf) {
@@ -266,33 +262,6 @@ public class FlowExecutor extends ThreadPoolExecutor {
 
   private String getId() {
     return createUniqueID();
-  }
-
-  private static void handleFlowException(Flow<?> flow) {
-    try {
-      for (val stepStats : flow.getFlowStats().getFlowStepStats()) {
-        if (stepStats instanceof HadoopStepStats) {
-          val hadoopStepStats = (HadoopStepStats) stepStats;
-          for (val taskStats : hadoopStepStats.getTaskStats().values()) {
-            for (val hadoopAttempt : taskStats.getAttempts().values()) {
-              if (hadoopAttempt.getStatusFor() == Status.FAILED) {
-                val logUrl = new StringBuilder(hadoopAttempt.getTaskTrackerHttp());
-                logUrl
-                    .append("/tasklog?attemptid=")
-                    .append(taskStats.getTaskID())
-                    .append("&plaintext=true")
-                    .append("&filter=")
-                    .append(TaskLog.LogName.STDOUT);
-
-                log.info("Log url: {}", logUrl);
-              }
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      log.error("Error handling flow excpetion:", e);
-    }
   }
 
 }

@@ -17,12 +17,24 @@
  */
 package org.icgc.dcc.hadoop.fs;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
+
+import java.util.Map;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.icgc.dcc.core.util.Hosts;
+import org.icgc.dcc.core.util.URIs;
+import org.icgc.dcc.hadoop.util.HadoopConstants;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Util methods for {@link Configuration}.
@@ -38,12 +50,94 @@ public final class Configurations {
     return addFsDefault(newConfiguration(), fsDefault);
   }
 
+  public static Configuration newConfiguration(
+      @NonNull final String fsDefault,
+      @NonNull final String jobTracker) {
+    return addJobTracker(
+        addFsDefault(
+            newConfiguration(),
+            fsDefault),
+        jobTracker);
+  }
+
+  public static Configuration newConfiguration(@NonNull final Map<?, ?> properties) {
+    val config = newConfiguration();
+    for (val property : properties.entrySet()) {
+      addProperty(
+          config,
+          String.valueOf(checkNotNull(
+              property.getKey(),
+              "Expecting valid key set, instead got '%s'",
+              properties.keySet())),
+          String.valueOf(checkNotNull(
+              property.getValue(),
+              "Expecting valid value set, instead got '%s'",
+              properties.values())));
+    }
+
+    return config;
+  }
+
+  public static Configuration newDefaultLocalConfiguration() {
+    return newConfiguration(getDefaultLocalPropertiesMap());
+  }
+
+  public static Configuration newDefaultDistributedConfiguration() {
+    return newConfiguration(getDefaultDistributedPropertiesMap());
+  }
+
   public static Configuration addFsDefault(
       @NonNull final Configuration config,
       @NonNull final String fsDefault) {
-    config.set(FS_DEFAULT_NAME_KEY, fsDefault);
+    return addProperty(config, FS_DEFAULT_NAME_KEY, fsDefault);
+  }
+
+  public static Configuration addJobTracker(
+      @NonNull final Configuration config,
+      @NonNull final String jobTracker) {
+    return addProperty(config, MR_JOBTRACKER_ADDRESS_KEY, jobTracker);
+  }
+
+  public static Configuration addProperty(
+      @NonNull final Configuration config,
+      @NonNull final String key,
+      @NonNull final String value) {
+    config.set(key, value);
 
     return config;
+  }
+
+  public static Configuration fromMap(@NonNull final Map<?, ?> map) {
+    return newConfiguration(map);
+  }
+
+  public static Map<?, ?> asMap(@NonNull final Configuration config) {
+    val builder = ImmutableMap.builder();
+    for (val entry : config) {
+      builder.put(entry);
+    }
+
+    return builder.build();
+  }
+
+  public static Map<?, ?> getDefaultLocalPropertiesMap() {
+    return getPropertiesMap(
+        URIs.LOCAL_ROOT,
+        Hosts.LOCALHOST);
+  }
+
+  public static Map<?, ?> getDefaultDistributedPropertiesMap() {
+    return getPropertiesMap(
+        URIs.HDFS_ROOT,
+        Hosts.LOCALHOST);
+  }
+
+  public static Map<String, String> getPropertiesMap(
+      @NonNull final String fsDefault,
+      @NonNull final String jobTracker) {
+    return ImmutableMap.of(
+        CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsDefault,
+        HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY, jobTracker);
   }
 
 }

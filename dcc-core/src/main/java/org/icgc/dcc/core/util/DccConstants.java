@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,42 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.primary.visitor;
+package org.icgc.dcc.core.util;
 
-import java.util.Set;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
-import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.validation.primary.core.ExternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.PlanElement;
-import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
+/**
+ * General constants pertaining to DCC applications. Keep to the strict minimum.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public final class DccConstants {
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Sets;
-
-public class ExternalRestrictionPlanningVisitor extends ExternalFlowPlanningVisitor {
-
-  private final Set<RestrictionType> restrictionTypes;
-
-  public ExternalRestrictionPlanningVisitor(Set<RestrictionType> restrictionTypes) {
-    this.restrictionTypes = Sets.filter(restrictionTypes, new Predicate<RestrictionType>() {
-
-      @Override
-      public boolean apply(RestrictionType input) {
-        return input.flowType() == FlowType.EXTERNAL;
-      }
-
-    });
-  }
-
-  @Override
-  public void visit(Restriction restriction) {
-    for (RestrictionType type : restrictionTypes) {
-      if (type.builds(restriction.getType().getId())) {
-        PlanElement element = type.build(getCurrentField(), restriction);
-        collectPlanElement((ExternalPlanElement) element);
-      }
-    }
-  }
+  public static final String INPUT_FILES_SEPARATOR = Separators.TAB;
 
 }

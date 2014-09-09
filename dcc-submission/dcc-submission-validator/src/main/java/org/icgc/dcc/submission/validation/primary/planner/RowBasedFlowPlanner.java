@@ -17,26 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.primary.planner;
 
-import org.icgc.dcc.submission.validation.primary.core.InternalPlanElement;
-import org.icgc.dcc.submission.validation.primary.core.Key;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 
 /**
- * Plans the internal flow for a particular {@code FileSchema}
+ * Plans the row-based flow for a particular {@code FileSchema}
  */
-public interface InternalFlowPlanner extends FileFlowPlanner {
+public interface RowBasedFlowPlanner extends FileFlowPlanner {
 
   /**
-   * Ensures that this flow will produce the requested trimmed output.
-   * 
-   * @param fields the fields to keep in the trimmed output
-   * @return a {@code Trim} instance representing this unique trimmed output
-   */
-  public Key addTrimmedOutput(String... fields);
-
-  /**
-   * Applies an {@code InternalPlanElement} to this {@code planner}
+   * Applies an {@code RowBasedPlanElement} to this {@code planner}
    * @param planElement
    */
-  public void applyInternalPlanElement(InternalPlanElement planElement);
+  public void applyRowBasedPlanElement(RowBasedPlanElement planElement);
 
 }

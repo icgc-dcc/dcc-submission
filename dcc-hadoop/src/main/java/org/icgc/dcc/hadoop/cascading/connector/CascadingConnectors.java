@@ -29,10 +29,14 @@ import cascading.flow.FlowConnector;
  */
 public interface CascadingConnectors {
 
-  static LocalConnectors LOCAL = new LocalConnectors();
-  static DistributedConnectors DISTRIBUTED = new DistributedConnectors();
-
   String describe();
+
+  Map<?, ?> getDefaultProperties();
+
+  /**
+   * Do *not* use in production.
+   */
+  FlowConnector getTestFlowConnector();
 
   FlowConnector getFlowConnector();
 
