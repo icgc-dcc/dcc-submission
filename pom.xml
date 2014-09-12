@@ -28,7 +28,6 @@
     <module>dcc-hadoop</module>
     <module>dcc-submission</module>
     <module>dcc-etl</module>
-    <module>dcc-portal</module>
     <module>dcc-downloader</module>
     <module>dcc-annotator</module>
     <module>dcc-identifier</module>

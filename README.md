@@ -29,7 +29,6 @@ Install ElasticSearch 0.90.1:
 Install UI development environment:
 	
 - [dcc-submission-ui](dcc-submission/dcc-submission-ui/README.md)
-- [dcc-portal-ui](dcc-portal/dcc-portal-ui/README.md)
 
 Extract reference genome to `/tmp`
 
@@ -58,10 +57,6 @@ To build, test and install _only_ the Download sub-system modules:
 
 `mvn -amd -pl dcc-downloader`
 	
-To build, test and install _only_ the Portal sub-system modules:
-
-`mvn -am -pl dcc-portal/dcc-portal-api`
-	
 Run
 ---
 
@@ -75,7 +70,6 @@ Top level system modules:
 - [ID](dcc-identifier/README.md)
 - [ETL](dcc-etl/README.md)
 - [Download](dcc-downloader/README.md)
-- [Portal](dcc-portal/README.md)
 	
 Changes
 ---
