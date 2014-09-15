@@ -27,12 +27,10 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-core</artifactId>
-      <version>3.5.10</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-hadoop</artifactId>
-      <version>3.5.10</version>
     </dependency>
 
     <!-- Security -->

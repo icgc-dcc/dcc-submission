@@ -32,7 +32,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-hadoop</artifactId>
-      <version>3.5.10</version>
     </dependency>
 
     <!-- Jackson (Codehaus) -->
@@ -157,4 +156,5 @@
     <!-- Versions -->
     <mvel.version>2.1.7.Final</mvel.version>
   </properties>
+  
 </project>

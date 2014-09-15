@@ -32,6 +32,24 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- DCC -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-core</artifactId>
+        <version>${dcc-core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-hadoop</artifactId>
+        <version>${dcc-hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-test</artifactId>
+        <version>${dcc-test.version}</version>
+        <scope>test</scope>
+      </dependency>
+
       <dependency>
         <groupId>org.mongodb.morphia</groupId>
         <artifactId>morphia</artifactId>
@@ -111,7 +129,11 @@
 
   <properties>
     <!-- Versions -->
+    <dcc-core.version>3.5.10</dcc-core.version>
+    <dcc-hadoop.version>3.5.10</dcc-hadoop.version>
+    <dcc-test.version>3.5.10</dcc-test.version>
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
   </properties>
+
 </project>
