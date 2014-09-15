@@ -23,14 +23,13 @@
   </repositories>
 
   <dependencies>
-    <!-- TODO: refactor this between dcc-submission and dcc-submission-core -->
     <!-- DCC -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-core</artifactId>
       <version>3.5.10</version>
     </dependency>
-    <dependency> <!-- Discussed with Bob, we may need a separate dcc-cascading module to avoid depending on cascading here -->
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-hadoop</artifactId>
       <version>3.5.10</version>

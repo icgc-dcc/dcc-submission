@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>dcc-submission</artifactId>
+  <version>3.5.11-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
@@ -22,7 +23,7 @@
     <module>dcc-submission-reporter</module>
   </modules>
 
- <repositories>
+  <repositories>
     <repository>
       <id>dcc-releases</id>
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-release</url>
