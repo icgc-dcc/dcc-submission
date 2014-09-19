@@ -6,7 +6,6 @@ Executive report engine for the data submission sub-system.
 Build
 ---
 
-	cd dcc
 	mvn -am -pl dcc-submission/dcc-submission-reporter
 
 
