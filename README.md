@@ -20,6 +20,7 @@ Sub-system modules:
 - [Submission Validator](dcc-submission-validator/README.md)
 - [Submission Reporter](dcc-submission-reporter/README.md)
 - [Submission UI](dcc-submission-ui/README.md)
+- [Submission Generator](dcc-submission-generator/README.md) 
 
 Changes
 ---
