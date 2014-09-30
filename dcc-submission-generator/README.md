@@ -1,10 +1,10 @@
-ICGC DCC - Generator
+ICGC DCC - Submission Generator
 ===
 
 Description
 ---
 
-A test data generator that generates artificial data for testing purposes. The data is valid when passed through the validator.
+A test data generator that generates synthetic submissions for testing purposes. The data is valid when passed through the validator (excluding script restrictions).
 
 Build
 ---
