@@ -18,6 +18,9 @@
 package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.submission.core.report.ErrorLevel.CELL_LEVEL;
+import static org.icgc.dcc.submission.core.report.ErrorLevel.FILE_LEVEL;
+import static org.icgc.dcc.submission.core.report.ErrorLevel.ROW_LEVEL;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.EXPECTED;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.FIELDS;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.FILES;
@@ -28,9 +31,6 @@ import static org.icgc.dcc.submission.core.report.ErrorParameterKey.OTHER_SCHEMA
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.SCHEMA;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.VALUE;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.VALUE2;
-import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.CELL_LEVEL;
-import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.FILE_LEVEL;
-import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.ROW_LEVEL;
 
 import java.util.Arrays;
 import java.util.List;
@@ -427,10 +427,6 @@ public enum ErrorType {
 
   public boolean isStructural() {
     return structural;
-  }
-
-  public enum ErrorLevel {
-    FILE_LEVEL, ROW_LEVEL, CELL_LEVEL;
   }
 
 }

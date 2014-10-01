@@ -118,7 +118,7 @@ public class ReferentialFileCheckerTest {
     // regardless of the listfile, the file exists
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
 
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(2)).getMatchingFileNames(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
@@ -131,7 +131,7 @@ public class ReferentialFileCheckerTest {
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     // no referencing and referenced file exists
     when(fs.getMatchingFileNames(anyString())).thenReturn(Lists.<String> newArrayList());
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(2)).getMatchingFileNames(anyString());
     TestUtils.checkReferentialErrorReported(validationContext, 2);
   }
@@ -144,7 +144,7 @@ public class ReferentialFileCheckerTest {
 
     // no referenced file
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("C"));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(2)).getMatchingFileNames(anyString());
     TestUtils.checkReferentialErrorReported(validationContext, 1);
   }
@@ -157,7 +157,7 @@ public class ReferentialFileCheckerTest {
 
     // no referenced file
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("A"));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(2)).getMatchingFileNames(anyString());
     TestUtils.checkReferentialErrorReported(validationContext, 1);
   }
@@ -169,7 +169,7 @@ public class ReferentialFileCheckerTest {
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     // regardless of the listfile, the file exists
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(1)).getMatchingFileNames(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
@@ -181,7 +181,7 @@ public class ReferentialFileCheckerTest {
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.A.getSchema()));
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("B"));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(1)).getMatchingFileNames(anyString());
     TestUtils.checkReferentialErrorReported(validationContext, 1);
   }
@@ -192,7 +192,7 @@ public class ReferentialFileCheckerTest {
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.A.getSchema()));
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("C"));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(1)).getMatchingFileNames(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
@@ -204,7 +204,7 @@ public class ReferentialFileCheckerTest {
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.C.getSchema()));
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(0)).getMatchingFileNames(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
@@ -216,7 +216,7 @@ public class ReferentialFileCheckerTest {
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.C.getSchema()));
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("B"));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(0)).getMatchingFileNames(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
@@ -228,7 +228,7 @@ public class ReferentialFileCheckerTest {
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.C.getSchema()));
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
     verify(fs, times(0)).getMatchingFileNames(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());

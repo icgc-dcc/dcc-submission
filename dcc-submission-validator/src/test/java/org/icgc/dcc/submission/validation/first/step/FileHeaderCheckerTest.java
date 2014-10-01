@@ -69,7 +69,7 @@ public class FileHeaderCheckerTest {
 
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
   }
 
@@ -80,7 +80,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
   }
 
@@ -91,7 +91,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
   }
 
@@ -102,7 +102,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
   }
 
@@ -113,7 +113,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
@@ -125,7 +125,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
@@ -137,7 +137,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
@@ -149,7 +149,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
 
   }
@@ -161,7 +161,7 @@ public class FileHeaderCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
     FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
         validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
   }
 

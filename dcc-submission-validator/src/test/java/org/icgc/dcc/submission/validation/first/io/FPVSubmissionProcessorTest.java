@@ -91,8 +91,8 @@ public class FPVSubmissionProcessorTest {
     fpv.process("mystepname", validationContext, fs);
 
     TestUtils.checkNoErrorsReported(validationContext);
-    verify(dummyFileChecker, times(1)).check(anyString());
-    verify(dummyRowChecker, times(1)).check(anyString());
+    verify(dummyFileChecker, times(1)).checkFile(anyString());
+    verify(dummyRowChecker, times(1)).checkFile(anyString());
   }
 
   @Test
@@ -112,8 +112,8 @@ public class FPVSubmissionProcessorTest {
     fpv.setRowChecker(rowChecker);
     fpv.process("mystepname", validationContext, fs);
 
-    verify(fileChecker, times(1)).check(anyString());
-    verify(rowChecker, times(1)).check(anyString());
+    verify(fileChecker, times(1)).checkFile(anyString());
+    verify(rowChecker, times(1)).checkFile(anyString());
   }
 
   @Test
@@ -137,9 +137,9 @@ public class FPVSubmissionProcessorTest {
     fpv.setRowChecker(rowChecker);
     fpv.process("mystepname", validationContext, fs);
 
-    verify(fileChecker, times(1)).check(anyString());
+    verify(fileChecker, times(1)).checkFile(anyString());
     verify(moreChecker, never()).performSelfCheck(anyString());
-    verify(rowChecker, never()).check(anyString());
+    verify(rowChecker, never()).checkFile(anyString());
   }
 
   @Test
@@ -157,8 +157,8 @@ public class FPVSubmissionProcessorTest {
     fpv.setRowChecker(rowChecker);
     fpv.process("mystepname", validationContext, fs);
 
-    verify(fileChecker, times(1)).check(anyString());
-    verify(rowChecker, times(1)).check(anyString());
+    verify(fileChecker, times(1)).checkFile(anyString());
+    verify(rowChecker, times(1)).checkFile(anyString());
   }
 
   @Test
@@ -176,8 +176,8 @@ public class FPVSubmissionProcessorTest {
     fpv.setRowChecker(rowChecker);
     fpv.process("mystepname", validationContext, fs);
 
-    verify(fileChecker, times(1)).check(anyString());
-    verify(rowChecker, times(1)).check(anyString());
+    verify(fileChecker, times(1)).checkFile(anyString());
+    verify(rowChecker, times(1)).checkFile(anyString());
   }
 
   private static class DummyFileCheckerUnderTest extends CompositeFileChecker {

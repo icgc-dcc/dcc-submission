@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.first.step;
 import lombok.Getter;
 import lombok.NonNull;
 
-import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -37,7 +36,7 @@ public class NoOpFileChecker implements FileChecker {
   private final ReportContext reportContext;
   @Getter
   @NonNull
-  private final FPVFileSystem fs;
+  private final FPVFileSystem fileSystem;
   @Getter
   private final boolean failFast;
 
@@ -45,27 +44,23 @@ public class NoOpFileChecker implements FileChecker {
     this(validationContext, fs, false);
   }
 
-  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fs, boolean failFast) {
+  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
     this.dictionary = validationContext.getDictionary();
     this.reportContext = validationContext;
-    this.fs = fs;
+    this.fileSystem = fileSystem;
     this.failFast = false;
   }
 
   // TODO: Could be used to determine if submission directory is well-formed
   // before the beginning of the other checks
   @Override
-  public void check(String filePathname) {
+  public void checkFile(String fileName) {
+    // No-op
   }
 
   @Override
   public boolean isValid() {
     return true;
-  }
-
-  @Override
-  public ErrorLevel getCheckLevel() {
-    return ErrorLevel.FILE_LEVEL;
   }
 
   @Override

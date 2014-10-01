@@ -78,7 +78,7 @@ public class RowCharsetCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkRowCharsetErrorReported(validationContext, 2);
   }
 
@@ -88,7 +88,7 @@ public class RowCharsetCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkRowCharsetErrorReported(validationContext, 2);
   }
 

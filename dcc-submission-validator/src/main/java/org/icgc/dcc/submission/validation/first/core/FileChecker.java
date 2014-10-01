@@ -17,46 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.first.core;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.step.FileCollisionChecker;
-import org.icgc.dcc.submission.validation.first.step.FileCorruptionChecker;
-import org.icgc.dcc.submission.validation.first.step.FileHeaderChecker;
-import org.icgc.dcc.submission.validation.first.step.NoOpFileChecker;
-import org.icgc.dcc.submission.validation.first.step.ReferentialFileChecker;
-
 public interface FileChecker extends Checker {
 
-  void check(String filename);
+  void checkFile(String fileName);
 
-  FPVFileSystem getFs();
-
-  Dictionary getDictionary();
-
-  ReportContext getReportContext();
-
-  boolean canContinue();
-
-  /**
-   * Made non-final for power mock.
-   */
-  @NoArgsConstructor(access = PRIVATE)
-  public class FileCheckers {
-
-    public static FileChecker getDefaultFileChecker(ValidationContext validationContext, FPVFileSystem fs) {
-
-      // Chaining multiple file checker
-      return new FileHeaderChecker(
-          new FileCorruptionChecker(
-              new FileCollisionChecker(
-                  new ReferentialFileChecker(
-                      // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)?
-                      new NoOpFileChecker(validationContext, fs)))));
-    }
-  }
 }

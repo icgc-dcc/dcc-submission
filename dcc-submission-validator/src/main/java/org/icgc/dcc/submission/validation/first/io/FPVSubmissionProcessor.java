@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.validation.first.io;
 
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Iterables.transform;
-import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.FILE_LEVEL;
-import static org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel.ROW_LEVEL;
+import static org.icgc.dcc.submission.core.report.ErrorLevel.FILE_LEVEL;
+import static org.icgc.dcc.submission.core.report.ErrorLevel.ROW_LEVEL;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import javax.validation.constraints.NotNull;
@@ -33,9 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
-import org.icgc.dcc.submission.validation.first.core.FileChecker.FileCheckers;
+import org.icgc.dcc.submission.validation.first.core.FileCheckers;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
-import org.icgc.dcc.submission.validation.first.core.RowChecker.RowCheckers;
+import org.icgc.dcc.submission.validation.first.core.RowCheckers;
 
 import com.google.common.base.Function;
 
@@ -74,12 +74,12 @@ public class FPVSubmissionProcessor {
       log.info(banner());
       log.info("Validate '{}' level well-formedness for file: {}", FILE_LEVEL, fileName);
 
-      fileChecker.check(fileName);
+      fileChecker.checkFile(fileName);
       checkInterrupted(stepName);
 
       if (fileChecker.canContinue()) {
         log.info("Validating '{}' well-formedness for file: '{}'", ROW_LEVEL, fileName);
-        rowChecker.check(fileName);
+        rowChecker.checkFile(fileName);
         checkInterrupted(stepName);
       }
     }

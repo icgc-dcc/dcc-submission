@@ -23,7 +23,6 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ReportContext;
@@ -56,8 +55,8 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public void check(String fileName) {
-    delegate.check(fileName);
+  public void checkFile(String fileName) {
+    delegate.checkFile(fileName);
     log.info(banner());
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", name);
@@ -88,11 +87,6 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public ErrorLevel getCheckLevel() {
-    return delegate.getCheckLevel();
-  }
-
-  @Override
   public boolean isFailFast() {
     return failFast;
   }
@@ -103,8 +97,8 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public FPVFileSystem getFs() {
-    return delegate.getFs();
+  public FPVFileSystem getFileSystem() {
+    return delegate.getFileSystem();
   }
 
   @Override

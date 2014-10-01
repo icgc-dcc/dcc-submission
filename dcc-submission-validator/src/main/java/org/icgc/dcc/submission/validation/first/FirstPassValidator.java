@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first;
 
 import lombok.NoArgsConstructor;
+import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -34,10 +35,10 @@ public class FirstPassValidator implements Validator {
 
   @Override
   public void validate(ValidationContext validationContext) {
-    new FPVSubmissionProcessor().process(
-        getName(),
-        validationContext,
-        new FPVFileSystem(validationContext.getSubmissionDirectory()));
+    val fileSystem = new FPVFileSystem(validationContext.getSubmissionDirectory());
+    val processor = new FPVSubmissionProcessor();
+
+    processor.process(getName(), validationContext, fileSystem);
   }
 
 }

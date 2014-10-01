@@ -17,38 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.first.core;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.step.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.step.RowCharsetChecker;
-import org.icgc.dcc.submission.validation.first.step.RowColumnChecker;
 
 public interface RowChecker extends FileChecker {
 
-  void checkRow(
-      String filename,
-      FileSchema fileSchema,
-      CharSequence row,
-      long lineNumber);
-
-  /**
-   * Made non-final for power mock.
-   */
-  @NoArgsConstructor(access = PRIVATE)
-  public class RowCheckers {
-
-    public static RowChecker getDefaultRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
-
-      // Chaining multiple row checkers
-      return new RowColumnChecker(
-          new RowCharsetChecker(
-              // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
-              new NoOpRowChecker(validationContext, fs)));
-    }
-  }
+  void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber);
 
 }

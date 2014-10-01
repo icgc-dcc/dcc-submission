@@ -41,7 +41,7 @@ public class FileHeaderChecker extends CompositeFileChecker {
   @Override
   public void performSelfCheck(String fileName) {
     val expectedHeader = retrieveExpectedHeader(fileName);
-    val actualHeader = getFs().peekFileHeader(fileName);
+    val actualHeader = getFileSystem().peekFileHeader(fileName);
     if (isExactMatch(expectedHeader, actualHeader)) {
       log.info("Correct header in '{}': '{}'", fileName, expectedHeader);
     } else {

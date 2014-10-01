@@ -83,7 +83,7 @@ public class FileCorruptionCheckerTest {
     FileCorruptionChecker checker =
         new FileCorruptionChecker(
             new NoOpFileChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
@@ -99,7 +99,7 @@ public class FileCorruptionCheckerTest {
     FileCorruptionChecker checker =
         new FileCorruptionChecker(
             new NoOpFileChecker(validationContext, fs));
-    checker.check("file1.gz");
+    checker.checkFile("file1.gz");
     checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
@@ -113,7 +113,7 @@ public class FileCorruptionCheckerTest {
     when(submissionDirectory.open(anyString())).thenReturn(testInputStream);
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
-    checker.check("file.bz2");
+    checker.checkFile("file.bz2");
     checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
@@ -127,7 +127,7 @@ public class FileCorruptionCheckerTest {
     when(submissionDirectory.open(anyString())).thenReturn(testInputStream);
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
-    checker.check("file.bz2");
+    checker.checkFile("file.bz2");
     checkErrorReported();
   }
 
@@ -138,7 +138,7 @@ public class FileCorruptionCheckerTest {
     doThrow(new IOException()).when(fs).attemptGzipRead(anyString());
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
-    checker.check("file.gz");
+    checker.checkFile("file.gz");
     verify(fs).determineCodecFromFilename(anyString());
     verify(fs).determineCodecFromContent(anyString());
     verify(fs).attemptGzipRead(anyString());
@@ -153,7 +153,7 @@ public class FileCorruptionCheckerTest {
     doThrow(new IOException()).when(fs).attemptBzip2Read(anyString());
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
-    checker.check("file.bz2");
+    checker.checkFile("file.bz2");
     verify(fs).determineCodecFromFilename(anyString());
     verify(fs).determineCodecFromContent(anyString());
     verify(fs).attemptBzip2Read(anyString());
@@ -171,7 +171,7 @@ public class FileCorruptionCheckerTest {
     when(submissionDirectory.open(anyString())).thenReturn(testInputStream);
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
-    checker.check("file.gz");
+    checker.checkFile("file.gz");
     verify(fs).determineCodecFromFilename(anyString());
     verify(fs).determineCodecFromContent(anyString());
     verify(fs, never()).attemptBzip2Read(anyString());
@@ -189,7 +189,7 @@ public class FileCorruptionCheckerTest {
     doReturn(PLAIN_TEXT).when(fs).determineCodecFromFilename(anyString());
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(validationContext, fs));
-    checker.check("file.gz");
+    checker.checkFile("file.gz");
     verify(fs).determineCodecFromFilename(anyString());
     verify(fs).determineCodecFromContent(anyString());
     verify(fs, never()).attemptBzip2Read(anyString());

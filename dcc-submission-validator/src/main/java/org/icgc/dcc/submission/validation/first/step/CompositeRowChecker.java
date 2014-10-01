@@ -30,7 +30,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
@@ -71,7 +70,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
-  public void check(String filename) {
+  public void checkFile(String filename) {
     log.info(banner());
 
     // check all rows in the file
@@ -86,7 +85,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
     @Cleanup
     val inputStream = new BufferedInputStream(
-        getFs().getDecompressingInputStream(fileName),
+        getFileSystem().getDecompressingInputStream(fileName),
         LINE_BUFFER_SIZE);
     val watch = Stopwatch.createStarted();
     val line = new StringBuilder(512);
@@ -162,18 +161,13 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
-  public ErrorLevel getCheckLevel() {
-    return delegate.getCheckLevel();
-  }
-
-  @Override
   public boolean isFailFast() {
     return failFast;
   }
 
   @Override
-  public FPVFileSystem getFs() {
-    return delegate.getFs();
+  public FPVFileSystem getFileSystem() {
+    return delegate.getFileSystem();
   }
 
 }

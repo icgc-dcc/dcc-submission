@@ -81,7 +81,7 @@ public class FileCollisionCheckerTest {
     when(fs.getMatchingFileNames(anyString()))
         .thenReturn(fileNames());
 
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
 
     checkNoErrorsReported(context);
     assertTrue(checker.isValid());
@@ -92,7 +92,7 @@ public class FileCollisionCheckerTest {
     when(fs.getMatchingFileNames(anyString()))
         .thenReturn(fileNames("testfile1"));
 
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
 
     checkNoErrorsReported(context);
     assertTrue(checker.isValid());
@@ -104,7 +104,7 @@ public class FileCollisionCheckerTest {
     when(fs.getMatchingFileNames(anyString()))
         .thenReturn(fileNames("testfile1", "testfile2"));
 
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
 
     checkFileCollisionErrorReported(context, 0);
   }
@@ -114,7 +114,7 @@ public class FileCollisionCheckerTest {
     when(fs.getMatchingFileNames(anyString()))
         .thenReturn(fileNames("testfile1", "testfile1.gz"));
 
-    checker.check("testfile1");
+    checker.checkFile("testfile1");
 
     checkFileCollisionErrorReported(context, 1);
   }

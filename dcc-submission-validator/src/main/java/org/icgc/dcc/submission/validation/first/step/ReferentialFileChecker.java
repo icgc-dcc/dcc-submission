@@ -75,7 +75,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
       val referencedFileSchema = optionalReferencedFileSchema.get();
       if (referencedFileSchema.getRole() == FileSchemaRole.SUBMISSION) {
         val pattern = referencedFileSchema.getPattern();
-        val fileNames = getFs().getMatchingFileNames(pattern);
+        val fileNames = getFileSystem().getMatchingFileNames(pattern);
         if (fileNames.isEmpty()) {
           log.info("Fail referenced check for '{}': missing referencing file with schema '{}'",
               fileName, referencedFileSchema.getName());
@@ -114,7 +114,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
 
     for (val referencingFileSchema : referencingFileSchemata) {
       checkState(referencingFileSchema.getRole() == FileSchemaRole.SUBMISSION);
-      val referencingFileNames = getFs().getMatchingFileNames(referencingFileSchema.getPattern());
+      val referencingFileNames = getFileSystem().getMatchingFileNames(referencingFileSchema.getPattern());
       if (referencingFileNames.isEmpty()) {
         log.info("Fail referencing check for '{}': missing referencing file with schema '{}'",
             fileName, referencingFileSchema.getName());

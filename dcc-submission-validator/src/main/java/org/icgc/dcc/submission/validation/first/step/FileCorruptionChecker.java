@@ -42,7 +42,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
   @Override
   public void performSelfCheck(String fileName) {
-    val fs = getFs();
+    val fs = getFileSystem();
 
     CodecType fileNameType = fs.determineCodecFromFilename(fileName);
     log.info("File name '{}' indicates type: '{}'", fileName, fileNameType);
@@ -98,7 +98,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
    */
   private void checkBZip2(String fileName) {
     try {
-      getFs().attemptBzip2Read(fileName);
+      getFileSystem().attemptBzip2Read(fileName);
     } catch (IOException e) {
       e.printStackTrace();
       String errMsg = e.getMessage();
@@ -127,7 +127,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
 
   private void checkGZip(String fileName) {
     try {
-      getFs().attemptGzipRead(fileName);
+      getFileSystem().attemptGzipRead(fileName);
     } catch (IOException e) {
       e.printStackTrace();
       log.info("Exception caught in decoding gzip file '{}': '{}'", fileName, e.getMessage());

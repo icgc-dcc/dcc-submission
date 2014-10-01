@@ -74,7 +74,7 @@ public class RowColumnCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
@@ -85,7 +85,7 @@ public class RowColumnCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 1);
   }
 
@@ -95,7 +95,7 @@ public class RowColumnCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 1);
   }
 
@@ -105,7 +105,7 @@ public class RowColumnCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 1);
   }
 
@@ -115,7 +115,7 @@ public class RowColumnCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 2);
   }
 
@@ -126,7 +126,7 @@ public class RowColumnCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkRowColumnErrorReported(validationContext, 3);
   }
 
@@ -136,7 +136,7 @@ public class RowColumnCheckerTest {
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext, fs));
-    checker.check(anyString());
+    checker.checkFile(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }

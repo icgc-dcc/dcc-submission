@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.first.step;
 
-import org.icgc.dcc.submission.core.report.ErrorType.ErrorLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
@@ -34,11 +33,13 @@ public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
   }
 
   @Override
-  public void check(String filename) {
+  public void checkFile(String filename) {
+    // No-op
   }
 
   @Override
   public void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber) {
+    // No-op
   }
 
   @Override
@@ -46,8 +47,4 @@ public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
     return true;
   }
 
-  @Override
-  public ErrorLevel getCheckLevel() {
-    return ErrorLevel.ROW_LEVEL;
-  }
 }
