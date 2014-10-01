@@ -19,7 +19,6 @@ package org.icgc.dcc.generator.config;
 
 import java.io.File;
 
-import lombok.Delegate;
 import lombok.SneakyThrows;
 import lombok.Value;
 
@@ -34,7 +33,6 @@ public class GeneratorConfigFile {
    */
   private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
 
-  @Delegate
   File file;
 
   @SneakyThrows
