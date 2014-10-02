@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.row;
 
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.core.report.Error.error;
@@ -31,13 +31,14 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.first.core.AbstractDelegatingChecker;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
 import com.google.common.base.Stopwatch;
 
 @Slf4j
-public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
+public abstract class DelegatingRowChecker extends AbstractDelegatingChecker implements RowChecker, FileChecker {
 
   /**
    * Number of bytes to buffer when reading submission files.
@@ -60,26 +61,20 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   @NonNull
   protected final RowChecker delegate;
 
-  public CompositeRowChecker(RowChecker delegate, boolean failFast) {
+  public DelegatingRowChecker(RowChecker delegate, boolean failFast) {
     super(delegate, failFast);
     this.delegate = delegate;
   }
 
-  public CompositeRowChecker(RowChecker nestedChecker) {
+  public DelegatingRowChecker(RowChecker nestedChecker) {
     this(nestedChecker, false);
   }
 
   @Override
-  public void checkFile(String filename) {
+  @SneakyThrows
+  public void checkFile(String fileName) {
     log.info(banner());
 
-    // check all rows in the file
-    performSelfCheck(filename);
-  }
-
-  @Override
-  @SneakyThrows
-  public void performSelfCheck(String fileName) {
     log.info("Start performing {} validation...", name);
     val fileSchema = getFileSchema(fileName);
 
@@ -154,20 +149,5 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   public abstract void performSelfCheck(String filename, FileSchema fileSchema, CharSequence row, long lineNumber);
-
-  @Override
-  public boolean isValid() {
-    return !getReportContext().hasErrors();
-  }
-
-  @Override
-  public boolean isFailFast() {
-    return failFast;
-  }
-
-  @Override
-  public FPVFileSystem getFileSystem() {
-    return delegate.getFileSystem();
-  }
 
 }

@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.file;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.core.report.Error.error;
@@ -33,7 +33,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 @Slf4j
-public class ReferentialFileChecker extends CompositeFileChecker {
+public class ReferentialFileChecker extends DelegatingFileChecker {
 
   public ReferentialFileChecker(FileChecker compositeChecker) {
     this(compositeChecker, false);
@@ -44,7 +44,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   }
 
   @Override
-  public void performSelfCheck(String fileName) {
+  public void executeFileCheck(String fileName) {
     log.info("Checking referenced file presence");
     referencedCheck(fileName);
 
@@ -110,6 +110,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
           public String apply(FileSchema fileSchema) {
             return fileSchema.getName();
           }
+
         }));
 
     for (val referencingFileSchema : referencingFileSchemata) {

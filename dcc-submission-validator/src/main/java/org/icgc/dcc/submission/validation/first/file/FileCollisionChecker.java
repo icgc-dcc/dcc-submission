@@ -15,74 +15,76 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.file;
 
-import static org.icgc.dcc.core.util.Separators.TAB_CHARACTER;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static org.icgc.dcc.submission.core.report.Error.error;
-import static org.icgc.dcc.submission.core.report.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
+import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_FILES_ERROR;
+
+import java.util.List;
+
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.first.core.RowChecker;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
 
 @Slf4j
-public class RowColumnChecker extends CompositeRowChecker {
+public class FileCollisionChecker extends DelegatingFileChecker {
 
-  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
-    super(rowChecker, failFast);
+  public FileCollisionChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
   }
 
-  public RowColumnChecker(RowChecker rowChecker) {
-    this(rowChecker, false);
+  public FileCollisionChecker(FileChecker fileChecker, boolean failFast) {
+    super(fileChecker, failFast);
   }
 
   @Override
-  public void performSelfCheck(
-      String filename,
-      FileSchema fileSchema,
-      CharSequence line,
-      long lineNumber) {
+  public void executeFileCheck(String fileName) {
+    val fileSchema = getFileSchema(fileName);
 
-    val expectedNumColumns = getExpectedColumnCount(fileSchema);
-    val actualNumColumns = getActualColumnCount(line);
-    if (isCountMismatch(expectedNumColumns, actualNumColumns)) {
-      log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
-          + actualNumColumns + " at line " + lineNumber);
+    val pattern = fileSchema.getPattern();
+    val fileNames = getFileSystem().getMatchingFileNames(pattern);
+    log.info("Files: '{}'", fileNames);
+    if (hasCollisions(fileNames)) {
+      log.info("More than 1 file matching the file pattern: {}", pattern);
 
       incrementCheckErrorCount();
 
       getReportContext().reportError(
           error()
-              .fileName(filename)
-              .lineNumber(lineNumber)
-              .type(STRUCTURALLY_INVALID_ROW_ERROR)
-              .value(actualNumColumns)
-              .params(expectedNumColumns)
+              .fileName(fileName)
+              .type(TOO_MANY_FILES_ERROR)
+              .params(fileSchema.getName(), copyOf(fileNames))
               .build());
     }
   }
 
-  private int getExpectedColumnCount(FileSchema fileSchema) {
-    return fileSchema.getFields().size(); // TODO: fix inefficiency
-  }
+  /**
+   * Determines if a list of file names has collisions based on prefixes which would indicate either a poor choice in
+   * naming or accidental re-submission.
+   * <p>
+   * e.g. {@code hasCollisions(of("donor.1.txt", "donor.1.txt.gz")) == true}
+   * 
+   * @param fileNames the file names to check
+   * @return {@code true} if collisions exist, {@code false} otherwise
+   */
+  private boolean hasCollisions(@NonNull List<String> fileNames) {
+    val size = fileNames.size();
+    for (int i = 0; i < size; i++) {
+      val a = fileNames.get(i);
+      for (int j = i + 1; j < size; j++) {
+        val b = fileNames.get(j);
 
-  private int getActualColumnCount(CharSequence line) {
-    int separatorCount = 0;
-    for (int i = 0; i < line.length(); i++) {
-      if (line.charAt(i) == TAB_CHARACTER) {
-        separatorCount++;
+        val prefix = a.startsWith(b) || b.startsWith(a);
+        if (prefix) {
+          return true;
+        }
       }
     }
 
-    // One more field than separator count
-    val fieldCount = separatorCount + 1;
-
-    return fieldCount;
-  }
-
-  private boolean isCountMismatch(int expectedNumColumns, int actualNumColumns) {
-    return actualNumColumns != expectedNumColumns;
+    return false;
   }
 
 }

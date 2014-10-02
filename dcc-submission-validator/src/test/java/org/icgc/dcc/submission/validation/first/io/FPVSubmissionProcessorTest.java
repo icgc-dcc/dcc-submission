@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import lombok.val;
 
@@ -36,8 +37,8 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
-import org.icgc.dcc.submission.validation.first.step.CompositeFileChecker;
-import org.icgc.dcc.submission.validation.first.step.TestUtils;
+import org.icgc.dcc.submission.validation.first.file.DelegatingFileChecker;
+import org.icgc.dcc.submission.validation.first.row.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -119,10 +120,20 @@ public class FPVSubmissionProcessorTest {
   @Test
   public void sanityNotValidFileLevelFailFast() throws IOException {
     FileChecker fileChecker = mock(FileChecker.class);
+    Dictionary dictionary = mock(Dictionary.class);
+    ValidationContext validationContext = mock(ValidationContext.class);
+
+    @SuppressWarnings("unchecked")
+    Iterable<? extends DataType> dataTypes = any(Iterable.class);
+    when(dictionary.getFileSchemata(dataTypes)).thenReturn(Collections.<FileSchema> emptyList());
+
+    when(validationContext.getDictionary()).thenReturn(dictionary);
+
+    when(fileChecker.getReportContext()).thenReturn(validationContext);
     when(fileChecker.isValid()).thenReturn(false);
     when(fileChecker.isFailFast()).thenReturn(true); // fail it right away
 
-    CompositeFileChecker moreChecker = PowerMockito.spy(
+    DelegatingFileChecker moreChecker = PowerMockito.spy(
         new DummyFileCheckerUnderTest(
             new DummyFileCheckerUnderTest(
                 fileChecker,
@@ -138,7 +149,7 @@ public class FPVSubmissionProcessorTest {
     fpv.process("mystepname", validationContext, fs);
 
     verify(fileChecker, times(1)).checkFile(anyString());
-    verify(moreChecker, never()).performSelfCheck(anyString());
+    verify(moreChecker, never()).executeFileCheck(anyString());
     verify(rowChecker, never()).checkFile(anyString());
   }
 
@@ -180,7 +191,7 @@ public class FPVSubmissionProcessorTest {
     verify(rowChecker, times(1)).checkFile(anyString());
   }
 
-  private static class DummyFileCheckerUnderTest extends CompositeFileChecker {
+  private static class DummyFileCheckerUnderTest extends DelegatingFileChecker {
 
     public DummyFileCheckerUnderTest(FileChecker nestedChecker) {
       super(nestedChecker);
@@ -191,7 +202,7 @@ public class FPVSubmissionProcessorTest {
     }
 
     @Override
-    public void performSelfCheck(String filename) {
+    public void executeFileCheck(String filename) {
 
     }
 

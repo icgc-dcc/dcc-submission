@@ -15,56 +15,58 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.file;
 
-import lombok.Getter;
-import lombok.NonNull;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.FILE_HEADER_ERROR;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
+import java.util.List;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
-public class NoOpFileChecker implements FileChecker {
+@Slf4j
+public class FileHeaderChecker extends DelegatingFileChecker {
 
-  @Getter
-  @NonNull
-  private final Dictionary dictionary;
-  @Getter
-  @NonNull
-  private final ReportContext reportContext;
-  @Getter
-  @NonNull
-  private final FPVFileSystem fileSystem;
-  @Getter
-  private final boolean failFast;
-
-  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fs) {
-    this(validationContext, fs, false);
+  public FileHeaderChecker(FileChecker fileChecker, boolean failFast) {
+    super(fileChecker, failFast);
   }
 
-  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
-    this.dictionary = validationContext.getDictionary();
-    this.reportContext = validationContext;
-    this.fileSystem = fileSystem;
-    this.failFast = false;
-  }
-
-  // TODO: Could be used to determine if submission directory is well-formed
-  // before the beginning of the other checks
-  @Override
-  public void checkFile(String fileName) {
-    // No-op
+  public FileHeaderChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
   }
 
   @Override
-  public boolean isValid() {
-    return true;
+  public void executeFileCheck(String fileName) {
+    val expectedHeader = retrieveExpectedHeader(fileName);
+    val actualHeader = getFileSystem().peekFileHeader(fileName);
+
+    if (isExactMatch(expectedHeader, actualHeader)) {
+      log.info("Correct header in '{}': '{}'", fileName, expectedHeader);
+    } else {
+      log.info(
+          "Different from the expected header in '{}': '{}', actual header: '{}'",
+          new Object[] { fileName, expectedHeader, actualHeader });
+
+      incrementCheckErrorCount();
+
+      getReportContext().reportError(
+          error()
+              .fileName(fileName)
+              .type(FILE_HEADER_ERROR)
+              .params(expectedHeader, actualHeader)
+              .build());
+    }
   }
 
-  @Override
-  public boolean canContinue() {
-    return true;
+  private final List<String> retrieveExpectedHeader(String filename) {
+    return getFileSchema(filename).getFieldNames();
   }
+
+  private boolean isExactMatch(List<String> expectedHeader, List<String> actualHeader) {
+    return actualHeader.equals(expectedHeader);
+  }
+
 }

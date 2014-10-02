@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.file;
 
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.COMPRESSION_CODEC_ERROR;
@@ -30,7 +30,7 @@ import org.icgc.dcc.submission.validation.first.core.FileChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType;
 
 @Slf4j
-public class FileCorruptionChecker extends CompositeFileChecker {
+public class FileCorruptionChecker extends DelegatingFileChecker {
 
   public FileCorruptionChecker(FileChecker fileChecker, boolean failFast) {
     super(fileChecker, failFast);
@@ -41,7 +41,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public void performSelfCheck(String fileName) {
+  public void executeFileCheck(String fileName) {
     val fs = getFileSystem();
 
     CodecType fileNameType = fs.determineCodecFromFilename(fileName);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,29 +15,44 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.core;
+package org.icgc.dcc.submission.validation.first.row;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.row.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.row.RowCharsetChecker;
-import org.icgc.dcc.submission.validation.first.row.RowColumnChecker;
 
-/**
- * Made non-final for power mock.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class RowCheckers {
+public class TestUtils {
 
-  public static RowChecker getDefaultRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
-
-    // Chaining multiple row checkers
-    return new RowColumnChecker(
-        new RowCharsetChecker(
-            // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
-            new NoOpRowChecker(validationContext, fs)));
+  public static void checkErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(any(Error.class));
   }
+
+  public static void checkFileCollisionErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(any(Error.class));
+  }
+
+  public static void checkRowCharsetErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(any(Error.class));
+  }
+
+  public static void checkRowColumnErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(any(Error.class));
+  }
+
+  public static void checkFileHeaderErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(any(Error.class));
+  }
+
+  public static void checkReferentialErrorReported(ValidationContext validationContext, int times) {
+    verify(validationContext, times(times)).reportError(any(Error.class));
+  }
+
+  public static void checkNoErrorsReported(ValidationContext validationContext) {
+    verify(validationContext, never()).reportError(any(Error.class));
+  }
+
 }

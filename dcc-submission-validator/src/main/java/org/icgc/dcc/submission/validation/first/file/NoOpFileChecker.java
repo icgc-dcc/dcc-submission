@@ -15,44 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.file;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.core.AbstractChecker;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
-public class TestUtils {
+public class NoOpFileChecker extends AbstractChecker implements FileChecker {
 
-  public static void checkErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(any(Error.class));
+  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fileSystem) {
+    super(validationContext, fileSystem, false);
   }
 
-  public static void checkFileCollisionErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(any(Error.class));
+  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
+    super(validationContext, fileSystem, failFast);
   }
 
-  public static void checkRowCharsetErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(any(Error.class));
-  }
-
-  public static void checkRowColumnErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(any(Error.class));
-  }
-
-  public static void checkFileHeaderErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(any(Error.class));
-  }
-
-  public static void checkReferentialErrorReported(ValidationContext validationContext, int times) {
-    verify(validationContext, times(times)).reportError(any(Error.class));
-  }
-
-  public static void checkNoErrorsReported(ValidationContext validationContext) {
-    verify(validationContext, never()).reportError(any(Error.class));
+  // TODO: Could be used to determine if submission directory is well-formed
+  // before the beginning of the other checks
+  @Override
+  public void checkFile(String fileName) {
+    // No-op
   }
 
 }

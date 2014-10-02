@@ -15,36 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.row;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.core.AbstractChecker;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
-public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
+public class NoOpRowChecker extends AbstractChecker implements RowChecker {
 
-  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
-    this(validationContext, fs, false);
+  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fileSystem) {
+    this(validationContext, fileSystem, false);
   }
 
-  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fs, boolean failFast) {
-    super(validationContext, fs, failFast);
+  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
+    super(validationContext, fileSystem, failFast);
   }
 
   @Override
-  public void checkFile(String filename) {
+  public void checkFile(String fileName) {
     // No-op
   }
 
   @Override
-  public void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber) {
+  public void checkRow(String fileName, FileSchema fileSchema, CharSequence row, long lineNumber) {
     // No-op
-  }
-
-  @Override
-  public boolean isValid() {
-    return true;
   }
 
 }

@@ -15,59 +15,44 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.core;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.repeat;
 import lombok.NonNull;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.first.core.Checker;
-import org.icgc.dcc.submission.validation.first.core.FileChecker;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
 
-@Slf4j
-public abstract class CompositeFileChecker implements FileChecker {
+public abstract class AbstractDelegatingChecker extends AbstractChecker {
 
+  /**
+   * Metadata.
+   */
   @NonNull
   protected final String name;
+
+  /**
+   * Dependencies.
+   */
   @NonNull
-  protected final FileChecker delegate;
-  protected final boolean failFast;
+  protected final Checker delegate;
 
   /**
    * Count for the errors of a given {@link Checker}.
    */
   protected long checkErrorCount = 0;
 
-  public CompositeFileChecker(FileChecker delegate, boolean failFast) {
-    this.delegate = delegate;
-    this.failFast = failFast;
+  public AbstractDelegatingChecker(Checker delegate, boolean failFast) {
+    super((ValidationContext) delegate.getReportContext(), delegate.getFileSystem(), failFast);
     this.name = this.getClass().getSimpleName();
+    this.delegate = delegate;
   }
 
-  public CompositeFileChecker(FileChecker delegate) {
+  public AbstractDelegatingChecker(FileChecker delegate) {
     this(delegate, false);
   }
-
-  @Override
-  public void checkFile(String fileName) {
-    delegate.checkFile(fileName);
-    log.info(banner());
-    if (delegate.canContinue()) {
-      log.info("Start performing {} validation...", name);
-      performSelfCheck(fileName);
-      log.info("End performing {} validation. Number of errors found: '{}'",
-          name,
-          checkErrorCount);
-    }
-  }
-
-  public abstract void performSelfCheck(String fileName);
 
   /**
    * Must always increment when reporting an error (TODO: address this).
@@ -78,32 +63,12 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean canContinue() {
-    return (delegate.canContinue() && (checkErrorCount == 0 || !failFast));
+    return (delegate.canContinue() && (checkErrorCount == 0 || !isFailFast()));
   }
 
   @Override
   public boolean isValid() {
     return (delegate.isValid() && !getReportContext().hasErrors());
-  }
-
-  @Override
-  public boolean isFailFast() {
-    return failFast;
-  }
-
-  @Override
-  public Dictionary getDictionary() {
-    return delegate.getDictionary();
-  }
-
-  @Override
-  public FPVFileSystem getFileSystem() {
-    return delegate.getFileSystem();
-  }
-
-  @Override
-  public ReportContext getReportContext() {
-    return delegate.getReportContext();
   }
 
   protected FileSchema getFileSchema(String fileName) {
@@ -115,4 +80,5 @@ public abstract class CompositeFileChecker implements FileChecker {
   protected String banner() {
     return repeat("-", 75);
   }
+
 }

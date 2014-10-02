@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,27 +17,54 @@
  */
 package org.icgc.dcc.submission.validation.first.core;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.row.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.row.RowCharsetChecker;
-import org.icgc.dcc.submission.validation.first.row.RowColumnChecker;
 
-/**
- * Made non-final for power mock.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class RowCheckers {
+public class AbstractChecker implements Checker {
 
-  public static RowChecker getDefaultRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
+  /**
+   * Dependencies.
+   */
+  @Getter
+  @NonNull
+  private final Dictionary dictionary;
+  @Getter
+  @NonNull
+  private final ReportContext reportContext;
+  @Getter
+  @NonNull
+  private final FPVFileSystem fileSystem;
 
-    // Chaining multiple row checkers
-    return new RowColumnChecker(
-        new RowCharsetChecker(
-            // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
-            new NoOpRowChecker(validationContext, fs)));
+  /**
+   * Metadata.
+   */
+  @Getter
+  private final boolean failFast;
+
+  public AbstractChecker(ValidationContext validationContext, FPVFileSystem fs) {
+    this(validationContext, fs, false);
   }
+
+  public AbstractChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
+    this.dictionary = validationContext.getDictionary();
+    this.reportContext = validationContext;
+    this.fileSystem = fileSystem;
+    this.failFast = false;
+  }
+
+  @Override
+  public boolean isValid() {
+    return true;
+  }
+
+  @Override
+  public boolean canContinue() {
+    return true;
+  }
+
 }

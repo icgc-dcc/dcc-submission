@@ -15,76 +15,64 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.row;
 
-import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.base.CharMatcher.ASCII;
+import static com.google.common.base.CharMatcher.JAVA_ISO_CONTROL;
+import static com.google.common.base.CharMatcher.noneOf;
+import static com.google.common.base.Charsets.US_ASCII;
 import static org.icgc.dcc.submission.core.report.Error.error;
-import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_FILES_ERROR;
-
-import java.util.List;
-
-import lombok.NonNull;
-import lombok.val;
+import static org.icgc.dcc.submission.core.report.ErrorType.INVALID_CHARSET_ROW_ERROR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.first.core.FileChecker;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
+
+import com.google.common.base.CharMatcher;
 
 @Slf4j
-public class FileCollisionChecker extends CompositeFileChecker {
+public class RowCharsetChecker extends DelegatingRowChecker {
 
-  public FileCollisionChecker(FileChecker fileChecker) {
-    this(fileChecker, true);
+  private final static CharMatcher DEFAULT_INVALID_MATCHER =
+      ASCII
+          .negate()
+          .or(JAVA_ISO_CONTROL)
+          .and(
+              noneOf(FIELD_SEPARATOR))
+          .precomputed();
+
+  public RowCharsetChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
   }
 
-  public FileCollisionChecker(FileChecker fileChecker, boolean failFast) {
-    super(fileChecker, failFast);
+  public RowCharsetChecker(RowChecker rowChecker) {
+    this(rowChecker, false);
   }
 
   @Override
-  public void performSelfCheck(String fileName) {
-    val fileSchema = getFileSchema(fileName);
+  public void performSelfCheck(
+      String fileName,
+      FileSchema fileSchema,
+      CharSequence line,
+      long lineNumber) {
 
-    val pattern = fileSchema.getPattern();
-    val fileNames = getFileSystem().getMatchingFileNames(pattern);
-    log.info("Files: '{}'", fileNames);
-    if (hasCollisions(fileNames)) {
-      log.info("More than 1 file matching the file pattern: {}", pattern);
+    if (containsInvalidCharacter(line)) {
+      log.info("Invalid character found in the row: {}", line);
 
       incrementCheckErrorCount();
 
       getReportContext().reportError(
           error()
               .fileName(fileName)
-              .type(TOO_MANY_FILES_ERROR)
-              .params(fileSchema.getName(), copyOf(fileNames))
+              .lineNumber(lineNumber)
+              .type(INVALID_CHARSET_ROW_ERROR)
+              .params(US_ASCII.name()) // TODO: return actual list
               .build());
     }
   }
 
-  /**
-   * Determines if a list of file names has collisions based on prefixes which would indicate either a poor choice in
-   * naming or accidental re-submission.
-   * <p>
-   * e.g. {@code hasCollisions(of("donor.1.txt", "donor.1.txt.gz")) == true}
-   * 
-   * @param fileNames the file names to check
-   * @return {@code true} if collisions exist, {@code false} otherwise
-   */
-  private boolean hasCollisions(@NonNull List<String> fileNames) {
-    val size = fileNames.size();
-    for (int i = 0; i < size; i++) {
-      val a = fileNames.get(i);
-      for (int j = i + 1; j < size; j++) {
-        val b = fileNames.get(j);
-
-        val prefix = a.startsWith(b) || b.startsWith(a);
-        if (prefix) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+  private boolean containsInvalidCharacter(CharSequence line) {
+    return DEFAULT_INVALID_MATCHER.matchesAnyOf(line);
   }
-
 }

@@ -21,12 +21,12 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.file.FileCollisionChecker;
+import org.icgc.dcc.submission.validation.first.file.FileCorruptionChecker;
+import org.icgc.dcc.submission.validation.first.file.FileHeaderChecker;
+import org.icgc.dcc.submission.validation.first.file.NoOpFileChecker;
+import org.icgc.dcc.submission.validation.first.file.ReferentialFileChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.step.FileCollisionChecker;
-import org.icgc.dcc.submission.validation.first.step.FileCorruptionChecker;
-import org.icgc.dcc.submission.validation.first.step.FileHeaderChecker;
-import org.icgc.dcc.submission.validation.first.step.NoOpFileChecker;
-import org.icgc.dcc.submission.validation.first.step.ReferentialFileChecker;
 
 /**
  * Made non-final for power mock.

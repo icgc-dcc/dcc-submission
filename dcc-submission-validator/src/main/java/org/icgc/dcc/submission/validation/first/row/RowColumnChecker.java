@@ -15,56 +15,74 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.step;
+package org.icgc.dcc.submission.validation.first.row;
 
+import static org.icgc.dcc.core.util.Separators.TAB_CHARACTER;
 import static org.icgc.dcc.submission.core.report.Error.error;
-import static org.icgc.dcc.submission.core.report.ErrorType.FILE_HEADER_ERROR;
-
-import java.util.List;
-
+import static org.icgc.dcc.submission.core.report.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.first.core.FileChecker;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
 
 @Slf4j
-public class FileHeaderChecker extends CompositeFileChecker {
+public class RowColumnChecker extends DelegatingRowChecker {
 
-  public FileHeaderChecker(FileChecker fileChecker, boolean failFast) {
-    super(fileChecker, failFast);
+  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
   }
 
-  public FileHeaderChecker(FileChecker fileChecker) {
-    this(fileChecker, true);
+  public RowColumnChecker(RowChecker rowChecker) {
+    this(rowChecker, false);
   }
 
   @Override
-  public void performSelfCheck(String fileName) {
-    val expectedHeader = retrieveExpectedHeader(fileName);
-    val actualHeader = getFileSystem().peekFileHeader(fileName);
-    if (isExactMatch(expectedHeader, actualHeader)) {
-      log.info("Correct header in '{}': '{}'", fileName, expectedHeader);
-    } else {
-      log.info(
-          "Different from the expected header in '{}': '{}', actual header: '{}'",
-          new Object[] { fileName, expectedHeader, actualHeader });
+  public void performSelfCheck(
+      String filename,
+      FileSchema fileSchema,
+      CharSequence line,
+      long lineNumber) {
+
+    val expectedNumColumns = getExpectedColumnCount(fileSchema);
+    val actualNumColumns = getActualColumnCount(line);
+    if (isCountMismatch(expectedNumColumns, actualNumColumns)) {
+      log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
+          + actualNumColumns + " at line " + lineNumber);
 
       incrementCheckErrorCount();
 
       getReportContext().reportError(
           error()
-              .fileName(fileName)
-              .type(FILE_HEADER_ERROR)
-              .params(expectedHeader, actualHeader)
+              .fileName(filename)
+              .lineNumber(lineNumber)
+              .type(STRUCTURALLY_INVALID_ROW_ERROR)
+              .value(actualNumColumns)
+              .params(expectedNumColumns)
               .build());
     }
   }
 
-  private final List<String> retrieveExpectedHeader(String filename) {
-    return getFileSchema(filename).getFieldNames();
+  private int getExpectedColumnCount(FileSchema fileSchema) {
+    return fileSchema.getFields().size(); // TODO: fix inefficiency
   }
 
-  private boolean isExactMatch(List<String> expectedHeader, List<String> actualHeader) {
-    return actualHeader.equals(expectedHeader);
+  private int getActualColumnCount(CharSequence line) {
+    int separatorCount = 0;
+    for (int i = 0; i < line.length(); i++) {
+      if (line.charAt(i) == TAB_CHARACTER) {
+        separatorCount++;
+      }
+    }
+
+    // One more field than separator count
+    val fieldCount = separatorCount + 1;
+
+    return fieldCount;
   }
+
+  private boolean isCountMismatch(int expectedNumColumns, int actualNumColumns) {
+    return actualNumColumns != expectedNumColumns;
+  }
+
 }

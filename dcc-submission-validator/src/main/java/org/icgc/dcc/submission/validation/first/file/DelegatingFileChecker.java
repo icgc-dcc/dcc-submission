@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,29 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.core;
+package org.icgc.dcc.submission.validation.first.file;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.row.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.row.RowCharsetChecker;
-import org.icgc.dcc.submission.validation.first.row.RowColumnChecker;
+import org.icgc.dcc.submission.validation.first.core.AbstractDelegatingChecker;
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
 
-/**
- * Made non-final for power mock.
- */
-@NoArgsConstructor(access = PRIVATE)
-public class RowCheckers {
+@Slf4j
+public abstract class DelegatingFileChecker extends AbstractDelegatingChecker implements FileChecker {
 
-  public static RowChecker getDefaultRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
-
-    // Chaining multiple row checkers
-    return new RowColumnChecker(
-        new RowCharsetChecker(
-            // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
-            new NoOpRowChecker(validationContext, fs)));
+  public DelegatingFileChecker(FileChecker delegate, boolean failFast) {
+    super(delegate, failFast);
   }
+
+  public DelegatingFileChecker(FileChecker delegate) {
+    this(delegate, false);
+  }
+
+  @Override
+  public void checkFile(String fileName) {
+    ((FileChecker) delegate).checkFile(fileName);
+    log.info(banner());
+    if (delegate.canContinue()) {
+      log.info("Start performing {} validation...", name);
+      executeFileCheck(fileName);
+      log.info("End performing {} validation. Number of errors found: '{}'",
+          name,
+          checkErrorCount);
+    }
+  }
+
+  public abstract void executeFileCheck(String fileName);
+
 }

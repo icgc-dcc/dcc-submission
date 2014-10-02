@@ -47,7 +47,7 @@ import com.google.common.base.Function;
 public class FPVSubmissionProcessor {
 
   /**
-   * For tests only (TODO: change that...).
+   * Dependencies.
    */
   @NotNull
   @Setter
