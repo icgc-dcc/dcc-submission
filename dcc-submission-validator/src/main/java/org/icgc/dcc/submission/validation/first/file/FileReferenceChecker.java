@@ -83,7 +83,7 @@ public class FileReferenceChecker extends DelegatingFileChecker {
           reportError(error()
               .fileName(fileName)
               .type(RELATION_FILE_ERROR)
-              .params(fileSchema.getName())
+              .params(referencedFileSchema.getName())
               .build());
         }
       } else {
