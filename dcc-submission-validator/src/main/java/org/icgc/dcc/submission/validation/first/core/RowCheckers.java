@@ -19,12 +19,14 @@ package org.icgc.dcc.submission.validation.first.core;
 
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
+import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.file.RowNoOpChecker;
+import org.icgc.dcc.submission.validation.first.file.RowCharsetChecker;
+import org.icgc.dcc.submission.validation.first.file.RowColumnChecker;
+import org.icgc.dcc.submission.validation.first.file.RowCountChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.row.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.row.RowCharsetChecker;
-import org.icgc.dcc.submission.validation.first.row.RowColumnChecker;
 
 /**
  * Made non-final for power mock.
@@ -33,11 +35,15 @@ import org.icgc.dcc.submission.validation.first.row.RowColumnChecker;
 public class RowCheckers {
 
   public static RowChecker getDefaultRowChecker(ValidationContext validationContext, FPVFileSystem fs) {
+    val chain =
+        new RowColumnChecker(
+            new RowCharsetChecker(
+                new RowCountChecker(
+                    new RowNoOpChecker(validationContext, fs) // Leaf checker
+                )
+            )
+        );
 
-    // Chaining multiple row checkers
-    return new RowColumnChecker(
-        new RowCharsetChecker(
-            // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
-            new NoOpRowChecker(validationContext, fs)));
+    return chain;
   }
 }

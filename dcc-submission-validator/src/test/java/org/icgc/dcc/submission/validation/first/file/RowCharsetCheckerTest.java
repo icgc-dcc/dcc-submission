@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.row;
+package org.icgc.dcc.submission.validation.first.file;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -28,8 +28,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.row.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.first.row.RowCharsetChecker;
+import org.icgc.dcc.submission.validation.first.row.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +41,7 @@ import com.google.common.base.Optional;
 public class RowCharsetCheckerTest {
 
   @Mock
-  private NoOpRowChecker baseChecker;
+  private RowNoOpChecker baseChecker;
 
   @Mock
   private FileSchema fileSchema;
@@ -79,7 +78,7 @@ public class RowCharsetCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\tf2\r\na\tb\r\n".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
-    RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
+    RowCharsetChecker checker = new RowCharsetChecker(new RowNoOpChecker(validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkRowCharsetErrorReported(validationContext, 2);
   }
@@ -89,7 +88,7 @@ public class RowCharsetCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("f1\t\rf2\na\r\tb\n".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
 
-    RowCharsetChecker checker = new RowCharsetChecker(new NoOpRowChecker(validationContext, fs));
+    RowCharsetChecker checker = new RowCharsetChecker(new RowNoOpChecker(validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkRowCharsetErrorReported(validationContext, 2);
   }

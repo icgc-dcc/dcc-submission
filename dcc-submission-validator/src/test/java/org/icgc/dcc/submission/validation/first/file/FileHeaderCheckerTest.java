@@ -30,7 +30,7 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
 import org.icgc.dcc.submission.validation.first.file.FileHeaderChecker;
-import org.icgc.dcc.submission.validation.first.file.NoOpFileChecker;
+import org.icgc.dcc.submission.validation.first.file.FileNoOpChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;import org.icgc.dcc.submission.validation.first.row.TestUtils;
 
 import org.junit.Before;
@@ -70,7 +70,7 @@ public class FileHeaderCheckerTest {
   public void simpleValidation() throws Exception {
     when(fs.peekFileHeader(anyString())).thenReturn(newArrayList("a", "b"));
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkNoErrorsReported(validationContext);
@@ -81,7 +81,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "a\tr".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
@@ -92,7 +92,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "b\ta\rf1\t\f2\r".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
@@ -103,7 +103,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "b\tb\rf1\t\f2\r".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
@@ -114,7 +114,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "a\tb\tc\rf1\t\f2\r".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
@@ -126,7 +126,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         " a \tb\rf1\t\f2\r".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
@@ -138,7 +138,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "A\tB\rf1\t\f2\r".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
@@ -150,7 +150,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         "ab\tb\rf1\t\f2\r".getBytes()));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);
@@ -162,7 +162,7 @@ public class FileHeaderCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream(
         new byte[0]));
     when(fs.getDecompressingInputStream(anyString())).thenReturn(fis);
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(
+    FileChecker checker = new FileHeaderChecker(new FileNoOpChecker(
         validationContext, fs));
     checker.checkFile(anyString());
     TestUtils.checkFileHeaderErrorReported(validationContext, 1);

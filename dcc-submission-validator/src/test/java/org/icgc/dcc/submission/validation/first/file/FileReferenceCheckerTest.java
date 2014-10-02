@@ -51,7 +51,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ReferentialFileCheckerTest {
+public class FileReferenceCheckerTest {
 
   // Build schemata: A<->B->C and D
   enum Schema {
@@ -113,9 +113,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void validReferentialCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.B.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     // regardless of the listfile, the file exists
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
 
@@ -127,9 +127,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void invalidReferentialCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.B.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     // no referencing and referenced file exists
     when(fs.getMatchingFileNames(anyString())).thenReturn(Lists.<String> newArrayList());
     checker.checkFile("testfile1");
@@ -139,9 +139,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void invalidReferencedCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.B.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
 
     // no referenced file
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("C"));
@@ -152,9 +152,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void invalidReferencingCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.B.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
 
     // no referenced file
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("A"));
@@ -165,9 +165,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void validReferentialCheckSchemaA() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.A.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     // regardless of the listfile, the file exists
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
     checker.checkFile("testfile1");
@@ -178,9 +178,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void invalidReferentialCheckSchemaA() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.A.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("B"));
     checker.checkFile("testfile1");
     verify(fs, times(1)).getMatchingFileNames(anyString());
@@ -189,9 +189,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void validReferentialCheckSchemaANoC() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.A.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("C"));
     checker.checkFile("testfile1");
     verify(fs, times(1)).getMatchingFileNames(anyString());
@@ -201,9 +201,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void validReferentialCheckSchemaC() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.C.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
     checker.checkFile("testfile1");
     verify(fs, times(0)).getMatchingFileNames(anyString());
@@ -213,9 +213,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void validReferentialCheckSchemaCNoB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.C.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenAnswer(new NoSchemaFound("B"));
     checker.checkFile("testfile1");
     verify(fs, times(0)).getMatchingFileNames(anyString());
@@ -225,9 +225,9 @@ public class ReferentialFileCheckerTest {
 
   @Test
   public void validReferentialCheckSchemaD() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext, fs));
+    FileChecker baseChecker = spy(new FileNoOpChecker(validationContext, fs));
     when(dict.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> of(Schema.C.getSchema()));
-    ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
+    FileReferenceChecker checker = new FileReferenceChecker(baseChecker);
     when(fs.getMatchingFileNames(anyString())).thenReturn(newArrayList(anyString()));
     checker.checkFile("testfile1");
     verify(fs, times(0)).getMatchingFileNames(anyString());

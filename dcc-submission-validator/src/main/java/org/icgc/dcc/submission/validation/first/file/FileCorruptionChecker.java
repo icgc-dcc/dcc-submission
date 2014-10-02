@@ -41,7 +41,7 @@ public class FileCorruptionChecker extends DelegatingFileChecker {
   }
 
   @Override
-  public void executeFileCheck(String fileName) {
+  public void performSelfCheck(String fileName) {
     val fs = getFileSystem();
 
     CodecType fileNameType = fs.determineCodecFromFilename(fileName);
@@ -53,14 +53,11 @@ public class FileCorruptionChecker extends DelegatingFileChecker {
     } catch (IOException e) {
       log.info("Exception caught in detecting file type for '{}' from content'{}'", fileName, e.getMessage());
 
-      incrementCheckErrorCount();
-
-      getReportContext().reportError(
-          error()
-              .fileName(fileName)
-              .type(COMPRESSION_CODEC_ERROR) // TODO: create new "corrupted" file error rather
-              .params(getFileSchema(fileName).getName())
-              .build());
+      reportError(error()
+          .fileName(fileName)
+          .type(COMPRESSION_CODEC_ERROR) // TODO: create new "corrupted" file error rather
+          .params(getFileSchema(fileName).getName())
+          .build());
     }
     log.info("Content for '{}' indicates type: '{}'", fileName, contentType);
 
@@ -82,14 +79,11 @@ public class FileCorruptionChecker extends DelegatingFileChecker {
           new Object[] { fileName, contentType, fileNameType });
       // TODO: create new error type rather?
 
-      incrementCheckErrorCount();
-
-      getReportContext().reportError(
-          error()
-              .fileName(fileName)
-              .type(COMPRESSION_CODEC_ERROR)
-              .params(getFileSchema(fileName).getName())
-              .build());
+      reportError(error()
+          .fileName(fileName)
+          .type(COMPRESSION_CODEC_ERROR)
+          .params(getFileSchema(fileName).getName())
+          .build());
     }
   }
 
@@ -103,24 +97,21 @@ public class FileCorruptionChecker extends DelegatingFileChecker {
       e.printStackTrace();
       String errMsg = e.getMessage();
       log.info("Exception caught in decoding bzip2 file '{}': '{}'", fileName, errMsg);
-      incrementCheckErrorCount();
 
       // TODO: remove this after upgrade hadoop
       if (errMsg != null && errMsg.equals("bad block header")) {
         log.info("found possibly, concatenated bzip2 files!", fileName);
-        getReportContext().reportError(
-            error()
-                .fileName(fileName)
-                .type(UNSUPPORTED_COMPRESSED_FILE)
-                .params(getFileSchema(fileName).getName())
-                .build());
+        reportError(error()
+            .fileName(fileName)
+            .type(UNSUPPORTED_COMPRESSED_FILE)
+            .params(getFileSchema(fileName).getName())
+            .build());
       } else {
-        getReportContext().reportError(
-            error()
-                .fileName(fileName)
-                .type(COMPRESSION_CODEC_ERROR)
-                .params(getFileSchema(fileName).getName())
-                .build());
+        reportError(error()
+            .fileName(fileName)
+            .type(COMPRESSION_CODEC_ERROR)
+            .params(getFileSchema(fileName).getName())
+            .build());
       }
     }
   }
@@ -129,17 +120,13 @@ public class FileCorruptionChecker extends DelegatingFileChecker {
     try {
       getFileSystem().attemptGzipRead(fileName);
     } catch (IOException e) {
-      e.printStackTrace();
       log.info("Exception caught in decoding gzip file '{}': '{}'", fileName, e.getMessage());
 
-      incrementCheckErrorCount();
-
-      getReportContext().reportError(
-          error()
-              .fileName(fileName)
-              .type(COMPRESSION_CODEC_ERROR)
-              .params(getFileSchema(fileName).getName())
-              .build());
+      reportError(error()
+          .fileName(fileName)
+          .type(COMPRESSION_CODEC_ERROR)
+          .params(getFileSchema(fileName).getName())
+          .build());
     }
   }
 }

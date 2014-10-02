@@ -39,11 +39,6 @@ public abstract class AbstractDelegatingChecker extends AbstractChecker {
   @NonNull
   protected final Checker delegate;
 
-  /**
-   * Count for the errors of a given {@link Checker}.
-   */
-  protected long checkErrorCount = 0;
-
   public AbstractDelegatingChecker(Checker delegate, boolean failFast) {
     super((ValidationContext) delegate.getReportContext(), delegate.getFileSystem(), failFast);
     this.name = this.getClass().getSimpleName();
@@ -52,13 +47,6 @@ public abstract class AbstractDelegatingChecker extends AbstractChecker {
 
   public AbstractDelegatingChecker(FileChecker delegate) {
     this(delegate, false);
-  }
-
-  /**
-   * Must always increment when reporting an error (TODO: address this).
-   */
-  protected void incrementCheckErrorCount() {
-    checkErrorCount++;
   }
 
   @Override

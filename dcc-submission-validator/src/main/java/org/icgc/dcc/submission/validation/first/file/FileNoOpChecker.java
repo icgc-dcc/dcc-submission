@@ -22,13 +22,13 @@ import org.icgc.dcc.submission.validation.first.core.AbstractChecker;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
-public class NoOpFileChecker extends AbstractChecker implements FileChecker {
+public class FileNoOpChecker extends AbstractChecker implements FileChecker {
 
-  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fileSystem) {
+  public FileNoOpChecker(ValidationContext validationContext, FPVFileSystem fileSystem) {
     super(validationContext, fileSystem, false);
   }
 
-  public NoOpFileChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
+  public FileNoOpChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
     super(validationContext, fileSystem, failFast);
   }
 

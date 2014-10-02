@@ -320,6 +320,18 @@ public enum ErrorType {
   },
 
   /**
+   * File has no data rows.
+   */
+  MISSING_ROWS_ERROR(FILE_LEVEL, "No rows found: %s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, List.class);
+      return ImmutableMap.of(FIELDS, params[0]);
+    }
+  },
+
+  /**
    * Repeated field names found in header.
    */
   FILE_HEADER_ERROR(FILE_LEVEL, "File header error: %s") {

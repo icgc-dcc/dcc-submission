@@ -15,32 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.row;
+package org.icgc.dcc.submission.validation.first.file;
+
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.MISSING_ROWS_ERROR;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.first.core.AbstractChecker;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
-import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
-public class NoOpRowChecker extends AbstractChecker implements RowChecker {
+@Slf4j
+public class RowCountChecker extends DelegatingFileRowChecker {
 
-  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fileSystem) {
-    this(validationContext, fileSystem, false);
+  private int rowCount;
+
+  public RowCountChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
   }
 
-  public NoOpRowChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
-    super(validationContext, fileSystem, failFast);
-  }
-
-  @Override
-  public void checkFile(String fileName) {
-    // No-op
+  public RowCountChecker(RowChecker rowChecker) {
+    this(rowChecker, false);
   }
 
   @Override
-  public void checkRow(String fileName, FileSchema fileSchema, CharSequence row, long lineNumber) {
-    // No-op
+  void performSelfCheck(String fileName, FileSchema fileSchema, CharSequence line, long lineNumber) {
+    // Keep track of how many rows we've seen
+    rowCount++;
+  }
+
+  @Override
+  void performSelfFinish(String fileName, FileSchema fileSchema) {
+    val noRows = rowCount == 0;
+    if (noRows) {
+      log.info("No rows in file: '{}'", fileName);
+
+      reportError(error()
+          .fileName(fileName)
+          .type(MISSING_ROWS_ERROR)
+          .build());
+    }
+
   }
 
 }

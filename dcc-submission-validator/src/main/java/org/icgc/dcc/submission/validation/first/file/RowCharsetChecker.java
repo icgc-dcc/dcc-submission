@@ -15,74 +15,66 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.row;
+package org.icgc.dcc.submission.validation.first.file;
 
-import static org.icgc.dcc.core.util.Separators.TAB_CHARACTER;
+import static com.google.common.base.CharMatcher.ASCII;
+import static com.google.common.base.CharMatcher.JAVA_ISO_CONTROL;
+import static com.google.common.base.CharMatcher.noneOf;
+import static com.google.common.base.Charsets.US_ASCII;
 import static org.icgc.dcc.submission.core.report.Error.error;
-import static org.icgc.dcc.submission.core.report.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
-import lombok.val;
+import static org.icgc.dcc.submission.core.report.ErrorType.INVALID_CHARSET_ROW_ERROR;
+import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
 
-@Slf4j
-public class RowColumnChecker extends DelegatingRowChecker {
+import com.google.common.base.CharMatcher;
 
-  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
+@Slf4j
+public class RowCharsetChecker extends DelegatingFileRowChecker {
+
+  private final static CharMatcher DEFAULT_INVALID_MATCHER =
+      ASCII
+          .negate()
+          .or(JAVA_ISO_CONTROL)
+          .and(
+              noneOf(FIELD_SEPARATOR))
+          .precomputed();
+
+  public RowCharsetChecker(RowChecker rowChecker, boolean failFast) {
     super(rowChecker, failFast);
   }
 
-  public RowColumnChecker(RowChecker rowChecker) {
+  public RowCharsetChecker(RowChecker rowChecker) {
     this(rowChecker, false);
   }
 
   @Override
-  public void performSelfCheck(
-      String filename,
+  void performSelfCheck(
+      String fileName,
       FileSchema fileSchema,
       CharSequence line,
       long lineNumber) {
 
-    val expectedNumColumns = getExpectedColumnCount(fileSchema);
-    val actualNumColumns = getActualColumnCount(line);
-    if (isCountMismatch(expectedNumColumns, actualNumColumns)) {
-      log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
-          + actualNumColumns + " at line " + lineNumber);
+    if (containsInvalidCharacter(line)) {
+      log.info("Invalid character found in the row: {}", line);
 
-      incrementCheckErrorCount();
-
-      getReportContext().reportError(
-          error()
-              .fileName(filename)
-              .lineNumber(lineNumber)
-              .type(STRUCTURALLY_INVALID_ROW_ERROR)
-              .value(actualNumColumns)
-              .params(expectedNumColumns)
-              .build());
+      reportError(error()
+          .fileName(fileName)
+          .lineNumber(lineNumber)
+          .type(INVALID_CHARSET_ROW_ERROR)
+          .params(US_ASCII.name()) // TODO: return actual list
+          .build());
     }
   }
 
-  private int getExpectedColumnCount(FileSchema fileSchema) {
-    return fileSchema.getFields().size(); // TODO: fix inefficiency
+  @Override
+  void performSelfFinish(String fileName, FileSchema fileSchema) {
+    // No-op
   }
 
-  private int getActualColumnCount(CharSequence line) {
-    int separatorCount = 0;
-    for (int i = 0; i < line.length(); i++) {
-      if (line.charAt(i) == TAB_CHARACTER) {
-        separatorCount++;
-      }
-    }
-
-    // One more field than separator count
-    val fieldCount = separatorCount + 1;
-
-    return fieldCount;
+  private static boolean containsInvalidCharacter(CharSequence line) {
+    return DEFAULT_INVALID_MATCHER.matchesAnyOf(line);
   }
-
-  private boolean isCountMismatch(int expectedNumColumns, int actualNumColumns) {
-    return actualNumColumns != expectedNumColumns;
-  }
-
 }

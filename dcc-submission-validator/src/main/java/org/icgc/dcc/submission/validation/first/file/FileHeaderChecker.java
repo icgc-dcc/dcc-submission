@@ -39,7 +39,7 @@ public class FileHeaderChecker extends DelegatingFileChecker {
   }
 
   @Override
-  public void executeFileCheck(String fileName) {
+  public void performSelfCheck(String fileName) {
     val expectedHeader = retrieveExpectedHeader(fileName);
     val actualHeader = getFileSystem().peekFileHeader(fileName);
 
@@ -50,14 +50,11 @@ public class FileHeaderChecker extends DelegatingFileChecker {
           "Different from the expected header in '{}': '{}', actual header: '{}'",
           new Object[] { fileName, expectedHeader, actualHeader });
 
-      incrementCheckErrorCount();
-
-      getReportContext().reportError(
-          error()
-              .fileName(fileName)
-              .type(FILE_HEADER_ERROR)
-              .params(expectedHeader, actualHeader)
-              .build());
+      reportError(error()
+          .fileName(fileName)
+          .type(FILE_HEADER_ERROR)
+          .params(expectedHeader, actualHeader)
+          .build());
     }
   }
 

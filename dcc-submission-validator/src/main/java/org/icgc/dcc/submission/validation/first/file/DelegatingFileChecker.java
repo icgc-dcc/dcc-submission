@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.validation.first.core.AbstractDelegatingChecker;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
 
+import com.google.common.annotations.VisibleForTesting;
+
 @Slf4j
 public abstract class DelegatingFileChecker extends AbstractDelegatingChecker implements FileChecker {
 
@@ -39,13 +41,17 @@ public abstract class DelegatingFileChecker extends AbstractDelegatingChecker im
     log.info(banner());
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", name);
-      executeFileCheck(fileName);
+      performSelfCheck(fileName);
       log.info("End performing {} validation. Number of errors found: '{}'",
           name,
           checkErrorCount);
     }
   }
 
-  public abstract void executeFileCheck(String fileName);
+  /**
+   * Template method
+   */
+  @VisibleForTesting
+  public abstract void performSelfCheck(String fileName);
 
 }

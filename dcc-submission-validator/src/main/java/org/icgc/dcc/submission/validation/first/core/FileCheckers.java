@@ -19,13 +19,14 @@ package org.icgc.dcc.submission.validation.first.core;
 
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
+import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.file.FileCollisionChecker;
 import org.icgc.dcc.submission.validation.first.file.FileCorruptionChecker;
 import org.icgc.dcc.submission.validation.first.file.FileHeaderChecker;
-import org.icgc.dcc.submission.validation.first.file.NoOpFileChecker;
-import org.icgc.dcc.submission.validation.first.file.ReferentialFileChecker;
+import org.icgc.dcc.submission.validation.first.file.FileNoOpChecker;
+import org.icgc.dcc.submission.validation.first.file.FileReferenceChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
 /**
@@ -35,13 +36,18 @@ import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 public class FileCheckers {
 
   public static FileChecker getDefaultFileChecker(ValidationContext validationContext, FPVFileSystem fs) {
-    // Chaining multiple file checker
-    return new FileHeaderChecker(
-        new FileCorruptionChecker(
-            new FileCollisionChecker(
-                new ReferentialFileChecker(
-                    // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)?
-                    new NoOpFileChecker(validationContext, fs)))));
+    val chain =
+        new FileHeaderChecker(
+            new FileCorruptionChecker(
+                new FileCollisionChecker(
+                    new FileReferenceChecker(
+                        new FileNoOpChecker(validationContext, fs) // Leaf checker
+                    )
+                )
+            )
+        );
+
+    return chain;
   }
 
 }

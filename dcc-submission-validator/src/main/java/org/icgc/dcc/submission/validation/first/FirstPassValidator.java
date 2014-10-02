@@ -22,8 +22,8 @@ import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.first.core.FPVSubmissionProcessor;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
-import org.icgc.dcc.submission.validation.first.io.FPVSubmissionProcessor;
 
 @NoArgsConstructor
 public class FirstPassValidator implements Validator {

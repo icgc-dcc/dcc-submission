@@ -73,7 +73,7 @@ public class FileCollisionCheckerTest {
     when(context.getDccFileSystem()).thenReturn(dccFileSystem);
     when(context.getDictionary()).thenReturn(dictionary);
 
-    checker = new FileCollisionChecker(new NoOpFileChecker(context, fs));
+    checker = new FileCollisionChecker(new FileNoOpChecker(context, fs));
   }
 
   @Test

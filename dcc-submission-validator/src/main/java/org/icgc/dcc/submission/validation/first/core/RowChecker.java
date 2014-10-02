@@ -23,4 +23,6 @@ public interface RowChecker extends FileChecker {
 
   void checkRow(String filename, FileSchema fileSchema, CharSequence row, long lineNumber);
 
+  void finish(String filename, FileSchema fileSchema);
+
 }

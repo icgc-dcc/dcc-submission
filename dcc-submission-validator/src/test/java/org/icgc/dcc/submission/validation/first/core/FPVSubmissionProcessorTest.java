@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.io;
+package org.icgc.dcc.submission.validation.first.core;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.any;
@@ -35,8 +35,9 @@ import org.icgc.dcc.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.core.FPVSubmissionProcessor;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
-import org.icgc.dcc.submission.validation.first.core.RowChecker;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.file.DelegatingFileChecker;
 import org.icgc.dcc.submission.validation.first.row.TestUtils;
 import org.junit.Before;
@@ -149,7 +150,7 @@ public class FPVSubmissionProcessorTest {
     fpv.process("mystepname", validationContext, fs);
 
     verify(fileChecker, times(1)).checkFile(anyString());
-    verify(moreChecker, never()).executeFileCheck(anyString());
+    verify(moreChecker, never()).performSelfCheck(anyString());
     verify(rowChecker, never()).checkFile(anyString());
   }
 
@@ -202,7 +203,7 @@ public class FPVSubmissionProcessorTest {
     }
 
     @Override
-    public void executeFileCheck(String filename) {
+    public void performSelfCheck(String filename) {
 
     }
 

@@ -33,18 +33,18 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 @Slf4j
-public class ReferentialFileChecker extends DelegatingFileChecker {
+public class FileReferenceChecker extends DelegatingFileChecker {
 
-  public ReferentialFileChecker(FileChecker compositeChecker) {
+  public FileReferenceChecker(FileChecker compositeChecker) {
     this(compositeChecker, false);
   }
 
-  public ReferentialFileChecker(FileChecker compositeChecker, boolean failFast) {
+  public FileReferenceChecker(FileChecker compositeChecker, boolean failFast) {
     super(compositeChecker, failFast);
   }
 
   @Override
-  public void executeFileCheck(String fileName) {
+  public void performSelfCheck(String fileName) {
     log.info("Checking referenced file presence");
     referencedCheck(fileName);
 
@@ -80,14 +80,11 @@ public class ReferentialFileChecker extends DelegatingFileChecker {
           log.info("Fail referenced check for '{}': missing referencing file with schema '{}'",
               fileName, referencedFileSchema.getName());
 
-          incrementCheckErrorCount();
-
-          getReportContext().reportError(
-              error()
-                  .fileName(fileName)
-                  .type(RELATION_FILE_ERROR)
-                  .params(fileSchema.getName())
-                  .build());
+          reportError(error()
+              .fileName(fileName)
+              .type(RELATION_FILE_ERROR)
+              .params(fileSchema.getName())
+              .build());
         }
       } else {
         log.info("Skipping check for system file presence");
@@ -120,14 +117,11 @@ public class ReferentialFileChecker extends DelegatingFileChecker {
         log.info("Fail referencing check for '{}': missing referencing file with schema '{}'",
             fileName, referencingFileSchema.getName());
 
-        incrementCheckErrorCount();
-
-        getReportContext().reportError(
-            error()
-                .fileName(fileName)
-                .type(REVERSE_RELATION_FILE_ERROR)
-                .params(referencingFileSchema.getName())
-                .build());
+        reportError(error()
+            .fileName(fileName)
+            .type(REVERSE_RELATION_FILE_ERROR)
+            .params(referencingFileSchema.getName())
+            .build());
       }
     }
   }

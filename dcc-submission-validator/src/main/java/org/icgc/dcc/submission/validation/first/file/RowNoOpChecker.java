@@ -15,64 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.row;
-
-import static com.google.common.base.CharMatcher.ASCII;
-import static com.google.common.base.CharMatcher.JAVA_ISO_CONTROL;
-import static com.google.common.base.CharMatcher.noneOf;
-import static com.google.common.base.Charsets.US_ASCII;
-import static org.icgc.dcc.submission.core.report.Error.error;
-import static org.icgc.dcc.submission.core.report.ErrorType.INVALID_CHARSET_ROW_ERROR;
-import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.FIELD_SEPARATOR;
-import lombok.extern.slf4j.Slf4j;
+package org.icgc.dcc.submission.validation.first.file;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.core.AbstractChecker;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 
-import com.google.common.base.CharMatcher;
+public class RowNoOpChecker extends AbstractChecker implements RowChecker {
 
-@Slf4j
-public class RowCharsetChecker extends DelegatingRowChecker {
-
-  private final static CharMatcher DEFAULT_INVALID_MATCHER =
-      ASCII
-          .negate()
-          .or(JAVA_ISO_CONTROL)
-          .and(
-              noneOf(FIELD_SEPARATOR))
-          .precomputed();
-
-  public RowCharsetChecker(RowChecker rowChecker, boolean failFast) {
-    super(rowChecker, failFast);
+  public RowNoOpChecker(ValidationContext validationContext, FPVFileSystem fileSystem) {
+    this(validationContext, fileSystem, false);
   }
 
-  public RowCharsetChecker(RowChecker rowChecker) {
-    this(rowChecker, false);
+  public RowNoOpChecker(ValidationContext validationContext, FPVFileSystem fileSystem, boolean failFast) {
+    super(validationContext, fileSystem, failFast);
   }
 
   @Override
-  public void performSelfCheck(
-      String fileName,
-      FileSchema fileSchema,
-      CharSequence line,
-      long lineNumber) {
-
-    if (containsInvalidCharacter(line)) {
-      log.info("Invalid character found in the row: {}", line);
-
-      incrementCheckErrorCount();
-
-      getReportContext().reportError(
-          error()
-              .fileName(fileName)
-              .lineNumber(lineNumber)
-              .type(INVALID_CHARSET_ROW_ERROR)
-              .params(US_ASCII.name()) // TODO: return actual list
-              .build());
-    }
+  public void checkFile(String fileName) {
+    // No-op
   }
 
-  private boolean containsInvalidCharacter(CharSequence line) {
-    return DEFAULT_INVALID_MATCHER.matchesAnyOf(line);
+  @Override
+  public void checkRow(String fileName, FileSchema fileSchema, CharSequence row, long lineNumber) {
+    // No-op
   }
+
+  @Override
+  public void finish(String fileName, FileSchema fileSchema) {
+    // No-op
+  }
+
 }

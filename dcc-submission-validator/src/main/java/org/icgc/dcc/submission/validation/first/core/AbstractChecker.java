@@ -46,6 +46,11 @@ public class AbstractChecker implements Checker {
   @Getter
   private final boolean failFast;
 
+  /**
+   * Count for the errors of a given {@link Checker}.
+   */
+  protected long checkErrorCount = 0;
+
   public AbstractChecker(ValidationContext validationContext, FPVFileSystem fs) {
     this(validationContext, fs, false);
   }
@@ -65,6 +70,11 @@ public class AbstractChecker implements Checker {
   @Override
   public boolean canContinue() {
     return true;
+  }
+
+  protected void reportError(org.icgc.dcc.submission.core.report.Error error) {
+    checkErrorCount++;
+    getReportContext().reportError(error);
   }
 
 }

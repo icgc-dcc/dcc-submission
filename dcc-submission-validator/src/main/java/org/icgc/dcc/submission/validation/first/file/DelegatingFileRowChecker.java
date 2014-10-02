@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.row;
+package org.icgc.dcc.submission.validation.first.file;
 
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.core.report.Error.error;
@@ -38,7 +38,7 @@ import org.icgc.dcc.submission.validation.first.core.RowChecker;
 import com.google.common.base.Stopwatch;
 
 @Slf4j
-public abstract class DelegatingRowChecker extends AbstractDelegatingChecker implements RowChecker, FileChecker {
+public abstract class DelegatingFileRowChecker extends AbstractDelegatingChecker implements RowChecker, FileChecker {
 
   /**
    * Number of bytes to buffer when reading submission files.
@@ -61,12 +61,12 @@ public abstract class DelegatingRowChecker extends AbstractDelegatingChecker imp
   @NonNull
   protected final RowChecker delegate;
 
-  public DelegatingRowChecker(RowChecker delegate, boolean failFast) {
+  public DelegatingFileRowChecker(RowChecker delegate, boolean failFast) {
     super(delegate, failFast);
     this.delegate = delegate;
   }
 
-  public DelegatingRowChecker(RowChecker nestedChecker) {
+  public DelegatingFileRowChecker(RowChecker nestedChecker) {
     this(nestedChecker, false);
   }
 
@@ -119,15 +119,17 @@ public abstract class DelegatingRowChecker extends AbstractDelegatingChecker imp
     if (line.length() > 0) {
       log.info("Missing new line at end of file '{}'", fileName);
 
-      getReportContext().reportError(
-          error()
-              .fileName(fileName)
-              .lineNumber(lineNumber)
-              .type(LINE_TERMINATOR_MISSING_ERROR)
-              .build());
+      reportError(error()
+          .fileName(fileName)
+          .lineNumber(lineNumber)
+          .type(LINE_TERMINATOR_MISSING_ERROR)
+          .build());
     }
 
-    log.info("End performing '{}' validation on '{}' in {}. Number of errors found: {}",
+    log.info("Finishing performing {} validation...", name);
+    finish(fileName, fileSchema);
+
+    log.info("Completed '{}' validation on '{}' in {}. Number of errors found: {}",
         new Object[] { name, fileName, watch, formatCount(checkErrorCount) });
   }
 
@@ -148,6 +150,18 @@ public abstract class DelegatingRowChecker extends AbstractDelegatingChecker imp
     }
   }
 
-  public abstract void performSelfCheck(String filename, FileSchema fileSchema, CharSequence row, long lineNumber);
+  @Override
+  public void finish(String fileName, FileSchema fileSchema) {
+    delegate.finish(fileName, fileSchema);
+
+    performSelfFinish(fileName, fileSchema);
+  }
+
+  /**
+   * Template methods
+   */
+  abstract void performSelfCheck(String filename, FileSchema fileSchema, CharSequence row, long lineNumber);
+
+  abstract void performSelfFinish(String fileName, FileSchema fileSchema);
 
 }
