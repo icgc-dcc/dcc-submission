@@ -92,13 +92,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Required file missing"
       description: (source) ->
         """
-        <code>#{source.parameters?.SCHEMA}</code> file is missing
+        A <code>#{source.parameters?.SCHEMA}</code> file is missing
         """
     REVERSE_RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
         """
-        <code>#{source.parameters?.SCHEMA}</code> file is missing
+        A <code>#{source.parameters?.SCHEMA}</code> file is missing
         """
     RELATION_VALUE_ERROR:
       name: "Relation violation"
@@ -123,6 +123,12 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Missing value for required field. Offending lines
+        """
+    MISSING_ROWS_ERROR:
+      name: "Missing rows"
+      description: (source) ->
+        """
+        There are no records in this file. At least one record is required.
         """
     OUT_OF_RANGE_ERROR:
       name: "Value out of range"
@@ -235,6 +241,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "TOO_MANY_FILES_ERROR"
       #"FILE_HEADER_ERROR"
       "RELATION_FILE_ERROR"
+      "MISSING_ROWS_ERROR"
       "REVERSE_RELATION_FILE_ERROR"
       "TOO_MANY_CONFIDENTIAL_OBSERVATIONS_ERROR"
       ]
