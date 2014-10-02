@@ -28,7 +28,7 @@ import org.icgc.dcc.submission.validation.first.core.RowChecker;
 @Slf4j
 public class RowCountChecker extends DelegatingFileRowChecker {
 
-  private int rowCount;
+  private int lineCount;
 
   public RowCountChecker(RowChecker rowChecker, boolean failFast) {
     super(rowChecker, failFast);
@@ -40,12 +40,15 @@ public class RowCountChecker extends DelegatingFileRowChecker {
 
   @Override
   void performSelfCheck(String fileName, FileSchema fileSchema, CharSequence line, long lineNumber) {
-    // Keep track of how many rows we've seen
-    rowCount++;
+    // Keep track of how many lines we've seen
+    lineCount++;
   }
 
   @Override
   void performSelfFinish(String fileName, FileSchema fileSchema) {
+    val headerCount = 1;
+    val rowCount = lineCount - headerCount;
+
     val noRows = rowCount == 0;
     if (noRows) {
       log.info("No rows in file: '{}'", fileName);

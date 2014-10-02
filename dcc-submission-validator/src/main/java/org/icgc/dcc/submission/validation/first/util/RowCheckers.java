@@ -15,13 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.first.core;
+package org.icgc.dcc.submission.validation.first.util;
 
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
 import org.icgc.dcc.submission.validation.first.file.RowNoOpChecker;
 import org.icgc.dcc.submission.validation.first.file.RowCharsetChecker;
 import org.icgc.dcc.submission.validation.first.file.RowColumnChecker;
