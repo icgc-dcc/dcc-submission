@@ -26,7 +26,7 @@
 
   <repositories>
     <repository>
-      <id>dcc-releases</id>
+      <id>dcc-release</id>
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-release</url>
     </repository>
   </repositories>
@@ -36,18 +36,18 @@
       <!-- DCC -->
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-core</artifactId>
-        <version>${dcc-core.version}</version>
+        <artifactId>dcc-common-core</artifactId>
+        <version>${dcc-common.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-hadoop</artifactId>
-        <version>${dcc-hadoop.version}</version>
+        <artifactId>dcc-common-hadoop</artifactId>
+        <version>${dcc-common.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-test</artifactId>
-        <version>${dcc-test.version}</version>
+        <artifactId>dcc-common-test</artifactId>
+        <version>${dcc-common.version}</version>
         <scope>test</scope>
       </dependency>
 
@@ -130,9 +130,7 @@
 
   <properties>
     <!-- Versions -->
-    <dcc-core.version>3.5.10</dcc-core.version>
-    <dcc-hadoop.version>3.5.10</dcc-hadoop.version>
-    <dcc-test.version>3.5.10</dcc-test.version>
+    <dcc-common.version>3.5.13</dcc-common.version>
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
   </properties>

@@ -14,23 +14,15 @@
   <name>${project.artifactId}</name>
   <description>${project.name}</description>
 
-  <repositories>
-    <!-- Parent pom bootstrap -->
-    <repository>
-      <id>internal</id>
-      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <!-- DCC -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-core</artifactId>
+      <artifactId>dcc-common-core</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-hadoop</artifactId>
+      <artifactId>dcc-common-hadoop</artifactId>
     </dependency>
 
     <!-- Security -->

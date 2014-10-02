@@ -14,57 +14,16 @@
   <name>${project.artifactId}</name>
   <description>${project.name}</description>
 
-  <repositories>
-    <!-- Parent pom bootstrap -->
-    <repository>
-      <id>internal</id>
-      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
-    </repository>
-  </repositories>
-
   <dependencies>
-
-    <!-- Utilities -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tika</groupId>
-      <artifactId>tika-core</artifactId>
-      <version>1.4</version><!-- TODO: move up -->
-    </dependency>
-    <dependency>
-	  <groupId>org.apache.commons</groupId>
-	  <artifactId>commons-compress</artifactId>
-	  <version>${commons-compress.version}</version>
-	</dependency>
 
     <!-- DCC -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-core</artifactId>
+      <artifactId>dcc-common-core</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-hadoop</artifactId>
-    </dependency>
-
-    <!-- Testing - DCC -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-resources</artifactId>
-      <scope>test</scope>
+      <artifactId>dcc-common-hadoop</artifactId>
     </dependency>
 
     <!-- Hadoop -->
@@ -98,6 +57,39 @@
     <dependency>
       <groupId>cascading</groupId>
       <artifactId>cascading-hadoop</artifactId>
+    </dependency>
+
+    <!-- Utilities -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>1.4</version><!-- TODO: move up -->
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>${commons-compress.version}</version>
+    </dependency>
+
+    <!-- Testing - DCC -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-common-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-resources</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
