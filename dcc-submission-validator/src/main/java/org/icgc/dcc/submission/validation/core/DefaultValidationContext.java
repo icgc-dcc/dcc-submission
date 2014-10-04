@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.core;
 import static java.util.regex.Pattern.matches;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.Delegate;
@@ -161,6 +162,10 @@ public class DefaultValidationContext implements ValidationContext {
   public List<Path> getFiles(FileType fileType) {
     val submissionDirectory = getSubmissionDirectory();
     val fileSchema = getFileSchema(fileType);
+    if (fileSchema == null) {
+      return Collections.emptyList();
+    }
+
     val fileNamePattern = fileSchema.getPattern();
 
     val builder = ImmutableList.<Path> builder();
@@ -178,7 +183,7 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public FileSchema getFileSchema(FileType fileType) {
-    return getDictionary().getFileSchema(fileType);
+    return getDictionary().getFileSchemaByName(fileType.getId()).orNull();
   }
 
 }

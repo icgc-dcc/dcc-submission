@@ -211,7 +211,6 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         the corresponding sequence in the reference genome at:
         chromosome_start - chromosome_end
         """
-
     REFERENCE_GENOME_INSERTION_ERROR:
       name: "Reference genome error"
       description: (source) ->
@@ -231,6 +230,18 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         threshold is set as #{parseFloat(100*expected).toFixed(2)}% ).
         More details about SSM masking can be found
         <a href="http://docs.icgc.org/" target="_blank">here</a>.
+        """
+    SAMPLE_TYPE_MISMATCH:
+      name: "Sample type mismatch error"
+      description: (source) ->
+        """
+         Sample types should be consistent between clinical and experimental meta files.
+        """
+    REFERENCE_SAMPLE_TYPE_MISMATCH:
+      name: "Reference sample type mismatch error"
+      description: (source) ->
+        """
+         Reference sample types should be consistent between clinical and experimental meta files.
         """
   details: (source) ->
 

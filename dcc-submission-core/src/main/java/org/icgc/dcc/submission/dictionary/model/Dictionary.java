@@ -143,7 +143,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public FileSchema getFileSchema(@NonNull FileType type) {
     val optional = getFileSchemaByName(type.getId());
-    checkState(optional.isPresent(), "Coun't find type '%s' in dictionary", type);
+    checkState(optional.isPresent(), "Couldn't find type '%s' in dictionary", type);
     return optional.get();
   }
 

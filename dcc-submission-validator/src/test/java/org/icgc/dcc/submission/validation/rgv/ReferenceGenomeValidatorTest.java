@@ -17,7 +17,7 @@ import org.junit.Test;
 public class ReferenceGenomeValidatorTest extends BaseReferenceGenomeValidatorTest {
 
   @Test
-  public void testSsmSamplePrimaryFile() throws IOException {
+  public void testSsmSamplePrimaryFile() throws IOException, InterruptedException {
     val testFile = TEST_FILE_NAME;
     val context = mockContext();
 

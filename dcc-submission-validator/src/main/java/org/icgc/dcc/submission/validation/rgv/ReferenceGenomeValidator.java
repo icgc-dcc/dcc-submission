@@ -94,12 +94,12 @@ public class ReferenceGenomeValidator implements Validator {
    * is well-formed, and that each individual field is sane.
    */
   @Override
-  public void validate(ValidationContext context) {
+  public void validate(ValidationContext context) throws InterruptedException {
     log.info("Starting...");
 
     // Selective validation filtering
     if (!isValidatable(context.getDataTypes())) {
-      log.info("SSM / SGV validation not required for '{}'. Skipping...", context.getProjectKey());
+      log.info("Validation not required for '{}'. Skipping...", context.getProjectKey());
 
       return;
     }

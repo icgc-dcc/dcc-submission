@@ -17,11 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
-import static java.lang.String.format;
 import static java.util.regex.Pattern.matches;
+import static org.icgc.dcc.core.util.FormatUtils._;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,7 @@ import com.google.common.collect.ImmutableList;
 @RequiredArgsConstructor
 public abstract class AbstractValidationContext implements ValidationContext {
 
-  protected static final String DICTIONARY_VERSION = "0.8a";
+  protected static final String DICTIONARY_VERSION = "0.9a";
 
   @Override
   public SubmissionPlatformStrategy getPlatformStrategy() {
@@ -105,6 +106,10 @@ public abstract class AbstractValidationContext implements ValidationContext {
   public List<Path> getFiles(FileType fileType) {
     val submissionDirectory = getSubmissionDirectory();
     val fileSchema = getFileSchema(fileType);
+    if (fileSchema == null) {
+      return Collections.emptyList();
+    }
+
     val fileNamePattern = fileSchema.getPattern();
 
     val builder = ImmutableList.<Path> builder();
@@ -122,7 +127,7 @@ public abstract class AbstractValidationContext implements ValidationContext {
 
   @Override
   public FileSchema getFileSchema(FileType fileType) {
-    return getDictionary().getFileSchema(fileType);
+    return getDictionary().getFileSchemaByName(fileType.getId()).orNull();
   }
 
   @Override
@@ -152,11 +157,17 @@ public abstract class AbstractValidationContext implements ValidationContext {
 
   @Override
   public void reportError(Error error) {
-    val message =
-        "[reportError] fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s";
     val text =
-        format(message, error.getFileName(), error.getLineNumber(), error.getFieldNames().toString(), error.getValue(),
-            error.getType(), Arrays.toString(error.getParams()));
+        _(
+            "[reportError] projectKey = '%s',  fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s",
+            getProjectKey(),
+            error.getFileName(),
+            error.getLineNumber(),
+            error.getFieldNames().toString(),
+            error.getValue(),
+            error.getType(),
+            Arrays.toString(error.getParams()));
+
     log.error("{}", text);
   }
 
