@@ -45,6 +45,7 @@ import org.icgc.dcc.submission.validation.primary.planner.Planner;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.rgv.ReferenceGenomeValidator;
 import org.icgc.dcc.submission.validation.rgv.reference.PicardReferenceGenome;
+import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
@@ -67,6 +68,7 @@ public class ValidationModule extends AbstractDccModule {
   private static final String PRIMARY_VALIDATOR_CONFIG_VALUE = "pv";
   private static final String KEY_VALIDATOR_CONFIG_VALUE = "kv";
   private static final String REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE = "rgv";
+  private static final String SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE = "sample";
   private static final String NORMALIZATION_VALIDATOR_CONFIG_VALUE = "nv";
 
   /**
@@ -84,7 +86,8 @@ public class ValidationModule extends AbstractDccModule {
   @Override
   protected void configure() {
     requestStaticInjection(ByteOffsetToLineNumber.class);
-    bind(SubmissionPlatformStrategyFactory.class).toProvider(SubmissionPlatformStrategyFactoryProvider.class).in(Singleton.class);
+    bind(SubmissionPlatformStrategyFactory.class).toProvider(SubmissionPlatformStrategyFactoryProvider.class).in(
+        Singleton.class);
     bind(Planner.class).in(Singleton.class);
 
     // Set binder will preserve bind order as iteration order for injectees
@@ -154,6 +157,8 @@ public class ValidationModule extends AbstractDccModule {
           validators.add(keyValidator());
         } else if (value.equals(REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE)) {
           validators.add(referenceGenomeValidator(config));
+        } else if (value.equals(SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(sampleTypeValidator());
         } else if (value.equals(NORMALIZATION_VALIDATOR_CONFIG_VALUE)) {
           validators.add(normalizationValidator(config, dccFileSystem2));
         } else {
@@ -166,6 +171,7 @@ public class ValidationModule extends AbstractDccModule {
       validators.add(primaryValidator(planner));
       validators.add(keyValidator());
       validators.add(referenceGenomeValidator(config));
+      validators.add(sampleTypeValidator());
       validators.add(normalizationValidator(config, dccFileSystem2));
     }
 
@@ -188,6 +194,10 @@ public class ValidationModule extends AbstractDccModule {
     val fastaFilePath = get(config, FASTA_FILE_PATH_CONFIG_PARAM);
 
     return new ReferenceGenomeValidator(new PicardReferenceGenome(fastaFilePath));
+  }
+
+  private static Validator sampleTypeValidator() {
+    return new SampleTypeValidator();
   }
 
   private static Validator normalizationValidator(Config config, DccFileSystem2 dccFileSystem2) {

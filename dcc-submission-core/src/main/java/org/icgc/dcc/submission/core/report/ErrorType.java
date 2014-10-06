@@ -376,6 +376,30 @@ public enum ErrorType {
       checkParams(params, Long.class, Long.class, Float.class);
       return ImmutableMap.of(VALUE, params[0], VALUE2, params[1], EXPECTED, params[2]);
     }
+  },
+
+  /**
+   * Sample types should be consistent between clinical and experimental meta files
+   */
+  SAMPLE_TYPE_MISMATCH(CELL_LEVEL, "Inconsistent sample type between clinical and experimental meta files") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class, String.class, String.class);
+      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+    }
+  },
+
+  /**
+   * Reference sample types should be consistent between clinical and experimental meta files
+   */
+  REFERENCE_SAMPLE_TYPE_MISMATCH(CELL_LEVEL, "Inconsistent reference sample type between clinical and experimental meta files") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class, String.class, String.class);
+      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+    }
   };
 
   /**
