@@ -124,17 +124,10 @@ module.exports = class ValidateSubmissionView extends View
     @delegate 'click', '#feature-clear', @selectNone
     @delegate 'input propertychange', '#emails', @checkEmail
 
-    @delegate 'click', '#validation-warning-dismiss', @dismissWarning
-
     @render()
 
   render: ->
     super
-
-    # Check if warning should be rendered
-    dismissed = mediator.user.get("warningDismissed")
-    if dismissed
-      @.$('#validation-warning').css('display', 'none')
 
 
     # Check if email is preset
@@ -191,11 +184,6 @@ module.exports = class ValidateSubmissionView extends View
       aoColumns: aoColumns
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @dataTypes
-
-
-  dismissWarning: (e)=>
-    mediator.user.set "warningDismissed", true
-    @.$('#validation-warning').css('display', 'none')
 
 
   checkEmail: (e)->
