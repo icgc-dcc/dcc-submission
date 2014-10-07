@@ -188,8 +188,9 @@ found on host #{host}"
 
   getOrphanWarning: ->
     return """
+    <p><i class="icon-warning-sign"></i>
     Please be advised that <em>donors</em>, <em>specimen</em>, and <em>analyzed_samples</em> with no associated
-    experimental results will be ignored and not reported in the upcoming Data Portal release.
+    experimental results will be ignored and not reported in the upcoming Data Portal release.</p>
     """
 
   getStateDisplay: (state) ->
