@@ -17,8 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.sample.core;
 
+import static lombok.AccessLevel.PRIVATE;
+
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import com.google.common.collect.ImmutableSet;
@@ -28,17 +32,24 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @see http://docs.icgc.org/controlled-vocabulary#GLOBAL.0.reference_sample_type.v1
  */
+@RequiredArgsConstructor(access = PRIVATE)
 public enum ReferenceSampleTypeCategory {
 
   /**
-   * Matched from donor
+   * Matched from donor.
    */
-  MATCHED,
+  MATCHED("matched"),
 
   /**
    * Anything other than {@link ReferenceSampleTypeCategory#MATCHED}.
    */
-  NON_MATCHED;
+  NON_MATCHED("non-matched");
+
+  /**
+   * Metadata.
+   */
+  @Getter
+  private final String description;
 
   /**
    * Constants.
@@ -46,7 +57,7 @@ public enum ReferenceSampleTypeCategory {
   private static final Set<String> MATCHED_TERM_CODES = ImmutableSet.of("1");
   private static final Set<String> NON_MATCHED_TERM_VALUES = ImmutableSet.of("matched normal");
 
-  public static ReferenceSampleTypeCategory fromSampleType(String term) {
+  public static ReferenceSampleTypeCategory fromReferenceSampleType(String term) {
     val matched = MATCHED_TERM_CODES.contains(term) || NON_MATCHED_TERM_VALUES.contains(term);
 
     return matched ? MATCHED : NON_MATCHED;

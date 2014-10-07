@@ -17,8 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.sample.core;
 
+import static lombok.AccessLevel.PRIVATE;
+
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import com.google.common.collect.ImmutableSet;
@@ -28,18 +32,28 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @see http://docs.icgc.org/controlled-vocabulary#specimen.0.specimen_type.v3
  */
+@RequiredArgsConstructor(access = PRIVATE)
 public enum SpecimenTypeCategory {
 
   /**
    * Healthy.
    */
-  NORMAL,
+  NORMAL("normal"),
 
   /**
    * Tumor related.
    */
-  NON_NORMAL;
+  NON_NORMAL("non-normal");
 
+  /**
+   * Metadata.
+   */
+  @Getter
+  private final String description;
+
+  /**
+   * Constants.
+   */
   private static final Set<String> NORMAL_TERM_CODES = ImmutableSet.<String> builder()
       .add("101")
       .add("102")
@@ -50,7 +64,6 @@ public enum SpecimenTypeCategory {
       .add("107")
       .add("108")
       .build();
-
   private static final Set<String> NORMAL_TERM_VALUES = ImmutableSet.<String> builder()
       .add("Normal - solid tissue")
       .add("Normal - blood derived")

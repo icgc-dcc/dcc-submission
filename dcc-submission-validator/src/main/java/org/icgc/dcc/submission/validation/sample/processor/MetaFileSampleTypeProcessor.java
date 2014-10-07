@@ -96,15 +96,18 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
     val matchedSpecimenTypeCategory = SpecimenTypeCategory.fromSpecimenType(matchedSpecimenType);
 
     val referenceSampleType = record.get(REFERENCE_SAMPLE_TYPE_FIELD_NAME);
-    val referenceSampleTypeCategory = ReferenceSampleTypeCategory.fromSampleType(referenceSampleType);
+    val referenceSampleTypeCategory = ReferenceSampleTypeCategory.fromReferenceSampleType(referenceSampleType);
 
     /*
      * Verify
      */
 
-    // TODO: Fine tune parameters for reporting purposes
-    // TODO: Determine if RGV-like TupleState file writing is required
     if (isMutationType(metaFileType) && !isNotApplicable(matchedSampleId)) {
+
+      /*
+       * Mutation sample type validation (analyzed)
+       */
+
       if (analyzedSpecimenTypeCategory != NON_NORMAL) {
         context.reportError(
             error()
@@ -113,9 +116,14 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
                 .type(SAMPLE_TYPE_MISMATCH)
                 .lineNumber(lineNumber)
                 .value(analyzedSampleId)
-                .params(analyzedSpecimenType, NON_NORMAL.toString())
+                .params(analyzedSpecimenType, NON_NORMAL.getDescription())
                 .build());
       }
+
+      /*
+       * Mutation sample type validation (matched)
+       */
+
       if (matchedSpecimenTypeCategory != NORMAL) {
         context.reportError(
             error()
@@ -124,10 +132,15 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
                 .type(SAMPLE_TYPE_MISMATCH)
                 .lineNumber(lineNumber)
                 .value(matchedSampleId)
-                .params(matchedSpecimenType, NORMAL.toString())
+                .params(matchedSpecimenType, NORMAL.getDescription())
                 .build());
       }
     } else if (metaFileType == SGV_M_TYPE) {
+
+      /*
+       * SGV sample type validation (analyzed)
+       */
+
       if (analyzedSpecimenTypeCategory != NORMAL) {
         context.reportError(
             error()
@@ -136,10 +149,15 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
                 .type(SAMPLE_TYPE_MISMATCH)
                 .lineNumber(lineNumber)
                 .value(analyzedSampleId)
-                .params(analyzedSpecimenType, NORMAL.toString())
+                .params(analyzedSpecimenType, NORMAL.getDescription())
                 .build());
       }
     } else {
+
+      /*
+       * Reference sample type validation (analyzed)
+       */
+
       if (analyzedSpecimenTypeCategory == NORMAL && referenceSampleTypeCategory == MATCHED) {
         context.reportError(
             error()
@@ -148,16 +166,22 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
                 .type(REFERENCE_SAMPLE_TYPE_MISMATCH)
                 .lineNumber(lineNumber)
                 .value(analyzedSampleId)
-                .params(referenceSampleType, MATCHED.toString())
+                .params(referenceSampleType, MATCHED.getDescription())
                 .build());
       }
     }
   }
 
+  /**
+   * Mutation is different from "variation".
+   */
   private static boolean isMutationType(FileType metaFileType) {
     return metaFileType == SSM_M_TYPE || metaFileType == CNSM_M_TYPE || metaFileType == STSM_M_TYPE;
   }
 
+  /**
+   * Is a special case.
+   */
   private static boolean isNotApplicable(String analyzedSampleId) {
     return SpecialValue.NOT_APPLICABLE_CODE.equals(analyzedSampleId);
   }
