@@ -114,7 +114,6 @@ module.exports = class ValidateSubmissionView extends View
       success: (data) =>
         @model.set 'queue', data.get 'queue'
 
-    @dismissed = false
     super
 
     @modelBind 'change', @render
@@ -128,7 +127,6 @@ module.exports = class ValidateSubmissionView extends View
 
   render: ->
     super
-
 
     # Check if email is preset
     @checkEmail(null)
