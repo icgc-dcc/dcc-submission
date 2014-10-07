@@ -41,8 +41,8 @@ public class MetaFileSampleTypeProcessorTest {
       "normal-sample2", "102", // Normal - blood derived
 
       // Tumor
-      "non-normal-sample3", "109", // Primary tumour - solid tissue
-      "non-normal-sample4", "125" // Cell line - derived from tumour
+      "tumor-sample3", "109", // Primary tumour - solid tissue
+      "tumor-sample4", "125" // Cell line - derived from tumour
   ));
 
   @Mock
@@ -55,7 +55,7 @@ public class MetaFileSampleTypeProcessorTest {
     val processor = createProcessor(SSM_M_TYPE);
 
     val record = of(
-        ANALYZED_SAMPLE_ID_FIELD_NAME, "non-normal-sample3",
+        ANALYZED_SAMPLE_ID_FIELD_NAME, "tumor-sample3",
         MATCHED_SAMPLE_ID_FIELD_NAME, "normal-sample1"
         );
 
@@ -65,12 +65,12 @@ public class MetaFileSampleTypeProcessorTest {
   }
 
   @Test
-  public void testInvalidSsmNormalNormal() throws IOException {
+  public void testInvalidSsmTumorTumor() throws IOException {
     val processor = createProcessor(SSM_M_TYPE);
 
     val record = of(
-        ANALYZED_SAMPLE_ID_FIELD_NAME, "non-normal-sample3",
-        MATCHED_SAMPLE_ID_FIELD_NAME, "non-normal-sample4"
+        ANALYZED_SAMPLE_ID_FIELD_NAME, "tumor-sample3",
+        MATCHED_SAMPLE_ID_FIELD_NAME, "tumor-sample4"
         );
 
     processor.process(LINE_NUMBER, record);
@@ -83,7 +83,7 @@ public class MetaFileSampleTypeProcessorTest {
   }
 
   @Test
-  public void testInvalidSsmTumorTumor() throws IOException {
+  public void testInvalidSsmNormalNormal() throws IOException {
     val processor = createProcessor(SSM_M_TYPE);
 
     val record = of(
@@ -106,7 +106,7 @@ public class MetaFileSampleTypeProcessorTest {
 
     val record = of(
         ANALYZED_SAMPLE_ID_FIELD_NAME, "normal-sample1",
-        MATCHED_SAMPLE_ID_FIELD_NAME, "non-normal-sample3"
+        MATCHED_SAMPLE_ID_FIELD_NAME, "tumor-sample3"
         );
 
     processor.process(LINE_NUMBER, record);
@@ -135,10 +135,10 @@ public class MetaFileSampleTypeProcessorTest {
   }
 
   @Test
-  public void testInvalidSsmTumor() throws IOException {
+  public void testInvalidSgvTumor() throws IOException {
     val processor = createProcessor(SGV_M_TYPE);
 
-    val record = of(ANALYZED_SAMPLE_ID_FIELD_NAME, "non-normal-sample3");
+    val record = of(ANALYZED_SAMPLE_ID_FIELD_NAME, "tumor-sample3");
 
     processor.process(LINE_NUMBER, record);
 
