@@ -18,6 +18,9 @@
 package org.icgc.dcc.submission.validation.sample.processor;
 
 import static org.icgc.dcc.core.model.FileTypes.FileType.CNSM_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_SEQ_M_TYPE;
+import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_SEQ_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.model.FileTypes.FileType.STSM_M_TYPE;
@@ -102,7 +105,7 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
      * Verify
      */
 
-    if (isMutationType(metaFileType) && !isNotApplicable(matchedSampleId)) {
+    if (isMutationFileType(metaFileType) && !isNotApplicable(matchedSampleId)) {
 
       /*
        * Mutation sample type validation (analyzed)
@@ -135,7 +138,7 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
                 .params(matchedSpecimenType, NORMAL.getDescription())
                 .build());
       }
-    } else if (metaFileType == SGV_M_TYPE) {
+    } else if (isVariationFileType(metaFileType)) {
 
       /*
        * SGV sample type validation (analyzed)
@@ -152,7 +155,7 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
                 .params(analyzedSpecimenType, NORMAL.getDescription())
                 .build());
       }
-    } else {
+    } else if (isReferringSurveyFileType(metaFileType)) {
 
       /*
        * Reference sample type validation (analyzed)
@@ -168,19 +171,39 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
                 .value(analyzedSampleId)
                 .params(referenceSampleType, MATCHED.getDescription())
                 .build());
+      } else {
+        // Nothing to validate
       }
     }
   }
 
   /**
-   * Mutation is different from "variation".
+   * Is a mutation file type.
+   * <p>
+   * "Mutation" is different from "variation".
    */
-  private static boolean isMutationType(FileType metaFileType) {
+  private static boolean isMutationFileType(FileType metaFileType) {
     return metaFileType == SSM_M_TYPE || metaFileType == CNSM_M_TYPE || metaFileType == STSM_M_TYPE;
   }
 
   /**
-   * Is a special case.
+   * Is a variation file type.
+   * <p>
+   * "Variation" is different from "mutation".
+   */
+  private static boolean isVariationFileType(FileType metaFileType) {
+    return metaFileType == SGV_M_TYPE;
+  }
+
+  /**
+   * Is a so-called "survey file type" with a {@code reference_sample_type} field.
+   */
+  private static boolean isReferringSurveyFileType(FileType metaFileType) {
+    return metaFileType == EXP_ARRAY_M_TYPE || metaFileType == EXP_SEQ_M_TYPE || metaFileType == MIRNA_SEQ_M_TYPE;
+  }
+
+  /**
+   * Is {@code -888}.
    */
   private static boolean isNotApplicable(String analyzedSampleId) {
     return SpecialValue.NOT_APPLICABLE_CODE.equals(analyzedSampleId);
