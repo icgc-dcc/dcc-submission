@@ -239,7 +239,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
 
         """
         Sample types should be consistent between clinical and experimental meta files.
-        Excpected <code>#{fieldName}</code> to be <code>#{expected}</code>
+        Expected <code>#{fieldName}</code> to be <code>#{expected}</code>
         """
     REFERENCE_SAMPLE_TYPE_MISMATCH:
       name: "Reference sample type mismatch error"
@@ -250,7 +250,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
 
         """
         Reference sample types should be consistent between clinical and experimental meta files.
-        Field <code>#{fieldName}</code> cannot be <code>#{unexpected}</code> for the following
+        The field <code>#{fieldName}</code> cannot be <code>#{unexpected}</code> for the following
         analyzed_sample_id(s)
         """
   details: (source) ->

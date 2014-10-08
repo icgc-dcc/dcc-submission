@@ -161,6 +161,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String PROJECT7_KEY = "project.7";
   private static final String PROJECT7 = _("{name:'Project Seven',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT7_KEY);
+  private static final String PROJECT8_KEY = "project.8";
+  private static final String PROJECT8 = _("{name:'Project Eight',key:'%s',users:['admin'],groups:['admin']}",
+      PROJECT8_KEY);
 
   private final static Map<String, SubmissionState> INITIAL_STATES =
       new ImmutableMap.Builder<String, SubmissionState>()
@@ -171,6 +174,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT5_KEY, NOT_VALIDATED)
           .put(PROJECT6_KEY, NOT_VALIDATED)
           .put(PROJECT7_KEY, NOT_VALIDATED)
+          .put(PROJECT8_KEY, NOT_VALIDATED)
           .build();
 
   private final static Map<String, SubmissionState> POST_VALIDATION_STATES =
@@ -182,6 +186,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT5_KEY, INVALID)
           .put(PROJECT6_KEY, INVALID)
           .put(PROJECT7_KEY, INVALID)
+          .put(PROJECT8_KEY, INVALID)
           .build();
 
   private final static Map<String, SubmissionState> POST_PARTIAL_REVALIDATION_STATES =
@@ -191,8 +196,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT3_KEY, INVALID)
           .put(PROJECT4_KEY, INVALID)
           .put(PROJECT5_KEY, INVALID)
-          .put(PROJECT6_KEY, NOT_VALIDATED) // This project isn't included in the revalition
+          .put(PROJECT6_KEY, NOT_VALIDATED) // This project isn't included in the revalidation
           .put(PROJECT7_KEY, INVALID)
+          .put(PROJECT8_KEY, INVALID)
           .build();
 
   private final static Map<String, SubmissionState> POST_RELEASE_STATES =
@@ -204,6 +210,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT5_KEY, INVALID)
           .put(PROJECT6_KEY, NOT_VALIDATED)
           .put(PROJECT7_KEY, INVALID)
+          .put(PROJECT8_KEY, INVALID)
           .build();
 
   private final static Map<String, SubmissionState> POST_TERM_ADDITION_STATES =
@@ -215,6 +222,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
           .put(PROJECT5_KEY, NOT_VALIDATED)
           .put(PROJECT6_KEY, NOT_VALIDATED)
           .put(PROJECT7_KEY, NOT_VALIDATED)
+          .put(PROJECT8_KEY, NOT_VALIDATED)
           .build();
 
   /**
@@ -262,7 +270,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
       + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
       + "{key:'" + PROJECT6_KEY + "',emails:['project6@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
-      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}"
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT8_KEY + "',emails:['project8@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}"
       + "]";
 
   private static final String PROJECTS_TO_ENQUEUE2 = "["
@@ -270,7 +279,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       + "{key:'" + PROJECT3_KEY + "',emails:['project3@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
       + "{key:'" + PROJECT4_KEY + "',emails:['project4@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
       + "{key:'" + PROJECT5_KEY + "',emails:['project5@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
-      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}]";
+      + "{key:'" + PROJECT7_KEY + "',emails:['project7@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "},"
+      + "{key:'" + PROJECT8_KEY + "',emails:['project8@example.org'], dataTypes: " + PROJECT_DATA_TYPES + "}]";
 
   /**
    * Submission file system.
@@ -510,6 +520,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Checking validated submission 7...");
     checkValidatedSubmission(PROJECT7_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT7_KEY));
 
+    status("admin", "Checking validated submission 8...");
+    checkValidatedSubmission(PROJECT8_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT8_KEY));
+
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
         hasSubmisisonStates(getStates(POST_PARTIAL_REVALIDATION_STATES)));
@@ -596,6 +609,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Adding project 7...");
     val response7 = post(client, PROJECTS_ENDPOINT, PROJECT7);
     assertEquals(CREATED.getStatusCode(), response7.getStatus());
+
+    status("admin", "Adding project 8...");
+    val response8 = post(client, PROJECTS_ENDPOINT, PROJECT8);
+    assertEquals(CREATED.getStatusCode(), response8.getStatus());
   }
 
   private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
@@ -751,6 +768,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("user", "Checking validated submission 7...");
     checkValidatedSubmission(PROJECT7_KEY, POST_VALIDATION_STATES.get(PROJECT7_KEY));
+
+    status("user", "Checking validated submission 8...");
+    checkValidatedSubmission(PROJECT8_KEY, POST_VALIDATION_STATES.get(PROJECT8_KEY));
 
     // TODO: Do the negation of following for the projects the failed primary validation
 
