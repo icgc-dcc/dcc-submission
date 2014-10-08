@@ -245,12 +245,15 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Reference sample type mismatch error"
       description: (source) ->
         # This is reversed, expected is the only value NOT valid
-        unexpected = source.parameters.EXPECTED
+        unexpectedCode = source.parameters.EXPECTED
         fieldName = source.fieldNames[0]
+        unexpectedField = unexpectedCode
+        if unexpectedCode == "matched"
+          unexpectedField = "matched normal"
 
         """
         Reference sample types should be consistent between clinical and experimental meta files.
-        The field <code>#{fieldName}</code> cannot be <code>#{unexpected}</code> for the following
+        The field <code>#{fieldName}</code> cannot be <code>#{unexpectedField}</code> for the following
         analyzed_sample_id(s)
         """
   details: (source) ->
