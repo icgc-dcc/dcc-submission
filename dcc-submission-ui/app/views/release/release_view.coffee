@@ -25,6 +25,8 @@ PageView = require 'views/base/view'
 ReleaseHeaderView = require 'views/release/release_header_view'
 CompleteReleaseView = require 'views/release/complete_release_view'
 SubmissionTableView = require 'views/submission/submission_table_view'
+WarningView = require 'views/warning_view'
+Model = require 'models/base/model'
 utils = require 'lib/utils'
 template = require 'views/templates/release/release'
 
@@ -72,6 +74,14 @@ module.exports = class ReleaseView extends PageView
   render: ->
     #console.debug "ReleaseView#render", @model
     super
+
+    @subview('WarningView'
+      new WarningView {
+        model: new Model
+          msg: utils.getOrphanWarning()
+        el: @.$("#warning-container")
+      }
+    )
 
     @subview('ReleaseHeader'
       new ReleaseHeaderView {

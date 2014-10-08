@@ -27,6 +27,8 @@ ReportDatatypeView = require 'views/release/report_datatype_view'
 SignOffSubmissionView = require 'views/submission/signoff_submission_view'
 ValidateSubmissionView = require 'views/submission/validate_submission_view'
 CancelSubmissionView = require 'views/submission/cancel_submission_view'
+WarningView = require 'views/warning_view'
+Model = require 'models/base/model'
 
 utils = require 'lib/utils'
 template = require 'views/templates/submission/submission'
@@ -98,6 +100,14 @@ module.exports = class SubmissionView extends View
   render: ->
     #console.debug "SubmissionView#render", @model
     super
+
+    @subview('WarningView'
+      new WarningView {
+        model: new Model
+          msg: utils.getOrphanWarning()
+        el: @.$("#warning-container")
+      }
+    )
 
     @subview('SubmissionHeadeView'
       new SubmissionHeaderView {
