@@ -20,14 +20,10 @@ package org.icgc.dcc.submission.service;
 import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Iterables.filter;
 import static java.lang.String.format;
 import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
-import static org.icgc.dcc.submission.release.model.Release.SIGNED_OFF_PROJECTS_PREDICATE;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.Submission.getProjectKeys;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
@@ -738,19 +734,14 @@ public class ReleaseService extends AbstractService {
   }
 
   private void setUpNewReleaseFileSystem(@NonNull Release oldRelease, @NonNull Release nextRelease) {
+    val oldReleaseFileSystem = dccFileSystem.getReleaseFilesystem(oldRelease);
+
+    // Copy all files from the old to the new release
     dccFileSystem.getReleaseFilesystem(nextRelease)
         .setUpNewReleaseFileSystem(
-            oldRelease.getName(), // Remove after DCC-1940
             nextRelease.getName(),
-
-            // The release file system
-            dccFileSystem.getReleaseFilesystem(oldRelease),
-
-            // The signed off projects
-            getProjectKeys(filter(oldRelease.getSubmissions(), SIGNED_OFF_PROJECTS_PREDICATE)),
-
-            // The remaining projects
-            getProjectKeys(filter(oldRelease.getSubmissions(), not(SIGNED_OFF_PROJECTS_PREDICATE))));
+            oldReleaseFileSystem,
+            oldRelease.getProjectKeys());
   }
 
   /**

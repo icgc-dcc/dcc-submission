@@ -51,9 +51,7 @@ public class DccFileSystem {
    * This is the only hadoop element in this class (everything else is handled in HadoopUtils)
    */
   private final FileSystem fileSystem;
-
   private final Config config;
-
   private final String rootStringPath;
 
   @Inject
@@ -135,11 +133,10 @@ public class DccFileSystem {
     val releaseStringPath = this.buildReleaseStringPath(newReleaseName);
     log.info("Creating new release path: '{}'", releaseStringPath);
 
-    checkState(!checkExistence(this.fileSystem, releaseStringPath),
-        "Release directory already exists: '%s'", releaseStringPath);
-    log.info("Creating filesystem for release: '{}'", newReleaseName);
+    checkState(!checkExistence(this.fileSystem, releaseStringPath), "Release directory already exists: '%s'",
+        releaseStringPath);
 
-    // create corresponding release directory
+    log.info("Creating filesystem for release: '{}'", newReleaseName);
     mkdirs(this.fileSystem, releaseStringPath);
 
     return releaseStringPath;
@@ -166,9 +163,7 @@ public class DccFileSystem {
     return projectStringPath;
   }
 
-  public String createValidationDirectory(
-      @NonNull String release,
-      @NonNull String projectKey) {
+  public String createValidationDirectory(@NonNull String release, @NonNull String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
 
@@ -221,14 +216,12 @@ public class DccFileSystem {
   /**
    * TODO: move this to {@link ReleaseFileSystemTest}...
    */
-  protected void createProjectDirectoryStructures(
-      String release,
-      @NonNull Set<String> projectKeys) {
+  protected void createProjectDirectoryStructures(String release, @NonNull Set<String> projectKeys) {
 
     // Create sub-directory for each project
     log.info("# of projects = " + projectKeys.size());
-    for (String projectKey : projectKeys) {
-      this.createNewProjectDirectoryStructure(release, projectKey);
+    for (val projectKey : projectKeys) {
+      createNewProjectDirectoryStructure(release, projectKey);
     }
   }
 

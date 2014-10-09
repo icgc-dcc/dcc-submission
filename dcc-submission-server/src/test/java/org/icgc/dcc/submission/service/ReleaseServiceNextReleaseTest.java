@@ -130,9 +130,9 @@ public class ReleaseServiceNextReleaseTest {
 
     verify(releaseFileSystem)
         .setUpNewReleaseFileSystem(
-            anyString(), anyString(),
+            anyString(),
             any(ReleaseFileSystem.class),
-            anyListOf(String.class), anyListOf(String.class));
+            anyListOf(String.class));
     verify(release).complete();
   }
 
