@@ -130,7 +130,7 @@
 
   <properties>
     <!-- Versions -->
-    <dcc-common.version>3.5.13</dcc-common.version>
+    <dcc-common.version>3.6.1.1</dcc-common.version>
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
   </properties>

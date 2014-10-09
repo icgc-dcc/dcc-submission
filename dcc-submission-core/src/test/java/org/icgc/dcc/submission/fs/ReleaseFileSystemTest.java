@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 
 public class ReleaseFileSystemTest {
 
@@ -50,7 +49,7 @@ public class ReleaseFileSystemTest {
 
   @Test
   @SneakyThrows
-  public void testMovePathFrom() {
+  public void testCopyFrom() {
 
     //
     // Setup: Environment
@@ -143,9 +142,6 @@ public class ReleaseFileSystemTest {
     val nextSystemDir = new File(nextReleaseDir, SYSTEM_FILES_DIR_NAME);
     val nextSystemFile = new File(nextSystemDir, "system.txt");
 
-    // Create files and directories
-    nextSubmissionDir.mkdirs();
-
     when(nextRelease.getName()).thenReturn(nextReleaseName);
     when(nextRelease.getSubmission(anyString())).thenReturn(
         Optional.<Submission> of(mock(Submission.class)));
@@ -170,26 +166,22 @@ public class ReleaseFileSystemTest {
     // Exercise
     //
 
-    val signedOffProjectKeys = Lists.<String> newArrayList();
-    val nonSignedOffProjectKeys = projectKeys(projectKey);
-    nextReleaseFileSystem.setUpNewReleaseFileSystem(previousReleaseName, nextReleaseName, previousReleaseFileSystem,
-        signedOffProjectKeys, nonSignedOffProjectKeys);
+    val projectKeys = projectKeys(projectKey);
+    nextReleaseFileSystem.setUpNewReleaseFileSystem(nextReleaseName, previousReleaseFileSystem, projectKeys);
 
     //
     // Verify
     //
 
     // The "moveFrom" validation folder moved
-    // Un-comment after addressing DCC-419: would have to make
-    // createProjectDirectory() work
-    // assertThat(previousSubmissionDir).exists();
+    assertThat(previousSubmissionDir).exists();
 
-    assertThat(previousSubmissionValidationDir).doesNotExist();
-    assertThat(previousSubmissionDonorFile).doesNotExist();
-    assertThat(previousSubmissionSampleFile).doesNotExist();
+    assertThat(previousSubmissionValidationDir).exists();
+    assertThat(previousSubmissionDonorFile).exists();
+    assertThat(previousSubmissionSampleFile).exists();
 
     assertThat(previousSystemDir).exists();
-    assertThat(previousSystemFile).doesNotExist();
+    assertThat(previousSystemFile).exists();
 
     // The "moveTo" is fully populated
     assertThat(nextSubmissionDir).exists();

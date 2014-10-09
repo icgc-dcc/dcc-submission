@@ -17,13 +17,10 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
 import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,15 +72,10 @@ public class ReleaseFileSystem {
   }
 
   public void setUpNewReleaseFileSystem(
-      String oldReleaseName, // Remove after DCC-1940
       String newReleaseName,
       @NonNull ReleaseFileSystem previous,
-      @NonNull Iterable<String> signedOffProjectKeys,
-      @NonNull Iterable<String> otherProjectKeys) {
+      @NonNull Iterable<String> projectKeys) {
     log.info("Setting up new release file system for: '{}'", newReleaseName);
-
-    checkState(signedOffProjectKeys.iterator().hasNext() || otherProjectKeys.iterator().hasNext(),
-        "There must be at least on project key to process");
 
     // Shorthands
     val fileSystem = dccFileSystem.getFileSystem();
@@ -91,23 +83,13 @@ public class ReleaseFileSystem {
 
     dccFileSystem.createReleaseDirectory(newReleaseName);
 
-    // Create empty dirs along with nested .validation
-    dccFileSystem.createProjectDirectoryStructures(
-        newReleaseName,
-        newLinkedHashSet(signedOffProjectKeys));
-
-    for (val otherProjectKey : otherProjectKeys) {
-      // Move "releaseName/projectKey/"
-      move(fileSystem,
-          previous.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath(),
-          next.getSubmissionDirectory(otherProjectKey).getSubmissionDirPath());
-
-      // Band-aid: see DCC-1940
-      dccFileSystem.createProjectDirectory(oldReleaseName, otherProjectKey);
+    for (val projectKey : projectKeys) {
+      // Copy "release_(n-1)/projectKey/" to "release_(n)/projectKey/"
+      copySubmissionDir(projectKey, previous, next, fileSystem);
     }
 
-    // Move "releaseName/projectKey/.system"
-    moveSystemDir(previous, fileSystem, next);
+    // Copy "release_(n-1)/.system/" to "release_(n)/.system/"
+    copySystemDir(previous, next, fileSystem);
   }
 
   public void resetValidationFolder(@NonNull String projectKey) {
@@ -153,36 +135,26 @@ public class ReleaseFileSystem {
     return isApplication() || userSubject.isPermitted(projectViewPrivilege(projectKey));
   }
 
-  private static void moveSystemDir(ReleaseFileSystem previous, FileSystem fileSystem, ReleaseFileSystem next) {
+  private static void copySubmissionDir(String projectKey, ReleaseFileSystem previous, ReleaseFileSystem next,
+      FileSystem fileSystem) {
+    val previousSubmissionDir = getSubmissionDir(previous, projectKey);
+    val nextSubmissionDir = getSubmissionDir(next, projectKey);
+
+    HadoopUtils.cp(fileSystem, previousSubmissionDir, nextSubmissionDir);
+  }
+
+  private static void copySystemDir(ReleaseFileSystem previous, ReleaseFileSystem next, FileSystem fileSystem) {
     val sourceSystemDir = previous.getSystemDirPath();
     val targetSystemDir = next.getSystemDirPath();
 
-    log.info("Creating '{}'", targetSystemDir);
-    HadoopUtils.mkdirs(fileSystem, targetSystemDir.toString());
-
-    val systemFilePaths = HadoopUtils.lsFile(fileSystem, sourceSystemDir);
-    for (val sourceSystemFilePath : systemFilePaths) {
-      val targetSystemFilePath = new Path(targetSystemDir, sourceSystemFilePath.getName());
-
-      movePath(fileSystem, sourceSystemFilePath, targetSystemFilePath);
-    }
+    HadoopUtils.cp(fileSystem, sourceSystemDir, targetSystemDir);
   }
 
-  @SneakyThrows
-  private static void movePath(FileSystem fileSystem, Path source, Path target) {
-    move(fileSystem, source.toString(), target.toString());
-  }
+  private static Path getSubmissionDir(ReleaseFileSystem releaseFileSystem, String projectKey) {
+    val submissionDirectory = releaseFileSystem.getSubmissionDirectory(projectKey);
+    val text = submissionDirectory.getSubmissionDirPath();
 
-  @SneakyThrows
-  private static void move(FileSystem fileSystem, String source, String target) {
-    try {
-      log.info("Moving '{}' to '{}'...", source, target);
-      HadoopUtils.mv(fileSystem, source, target);
-    } catch (Throwable t) {
-      log.error("Could not move '{}' to '{}': " + t, source, target);
-
-      throw t;
-    }
+    return new Path(text);
   }
 
 }
