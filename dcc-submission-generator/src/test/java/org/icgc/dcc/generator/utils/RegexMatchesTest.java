@@ -18,7 +18,7 @@
 package org.icgc.dcc.generator.utils;
 
 import static java.util.regex.Pattern.compile;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import lombok.val;
 
 import org.junit.Test;

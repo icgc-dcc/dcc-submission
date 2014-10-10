@@ -22,7 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Files.readLines;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;

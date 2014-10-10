@@ -3,7 +3,7 @@ package org.icgc.dcc.submission.web.resource;
 import static com.google.common.util.concurrent.Service.State.RUNNING;
 import static javax.ws.rs.client.Entity.json;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.ws.rs.core.Response;
 

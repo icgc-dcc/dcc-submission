@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.cascading;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CancellationException;

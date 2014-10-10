@@ -3,7 +3,7 @@ package org.icgc.dcc.submission.repository;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.String.format;
 import static org.elasticsearch.common.collect.Lists.newArrayList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import lombok.val;
 
 import org.icgc.dcc.submission.release.ReleaseException;

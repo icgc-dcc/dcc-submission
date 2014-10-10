@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.primary.report;
 
 import static com.google.common.io.ByteStreams.toByteArray;
 import static com.google.common.io.Files.getFileExtension;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.Component.REPORTER;
 import static org.icgc.dcc.common.core.DccResources.getCodeListsDccResource;
 import static org.icgc.dcc.common.core.DccResources.getDictionaryDccResource;

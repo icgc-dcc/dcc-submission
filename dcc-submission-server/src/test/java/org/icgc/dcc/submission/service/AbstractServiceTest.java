@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.service;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.service.AbstractService.MAX_ATTEMPTS;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;

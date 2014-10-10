@@ -1,6 +1,6 @@
 package org.icgc.dcc.submission.validation.key.core;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;

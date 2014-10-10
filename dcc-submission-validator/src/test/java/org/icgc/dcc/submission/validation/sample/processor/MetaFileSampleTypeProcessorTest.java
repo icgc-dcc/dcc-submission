@@ -1,7 +1,7 @@
 package org.icgc.dcc.submission.validation.sample.processor;
 
 import static com.google.common.collect.ImmutableMap.of;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.EXP_SEQ_M_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_M_TYPE;

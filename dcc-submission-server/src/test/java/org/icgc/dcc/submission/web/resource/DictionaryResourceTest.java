@@ -1,7 +1,7 @@
 package org.icgc.dcc.submission.web.resource;
 
 import static javax.ws.rs.client.Entity.json;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.web.util.Responses.UNPROCESSABLE_ENTITY;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

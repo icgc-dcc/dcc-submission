@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.cascading;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.hadoop.cascading.Tuples2.sameContent;
 
 import java.util.Iterator;
