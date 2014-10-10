@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.sample.processor;
 
-import static org.icgc.dcc.core.model.FileTypes.FileType.CNSM_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_SEQ_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.MIRNA_SEQ_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.STSM_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.CNSM_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.EXP_SEQ_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.MIRNA_SEQ_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.STSM_M_TYPE;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.REFERENCE_SAMPLE_TYPE_MISMATCH;
 import static org.icgc.dcc.submission.core.report.ErrorType.SAMPLE_TYPE_MISMATCH;
@@ -42,9 +42,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.model.SpecialValue;
-import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.SpecialValue;
+import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.sample.core.ReferenceSampleTypeCategory;
 import org.icgc.dcc.submission.validation.sample.core.Samples;

@@ -23,7 +23,7 @@ import static org.icgc.dcc.submission.core.report.ErrorType.FORBIDDEN_VALUE_ERRO
 
 import java.util.List;
 
-import org.icgc.dcc.core.model.SpecialValue;
+import org.icgc.dcc.common.core.model.SpecialValue;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 
@@ -61,11 +61,11 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
     TupleEntry entry = functionCall.getArguments();
     TupleState state = ValidationFields.state(entry);
 
-    for(Comparable fieldName : entry.getFields()) {
+    for (Comparable fieldName : entry.getFields()) {
       // Only check for required fields (irrespective of whether it is a strict or non-strict requirement
-      if(requiredFieldnames.contains(fieldName.toString())) {
+      if (requiredFieldnames.contains(fieldName.toString())) {
         String value = entry.getString(fieldName);
-        if(SpecialValue.DEPRECATED_VALUES.contains(value)) {
+        if (SpecialValue.DEPRECATED_VALUES.contains(value)) {
           state.reportError(FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
         }
       }

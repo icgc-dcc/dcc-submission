@@ -1,8 +1,8 @@
 package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
-import static org.icgc.dcc.core.model.FeatureTypes.withSequencingStrategy;
-import static org.icgc.dcc.core.model.SpecialValue.MISSING_CODES;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.common.core.model.FeatureTypes.withSequencingStrategy;
+import static org.icgc.dcc.common.core.model.SpecialValue.MISSING_CODES;
+import static org.icgc.dcc.common.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.submission.reporter.OutputType.SEQUENCING_STRATEGY;
 import static org.icgc.dcc.submission.reporter.ReporterFields.DONOR_ID_FIELD;
 import static org.icgc.dcc.submission.reporter.ReporterFields.PROJECT_ID_FIELD;
@@ -16,14 +16,14 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.TransposeBuffer;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.NullReplacer;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.NullReplacer.NullReplacing;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.ReadableHashJoin;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.ReadableHashJoin.JoinData;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.TransposeBuffer;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.UniqueCountBy;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
 
 import cascading.pipe.Every;
 import cascading.pipe.GroupBy;

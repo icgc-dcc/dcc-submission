@@ -26,7 +26,7 @@ import static com.google.common.io.Resources.readLines;
 import static com.google.inject.Guice.createInjector;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.core.util.VersionUtils.getScmInfo;
+import static org.icgc.dcc.common.core.util.VersionUtils.getScmInfo;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -36,7 +36,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.hadoop.util.HadoopProperties;
+import org.icgc.dcc.common.hadoop.util.HadoopProperties;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.DccRuntime;

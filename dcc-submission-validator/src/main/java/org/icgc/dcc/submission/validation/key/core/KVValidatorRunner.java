@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static org.icgc.dcc.core.util.FormatUtils.formatMemory;
+import static org.icgc.dcc.common.core.util.FormatUtils.formatMemory;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,9 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.hadoop.cascading.FlowExecutorJob;
-import org.icgc.dcc.hadoop.parser.FileLineListParser;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.hadoop.cascading.FlowExecutorJob;
+import org.icgc.dcc.common.hadoop.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 

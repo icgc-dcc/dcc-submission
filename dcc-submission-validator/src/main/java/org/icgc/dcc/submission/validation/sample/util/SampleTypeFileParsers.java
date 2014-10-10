@@ -24,8 +24,8 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.parser.FileParser;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.hadoop.parser.FileParser;
 import org.icgc.dcc.submission.core.parser.SubmissionFileParsers;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;

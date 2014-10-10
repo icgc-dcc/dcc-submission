@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.key.core;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.hadoop.parser.FileLineParser;
-import org.icgc.dcc.hadoop.parser.FileParser;
+import org.icgc.dcc.common.hadoop.parser.FileLineParser;
+import org.icgc.dcc.common.hadoop.parser.FileParser;
 
 /**
  * "typedef" for parsers used by the key validation framework.

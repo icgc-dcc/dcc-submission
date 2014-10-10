@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.core.report;
 
 import static java.util.Collections.emptyList;
-import static org.icgc.dcc.core.util.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
 
 import java.util.Collection;
 import java.util.List;

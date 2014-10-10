@@ -41,6 +41,7 @@ import cascading.tuple.TupleEntry;
  */
 @SuppressWarnings("rawtypes")
 public class DeviationBy extends AggregateBy {
+
   private static final long serialVersionUID = 1L;
 
   public final static String AVG = "avg";
@@ -54,6 +55,7 @@ public class DeviationBy extends AggregateBy {
    * @see cascading.pipe.assembly.AverageBy
    */
   public static class DeviationPartials implements Functor {
+
     private static final long serialVersionUID = 1L;
 
     private final Fields declaredFields;
@@ -76,10 +78,10 @@ public class DeviationBy extends AggregateBy {
 
     @Override
     public Tuple aggregate(FlowProcess flowProcess, TupleEntry args, Tuple context) {
-      if(context == null) {
+      if (context == null) {
         context = Tuple.size(3);
       }
-      if(args.getObject(0) != null) {
+      if (args.getObject(0) != null) {
         context.set(0, context.getDouble(0) + args.getDouble(0));
         context.set(1, context.getDouble(1) + Math.pow(args.getDouble(0), 2));
         context.set(2, context.getLong(2) + 1);
@@ -99,10 +101,12 @@ public class DeviationBy extends AggregateBy {
    */
   public static class DeviationFinal extends BaseOperation<DeviationFinal.Context> implements
       Aggregator<DeviationFinal.Context> {
+
     private static final long serialVersionUID = 1L;
 
     /** Class Context is used to hold intermediate values. */
     protected static class Context {
+
       double sum;
 
       double sumOfSquare;
@@ -124,13 +128,13 @@ public class DeviationBy extends AggregateBy {
     public DeviationFinal(Fields fieldDeclaration) {
       super(2, fieldDeclaration);
 
-      if(!fieldDeclaration.isSubstitution() && fieldDeclaration.size() != 2) throw new IllegalArgumentException(
+      if (!fieldDeclaration.isSubstitution() && fieldDeclaration.size() != 2) throw new IllegalArgumentException(
           "fieldDeclaration may only declare 2 fields, got: " + fieldDeclaration.size());
     }
 
     @Override
     public void start(FlowProcess flowProcess, AggregatorCall<Context> aggregatorCall) {
-      if(aggregatorCall.getContext() != null) aggregatorCall.getContext().reset();
+      if (aggregatorCall.getContext() != null) aggregatorCall.getContext().reset();
       else
         aggregatorCall.setContext(new Context());
     }

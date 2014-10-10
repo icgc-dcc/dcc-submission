@@ -39,8 +39,8 @@ import org.icgc.dcc.submission.validation.primary.planner.BaseFileFlowPlanner;
  * A {@code DictionaryVisitor} that collects {@code PlanElement} during its visit. Elements are cleared upon each visit
  * of a new {@code FileSchema}.
  * <p>
- * The visit is bound to a particular submission file through the {@link BaseFileFlowPlanner} that triggers the
- * actual {@link FileSchema} visit.
+ * The visit is bound to a particular submission file through the {@link BaseFileFlowPlanner} that triggers the actual
+ * {@link FileSchema} visit.
  * 
  * @param <T> the type of {@code PlanElement} collected by this visitor
  */

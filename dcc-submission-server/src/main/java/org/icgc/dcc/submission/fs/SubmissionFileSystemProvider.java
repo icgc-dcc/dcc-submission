@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static org.icgc.dcc.core.util.FsConfig.FS_URL;
-import static org.icgc.dcc.hadoop.fs.Configurations.addFsDefault;
-import static org.icgc.dcc.hadoop.fs.FileSystems.getFileSystem;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.getConfigurationDescription;
+import static org.icgc.dcc.common.core.util.FsConfig.FS_URL;
+import static org.icgc.dcc.common.hadoop.fs.Configurations.addFsDefault;
+import static org.icgc.dcc.common.hadoop.fs.FileSystems.getFileSystem;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getConfigurationDescription;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;

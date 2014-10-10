@@ -19,15 +19,15 @@ package org.icgc.dcc.submission.validation.norm.cli;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.typesafe.config.ConfigFactory.parseMap;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
-import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 import org.icgc.dcc.submission.validation.norm.PseudoNormalizer;

@@ -2,7 +2,7 @@ package org.icgc.dcc.submission.core.report;
 
 import lombok.val;
 
-import org.icgc.dcc.core.model.ValueType;
+import org.icgc.dcc.common.core.model.ValueType;
 import org.junit.Test;
 
 public class ErrorTypeTest {

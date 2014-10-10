@@ -27,7 +27,7 @@ import java.util.List;
 import lombok.Value;
 import lombok.val;
 
-import org.icgc.dcc.core.model.SpecialValue;
+import org.icgc.dcc.common.core.model.SpecialValue;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;

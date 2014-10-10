@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.primary.visitor;
 
-import org.icgc.dcc.core.model.ValueType;
+import org.icgc.dcc.common.core.model.ValueType;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.core.report.ErrorType;
@@ -46,7 +46,7 @@ public class ValueTypePlanningVisitor extends RowBasedFlowPlanningVisitor {
   @Override
   public void visit(Field field) {
     // No need to verify ValueType.TEXT since everything can be a String...
-    if(field.getValueType() != ValueType.TEXT) {
+    if (field.getValueType() != ValueType.TEXT) {
       collectPlanElement(new ValueTypePlanElement(field.getName(), field.getValueType()));
     }
   }
@@ -89,7 +89,7 @@ public class ValueTypePlanningVisitor extends RowBasedFlowPlanningVisitor {
         Object parsedValue = null;
         try {
           parsedValue = parse(value);
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
           Object fieldName = arguments.getFields().get(0);
 
           ValidationFields.state(arguments).reportError(ErrorType.VALUE_TYPE_ERROR, fieldName.toString(),
@@ -99,15 +99,15 @@ public class ValueTypePlanningVisitor extends RowBasedFlowPlanningVisitor {
       }
 
       private Object parse(String value) {
-        if(value == null) {
+        if (value == null) {
           return null;
         }
-        switch(type) {
+        switch (type) {
         case DATETIME:
           throw new PlanningException(DISPLAY_NAME + " " + ValueType.DATETIME + " is not supported at the moment");
         case DECIMAL:
           Double doubleValue = Double.valueOf(value);
-          if(doubleValue == Double.POSITIVE_INFINITY || doubleValue == Double.NEGATIVE_INFINITY) {
+          if (doubleValue == Double.POSITIVE_INFINITY || doubleValue == Double.NEGATIVE_INFINITY) {
             throw new NumberFormatException();
           }
           return doubleValue;

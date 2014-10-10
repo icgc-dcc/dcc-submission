@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import lombok.NonNull;
 import lombok.Value;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 
 /**
  * There's already a "SubmissionFile" class (for the UI)...

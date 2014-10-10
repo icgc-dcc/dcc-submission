@@ -35,9 +35,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 
 import com.google.common.base.Optional;
 

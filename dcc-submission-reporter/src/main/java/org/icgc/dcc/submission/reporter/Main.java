@@ -1,15 +1,15 @@
 package org.icgc.dcc.submission.reporter;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static org.icgc.dcc.core.util.Splitters.COMMA;
+import static org.icgc.dcc.common.core.util.Splitters.COMMA;
 
 import java.util.Set;
 
 import lombok.val;
 
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.icgc.dcc.core.util.URLs;
-import org.icgc.dcc.hadoop.util.HadoopConstants;
+import org.icgc.dcc.common.core.util.URLs;
+import org.icgc.dcc.common.hadoop.util.HadoopConstants;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;

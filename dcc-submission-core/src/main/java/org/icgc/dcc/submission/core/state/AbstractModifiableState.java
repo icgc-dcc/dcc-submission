@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
 

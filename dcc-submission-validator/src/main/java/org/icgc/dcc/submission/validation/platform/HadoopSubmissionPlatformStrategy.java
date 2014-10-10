@@ -18,13 +18,13 @@
 package org.icgc.dcc.submission.validation.platform;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static org.icgc.dcc.core.util.Maps2.toObjectsMap;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.getInputStream;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.hadoop.util.HadoopProperties.enableIntermediateMapOutputCompression;
-import static org.icgc.dcc.hadoop.util.HadoopProperties.enableJobOutputCompression;
-import static org.icgc.dcc.hadoop.util.HadoopProperties.setAvailableCodecs;
+import static org.icgc.dcc.common.core.util.Maps2.toObjectsMap;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getInputStream;
+import static org.icgc.dcc.common.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.common.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.common.hadoop.util.HadoopProperties.enableIntermediateMapOutputCompression;
+import static org.icgc.dcc.common.hadoop.util.HadoopProperties.enableJobOutputCompression;
+import static org.icgc.dcc.common.hadoop.util.HadoopProperties.setAvailableCodecs;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -34,7 +34,7 @@ import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 

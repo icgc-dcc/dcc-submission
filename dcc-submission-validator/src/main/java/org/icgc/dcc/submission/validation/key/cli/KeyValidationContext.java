@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.validation.key.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_S_TYPE;
-import static org.icgc.dcc.core.util.FsConfig.FS_URL;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_S_TYPE;
+import static org.icgc.dcc.common.core.util.FsConfig.FS_URL;
 import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
 
@@ -36,9 +36,9 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.util.resolver.ArtifactoryDictionaryResolver;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.util.resolver.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;

@@ -21,7 +21,7 @@ import static com.beust.jcommander.internal.Lists.newArrayList;
 import static com.google.common.collect.Iterables.cycle;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.io.Resources.getResource;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.generator.utils.Dictionaries.isUniqueField;
 import static org.supercsv.prefs.CsvPreference.TAB_PREFERENCE;
 

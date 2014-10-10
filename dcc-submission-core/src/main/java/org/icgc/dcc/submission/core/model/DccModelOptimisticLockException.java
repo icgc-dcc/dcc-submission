@@ -21,6 +21,7 @@ package org.icgc.dcc.submission.core.model;
  * For failure to obtain a lock optimistically.
  */
 public class DccModelOptimisticLockException extends Exception {
+
   public DccModelOptimisticLockException(Exception e) {
     super(e);
   }

@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first.file;
 
-import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.LINE_TERMINATOR_MISSING_ERROR;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;

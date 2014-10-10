@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static org.icgc.dcc.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsRecursive;
+import static org.icgc.dcc.common.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsRecursive;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.util.Joiners;
+import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.cli.KeyValidationContext;
 import org.junit.Before;

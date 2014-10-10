@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
-import static org.icgc.dcc.hadoop.cascading.Flows.connectFlowDef;
+import static org.icgc.dcc.common.hadoop.cascading.Flows.connectFlowDef;
 
 import java.net.InetAddress;
 
@@ -29,12 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.util.Joiners;
-import org.icgc.dcc.hadoop.cascading.CascadingContext;
-import org.icgc.dcc.hadoop.cascading.Flows;
-import org.icgc.dcc.hadoop.fs.FileSystems;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.hadoop.util.HadoopConstants;
+import org.icgc.dcc.common.core.util.Joiners;
+import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.common.hadoop.cascading.Flows;
+import org.icgc.dcc.common.hadoop.fs.FileSystems;
+import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.common.hadoop.util.HadoopConstants;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;

@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.sftp.fs;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsAll;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsAll;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.SshFileList;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 

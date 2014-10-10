@@ -28,6 +28,7 @@ import cascading.tuple.TupleEntry;
 
 @SuppressWarnings("rawtypes")
 public class MinMaxBy extends AggregateBy {
+
   private static final long serialVersionUID = 1L;
 
   private static final int VALUE_OFFSET = 0;
@@ -43,6 +44,7 @@ public class MinMaxBy extends AggregateBy {
   private static final Fields MIN_MAX_FIELDS = new Fields(MIN, MAX);
 
   public static class MinMaxPartial implements Functor {
+
     private static final long serialVersionUID = 1L;
 
     private final Fields declaredFields;
@@ -67,17 +69,17 @@ public class MinMaxBy extends AggregateBy {
 
     @Override
     public Tuple aggregate(FlowProcess flowProcess, TupleEntry tupleEntry, Tuple tuple) {
-      if(tuple == null) {
+      if (tuple == null) {
         tuple = Tuple.size(MIN_MAX_FIELDS.size());
       }
 
       Object object = tupleEntry.getObject(VALUE_OFFSET);
-      if(object != null) {
+      if (object != null) {
         double value = tupleEntry.getDouble(VALUE_OFFSET);
-        if(tuple.getObject(MIN_OFFSET) == null || value < tuple.getDouble(MIN_OFFSET)) {
+        if (tuple.getObject(MIN_OFFSET) == null || value < tuple.getDouble(MIN_OFFSET)) {
           tuple.set(MIN_OFFSET, value);
         }
-        if(tuple.getObject(MAX_OFFSET) == null || value > tuple.getDouble(MAX_OFFSET)) {
+        if (tuple.getObject(MAX_OFFSET) == null || value > tuple.getDouble(MAX_OFFSET)) {
           tuple.set(MAX_OFFSET, value);
         }
       }
@@ -88,9 +90,11 @@ public class MinMaxBy extends AggregateBy {
   }
 
   public static class MinMaxFinal extends BaseOperation<MinMaxFinal.Context> implements Aggregator<MinMaxFinal.Context> {
+
     private static final long serialVersionUID = 1L;
 
     protected static class Context {
+
       Double min;
 
       Double max;
@@ -108,7 +112,7 @@ public class MinMaxBy extends AggregateBy {
 
     @Override
     public void start(FlowProcess flowProcess, AggregatorCall<Context> aggregatorCall) {
-      if(aggregatorCall.getContext() != null) {
+      if (aggregatorCall.getContext() != null) {
         aggregatorCall.getContext().reset();
       } else {
         aggregatorCall.setContext(new Context());
@@ -120,15 +124,15 @@ public class MinMaxBy extends AggregateBy {
       TupleEntry tupleEntry = aggregatorCall.getArguments();
 
       Context context = aggregatorCall.getContext();
-      if(tupleEntry.getObject(MIN_OFFSET) != null) {
+      if (tupleEntry.getObject(MIN_OFFSET) != null) {
         double min = tupleEntry.getDouble(MIN_OFFSET);
-        if(context.min == null || min < context.min) {
+        if (context.min == null || min < context.min) {
           context.min = min;
         }
       }
-      if(tupleEntry.getObject(MAX_OFFSET) != null) {
+      if (tupleEntry.getObject(MAX_OFFSET) != null) {
         double max = tupleEntry.getDouble(MAX_OFFSET);
-        if(context.max == null || max > context.max) {
+        if (context.max == null || max > context.max) {
           context.max = max;
         }
       }

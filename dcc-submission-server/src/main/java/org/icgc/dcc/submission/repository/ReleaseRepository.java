@@ -22,7 +22,7 @@ import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static java.lang.String.format;
-import static org.icgc.dcc.core.model.Identifiable.Identifiables.getId;
+import static org.icgc.dcc.common.core.model.Identifiable.Identifiables.getId;
 import static org.icgc.dcc.submission.release.model.QRelease.release;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
@@ -33,7 +33,7 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.common.core.model.Identifiable;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;

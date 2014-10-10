@@ -2,10 +2,10 @@ package org.icgc.dcc.submission.validation.sample.processor;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.model.FileTypes.FileType.EXP_SEQ_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_M_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.EXP_SEQ_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.submission.core.report.ErrorType.REFERENCE_SAMPLE_TYPE_MISMATCH;
 import static org.icgc.dcc.submission.core.report.ErrorType.SAMPLE_TYPE_MISMATCH;
 import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.ANALYZED_SAMPLE_ID_FIELD_NAME;
@@ -20,7 +20,7 @@ import java.io.IOException;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.sample.core.Samples;

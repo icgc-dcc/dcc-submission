@@ -28,10 +28,10 @@ public class FileValidator implements IValueValidator<File> {
 
   @Override
   public void validate(String name, File file) throws ParameterException {
-    if(file.exists() == false) {
+    if (file.exists() == false) {
       parameterException(name, file, "does not exist");
     }
-    if(file.isFile() == false) {
+    if (file.isFile() == false) {
       parameterException(name, file, "is not a file");
     }
   }

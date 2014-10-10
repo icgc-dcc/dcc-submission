@@ -43,7 +43,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.model.ValueType;
+import org.icgc.dcc.common.core.model.ValueType;
 
 import com.google.common.collect.ImmutableMap;
 

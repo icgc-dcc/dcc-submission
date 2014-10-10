@@ -31,9 +31,9 @@ import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.model.Identifiable;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

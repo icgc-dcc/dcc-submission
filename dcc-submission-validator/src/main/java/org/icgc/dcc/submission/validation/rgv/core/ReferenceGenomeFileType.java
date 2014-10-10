@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.rgv.core;
 
 import lombok.Value;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 
 @Value
 public class ReferenceGenomeFileType {

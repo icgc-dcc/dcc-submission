@@ -47,6 +47,7 @@ import com.mysema.util.FileUtils;
  * 
  */
 public class TupleStateSerializationTest extends CascadingTestCase {
+
   File file;
 
   @Test

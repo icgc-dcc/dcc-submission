@@ -120,7 +120,7 @@ public class DiscreteValuesRestriction implements RowBasedPlanElement {
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry tupleEntry = functionCall.getArguments();
       String value = tupleEntry.getString(0);
-      if(value != null && values.contains(value) == false) {
+      if (value != null && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ErrorType.DISCRETE_VALUES_ERROR, fieldName.toString(),
             value, values);

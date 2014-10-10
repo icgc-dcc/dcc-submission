@@ -18,9 +18,9 @@
 package org.icgc.dcc.submission.http.jersey;
 
 import static javax.ws.rs.BindingPriority.HEADER_DECORATOR;
-import static org.icgc.dcc.core.util.VersionUtils.getApiVersion;
-import static org.icgc.dcc.core.util.VersionUtils.getCommitId;
-import static org.icgc.dcc.core.util.VersionUtils.getVersion;
+import static org.icgc.dcc.common.core.util.VersionUtils.getApiVersion;
+import static org.icgc.dcc.common.core.util.VersionUtils.getCommitId;
+import static org.icgc.dcc.common.core.util.VersionUtils.getVersion;
 
 import java.io.IOException;
 

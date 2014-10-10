@@ -38,8 +38,8 @@ import java.util.Random;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.SpecialValue;
-import org.icgc.dcc.core.model.ValueType;
+import org.icgc.dcc.common.core.model.SpecialValue;
+import org.icgc.dcc.common.core.model.ValueType;
 import org.icgc.dcc.generator.model.CodeListTerms;
 import org.icgc.dcc.generator.model.Key;
 import org.icgc.dcc.generator.utils.CodeLists;

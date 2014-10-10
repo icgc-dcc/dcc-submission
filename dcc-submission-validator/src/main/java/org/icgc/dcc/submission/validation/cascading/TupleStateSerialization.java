@@ -43,11 +43,12 @@ import cascading.tuple.hadoop.io.BufferedInputStream;
 public class TupleStateSerialization extends Configured implements Comparison<TupleState>, Serialization<TupleState> {
 
   public static class TupleStateDeserializer implements Deserializer<TupleState> {
+
     private DataInputStream in;
 
     @Override
     public void open(InputStream in) throws IOException {
-      if(in instanceof DataInputStream) {
+      if (in instanceof DataInputStream) {
         this.in = (DataInputStream) in;
       } else {
         this.in = new DataInputStream(in);
@@ -60,7 +61,7 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
       TupleState tupleState = null;
       try {
         tupleState = (TupleState) output.readObject();
-      } catch(ClassNotFoundException e) {
+      } catch (ClassNotFoundException e) {
         e.printStackTrace();
       }
       return tupleState;
@@ -74,11 +75,12 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
   }
 
   public static class TupleStateSerializer implements Serializer<TupleState> {
+
     private DataOutputStream out;
 
     @Override
     public void open(OutputStream out) throws IOException {
-      if(out instanceof DataOutputStream) {
+      if (out instanceof DataOutputStream) {
         this.out = (DataOutputStream) out;
       } else {
         this.out = new DataOutputStream(out);
@@ -103,11 +105,11 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
 
     @Override
     public int compare(TupleState lhs, TupleState rhs) {
-      if(lhs == null) {
+      if (lhs == null) {
         return -1;
       }
 
-      if(rhs == null) {
+      if (rhs == null) {
         return 1;
       }
 
@@ -117,15 +119,15 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
     @Override
     public int compare(BufferedInputStream lhsStream, BufferedInputStream rhsStream) {
       try {
-        if(lhsStream == null && rhsStream == null) {
+        if (lhsStream == null && rhsStream == null) {
           return 0;
         }
 
-        if(lhsStream == null) {
+        if (lhsStream == null) {
           return -1;
         }
 
-        if(rhsStream == null) {
+        if (rhsStream == null) {
           return 1;
         }
 
@@ -133,7 +135,7 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
         String rhsString = WritableUtils.readString(new DataInputStream(rhsStream));
 
         return lhsString.compareTo(rhsString);
-      } catch(IOException exception) {
+      } catch (IOException exception) {
         throw new CascadingException(exception);
       }
     }

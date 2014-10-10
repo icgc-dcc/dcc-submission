@@ -28,7 +28,7 @@ import java.util.Map;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.mongodb.morphia.Datastore;

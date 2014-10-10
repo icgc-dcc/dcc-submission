@@ -37,9 +37,9 @@ import lombok.ToString;
 import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.Dictionaries;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.Dictionaries;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 import org.mongodb.morphia.annotations.Embedded;

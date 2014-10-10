@@ -26,7 +26,7 @@ public class RemoveHeaderFilter extends BaseOperation<Void> implements Filter<Vo
 
   @Override
   public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
-    if(filterCall.getArguments().getLong(ValidationFields.OFFSET_FIELD_NAME) == 0) {
+    if (filterCall.getArguments().getLong(ValidationFields.OFFSET_FIELD_NAME) == 0) {
       return true;
     } else {
       return false;

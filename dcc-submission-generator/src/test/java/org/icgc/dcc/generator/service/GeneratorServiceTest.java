@@ -26,7 +26,7 @@ import static org.icgc.dcc.generator.service.GeneratorService.generatorService;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.generator.model.ExperimentalFile;
 import org.icgc.dcc.generator.model.ExperimentalFile.FileType;
 import org.icgc.dcc.generator.utils.FileSchemas;

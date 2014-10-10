@@ -19,14 +19,14 @@ package org.icgc.dcc.submission.config;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableMap.copyOf;
-import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
-import static org.icgc.dcc.core.util.Strings2.unquote;
+import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
+import static org.icgc.dcc.common.core.util.Strings2.unquote;
 
 import java.util.Map;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.util.SerializableMaps;
+import org.icgc.dcc.common.core.util.SerializableMaps;
 
 import com.google.common.base.Function;
 import com.typesafe.config.Config;

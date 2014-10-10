@@ -2,11 +2,11 @@ package org.icgc.dcc.submission.reporter.cascading.subassembly;
 
 import static cascading.tuple.Fields.NONE;
 import static com.google.common.collect.Iterables.toArray;
-import static org.icgc.dcc.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getCountFieldCounterpart;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getFieldName;
-import static org.icgc.dcc.hadoop.cascading.Fields2.getTemporaryCountByFields;
-import static org.icgc.dcc.hadoop.cascading.Fields2.keyValuePair;
+import static org.icgc.dcc.common.hadoop.cascading.Fields2.checkFieldsCardinalityOne;
+import static org.icgc.dcc.common.hadoop.cascading.Fields2.getCountFieldCounterpart;
+import static org.icgc.dcc.common.hadoop.cascading.Fields2.getFieldName;
+import static org.icgc.dcc.common.hadoop.cascading.Fields2.getTemporaryCountByFields;
+import static org.icgc.dcc.common.hadoop.cascading.Fields2.keyValuePair;
 import static org.icgc.dcc.submission.reporter.OutputType.DONOR;
 import static org.icgc.dcc.submission.reporter.OutputType.OBSERVATION;
 import static org.icgc.dcc.submission.reporter.OutputType.SAMPLE;
@@ -24,11 +24,11 @@ import static org.icgc.dcc.submission.reporter.ReporterFields._ANALYSIS_OBSERVAT
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.Insert;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.NamingPipe;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.ReorderAllFields;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy;
-import org.icgc.dcc.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.Insert;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.NamingPipe;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.ReorderAllFields;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.UniqueCountBy;
+import org.icgc.dcc.common.hadoop.cascading.SubAssemblies.UniqueCountBy.UniqueCountByData;
 import org.icgc.dcc.submission.reporter.OutputType;
 
 import cascading.pipe.HashJoin;

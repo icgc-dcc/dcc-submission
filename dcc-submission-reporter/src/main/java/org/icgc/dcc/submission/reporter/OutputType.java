@@ -1,6 +1,6 @@
 package org.icgc.dcc.submission.reporter;
 
-import org.icgc.dcc.core.model.Identifiable;
+import org.icgc.dcc.common.core.model.Identifiable;
 
 public enum OutputType implements Identifiable {
 

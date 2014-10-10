@@ -42,8 +42,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.glassfish.jersey.internal.util.Base64;
-import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Restriction;

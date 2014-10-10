@@ -3,9 +3,9 @@ package org.icgc.dcc.submission.reporter;
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.core.util.Optionals.ABSENT_STRING_MAP;
-import static org.icgc.dcc.core.util.Splitters.TAB;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.readSmallTextFile;
+import static org.icgc.dcc.common.core.util.Optionals.ABSENT_STRING_MAP;
+import static org.icgc.dcc.common.core.util.Splitters.TAB;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.readSmallTextFile;
 
 import java.util.List;
 import java.util.Map;

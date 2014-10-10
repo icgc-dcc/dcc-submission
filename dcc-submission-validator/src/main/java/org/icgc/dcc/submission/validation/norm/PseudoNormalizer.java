@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.norm;
 
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
-import static org.icgc.dcc.core.util.Separators.TAB;
+import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.common.core.util.Separators.TAB;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,9 +32,9 @@ import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
-import org.icgc.dcc.hadoop.parser.TsvPartFileProcessor;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
+import org.icgc.dcc.common.hadoop.parser.TsvPartFileProcessor;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 /**

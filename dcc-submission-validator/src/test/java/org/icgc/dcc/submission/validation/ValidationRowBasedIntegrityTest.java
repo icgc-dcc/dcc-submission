@@ -33,7 +33,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;

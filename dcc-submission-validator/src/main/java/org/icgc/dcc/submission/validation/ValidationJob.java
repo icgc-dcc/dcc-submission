@@ -26,7 +26,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.util.ThreadNamingRunnable;
+import org.icgc.dcc.common.core.util.ThreadNamingRunnable;
 import org.icgc.dcc.submission.validation.core.Validation;
 
 /**

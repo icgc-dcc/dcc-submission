@@ -1,6 +1,6 @@
 package org.icgc.dcc.submission.core;
 
-import static org.icgc.dcc.core.model.Configurations.MONGO_URI_KEY;
+import static org.icgc.dcc.common.core.model.Configurations.MONGO_URI_KEY;
 
 import java.net.UnknownHostException;
 

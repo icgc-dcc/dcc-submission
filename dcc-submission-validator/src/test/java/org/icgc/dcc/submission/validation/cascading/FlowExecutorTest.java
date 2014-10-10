@@ -9,8 +9,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
-import org.icgc.dcc.hadoop.cascading.FlowExecutor;
-import org.icgc.dcc.hadoop.cascading.FlowExecutorJob;
+import org.icgc.dcc.common.hadoop.cascading.FlowExecutor;
+import org.icgc.dcc.common.hadoop.cascading.FlowExecutorJob;
 import org.icgc.dcc.submission.validation.MiniHadoop;
 import org.junit.Ignore;
 import org.junit.Test;

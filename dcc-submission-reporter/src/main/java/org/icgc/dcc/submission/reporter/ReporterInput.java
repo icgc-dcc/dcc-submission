@@ -4,8 +4,8 @@ import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static java.util.Arrays.asList;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SAMPLE_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.submission.reporter.Reporter.getHeadPipeName;
 
 import java.util.List;
@@ -17,9 +17,9 @@ import lombok.ToString;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.util.Functions2;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.util.Functions2;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;

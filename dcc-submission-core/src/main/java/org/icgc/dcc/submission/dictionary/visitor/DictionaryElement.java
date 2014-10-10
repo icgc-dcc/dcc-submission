@@ -21,5 +21,6 @@ package org.icgc.dcc.submission.dictionary.visitor;
  * TODO
  */
 public interface DictionaryElement {
+
   public void accept(DictionaryVisitor dictionaryVisitor);
 }

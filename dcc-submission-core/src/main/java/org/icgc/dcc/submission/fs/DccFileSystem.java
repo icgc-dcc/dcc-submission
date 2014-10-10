@@ -19,12 +19,12 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.core.util.FsConfig.FS_ROOT;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.checkExistence;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsAll;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.mkdirs;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.rmr;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.toFilenameList;
+import static org.icgc.dcc.common.core.util.FsConfig.FS_ROOT;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsAll;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.mkdirs;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.rmr;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.toFilenameList;
 
 import java.util.Set;
 

@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.core;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static org.icgc.dcc.core.Component.NORMALIZER;
+import static org.icgc.dcc.common.core.Component.NORMALIZER;
 
 import java.util.Set;
 
@@ -27,7 +27,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.DictionaryService;

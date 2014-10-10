@@ -18,7 +18,7 @@
 package org.icgc.dcc.generator.core;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.core.model.FileTypes.FileType.JCN_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.JCN_M_TYPE;
 import static org.icgc.dcc.generator.utils.Dictionaries.SAMPLE_SCHEMA_NAME;
 import static org.icgc.dcc.generator.utils.Dictionaries.isUniqueField;
 

@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.Identifiable.Identifiables;
+import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.DccFileSystem;

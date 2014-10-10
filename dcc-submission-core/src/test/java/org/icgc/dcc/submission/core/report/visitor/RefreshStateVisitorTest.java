@@ -2,14 +2,14 @@ package org.icgc.dcc.submission.core.report.visitor;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
+import static org.icgc.dcc.common.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.DataTypeState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;

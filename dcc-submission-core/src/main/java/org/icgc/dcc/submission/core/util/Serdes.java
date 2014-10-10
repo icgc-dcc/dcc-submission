@@ -24,9 +24,9 @@ import java.io.IOException;
 import lombok.NoArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;

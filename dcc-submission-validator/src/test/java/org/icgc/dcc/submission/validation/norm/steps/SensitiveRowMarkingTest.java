@@ -21,7 +21,7 @@ import static org.icgc.dcc.submission.validation.cascading.CascadingTestUtils.ch
 
 import java.util.Iterator;
 
-import org.icgc.dcc.core.model.Marking;
+import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
 import org.junit.Test;
 

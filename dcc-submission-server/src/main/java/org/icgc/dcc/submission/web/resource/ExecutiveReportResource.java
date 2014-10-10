@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.web.resource;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static org.icgc.dcc.core.util.Splitters.COMMA;
+import static org.icgc.dcc.common.core.util.Splitters.COMMA;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
@@ -44,8 +44,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.util.Joiners;
-import org.icgc.dcc.core.util.Strings2;
+import org.icgc.dcc.common.core.util.Joiners;
+import org.icgc.dcc.common.core.util.Strings2;
 import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
 import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.service.ExecutiveReportService;

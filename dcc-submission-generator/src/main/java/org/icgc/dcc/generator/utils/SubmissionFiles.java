@@ -19,7 +19,7 @@ package org.icgc.dcc.generator.utils;
 
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FileTypes.FILE_EXTENSION;
+import static org.icgc.dcc.common.core.model.FileTypes.FILE_EXTENSION;
 import lombok.NoArgsConstructor;
 import lombok.val;
 

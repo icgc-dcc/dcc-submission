@@ -26,7 +26,7 @@ import static java.lang.System.err;
 import static java.lang.System.out;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.core.util.VersionUtils.getScmInfo;
+import static org.icgc.dcc.common.core.util.VersionUtils.getScmInfo;
 import static org.icgc.dcc.generator.service.GeneratorService.generatorService;
 
 import java.io.File;

@@ -48,7 +48,7 @@ public final class TupleStates {
     @Override
     public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
       TupleState tupleState = ValidationFields.state(filterCall.getArguments());
-      switch(state) {
+      switch (state) {
       case VALID:
         return tupleState.isInvalid();
       case INVALID:

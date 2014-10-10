@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import static org.icgc.dcc.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
+import static org.icgc.dcc.common.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -28,7 +28,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 @Slf4j

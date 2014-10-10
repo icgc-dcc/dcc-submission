@@ -20,21 +20,21 @@ package org.icgc.dcc.submission.validation.key.core;
 import static com.google.common.collect.Iterables.find;
 import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_ARRAY_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_SEQ_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.JCN_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_ARRAY_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_SEQ_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_SEQ_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SGV_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.EXP_ARRAY_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.EXP_SEQ_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.JCN_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.METH_ARRAY_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.METH_SEQ_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.MIRNA_SEQ_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SGV_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 
 import com.google.common.base.Predicate;
 

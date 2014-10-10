@@ -26,8 +26,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.sample.core.Samples;

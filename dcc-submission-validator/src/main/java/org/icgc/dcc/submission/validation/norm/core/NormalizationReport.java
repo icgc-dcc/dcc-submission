@@ -28,7 +28,7 @@ import lombok.Value;
 import lombok.val;
 import lombok.experimental.Builder;
 
-import org.icgc.dcc.core.model.Marking;
+import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
 
 import com.google.common.collect.ImmutableMap;

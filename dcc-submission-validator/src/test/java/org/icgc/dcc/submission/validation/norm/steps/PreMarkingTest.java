@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.core.model.Marking;
+import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.submission.validation.cascading.CascadingTestUtils;
 import org.icgc.dcc.submission.validation.norm.steps.PreMarking.PreMarker;
 import org.junit.Test;

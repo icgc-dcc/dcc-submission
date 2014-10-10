@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.util.regex.Pattern.matches;
-import static org.icgc.dcc.core.util.FormatUtils._;
+import static org.icgc.dcc.common.core.util.FormatUtils._;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.Report;

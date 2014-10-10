@@ -24,8 +24,8 @@ import java.util.Map;
 import lombok.NoArgsConstructor;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.hadoop.parser.FileParser;
-import org.icgc.dcc.hadoop.parser.FileParsers;
+import org.icgc.dcc.common.hadoop.parser.FileParser;
+import org.icgc.dcc.common.hadoop.parser.FileParsers;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 @NoArgsConstructor(access = PRIVATE)

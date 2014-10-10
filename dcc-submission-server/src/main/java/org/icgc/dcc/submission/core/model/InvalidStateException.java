@@ -23,6 +23,7 @@ import org.icgc.dcc.submission.web.model.ServerErrorCode;
  * When an operation is attempted on the system when its states does not allow it.
  */
 public class InvalidStateException extends Exception {
+
   private final ServerErrorCode code;
 
   private final Object state; // may not be provided (for now)

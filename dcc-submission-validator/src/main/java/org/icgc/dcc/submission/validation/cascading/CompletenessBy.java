@@ -28,6 +28,7 @@ import cascading.tuple.TupleEntry;
 
 @SuppressWarnings("rawtypes")
 public class CompletenessBy extends AggregateBy {
+
   private static final long serialVersionUID = 1L;
 
   private static final int VALUE_OFFSET = 0;
@@ -49,6 +50,7 @@ public class CompletenessBy extends AggregateBy {
   private static final Fields COMPLETENESS_FIELDS = new Fields(NULLS, MISSING, POPULATED);
 
   public static class CompletenessPartial implements Functor {
+
     private static final long serialVersionUID = 1L;
 
     private final Fields declaredFields;
@@ -73,14 +75,14 @@ public class CompletenessBy extends AggregateBy {
 
     @Override
     public Tuple aggregate(FlowProcess flowProcess, TupleEntry tupleEntry, Tuple tuple) {
-      if(tuple == null) {
+      if (tuple == null) {
         tuple = new Tuple(0, 0, 0);
       }
 
       String value = tupleEntry.getString(VALUE_OFFSET);
-      if(isMissingValue(tupleEntry)) {
+      if (isMissingValue(tupleEntry)) {
         tuple.set(MISSING_OFFSET, tuple.getInteger(MISSING_OFFSET) + 1);
-      } else if(value == null || value.isEmpty()) {
+      } else if (value == null || value.isEmpty()) {
         tuple.set(NULLS_OFFSET, tuple.getInteger(NULLS_OFFSET) + 1);
       } else {
         tuple.set(POPULATED_OFFSET, tuple.getInteger(POPULATED_OFFSET) + 1);
@@ -96,6 +98,7 @@ public class CompletenessBy extends AggregateBy {
 
   public static class CompletenessFinal extends BaseOperation<CompletenessFinal.Context> implements
       Aggregator<CompletenessFinal.Context> {
+
     private static final long serialVersionUID = 1L;
 
     protected static class Context {
@@ -120,7 +123,7 @@ public class CompletenessBy extends AggregateBy {
 
     @Override
     public void start(FlowProcess flowProcess, AggregatorCall<Context> aggregatorCall) {
-      if(aggregatorCall.getContext() != null) {
+      if (aggregatorCall.getContext() != null) {
         aggregatorCall.getContext().reset();
       } else {
         aggregatorCall.setContext(new Context());

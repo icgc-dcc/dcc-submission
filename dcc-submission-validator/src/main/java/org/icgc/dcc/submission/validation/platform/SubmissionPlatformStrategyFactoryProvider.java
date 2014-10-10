@@ -23,8 +23,8 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.core.util.InjectionNames;
-import org.icgc.dcc.core.util.Scheme;
+import org.icgc.dcc.common.core.util.InjectionNames;
+import org.icgc.dcc.common.core.util.Scheme;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;

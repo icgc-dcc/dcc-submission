@@ -23,7 +23,7 @@ import java.util.Map;
 
 import lombok.NonNull;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.FileReport;
 
 import com.google.common.collect.ImmutableMap.Builder;

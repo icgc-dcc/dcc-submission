@@ -18,10 +18,10 @@
 package org.icgc.dcc.submission.validation.rgv;
 
 import static com.google.common.collect.ImmutableList.of;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SGV_P_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SSM_P_TYPE;
-import static org.icgc.dcc.core.util.FormatUtils._;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_P_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
+import static org.icgc.dcc.common.core.util.FormatUtils._;
 import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.REFERENCE_GENOME_INSERTION_ERROR;
@@ -43,10 +43,10 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.hadoop.parser.FileParser;
-import org.icgc.dcc.hadoop.parser.FileRecordProcessor;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.hadoop.parser.FileParser;
+import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;

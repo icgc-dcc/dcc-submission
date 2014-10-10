@@ -20,9 +20,9 @@ package org.icgc.dcc.submission.core.util;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.DataType.DataTypes;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.mongodb.morphia.converters.SimpleValueConverter;
 import org.mongodb.morphia.converters.TypeConverter;
 import org.mongodb.morphia.mapping.MappedField;

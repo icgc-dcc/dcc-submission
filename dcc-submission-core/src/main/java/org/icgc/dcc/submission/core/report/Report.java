@@ -34,8 +34,8 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.visitor.AbortVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddErrorVisitor;
 import org.icgc.dcc.submission.core.report.visitor.AddFieldVisitor;

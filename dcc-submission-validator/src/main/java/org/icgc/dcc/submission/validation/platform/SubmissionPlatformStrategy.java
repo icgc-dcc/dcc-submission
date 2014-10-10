@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.platform;
 
-import static org.icgc.dcc.core.util.Separators.DOUBLE_DASH;
+import static org.icgc.dcc.common.core.util.Separators.DOUBLE_DASH;
 
 import java.io.InputStream;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.util.DccConstants;
-import org.icgc.dcc.core.util.Separators;
+import org.icgc.dcc.common.core.util.DccConstants;
+import org.icgc.dcc.common.core.util.Separators;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;

@@ -21,7 +21,7 @@ import static java.util.Arrays.asList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;

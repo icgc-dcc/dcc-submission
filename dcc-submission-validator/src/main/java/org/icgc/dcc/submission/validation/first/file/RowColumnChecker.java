@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.first.file;
 
-import static org.icgc.dcc.core.util.Separators.TAB_CHARACTER;
+import static org.icgc.dcc.common.core.util.Separators.TAB_CHARACTER;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
 import lombok.val;

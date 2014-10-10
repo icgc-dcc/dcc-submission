@@ -3,7 +3,7 @@ package org.icgc.dcc.submission.core.state;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;

@@ -19,12 +19,12 @@ package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static com.google.common.base.Joiner.on;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
+import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
 import lombok.val;
 
-import org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames;
+import org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 

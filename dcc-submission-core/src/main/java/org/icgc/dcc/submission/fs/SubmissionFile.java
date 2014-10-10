@@ -24,8 +24,8 @@ import java.util.Date;
 import lombok.NonNull;
 import lombok.Value;
 
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
 import org.icgc.dcc.submission.core.util.TypeConverters.FileTypeConverter;

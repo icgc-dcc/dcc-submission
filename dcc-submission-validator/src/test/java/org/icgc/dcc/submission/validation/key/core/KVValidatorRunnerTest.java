@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
-import org.icgc.dcc.core.model.DataType.DataTypes;
+import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.TestUtils;
 import org.junit.Test;

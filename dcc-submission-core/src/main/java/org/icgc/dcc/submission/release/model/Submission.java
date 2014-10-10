@@ -38,9 +38,9 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.Identifiable;
-import org.icgc.dcc.core.util.Joiners;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.Identifiable;
+import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.report.Report;

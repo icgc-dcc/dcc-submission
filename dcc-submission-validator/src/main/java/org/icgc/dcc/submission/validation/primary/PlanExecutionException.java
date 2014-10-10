@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.primary;
 
 public class PlanExecutionException extends RuntimeException {
+
   public PlanExecutionException() {
     super();
   }

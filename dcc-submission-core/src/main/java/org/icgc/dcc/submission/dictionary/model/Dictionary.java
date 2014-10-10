@@ -40,10 +40,10 @@ import lombok.ToString;
 import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.Dictionaries;
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.Dictionaries;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;

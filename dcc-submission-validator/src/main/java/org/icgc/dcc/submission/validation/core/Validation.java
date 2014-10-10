@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.core;
 
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.util.List;

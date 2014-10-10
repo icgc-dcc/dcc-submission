@@ -92,7 +92,7 @@ public class RequiredRestriction implements RowBasedPlanElement {
 
     @Override
     public PlanElement build(Field field, Restriction restriction) {
-      if(restriction.getConfig() == null || restriction.getConfig().get(ACCEPT_MISSING_CODE) == null) {
+      if (restriction.getConfig() == null || restriction.getConfig().get(ACCEPT_MISSING_CODE) == null) {
         return new RequiredRestriction(field.getName(), true);
       }
       Boolean acceptMissingCode = (Boolean) restriction.getConfig().get(ACCEPT_MISSING_CODE);
@@ -104,6 +104,7 @@ public class RequiredRestriction implements RowBasedPlanElement {
 
   @SuppressWarnings("rawtypes")
   public static class SpecifiedFunction extends BaseOperation implements Function {
+
     private final boolean acceptMissingCode;
 
     protected SpecifiedFunction(boolean acceptMissingCode) {
@@ -120,11 +121,11 @@ public class RequiredRestriction implements RowBasedPlanElement {
           ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0));
       // TODO The IF conditions seem to lead to the same thing
       // TODO: DCC-1076 - This should also check for -999 rather than have {@link ForbiddenValuesFunction} do it.
-      if(isFieldMissing == false && (value == null || value.isEmpty())) {
+      if (isFieldMissing == false && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ErrorType.MISSING_VALUE_ERROR, fieldName.toString(),
             value);
-      } else if(isFieldMissing == true && !acceptMissingCode) {
+      } else if (isFieldMissing == true && !acceptMissingCode) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ErrorType.MISSING_VALUE_ERROR, fieldName.toString(),
             value);

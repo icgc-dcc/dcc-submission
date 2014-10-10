@@ -26,7 +26,7 @@ import java.util.List;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 import com.fasterxml.jackson.core.JsonParser;

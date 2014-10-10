@@ -19,13 +19,13 @@ package org.icgc.dcc.submission.config;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.name.Names.named;
-import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
+import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.util.InjectionNames;
+import org.icgc.dcc.common.core.util.InjectionNames;
 
 import com.google.inject.AbstractModule;
 import com.typesafe.config.Config;

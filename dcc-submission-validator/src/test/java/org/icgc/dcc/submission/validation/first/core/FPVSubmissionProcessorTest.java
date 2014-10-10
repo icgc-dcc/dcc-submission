@@ -31,13 +31,14 @@ import java.util.Collections;
 
 import lombok.val;
 
-import org.icgc.dcc.core.model.DataType;
+import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.FPVSubmissionProcessor;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
-import org.icgc.dcc.submission.validation.first.core.RowChecker;import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
+import org.icgc.dcc.submission.validation.first.core.RowChecker;
+import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.file.DelegatingFileChecker;
 import org.icgc.dcc.submission.validation.first.row.TestUtils;
 import org.junit.Before;

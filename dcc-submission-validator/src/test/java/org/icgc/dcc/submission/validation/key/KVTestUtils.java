@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.key;
 
-import static org.icgc.dcc.core.util.Joiners.PATH;
+import static org.icgc.dcc.common.core.util.Joiners.PATH;
 
 import java.io.File;
 import java.io.IOException;

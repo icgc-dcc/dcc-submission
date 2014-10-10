@@ -18,10 +18,10 @@
 package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
+import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.core.model.Marking;
+import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 

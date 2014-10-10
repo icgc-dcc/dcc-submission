@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static java.util.UUID.randomUUID;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_OBSERVATION_ID;
 
 import java.util.UUID;
 

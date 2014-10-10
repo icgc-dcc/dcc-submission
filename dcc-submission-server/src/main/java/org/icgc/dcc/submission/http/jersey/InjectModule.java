@@ -65,7 +65,7 @@ public class InjectModule extends AbstractModule {
     @Override
     public Object resolve(Injectee injectee, ServiceHandle<?> root) {
       Type type = injectee.getRequiredType();
-      if(type instanceof Class) {
+      if (type instanceof Class) {
         return injector.getInstance((Class<?>) type);
       }
       throw new IllegalStateException(String.format("don't know how to inject type %s (%s)", type,

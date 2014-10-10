@@ -29,7 +29,7 @@ import lombok.ToString;
 import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.core.model.ValueType;
+import org.icgc.dcc.common.core.model.ValueType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 import org.mongodb.morphia.annotations.Embedded;

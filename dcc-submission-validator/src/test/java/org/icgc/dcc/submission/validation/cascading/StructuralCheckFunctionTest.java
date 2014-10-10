@@ -66,7 +66,7 @@ public class StructuralCheckFunctionTest {
   public void test_parseValues() {
     val line = "1\t\t\t";
     val values = StructuralCheckFunction.parseValues(line);
-    
+
     assertThat(values).hasSize(4);
     assertThat(values.get(0)).isEqualTo("1");
     assertThat(values.get(1)).isEmpty();

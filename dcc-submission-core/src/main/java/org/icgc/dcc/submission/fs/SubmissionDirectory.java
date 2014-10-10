@@ -19,15 +19,15 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.regex.Pattern.compile;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SAMPLE_TYPE;
-import static org.icgc.dcc.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import static org.icgc.dcc.core.util.Splitters.TAB;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.isFile;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.lsFile;
-import static org.icgc.dcc.hadoop.fs.HadoopUtils.rm;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SAMPLE_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.common.core.util.Splitters.TAB;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.isFile;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsFile;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.rm;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -46,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.icgc.dcc.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;

@@ -21,6 +21,7 @@ package org.icgc.dcc.submission.core.model;
  * For concurrency problems of unknown origins (such as deadlocks).
  */
 public class DccConcurrencyException extends RuntimeException {
+
   public DccConcurrencyException(Exception e) {
     super(e);
   }

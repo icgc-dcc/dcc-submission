@@ -24,6 +24,7 @@ import cascading.operation.FilterCall;
 import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 
 public class RemoveEmptyValidationLineFilter extends BaseOperation<Void> implements Filter<Void> {
+
   @Override
   public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
     String tuple = filterCall.getArguments().getString(LINE_FIELD_NAME);

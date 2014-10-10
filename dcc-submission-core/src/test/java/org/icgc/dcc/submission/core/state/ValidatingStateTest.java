@@ -19,17 +19,17 @@ package org.icgc.dcc.submission.core.state;
 
 import static com.google.common.collect.Iterables.find;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.util.Jackson.formatPrettyJson;
+import static org.icgc.dcc.common.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.submission.core.report.DataTypeState.INVALID;
 import static org.icgc.dcc.submission.core.report.DataTypeState.VALID;
 import static org.mockito.Mockito.when;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.core.model.ClinicalType;
-import org.icgc.dcc.core.model.DataType;
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.model.ClinicalType;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.DataTypeState;

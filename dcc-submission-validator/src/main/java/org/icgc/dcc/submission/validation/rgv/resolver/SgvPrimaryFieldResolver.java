@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.rgv.resolver;
 
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_VARIANT_TYPE;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_VARIANT_TYPE;
 
 import java.util.Map;
 

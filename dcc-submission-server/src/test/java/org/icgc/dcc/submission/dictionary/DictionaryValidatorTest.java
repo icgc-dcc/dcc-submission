@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.dictionary;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.model.ValueType.INTEGER;
+import static org.icgc.dcc.common.core.model.ValueType.INTEGER;
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
 
 import java.util.List;
