@@ -15,16 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.rgv.resolver;
+package org.icgc.dcc.submission.validation.rgv.accessor;
 
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_VARIANT_TYPE;
 
 import java.util.Map;
 
-public class SgvPrimaryFieldResolver extends AbstractPrimaryFieldResolver {
+public class SgvPrimaryFieldAccessor extends AbstractPrimaryFieldAccessor {
 
   @Override
-  public String resolveMutationType(Map<String, String> record) {
+  public String getMutationType(Map<String, String> record) {
     return record.get(SUBMISSION_OBSERVATION_VARIANT_TYPE);
   }
 

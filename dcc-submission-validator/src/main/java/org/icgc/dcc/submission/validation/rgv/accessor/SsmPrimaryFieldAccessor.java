@@ -15,20 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.rgv.core;
+package org.icgc.dcc.submission.validation.rgv.accessor;
+
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 
 import java.util.Map;
 
-public interface PrimaryFieldResolver {
+public class SsmPrimaryFieldAccessor extends AbstractPrimaryFieldAccessor {
 
-  String resolveMutationType(Map<String, String> record);
-
-  String resolveChromosomeCode(Map<String, String> record);
-
-  String resolveStart(Map<String, String> record);
-
-  String resolveEnd(Map<String, String> record);
-
-  String resolveReferenceAllele(Map<String, String> record);
+  @Override
+  public String getMutationType(Map<String, String> record) {
+    return record.get(SUBMISSION_OBSERVATION_MUTATION_TYPE);
+  }
 
 }

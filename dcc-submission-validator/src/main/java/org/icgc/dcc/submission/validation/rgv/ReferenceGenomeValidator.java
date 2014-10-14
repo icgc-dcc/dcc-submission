@@ -17,10 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.rgv;
 
-import static com.google.common.collect.ImmutableList.of;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_P_TYPE;
-import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.common.core.util.FormatUtils._;
 import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.core.report.Error.error;
@@ -50,12 +47,10 @@ import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.rgv.core.PrimaryFieldResolver;
+import org.icgc.dcc.submission.validation.rgv.core.PrimaryFieldAccessor;
 import org.icgc.dcc.submission.validation.rgv.core.ReferenceGenomeFileType;
 import org.icgc.dcc.submission.validation.rgv.reference.ReferenceGenome;
 import org.icgc.dcc.submission.validation.rgv.report.TupleStateWriter;
-import org.icgc.dcc.submission.validation.rgv.resolver.SgvPrimaryFieldResolver;
-import org.icgc.dcc.submission.validation.rgv.resolver.SsmPrimaryFieldResolver;
 
 /**
  * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input.
@@ -70,13 +65,6 @@ import org.icgc.dcc.submission.validation.rgv.resolver.SsmPrimaryFieldResolver;
 @Slf4j
 @RequiredArgsConstructor
 public class ReferenceGenomeValidator implements Validator {
-
-  /**
-   * File types that are the target of validation.
-   */
-  private static final List<ReferenceGenomeFileType> REFERENCE_GENOME_FILE_TYPES = of(
-      new ReferenceGenomeFileType(SSM_P_TYPE, new SsmPrimaryFieldResolver()),
-      new ReferenceGenomeFileType(SGV_P_TYPE, new SgvPrimaryFieldResolver()));
 
   /**
    * The reference genome used to validate.
@@ -108,9 +96,9 @@ public class ReferenceGenomeValidator implements Validator {
   }
 
   private void validateFileTypes(ValidationContext context) {
-    for (val referringFileType : REFERENCE_GENOME_FILE_TYPES) {
+    for (val referringFileType : ReferenceGenomeFileType.values()) {
       val fileType = referringFileType.getType();
-      val fieldResolver = referringFileType.getFieldResolver();
+      val fieldAccessor = referringFileType.getFieldAccessor();
       val files = context.getFiles(fileType);
       val skip = files.isEmpty();
       if (skip) {
@@ -119,13 +107,13 @@ public class ReferenceGenomeValidator implements Validator {
         continue;
       }
 
-      validateFileType(context, fileType, files, fieldResolver);
+      validateFileType(context, fileType, files, fieldAccessor);
     }
   }
 
   @SneakyThrows
   private void validateFileType(ValidationContext context, FileType fileType, List<Path> files,
-      PrimaryFieldResolver fieldResolver) {
+      PrimaryFieldAccessor fieldAccessor) {
     val fileParser = newMapFileParser(context.getFileSystem(), context.getFileSchema(fileType));
     for (val file : files) {
       @Cleanup
@@ -133,14 +121,14 @@ public class ReferenceGenomeValidator implements Validator {
 
       // Get to work
       log.info("Performing reference genome validation on file '{}' for '{}'", file, context.getProjectKey());
-      validateFile(context, file, fileParser, fieldResolver, writer);
+      validateFile(context, file, fileParser, fieldAccessor, writer);
       log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
     }
   }
 
   @SneakyThrows
   private void validateFile(final ValidationContext context, final Path filePath,
-      final FileParser<Map<String, String>> fileParser, final PrimaryFieldResolver fieldResolver,
+      final FileParser<Map<String, String>> fileParser, final PrimaryFieldAccessor fieldAccessor,
       final TupleStateWriter writer) {
     val fileName = filePath.getName();
 
@@ -148,12 +136,12 @@ public class ReferenceGenomeValidator implements Validator {
 
       @Override
       public void process(long lineNumber, Map<String, String> record) throws IOException {
-        // Resolve fields
-        val mutationType = fieldResolver.resolveMutationType(record);
-        val chromosomeCode = fieldResolver.resolveChromosomeCode(record);
-        val start = fieldResolver.resolveStart(record);
-        val end = fieldResolver.resolveEnd(record);
-        val actualReference = fieldResolver.resolveReferenceAllele(record);
+        // Access field values
+        val mutationType = fieldAccessor.getMutationType(record);
+        val chromosomeCode = fieldAccessor.getChromosomeCode(record);
+        val start = fieldAccessor.getStart(record);
+        val end = fieldAccessor.getEnd(record);
+        val actualReference = fieldAccessor.getReferenceAllele(record);
 
         if (isInsertionType(mutationType)) {
           // Insertion
@@ -219,8 +207,8 @@ public class ReferenceGenomeValidator implements Validator {
 
   private static boolean isValidatable(Iterable<DataType> dataTypes) {
     for (val dataType : dataTypes) {
-      for (val resolver : REFERENCE_GENOME_FILE_TYPES) {
-        if (resolver.getType().getDataType() == dataType) {
+      for (val referenceGenomeFileType : ReferenceGenomeFileType.values()) {
+        if (referenceGenomeFileType.getType().getDataType() == dataType) {
           return true;
         }
       }

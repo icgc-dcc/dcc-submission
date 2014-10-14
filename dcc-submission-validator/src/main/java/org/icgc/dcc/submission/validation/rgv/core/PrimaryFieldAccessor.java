@@ -15,37 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.rgv.resolver;
-
-import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
-import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
-import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
-import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+package org.icgc.dcc.submission.validation.rgv.core;
 
 import java.util.Map;
 
-import org.icgc.dcc.submission.validation.rgv.core.PrimaryFieldResolver;
+public interface PrimaryFieldAccessor {
 
-public abstract class AbstractPrimaryFieldResolver implements PrimaryFieldResolver {
+  String getMutationType(Map<String, String> record);
 
-  @Override
-  public String resolveChromosomeCode(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_CHROMOSOME);
-  }
+  String getChromosomeCode(Map<String, String> record);
 
-  @Override
-  public String resolveStart(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_CHROMOSOME_START);
-  }
+  String getStart(Map<String, String> record);
 
-  @Override
-  public String resolveEnd(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_CHROMOSOME_END);
-  }
+  String getEnd(Map<String, String> record);
 
-  @Override
-  public String resolveReferenceAllele(Map<String, String> record) {
-    return record.get(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
-  }
+  String getReferenceAllele(Map<String, String> record);
 
 }
