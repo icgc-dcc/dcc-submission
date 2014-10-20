@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,63 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.parser;
+package org.icgc.dcc.submission.core.util;
 
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.List;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.val;
 
-import org.icgc.dcc.common.hadoop.parser.AbstractFileLineParser;
-import org.icgc.dcc.submission.core.util.FieldNameComparator;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import com.google.common.primitives.Ints;
 
-import com.google.common.collect.ImmutableSortedMap;
-
-/**
- * Parser that guarantees {@link FileSchema} defined field ordering of its parsed {@code Map<String, String>} field map.
- */
-@ToString
 @RequiredArgsConstructor
-public class FileLineMapParser extends AbstractFileLineParser<Map<String, String>> {
+public class FieldNameComparator implements Comparator<String> {
 
   @NonNull
-  protected final FileSchema schema;
-  @NonNull
-  protected final Comparator<String> fieldNameComparator;
-
-  public FileLineMapParser(FileSchema schema) {
-    this.schema = schema;
-    this.fieldNameComparator = new FieldNameComparator(schema.getFieldNames());
-  }
+  private final List<String> fieldNames;
 
   @Override
-  public Map<String, String> parse(String line) {
-    val values = split(line);
-    return parse(values);
-  }
+  public int compare(String fieldName1, String fieldName2) {
+    val index1 = fieldNames.indexOf(fieldName1);
+    val index2 = fieldNames.indexOf(fieldName2);
 
-  private SortedMap<String, String> parse(Iterator<String> values) {
-    val record = createFieldOrderMapBuilder();
-    for (val fieldName : schema.getFieldNames()) {
-      val fieldValue = values.next();
-      record.put(fieldName, fieldValue);
-    }
-
-    return record.build();
-  }
-
-  private ImmutableSortedMap.Builder<String, String> createFieldOrderMapBuilder() {
-    return ImmutableSortedMap.<String, String> orderedBy(fieldNameComparator);
-  }
-
-  protected static Iterator<String> split(String line) {
-    return FIELD_SPLITTER.split(line).iterator();
+    return Ints.compare(index1, index2);
   }
 
 }
