@@ -2,7 +2,9 @@ function TableViewer(config, d) {
    this.config = config;
    this.dictUtil = d;
    this.isTable = true;
-   this.toggleFunc = null;
+   this.toggleNodeFunc = null;
+   this.toggleDataTypeFunc = null;
+
    this.selectedDataType = 'all';
 
 
@@ -320,7 +322,6 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
 // Data type filter, hide unmatched datatype tables
 ////////////////////////////////////////////////////////////////////////////////
 TableViewer.prototype.selectDataType = function(label) {
-   this.selectedDataType = label;
 
    d3.select("#minimapLabel").select("span").text("File Type: " + label+" ");
    d3.select("#minimapWrapper").style("display", "none");
@@ -353,8 +354,11 @@ TableViewer.prototype.buildFilterRow = function(grp, name, label, height) {
       .on("mouseover", function(d) { d3.select(this).style("fill", _self.colourMinimapSelect); })
       .on("mouseout", function(d) { d3.select(this).style("fill", d.cCurrent); })
       .on("click", function(d) {
-         _self.selectDataType(name);
-         d3.event.stopPropagation();
+         //_self.selectDataType(name);
+         // d3.event.stopPropagation();
+
+         _self.selectedDataType = name;
+         _self.toggleDataTypeFunc();
       });
 
    grp.append("text")
@@ -506,8 +510,10 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    function click(d) {
      d3.event.stopPropagation();
      // order matters
-     _self.toggleFunc(true);
-     _self.selectDataType(d.name);
+
+     _self.selectedDataType = d.name;
+     _self.toggleNodeFunc();
+     // _self.selectDataType(d.name);
    }
 
 

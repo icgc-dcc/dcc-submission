@@ -33,7 +33,7 @@
 }
 
 
-// From Bostock's examples
+/* From Bostock's examples */
 .node {
   cursor: pointer;
 }
@@ -112,12 +112,16 @@ a {
     <div class="collapse navbar-collapse">
       <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
-          <input data-ng-click="$event.stopPropagation()" class="form-control" id="filter" type="text" size="25" onKeyUp="doFilter()" placeholder="Search:">
+          <input 
+               data-ng-model="q"
+               data-ng-keyup="doFilter()"
+               data-ng-click="$event.stopPropagation()" class="form-control" id="filter" type="text" size="25" placeholder="Search:">
           </input>
         </div>
       </div>
 
 
+      <!--
       <div class="test">
         Hello {{dictUtil.versionList.length}}
         <select 
@@ -127,18 +131,23 @@ a {
         </select>
         Hello
       </div>
+      -->
       
 
       <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
            <select class="form-control" id="version_from" 
-               onChange="switchDictionary()" style="width:6em">
+               data-ng-options="item for item in dictUtil.versionList"
+               data-ng-model="vFrom"
+               data-ng-change="switchDictionary()" style="width:6em">
            </select>
         </div>
         TO
         <div class="form-group">
            <select class="form-control" id="version_to" 
-               onChange="switchDictionary()" style="width:6em">
+               data-ng-options="item for item in dictUtil.versionList"
+               data-ng-model="vTo"
+               data-ng-change="switchDictionary()" style="width:6em">
            </select>
         </div>
       </div>
@@ -156,10 +165,10 @@ a {
           <button class="btn btn-default" id="viewToggle" 
               data-ng-style="{'display': isReportOpen? 'none':'block'}"
               data-ng-click="changeView();">
-             <span data-ng-if="tableViewer.isTable">
+             <span data-ng-if="viewMode === 'table'">
                  <i class="glyphicon glyphicon-picture"></i> Graph View
              </span>
-             <span data-ng-if="!tableViewer.isTable">
+             <span data-ng-if="viewMode === 'graph'">
                  <i class="glyphicon glyphicon-list-alt"></i> Table View
              </span>
           </button>
@@ -218,26 +227,31 @@ a {
 var app = angular.module("ViewerApp", []);
 var codelistMap = {};
 
-app.controller("ViewerController", function($scope, $location, $http) {
+
+app.controller("ViewerController", function($scope, $location, $http, $timeout) {
+
+  var qPromise = null;
 
   // params
-  $scope.versionFrom = '';
-  $scope.versionTo = '';
-  $scope.viewMode = '';
+  $scope.vFrom = '';
+  $scope.vTo = '';
+  $scope.viewMode = 'graph';
   $scope.fileType = '';
+  $scope.q = '';
+  $scope.dataType = 'all';
 
 
   $scope.update = function() {
     var search = $location.search();
-
     console.log('update', search);
-    if (search.viewMode) {
-      if (search.viewMode === 'table') {
-        $scope.tableViewer.toggleFunc(true);
-      } else {
-        $scope.tableViewer.toggleFunc(false);
-      }
-    }
+
+    if (search.vFrom && search.vFrom !== '') $scope.vFrom = search.vFrom;
+    if (search.vTo && search.vTo !== '') $scope.vTo = search.vTo;
+    if (search.viewMode) $scope.viewMode = search.viewMode;
+
+    $scope.dataType = search.dataType || 'all';
+    $scope.q = search.q || '';
+    $scope.render();
   };
 
 
@@ -248,29 +262,28 @@ app.controller("ViewerController", function($scope, $location, $http) {
      $scope.isReportOpen = false;
   
      // Externalized function
-     $scope.tableViewer.toggleFunc = function(isTable) {
-       var ver = getSelect("#version_to");
-       $scope.tableViewer.isTable = isTable;
-       $scope.render(ver);
+     $scope.tableViewer.toggleNodeFunc = function() {
+       $scope.$apply(function() {
+         var search = $location.search();
+         search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
+         search.dataType = $scope.tableViewer.selectedDataType;
+         $location.search(search);
+       });
+     };
+
+     $scope.tableViewer.toggleDataTypeFunc = function() {
+       $scope.$apply(function() {
+         console.log('asdf');
+         var search = $location.search();
+         search.dataType = $scope.tableViewer.selectedDataType;
+         $location.search(search);
+       });
      };
   
      /*d3.select("#filter").on("click", function() {
         d3.event.stopPropagation();
      });*/
   
-     d3.select("#version_to").selectAll("option")
-       .data($scope.dictUtil.versionList)
-       .enter()
-       .append("option")
-       .attr("value", function(d) { return d; })
-       .text(function(d) { return d;});
-  
-     d3.select("#version_from").selectAll("option")
-       .data($scope.dictUtil.versionList)
-       .enter()
-       .append("option")
-       .attr("value", function(d) { return d; })
-       .text(function(d) { return d;});
   
      d3.select("#counterNew").style("color", $scope.tableViewer.colourNew);
      d3.select("#counterChanged").style("color", $scope.tableViewer.colourChanged);
@@ -284,11 +297,10 @@ app.controller("ViewerController", function($scope, $location, $http) {
   
        // Done preparing data, now start rendering, this may be flaky
        // because we are attempting to guess the correct dictionaries
-       console.log('done init!!!');
-       $scope.tableViewer.toggleFunc(false);
-       if (d3.select("#version_from").node().children.length > 1) {
-          d3.select("#version_from").node().selectedIndex = 1;
-       }
+
+       $scope.vFrom = $scope.dictUtil.versionList[1];
+       $scope.vTo = $scope.dictUtil.versionList[0];
+       console.log('done init!!!', $scope.vFrom, $scope.vTo);
        $scope.switchDictionary();
        startWatcher();
      });
@@ -298,12 +310,7 @@ app.controller("ViewerController", function($scope, $location, $http) {
   $scope.changeView = function() {
     console.log('change view');
     var search = $location.search();
-    $scope.tableViewer.isTable = !$scope.tableViewer.isTable;
-
-    search.viewMode = 'graph';
-    if ($scope.tableViewer.isTable === true) {
-      search.viewMode = 'table';
-    }
+    search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
     $location.search(search);
   };
 
@@ -320,51 +327,57 @@ app.controller("ViewerController", function($scope, $location, $http) {
     $scope.$watch(function() { return $location.search(); }, function(n, o) {
       $scope.update();
     }, true);
-
-    // not working, out of scope, viewer needs to provide a hook for angular to run digest
-    /*
-    $scope.$watch(function() { return $scope.tableViewer.selectedDataType; }, function(n, o) {
-      $scope.changeType();
-    }, true); */
   }
 
 
 
-
-function getSelect(elem) {
-   var index = d3.select(elem).node().selectedIndex;
-   return d3.select(elem).node()[index].value;
-}
-
-
   $scope.switchDictionary = function() {
-    $scope.render();
-    $scope.generateChangeList();
+    var search = $location.search();
+    search.vFrom = $scope.vFrom;
+    search.vTo = $scope.vTo;
+    $location.search(search);
   };
 
-function doFilter() {
-   var txt = d3.select("#filter").node().value;
-   $scope.tableViewer.filter(txt);
-}
+  $scope.doFilter = function() {
+
+    $timeout.cancel(qPromise);
+    console.log("hhhh ", $scope.q);
+
+    qPromise = $timeout(function() {
+      var search = $location.search();
+      var txt = $scope.q;
+      search.q = txt;
+
+      $scope.tableViewer.filter($scope.q);
+      $location.search(search);
+    }, 400);
+  }
 
 
   $scope.render = function() {
-     var versionFrom = getSelect("#version_from");
-     var versionTo = getSelect("#version_to");
-  
-     if ($scope.tableViewer.isTable) {
-        $scope.tableViewer.selectDataType("all");
+     var versionFrom = $scope.vFrom;
+     var versionTo = $scope.vTo;
+     var viewMode = $scope.viewMode;
+     var query = $scope.q;
+     var dataType = $scope.dataType;
+
+     console.log("render", versionFrom, versionTo, viewMode, query, dataType);
+
+     if (viewMode === 'table') {
         $scope.tableViewer.showDictionaryTable(versionFrom, versionTo);
+        $scope.tableViewer.selectDataType(dataType);
      } else {
         $scope.tableViewer.showDictionaryGraph(versionFrom, versionTo);
      }
-     doFilter();
+     $scope.tableViewer.filter(query);
+     $scope.generateChangeList();
   };
 
 
   $scope.generateChangeList = function() {
-     var versionFrom = getSelect("#version_from");
-     var versionTo = getSelect("#version_to");
+     var versionFrom = $scope.vFrom;
+     var versionTo = $scope.vTo;
+
      var changeReport = $scope.dictUtil.createDiffListing(versionFrom, versionTo);
   
      d3.select("#changeReport").html("");
