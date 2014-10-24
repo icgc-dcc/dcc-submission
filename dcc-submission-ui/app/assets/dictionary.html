@@ -2,12 +2,10 @@
 <html data-ng-app="ViewerApp">
 <head><title>Dictionary Viewer :: ICGC Submission</title>
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
-<!--
-<link rel="stylesheet" href="bootstrap.css">
--->
 <link rel="stylesheet" href="styles/docco.css">
 <link rel="stylesheet" href="styles/nobg.css">
-<script src="angular.min.js"></script>
+
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
 <script src="/javascripts/vendor.js"></script>
 <script src="dictionaryUtil.js"></script>
 <script src="dictionaryViewer.js"></script>
@@ -59,7 +57,7 @@
 
 
 
-// Override bootstrap default styles to make UI less blobby-looking
+/* Override bootstrap default styles to make UI less blobby-looking */
 th {
    font-size: 0.8em;
 }
@@ -82,13 +80,13 @@ a {
 }
 
 .vis-wrapper {
-   margin-left:0.5em; 
+   margin-left:0.5em;
    margin-right:0.5em;
 }
 
 .report-wrapper {
-   margin-left:1.5em; 
-   margin-right:1.5em; 
+   margin-left:1.5em;
+   margin-right:1.5em;
    display:none;
 }
 
@@ -112,7 +110,7 @@ a {
     <div class="collapse navbar-collapse">
       <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
-          <input 
+          <input
                data-ng-model="q"
                data-ng-keyup="doFilter()"
                data-ng-click="$event.stopPropagation()" class="form-control" id="filter" type="text" size="25" placeholder="Search:">
@@ -122,7 +120,7 @@ a {
 
       <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
-           <select class="form-control" id="version_from" 
+           <select class="form-control" id="version_from"
                data-ng-model="vFrom"
                data-ng-options="item for item in dictUtil.versionList"
                data-ng-change="switchDictionary()" style="width:6em">
@@ -130,14 +128,14 @@ a {
         </div>
         TO
         <div class="form-group">
-           <select class="form-control" id="version_to" 
+           <select class="form-control" id="version_to"
                data-ng-model="vTo"
                data-ng-options="item for item in dictUtil.versionList"
                data-ng-change="switchDictionary()" style="width:6em">
            </select>
         </div>
- 
-        <span>&nbsp;&nbsp;&nbsp;&nbsp;View Mode</span>
+
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;View</span>
         <div class="form-group">
             <select
                  class="form-control"
@@ -149,10 +147,10 @@ a {
       </div>
 
       <div class="navbar-form navbar-right">
-         <div class="form-control"> 
-             <span id="counterNew" data-ng-style="{color: tableViewer.colourNew}">{{changeReport.fieldsAdded.length}} new</span>, 
-                 <span id="counterChanged" data-ng-style="{color: tableViewer.colourChanged}">{{changeReport.fieldsChanged.length}} changed</span>
-             </div>
+         <div>
+             <span id="counterNew" data-ng-style="{color: tableViewer.colourNew}">{{changeReport.fieldsAdded.length}} new</span>
+             &nbsp;&nbsp;
+             <span id="counterChanged" data-ng-style="{color: tableViewer.colourChanged}">{{changeReport.fieldsChanged.length}} changed</span>
          </div>
       </div>
 
@@ -161,7 +159,6 @@ a {
   </div>
 </div>
 
-<!---->
 
 <div id="visWrapper" class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">
    <!-- template for table viewer-->
@@ -185,14 +182,14 @@ a {
 <div id="reportWrapper" class="report-wrapper" data-ng-style="{'display': viewMode==='report'? 'block':'none'}">
    <div id="changeReport">
       <pre>
-      Added: 
-      {{changeReport.added}}
+Added:
+{{changeReport.added}}
 
-      Changed:
-      {{changeReport.changed}}
-      
-      Removed:
-      {{changeReport.removed}}
+Changed:
+{{changeReport.changed}}
+
+Removed:
+{{changeReport.removed}}
       </pre>
    </div>
 </div>
@@ -262,7 +259,7 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
      // FIXME: need better 'sorting'
      $scope.vFrom = $scope.dictUtil.versionList[1];
      $scope.vTo = $scope.dictUtil.versionList[0];
-  
+
      // Externalized function
      $scope.tableViewer.toggleNodeFunc = function() {
        $scope.$apply(function() {
@@ -281,13 +278,13 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
          $location.search(search);
        });
      };
-  
+
      // Grab the codelist
      $http.get("/ws/codeLists").success(function(codeLists) {
        codeLists.forEach(function(c) {
           codelistMap[c.name] = c;
        });
-  
+
        console.log('done init!!!', $scope.vFrom, $scope.vTo, $scope.dictUtil.versionList.length);
 
        $scope.switchDictionary();
@@ -300,7 +297,7 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
     console.log('change view');
     var search = $location.search();
     // search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
-    search.viewMode = $scope.viewMode; 
+    search.viewMode = $scope.viewMode;
 
     if (search.viewMode === 'graph') {
       delete search.dataType;
@@ -323,6 +320,7 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
 
   $scope.doFilter = function() {
     $timeout.cancel(qPromise);
+    $scope.tableViewer.filter($scope.q);
 
     qPromise = $timeout(function() {
       var search = $location.search();
@@ -331,7 +329,7 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
 
       $scope.tableViewer.filter($scope.q);
       $location.search(search);
-    }, 400);
+    }, 300);
   }
 
 
