@@ -1,8 +1,11 @@
-function TableViewer(config, dictUtil) {
+function TableViewer(config, d) {
    this.config = config;
-   this.dictUtil = dictUtil;
+   this.dictUtil = d;
    this.isTable = true;
-   this.toggleFunc = null;
+   this.toggleNodeFunc = null;
+   this.toggleDataTypeFunc = null;
+
+   this.selectedDataType = 'all';
 
 
    // Configuraitons
@@ -25,8 +28,8 @@ function TableViewer(config, dictUtil) {
 ////////////////////////////////////////////////////////////////////////////////
 TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
 
-   var data = dictUtil.getDictionary(versionTo);
    var _self = this;
+   var data = _self.dictUtil.getDictionary(versionTo);
 
 
    // Reset
@@ -36,10 +39,10 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
       d3.select("#datatypeSelector").style("visibility", "visible");
       d3.select("#datatypeTable").transition().duration(400).style("opacity", 1.0);
    });
- 
+
    // Re-order according to importance and data type
    data.files  = _.sortBy(data.files, function(d) {
-     return dictUtil.sortingOrder().indexOf(d.name);
+     return _self.dictUtil.sortingOrder().indexOf(d.name);
    });
 
    // Clean up DOM
@@ -164,7 +167,7 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
           .append("tr")
           .style("font-size", "1em")
           .each(function(row, idx) {
-             var rrr = dictUtil.getField(versionFrom, table.name, row.name);
+             var rrr = _self.dictUtil.getField(versionFrom, table.name, row.name);
              _self.buildRow(d3.select(this), row, rrr, idx);
           });
      });
@@ -191,7 +194,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
    var tableName = d3.select(elem.node().parentNode).datum().name;
    var compareRow = rowFrom;
 
-   var differenceList = compareRow? dictUtil.isDifferent2(row, compareRow) : [];
+   var differenceList = compareRow? _self.dictUtil.isDifferent2(row, compareRow) : [];
 
    elem.append("td").style("background-color", function() {
       if (!compareRow) return _self.colourNew;
@@ -255,7 +258,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
          c.terms.forEach(function(term) {
             list.append("li").classed("data-type-list", true).text(term.code + "  " + term.value);
          });
-      } 
+      }
    });
 
    elem.append("td").style("max-width", "250px").each(function() {
@@ -288,7 +291,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
             example.append("p").text("Examples");
             example.append("a")
               .text(regex.config.examples);
-             
+
               //.text(regex.config.examples);
          }
       }
@@ -301,7 +304,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
          d3.select(this).append("pre").style("width", "100%").style("font-size", "0.8em").append("code").html(beautifiedScript);
       }
    });
-   
+
    /*
    .style("box-shadow", function() {
       if (differenceList.indexOf("script") >= 0) {
@@ -351,8 +354,11 @@ TableViewer.prototype.buildFilterRow = function(grp, name, label, height) {
       .on("mouseover", function(d) { d3.select(this).style("fill", _self.colourMinimapSelect); })
       .on("mouseout", function(d) { d3.select(this).style("fill", d.cCurrent); })
       .on("click", function(d) {
-         _self.selectDataType(name);
-         d3.event.stopPropagation();
+         //_self.selectDataType(name);
+         // d3.event.stopPropagation();
+
+         _self.selectedDataType = name;
+         _self.toggleDataTypeFunc();
       });
 
    grp.append("text")
@@ -381,7 +387,7 @@ TableViewer.prototype.filter = function(txt) {
    } else {
       d3.selectAll(".dictionary_table").selectAll("tbody").selectAll("tr").filter(function(d) {
 
-         if (dictUtil.isMatch(d, re) === true) {
+         if (_self.dictUtil.isMatch(d, re) === true) {
            var parentName = d3.select(d3.select(this).node().parentNode).datum().name;
 
            if (! datatypeMap[parentName]) {
@@ -429,7 +435,7 @@ TableViewer.prototype.filter = function(txt) {
       if (!node) return false;
 
       var matches = _.filter(node.data.fields, function(field) {
-         return dictUtil.isMatch(field, re);
+         return _self.dictUtil.isMatch(field, re);
       });
       return matches.length > 0;
    }).style("fill", _self.colourHighlight);
@@ -437,7 +443,7 @@ TableViewer.prototype.filter = function(txt) {
    d3.select("#graph").selectAll(".filter-indicator").filter(function(field) {
       if (!txt || txt === '') return false;
       if (!field) return false;
-      return dictUtil.isMatch(field, re);
+      return _self.dictUtil.isMatch(field, re);
    }).style("opacity", 1.0);
 
 }
@@ -447,7 +453,8 @@ TableViewer.prototype.filter = function(txt) {
 ////////////////////////////////////////////////////////////////////////////////
 TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    var _self = this;
-   var dict = dictUtil.getDictionary(versionTo);
+   var dict = _self.dictUtil.getDictionary(versionTo);
+   // console.log(_self, versionFrom, versionTo);
    window.scrollTo(0, 0);
 
    // Reset
@@ -474,7 +481,7 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
       .append("g")
       .attr("transform", "translate(40, 0)");
 
-   
+
    var i = 0, duration = 750, root;
 
    // This is pivoted
@@ -484,17 +491,17 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    var tree = d3.layout.tree().size([graphHeight, graphWidth]);
    var diagonal = d3.svg.diagonal().projection(function(d) { return [d.y, d.x]; });
 
-    
 
-   var list = dictUtil.getParentRelation(dict);
+
+   var list = _self.dictUtil.getParentRelation(dict);
    var queue = [];
    var level = 0;
 
    var root = {name:"donor"};
    var visited = {};
    visited["donor"] = 1;
-   dictUtil.buildTree2(root, list, visited, dict);
-   
+   _self.dictUtil.buildTree2(root, list, visited, dict);
+
 
    root.x0 = 200;
    root.y0 = 0;
@@ -503,8 +510,10 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    function click(d) {
      d3.event.stopPropagation();
      // order matters
-     _self.toggleFunc();
-     _self.selectDataType(d.name);
+
+     _self.selectedDataType = d.name;
+     _self.toggleNodeFunc();
+     // _self.selectDataType(d.name);
    }
 
 
@@ -512,11 +521,11 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
      // Compute the new tree layout.
      var nodes = tree.nodes(root).reverse();
      var links = tree.links(nodes);
-   
+
      // Normalize for fixed-depth.
-     nodes.forEach(function(d) { 
+     nodes.forEach(function(d) {
         if (d.depth === 1) d.y = 150;
-        else d.y = d.depth * 220; 
+        else d.y = d.depth * 220;
 
 
         // hardwired, make a bit more room
@@ -532,42 +541,42 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
         var relations =  _.filter(list, function(l) {
            return name === l.parentNode;
         });
-        
+
         for (var idx=0; idx < relations.length; idx++) {
            var reln = relations[idx];
            var node = _.find(nodes, function(n) {
               return n.name === reln.node;
            });
-           
+
            if (node && node.depth === d.depth) {
               d.y += 95;
               break;
            }
         }
-        
+
      });
-   
+
      // Update the nodes…
      var node = svg.selectAll("g.node")
          .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
-   
+
      // Enter any new nodes at the parent's previous position.
      var nodeEnter = node.enter().append("g")
          .attr("id", function(d) { return d.name; })
          .attr("class", "node")
-         .attr("transform", function(d) { 
+         .attr("transform", function(d) {
             //var depth = d.depth;
             /*
-            if (d.name === 'specimen') { 
+            if (d.name === 'specimen') {
                console.log(d);
                console.log(_.filter(list, function(l) { return l.parentNode==='specimen'}));
             }
             if (d.children) {
                d.y += 60;
-            } 
+            }
             */
-            return "translate(" + d.y + "," + d.x + ")"; 
+            return "translate(" + d.y + "," + d.x + ")";
          })
          .on("click", click)
          .on("mouseover", function(d) {
@@ -578,11 +587,11 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
             d3.select(this).selectAll("text").style("font-weight", null);
             d3.select(this).selectAll("circle").style("stroke-width", 1);
          });
-   
+
      nodeEnter.append("circle")
          .attr("r", 6.5)
          .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
-   
+
      nodeEnter.append("text")
          .attr("x", "10")
          .attr("dy", ".10em")
@@ -613,25 +622,25 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
            .attr("height", 11)
            .attr("width", 2.0)
            .style("fill", function(field) {
-              var fieldFrom = dictUtil.getField(versionFrom, node.name, field.name); 
+              var fieldFrom = _self.dictUtil.getField(versionFrom, node.name, field.name);
               if (!fieldFrom) {
                  return _self.colourNew;
-              } else if (fieldFrom && dictUtil.isDifferent2(field, fieldFrom).length > 0) {
+              } else if (fieldFrom && _self.dictUtil.isDifferent2(field, fieldFrom).length > 0) {
                  return _self.colourChanged;
               } else {
                  return "#DDDDEE";
               }
            })
            .style("opacity", function(field) {
-              var fieldFrom = dictUtil.getField(versionFrom, node.name, field.name); 
+              var fieldFrom = _self.dictUtil.getField(versionFrom, node.name, field.name);
               if (!fieldFrom) {
                  return 1.0;
-              } else if (fieldFrom && dictUtil.isDifferent2(field, fieldFrom).length > 0) {
+              } else if (fieldFrom && _self.dictUtil.isDifferent2(field, fieldFrom).length > 0) {
                  return 1.0;
               } else {
                  return 0.6;
               }
- 
+
            });
 
 
@@ -705,12 +714,12 @@ TableViewer.prototype.renderLegend = function(svg, x, y) {
       .attr("r", 6.5)
       .attr("fill", "#FFFFFF")
       .attr("stroke", "#666666");
-      
+
    legend.append("text")
       .attr("x", 10)
       .attr("dy", ".10em")
       .text("meth_array_m");
-         
+
    for(var i=0; i < 6; i++) {
       legend.append("rect")
          .attr("x", 10+4*i)
@@ -723,13 +732,13 @@ TableViewer.prototype.renderLegend = function(svg, x, y) {
    legend.append("text")
       .attr("x", 90)
       .attr("y", 0)
-      .attr("fill", "#666666") 
+      .attr("fill", "#666666")
       .text("<--- FileType Name");
 
    legend.append("text")
       .attr("x", 90)
       .attr("y", 14)
-      .attr("fill", "#666666") 
+      .attr("fill", "#666666")
       .text("<--- # Fields");
 }
 
