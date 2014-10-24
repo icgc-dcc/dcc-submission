@@ -120,59 +120,42 @@ a {
         </div>
       </div>
 
-
-      <!--
-      <div class="test">
-        Hello {{dictUtil.versionList.length}}
-        <select 
-            data-ng-options="xxx as item for item in [1, 3, 5, 7, 9]"
-            data-ng-selected="xxx==1"
-            data-ng-model="xxx">
-        </select>
-        Hello
-      </div>
-      -->
-      
-
       <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
            <select class="form-control" id="version_from" 
-               data-ng-options="item for item in dictUtil.versionList"
                data-ng-model="vFrom"
+               data-ng-options="item for item in dictUtil.versionList"
                data-ng-change="switchDictionary()" style="width:6em">
            </select>
         </div>
         TO
         <div class="form-group">
            <select class="form-control" id="version_to" 
-               data-ng-options="item for item in dictUtil.versionList"
                data-ng-model="vTo"
+               data-ng-options="item for item in dictUtil.versionList"
                data-ng-change="switchDictionary()" style="width:6em">
            </select>
         </div>
+ 
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;View Mode</span>
+        <div class="form-group">
+            <select
+                 class="form-control"
+                 data-ng-options="item for item in ['graph', 'table', 'codelist', 'report']"
+                 data-ng-model="viewMode"
+                 data-ng-change="changeView()">
+            </select>
+        </div>
       </div>
 
-      <div class="navbar-form navbar-left">
-         <button class="btn btn-default">
-             <div id="viewReport" data-ng-click="isReportOpen = !isReportOpen; generateChangeList()">
-                 <span id="viewReportLabel">{{ isReportOpen? "Close Report" : "View Report" }}</span> (
-                 <span id="counterNew"></span>, 
-                 <span id="counterChanged"></span> )
-             </div>
-         </button>
-      </div>
       <div class="navbar-form navbar-right">
-          <button class="btn btn-default" id="viewToggle" 
-              data-ng-style="{'display': isReportOpen? 'none':'block'}"
-              data-ng-click="changeView();">
-             <span data-ng-if="viewMode === 'table'">
-                 <i class="glyphicon glyphicon-picture"></i> Graph View
-             </span>
-             <span data-ng-if="viewMode === 'graph'">
-                 <i class="glyphicon glyphicon-list-alt"></i> Table View
-             </span>
-          </button>
+         <div class="form-control"> 
+             <span id="counterNew" data-ng-style="{color: tableViewer.colourNew}">{{changeReport.fieldsAdded.length}} new</span>, 
+                 <span id="counterChanged" data-ng-style="{color: tableViewer.colourChanged}">{{changeReport.fieldsChanged.length}} changed</span>
+             </div>
+         </div>
       </div>
+
     </div>
 
   </div>
@@ -180,7 +163,7 @@ a {
 
 <!---->
 
-<div id="visWrapper" class="vis-wrapper" data-ng-style="{'display': isReportOpen? 'none': 'block'}">
+<div id="visWrapper" class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">
    <!-- template for table viewer-->
    <span id="datatypeSelector" style="display:inline-block; margin-right:10em; float:right">
        <button id="minimapLabel" class="btn btn-default"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
@@ -199,8 +182,19 @@ a {
 
 
 <!-- template for report -->
-<div id="reportWrapper" class="report-wrapper" data-ng-style="{'display': isReportOpen? 'block':'none'}">
-   <div id="changeReport"></div>
+<div id="reportWrapper" class="report-wrapper" data-ng-style="{'display': viewMode==='report'? 'block':'none'}">
+   <div id="changeReport">
+      <pre>
+      Added: 
+      {{changeReport.added}}
+
+      Changed:
+      {{changeReport.changed}}
+      
+      Removed:
+      {{changeReport.removed}}
+      </pre>
+   </div>
 </div>
 <!---->
 
@@ -230,17 +224,21 @@ var codelistMap = {};
 
 app.controller("ViewerController", function($scope, $location, $http, $timeout) {
 
-  var qPromise = null;
+  // Renderer and dictionary logic
+  $scope.tableViewer = null;
+  $scope.dictUtil = null;
 
   // params
   $scope.vFrom = '';
   $scope.vTo = '';
   $scope.viewMode = 'graph';
-  $scope.fileType = '';
   $scope.q = '';
   $scope.dataType = 'all';
 
+  // Query timer
+  var qPromise = null;
 
+  // Master sync
   $scope.update = function() {
     var search = $location.search();
     console.log('update', search);
@@ -248,18 +246,22 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
     if (search.vFrom && search.vFrom !== '') $scope.vFrom = search.vFrom;
     if (search.vTo && search.vTo !== '') $scope.vTo = search.vTo;
     if (search.viewMode) $scope.viewMode = search.viewMode;
-
     $scope.dataType = search.dataType || 'all';
     $scope.q = search.q || '';
+    $scope.isReportOpen = search.isReportOpen === 'true' ? true : false;
+
     $scope.render();
   };
 
-
-  $scope.tableViewer = null;
+  // Init
   $http.get("/ws/dictionaries").success(function(dictionaryList) {
      $scope.dictUtil = new DictionaryUtil(dictionaryList);
      $scope.tableViewer = new TableViewer(null, $scope.dictUtil);
      $scope.isReportOpen = false;
+
+     // FIXME: need better 'sorting'
+     $scope.vFrom = $scope.dictUtil.versionList[1];
+     $scope.vTo = $scope.dictUtil.versionList[0];
   
      // Externalized function
      $scope.tableViewer.toggleNodeFunc = function() {
@@ -280,27 +282,14 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
        });
      };
   
-     /*d3.select("#filter").on("click", function() {
-        d3.event.stopPropagation();
-     });*/
-  
-  
-     d3.select("#counterNew").style("color", $scope.tableViewer.colourNew);
-     d3.select("#counterChanged").style("color", $scope.tableViewer.colourChanged);
-  
-  
      // Grab the codelist
      $http.get("/ws/codeLists").success(function(codeLists) {
        codeLists.forEach(function(c) {
           codelistMap[c.name] = c;
        });
   
-       // Done preparing data, now start rendering, this may be flaky
-       // because we are attempting to guess the correct dictionaries
+       console.log('done init!!!', $scope.vFrom, $scope.vTo, $scope.dictUtil.versionList.length);
 
-       $scope.vFrom = $scope.dictUtil.versionList[1];
-       $scope.vTo = $scope.dictUtil.versionList[0];
-       console.log('done init!!!', $scope.vFrom, $scope.vTo);
        $scope.switchDictionary();
        startWatcher();
      });
@@ -310,18 +299,14 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
   $scope.changeView = function() {
     console.log('change view');
     var search = $location.search();
-    search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
+    // search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
+    search.viewMode = $scope.viewMode; 
+
+    if (search.viewMode === 'graph') {
+      delete search.dataType;
+    }
     $location.search(search);
   };
-
-  $scope.changeType = function() {
-    var search = $location.search();
-    search.fileType = $scope.tableViewer.selectedDataType;
-    console.log('change search type to', search.fileType);
-    $location.search(search);
-  };
-
-
 
   function startWatcher() {
     $scope.$watch(function() { return $location.search(); }, function(n, o) {
@@ -329,19 +314,15 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
     }, true);
   }
 
-
-
   $scope.switchDictionary = function() {
     var search = $location.search();
-    search.vFrom = $scope.vFrom;
-    search.vTo = $scope.vTo;
+    search.vFrom = encodeURIComponent($scope.vFrom);
+    search.vTo = encodeURIComponent($scope.vTo);
     $location.search(search);
   };
 
   $scope.doFilter = function() {
-
     $timeout.cancel(qPromise);
-    console.log("hhhh ", $scope.q);
 
     qPromise = $timeout(function() {
       var search = $location.search();
@@ -361,8 +342,7 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
      var query = $scope.q;
      var dataType = $scope.dataType;
 
-     console.log("render", versionFrom, versionTo, viewMode, query, dataType);
-
+     console.log("Render", versionFrom, versionTo, viewMode, query, dataType);
      if (viewMode === 'table') {
         $scope.tableViewer.showDictionaryTable(versionFrom, versionTo);
         $scope.tableViewer.selectDataType(dataType);
@@ -378,45 +358,22 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
      var versionFrom = $scope.vFrom;
      var versionTo = $scope.vTo;
 
-     var changeReport = $scope.dictUtil.createDiffListing(versionFrom, versionTo);
-  
-     d3.select("#changeReport").html("");
-     d3.select("#changeReport").append("pre").text(function() {
-        var text = "";
-        text += "\nAdded:\n";
-        changeReport.fieldsAdded.forEach(function(field) {
-           text += field.fileType + "|" + field.fieldName + "\n";
-        });
-        text += "\nChanged:\n";
-        changeReport.fieldsChanged.forEach(function(field) {
-           text += field.fileType + "|" + field.fieldName + "|" + field.changes + "\n";
-        });
-        text += "\nRemoved:\n";
-        changeReport.fieldsRemoved.forEach(function(field) {
-           text += field.fileType + "|" + field.fieldName + "\n";
-        });
-  
-        return text;
-     });
-  
-     d3.select("#counterNew").text(function() {
-        return changeReport.fieldsAdded.length + " new";
-     });
-     d3.select("#counterChanged").text(function() {
-        return changeReport.fieldsChanged.length + " changed";
-     });
+     $scope.changeReport = $scope.dictUtil.createDiffListing(versionFrom, versionTo);
+
+     $scope.changeReport.changed = $scope.changeReport.fieldsChanged.map(function(field) {
+       return field.fileType + '|' + field.fieldName;
+     }).join('\n')
+
+     $scope.changeReport.added = $scope.changeReport.fieldsAdded.map(function(field) {
+       return field.fileType + '|' + field.fieldName;
+     }).join('\n')
+
+     $scope.changeReport.removed = $scope.changeReport.fieldsRemoved.map(function(field) {
+       return field.fileType + '|' + field.fieldName;
+     }).join('\n')
+
   };
-
-
 });
 
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Entry point, setting up user interaction events
-////////////////////////////////////////////////////////////////////////////////
 </script>
 </html>
