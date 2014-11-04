@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dictionary reader and utilities
 ////////////////////////////////////////////////////////////////////////////////
-var DictionaryUtil = function(list, config) {
+var DictionaryUtil = function(list) {
 
    list = _.filter(list, function(d) {
       var pattern = new RegExp("^draft");
@@ -9,7 +9,6 @@ var DictionaryUtil = function(list, config) {
    });
 
    this.dictList = list;
-   this.config = config;
    this.sortedDictionaryList = _.sortBy(this.dictList, function(obj) {
       return obj.version;
    }).reverse();
@@ -206,7 +205,35 @@ DictionaryUtil.prototype.createDiffListing = function(versionFrom, versionTo) {
    }
 
    return report;
-}
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Splits codelists into used/non-used in a specific version
+// Note there is only ONE codelist
+////////////////////////////////////////////////////////////////////////////////
+DictionaryUtil.prototype.getCodeListCoverage = function(name, version) {
+  var _self = this;
+  var result = [];
+  var dictionary = _self.getDictionary(version);
+
+  dictionary.files.forEach(function(file) {
+    file.fields.forEach(function(field) {
+      var restrictions = field.restrictions;
+      var codelist = _.find(restrictions, function(obj) { return obj.type == 'codelist'; });
+      if ( ! codelist) return;
+
+      var codelistName = codelist.config.name;
+      if (codelistName === name && result.indexOf(file.name) === -1) {
+        result.push(file.name);
+      }
+    });
+  });
+
+  return result;
+};
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -282,4 +309,5 @@ DictionaryUtil.prototype.getParentRelation = function(dict) {
    });
    return list;
 };
+
 

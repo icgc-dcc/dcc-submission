@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 <link rel="stylesheet" href="styles/docco.css">
 <link rel="stylesheet" href="styles/nobg.css">
-
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
 <script src="/javascripts/vendor.js"></script>
 <script src="dictionaryUtil.js"></script>
@@ -30,7 +29,6 @@
    font-size: 0.75em;
 }
 
-
 /* From Bostock's examples */
 .node {
   cursor: pointer;
@@ -50,12 +48,9 @@
 
 .link {
   fill: none;
-  stroke: #f1f1f1;
-  stroke-width: 2.0px;
+  stroke: #e1f1e1;
+  stroke-width: 3.0px;
 }
-
-
-
 
 /* Override bootstrap default styles to make UI less blobby-looking */
 th {
@@ -84,7 +79,7 @@ a {
    margin-right:0.5em;
 }
 
-.report-wrapper {
+.report-wrapper, .codelist-wrapper {
    margin-left:1.5em;
    margin-right:1.5em;
    display:none;
@@ -120,7 +115,7 @@ a {
 
       <div class="navbar-form navbar-left" role="search">
         <div class="form-group">
-           <select class="form-control" id="version_from"
+           <select class="form-control"
                data-ng-model="vFrom"
                data-ng-options="item for item in dictUtil.versionList"
                data-ng-change="switchDictionary()" style="width:6em">
@@ -128,7 +123,7 @@ a {
         </div>
         TO
         <div class="form-group">
-           <select class="form-control" id="version_to"
+           <select class="form-control"
                data-ng-model="vTo"
                data-ng-options="item for item in dictUtil.versionList"
                data-ng-change="switchDictionary()" style="width:6em">
@@ -148,9 +143,9 @@ a {
 
       <div class="navbar-form navbar-right">
          <div>
-             <span id="counterNew" data-ng-style="{color: tableViewer.colourNew}">{{changeReport.fieldsAdded.length}} new</span>
+             <span data-ng-style="{color: tableViewer.colourNew}">{{changeReport.fieldsAdded.length}} new</span>
              &nbsp;&nbsp;
-             <span id="counterChanged" data-ng-style="{color: tableViewer.colourChanged}">{{changeReport.fieldsChanged.length}} changed</span>
+             <span data-ng-style="{color: tableViewer.colourChanged}">{{changeReport.fieldsChanged.length}} changed</span>
          </div>
       </div>
 
@@ -160,7 +155,8 @@ a {
 </div>
 
 
-<div id="visWrapper" class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">
+<!--<div class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">-->
+<div class="vis-wrapper" data-ng-style="{'display': ['table', 'graph'].indexOf(viewMode) === -1 ? 'none': 'block'}">
    <!-- template for table viewer-->
    <span id="datatypeSelector" style="display:inline-block; margin-right:10em; float:right">
        <button id="minimapLabel" class="btn btn-default"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
@@ -179,8 +175,8 @@ a {
 
 
 <!-- template for report -->
-<div id="reportWrapper" class="report-wrapper" data-ng-style="{'display': viewMode==='report'? 'block':'none'}">
-   <div id="changeReport">
+<div class="report-wrapper" data-ng-style="{'display': viewMode==='report'? 'block':'none'}">
+   <div> 
       <pre>
 Added:
 {{changeReport.added}}
@@ -193,7 +189,46 @@ Removed:
       </pre>
    </div>
 </div>
-<!---->
+
+
+<!-- template for codelists -->
+<div class="codelist-wrapper" data-ng-style="{'display': viewMode==='codelist'? 'block':'none'}">
+   <div>
+       <span> Hide unused CodeLists: <input type="checkbox" data-ng-model="hideUnusedCodeLists" data-ng-change="render()"></span>
+   </div>
+   <br>
+   <table class="table table-condensed table-bordered table-hover">
+        <thead>
+            <tr>
+               <th>Name</th>
+               <th>Used in ...</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-ng-repeat="codeList in codeListsFiltered | filter:{'name':q} | orderBy:'name'"
+                data-ng-init="expanded=false">
+                <td> 
+                    <span data-ng-click="expanded=!expanded">
+                        <a href="">
+                            {{codeList.name}}
+                            <i class="{{expanded? 'glyphicon glyphicon-chevron-up': 'glyphicon glyphicon-chevron-down'}}"></i>
+                        </a>
+                    </span>
+                    <ul data-ng-show="expanded" class="list-unstyled">
+                        <li data-ng-repeat="term in codeList.terms">
+                        {{term.code}} &nbsp;&nbsp;&nbsp; {{term.value}}
+                        </li>
+                    </ul>
+                </td>
+                <td style="max-width:60rem"> 
+                    <span data-ng-repeat="datatype in codeList.coverage">
+                        <a href="" data-ng-click="goto('table', datatype)">{{datatype}}</a>&nbsp;&nbsp;
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+   </table>
+</div>
 
 </body>
 <script>
@@ -216,8 +251,6 @@ Removed:
 ////////////////////////////////////////////////////////////////////////////////
 
 var app = angular.module("ViewerApp", []);
-var codelistMap = {};
-
 
 app.controller("ViewerController", function($scope, $location, $http, $timeout) {
 
@@ -232,6 +265,8 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
   $scope.q = '';
   $scope.dataType = 'all';
 
+  $scope.hideUnusedCodeLists = true;
+
   // Query timer
   var qPromise = null;
 
@@ -242,7 +277,8 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
 
     if (search.vFrom && search.vFrom !== '') $scope.vFrom = search.vFrom;
     if (search.vTo && search.vTo !== '') $scope.vTo = search.vTo;
-    if (search.viewMode) $scope.viewMode = search.viewMode;
+    //if (search.viewMode) $scope.viewMode = search.viewMode;
+    $scope.viewMode = search.viewMode || 'graph';
     $scope.dataType = search.dataType || 'all';
     $scope.q = search.q || '';
     $scope.isReportOpen = search.isReportOpen === 'true' ? true : false;
@@ -252,46 +288,56 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
 
   // Init
   $http.get("/ws/dictionaries").success(function(dictionaryList) {
-     $scope.dictUtil = new DictionaryUtil(dictionaryList);
-     $scope.tableViewer = new TableViewer(null, $scope.dictUtil);
-     $scope.isReportOpen = false;
-
-     // FIXME: need better 'sorting'
-     $scope.vFrom = $scope.dictUtil.versionList[1];
-     $scope.vTo = $scope.dictUtil.versionList[0];
-
-     // Externalized function
-     $scope.tableViewer.toggleNodeFunc = function() {
-       $scope.$apply(function() {
-         var search = $location.search();
-         search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
-         search.dataType = $scope.tableViewer.selectedDataType;
-         $location.search(search);
-       });
-     };
-
-     $scope.tableViewer.toggleDataTypeFunc = function() {
-       $scope.$apply(function() {
-         console.log('asdf');
-         var search = $location.search();
-         search.dataType = $scope.tableViewer.selectedDataType;
-         $location.search(search);
-       });
-     };
-
      // Grab the codelist
      $http.get("/ws/codeLists").success(function(codeLists) {
+       console.log('Done AJAX calls');
+
+       var codelistMap = {};
        codeLists.forEach(function(c) {
           codelistMap[c.name] = c;
        });
 
-       console.log('done init!!!', $scope.vFrom, $scope.vTo, $scope.dictUtil.versionList.length);
+       $scope.codeLists = codeLists;
+       $scope.dictUtil = new DictionaryUtil(dictionaryList);
+       $scope.tableViewer = new TableViewer($scope.dictUtil, codelistMap);
+       $scope.isReportOpen = false;
+
+       // FIXME: need better 'sorting'
+       $scope.vFrom = $scope.dictUtil.versionList[1];
+       $scope.vTo = $scope.dictUtil.versionList[0];
+
+       // Externalized function
+       $scope.tableViewer.toggleNodeFunc = function() {
+         $scope.$apply(function() {
+           var search = $location.search();
+           search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
+           search.dataType = $scope.tableViewer.selectedDataType;
+           $location.search(search);
+         });
+       };
+
+       $scope.tableViewer.toggleDataTypeFunc = function() {
+         $scope.$apply(function() {
+           console.log('asdf');
+           var search = $location.search();
+           search.dataType = $scope.tableViewer.selectedDataType;
+           $location.search(search);
+         });
+       };
+
 
        $scope.switchDictionary();
        startWatcher();
+
      });
 
   });
+
+  function startWatcher() {
+    $scope.$watch(function() { return $location.search(); }, function(n, o) {
+      $scope.update();
+    }, true);
+  }
 
   $scope.changeView = function() {
     console.log('change view');
@@ -305,11 +351,14 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
     $location.search(search);
   };
 
-  function startWatcher() {
-    $scope.$watch(function() { return $location.search(); }, function(n, o) {
-      $scope.update();
-    }, true);
-  }
+  $scope.goto = function(view, type) {
+    var search = $location.search();
+    search.viewMode = view;
+    search.dataType = type;
+    delete search.q;
+    $location.search(search);
+  };
+
 
   $scope.switchDictionary = function() {
     var search = $location.search();
@@ -349,6 +398,18 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
      }
      $scope.tableViewer.filter(query);
      $scope.generateChangeList();
+
+     $scope.codeLists.forEach(function(codeList) {
+       codeList.coverage = $scope.dictUtil.getCodeListCoverage(codeList.name, versionTo).sort();
+     });
+
+     $scope.codeListsFiltered = $scope.codeLists;
+
+     if ($scope.hideUnusedCodeLists === true) {
+       $scope.codeListsFiltered = _.filter($scope.codeLists, function(codeList) {
+         return codeList.coverage.length > 0;
+       });
+     }
   };
 
 

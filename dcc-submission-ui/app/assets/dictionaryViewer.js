@@ -1,6 +1,6 @@
-function TableViewer(config, d) {
-   this.config = config;
-   this.dictUtil = d;
+function TableViewer(dictionary, codelist) {
+   this.dictUtil = dictionary;
+   this.codelistMap = codelist;
    this.isTable = true;
    this.toggleNodeFunc = null;
    this.toggleDataTypeFunc = null;
@@ -26,11 +26,13 @@ function TableViewer(config, d) {
 ////////////////////////////////////////////////////////////////////////////////
 // Main dictionary function
 ////////////////////////////////////////////////////////////////////////////////
+TableViewer.prototype.showCodeLists = function() {
+};
+
 TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
 
    var _self = this;
    var data = _self.dictUtil.getDictionary(versionTo);
-
 
    // Reset
    d3.select("#datatypeGraph").transition().duration(300).style("opacity", 0.1).each("end", function() {
@@ -177,7 +179,7 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
 
      // Turn on regexp highlighter
      RegexColorizer.colorizeAll();
-}
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -254,7 +256,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
            .style("position", "inherit"); // Not sure why this works, otherwise it overlap with svg
 
          var list = d3.select(this).append("ul").style("display", "none").classed("list-unstyled", true);
-         var c = codelistMap[ codelist.config.name ];
+         var c = _self.codelistMap[ codelist.config.name ];
          c.terms.forEach(function(term) {
             list.append("li").classed("data-type-list", true).text(term.code + "  " + term.value);
          });
@@ -315,7 +317,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
       }
    });
    */
-}
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -339,7 +341,7 @@ TableViewer.prototype.selectDataType = function(label) {
          return 1;
       }).style("display", "none");
    }
-}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Builds a mini-map row (one row per table)
@@ -367,7 +369,7 @@ TableViewer.prototype.buildFilterRow = function(grp, name, label, height) {
       .attr("font-size", "0.9em")
       .style("pointer-events", "none")
       .text(name);
-}
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -446,7 +448,7 @@ TableViewer.prototype.filter = function(txt) {
       return _self.dictUtil.isMatch(field, re);
    }).style("opacity", 1.0);
 
-}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Render the dictioary in a tree/graph layout
@@ -691,7 +693,7 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    update(root);
 
    this.renderLegend(svg, 20, 30);
-}
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -740,5 +742,5 @@ TableViewer.prototype.renderLegend = function(svg, x, y) {
       .attr("y", 14)
       .attr("fill", "#666666")
       .text("<--- # Fields");
-}
+};
 
