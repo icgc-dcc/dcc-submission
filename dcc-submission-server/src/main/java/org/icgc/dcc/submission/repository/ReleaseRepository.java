@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
-import static java.lang.String.format;
 import static org.icgc.dcc.common.core.model.Identifiable.Identifiables.getId;
 import static org.icgc.dcc.submission.release.model.QRelease.release;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
@@ -153,9 +152,10 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
         updatedRelease,
         false);
 
-    if (result.getHadError()) {
-      throw new IllegalStateException(format("Error updating release '%s': %s", releaseName, result.getError()));
-    }
+    result.getUpdatedCount();
+
+    checkState(!result.getHadError(), "Error updating release '%s': %s", releaseName, result.getError());
+    checkState(result.getUpdatedCount() == 1, "Updating release '%s' failed: %s", releaseName, result.getWriteResult());
   }
 
   public Release updateCompletedRelease(@NonNull Release completedRelease) {

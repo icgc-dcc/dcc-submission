@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -57,6 +58,7 @@ import com.google.common.collect.Lists;
 /**
  * Not meant to be used in a hash for now (override hashCode if so)
  */
+@Slf4j
 @Entity
 @ToString
 @EqualsAndHashCode(of = "name", callSuper = false)
@@ -218,6 +220,8 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void enqueue(@NonNull QueuedProject queuedProject) {
+    log.info("Enqueing '{}' from current queue state {}...", queuedProject, queue);
+
     // Not sure why there is a test / expectation for this, but here it is:
     if (queuedProject.getKey() == null || queuedProject.getKey().isEmpty()) {
       return;
@@ -237,6 +241,8 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void removeFromQueue(@NonNull final String projectKey) {
+    log.info("Removing '{}' from current queue state {}...", projectKey, queue);
+
     val iterator = queue.iterator();
     while (iterator.hasNext()) {
       val queuedProject = iterator.next();
@@ -260,15 +266,13 @@ public class Release extends BaseEntity implements HasName {
    * This method is <b>not</b> thread-safe.
    */
   public QueuedProject dequeueProject() {
+    log.info("Dequeing from current queue state {}...", queue);
     checkState(isQueued());
     return queue.remove(0);
   }
 
-  public Optional<QueuedProject> dequeue() {
-    return Optional.<QueuedProject> fromNullable(isQueued() ? queue.remove(0) : null);
-  }
-
   public void emptyQueue() {
+    log.info("Emptying from current queue state {}...", queue);
     queue.clear();
   }
 

@@ -87,7 +87,7 @@ public class ReferenceGenomeValidator implements Validator {
 
     // Selective validation filtering
     if (!isValidatable(context.getDataTypes())) {
-      log.info("Validation not required for '{}'. Skipping...", context.getProjectKey());
+      log.info("Reference genome validation applicable for '{}'. Skipping...", context.getProjectKey());
 
       return;
     }
@@ -98,15 +98,27 @@ public class ReferenceGenomeValidator implements Validator {
   private void validateFileTypes(ValidationContext context) {
     for (val referringFileType : ReferenceGenomeFileType.values()) {
       val fileType = referringFileType.getType();
-      val fieldAccessor = referringFileType.getFieldAccessor();
-      val files = context.getFiles(fileType);
-      val skip = files.isEmpty();
-      if (skip) {
-        log.info("No '{}' file(s) for '{}'. Skipping...", fileType, context.getProjectKey());
+      val dataType = fileType.getDataType();
+
+      // Data type must be specified by the user
+      val specified = context.getDataTypes().contains(dataType);
+      if (!specified) {
+        log.info("No '{}' data type specified for '{}'. Skipping...", dataType, context.getProjectKey());
 
         continue;
       }
 
+      // Data type must be available in the file system
+      val fieldAccessor = referringFileType.getFieldAccessor();
+      val files = context.getFiles(fileType);
+      val available = !files.isEmpty();
+      if (!available) {
+        log.info("No '{}' submission file(s) available for '{}'. Skipping...", fileType, context.getProjectKey());
+
+        continue;
+      }
+
+      // Specified and available
       validateFileType(context, fileType, files, fieldAccessor);
     }
   }

@@ -142,19 +142,6 @@ public class ReleaseTest {
   }
 
   @Test
-  public void test_dequeue() {
-    assertEquals(0, release.getQueuedProjectKeys().size());
-    List<QueuedProject> queuedProjects = Lists.newArrayList();
-    queuedProjects.add(new QueuedProject("pkey1", Lists.newArrayList(EMAIL)));
-    queuedProjects.add(new QueuedProject("pkey2", Lists.newArrayList(EMAIL)));
-    release.enqueue(queuedProjects);
-    assertEquals(2, release.getQueuedProjectKeys().size());
-    assertEquals("pkey1", release.dequeue().get().getKey());
-    assertEquals(1, release.getQueuedProjectKeys().size());
-    assertEquals("pkey2", release.getQueuedProjectKeys().get(0));
-  }
-
-  @Test
   public void test_emptyQueue() {
     assertEquals(0, release.getQueuedProjectKeys().size());
     String projectKey = "pkey";
