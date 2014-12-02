@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.release.model;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
@@ -145,14 +146,14 @@ public class Release extends BaseEntity implements HasName {
 
   @JsonIgnore
   public Iterable<String> getProjectKeys() {
-    return transform(getSubmissions(), new Function<Submission, String>() {
+    return copyOf(transform(getSubmissions(), new Function<Submission, String>() {
 
       @Override
       public String apply(Submission input) {
         return input.getProjectKey();
       }
 
-    });
+    }));
   }
 
   @JsonIgnore

@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.primary.report;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.cascading.CompletenessBy.COMPLETENESS;
 
@@ -88,7 +88,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
     this.fieldStatDigests = fieldStatDigests;
 
     // Extract the names
-    this.fieldNames = newArrayList(transform(
+    this.fieldNames = copyOf(transform(
         fieldStatDigests.values(),
         new Function<FieldStatDigest, String>() {
 

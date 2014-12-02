@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first.file;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_FILE_ERROR;
 import static org.icgc.dcc.submission.core.report.ErrorType.REVERSE_RELATION_FILE_ERROR;
@@ -61,13 +62,13 @@ public class FileReferenceChecker extends DelegatingFileChecker {
     val fileSchema = getFileSchema(fileName);
     val relations = fileSchema.getRelations();
     log.info("Checking presence for '{}' referenced schemata: '{}'", relations.size(),
-        Iterables.transform(relations, new Function<Relation, String>() {
+        copyOf(Iterables.transform(relations, new Function<Relation, String>() {
 
           @Override
           public String apply(Relation relation) {
             return relation.getOther();
           }
-        }));
+        })));
 
     for (val relation : relations) {
       val optionalReferencedFileSchema = getDictionary().getFileSchemaByName(relation.getOther());
@@ -101,14 +102,14 @@ public class FileReferenceChecker extends DelegatingFileChecker {
     val fileSchema = getFileSchema(fileName);
     val referencingFileSchemata = fileSchema.getIncomingSurjectiveRelationFileSchemata(getDictionary());
     log.info("Checking presence for '{}' referencing schemata: '{}'", referencingFileSchemata.size(),
-        Iterables.transform(referencingFileSchemata, new Function<FileSchema, String>() {
+        copyOf(Iterables.transform(referencingFileSchemata, new Function<FileSchema, String>() {
 
           @Override
           public String apply(FileSchema fileSchema) {
             return fileSchema.getName();
           }
 
-        }));
+        })));
 
     for (val referencingFileSchema : referencingFileSchemata) {
       checkState(referencingFileSchema.getRole() == FileSchemaRole.SUBMISSION);

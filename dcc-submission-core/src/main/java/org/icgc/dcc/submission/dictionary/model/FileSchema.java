@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.dictionary.model;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.regex.Pattern.compile;
 import static org.icgc.dcc.submission.dictionary.model.Field.IS_CONTROLLED;
@@ -122,13 +123,13 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   public Iterable<String> fieldNames() {
-    return Iterables.transform(fields, new Function<Field, String>() {
+    return ImmutableList.copyOf(transform(fields, new Function<Field, String>() {
 
       @Override
       public String apply(Field input) {
         return input.getName();
       }
-    });
+    }));
   }
 
   public String getLabel() {
@@ -273,14 +274,14 @@ public class FileSchema implements DictionaryElement, Serializable {
 
   @JsonIgnore
   private Iterable<String> getFieldNames(Iterable<Field> fields) {
-    return Iterables.transform(fields, new Function<Field, String>() {
+    return ImmutableList.copyOf(transform(fields, new Function<Field, String>() {
 
       @Override
       public String apply(Field field) {
         return field.getName();
       }
 
-    });
+    }));
   }
 
   /**

@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.norm;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.io.Files.readLines;
 import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
 import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MUTATION;
@@ -230,7 +231,7 @@ public class ExecutableSpecConverter {
   }
 
   private static String toTsvString(List<List<String>> listOfList) {
-    return NEWLINE_JOINER.join(Iterables.transform(
+    return NEWLINE_JOINER.join(copyOf(Iterables.transform(
         listOfList,
         new Function<List<String>, String>() {
 
@@ -238,7 +239,7 @@ public class ExecutableSpecConverter {
           public String apply(List<String> input) {
             return TAB_JOINER.join(input);
           }
-        }));
+        })));
   }
 
   private static String unabbreviate(String abbrev) {

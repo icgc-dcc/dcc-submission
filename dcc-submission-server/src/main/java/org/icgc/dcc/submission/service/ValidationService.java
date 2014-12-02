@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.service;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.getStackTraceAsString;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.util.concurrent.AbstractScheduledService.Scheduler.newFixedDelaySchedule;
 import static java.lang.Thread.sleep;
@@ -185,7 +186,7 @@ public class ValidationService extends AbstractScheduledService {
         val queue = release.getQueue();
         val next = nextProject.get();
         log.info("Trying to validate next eligible project in queue: '{}' ('{}': '{}')",
-            new Object[] { next.getId(), queue.size(), transform(queue, Identifiables.getId()) });
+            new Object[] { next.getId(), queue.size(), copyOf(transform(queue, Identifiables.getId())) });
         tryValidation(release, next);
       }
     } catch (ValidationRejectedException e) {

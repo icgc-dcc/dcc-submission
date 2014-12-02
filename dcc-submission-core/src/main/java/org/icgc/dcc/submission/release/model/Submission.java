@@ -55,6 +55,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 @Slf4j
@@ -303,7 +304,7 @@ public class Submission implements Serializable, Identifiable {
   }
 
   public static Iterable<String> getProjectKeys(@NonNull Iterable<Submission> submissions) {
-    return transform(submissions, getProjectKeyFunction());
+    return ImmutableList.copyOf(transform(submissions, getProjectKeyFunction()));
   }
 
   private <Result> Result executeTransition(@NonNull Iterable<SubmissionFile> submissionFiles,
