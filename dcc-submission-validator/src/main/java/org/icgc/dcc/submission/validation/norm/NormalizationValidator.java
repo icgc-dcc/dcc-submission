@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.norm;
 import static cascading.cascade.CascadeDef.cascadeDef;
 import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
@@ -353,7 +353,7 @@ public final class NormalizationValidator implements Validator {
   }
 
   private List<String> getSsmPrimaryFiles(ValidationContext context) {
-    return newArrayList(transform(
+    return copyOf(transform(
         context.getFiles(SSM_P_TYPE),
         new Function<Path, String>() {
 

@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.first.core;
 
 import static com.google.common.base.Strings.repeat;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 import static org.icgc.dcc.submission.core.report.ErrorLevel.FILE_LEVEL;
 import static org.icgc.dcc.submission.core.report.ErrorLevel.ROW_LEVEL;
@@ -94,14 +95,14 @@ public class FPVSubmissionProcessor {
     val fileSchemata = context.getDictionary().getFileSchemata(context.getDataTypes());
 
     // Selective validation filtering
-    return transform(fileSchemata, new Function<FileSchema, String>() {
+    return copyOf(transform(fileSchemata, new Function<FileSchema, String>() {
 
       @Override
       public String apply(FileSchema fileSchema) {
         return fileSchema.getPattern();
       }
 
-    });
+    }));
   }
 
   private static String banner() {

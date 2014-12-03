@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
@@ -41,19 +41,20 @@ public class KVDynamicDictionary implements KVDictionary {
 
   @Override
   public Iterable<KVExperimentalDataType> getExperimentalDataTypes() {
-    return transform(dictionary.getFeatureTypes(), new Function<FeatureType, KVExperimentalDataType>() {
+    return copyOf(transform(dictionary.getFeatureTypes(),
+        new Function<FeatureType, KVExperimentalDataType>() {
 
-      @Override
-      public KVExperimentalDataType apply(FeatureType featureType) {
-        return KVExperimentalDataType.from(featureType);
-      }
+          @Override
+          public KVExperimentalDataType apply(FeatureType featureType) {
+            return KVExperimentalDataType.from(featureType);
+          }
 
-    });
+        }));
   }
 
   @Override
   public List<KVFileType> getExperimentalFileTypes(KVExperimentalDataType dataType) {
-    return newArrayList(transform(
+    return copyOf(transform(
         dictionary.getFileTypesReferencedBranch(dataType.getFeatureType()),
         new Function<FileType, KVFileType>() {
 

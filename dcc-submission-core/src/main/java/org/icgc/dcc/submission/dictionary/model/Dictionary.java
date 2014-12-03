@@ -18,11 +18,11 @@
 package org.icgc.dcc.submission.dictionary.model;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.contains;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.asMap;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
@@ -56,7 +56,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -196,7 +195,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<String> getFileSchemaNames() {
-    return ImmutableList.<String> copyOf(transform(files, new Function<FileSchema, String>() {
+    return copyOf(transform(files, new Function<FileSchema, String>() {
 
       @Override
       public String apply(FileSchema input) {
@@ -211,7 +210,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<String> getFilePatterns() {
-    return ImmutableList.<String> copyOf(transform(files, new Function<FileSchema, String>() {
+    return copyOf(transform(files, new Function<FileSchema, String>() {
 
       @Override
       public String apply(FileSchema input) {
@@ -250,7 +249,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       }
     });
 
-    return ImmutableList.<FileSchema> copyOf(filter);
+    return copyOf(filter);
   }
 
   /**
@@ -343,7 +342,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<FileType> getFileTypes() {
-    return newArrayList(transform(files, new Function<FileSchema, FileType>() {
+    return copyOf(transform(files, new Function<FileSchema, FileType>() {
 
       @Override
       public FileType apply(FileSchema input) {
@@ -358,7 +357,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<DataType> getDataTypes() {
-    return newArrayList(newLinkedHashSet(transform(
+    return copyOf(newLinkedHashSet(transform(
         getFileTypes(),
         FileType.toDataType())));
   }
@@ -368,7 +367,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<FeatureType> getFeatureTypes() {
-    return newArrayList(transform(
+    return copyOf(transform(
 
         // Only get file types indicators of a feature type
         filter(
