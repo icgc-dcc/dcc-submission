@@ -8,6 +8,7 @@
 <script src="/javascripts/vendor.js"></script>
 <script src="dictionaryUtil.js"></script>
 <script src="dictionaryViewer.js"></script>
+
 <style type="text/css">
 
 .data-type-list {
@@ -325,10 +326,7 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
          });
        };
 
-
-       $scope.switchDictionary();
        startWatcher();
-
      });
 
   });
