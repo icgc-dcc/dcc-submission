@@ -9,9 +9,25 @@ var DictionaryUtil = function(list) {
    });
 
    this.dictList = list;
+   /*
    this.sortedDictionaryList = _.sortBy(this.dictList, function(obj) {
-      return obj.version;
+      var ver = obj.version.replace(/[^\d.-]/g, '');
+      return ver;
    }).reverse();
+   */
+
+   this.sortedDictionaryList = _.sortBy(this.dictList, function(obj) {
+     var suffix = obj.version.replace(/\d+.\d+/, '');
+     return suffix;
+   }).reverse();
+
+   this.sortedDictionaryList = _.sortBy(this.sortedDictionaryList, function(obj) {
+     var ver = obj.version.split('.')[1];
+     ver = ver.split(/[-_]/)[0]
+     ver = ver.replace(/[^\d]/, '');
+     return -ver;
+   });
+
    this.versionList = _.pluck(this.sortedDictionaryList, "version");
    this.dictionaryMap = {};
 
