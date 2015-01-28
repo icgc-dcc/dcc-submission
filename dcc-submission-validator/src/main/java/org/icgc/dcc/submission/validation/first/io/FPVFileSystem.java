@@ -33,6 +33,7 @@ import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.tika.Tika;
@@ -115,6 +116,9 @@ public class FPVFileSystem {
     // check the bzip2 header
 
     BZip2Codec codec = new BZip2Codec();
+
+    // FIXME: passing in a blank configuration to get things working in CDH5.1 for now
+    codec.setConf(new Configuration());
 
     @Cleanup
     CompressionInputStream in = codec.createInputStream(submissionDirectory.open(fileName));
