@@ -44,7 +44,7 @@ public class CodeListRepository extends AbstractRepository<CodeList, QCodeList> 
   }
 
   public CodeList findCodeListByName(@NonNull String codeListName) {
-    return uniqueResult(_.name.eq(codeListName));
+    return uniqueResult(entity.name.eq(codeListName));
   }
 
   public void saveCodeLists(@NonNull List<CodeList> codeLists) {

@@ -42,11 +42,11 @@ public class ProjectRepository extends AbstractRepository<Project, QProject> {
   }
 
   public Project findProject(@NonNull String projectKey) {
-    return uniqueResult(_.key.eq(projectKey));
+    return uniqueResult(entity.key.eq(projectKey));
   }
 
   public Project findProjectByUser(@NonNull String projectKey, @NonNull String username) {
-    return singleResult(_.key.eq(projectKey).and(_.users.contains(username)));
+    return singleResult(entity.key.eq(projectKey).and(entity.users.contains(username)));
   }
 
   public List<Project> findProjects() {
@@ -54,11 +54,11 @@ public class ProjectRepository extends AbstractRepository<Project, QProject> {
   }
 
   public List<Project> findProjects(@NonNull Iterable<String> projectKeys) {
-    return list(_.key.in(copyOf(projectKeys)));
+    return list(entity.key.in(copyOf(projectKeys)));
   }
 
   public List<Project> findProjectsByUser(@NonNull String username) {
-    return list(_.users.contains(username));
+    return list(entity.users.contains(username));
   }
 
   /**
