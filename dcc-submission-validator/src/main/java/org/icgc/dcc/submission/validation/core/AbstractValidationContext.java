@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static java.util.regex.Pattern.matches;
-import static org.icgc.dcc.common.core.util.FormatUtils._;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -158,15 +157,16 @@ public abstract class AbstractValidationContext implements ValidationContext {
   @Override
   public void reportError(Error error) {
     val text =
-        _(
-            "[reportError] projectKey = '%s',  fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s",
-            getProjectKey(),
-            error.getFileName(),
-            error.getLineNumber(),
-            error.getFieldNames().toString(),
-            error.getValue(),
-            error.getType(),
-            Arrays.toString(error.getParams()));
+        String
+            .format(
+                "[reportError] projectKey = '%s',  fileName = '%s', lineNumber = %s, columnName = %s, value = %s, type = %s, params = %s",
+                getProjectKey(),
+                error.getFileName(),
+                error.getLineNumber(),
+                error.getFieldNames().toString(),
+                error.getValue(),
+                error.getType(),
+                Arrays.toString(error.getParams()));
 
     log.error("{}", text);
   }
