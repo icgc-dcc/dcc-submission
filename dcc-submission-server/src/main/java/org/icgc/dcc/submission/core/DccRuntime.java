@@ -33,7 +33,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.Inject;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @___(@Inject))
 public class DccRuntime {
 
   @NonNull

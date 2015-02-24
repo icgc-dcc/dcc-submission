@@ -68,7 +68,7 @@ import com.google.inject.Inject;
  * responsible for mediating validation cancellation requests coming from the web layer.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ValidationService extends AbstractScheduledService {
 
   /**

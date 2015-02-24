@@ -42,7 +42,7 @@ import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class DictionaryService {
 
   @NonNull

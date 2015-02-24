@@ -34,7 +34,7 @@ import com.google.inject.Provider;
 import com.typesafe.config.Config;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @___(@Inject))
 public class SubmissionFileSystemProvider implements Provider<FileSystem> {
 
   @NonNull

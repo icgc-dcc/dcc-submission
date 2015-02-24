@@ -42,7 +42,7 @@ import com.google.inject.Inject;
  * Implements {@code UsernamePasswordAuthenticator} on top of {@code Shiro}.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator {
 
   @NonNull
