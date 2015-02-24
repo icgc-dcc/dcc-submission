@@ -21,7 +21,7 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Builder;
+import lombok.Builder;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)
