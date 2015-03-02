@@ -45,7 +45,7 @@ public class DictionaryRepository extends AbstractRepository<Dictionary, QDictio
   }
 
   public long countDictionariesByVersion(@NonNull String version) {
-    return count(_.version.eq(version));
+    return count(entity.version.eq(version));
   }
 
   public List<Dictionary> findDictionaries() {
@@ -53,7 +53,7 @@ public class DictionaryRepository extends AbstractRepository<Dictionary, QDictio
   }
 
   public Dictionary findDictionaryByVersion(@NonNull String version) {
-    return uniqueResult(_.version.eq(version));
+    return uniqueResult(entity.version.eq(version));
   }
 
   public void saveDictionary(@NonNull Dictionary dictionary) {

@@ -65,7 +65,7 @@ import com.google.inject.Inject;
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SftpContext {
 
   /**

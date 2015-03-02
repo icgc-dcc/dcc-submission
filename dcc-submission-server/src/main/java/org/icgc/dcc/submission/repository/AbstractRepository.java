@@ -57,19 +57,19 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
    * <p>
    * Named {@code _} to be idiomatic in derived classes.
    */
-  protected final Q _;
+  protected final Q entity;
 
   @Inject
   public AbstractRepository(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull Q entityPath) {
     this.morphia = morphia;
     this.datastore = datastore;
-    this._ = entityPath;
+    this.entity = entityPath;
 
     registerEntityType(entityPath.getType());
   }
 
   protected MongodbQuery<E> query() {
-    return new MorphiaQuery<E>(morphia(), datastore(), _);
+    return new MorphiaQuery<E>(morphia(), datastore(), entity);
   }
 
   protected MongodbQuery<E> where(@NonNull Predicate predicate) {
@@ -160,7 +160,7 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
 
   @SuppressWarnings("unchecked")
   private Class<E> getEntityType() {
-    return (Class<E>) _.getType();
+    return (Class<E>) entity.getType();
   }
 
 }

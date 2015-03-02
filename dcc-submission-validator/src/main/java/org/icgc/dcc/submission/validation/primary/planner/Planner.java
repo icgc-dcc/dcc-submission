@@ -46,7 +46,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @___(@Inject))
 public class Planner {
 
   @NonNull

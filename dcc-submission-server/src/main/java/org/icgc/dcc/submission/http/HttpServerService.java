@@ -56,7 +56,7 @@ import com.typesafe.config.Config;
  * A {@code Service} for managing the {@code HttpServer} life cycle.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class HttpServerService extends AbstractService {
 
   /**

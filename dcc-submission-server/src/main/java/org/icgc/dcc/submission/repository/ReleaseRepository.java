@@ -51,7 +51,7 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public Release findOpenRelease() {
-    return singleResult(_.state.eq(OPENED));
+    return singleResult(entity.state.eq(OPENED));
   }
 
   public long countReleases() {
@@ -59,7 +59,7 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public long countOpenReleases() {
-    return count(_.state.eq(OPENED));
+    return count(entity.state.eq(OPENED));
   }
 
   public List<Release> findReleases() {
@@ -67,23 +67,24 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public List<Release> findReleaseSummaries() {
-    return list(_.name, _.dictionaryVersion, _.releaseDate, _.state, _.submissions.any().projectKey);
+    return list(entity.name, entity.dictionaryVersion, entity.releaseDate, entity.state,
+        entity.submissions.any().projectKey);
   }
 
   public Release findNextRelease() {
-    return singleResult(_.state.eq(OPENED));
+    return singleResult(entity.state.eq(OPENED));
   }
 
   public Release findNextReleaseQueue() {
-    return singleResult(_.state.eq(OPENED), _.queue);
+    return singleResult(entity.state.eq(OPENED), entity.queue);
   }
 
   public String findNextReleaseDictionaryVersion() {
-    return singleResult(_.state.eq(OPENED), _.dictionaryVersion).getDictionaryVersion();
+    return singleResult(entity.state.eq(OPENED), entity.dictionaryVersion).getDictionaryVersion();
   }
 
   public Release findReleaseByName(@NonNull String releaseName) {
-    return uniqueResult(_.name.eq(releaseName));
+    return uniqueResult(entity.name.eq(releaseName));
   }
 
   public String findDictionaryVersion(@NonNull String releaseName) {
@@ -112,19 +113,19 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public Release findReleaseSummaryByName(@NonNull String releaseName) {
-    return uniqueResult(_.name.eq(releaseName),
-        _.name, _.dictionaryVersion, _.releaseDate, _.state,
-        _.submissions.any().projectKey, _.submissions.any().projectName, _.submissions.any().state,
-        _.submissions.any().report.dataTypeReports.any().dataType,
-        _.submissions.any().report.dataTypeReports.any().dataTypeState);
+    return uniqueResult(entity.name.eq(releaseName),
+        entity.name, entity.dictionaryVersion, entity.releaseDate, entity.state,
+        entity.submissions.any().projectKey, entity.submissions.any().projectName, entity.submissions.any().state,
+        entity.submissions.any().report.dataTypeReports.any().dataType,
+        entity.submissions.any().report.dataTypeReports.any().dataTypeState);
   }
 
   public Release findCompletedRelease(@NonNull String releaseName) {
-    return uniqueResult(_.state.eq(COMPLETED).and(_.name.eq(releaseName)));
+    return uniqueResult(entity.state.eq(COMPLETED).and(entity.name.eq(releaseName)));
   }
 
   public List<Release> findCompletedReleases() {
-    return list(_.state.eq(COMPLETED));
+    return list(entity.state.eq(COMPLETED));
   }
 
   public void saveNewRelease(@NonNull Release newRelease) {

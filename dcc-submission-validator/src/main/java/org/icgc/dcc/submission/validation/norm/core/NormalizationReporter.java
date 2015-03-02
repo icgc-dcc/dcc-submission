@@ -34,7 +34,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
-import lombok.experimental.Builder;
+import lombok.Builder;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig;

@@ -59,7 +59,7 @@ import com.google.inject.Inject;
 @Provider
 @BindingPriority(AUTHENTICATION)
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   /**

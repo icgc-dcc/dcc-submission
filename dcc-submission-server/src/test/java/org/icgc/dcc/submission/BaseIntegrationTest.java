@@ -39,10 +39,6 @@ public class BaseIntegrationTest {
 
   protected final Client client = ClientFactory.newClient();
 
-  protected static String _(String format, Object... args) {
-    return String.format(format, args);
-  }
-
   @SneakyThrows
   protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {
     Path errorFile = new Path(dir, path);

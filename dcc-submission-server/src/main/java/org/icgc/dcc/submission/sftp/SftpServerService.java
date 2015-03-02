@@ -44,7 +44,7 @@ import com.google.inject.Inject;
  * Service abstraction to the SFTP sub-system.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SftpServerService extends AbstractService {
 
   /**

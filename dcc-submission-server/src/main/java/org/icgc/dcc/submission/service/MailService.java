@@ -55,7 +55,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class MailService {
 
   /**

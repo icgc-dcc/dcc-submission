@@ -26,7 +26,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
-import lombok.experimental.Builder;
+import lombok.Builder;
 
 import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;

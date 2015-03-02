@@ -36,7 +36,7 @@ public class UserRepository extends AbstractRepository<User, QUser> {
   }
 
   public User findUserByUsername(@NonNull String username) {
-    return uniqueResult(_.username.eq(username));
+    return uniqueResult(entity.username.eq(username));
   }
 
   public User saveUser(@NonNull User user) {

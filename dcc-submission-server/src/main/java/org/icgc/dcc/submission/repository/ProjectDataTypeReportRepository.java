@@ -43,25 +43,25 @@ public class ProjectDataTypeReportRepository extends AbstractRepository<ProjectD
 
   public List<ProjectDataTypeReport> find(String releaseName, List<String> projectCodes) {
     if (projectCodes.isEmpty()) {
-      return list(_.releaseName.eq(releaseName));
+      return list(entity.releaseName.eq(releaseName));
     }
-    return list(_.releaseName.eq(releaseName).and(_.projectCode.in(projectCodes)));
+    return list(entity.releaseName.eq(releaseName).and(entity.projectCode.in(projectCodes)));
   }
 
   public void deleteBySubmission(
       @NonNull final String releaseName,
       @NonNull final String projectKey) {
     datastore().delete(createQuery()
-        .filter(fieldName(_.releaseName), releaseName)
-        .filter(fieldName(_.projectCode), projectKey));
+        .filter(fieldName(entity.releaseName), releaseName)
+        .filter(fieldName(entity.projectCode), projectKey));
   }
 
   public void upsert(ProjectDataTypeReport projectDataTypeReport) {
     updateFirst(createQuery()
-        .filter(fieldName(_.releaseName), projectDataTypeReport.getReleaseName())
-        .filter(fieldName(_.projectCode), projectDataTypeReport.getProjectCode())
-        .filter(fieldName(_.featureType), projectDataTypeReport.getFeatureType())
-        .filter(fieldName(_.sampleType), projectDataTypeReport.getSampleType()),
+        .filter(fieldName(entity.releaseName), projectDataTypeReport.getReleaseName())
+        .filter(fieldName(entity.projectCode), projectDataTypeReport.getProjectCode())
+        .filter(fieldName(entity.featureType), projectDataTypeReport.getFeatureType())
+        .filter(fieldName(entity.sampleType), projectDataTypeReport.getSampleType()),
         projectDataTypeReport, true);
   }
 }

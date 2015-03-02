@@ -34,7 +34,7 @@ import com.typesafe.config.Config;
  * A {@link HttpHandlerProvider} that will mount {@code Jersey} on a particular path. The path is configured through the
  * {@code http.ws.path} parameter.
  */
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class JerseyHandler implements HttpHandlerProvider {
 
   @NonNull

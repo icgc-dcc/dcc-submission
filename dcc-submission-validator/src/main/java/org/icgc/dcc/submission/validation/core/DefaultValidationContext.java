@@ -23,11 +23,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.Delegate;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.val;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;

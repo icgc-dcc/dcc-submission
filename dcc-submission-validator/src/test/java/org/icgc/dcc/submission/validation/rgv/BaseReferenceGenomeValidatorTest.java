@@ -34,7 +34,7 @@ import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
-import lombok.experimental.Builder;
+import lombok.Builder;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;

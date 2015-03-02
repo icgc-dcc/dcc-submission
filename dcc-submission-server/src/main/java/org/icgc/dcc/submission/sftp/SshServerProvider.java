@@ -43,7 +43,7 @@ import com.typesafe.config.Config;
  * Factory class for encapsulating the "complex" logic of creating an {@link SshServer}.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SshServerProvider implements Provider<SshServer> {
 
   /**

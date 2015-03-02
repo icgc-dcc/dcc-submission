@@ -53,7 +53,7 @@ import com.google.inject.Inject;
  */
 @Slf4j
 @ThreadSafe
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @___(@Inject))
 public class ValidationExecutor {
 
   /**

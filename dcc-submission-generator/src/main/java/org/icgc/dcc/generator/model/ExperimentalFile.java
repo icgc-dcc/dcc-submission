@@ -23,7 +23,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Builder;
+import lombok.Builder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

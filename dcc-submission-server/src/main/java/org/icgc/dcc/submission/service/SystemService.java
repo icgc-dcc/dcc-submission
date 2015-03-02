@@ -25,7 +25,7 @@ import org.icgc.dcc.submission.sftp.SftpServerService;
 
 import com.google.inject.Inject;
 
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SystemService {
 
   @NonNull
