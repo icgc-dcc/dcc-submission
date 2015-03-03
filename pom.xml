@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-parent</artifactId>
-    <version>11</version>
+    <version>12</version>
   </parent>
 
   <artifactId>dcc-submission</artifactId>
@@ -131,7 +131,7 @@
   <properties>
     <!-- Versions -->
     <dcc-common.version>3.8.2.0</dcc-common.version>
-    
+
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
   </properties>
