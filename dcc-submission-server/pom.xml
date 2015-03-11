@@ -157,13 +157,6 @@
       <artifactId>jsr305</artifactId>
     </dependency>
 
-    <!-- Scripting -->
-    <dependency>
-      <groupId>org.mvel</groupId>
-      <artifactId>mvel2</artifactId>
-      <version>${mvel.version}</version>
-    </dependency>
-
     <!-- Testing - REST -->
     <dependency>
       <groupId>org.glassfish.jersey.test-framework</groupId>
@@ -355,6 +348,5 @@
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     <mina.version>0.9.0</mina.version>
     <shiro.version>1.2.0</shiro.version>
-    <mvel.version>2.1.7.Final</mvel.version>
   </properties>
 </project>
