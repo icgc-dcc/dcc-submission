@@ -145,8 +145,8 @@
   </dependencies>
 
   <properties>
-    <!-- Versions -->
-    <mvel.version>2.1.7.Final</mvel.version>
+    <!-- Versions - MVEL -->
+    <mvel.version>2.2.4.Final</mvel.version>
   </properties>
   
 </project>
