@@ -23,7 +23,6 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
-import org.icgc.dcc.submission.release.model.Release;
 import org.junit.Test;
 
 public class ReleaseValidationTest extends ModelValidationTest<Release> {

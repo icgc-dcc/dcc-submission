@@ -34,8 +34,8 @@ import org.icgc.dcc.submission.validation.core.Validation;
  * <p>
  * Triggers {@link ValidationListener} events.
  */
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class ValidationJob implements Runnable {
 
   @NonNull

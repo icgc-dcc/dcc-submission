@@ -31,10 +31,10 @@ public class Clinical {
    * Data.
    */
   @NonNull
-  private final List<Record> donors;
+  List<Record> donors;
   @NonNull
-  private final List<Record> specimens;
+  List<Record> specimens;
   @NonNull
-  private final List<Record> samples;
+  List<Record> samples;
 
 }

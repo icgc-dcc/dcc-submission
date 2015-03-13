@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.parser;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +24,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
+import org.icgc.dcc.common.hadoop.parser.FileParser;
 import org.icgc.dcc.submission.validation.core.Record;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
@@ -34,8 +33,7 @@ import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Parser implementation that creates an in-memory model of the specimen and sample fields required to perform sample
- * type validation.
+ * Parser implementation that creates an in-memory model of clinical data.
  */
 public class ClinicalParser {
 
@@ -61,20 +59,18 @@ public class ClinicalParser {
 
   @SneakyThrows
   private static List<Record> parseFileType(FileType fileType, ValidationContext context) {
-    val list = ImmutableList.<Record> builder();
-    val fileParser = ValidationFileParsers.newMapFileParser(context, fileType);
+    val fileParser = createParser(fileType, context);
+
+    val records = ImmutableList.<Record> builder();
     for (val file : context.getFiles(fileType)) {
-      fileParser.parse(file, new FileRecordProcessor<Map<String, String>>() {
-
-        @Override
-        public void process(long lineNumber, Map<String, String> map) throws IOException {
-          list.add(new Record(map));
-        }
-
-      });
+      fileParser.parse(file, (lineNumber, map) -> records.add(new Record(map)));
     }
 
-    return list.build();
+    return records.build();
+  }
+
+  private static FileParser<Map<String, String>> createParser(FileType fileType, ValidationContext context) {
+    return ValidationFileParsers.newMapFileParser(context, fileType);
   }
 
 }

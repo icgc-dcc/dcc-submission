@@ -22,9 +22,9 @@ import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.
 
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Value;
 import lombok.val;
-import lombok.Builder;
 
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.data.KVRow;

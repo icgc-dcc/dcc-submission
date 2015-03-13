@@ -21,14 +21,13 @@ import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldName
 import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SPECIMEN_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SPECIMEN_TYPE_FIELD_NAME;
 
-import java.io.IOException;
 import java.util.Map;
 
 import lombok.SneakyThrows;
 import lombok.val;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
+import org.icgc.dcc.common.hadoop.parser.FileParser;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.sample.core.Samples;
 import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
@@ -60,19 +59,15 @@ public class SamplesParser {
   @SneakyThrows
   private static Map<String, String> parseFileTypeMap(FileType fileType, final String keyFieldName,
       final String valueFieldName, ValidationContext context) {
+    val fileParser = createParser(fileType, context);
+
     val map = ImmutableMap.<String, String> builder();
-    val fileParser = ValidationFileParsers.newMapFileParser(context, fileType);
     for (val file : context.getFiles(fileType)) {
-      fileParser.parse(file, new FileRecordProcessor<Map<String, String>>() {
+      fileParser.parse(file, (lineNumber, record) -> {
+        String key = record.get(keyFieldName);
+        String value = record.get(valueFieldName);
 
-        @Override
-        public void process(long lineNumber, Map<String, String> record) throws IOException {
-          val key = record.get(keyFieldName);
-          val value = record.get(valueFieldName);
-
-          map.put(key, value);
-        }
-
+        map.put(key, value);
       });
     }
 
@@ -90,6 +85,10 @@ public class SamplesParser {
     }
 
     return innerJoin.build();
+  }
+
+  private static FileParser<Map<String, String>> createParser(FileType fileType, ValidationContext context) {
+    return ValidationFileParsers.newMapFileParser(context, fileType);
   }
 
 }

@@ -29,11 +29,8 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
-import org.icgc.dcc.submission.validation.first.file.FileHeaderChecker;
-import org.icgc.dcc.submission.validation.first.file.FileNoOpChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.row.TestUtils;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

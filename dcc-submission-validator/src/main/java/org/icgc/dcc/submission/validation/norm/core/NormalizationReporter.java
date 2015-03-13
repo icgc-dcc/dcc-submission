@@ -31,10 +31,10 @@ import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.N
 
 import java.util.List;
 
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
-import lombok.Builder;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig;

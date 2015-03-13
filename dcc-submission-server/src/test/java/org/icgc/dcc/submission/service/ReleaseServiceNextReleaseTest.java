@@ -30,7 +30,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;

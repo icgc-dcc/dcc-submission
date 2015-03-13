@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.primary.visitor;
 import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 
 public class RowBasedFlowPlanningVisitor extends PlanningVisitor<RowBasedPlanElement> {
 

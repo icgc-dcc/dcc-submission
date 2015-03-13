@@ -24,7 +24,6 @@ import java.util.Set;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction.InCodeListFunction;
 import org.junit.Test;
 

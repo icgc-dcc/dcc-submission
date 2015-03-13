@@ -20,8 +20,8 @@ package org.icgc.dcc.submission.validation.key.data;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
-import lombok.Value;
 import lombok.Builder;
+import lombok.Value;
 
 import org.icgc.dcc.submission.validation.key.core.KVKeyType;
 

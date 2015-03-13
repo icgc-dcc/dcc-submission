@@ -341,7 +341,7 @@
 
   <properties>
     <!-- Entry point -->
-    <main.class>org.icgc.dcc.submission.Main</main.class>
+    <main.class>org.icgc.dcc.submission.SubmissionMain</main.class>
 
     <!-- Versions -->
     <jersey.version>2.0-m10</jersey.version>

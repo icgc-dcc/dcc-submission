@@ -30,6 +30,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.common.core.util.FsConfig.FS_ROOT;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
+import static org.icgc.dcc.common.test.Tests.TEST_FIXTURES_DIR;
 import static org.icgc.dcc.submission.TestUtils.$;
 import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
@@ -71,7 +72,6 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
-import static org.icgc.dcc.common.test.Tests.TEST_FIXTURES_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -95,7 +95,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes;
 import org.icgc.dcc.common.core.util.AppUtils;
 import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.core.PersistenceModule;
+import org.icgc.dcc.submission.config.PersistenceModule;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
@@ -141,28 +141,36 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * {@link file:///src/test/resources/fixtures/submission/fs/release1}.
    */
   private static final String PROJECT1_KEY = "project.1";
-  private static final String PROJECT1 = String.format("{name:'Project One',key:'%s',users:['admin'],groups:['admin']}",
+  private static final String PROJECT1 = String.format(
+      "{name:'Project One',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT1_KEY);
   private static final String PROJECT2_KEY = "project.2";
-  private static final String PROJECT2 = String.format("{name:'Project Two',key:'%s',users:['admin','brett'],groups:['admin']}",
+  private static final String PROJECT2 = String.format(
+      "{name:'Project Two',key:'%s',users:['admin','brett'],groups:['admin']}",
       PROJECT2_KEY);
   private static final String PROJECT3_KEY = "project.3";
-  private static final String PROJECT3 = String.format("{name:'Project Three',key:'%s',users:['admin'],groups:['admin']}",
+  private static final String PROJECT3 = String.format(
+      "{name:'Project Three',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT3_KEY);
   private static final String PROJECT4_KEY = "project.4";
-  private static final String PROJECT4 = String.format("{name:'Project Four',key:'%s',users:['admin'],groups:['admin']}",
+  private static final String PROJECT4 = String.format(
+      "{name:'Project Four',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT4_KEY);
   private static final String PROJECT5_KEY = "project.5";
-  private static final String PROJECT5 = String.format("{name:'Project Five',key:'%s',users:['admin'],groups:['admin']}",
+  private static final String PROJECT5 = String.format(
+      "{name:'Project Five',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT5_KEY);
   private static final String PROJECT6_KEY = "project.6";
-  private static final String PROJECT6 = String.format("{name:'Project Six',key:'%s',users:['admin'],groups:['admin']}",
+  private static final String PROJECT6 = String.format(
+      "{name:'Project Six',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT6_KEY);
   private static final String PROJECT7_KEY = "project.7";
-  private static final String PROJECT7 = String.format("{name:'Project Seven',key:'%s',users:['admin'],groups:['admin']}",
+  private static final String PROJECT7 = String.format(
+      "{name:'Project Seven',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT7_KEY);
   private static final String PROJECT8_KEY = "project.8";
-  private static final String PROJECT8 = String.format("{name:'Project Eight',key:'%s',users:['admin'],groups:['admin']}",
+  private static final String PROJECT8 = String.format(
+      "{name:'Project Eight',key:'%s',users:['admin'],groups:['admin']}",
       PROJECT8_KEY);
 
   private final static Map<String, SubmissionState> INITIAL_STATES =
@@ -316,7 +324,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       hadoop = new MiniHadoop(new Configuration(), 1, 1, new File("/tmp/hadoop"));
       fileSystem = hadoop.getFileSystem();
 
-      // Config overrides for {@code Main} consumption
+      // Config overrides for {@code SubmissionMain} consumption
       val jobConf = hadoop.createJobConf();
       System.setProperty("fs.url", jobConf.get("fs.defaultFS"));
       System.setProperty("hadoop.fs.defaultFS", jobConf.get("fs.defaultFS"));
@@ -331,7 +339,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     smtpServer = SimpleSmtpServer.start(TEST_CONFIG.getInt("mail.smtp.port"));
 
     status("init", "Starting submission server...");
-    Main.main("external", TEST_CONFIG_FILE.getAbsolutePath());
+    SubmissionMain.main("external", TEST_CONFIG_FILE.getAbsolutePath());
   }
 
   @After
@@ -350,7 +358,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("shutdown", "SMTP server shut down.");
 
     status("shutdown", "Shutting down submission server...");
-    Main.shutdown();
+    SubmissionMain.shutdown();
     status("shutdown", "Submission server shut down.");
 
     if (hadoop != null) {

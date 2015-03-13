@@ -34,7 +34,7 @@ To start the server from the command line:
 
 Start the server using an IDE by running:
 
-	org.icgc.dcc.submission.Main external src/test/conf/application.conf
+	org.icgc.dcc.submission.SubmissionMain external src/test/conf/application.conf
 
 To see the client interface, point your browser to [http://localhost:5380/](http://localhost:5380/)
 

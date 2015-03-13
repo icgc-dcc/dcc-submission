@@ -24,17 +24,17 @@ import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUB
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
-import static org.icgc.dcc.submission.validation.TestUtils.getFieldNames;
+import static org.icgc.dcc.submission.validation.ValidationTests.getTestFieldNames;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
-import lombok.Builder;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -169,7 +169,7 @@ public class BaseReferenceGenomeValidatorTest {
   }
 
   private List<String> getSsmPrimaryFieldNames() {
-    return getFieldNames(SSM_P_TYPE);
+    return getTestFieldNames(SSM_P_TYPE);
   }
 
   private SsmPrimaryRecord.SsmPrimaryRecordBuilder record() {

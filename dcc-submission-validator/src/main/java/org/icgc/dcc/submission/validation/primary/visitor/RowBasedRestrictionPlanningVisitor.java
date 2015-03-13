@@ -21,9 +21,9 @@ import java.util.Set;
 
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;

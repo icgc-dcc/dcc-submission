@@ -40,7 +40,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
-import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -93,7 +93,7 @@ public class ValidationService extends AbstractScheduledService {
   private final Set<Validator> validators;
 
   /**
-   * Main {@code Validation} dispatch processing.
+   * SubmissionMain {@code Validation} dispatch processing.
    * 
    * @throws Exception
    */
@@ -131,7 +131,7 @@ public class ValidationService extends AbstractScheduledService {
   }
 
   /**
-   * Main {@code Validation} dispatch loop that that is invoked by the {@link #scheduler()}.
+   * SubmissionMain {@code Validation} dispatch loop that that is invoked by the {@link #scheduler()}.
    * 
    * @throws Exception
    */

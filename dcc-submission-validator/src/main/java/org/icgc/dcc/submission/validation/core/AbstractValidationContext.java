@@ -49,7 +49,7 @@ import com.google.common.collect.ImmutableList;
 @RequiredArgsConstructor
 public abstract class AbstractValidationContext implements ValidationContext {
 
-  protected static final String DICTIONARY_VERSION = "0.9a";
+  protected static final String DICTIONARY_VERSION = "0.10a";
 
   @Override
   public SubmissionPlatformStrategy getPlatformStrategy() {

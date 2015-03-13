@@ -3,7 +3,6 @@ package org.icgc.dcc.submission.validation.pcawg.util;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.pcawg.util.PCAWGRepository;
 import org.junit.Test;
 
 @Slf4j

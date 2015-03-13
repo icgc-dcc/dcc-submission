@@ -33,7 +33,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Mostly ported from TestUtils in the dcc-submission-server module (TODO: address code duplication).
+ * Mostly ported from ValidationTests in the dcc-submission-server module (TODO: address code duplication).
  */
 @NoArgsConstructor(access = PRIVATE)
 final class NormalizationTestUtils {

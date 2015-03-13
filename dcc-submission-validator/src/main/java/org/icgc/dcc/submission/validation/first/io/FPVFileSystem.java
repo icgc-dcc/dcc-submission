@@ -113,11 +113,10 @@ public class FPVFileSystem {
   }
 
   public void attemptBzip2Read(String fileName) throws IOException {
-    // check the bzip2 header
-
+    // Check the bzip2 header
     BZip2Codec codec = new BZip2Codec();
 
-    // FIXME: passing in a blank configuration to get things working in CDH5.1 for now
+    // FIXME: Passing in a blank configuration to get things working in CDH5.1 for now
     codec.setConf(new Configuration());
 
     @Cleanup
@@ -135,8 +134,8 @@ public class FPVFileSystem {
   @SneakyThrows
   public List<String> peekFileHeader(String fileName) {
     @Cleanup
-    BufferedReader reader = new BufferedReader(new InputStreamReader(
-        submissionDirectory.getDecompressingInputStream(fileName)));
+    BufferedReader reader =
+        new BufferedReader(new InputStreamReader(submissionDirectory.getDecompressingInputStream(fileName)));
     String header = reader.readLine();
     header = (header == null) ? "" : header;
     return copyOf(FIELD_SPLITTER.split(header));

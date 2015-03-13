@@ -18,9 +18,9 @@
 package org.icgc.dcc.submission.validation.primary.visitor;
 
 import org.icgc.dcc.common.core.model.ValueType;
+import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
-import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.planner.PlanningException;
 

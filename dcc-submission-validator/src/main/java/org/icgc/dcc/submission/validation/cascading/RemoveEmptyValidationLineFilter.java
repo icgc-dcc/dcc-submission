@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
+import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
 import cascading.operation.FilterCall;
-import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 
 public class RemoveEmptyValidationLineFilter extends BaseOperation<Void> implements Filter<Void> {
 

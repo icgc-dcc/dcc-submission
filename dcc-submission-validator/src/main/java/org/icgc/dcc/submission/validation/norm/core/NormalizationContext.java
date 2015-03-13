@@ -21,9 +21,9 @@ import static com.google.common.collect.ImmutableList.copyOf;
 
 import java.util.Map;
 
+import lombok.Builder;
 import lombok.Value;
 import lombok.val;
-import lombok.Builder;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;

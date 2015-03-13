@@ -20,6 +20,9 @@ package org.icgc.dcc.submission.config;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.name.Names.named;
 import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
+
+import java.util.Map;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -28,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.common.core.util.InjectionNames;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.TypeLiteral;
 import com.typesafe.config.Config;
 
 /**
@@ -36,6 +40,11 @@ import com.typesafe.config.Config;
 @Slf4j
 @RequiredArgsConstructor
 public class ConfigModule extends AbstractModule {
+
+  /**
+   * Constants.
+   */
+  private static final TypeLiteral<Map<String, String>> STRING_MAP = new TypeLiteral<Map<String, String>>() {};
 
   @NonNull
   private final Config config;
@@ -48,10 +57,9 @@ public class ConfigModule extends AbstractModule {
     checkState(config.hasPath(HADOOP_KEY));
     val hadoopProperties = Configs.asStringMap(config.getObject(HADOOP_KEY));
     log.info("Hadoop properties: '{}'", hadoopProperties);
-    bind(TypeLiterals.STRING_MAP)
+    bind(STRING_MAP)
         .annotatedWith(
             named(InjectionNames.HADOOP_PROPERTIES))
         .toInstance(hadoopProperties);
   }
-
 }

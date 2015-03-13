@@ -26,10 +26,8 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.serializer.WritableSerialization;
 import org.apache.hadoop.mapred.JobConf;
-import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.core.report.ErrorType;
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;

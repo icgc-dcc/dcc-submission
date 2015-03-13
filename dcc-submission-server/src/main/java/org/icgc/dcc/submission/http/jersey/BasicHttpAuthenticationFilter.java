@@ -56,9 +56,9 @@ import com.google.inject.Inject;
  * Example client usage:
  * <code>$ curl -v -H "Authorization: Basic $(echo -n "brett:brettspasswd" | base64)" http://localhost:5379/ws/myresource</code>
  */
+@Slf4j
 @Provider
 @BindingPriority(AUTHENTICATION)
-@Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
@@ -114,7 +114,7 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
     }
 
     // Expected to be of the form: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
-    val parts = authorizationHeader.split(" ", 2);
+    String[] parts = authorizationHeader.split(" ", 2);
     if (parts.length != 2 || !parts[0].equals(HTTP_AUTH_PREFIX)) {
       abort(context, authorizationHeader);
       return;
@@ -123,7 +123,7 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
     // Decode the Base64-concatenated token
     val authenticationToken = parts[1];
     val decodedAuthenticationToken = Base64.decodeToString(authenticationToken);
-    val decoded = decodedAuthenticationToken.split(TOKEN_INFO_SEPARATOR, 2);
+    String[] decoded = decodedAuthenticationToken.split(TOKEN_INFO_SEPARATOR, 2);
     if (decoded.length != 2) {
       abort(context, decoded.length);
       return;

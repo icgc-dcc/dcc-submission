@@ -13,7 +13,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.TestUtils;
+import org.icgc.dcc.submission.validation.ValidationTests;
 import org.junit.Test;
 
 import cascading.flow.hadoop.HadoopFlowStep;
@@ -49,7 +49,7 @@ public class KVValidatorRunnerTest {
   }
 
   private Dictionary getDictionary() {
-    return TestUtils.dictionary();
+    return ValidationTests.getTestDictionary();
   }
 
 }

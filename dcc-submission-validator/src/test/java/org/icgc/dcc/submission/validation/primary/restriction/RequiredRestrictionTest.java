@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.primary.restriction;
 import java.util.Iterator;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction.SpecifiedFunction;
 import org.junit.Test;
 

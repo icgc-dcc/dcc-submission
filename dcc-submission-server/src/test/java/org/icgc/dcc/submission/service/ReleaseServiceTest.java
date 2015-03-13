@@ -33,8 +33,8 @@ import java.util.Set;
 import junit.framework.Assert;
 import lombok.val;
 
+import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
-import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;

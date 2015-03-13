@@ -24,6 +24,7 @@ import static org.icgc.dcc.common.core.util.Joiners.COMMA;
 import java.net.URL;
 import java.util.Set;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -35,14 +36,21 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 @Slf4j
+@RequiredArgsConstructor
 public class PCAWGRepository {
 
   /**
    * Constants.
    */
-  private static final String PCAWG_URL = "http://pancancer.info";
-  private static final String PCAWG_INDEX_PATH = "elasticsearch/pcawg_es";
-  private static final String PCAWG_SEARCH_URL = PCAWG_URL + "/" + PCAWG_INDEX_PATH;
+  private static final String DEFAULT_PCAWG_URL = "http://pancancer.info";
+  private static final String DEFAULT_PCAWG_INDEX_PATH = "elasticsearch/pcawg_es";
+  private static final String DEFAULT_PCAWG_SEARCH_URL = DEFAULT_PCAWG_URL + "/" + DEFAULT_PCAWG_INDEX_PATH;
+
+  private final String searchUrl;
+
+  public PCAWGRepository() {
+    this(DEFAULT_PCAWG_SEARCH_URL);
+  }
 
   public Set<String> getProjects() {
     val result = searchProjects(
@@ -91,7 +99,7 @@ public class PCAWGRepository {
     return projectSamples;
   }
 
-  private static ObjectNode searchProjects(String query) {
+  private ObjectNode searchProjects(String query) {
     return search("_search"
         + "?"
         + "size"
@@ -103,7 +111,7 @@ public class PCAWGRepository {
         + query);
   }
 
-  private static ObjectNode searchDonors(String... fields) {
+  private ObjectNode searchDonors(String... fields) {
     return search("donor/_search"
         + "?"
         + "size"
@@ -116,8 +124,8 @@ public class PCAWGRepository {
   }
 
   @SneakyThrows
-  private static ObjectNode search(String path) {
-    val url = new URL(PCAWG_SEARCH_URL + "/" + path);
+  private ObjectNode search(String path) {
+    val url = new URL(searchUrl + "/" + path);
 
     log.info("Requesting '{}'...", url);
     return DEFAULT.readValue(url, ObjectNode.class);

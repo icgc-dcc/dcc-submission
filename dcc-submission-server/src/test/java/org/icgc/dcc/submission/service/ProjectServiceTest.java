@@ -12,7 +12,6 @@ import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.repository.ProjectRepository;
-import org.icgc.dcc.submission.service.ProjectService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

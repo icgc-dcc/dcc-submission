@@ -104,18 +104,13 @@ public class ByteOffsetToLineNumberTest {
   private static byte[] getBytes(File file) {
     @Cleanup
     val input = new FileInputStream(file);
-    val bytes = toByteArray(isGzip(file) ? new GZIPInputStream(input) : input);
+    byte[] bytes = toByteArray(isGzip(file) ? new GZIPInputStream(input) : input);
 
     return bytes;
   }
 
   private static boolean isGzip(File file) {
     return getFileExtension(file.getName()).equals("gz");
-  }
-
-  @SneakyThrows
-  private static FileSystem createFileSystem() {
-    return FileSystem.getLocal(new Configuration());
   }
 
 }

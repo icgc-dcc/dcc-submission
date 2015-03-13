@@ -174,12 +174,12 @@ public class ClinicalIndex {
     return specimen.get(SUBMISSION_DONOR_ID);
   }
 
-  private static String getSampleSpecimenId(Map<String, String> sample) {
-    return sample.get(SUBMISSION_SPECIMEN_ID);
-  }
-
   private static String getSampleSampleId(Map<String, String> sample) {
     return sample.get(SUBMISSION_ANALYZED_SAMPLE_ID);
+  }
+
+  private static String getSampleSpecimenId(Map<String, String> sample) {
+    return sample.get(SUBMISSION_SPECIMEN_ID);
   }
 
 }

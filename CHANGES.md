@@ -3,6 +3,12 @@ ICGC DCC - Submisison - Change Log
 
 Change log for the DCC 2.0 Submission system
 
+3.8.2.2
+---
+
+- Added "PCAWG Validation" feature
+
+
 3.6.1.1
 ---
 

@@ -27,13 +27,13 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
-import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.planner.PlanningException;
 
 import cascading.flow.FlowProcess;

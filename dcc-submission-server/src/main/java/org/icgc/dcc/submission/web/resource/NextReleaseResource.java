@@ -54,8 +54,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.glassfish.grizzly.http.util.Header;
+import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
-import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;

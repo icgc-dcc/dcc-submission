@@ -63,9 +63,7 @@ public class PCAWGValidator implements Validator {
   }
 
   private boolean isValidatable(ValidationContext context) {
-    val projectNames = pcawgRepository.getProjects();
-
-    return projectNames.contains(context.getProjectKey());
+    return isPCAWG(context.getProjectKey());
   }
 
   private void validateClinical(ValidationContext context) {
@@ -74,6 +72,12 @@ public class PCAWGValidator implements Validator {
 
     // TODO: Implement rules.
     log.info("Clinical: {}", index);
+  }
+
+  private boolean isPCAWG(String projectKey) {
+    val projectNames = pcawgRepository.getProjects();
+
+    return projectNames.contains(projectKey);
   }
 
 }
