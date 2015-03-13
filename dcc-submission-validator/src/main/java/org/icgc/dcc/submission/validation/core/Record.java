@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,32 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.sample.util;
-
-import static lombok.AccessLevel.PRIVATE;
+package org.icgc.dcc.submission.validation.core;
 
 import java.util.Map;
 
-import lombok.NoArgsConstructor;
-import lombok.val;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.hadoop.parser.FileParser;
-import org.icgc.dcc.submission.core.parser.SubmissionFileParsers;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
+import com.google.common.collect.ForwardingMap;
 
-/**
- * Utility methods for parsing submission files within the context of the {@link SampleTypeValidator}.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class SampleTypeFileParsers {
+@RequiredArgsConstructor
+public class Record extends ForwardingMap<String, String> {
 
-  public static FileParser<Map<String, String>> newMapFileParser(ValidationContext context, FileType fileType) {
-    val fileSchema = context.getFileSchema(fileType);
-    val fileParser = SubmissionFileParsers.newMapFileParser(context.getFileSystem(), fileSchema);
+  @NonNull
+  private final Map<String, String> fields;
 
-    return fileParser;
+  @Override
+  protected Map<String, String> delegate() {
+    return fields;
   }
 
 }

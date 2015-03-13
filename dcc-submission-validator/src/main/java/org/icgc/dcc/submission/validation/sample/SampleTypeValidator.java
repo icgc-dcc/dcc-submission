@@ -21,7 +21,6 @@ import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupte
 
 import java.util.Collection;
 
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,7 @@ import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.sample.core.Samples;
 import org.icgc.dcc.submission.validation.sample.parser.SamplesParser;
 import org.icgc.dcc.submission.validation.sample.processor.MetaFileSampleTypeProcessor;
-import org.icgc.dcc.submission.validation.sample.util.SampleTypeFileParsers;
+import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
 
 import com.google.common.collect.ImmutableList;
 
@@ -46,7 +45,6 @@ import com.google.common.collect.ImmutableList;
  * @see https://jira.oicr.on.ca/browse/DCC-2556
  */
 @Slf4j
-@RequiredArgsConstructor
 public class SampleTypeValidator implements Validator {
 
   @Override
@@ -81,7 +79,7 @@ public class SampleTypeValidator implements Validator {
   @SneakyThrows
   private void validateFeatureSampleTypes(ValidationContext context, FeatureType featureType, Samples samples) {
     val metaFileType = featureType.getMetaFileType();
-    val metaFileParser = SampleTypeFileParsers.newMapFileParser(context, metaFileType);
+    val metaFileParser = ValidationFileParsers.newMapFileParser(context, metaFileType);
 
     // Parse and validate each meta file instance for this feature type in turn
     for (val metaFile : context.getFiles(metaFileType)) {

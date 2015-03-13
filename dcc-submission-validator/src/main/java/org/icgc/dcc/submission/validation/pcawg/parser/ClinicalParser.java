@@ -15,13 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.sample.parser;
-
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SAMPLE_ID_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SPECIMEN_ID_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SPECIMEN_TYPE_FIELD_NAME;
+package org.icgc.dcc.submission.validation.pcawg.parser;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import lombok.SneakyThrows;
@@ -29,67 +26,55 @@ import lombok.val;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
+import org.icgc.dcc.submission.validation.core.Record;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.sample.core.Samples;
+import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
 import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Parser implementation that creates an in-memory model of the specimen and sample fields required to perform sample
  * type validation.
  */
-public class SamplesParser {
+public class ClinicalParser {
 
-  public static Samples parse(ValidationContext context) {
-    val specimen = parseSpecimenMap(context);
-    val samples = parseSampleMap(context);
-    val innerJoin = innerJoinSpecimenSamples(specimen, samples);
+  public static Clinical parse(ValidationContext context) {
+    val donors = parseDonor(context);
+    val specimens = parseSpecimen(context);
+    val samples = parseSample(context);
 
-    return new Samples(innerJoin);
+    return new Clinical(donors, specimens, samples);
   }
 
-  private static Map<String, String> parseSpecimenMap(ValidationContext context) {
-    return parseFileTypeMap(FileType.SPECIMEN_TYPE, SPECIMEN_ID_FIELD_NAME, SPECIMEN_TYPE_FIELD_NAME, context);
+  private static List<Record> parseDonor(ValidationContext context) {
+    return parseFileType(FileType.DONOR_TYPE, context);
   }
 
-  private static Map<String, String> parseSampleMap(ValidationContext context) {
-    return parseFileTypeMap(FileType.SAMPLE_TYPE, SAMPLE_ID_FIELD_NAME, SPECIMEN_ID_FIELD_NAME, context);
+  private static List<Record> parseSpecimen(ValidationContext context) {
+    return parseFileType(FileType.SPECIMEN_TYPE, context);
+  }
+
+  private static List<Record> parseSample(ValidationContext context) {
+    return parseFileType(FileType.SAMPLE_TYPE, context);
   }
 
   @SneakyThrows
-  private static Map<String, String> parseFileTypeMap(FileType fileType, final String keyFieldName,
-      final String valueFieldName, ValidationContext context) {
-    val map = ImmutableMap.<String, String> builder();
+  private static List<Record> parseFileType(FileType fileType, ValidationContext context) {
+    val list = ImmutableList.<Record> builder();
     val fileParser = ValidationFileParsers.newMapFileParser(context, fileType);
     for (val file : context.getFiles(fileType)) {
       fileParser.parse(file, new FileRecordProcessor<Map<String, String>>() {
 
         @Override
-        public void process(long lineNumber, Map<String, String> record) throws IOException {
-          val key = record.get(keyFieldName);
-          val value = record.get(valueFieldName);
-
-          map.put(key, value);
+        public void process(long lineNumber, Map<String, String> map) throws IOException {
+          list.add(new Record(map));
         }
 
       });
     }
 
-    return map.build();
-  }
-
-  private static Map<String, String> innerJoinSpecimenSamples(Map<String, String> specimen, Map<String, String> samples) {
-    val innerJoin = ImmutableMap.<String, String> builder();
-    for (val entry : samples.entrySet()) {
-      val sampleId = entry.getKey();
-      val specimenId = entry.getValue();
-      val specimenType = specimen.get(specimenId);
-
-      innerJoin.put(sampleId, specimenType);
-    }
-
-    return innerJoin.build();
+    return list.build();
   }
 
 }
