@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,48 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.platform;
+package org.icgc.dcc.submission.validation.pcawg.util;
 
-import static org.icgc.dcc.common.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
-
-import java.io.InputStream;
-import java.util.Map;
-
+import static com.google.common.base.Strings.isNullOrEmpty;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.common.cascading.CascadingContext;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
+import org.icgc.dcc.submission.validation.core.Record;
 
-@Slf4j
-public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
+@UtilityClass
+public class PanCancer {
 
-  public LocalSubmissionPlatformStrategy(
-      @NonNull final Map<String, String> hadoopProperties,
-      @NonNull final Path source,
-      @NonNull final Path output) {
-    super(hadoopProperties, getDefaultLocalFileSystem(), source, output);
+  /**
+   * Constants. See {@code sample.0.study.v1}
+   * 
+   * <pre>
+   * http://***REMOVED***/dictionary.html#?vFrom=0.10a&vTo=0.10a&viewMode=codelist&dataType=sample&q=sample.0.study.v1
+   * </pre>
+   */
+  private static final String PAN_CANCER_STUDY_CODE = "1";
+  private static final String PAN_CANCER_STUDY_VALUE = "PanCancer Study";
+
+  public static boolean isPanCancerSample(@NonNull Record sample) {
+    val STUDY_FIELD_NAME = "study";
+    val study = sample.get(STUDY_FIELD_NAME);
+
+    return isPanCancerStudy(study);
   }
 
-  @Override
-  protected CascadingContext getCascadingContext() {
-    return CascadingContext.getLocal();
-  }
-
-  @Override
-  protected Map<?, ?> augmentFlowProperties(@NonNull final Map<?, ?> properties) {
-    return properties; // Nothing to add in local mode
-  }
-
-  @Override
-  @SneakyThrows
-  public InputStream readReportTap(String fileName, FlowType type, String reportName) {
-    val reportPath = getReportPath(fileName, type, reportName);
-    log.info("Streaming through report: '{}'", reportPath);
-    return fileSystem.open(reportPath);
+  public static boolean isPanCancerStudy(@NonNull String study) {
+    if (isNullOrEmpty(study)) {
+      return false;
+    } else if (study.equals(PAN_CANCER_STUDY_VALUE)) {
+      return true;
+    } else if (study.equals(PAN_CANCER_STUDY_CODE)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 }

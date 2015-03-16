@@ -33,9 +33,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.common.cascading.TupleEntries;
 import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.common.core.model.SpecialValue;
-import org.icgc.dcc.common.hadoop.cascading.TupleEntries;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;

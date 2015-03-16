@@ -28,6 +28,8 @@ import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.COMPONENT_NAME;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,8 +42,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
-import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -210,14 +212,15 @@ public class NormalizationValidatorTest {
   @SneakyThrows
   private void test(String inputFile, String referenceFile) {
     mockInputTap(inputFile);
-    mockOutputTap(OUTPUT_FILE);
     when(mockPlatformStrategy.getFlowConnector())
         .thenReturn(ctx.getConnectors().getFlowConnector());
     when(mockValidationContext.getFiles(SSM_P_TYPE))
         .thenReturn(newArrayList(new Path(inputFile)));
 
     new File(OUTPUT_FILE).delete();
-    normalizationValidator = NormalizationValidator.getDefaultInstance(mockDccFileSystem2, mockConfig);
+    normalizationValidator = spy(NormalizationValidator.getDefaultInstance(mockDccFileSystem2, mockConfig));
+    mockOutputTap(OUTPUT_FILE);
+
     normalizationValidator.validate(mockValidationContext);
 
     List<String> outputLines = readLines(new File(OUTPUT_FILE), UTF_8);
@@ -262,11 +265,8 @@ public class NormalizationValidatorTest {
         .thenReturn(getInputTap(inputFile));
   }
 
-  // TODO: Shouldn't have to do that
-  @SuppressWarnings("unchecked")
   private void mockOutputTap(String outputFile) {
-    when(mockDccFileSystem2.getNormalizationDataOutputTap(anyString()))
-        .thenReturn(getOutputTap(outputFile));
+    doReturn(getOutputTap(outputFile)).when(normalizationValidator).getNormalizationDataOutputTap(anyString());
   }
 
   // TODO: Shouldn't have to do that

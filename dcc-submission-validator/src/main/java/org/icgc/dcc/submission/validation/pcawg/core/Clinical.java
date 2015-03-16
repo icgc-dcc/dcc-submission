@@ -37,4 +37,15 @@ public class Clinical {
   @NonNull
   List<Record> samples;
 
+  @NonNull
+  List<Record> biomarker;
+  @NonNull
+  List<Record> family;
+  @NonNull
+  List<Record> exposure;
+  @NonNull
+  List<Record> surgery;
+  @NonNull
+  List<Record> therapy;
+
 }

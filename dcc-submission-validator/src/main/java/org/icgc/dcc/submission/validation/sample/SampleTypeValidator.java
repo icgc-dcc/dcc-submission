@@ -29,9 +29,9 @@ import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.sample.core.MetaFileSampleTypeProcessor;
 import org.icgc.dcc.submission.validation.sample.core.Samples;
 import org.icgc.dcc.submission.validation.sample.parser.SamplesParser;
-import org.icgc.dcc.submission.validation.sample.processor.MetaFileSampleTypeProcessor;
 import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
 
 import com.google.common.collect.ImmutableList;

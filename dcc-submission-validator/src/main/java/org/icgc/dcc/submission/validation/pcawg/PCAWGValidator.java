@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.pcawg;
 
+import java.util.Collection;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -24,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.pcawg.core.ClinicalIndex;
+import org.icgc.dcc.submission.validation.pcawg.core.ClinicalProcessor;
 import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
 import org.icgc.dcc.submission.validation.pcawg.util.PCAWGRepository;
 
@@ -68,10 +70,16 @@ public class PCAWGValidator implements Validator {
 
   private void validateClinical(ValidationContext context) {
     val clinical = ClinicalParser.parse(context);
-    val index = new ClinicalIndex(clinical);
+    val referenceSampleIds = getReferenceSampleIds(context);
 
-    // TODO: Implement rules.
-    log.info("Clinical: {}", index);
+    val processor = new ClinicalProcessor(clinical, referenceSampleIds, context);
+    processor.process();
+  }
+
+  private Collection<String> getReferenceSampleIds(ValidationContext context) {
+    val projectSamples = pcawgRepository.getProjectSamples();
+
+    return projectSamples.get(context.getProjectKey());
   }
 
   private boolean isPCAWG(String projectKey) {

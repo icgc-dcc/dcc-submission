@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.sample.processor;
+package org.icgc.dcc.submission.validation.sample.core;
 
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.CNSM_M_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.EXP_ARRAY_M_TYPE;
@@ -30,9 +30,9 @@ import static org.icgc.dcc.submission.core.report.ErrorType.SAMPLE_TYPE_MISMATCH
 import static org.icgc.dcc.submission.validation.sample.core.ReferenceSampleTypeCategory.MATCHED;
 import static org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory.NON_NORMAL;
 import static org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory.NORMAL;
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.ANALYZED_SAMPLE_ID_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.MATCHED_SAMPLE_ID_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.REFERENCE_SAMPLE_TYPE_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.ANALYZED_SAMPLE_ID_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.MATCHED_SAMPLE_ID_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.REFERENCE_SAMPLE_TYPE_FIELD_NAME;
 
 import java.io.IOException;
 import java.util.Map;
@@ -46,9 +46,6 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.core.model.SpecialValue;
 import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.sample.core.ReferenceSampleTypeCategory;
-import org.icgc.dcc.submission.validation.sample.core.Samples;
-import org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory;
 
 /**
  * {@link FileRecordProcessor} implementation that performs the actual row-level validation logic when parsing feature

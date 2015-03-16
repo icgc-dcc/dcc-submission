@@ -34,7 +34,7 @@ import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
+import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 

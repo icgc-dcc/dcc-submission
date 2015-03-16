@@ -19,16 +19,33 @@ package org.icgc.dcc.submission.validation.core;
 
 import java.util.Map;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+
 import com.google.common.collect.ForwardingMap;
 
+@Getter
 @RequiredArgsConstructor
 public class Record extends ForwardingMap<String, String> {
 
+  /**
+   * Data.
+   */
   @NonNull
   private final Map<String, String> fields;
+
+  /**
+   * Metadata.
+   */
+  @NonNull
+  private final FileType fileType;
+  @NonNull
+  private final Path file;
+  private final long lineNumber;
 
   @Override
   protected Map<String, String> delegate() {

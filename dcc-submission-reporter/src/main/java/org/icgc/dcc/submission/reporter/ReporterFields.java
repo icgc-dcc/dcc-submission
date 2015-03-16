@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.reporter;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.cascading.Fields2.getCountFieldCounterpart;
 import static org.icgc.dcc.common.core.model.FieldNames.OBSERVATION_TYPE;
 import static org.icgc.dcc.common.core.model.FieldNames.PROJECT_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
@@ -27,7 +28,6 @@ import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUB
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MATCHED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_SEQUENCING_STRATEGY;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
-import static org.icgc.dcc.common.hadoop.cascading.Fields2.getCountFieldCounterpart;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.common.core.model.FieldNames.ReporterFieldNames;

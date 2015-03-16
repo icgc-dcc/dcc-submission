@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.sample.parser;
 
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SAMPLE_ID_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SPECIMEN_ID_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFieldNames.SPECIMEN_TYPE_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.SAMPLE_ID_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.SPECIMEN_ID_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.SPECIMEN_TYPE_FIELD_NAME;
 
 import java.util.Map;
 

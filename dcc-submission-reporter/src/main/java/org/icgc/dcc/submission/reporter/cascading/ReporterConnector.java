@@ -15,11 +15,11 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.common.hadoop.cascading.Cascades;
-import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
-import org.icgc.dcc.common.hadoop.cascading.Flows;
-import org.icgc.dcc.common.hadoop.cascading.taps.GenericTaps;
-import org.icgc.dcc.common.hadoop.cascading.taps.LocalTaps;
+import org.icgc.dcc.common.cascading.Cascades;
+import org.icgc.dcc.common.cascading.CascadingContext;
+import org.icgc.dcc.common.cascading.Flows;
+import org.icgc.dcc.common.cascading.taps.GenericTaps;
+import org.icgc.dcc.common.cascading.taps.LocalTaps;
 import org.icgc.dcc.common.hadoop.util.HadoopConstants;
 import org.icgc.dcc.common.hadoop.util.HadoopProperties;
 import org.icgc.dcc.submission.reporter.OutputType;

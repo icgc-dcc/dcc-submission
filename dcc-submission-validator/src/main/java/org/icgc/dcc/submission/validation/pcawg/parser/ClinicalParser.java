@@ -38,23 +38,18 @@ import com.google.common.collect.ImmutableList;
 public class ClinicalParser {
 
   public static Clinical parse(ValidationContext context) {
-    val donors = parseDonor(context);
-    val specimens = parseSpecimen(context);
-    val samples = parseSample(context);
+    return new Clinical(
+        // Core
+        parseFileType(FileType.DONOR_TYPE, context),
+        parseFileType(FileType.SPECIMEN_TYPE, context),
+        parseFileType(FileType.SAMPLE_TYPE, context),
 
-    return new Clinical(donors, specimens, samples);
-  }
-
-  private static List<Record> parseDonor(ValidationContext context) {
-    return parseFileType(FileType.DONOR_TYPE, context);
-  }
-
-  private static List<Record> parseSpecimen(ValidationContext context) {
-    return parseFileType(FileType.SPECIMEN_TYPE, context);
-  }
-
-  private static List<Record> parseSample(ValidationContext context) {
-    return parseFileType(FileType.SAMPLE_TYPE, context);
+        // Optional
+        parseFileType(FileType.BIOMARKER_TYPE, context),
+        parseFileType(FileType.FAMILY_TYPE, context),
+        parseFileType(FileType.EXPOSURE_TYPE, context),
+        parseFileType(FileType.SURGERY_TYPE, context),
+        parseFileType(FileType.THERAPY_TYPE, context));
   }
 
   @SneakyThrows
@@ -63,7 +58,12 @@ public class ClinicalParser {
 
     val records = ImmutableList.<Record> builder();
     for (val file : context.getFiles(fileType)) {
-      fileParser.parse(file, (lineNumber, map) -> records.add(new Record(map)));
+      fileParser.parse(file, (lineNumber, fields) -> {
+        val record = new Record(fields, fileType, file, lineNumber);
+
+        records.add(record);
+      });
+
     }
 
     return records.build();

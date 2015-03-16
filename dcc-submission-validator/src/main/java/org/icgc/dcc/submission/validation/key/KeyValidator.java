@@ -40,7 +40,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.icgc.dcc.common.hadoop.cascading.FlowExecutor;
+import org.icgc.dcc.common.cascading.FlowExecutor;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;

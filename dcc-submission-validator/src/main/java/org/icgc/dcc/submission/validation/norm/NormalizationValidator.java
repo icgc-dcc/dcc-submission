@@ -44,10 +44,11 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.cascading.Cascades;
+import org.icgc.dcc.common.cascading.CascadingContext;
+import org.icgc.dcc.common.cascading.Flows;
+import org.icgc.dcc.common.cascading.Pipes;
 import org.icgc.dcc.common.core.Component;
-import org.icgc.dcc.common.hadoop.cascading.Cascades;
-import org.icgc.dcc.common.hadoop.cascading.Flows;
-import org.icgc.dcc.common.hadoop.cascading.Pipes;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -86,7 +87,7 @@ import com.typesafe.config.Config;
  */
 @Slf4j
 @RequiredArgsConstructor(access = PRIVATE)
-public final class NormalizationValidator implements Validator {
+public class NormalizationValidator implements Validator {
 
   static final Component COMPONENT = Component.NORMALIZER;
   static final String COMPONENT_NAME = COMPONENT.getId();
@@ -177,6 +178,18 @@ public final class NormalizationValidator implements Validator {
     } else {
       log.info("Skipping normalization for {}, no matching file in submission", SSM_P_TYPE);
     }
+  }
+
+  private CascadingContext getCascadingContext() {
+    return dccFileSystem2.isHadoopMode() ?
+        CascadingContext.getDistributed() :
+        CascadingContext.getLocal();
+  }
+
+  public Tap<?, ?, ?> getNormalizationDataOutputTap(String path) {
+    return getCascadingContext()
+        .getTaps()
+        .getNoCompressionTsvWithHeader(path);
   }
 
   /**
@@ -393,8 +406,7 @@ public final class NormalizationValidator implements Validator {
    * Returns the output tap for the cascade.
    */
   private Tap<?, ?, ?> getSinkTap(String outputDirPath) {
-    return dccFileSystem2.getNormalizationDataOutputTap(
-        PATH.join(outputDirPath, SSM_P_TYPE.getHarmonizedOutputFileName()));
+    return getNormalizationDataOutputTap(PATH.join(outputDirPath, SSM_P_TYPE.getHarmonizedOutputFileName()));
   }
 
   /**

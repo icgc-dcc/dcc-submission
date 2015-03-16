@@ -22,7 +22,7 @@ import static cascading.tuple.Fields.RESULTS;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
 import lombok.RequiredArgsConstructor;
 
-import org.icgc.dcc.common.hadoop.cascading.CascadingFunctions.Counter;
+import org.icgc.dcc.common.cascading.CascadingFunctions.Counter;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;

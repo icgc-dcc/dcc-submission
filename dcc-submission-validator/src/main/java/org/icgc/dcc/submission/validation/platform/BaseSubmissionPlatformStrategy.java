@@ -21,9 +21,9 @@ import static cascading.flow.FlowProps.setMaxConcurrentSteps;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.common.cascading.Fields2.fields;
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
 import static org.icgc.dcc.common.core.util.Joiners.EXTENSION;
-import static org.icgc.dcc.common.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.toFilenameList;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD;
@@ -41,9 +41,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.core.util.Extensions;
-import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.flow.FlowConnector;

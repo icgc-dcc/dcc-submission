@@ -45,9 +45,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.util.Joiners;
-import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;

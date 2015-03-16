@@ -62,13 +62,13 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.Component;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.core.model.Identifiable;
 import org.icgc.dcc.common.core.util.Collections3;
 import org.icgc.dcc.common.core.util.Extensions;
 import org.icgc.dcc.common.core.util.Optionals;
-import org.icgc.dcc.common.hadoop.cascading.CascadingContext;
 import org.junit.Before;
 import org.junit.Test;
 

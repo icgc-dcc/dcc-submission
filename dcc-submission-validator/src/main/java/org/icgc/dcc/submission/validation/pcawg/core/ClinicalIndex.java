@@ -17,9 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
-import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
-import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getDonorDonorId;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleSampleId;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleSpecimenId;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSpecimenDonorId;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSpecimenSpecimenId;
 
 import java.util.List;
 import java.util.Map;
@@ -60,37 +62,55 @@ public class ClinicalIndex {
   public ClinicalIndex(@NonNull Clinical clinical) {
     this.clinical = clinical;
 
-    val donorIndex = ImmutableMap.<String, Record> builder();
-    for (val donor : clinical.getDonors()) {
-      val donorId = getDonorDonorId(donor);
+    //
+    // Index donors
+    //
 
-      donorIndex.put(donorId, donor);
+    {
+      val donorIndex = ImmutableMap.<String, Record> builder();
+      for (val donor : clinical.getDonors()) {
+        val donorId = getDonorDonorId(donor);
+
+        donorIndex.put(donorId, donor);
+      }
+      this.donorIndex = donorIndex.build();
     }
-    this.donorIndex = donorIndex.build();
 
-    val sampleIndex = ImmutableMap.<String, Record> builder();
-    val specimenSampleIndex = ImmutableMultimap.<String, String> builder();
-    for (val sample : clinical.getSamples()) {
-      val sampleId = getSampleSampleId(sample);
-      val sampleSpecimenId = getSampleSpecimenId(sample);
+    //
+    // Index samples
+    //
 
-      sampleIndex.put(sampleId, sample);
-      specimenSampleIndex.put(sampleSpecimenId, sampleId);
+    {
+      val sampleIndex = ImmutableMap.<String, Record> builder();
+      val specimenSampleIndex = ImmutableMultimap.<String, String> builder();
+      for (val sample : clinical.getSamples()) {
+        val sampleId = getSampleSampleId(sample);
+        val sampleSpecimenId = getSampleSpecimenId(sample);
+
+        sampleIndex.put(sampleId, sample);
+        specimenSampleIndex.put(sampleSpecimenId, sampleId);
+      }
+      this.sampleIndex = sampleIndex.build();
+      this.specimenSampleIndex = specimenSampleIndex.build();
     }
-    this.sampleIndex = sampleIndex.build();
-    this.specimenSampleIndex = specimenSampleIndex.build();
 
-    val specimenIndex = ImmutableMap.<String, Record> builder();
-    val donorSpecimenIndex = ImmutableMultimap.<String, String> builder();
-    for (val specimen : clinical.getSpecimens()) {
-      val specimenId = getSpecimenSpecimenId(specimen);
-      val specimenDonorId = getSpecimenDonorId(specimen);
+    //
+    // Index specimen
+    //
 
-      specimenIndex.put(specimenId, specimen);
-      donorSpecimenIndex.put(specimenDonorId, specimenId);
+    {
+      val specimenIndex = ImmutableMap.<String, Record> builder();
+      val donorSpecimenIndex = ImmutableMultimap.<String, String> builder();
+      for (val specimen : clinical.getSpecimens()) {
+        val specimenId = getSpecimenSpecimenId(specimen);
+        val specimenDonorId = getSpecimenDonorId(specimen);
+
+        specimenIndex.put(specimenId, specimen);
+        donorSpecimenIndex.put(specimenDonorId, specimenId);
+      }
+      this.specimenIndex = specimenIndex.build();
+      this.donorSpecimenIndex = donorSpecimenIndex.build();
     }
-    this.specimenIndex = specimenIndex.build();
-    this.donorSpecimenIndex = donorSpecimenIndex.build();
   }
 
   public Record getDonor(@NonNull String donorId) {
@@ -160,26 +180,6 @@ public class ClinicalIndex {
     val specimenId = getSampleSpecimenId(sample);
 
     return getSpecimen(specimenId);
-  }
-
-  private static String getDonorDonorId(Map<String, String> donor) {
-    return donor.get(SUBMISSION_DONOR_ID);
-  }
-
-  private static String getSpecimenSpecimenId(Map<String, String> specimen) {
-    return specimen.get(SUBMISSION_SPECIMEN_ID);
-  }
-
-  private static String getSpecimenDonorId(Map<String, String> specimen) {
-    return specimen.get(SUBMISSION_DONOR_ID);
-  }
-
-  private static String getSampleSampleId(Map<String, String> sample) {
-    return sample.get(SUBMISSION_ANALYZED_SAMPLE_ID);
-  }
-
-  private static String getSampleSpecimenId(Map<String, String> sample) {
-    return sample.get(SUBMISSION_SPECIMEN_ID);
   }
 
 }

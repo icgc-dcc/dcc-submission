@@ -24,8 +24,8 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.icgc.dcc.common.cascading.RemoveHollowTupleFilter;
 import org.icgc.dcc.common.core.model.SpecialValue;
-import org.icgc.dcc.common.hadoop.cascading.RemoveHollowTupleFilter;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

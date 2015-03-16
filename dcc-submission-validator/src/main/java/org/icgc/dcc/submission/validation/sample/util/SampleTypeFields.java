@@ -26,7 +26,7 @@ import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
  * Dictionary defined field names required to implement the requirements of the {@link SampleTypeValidator}.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class SampleTypeFieldNames {
+public final class SampleTypeFields {
 
   /**
    * Clinical field name constants.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,48 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.platform;
+package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static org.icgc.dcc.common.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
 
-import java.io.InputStream;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.common.cascading.CascadingContext;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
+@UtilityClass
+public class ClinicalFields {
 
-@Slf4j
-public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
-
-  public LocalSubmissionPlatformStrategy(
-      @NonNull final Map<String, String> hadoopProperties,
-      @NonNull final Path source,
-      @NonNull final Path output) {
-    super(hadoopProperties, getDefaultLocalFileSystem(), source, output);
+  public static String getDonorDonorId(Map<String, String> donor) {
+    return donor.get(SUBMISSION_DONOR_ID);
   }
 
-  @Override
-  protected CascadingContext getCascadingContext() {
-    return CascadingContext.getLocal();
+  public static String getSpecimenSpecimenId(Map<String, String> specimen) {
+    return specimen.get(SUBMISSION_SPECIMEN_ID);
   }
 
-  @Override
-  protected Map<?, ?> augmentFlowProperties(@NonNull final Map<?, ?> properties) {
-    return properties; // Nothing to add in local mode
+  public static String getSpecimenDonorId(Map<String, String> specimen) {
+    return specimen.get(SUBMISSION_DONOR_ID);
   }
 
-  @Override
-  @SneakyThrows
-  public InputStream readReportTap(String fileName, FlowType type, String reportName) {
-    val reportPath = getReportPath(fileName, type, reportName);
-    log.info("Streaming through report: '{}'", reportPath);
-    return fileSystem.open(reportPath);
+  public static String getSampleSampleId(Map<String, String> sample) {
+    return sample.get(SUBMISSION_ANALYZED_SAMPLE_ID);
+  }
+
+  public static String getSampleSpecimenId(Map<String, String> sample) {
+    return sample.get(SUBMISSION_SPECIMEN_ID);
   }
 
 }
