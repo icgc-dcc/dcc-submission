@@ -28,7 +28,6 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.common.core.util.FsConfig.FS_ROOT;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.test.Tests.TEST_FIXTURES_DIR;
 import static org.icgc.dcc.submission.TestUtils.$;
@@ -96,6 +95,7 @@ import org.icgc.dcc.common.core.model.FileTypes;
 import org.icgc.dcc.common.core.util.AppUtils;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.config.PersistenceModule;
+import org.icgc.dcc.submission.core.util.FsConfig;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
@@ -294,7 +294,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * Submission file system.
    */
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
-  private static final String submission = TEST_CONFIG.getString(FS_ROOT);
+  private static final String submission = TEST_CONFIG.getString(FsConfig.FS_ROOT);
 
   /**
    * Test utilities.

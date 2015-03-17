@@ -36,10 +36,10 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.DccResources;
+import org.icgc.dcc.common.core.meta.RestfulCodeListsResolver;
+import org.icgc.dcc.common.core.meta.RestfulDictionaryResolver;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.core.util.Jackson;
-import org.icgc.dcc.common.core.util.resolver.RestfulCodeListsResolver;
-import org.icgc.dcc.common.core.util.resolver.RestfulDictionaryResolver;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;

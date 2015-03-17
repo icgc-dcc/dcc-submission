@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.common.core.util.InjectionNames;
+import org.icgc.dcc.submission.core.util.InjectionNames;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;

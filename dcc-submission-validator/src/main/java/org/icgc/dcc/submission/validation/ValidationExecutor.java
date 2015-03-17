@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.common.core.util.ThreadNamingRunnable;
+import org.icgc.dcc.common.core.util.concurrent.ThreadNamingRunnable;
 import org.icgc.dcc.submission.validation.core.Validation;
 
 import com.google.common.collect.MapMaker;

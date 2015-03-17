@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.pcawg.util;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleStudy;
 import lombok.NonNull;
 import lombok.val;
 import lombok.experimental.UtilityClass;
@@ -38,8 +39,7 @@ public class PanCancer {
   private static final String PAN_CANCER_STUDY_VALUE = "PanCancer Study";
 
   public static boolean isPanCancerSample(@NonNull Record sample) {
-    val STUDY_FIELD_NAME = "study";
-    val study = sample.get(STUDY_FIELD_NAME);
+    val study = getSampleStudy(sample);
 
     return isPanCancerStudy(study);
   }

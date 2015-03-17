@@ -28,7 +28,7 @@ import javax.validation.Valid;
 import lombok.ToString;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.common.core.util.SerializableMaps;
+import org.icgc.dcc.common.core.collect.SerializableMaps;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.mongodb.morphia.annotations.Entity;

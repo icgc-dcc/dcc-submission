@@ -23,8 +23,6 @@ import static org.icgc.dcc.common.core.Component.CONCATENATOR;
 import static org.icgc.dcc.common.core.Component.NORMALIZER;
 import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.common.core.util.FsConfig.FS_ROOT;
-import static org.icgc.dcc.common.core.util.FsConfig.FS_URL;
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.hadoop.util.HadoopConstants.FS_DEFAULT_FS;
@@ -42,10 +40,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.meta.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.common.core.model.DataType;
-import org.icgc.dcc.common.core.util.resolver.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.core.util.FsConfig;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -75,8 +74,8 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
       return parseMap(ImmutableMap.<String, Object> of(
           DOT.join(HADOOP_KEY, "\"" + MR_JOBTRACKER_ADDRESS_KEY + "\""), jobTracker,
           DOT.join(HADOOP_KEY, "\"" + FS_DEFAULT_FS + "\""), fsUrl,
-          FS_URL, fsUrl,
-          FS_ROOT, fsRoot
+          FsConfig.FS_URL, fsUrl,
+          FsConfig.FS_ROOT, fsRoot
           ));
     }
 

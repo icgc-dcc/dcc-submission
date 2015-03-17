@@ -28,6 +28,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ClinicalFields {
 
+  public final String STUDY_FIELD_NAME = "study";
+
   public static String getDonorDonorId(Map<String, String> donor) {
     return donor.get(SUBMISSION_DONOR_ID);
   }
@@ -46,6 +48,10 @@ public class ClinicalFields {
 
   public static String getSampleSpecimenId(Map<String, String> sample) {
     return sample.get(SUBMISSION_SPECIMEN_ID);
+  }
+
+  public static String getSampleStudy(Map<String, String> sample) {
+    return sample.get(STUDY_FIELD_NAME);
   }
 
 }

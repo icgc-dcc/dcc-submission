@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.icgc.dcc.common.core.util.FsConfig;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.User;
+import org.icgc.dcc.submission.core.util.FsConfig;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;

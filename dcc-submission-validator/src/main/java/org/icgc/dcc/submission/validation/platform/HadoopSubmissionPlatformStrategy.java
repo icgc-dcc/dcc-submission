@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation.platform;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static org.icgc.dcc.common.core.util.Maps2.toObjectsMap;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getInputStream;
 import static org.icgc.dcc.common.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.common.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
@@ -35,6 +34,7 @@ import lombok.SneakyThrows;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
+import org.icgc.dcc.common.core.collect.Maps2;
 import org.icgc.dcc.submission.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
@@ -73,7 +73,7 @@ public class HadoopSubmissionPlatformStrategy extends BaseSubmissionPlatformStra
                 SNAPPY_CODEC_PROPERTY_VALUE),
             GZIP_CODEC_PROPERTY_VALUE);
 
-    toObjectsMap(flowProperties)
+    Maps2.toObjectsMap(flowProperties)
         .putAll(additionalFlowProperties);
 
     return flowProperties;

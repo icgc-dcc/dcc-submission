@@ -135,7 +135,7 @@
 
   <properties>
     <!-- Versions -->
-    <dcc-common.version>3.8.2.2</dcc-common.version>
+    <dcc-common.version>3.8.2.4</dcc-common.version>
 
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>

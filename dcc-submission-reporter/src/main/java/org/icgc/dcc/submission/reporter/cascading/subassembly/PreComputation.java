@@ -42,11 +42,11 @@ import org.icgc.dcc.common.cascading.SubAssemblies.ReadableHashJoin.JoinData;
 import org.icgc.dcc.common.cascading.SubAssemblies.ReorderAllFields;
 import org.icgc.dcc.common.cascading.SubAssemblies.Transformerge;
 import org.icgc.dcc.common.cascading.operation.BaseFunction;
+import org.icgc.dcc.common.core.collect.SerializableMaps;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.core.util.SerializableMaps;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.FunctionCall;

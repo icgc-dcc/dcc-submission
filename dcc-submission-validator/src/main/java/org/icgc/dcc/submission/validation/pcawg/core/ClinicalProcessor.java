@@ -17,25 +17,25 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleSampleId;
 import static org.icgc.dcc.submission.validation.pcawg.util.PanCancer.isPanCancerSample;
+import static org.icgc.dcc.submission.validation.util.Streams.filter;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Predicate;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.validation.core.Record;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 
-import com.google.common.collect.ImmutableList;
-
+@Slf4j
 @RequiredArgsConstructor
 public class ClinicalProcessor {
 
@@ -60,6 +60,8 @@ public class ClinicalProcessor {
 
   public void process() {
     val panCancerSamples = getPanCancerSamples();
+
+    log.info("Processing {} PanCancer samples... {}", formatCount(panCancerSamples));
     for (val sample : panCancerSamples) {
       processSample(sample);
     }
@@ -71,7 +73,8 @@ public class ClinicalProcessor {
     if (!isValidSampleId(sampleId)) {
       // Assert
       reportError(error(sample)
-          .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID));
+          .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
+          .value(sampleId));
     }
 
     val specimen = index.getSampleSpecimen(sampleId);
@@ -106,10 +109,6 @@ public class ClinicalProcessor {
 
   private List<Record> getPanCancerSamples() {
     return filter(clinical.getSamples(), sample -> isPanCancerSample(sample));
-  }
-
-  private static <T> List<T> filter(Collection<T> values, Predicate<? super T> filter) {
-    return ImmutableList.copyOf(values.stream().filter(filter).collect(toList()));
   }
 
 }
