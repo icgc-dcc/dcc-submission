@@ -23,7 +23,7 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.experimental.UtilityClass;
 
-import org.icgc.dcc.submission.validation.core.Record;
+import org.icgc.dcc.submission.core.model.Record;
 
 @UtilityClass
 public class PanCancer {

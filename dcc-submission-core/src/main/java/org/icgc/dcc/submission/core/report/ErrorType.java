@@ -400,6 +400,46 @@ public enum ErrorType {
       checkParams(params, String.class, String.class, String.class);
       return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
     }
+
+  },
+
+  /**
+   * Sample study should be consistent between ICGC DCC and pancancer.info
+   */
+  PCAWG_SAMPLE_STUDY_MISMATCH(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class, String.class, String.class);
+      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+    }
+
+  },
+
+  /**
+   * Additional clinical field constraint for PCAWG.
+   */
+  PCAWG_CLINICAL_FIELD_REQUIRED(CELL_LEVEL, "Clinical field is required for PanCancer") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class, String.class, String.class);
+      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+    }
+
+  },
+
+  /**
+   * Additional clinical row constraint for PCAWG.
+   */
+  PCAWG_CLINICAL_ROW_REQUIRED(ROW_LEVEL, "Clinical row is required for PanCancer") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class, String.class, String.class);
+      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+    }
+
   };
 
   /**

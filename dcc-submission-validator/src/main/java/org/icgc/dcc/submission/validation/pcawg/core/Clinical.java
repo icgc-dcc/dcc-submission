@@ -22,7 +22,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.Value;
 
-import org.icgc.dcc.submission.validation.core.Record;
+import org.icgc.dcc.submission.core.model.Record;
 
 @Value
 public class Clinical {

@@ -53,8 +53,9 @@ public class PCAWGRepository {
   }
 
   public Set<String> getProjects() {
-    val result = searchProjects(
-        "{aggs:{project:{terms:{field:\"dcc_project_code\",size:1000}}}}");
+    log.info("Searching projects...");
+    val result = searchProjects("{aggs:{project:{terms:{field:\"dcc_project_code\",size:1000}}}}");
+    log.info("Found {} projects", formatCount(result));
 
     val buckets = result.path("aggregations").path("project").path("buckets");
 
@@ -69,11 +70,13 @@ public class PCAWGRepository {
   }
 
   public Multimap<String, String> getProjectSamples() {
+    log.info("Searching samples...");
     val result = searchDonors(
         "normal_alignment_status.dcc_specimen_type",
         "normal_alignment_status.submitter_sample_id",
         "tumor_alignment_status.dcc_specimen_type",
         "tumor_alignment_status.submitter_sample_id");
+    log.info("Found {} samples...", formatCount(result));
 
     val hits = result.get("hits").get("hits");
 

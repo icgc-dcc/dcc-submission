@@ -31,8 +31,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.core.report.Error;
-import org.icgc.dcc.submission.validation.core.Record;
+import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 
 @Slf4j
@@ -45,6 +46,7 @@ public class ClinicalProcessor {
   @NonNull
   private final Clinical clinical;
   private final ClinicalIndex index = createIndex();
+  private final boolean tcga;
 
   /**
    * Reference.
@@ -73,19 +75,24 @@ public class ClinicalProcessor {
     if (!isValidSampleId(sampleId)) {
       // Assert
       reportError(error(sample)
+          .type(ErrorType.PCAWG_SAMPLE_STUDY_MISMATCH)
           .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
           .value(sampleId));
     }
 
     val specimen = index.getSampleSpecimen(sampleId);
 
-    // TODO: Assert
-    reportError(error(specimen));
+    // TODO: Implement
+    reportError(error(specimen)
+        .type(ErrorType.PCAWG_CLINICAL_FIELD_REQUIRED));
 
     val donor = index.getSampleDonor(sampleId);
 
-    // TODO: Assert
-    reportError(error(donor));
+    if (!tcga) {
+      // TODO: Implement
+      reportError(error(donor)
+          .type(ErrorType.PCAWG_CLINICAL_ROW_REQUIRED));
+    }
   }
 
   private Error.Builder error(Record record) {

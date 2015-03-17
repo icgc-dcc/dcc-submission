@@ -17,18 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.parser;
 
+import static org.icgc.dcc.submission.validation.util.ValidationFileParsers.newMapFileParser;
+
 import java.util.List;
-import java.util.Map;
 
 import lombok.SneakyThrows;
 import lombok.val;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.hadoop.parser.FileParser;
-import org.icgc.dcc.submission.validation.core.Record;
+import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
-import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
 
 import com.google.common.collect.ImmutableList;
 
@@ -54,23 +53,18 @@ public class ClinicalParser {
 
   @SneakyThrows
   private static List<Record> parseFileType(FileType fileType, ValidationContext context) {
-    val fileParser = createParser(fileType, context);
+    val fileParser = newMapFileParser(context, fileType);
 
     val records = ImmutableList.<Record> builder();
     for (val file : context.getFiles(fileType)) {
       fileParser.parse(file, (lineNumber, fields) -> {
-        val record = new Record(fields, fileType, file, lineNumber);
+        Record record = new Record(fields, fileType, file, lineNumber);
 
         records.add(record);
       });
-
     }
 
     return records.build();
-  }
-
-  private static FileParser<Map<String, String>> createParser(FileType fileType, ValidationContext context) {
-    return ValidationFileParsers.newMapFileParser(context, fileType);
   }
 
 }

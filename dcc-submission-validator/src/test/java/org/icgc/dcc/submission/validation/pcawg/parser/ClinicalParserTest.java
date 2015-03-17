@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -61,6 +62,12 @@ public class ClinicalParserTest {
     val specimenFile = mockProjectFile(dictionary, FileType.SPECIMEN_TYPE, "specimen.txt");
     val sampleFile = mockProjectFile(dictionary, FileType.SAMPLE_TYPE, "sample.txt");
 
+    mockProjectFile(dictionary, FileType.BIOMARKER_TYPE, null);
+    mockProjectFile(dictionary, FileType.FAMILY_TYPE, null);
+    mockProjectFile(dictionary, FileType.EXPOSURE_TYPE, null);
+    mockProjectFile(dictionary, FileType.SURGERY_TYPE, null);
+    mockProjectFile(dictionary, FileType.THERAPY_TYPE, null);
+
     val clinical = ClinicalParser.parse(context);
 
     assertThat(clinical.getDonors()).hasSize(countRows(donorFile));
@@ -71,8 +78,8 @@ public class ClinicalParserTest {
   }
 
   private Path mockProjectFile(Dictionary dictionary, FileType fileType, String fileName) {
-    val file = new Path(TEST_PROJECT_PATH, fileName);
-    val files = ImmutableList.of(file);
+    val file = fileName != null ? new Path(TEST_PROJECT_PATH, fileName) : null;
+    val files = fileName != null ? ImmutableList.of(file) : Collections.<Path> emptyList();
     val fileSchema = dictionary.getFileSchema(fileType);
 
     when(context.getFiles(fileType)).thenReturn(files);

@@ -29,7 +29,7 @@ import java.util.Map;
 import lombok.NonNull;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.core.Record;
+import org.icgc.dcc.submission.core.model.Record;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

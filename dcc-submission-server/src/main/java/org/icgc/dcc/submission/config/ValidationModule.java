@@ -174,7 +174,7 @@ public class ValidationModule extends AbstractDccModule {
       // Default validators and validator ordering
       validators.add(firstPassValidator());
       validators.add(primaryValidator(planner));
-      validators.add(pcawgValidator());
+      // validators.add(pcawgValidator());
       validators.add(keyValidator());
       validators.add(referenceGenomeValidator(config));
       validators.add(sampleTypeValidator());
