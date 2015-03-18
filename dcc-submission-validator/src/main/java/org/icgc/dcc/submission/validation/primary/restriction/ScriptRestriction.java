@@ -311,7 +311,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
       return config;
     }
 
-    private boolean isInput(final java.lang.String fieldName) {
+    private boolean isInput(String fieldName) {
       return inputs.keySet().contains(fieldName);
     }
 

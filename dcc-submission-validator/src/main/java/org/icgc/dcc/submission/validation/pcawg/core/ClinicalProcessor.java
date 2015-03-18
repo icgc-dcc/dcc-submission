@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.pcawg.core;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleSampleId;
-import static org.icgc.dcc.submission.validation.pcawg.util.PanCancer.isPanCancerSample;
+import static org.icgc.dcc.submission.validation.pcawg.util.PCAWG.isPanCancerSample;
 import static org.icgc.dcc.submission.validation.util.Streams.filter;
 
 import java.util.Collection;

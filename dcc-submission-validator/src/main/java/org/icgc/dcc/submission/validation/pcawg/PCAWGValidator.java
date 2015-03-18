@@ -29,7 +29,8 @@ import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalProcessor;
 import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
-import org.icgc.dcc.submission.validation.pcawg.util.PCAWGRepository;
+import org.icgc.dcc.submission.validation.pcawg.util.PCAWGClient;
+import org.icgc.dcc.submission.validation.pcawg.util.TCGAClient;
 
 /**
  * Validator responsible for ensuring PCAWG validation rules are enforced.
@@ -44,7 +45,9 @@ import org.icgc.dcc.submission.validation.pcawg.util.PCAWGRepository;
 public class PCAWGValidator implements Validator {
 
   @NonNull
-  private final PCAWGRepository pcawgRepository;
+  private final PCAWGClient pcawgClient;
+  @NonNull
+  private final TCGAClient tcgaClient;
 
   @Override
   public String getName() {
@@ -79,13 +82,13 @@ public class PCAWGValidator implements Validator {
   }
 
   private Collection<String> getReferenceSampleIds(ValidationContext context) {
-    val projectSamples = pcawgRepository.getProjectSamples();
+    val projectSamples = pcawgClient.getProjectSamples();
 
     return projectSamples.get(context.getProjectKey());
   }
 
   private boolean isPCAWG(String projectKey) {
-    val projectNames = pcawgRepository.getProjects();
+    val projectNames = pcawgClient.getProjects();
 
     return projectNames.contains(projectKey);
   }
