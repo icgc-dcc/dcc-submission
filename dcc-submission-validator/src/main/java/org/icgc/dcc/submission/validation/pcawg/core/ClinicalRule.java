@@ -17,62 +17,22 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.List;
-
-import lombok.NonNull;
-import lombok.Value;
+import lombok.Data;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.model.Record;
 
-@Value
-public class Clinical {
+@Data
+public class ClinicalRule {
 
-  /**
-   * Data.
-   */
-  @NonNull
-  List<Record> donors;
-  @NonNull
-  List<Record> specimens;
-  @NonNull
-  List<Record> samples;
+  String rule;
 
-  @NonNull
-  List<Record> biomarker;
-  @NonNull
-  List<Record> family;
-  @NonNull
-  List<Record> exposure;
-  @NonNull
-  List<Record> surgery;
-  @NonNull
-  List<Record> therapy;
+  String fileType;
+  String fieldName;
 
-  public List<Record> get(FileType fileType) {
-    checkArgument(fileType.getDataType().isClinicalType());
+  boolean tcga;
 
-    if (fileType == FileType.DONOR_TYPE) {
-      return donors;
-    } else if (fileType == FileType.SPECIMEN_TYPE) {
-      return specimens;
-    } else if (fileType == FileType.SAMPLE_TYPE) {
-      return samples;
-    } else if (fileType == FileType.BIOMARKER_TYPE) {
-      return biomarker;
-    } else if (fileType == FileType.FAMILY_TYPE) {
-      return family;
-    } else if (fileType == FileType.EXPOSURE_TYPE) {
-      return exposure;
-    } else if (fileType == FileType.SURGERY_TYPE) {
-      return surgery;
-    } else if (fileType == FileType.THERAPY_TYPE) {
-      return therapy;
-    }
-
-    throw new IllegalArgumentException("Invalid clinical file type: " + fileType);
+  public FileType getFileType() {
+    return FileType.from(fileType);
   }
 
 }

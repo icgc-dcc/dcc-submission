@@ -72,13 +72,13 @@ public class PCAWGClient {
   }
 
   public Multimap<String, String> getProjectSamples() {
-    log.info("Searching samples...");
+    log.info("Searching donors samples...");
     val result = searchDonors(
         "normal_alignment_status.dcc_specimen_type",
         "normal_alignment_status.submitter_sample_id",
         "tumor_alignment_status.dcc_specimen_type",
         "tumor_alignment_status.submitter_sample_id");
-    log.info("Found {} samples...", formatCount(result));
+    log.info("Found donor samples");
 
     val hits = result.get("hits").get("hits");
 

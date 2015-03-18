@@ -30,6 +30,10 @@ public class ClinicalFields {
 
   public final String STUDY_FIELD_NAME = "study";
 
+  public static String getDonorId(Map<String, String> record) {
+    return record.get(SUBMISSION_DONOR_ID);
+  }
+
   public static String getDonorDonorId(Map<String, String> donor) {
     return donor.get(SUBMISSION_DONOR_ID);
   }

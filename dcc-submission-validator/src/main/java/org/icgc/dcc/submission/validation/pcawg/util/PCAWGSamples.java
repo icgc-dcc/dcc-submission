@@ -26,7 +26,7 @@ import lombok.experimental.UtilityClass;
 import org.icgc.dcc.submission.core.model.Record;
 
 @UtilityClass
-public class PCAWG {
+public class PCAWGSamples {
 
   /**
    * Constants. See {@code sample.0.study.v1}
@@ -35,21 +35,21 @@ public class PCAWG {
    * http://***REMOVED***/dictionary.html#?vFrom=0.10a&vTo=0.10a&viewMode=codelist&dataType=sample&q=sample.0.study.v1
    * </pre>
    */
-  private static final String PAN_CANCER_STUDY_CODE = "1";
-  private static final String PAN_CANCER_STUDY_VALUE = "PanCancer Study";
+  private static final String PCAWG_STUDY_CODE = "1";
+  private static final String PCAWG_STUDY_VALUE = "PanCancer Study";
 
-  public static boolean isPanCancerSample(@NonNull Record sample) {
+  public static boolean isPCAWGSample(@NonNull Record sample) {
     val study = getSampleStudy(sample);
 
-    return isPanCancerStudy(study);
+    return isPCAWGStudy(study);
   }
 
-  public static boolean isPanCancerStudy(@NonNull String study) {
+  public static boolean isPCAWGStudy(@NonNull String study) {
     if (isNullOrEmpty(study)) {
       return false;
-    } else if (study.equals(PAN_CANCER_STUDY_VALUE)) {
+    } else if (study.equals(PCAWG_STUDY_VALUE)) {
       return true;
-    } else if (study.equals(PAN_CANCER_STUDY_CODE)) {
+    } else if (study.equals(PCAWG_STUDY_CODE)) {
       return true;
     } else {
       return false;
