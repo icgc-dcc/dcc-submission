@@ -4,11 +4,12 @@
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 <link rel="stylesheet" href="styles/docco.css">
 <link rel="stylesheet" href="styles/nobg.css">
+<link href="bower_components/jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
 <script src="/javascripts/vendor.js"></script>
 <script src="dictionaryUtil.js"></script>
 <script src="dictionaryViewer.js"></script>
-
+<script src="bower_components/jsoneditor/dist/jsoneditor.min.js"></script>
 <style type="text/css">
 
 .data-type-list {
@@ -86,6 +87,23 @@ a {
    display:none;
 }
 
+  /** for bob to have non blue headers */
+  .jsoneditor .menu {
+    background: whitesmoke;
+    border-bottom: none;
+  }
+  .jsoneditor {
+    border:none;
+  }
+  .jsoneditor .menu button{
+    background: url(bower_components/jsoneditor/dist/img/jsoneditor-icons.png)white;
+    border-color: dimgray;
+  }
+
+  #jsonview{
+    margin-top: -20px; /** undoes margin of header */
+  }
+
 </style>
 </head>
 <body style="padding-top:70px" data-ng-controller="ViewerController">
@@ -135,7 +153,7 @@ a {
         <div class="form-group">
             <select
                  class="form-control"
-                 data-ng-options="item for item in ['graph', 'table', 'codelist', 'report']"
+                 data-ng-options="item for item in ['graph', 'table', 'codelist', 'report','json']"
                  data-ng-model="viewMode"
                  data-ng-change="changeView()">
             </select>
@@ -191,6 +209,8 @@ Removed:
    </div>
 </div>
 
+<!-- template for json viewer -->
+<div id="jsonviewer" data-ng-style="{'display': viewMode==='json'? 'block':'none'}"></div>
 
 <!-- template for codelists -->
 <div class="codelist-wrapper" data-ng-style="{'display': viewMode==='codelist'? 'block':'none'}">
@@ -319,13 +339,19 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
 
        $scope.tableViewer.toggleDataTypeFunc = function() {
          $scope.$apply(function() {
-           console.log('asdf');
+           console.log('asdf'); //very nice
            var search = $location.search();
            search.dataType = $scope.tableViewer.selectedDataType;
            $location.search(search);
          });
        };
 
+       var container = document.getElementById("jsonviewer");
+       var options = {
+            mode: 'view'
+       };
+       var editor = new JSONEditor(container, options);
+       editor.set(dictionaryList[dictionaryList.length-1]);
        startWatcher();
      });
 
