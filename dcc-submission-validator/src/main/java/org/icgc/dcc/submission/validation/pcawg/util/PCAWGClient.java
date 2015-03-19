@@ -24,12 +24,13 @@ import static org.icgc.dcc.common.core.util.Joiners.COMMA;
 import java.net.URL;
 import java.util.Set;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -37,7 +38,7 @@ import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PCAWGRepository {
+public class PCAWGClient {
 
   /**
    * Constants.
@@ -46,9 +47,10 @@ public class PCAWGRepository {
   private static final String DEFAULT_PCAWG_INDEX_PATH = "elasticsearch/pcawg_es";
   private static final String DEFAULT_PCAWG_SEARCH_URL = DEFAULT_PCAWG_URL + "/" + DEFAULT_PCAWG_INDEX_PATH;
 
+  @NonNull
   private final String searchUrl;
 
-  public PCAWGRepository() {
+  public PCAWGClient() {
     this(DEFAULT_PCAWG_SEARCH_URL);
   }
 
@@ -70,13 +72,13 @@ public class PCAWGRepository {
   }
 
   public Multimap<String, String> getProjectSamples() {
-    log.info("Searching samples...");
+    log.info("Searching donors samples...");
     val result = searchDonors(
         "normal_alignment_status.dcc_specimen_type",
         "normal_alignment_status.submitter_sample_id",
         "tumor_alignment_status.dcc_specimen_type",
         "tumor_alignment_status.submitter_sample_id");
-    log.info("Found {} samples...", formatCount(result));
+    log.info("Found donor samples");
 
     val hits = result.get("hits").get("hits");
 
@@ -102,7 +104,7 @@ public class PCAWGRepository {
     return projectSamples;
   }
 
-  private ObjectNode searchProjects(String query) {
+  private JsonNode searchProjects(String query) {
     return search("_search"
         + "?"
         + "size"
@@ -114,7 +116,7 @@ public class PCAWGRepository {
         + query);
   }
 
-  private ObjectNode searchDonors(String... fields) {
+  private JsonNode searchDonors(String... fields) {
     return search("donor/_search"
         + "?"
         + "size"
@@ -127,11 +129,11 @@ public class PCAWGRepository {
   }
 
   @SneakyThrows
-  private ObjectNode search(String path) {
+  private JsonNode search(String path) {
     val url = new URL(searchUrl + "/" + path);
 
     log.info("Requesting '{}'...", url);
-    return DEFAULT.readValue(url, ObjectNode.class);
+    return DEFAULT.readTree(url);
   }
 
 }

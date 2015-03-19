@@ -1,0 +1,167 @@
+{
+  "rules": [ 
+    {
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_sex",
+      "tcga": true
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_region_of_residence",
+      "tcga": true
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_vital_status",
+      "tcga": true
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_age_at_diagnosis",
+      "tcga": false
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_age_at_enrollment",
+      "tcga": false
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_diagnosis_icd10",
+      "tcga": true
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_tumour_staging_system_at_diagnosis",
+      "tcga": false
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_tumour_stage_at_diagnosis",
+      "tcga": false
+    }, { 
+      "rule": "mandatory",
+      "fileType": "donor",
+      "fieldName": "donor_tumour_stage_at_diagnosis_supplemental",
+      "tcga": false
+    }, 
+    
+    {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "specimen_interval",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "specimen_donor_treatment_type",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "specimen_donor_treatment_type_other",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "tumour_confirmed",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "tumour_histological_type",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "tumour_grading_system",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "tumour_grade",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "tumour_stage_system",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "specimen",
+      "fieldName": "tumour_stage",
+      "tcga": false
+    },
+    
+    
+    {
+      "rule": "mandatory",
+      "fileType": "family",
+      "fieldName": "relationship_disease_icd10",
+      "tcga": false
+    }, {
+      "rule": "mandatory",
+      "fileType": "family",
+      "fieldName": "relationship_disease",
+      "tcga": false
+    },
+    
+    {
+      "rule": "exposure",
+      "fileType": "family",
+      "fieldName": "tobacco_smoking_history_indicator",
+      "tcga": false
+    }, {
+      "rule": "exposure",
+      "fileType": "family",
+      "fieldName": "tobacco_smoking_intensity",
+      "tcga": false
+    }, {
+      "rule": "exposure",
+      "fileType": "family",
+      "fieldName": "alcohol_history",
+      "tcga": false
+    }, {
+      "rule": "exposure",
+      "fileType": "family",
+      "fieldName": "alcohol_history_intensity",
+      "tcga": false
+    },
+    
+    {
+      "rule": "therapy",
+      "fileType": "family",
+      "fieldName": "therapy_start_interval",
+      "tcga": false
+    }, {
+      "rule": "therapy",
+      "fileType": "family",
+      "fieldName": "therapy_duration",
+      "tcga": false
+    }, {
+      "rule": "therapy",
+      "fileType": "family",
+      "fieldName": "therapy_type",
+      "tcga": false
+    }, {
+      "rule": "therapy",
+      "fileType": "family",
+      "fieldName": "therapy_response",
+      "tcga": false
+    }, {
+      "rule": "therapy",
+      "fileType": "family",
+      "fieldName": "other_therapy",
+      "tcga": false
+    }, {
+      "rule": "therapy",
+      "fileType": "family",
+      "fieldName": "other_therapy_response",
+      "tcga": false
+    }
+    
+
+  ]
+}
+  

@@ -27,12 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.common.core.model.Programs;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.pcawg.core.ClinicalProcessor;
+import org.icgc.dcc.submission.validation.pcawg.core.ClinicalIndex;
+import org.icgc.dcc.submission.validation.pcawg.core.ClinicalValidator;
 import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
-import org.icgc.dcc.submission.validation.pcawg.util.PCAWGRepository;
+import org.icgc.dcc.submission.validation.pcawg.util.PCAWGClient;
+import org.icgc.dcc.submission.validation.pcawg.util.TCGAClient;
 
 /**
- * Validator responsible for ensuring PCAWG validation rules are enforced.
+ * Validator responsible for ensuring PCAWGSamples validation rules are enforced.
  * <p>
  * This class assumes that prior {@code Validator}s have ensured that clinical data exists and that all files are
  * welformed.
@@ -44,11 +46,13 @@ import org.icgc.dcc.submission.validation.pcawg.util.PCAWGRepository;
 public class PCAWGValidator implements Validator {
 
   @NonNull
-  private final PCAWGRepository pcawgRepository;
+  private final PCAWGClient pcawgClient;
+  @NonNull
+  private final TCGAClient tcgaClient;
 
   @Override
   public String getName() {
-    return "PCAWG Validator";
+    return "PCAWGSamples Validator";
   }
 
   @Override
@@ -74,18 +78,27 @@ public class PCAWGValidator implements Validator {
     val referenceSampleIds = getReferenceSampleIds(context);
     val tcga = Programs.isTCGA(context.getProjectKey());
 
-    val processor = new ClinicalProcessor(clinical, tcga, referenceSampleIds, context);
-    processor.process();
+    val validator = new ClinicalValidator(
+        // Data
+        clinical, new ClinicalIndex(clinical), tcga,
+
+        // Reference
+        tcgaClient, referenceSampleIds,
+
+        // Reporting
+        context);
+
+    validator.validate();
   }
 
   private Collection<String> getReferenceSampleIds(ValidationContext context) {
-    val projectSamples = pcawgRepository.getProjectSamples();
+    val projectSamples = pcawgClient.getProjectSamples();
 
     return projectSamples.get(context.getProjectKey());
   }
 
   private boolean isPCAWG(String projectKey) {
-    val projectNames = pcawgRepository.getProjects();
+    val projectNames = pcawgClient.getProjects();
 
     return projectNames.contains(projectKey);
   }

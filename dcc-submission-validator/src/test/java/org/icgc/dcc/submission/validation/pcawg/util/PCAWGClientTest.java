@@ -6,13 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 @Slf4j
-public class PCAWGRepositoryTest {
+public class PCAWGClientTest {
 
-  PCAWGRepository repository = new PCAWGRepository();
+  PCAWGClient client = new PCAWGClient();
 
   @Test
   public void testGetProjects() {
-    val projects = repository.getProjects();
+    val projects = client.getProjects();
 
     for (val project : projects) {
       log.info("Project: {}", project);
@@ -21,7 +21,7 @@ public class PCAWGRepositoryTest {
 
   @Test
   public void testGetProjectSamples() {
-    val projectSamples = repository.getProjectSamples();
+    val projectSamples = client.getProjectSamples();
 
     for (val entry : projectSamples.entries()) {
       log.info("Project sample: {}", entry);

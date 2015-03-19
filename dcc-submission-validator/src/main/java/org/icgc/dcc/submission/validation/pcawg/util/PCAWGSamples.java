@@ -15,64 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.pcawg.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.List;
-
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleStudy;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.val;
+import lombok.experimental.UtilityClass;
 
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 
-@Value
-public class Clinical {
+@UtilityClass
+public class PCAWGSamples {
 
   /**
-   * Data.
+   * Constants. See {@code sample.0.study.v1}
+   * 
+   * <pre>
+   * http://***REMOVED***/dictionary.html#?vFrom=0.10a&vTo=0.10a&viewMode=codelist&dataType=sample&q=sample.0.study.v1
+   * </pre>
    */
-  @NonNull
-  List<Record> donors;
-  @NonNull
-  List<Record> specimens;
-  @NonNull
-  List<Record> samples;
+  private static final String PCAWG_STUDY_CODE = "1";
+  private static final String PCAWG_STUDY_VALUE = "PanCancer Study";
 
-  @NonNull
-  List<Record> biomarker;
-  @NonNull
-  List<Record> family;
-  @NonNull
-  List<Record> exposure;
-  @NonNull
-  List<Record> surgery;
-  @NonNull
-  List<Record> therapy;
+  public static boolean isPCAWGSample(@NonNull Record sample) {
+    val study = getSampleStudy(sample);
 
-  public List<Record> get(FileType fileType) {
-    checkArgument(fileType.getDataType().isClinicalType());
+    return isPCAWGStudy(study);
+  }
 
-    if (fileType == FileType.DONOR_TYPE) {
-      return donors;
-    } else if (fileType == FileType.SPECIMEN_TYPE) {
-      return specimens;
-    } else if (fileType == FileType.SAMPLE_TYPE) {
-      return samples;
-    } else if (fileType == FileType.BIOMARKER_TYPE) {
-      return biomarker;
-    } else if (fileType == FileType.FAMILY_TYPE) {
-      return family;
-    } else if (fileType == FileType.EXPOSURE_TYPE) {
-      return exposure;
-    } else if (fileType == FileType.SURGERY_TYPE) {
-      return surgery;
-    } else if (fileType == FileType.THERAPY_TYPE) {
-      return therapy;
+  public static boolean isPCAWGStudy(@NonNull String study) {
+    if (isNullOrEmpty(study)) {
+      return false;
+    } else if (study.equals(PCAWG_STUDY_VALUE)) {
+      return true;
+    } else if (study.equals(PCAWG_STUDY_CODE)) {
+      return true;
+    } else {
+      return false;
     }
-
-    throw new IllegalArgumentException("Invalid clinical file type: " + fileType);
   }
 
 }

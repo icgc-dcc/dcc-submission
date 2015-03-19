@@ -37,7 +37,8 @@ import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
-import org.icgc.dcc.submission.validation.pcawg.util.PCAWGRepository;
+import org.icgc.dcc.submission.validation.pcawg.util.PCAWGClient;
+import org.icgc.dcc.submission.validation.pcawg.util.TCGAClient;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
@@ -174,7 +175,7 @@ public class ValidationModule extends AbstractDccModule {
       // Default validators and validator ordering
       validators.add(firstPassValidator());
       validators.add(primaryValidator(planner));
-      // validators.add(pcawgValidator());
+      validators.add(pcawgValidator());
       validators.add(keyValidator());
       validators.add(referenceGenomeValidator(config));
       validators.add(sampleTypeValidator());
@@ -197,7 +198,7 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   private static Validator pcawgValidator() {
-    return new PCAWGValidator(new PCAWGRepository());
+    return new PCAWGValidator(new PCAWGClient(), new TCGAClient());
   }
 
   private static Validator referenceGenomeValidator(Config config) {

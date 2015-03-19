@@ -17,43 +17,54 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.util;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleStudy;
+import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
+
+import java.net.URL;
+
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
-import lombok.experimental.UtilityClass;
 
-import org.icgc.dcc.submission.core.model.Record;
+import com.fasterxml.jackson.databind.JsonNode;
 
-@UtilityClass
-public class PanCancer {
+/**
+ * See https://wiki.nci.nih.gov/display/TCGA/TCGA+Barcode+to+UUID+Web+Service+User%27s+Guide
+ */
+@RequiredArgsConstructor
+public class TCGAClient {
 
   /**
-   * Constants. See {@code sample.0.study.v1}
-   * 
-   * <pre>
-   * http://***REMOVED***/dictionary.html#?vFrom=0.10a&vTo=0.10a&viewMode=codelist&dataType=sample&q=sample.0.study.v1
-   * </pre>
+   * Constants.
    */
-  private static final String PAN_CANCER_STUDY_CODE = "1";
-  private static final String PAN_CANCER_STUDY_VALUE = "PanCancer Study";
+  private static final String TCGA_BASE_URL = "https://tcga-data.nci.nih.gov";
 
-  public static boolean isPanCancerSample(@NonNull Record sample) {
-    val study = getSampleStudy(sample);
+  @NonNull
+  private final String baseUrl;
 
-    return isPanCancerStudy(study);
+  public TCGAClient() {
+    this(TCGA_BASE_URL);
   }
 
-  public static boolean isPanCancerStudy(@NonNull String study) {
-    if (isNullOrEmpty(study)) {
-      return false;
-    } else if (study.equals(PAN_CANCER_STUDY_VALUE)) {
-      return true;
-    } else if (study.equals(PAN_CANCER_STUDY_CODE)) {
-      return true;
-    } else {
-      return false;
-    }
+  @NonNull
+  public String getUUID(String barcode) {
+    val mappingUrl = getBarcodeMappingUrl(barcode);
+    val mapping = getBarcodeMapping(mappingUrl);
+
+    return getMappingUUID(mapping);
+  }
+
+  private String getBarcodeMappingUrl(String barcode) {
+    return baseUrl + "/uuid/uuidws/mapping" + "/json" + "/barcode" + "/" + barcode;
+  }
+
+  private static String getMappingUUID(JsonNode mapping) {
+    return mapping.path("uuidMapping").path("uuid").asText();
+  }
+
+  @SneakyThrows
+  private static JsonNode getBarcodeMapping(String url) {
+    return DEFAULT.readTree(new URL(url));
   }
 
 }

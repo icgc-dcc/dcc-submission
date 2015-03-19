@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,64 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.pcawg.cli;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import org.icgc.dcc.submission.validation.key.cli.KeyValidationContext;
 
-import java.util.List;
+public class PCAWGValidationContext extends KeyValidationContext {
 
-import lombok.NonNull;
-import lombok.Value;
-
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.model.Record;
-
-@Value
-public class Clinical {
-
-  /**
-   * Data.
-   */
-  @NonNull
-  List<Record> donors;
-  @NonNull
-  List<Record> specimens;
-  @NonNull
-  List<Record> samples;
-
-  @NonNull
-  List<Record> biomarker;
-  @NonNull
-  List<Record> family;
-  @NonNull
-  List<Record> exposure;
-  @NonNull
-  List<Record> surgery;
-  @NonNull
-  List<Record> therapy;
-
-  public List<Record> get(FileType fileType) {
-    checkArgument(fileType.getDataType().isClinicalType());
-
-    if (fileType == FileType.DONOR_TYPE) {
-      return donors;
-    } else if (fileType == FileType.SPECIMEN_TYPE) {
-      return specimens;
-    } else if (fileType == FileType.SAMPLE_TYPE) {
-      return samples;
-    } else if (fileType == FileType.BIOMARKER_TYPE) {
-      return biomarker;
-    } else if (fileType == FileType.FAMILY_TYPE) {
-      return family;
-    } else if (fileType == FileType.EXPOSURE_TYPE) {
-      return exposure;
-    } else if (fileType == FileType.SURGERY_TYPE) {
-      return surgery;
-    } else if (fileType == FileType.THERAPY_TYPE) {
-      return therapy;
-    }
-
-    throw new IllegalArgumentException("Invalid clinical file type: " + fileType);
+  public PCAWGValidationContext(String releaseName, String projectKey, String fsRoot, String fsUrl) {
+    super(releaseName, projectKey, fsRoot, fsUrl, "");
   }
 
 }

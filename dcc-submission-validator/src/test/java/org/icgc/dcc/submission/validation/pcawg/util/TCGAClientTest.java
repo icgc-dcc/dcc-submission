@@ -15,64 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.pcawg.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.assertj.core.api.Assertions.assertThat;
+import lombok.val;
 
-import java.util.List;
+import org.junit.Test;
 
-import lombok.NonNull;
-import lombok.Value;
+public class TCGAClientTest {
 
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.model.Record;
+  TCGAClient client = new TCGAClient();
 
-@Value
-public class Clinical {
+  @Test
+  public void testGetUUID() throws Exception {
+    val barcode = "TCGA-5T-A9QA-01A-21-A43F-20";
+    val uuid = client.getUUID(barcode);
 
-  /**
-   * Data.
-   */
-  @NonNull
-  List<Record> donors;
-  @NonNull
-  List<Record> specimens;
-  @NonNull
-  List<Record> samples;
-
-  @NonNull
-  List<Record> biomarker;
-  @NonNull
-  List<Record> family;
-  @NonNull
-  List<Record> exposure;
-  @NonNull
-  List<Record> surgery;
-  @NonNull
-  List<Record> therapy;
-
-  public List<Record> get(FileType fileType) {
-    checkArgument(fileType.getDataType().isClinicalType());
-
-    if (fileType == FileType.DONOR_TYPE) {
-      return donors;
-    } else if (fileType == FileType.SPECIMEN_TYPE) {
-      return specimens;
-    } else if (fileType == FileType.SAMPLE_TYPE) {
-      return samples;
-    } else if (fileType == FileType.BIOMARKER_TYPE) {
-      return biomarker;
-    } else if (fileType == FileType.FAMILY_TYPE) {
-      return family;
-    } else if (fileType == FileType.EXPOSURE_TYPE) {
-      return exposure;
-    } else if (fileType == FileType.SURGERY_TYPE) {
-      return surgery;
-    } else if (fileType == FileType.THERAPY_TYPE) {
-      return therapy;
-    }
-
-    throw new IllegalArgumentException("Invalid clinical file type: " + fileType);
+    assertThat(uuid).isEqualTo("9e71a150-8fd7-466c-96af-aab29520bcdc");
   }
 
 }
