@@ -61,11 +61,16 @@ module.exports = class CompleteReleaseView extends View
       when "SignedOffSubmissionRequired"
         "The release needs at least one SIGNED OFF
         submission before it can be COMPLETED."
+      else
+        "An error occurred. Please contact Support for assistance."
 
   completeRelease: ->
     #console.debug "CompleteReleaseView#completeRelease"
     name = @.$('#nextRelease').val()
     nextRelease = new NextRelease {name: name}
+
+    # Disable to avoid repeated submission
+    @.$('#complete-release-button').prop('disabled', true)
 
     nextRelease.save {},
       success: (data) =>
