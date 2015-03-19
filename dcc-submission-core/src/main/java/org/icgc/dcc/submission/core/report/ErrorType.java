@@ -410,8 +410,8 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params, String.class, String.class, String.class);
-      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+      checkParams(params, String.class, String.class);
+      return ImmutableMap.of(VALUE, params[0]);
     }
 
   },
@@ -423,8 +423,8 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params, String.class, String.class, String.class);
-      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+      checkParams(params, String.class);
+      return ImmutableMap.of();
     }
 
   },
@@ -437,7 +437,7 @@ public enum ErrorType {
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkParams(params, String.class, String.class, String.class);
-      return ImmutableMap.of(VALUE, params[0], EXPECTED, params[1]);
+      return ImmutableMap.of(VALUE, params[0]);
     }
 
   };

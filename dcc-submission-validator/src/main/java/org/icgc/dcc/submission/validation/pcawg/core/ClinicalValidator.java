@@ -184,9 +184,9 @@ public class ClinicalValidator {
 
         reportError(error(donor)
             .fieldNames(SUBMISSION_DONOR_ID)
+            .type(ErrorType.PCAWG_CLINICAL_ROW_REQUIRED)
             .value(donorId)
-            .params(fileType)
-            .type(ErrorType.PCAWG_CLINICAL_ROW_REQUIRED));
+            .params(fileType));
       }
     }
   }
@@ -231,10 +231,10 @@ public class ClinicalValidator {
     val donorIds = Sets.<String> newTreeSet();
     for (val donor : donors) {
       val donorId = getDonorDonorId(donor);
-  
+
       donorIds.add(donorId);
     }
-  
+
     return donorIds;
   }
 
