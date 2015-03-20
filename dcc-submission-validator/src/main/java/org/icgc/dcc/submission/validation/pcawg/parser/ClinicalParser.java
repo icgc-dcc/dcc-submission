@@ -28,6 +28,8 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
+import org.icgc.dcc.submission.validation.pcawg.core.ClinicalCore;
+import org.icgc.dcc.submission.validation.pcawg.core.ClinicalOptional;
 
 import com.google.common.collect.ImmutableList;
 
@@ -38,17 +40,17 @@ public class ClinicalParser {
 
   public static Clinical parse(ValidationContext context) {
     return new Clinical(
-        // Core
-        parseFileType(FileType.DONOR_TYPE, context),
-        parseFileType(FileType.SPECIMEN_TYPE, context),
-        parseFileType(FileType.SAMPLE_TYPE, context),
+        new ClinicalCore(
+            parseFileType(FileType.DONOR_TYPE, context),
+            parseFileType(FileType.SPECIMEN_TYPE, context),
+            parseFileType(FileType.SAMPLE_TYPE, context)),
 
-        // Optional
-        parseFileType(FileType.BIOMARKER_TYPE, context),
-        parseFileType(FileType.FAMILY_TYPE, context),
-        parseFileType(FileType.EXPOSURE_TYPE, context),
-        parseFileType(FileType.SURGERY_TYPE, context),
-        parseFileType(FileType.THERAPY_TYPE, context));
+        new ClinicalOptional(
+            parseFileType(FileType.BIOMARKER_TYPE, context),
+            parseFileType(FileType.FAMILY_TYPE, context),
+            parseFileType(FileType.EXPOSURE_TYPE, context),
+            parseFileType(FileType.SURGERY_TYPE, context),
+            parseFileType(FileType.THERAPY_TYPE, context)));
   }
 
   @SneakyThrows

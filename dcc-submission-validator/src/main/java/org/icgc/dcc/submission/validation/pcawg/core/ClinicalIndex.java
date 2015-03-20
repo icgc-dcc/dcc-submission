@@ -68,7 +68,7 @@ public class ClinicalIndex {
 
     {
       val donorIndex = ImmutableMap.<String, Record> builder();
-      for (val donor : clinical.getDonors()) {
+      for (val donor : clinical.getCore().getDonors()) {
         val donorId = getDonorDonorId(donor);
 
         donorIndex.put(donorId, donor);
@@ -83,7 +83,7 @@ public class ClinicalIndex {
     {
       val sampleIndex = ImmutableMap.<String, Record> builder();
       val specimenSampleIndex = ImmutableMultimap.<String, String> builder();
-      for (val sample : clinical.getSamples()) {
+      for (val sample : clinical.getCore().getSamples()) {
         val sampleId = getSampleSampleId(sample);
         val sampleSpecimenId = getSampleSpecimenId(sample);
 
@@ -101,7 +101,7 @@ public class ClinicalIndex {
     {
       val specimenIndex = ImmutableMap.<String, Record> builder();
       val donorSpecimenIndex = ImmutableMultimap.<String, String> builder();
-      for (val specimen : clinical.getSpecimens()) {
+      for (val specimen : clinical.getCore().getSpecimens()) {
         val specimenId = getSpecimenSpecimenId(specimen);
         val specimenDonorId = getSpecimenDonorId(specimen);
 

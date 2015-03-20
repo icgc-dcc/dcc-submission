@@ -24,11 +24,14 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 @Data
 public class ClinicalRule {
 
+  // Always "mandatory"
   String rule;
 
+  // Dictionary pointer
   String fileType;
   String fieldName;
 
+  // Also applies to TCGA?
   boolean tcga;
 
   public FileType getFileType() {

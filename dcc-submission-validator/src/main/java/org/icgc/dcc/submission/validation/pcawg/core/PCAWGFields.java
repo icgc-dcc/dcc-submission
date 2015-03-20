@@ -15,56 +15,46 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.util;
+package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleStudy;
 
-import java.net.URL;
+import java.util.Map;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.val;
+import lombok.experimental.UtilityClass;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-/**
- * See https://wiki.nci.nih.gov/display/TCGA/TCGA+Barcode+to+UUID+Web+Service+User%27s+Guide
- */
-@RequiredArgsConstructor
-public class TCGAClient {
+@UtilityClass
+public class PCAWGFields {
 
   /**
-   * Constants.
+   * Constants. See {@code sample.0.study.v1}
+   * 
+   * <pre>
+   * http://***REMOVED***/dictionary.html#?vFrom=0.10a&vTo=0.10a&viewMode=codelist&dataType=sample&q=sample.0.study.v1
+   * </pre>
    */
-  private static final String TCGA_BASE_URL = "https://tcga-data.nci.nih.gov";
+  private static final String PCAWG_STUDY_CODE = "1";
+  private static final String PCAWG_STUDY_VALUE = "PanCancer Study";
 
-  @NonNull
-  private final String baseUrl;
+  public static boolean isPCAWGSample(@NonNull Map<String, String> sample) {
+    val study = getSampleStudy(sample);
 
-  public TCGAClient() {
-    this(TCGA_BASE_URL);
+    return isPCAWGStudy(study);
   }
 
-  @NonNull
-  public String getUUID(String barcode) {
-    val mappingUrl = getBarcodeMappingUrl(barcode);
-    val mapping = getBarcodeMapping(mappingUrl);
-
-    return getMappingUUID(mapping);
-  }
-
-  private String getBarcodeMappingUrl(String barcode) {
-    return baseUrl + "/uuid/uuidws/mapping" + "/json" + "/barcode" + "/" + barcode;
-  }
-
-  private static String getMappingUUID(JsonNode mapping) {
-    return mapping.path("uuidMapping").path("uuid").asText();
-  }
-
-  @SneakyThrows
-  private static JsonNode getBarcodeMapping(String url) {
-    return DEFAULT.readTree(new URL(url));
+  private static boolean isPCAWGStudy(@NonNull String study) {
+    if (isNullOrEmpty(study)) {
+      return false;
+    } else if (study.equals(PCAWG_STUDY_VALUE)) {
+      return true;
+    } else if (study.equals(PCAWG_STUDY_CODE)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 }

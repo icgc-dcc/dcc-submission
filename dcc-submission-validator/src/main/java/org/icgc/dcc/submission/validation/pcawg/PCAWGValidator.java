@@ -29,12 +29,12 @@ import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalIndex;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalValidator;
+import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
+import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
-import org.icgc.dcc.submission.validation.pcawg.util.PCAWGClient;
-import org.icgc.dcc.submission.validation.pcawg.util.TCGAClient;
 
 /**
- * Validator responsible for ensuring PCAWGSamples validation rules are enforced.
+ * Validator responsible for ensuring PCAWGFields validation rules are enforced.
  * <p>
  * This class assumes that prior {@code Validator}s have ensured that clinical data exists and that all files are
  * welformed.
@@ -46,13 +46,13 @@ import org.icgc.dcc.submission.validation.pcawg.util.TCGAClient;
 public class PCAWGValidator implements Validator {
 
   @NonNull
-  private final PCAWGClient pcawgClient;
+  private final PanCancerClient pcawgClient;
   @NonNull
   private final TCGAClient tcgaClient;
 
   @Override
   public String getName() {
-    return "PCAWGSamples Validator";
+    return "PCAWGFields Validator";
   }
 
   @Override

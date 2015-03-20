@@ -15,41 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.pcawg.external;
 
-import java.util.List;
+import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
 
-import lombok.Value;
+import java.net.URL;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.model.Record;
+import com.fasterxml.jackson.databind.JsonNode;
 
-@Value
-public class Clinical {
-
-  /**
-   * Data - Core.
-   */
-  ClinicalCore core;
+/**
+ * See https://wiki.nci.nih.gov/display/TCGA/TCGA+Barcode+to+UUID+Web+Service+User%27s+Guide
+ */
+@RequiredArgsConstructor
+public class TCGAClient {
 
   /**
-   * Data - "Optional".
+   * Constants.
    */
-  ClinicalOptional optional;
+  private static final String TCGA_BASE_URL = "https://tcga-data.nci.nih.gov";
 
-  public List<Record> get(FileType fileType) {
-    val coreType = core.get(fileType);
-    if (coreType.isPresent()) {
-      return coreType.get();
-    }
+  @NonNull
+  private final String baseUrl;
 
-    val optionalType = optional.get(fileType);
-    if (optionalType.isPresent()) {
-      return optionalType.get();
-    }
+  public TCGAClient() {
+    this(TCGA_BASE_URL);
+  }
 
-    throw new IllegalArgumentException("Bad file type: " + fileType);
+  @NonNull
+  public String getUUID(String barcode) {
+    val mappingUrl = getBarcodeMappingUrl(barcode);
+    val mapping = getBarcodeMapping(mappingUrl);
+
+    return getMappingUUID(mapping);
+  }
+
+  private String getBarcodeMappingUrl(String barcode) {
+    return baseUrl + "/uuid/uuidws/mapping" + "/json" + "/barcode" + "/" + barcode;
+  }
+
+  private static String getMappingUUID(JsonNode mapping) {
+    return mapping.path("uuidMapping").path("uuid").asText();
+  }
+
+  @SneakyThrows
+  private static JsonNode getBarcodeMapping(String url) {
+    return DEFAULT.readTree(new URL(url));
   }
 
 }

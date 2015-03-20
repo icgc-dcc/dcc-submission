@@ -23,8 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
-import org.icgc.dcc.submission.validation.pcawg.util.PCAWGClient;
-import org.icgc.dcc.submission.validation.pcawg.util.TCGAClient;
+import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
+import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 
 /**
  * Entry point for testing {@link PCAWGValidator} from the command line in isolation of the other validators and
@@ -35,7 +35,7 @@ public class Main {
 
   @SneakyThrows
   public static void main(String... args) {
-    log.info("Starting PCAWGSamples validation...");
+    log.info("Starting PCAWGFields validation...");
 
     // Resolve configuration @formatter:off
     int i = 0;
@@ -49,7 +49,7 @@ public class Main {
     val validator = getValidator();
     validator.validate(context);
 
-    log.info("Finished PCAWGSamples validation.");
+    log.info("Finished PCAWGFields validation.");
   }
 
   private static ValidationContext getValidationContext(String releaseName, String projectKey, String fsRoot,
@@ -67,7 +67,7 @@ public class Main {
   }
 
   private static PCAWGValidator getValidator() {
-    return new PCAWGValidator(new PCAWGClient(), new TCGAClient());
+    return new PCAWGValidator(new PanCancerClient(), new TCGAClient());
   }
 
 }

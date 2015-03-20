@@ -15,41 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.pcawg.external;
 
-import java.util.List;
-
-import lombok.Value;
+import static org.assertj.core.api.Assertions.assertThat;
 import lombok.val;
 
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.model.Record;
+import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
+import org.junit.Test;
 
-@Value
-public class Clinical {
+public class TCGAClientTest {
 
-  /**
-   * Data - Core.
-   */
-  ClinicalCore core;
+  TCGAClient client = new TCGAClient();
 
-  /**
-   * Data - "Optional".
-   */
-  ClinicalOptional optional;
+  @Test
+  public void testGetUUID() throws Exception {
+    val barcode = "TCGA-5T-A9QA-01A-21-A43F-20";
+    val uuid = client.getUUID(barcode);
 
-  public List<Record> get(FileType fileType) {
-    val coreType = core.get(fileType);
-    if (coreType.isPresent()) {
-      return coreType.get();
-    }
-
-    val optionalType = optional.get(fileType);
-    if (optionalType.isPresent()) {
-      return optionalType.get();
-    }
-
-    throw new IllegalArgumentException("Bad file type: " + fileType);
+    assertThat(uuid).isEqualTo("9e71a150-8fd7-466c-96af-aab29520bcdc");
   }
 
 }

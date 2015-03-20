@@ -15,23 +15,59 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.util;
+package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import lombok.NonNull;
+import lombok.Value;
 import lombok.val;
 
-import org.junit.Test;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.model.Record;
 
-public class TCGAClientTest {
+import com.google.common.collect.ImmutableList;
 
-  TCGAClient client = new TCGAClient();
+@Value
+public class ClinicalCore implements Iterable<List<Record>> {
 
-  @Test
-  public void testGetUUID() throws Exception {
-    val barcode = "TCGA-5T-A9QA-01A-21-A43F-20";
-    val uuid = client.getUUID(barcode);
+  /**
+   * Data - Core.
+   */
+  @NonNull
+  List<Record> donors;
+  @NonNull
+  List<Record> specimens;
+  @NonNull
+  List<Record> samples;
 
-    assertThat(uuid).isEqualTo("9e71a150-8fd7-466c-96af-aab29520bcdc");
+  public Optional<List<Record>> get(FileType fileType) {
+    checkArgument(fileType.getDataType().isClinicalType());
+    val clinicalType = fileType.getDataType().asClinicalType();
+    checkArgument(clinicalType.isCoreClinicalType());
+
+    if (fileType == FileType.DONOR_TYPE) {
+      return Optional.of(donors);
+    } else if (fileType == FileType.SPECIMEN_TYPE) {
+      return Optional.of(specimens);
+    } else if (fileType == FileType.SAMPLE_TYPE) {
+      return Optional.of(samples);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Iterator<List<Record>> iterator() {
+    return ImmutableList.of(donors, specimens, samples).iterator();
+  }
+
+  public static Iterable<FileType> getFileTypes() {
+    return ImmutableList.of(FileType.DONOR_TYPE, FileType.SPECIMEN_TYPE, FileType.SAMPLE_TYPE);
   }
 
 }

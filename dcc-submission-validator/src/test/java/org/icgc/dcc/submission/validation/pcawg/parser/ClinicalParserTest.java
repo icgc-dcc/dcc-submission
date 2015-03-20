@@ -70,9 +70,9 @@ public class ClinicalParserTest {
 
     val clinical = ClinicalParser.parse(context);
 
-    assertThat(clinical.getDonors()).hasSize(countRows(donorFile));
-    assertThat(clinical.getSpecimens()).hasSize(countRows(specimenFile));
-    assertThat(clinical.getSamples()).hasSize(countRows(sampleFile));
+    assertThat(clinical.getCore().getDonors()).hasSize(countRows(donorFile));
+    assertThat(clinical.getCore().getSpecimens()).hasSize(countRows(specimenFile));
+    assertThat(clinical.getCore().getSamples()).hasSize(countRows(sampleFile));
 
     log.info("Clinical: {}", clinical);
   }

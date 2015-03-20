@@ -15,45 +15,72 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.util;
+package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleStudy;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
 import lombok.NonNull;
+import lombok.Value;
 import lombok.val;
-import lombok.experimental.UtilityClass;
 
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 
-@UtilityClass
-public class PCAWGSamples {
+import com.google.common.collect.ImmutableList;
+
+@Value
+public class ClinicalOptional implements Iterable<List<Record>> {
 
   /**
-   * Constants. See {@code sample.0.study.v1}
-   * 
-   * <pre>
-   * http://***REMOVED***/dictionary.html#?vFrom=0.10a&vTo=0.10a&viewMode=codelist&dataType=sample&q=sample.0.study.v1
-   * </pre>
+   * Data - "Optional".
    */
-  private static final String PCAWG_STUDY_CODE = "1";
-  private static final String PCAWG_STUDY_VALUE = "PanCancer Study";
+  @NonNull
+  List<Record> biomarker;
+  @NonNull
+  List<Record> family;
+  @NonNull
+  List<Record> exposure;
+  @NonNull
+  List<Record> surgery;
+  @NonNull
+  List<Record> therapy;
 
-  public static boolean isPCAWGSample(@NonNull Record sample) {
-    val study = getSampleStudy(sample);
+  public Optional<List<Record>> get(FileType fileType) {
+    checkArgument(fileType.getDataType().isClinicalType());
+    val clinicalType = fileType.getDataType().asClinicalType();
+    checkArgument(clinicalType.isOptionalClinicalType());
 
-    return isPCAWGStudy(study);
+    if (fileType == FileType.BIOMARKER_TYPE) {
+      return Optional.of(biomarker);
+    } else if (fileType == FileType.FAMILY_TYPE) {
+      return Optional.of(family);
+    } else if (fileType == FileType.EXPOSURE_TYPE) {
+      return Optional.of(exposure);
+    } else if (fileType == FileType.SURGERY_TYPE) {
+      return Optional.of(surgery);
+    } else if (fileType == FileType.THERAPY_TYPE) {
+      return Optional.of(therapy);
+    } else {
+      return Optional.empty();
+    }
   }
 
-  public static boolean isPCAWGStudy(@NonNull String study) {
-    if (isNullOrEmpty(study)) {
-      return false;
-    } else if (study.equals(PCAWG_STUDY_VALUE)) {
-      return true;
-    } else if (study.equals(PCAWG_STUDY_CODE)) {
-      return true;
-    } else {
-      return false;
-    }
+  @Override
+  public Iterator<List<Record>> iterator() {
+    return ImmutableList.of(biomarker, family, exposure, surgery, therapy).iterator();
+  }
+
+  public static Iterable<FileType> getFileTypes() {
+    return ImmutableList.of(
+        FileType.BIOMARKER_TYPE,
+        FileType.FAMILY_TYPE,
+        FileType.EXPOSURE_TYPE,
+        FileType.SURGERY_TYPE,
+        FileType.THERAPY_TYPE);
   }
 
 }

@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.util;
+package org.icgc.dcc.submission.validation.pcawg.external;
 
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
@@ -38,7 +38,7 @@ import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PCAWGClient {
+public class PanCancerClient {
 
   /**
    * Constants.
@@ -50,7 +50,7 @@ public class PCAWGClient {
   @NonNull
   private final String searchUrl;
 
-  public PCAWGClient() {
+  public PanCancerClient() {
     this(DEFAULT_PCAWG_SEARCH_URL);
   }
 
