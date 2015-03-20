@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.cli;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,8 @@ import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
 import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
 import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
+
+import com.google.common.collect.Multimap;
 
 /**
  * Entry point for testing {@link PCAWGValidator} from the command line in isolation of the other validators and
@@ -67,7 +73,39 @@ public class Main {
   }
 
   private static PCAWGValidator getValidator() {
-    return new PCAWGValidator(new PanCancerClient(), new TCGAClient());
+    return new PCAWGValidator(getPanCancerClient(), getTCGAClient());
+  }
+
+  private static PanCancerClient getPanCancerClient() {
+    return new PanCancerClient() {
+
+      Set<String> projects;
+      Multimap<String, String> projectSamples;
+
+      @Override
+      public Set<String> getProjects() {
+        return this.projects = projects != null ? projects : super.getProjects();
+      }
+
+      @Override
+      public Multimap<String, String> getProjectSamples() {
+        return this.projectSamples = projectSamples != null ? projectSamples : super.getProjectSamples();
+      }
+
+    };
+  }
+
+  private static TCGAClient getTCGAClient() {
+    return new TCGAClient() {
+
+      Map<String, String> cache = new ConcurrentHashMap<>();
+
+      @Override
+      public String getUUID(String barcode) {
+        return cache.computeIfAbsent(barcode, super::getUUID);
+      }
+
+    };
   }
 
 }

@@ -40,6 +40,30 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     @modelBind 'change', @update
 
   errors:
+    PCAWG_SAMPLE_STUDY_MISMATCH:
+      name: "PanCancer sample study mismatch"
+      description: (source) ->
+        """
+        Inconsistent sample study between ICGC DCC and pancancer.info
+        """
+    PCAWG_CLINICAL_FIELD_REQUIRED:
+      name: "PanCancer field required"
+      description: (source) ->
+        """
+        Clinical field is required for PanCancer
+        """
+    PCAWG_CLINICAL_ROW_REQUIRED:
+      name: "Clinical row required"
+      description: (source) ->
+        """
+        Clinical row is required for PanCancer
+        """
+    LINE_TERMINATOR_MISSING_ERROR:
+      name: "Missing line terminators"
+      description: (source) ->
+        """
+        Lines must terminated with <code>\\n</code>.
+        """
     UNSUPPORTED_COMPRESSED_FILE:
       name: "Unsupported compressed file"
       description: (source) ->
@@ -275,6 +299,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "OUT_OF_RANGE_ERROR"
       "NOT_A_NUMBER_ERROR"
       "INVALID_CHARSET_ROW_ERROR"
+      "LINE_TERMINATOR_MISSING_ERROR"
       #"STRUCTURALLY_INVALID_ROW_ERROR"
       ]
       return source.lineNumbers.join ', '

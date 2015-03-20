@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import java.util.Iterator;
 import java.util.List;
 
 import lombok.Value;
@@ -25,8 +26,10 @@ import lombok.val;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 
+import com.google.common.collect.Iterators;
+
 @Value
-public class Clinical {
+public class Clinical implements Iterable<List<Record>> {
 
   /**
    * Data - Core.
@@ -50,6 +53,11 @@ public class Clinical {
     }
 
     throw new IllegalArgumentException("Bad file type: " + fileType);
+  }
+
+  @Override
+  public Iterator<List<Record>> iterator() {
+    return Iterators.concat(core.iterator(), optional.iterator());
   }
 
 }

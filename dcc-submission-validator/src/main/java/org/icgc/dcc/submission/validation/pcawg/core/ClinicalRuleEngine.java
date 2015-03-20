@@ -25,9 +25,8 @@ import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUB
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
 import static org.icgc.dcc.common.core.model.SpecialValue.NOT_APPLICABLE_CODE;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
-import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
-import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getDonorId;
-import static org.icgc.dcc.submission.validation.pcawg.core.ClinicalFields.getSampleSampleId;
+import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
+import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
 import static org.icgc.dcc.submission.validation.util.Streams.filter;
 
 import java.util.Collection;
@@ -36,7 +35,6 @@ import java.util.Set;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,22 +44,21 @@ import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
+import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Resources;
 
 /**
  * Implementation of https://wiki.oicr.on.ca/display/DCCREVIEW/PCAWG+Clinical+Field+Requirements
  */
 @Slf4j
 @RequiredArgsConstructor
-public class ClinicalValidator {
+public class ClinicalRuleEngine {
 
   /**
-   * Constants.
+   * Metadata.
    */
-  private static final String RULES_FILE = "pcawg-clinical-rules.json";
+  private final List<ClinicalRule> rules;
 
   /**
    * Data.
@@ -70,7 +67,6 @@ public class ClinicalValidator {
   private final Clinical clinical;
   @NonNull
   private final ClinicalIndex index;
-  private final List<ClinicalRule> rules = readRules();
   private final boolean tcga;
 
   /**
@@ -87,37 +83,31 @@ public class ClinicalValidator {
   @NonNull
   private final ReportContext context;
 
-  @SneakyThrows
-  public static List<ClinicalRule> readRules() {
-    val node = DEFAULT.readTree(Resources.getResource(RULES_FILE));
-    val values = node.get("rules");
-
-    return DEFAULT.convertValue(values, new TypeReference<List<ClinicalRule>>() {});
-  }
-
-  public void validate() {
+  public void execute() {
     val watch = createStarted();
     log.info("Starting {} clinical validation with {} reference sample ids...", tcga ? "TCGA" : "non-TCGA",
         formatCount(referenceSampleIds));
 
-    log.info("Creating PCAWG clinical...");
-    val pawgClinical = new PCAWGClinical(clinical, index);
-    log.info("Finished creating PCAWG clinical");
+    log.info("Calculating PCAWG clinical...");
+    val pawgClinical = calculatePCAWGClinical();
+    log.info("Finished calculating PCAWG clinical");
 
     log.info("Validating core clinical...");
-    validateCore(pawgClinical);
+    validateCore(pawgClinical.getCore());
     log.info("Finished validating core clinical");
 
     log.info("Validating optional clinical...");
-    validateOptional(pawgClinical);
+    validateOptional(pawgClinical.getOptional());
     log.info("Finished validating optional clinical");
 
     log.info("Finshed validating in {}", watch);
   }
 
-  private void validateCore(PCAWGClinical pawgClinical) {
-    val pcawgCore = pawgClinical.getCore();
+  private Clinical calculatePCAWGClinical() {
+    return new PCAWGClinicalCalculator(clinical, index).calculate();
+  }
 
+  private void validateCore(ClinicalCore pcawgCore) {
     validateSamples(pcawgCore.getSamples());
 
     for (val pcawgCoreType : getValidatedCoreTypes()) {
@@ -126,9 +116,8 @@ public class ClinicalValidator {
     }
   }
 
-  private void validateOptional(PCAWGClinical pawgClinical) {
-    val donorIds = pawgClinical.getDonorIds();
-    val pcawgOptional = pawgClinical.getOptional(donorIds);
+  private void validateOptional(ClinicalOptional pcawgOptional) {
+    val donorIds = index.getDonorIds();
 
     for (val pcawgOptionalType : getValidatedOptionalTypes()) {
       val records = pcawgOptional.get(pcawgOptionalType).get();
@@ -160,10 +149,10 @@ public class ClinicalValidator {
   private void validateFileTypeRules(List<Record> records, FileType fileType) {
     val rules = getFileTypeRules(fileType);
 
+    // Execute all rules for each record
     for (val record : records) {
       for (val rule : rules) {
-        val applicable = !tcga || tcga && rule.isTcga();
-        if (!applicable) {
+        if (!isRuleApplicable(rule)) {
           continue;
         }
 
@@ -180,6 +169,10 @@ public class ClinicalValidator {
         }
       }
     }
+  }
+
+  private boolean isRuleApplicable(ClinicalRule rule) {
+    return !tcga || tcga && rule.isTcga();
   }
 
   private void validateFileTypeDonorPresence(List<Record> records, FileType fileType, Set<String> donorIds) {
@@ -213,6 +206,7 @@ public class ClinicalValidator {
   }
 
   private String getCanonicalSampleId(String sampleId) {
+    // Special case for TCGA who submits barcodes to DCC and UUIDs to PanCancer
     return tcga ? tcgaClient.getUUID(sampleId) : sampleId;
   }
 

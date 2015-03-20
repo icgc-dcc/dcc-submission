@@ -15,15 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.pcawg.util;
 
-import org.junit.Test;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
 
-public class ClinicalValidatorTest {
+import java.util.Map;
 
-  @Test
-  public void testReadRules() throws Exception {
-    ClinicalValidator.readRules();
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
+public class ClinicalFields {
+
+  public final String STUDY_FIELD_NAME = "study";
+
+  public static String getDonorId(Map<String, String> record) {
+    return record.get(SUBMISSION_DONOR_ID);
+  }
+
+  public static String getDonorDonorId(Map<String, String> donor) {
+    return donor.get(SUBMISSION_DONOR_ID);
+  }
+
+  public static String getSpecimenSpecimenId(Map<String, String> specimen) {
+    return specimen.get(SUBMISSION_SPECIMEN_ID);
+  }
+
+  public static String getSpecimenDonorId(Map<String, String> specimen) {
+    return specimen.get(SUBMISSION_DONOR_ID);
+  }
+
+  public static String getSampleSampleId(Map<String, String> sample) {
+    return sample.get(SUBMISSION_ANALYZED_SAMPLE_ID);
+  }
+
+  public static String getSampleSpecimenId(Map<String, String> sample) {
+    return sample.get(SUBMISSION_SPECIMEN_ID);
+  }
+
+  public static String getSampleStudy(Map<String, String> sample) {
+    return sample.get(STUDY_FIELD_NAME);
   }
 
 }

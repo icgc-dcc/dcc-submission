@@ -17,21 +17,29 @@
  */
 package org.icgc.dcc.submission.validation.pcawg;
 
+import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
+
 import java.util.Collection;
+import java.util.List;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.Programs;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.pcawg.core.ClinicalIndex;
-import org.icgc.dcc.submission.validation.pcawg.core.ClinicalValidator;
+import org.icgc.dcc.submission.validation.pcawg.core.ClinicalRule;
+import org.icgc.dcc.submission.validation.pcawg.core.ClinicalRuleEngine;
 import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
 import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
+import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.io.Resources;
 
 /**
  * Validator responsible for ensuring PCAWGFields validation rules are enforced.
@@ -44,6 +52,16 @@ import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
 @Slf4j
 @RequiredArgsConstructor
 public class PCAWGValidator implements Validator {
+
+  // TODO:
+  // 1) Decompose PCAWGValidator into 2 sub validators for Core and Clinical
+  // 2) Move remaining control logic into PCAWGValidator
+  // 3) Consider externalizing all rules by making generic RuleValidator
+
+  /**
+   * Constants.
+   */
+  private static final String RULES_FILE = "pcawg-clinical-rules.json";
 
   @NonNull
   private final PanCancerClient pcawgClient;
@@ -78,7 +96,9 @@ public class PCAWGValidator implements Validator {
     val referenceSampleIds = getReferenceSampleIds(context);
     val tcga = Programs.isTCGA(context.getProjectKey());
 
-    val validator = new ClinicalValidator(
+    val ruleEngine = new ClinicalRuleEngine(
+        readRules(),
+
         // Data
         clinical, new ClinicalIndex(clinical), tcga,
 
@@ -88,7 +108,7 @@ public class PCAWGValidator implements Validator {
         // Reporting
         context);
 
-    validator.validate();
+    ruleEngine.execute();
   }
 
   private Collection<String> getReferenceSampleIds(ValidationContext context) {
@@ -101,6 +121,14 @@ public class PCAWGValidator implements Validator {
     val projectNames = pcawgClient.getProjects();
 
     return projectNames.contains(projectKey);
+  }
+
+  @SneakyThrows
+  public static List<ClinicalRule> readRules() {
+    val node = DEFAULT.readTree(Resources.getResource(RULES_FILE));
+    val values = node.get("rules");
+
+    return DEFAULT.convertValue(values, new TypeReference<List<ClinicalRule>>() {});
   }
 
 }
