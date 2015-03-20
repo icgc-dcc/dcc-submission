@@ -346,6 +346,14 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
          });
        };
 
+
+       var container = document.getElementById("jsonviewer");
+       var options = {
+            mode: 'view'
+       };
+       var editor = new JSONEditor(container, options);
+       $scope.jsonEditor = editor;
+
        startWatcher();
      });
 
@@ -429,12 +437,7 @@ app.controller("ViewerController", function($scope, $location, $http, $timeout) 
        });
      }
 
-     var container = document.getElementById("jsonviewer");
-     var options = {
-          mode: 'view'
-     };
-     var editor = new JSONEditor(container, options);
-     editor.set($scope.dictUtil.getDictionary(versionTo));
+     $scope.jsonEditor.set($scope.dictUtil.getDictionary(versionTo));
   };
 
 
