@@ -66,3 +66,6 @@ logs/
 
 # Vagrant
 .vagrant/
+
+# JSON editor exclusions
+!/dcc-submission-ui/app/assets/bower_components/dist/
