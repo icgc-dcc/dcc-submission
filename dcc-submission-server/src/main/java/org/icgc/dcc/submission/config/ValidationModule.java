@@ -157,10 +157,10 @@ public class ValidationModule extends AbstractDccModule {
           validators.add(firstPassValidator());
         } else if (value.equals(PRIMARY_VALIDATOR_CONFIG_VALUE)) {
           validators.add(primaryValidator(planner));
-        } else if (value.equals(PCAWG_VALIDATOR_CONFIG_VALUE)) {
-          validators.add(pcawgValidator());
         } else if (value.equals(KEY_VALIDATOR_CONFIG_VALUE)) {
           validators.add(keyValidator());
+        } else if (value.equals(PCAWG_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(pcawgValidator());
         } else if (value.equals(REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE)) {
           validators.add(referenceGenomeValidator(config));
         } else if (value.equals(SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE)) {
@@ -175,8 +175,8 @@ public class ValidationModule extends AbstractDccModule {
       // Default validators and validator ordering
       validators.add(firstPassValidator());
       validators.add(primaryValidator(planner));
-      validators.add(pcawgValidator());
       validators.add(keyValidator());
+      validators.add(pcawgValidator());
       validators.add(referenceGenomeValidator(config));
       validators.add(sampleTypeValidator());
       validators.add(normalizationValidator(config, dccFileSystem2));
