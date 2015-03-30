@@ -44,19 +44,27 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "PanCancer sample study mismatch"
       description: (source) ->
         """
-        Inconsistent sample study between ICGC DCC and pancancer.info
+        Inconsistent sample study between ICGC DCC and
+        <a href="http://pancancer.info" target="_blank">pancancer.info</a>,
+        see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+        submission documentation</a> for details.
         """
     PCAWG_CLINICAL_FIELD_REQUIRED:
-      name: "PanCancer field required"
+      name: "PanCancer clinical field required"
       description: (source) ->
         """
-        Clinical field is required for PanCancer
+        Clinical field is required for PanCancer,
+        see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+        submission documentation</a> for details.
         """
     PCAWG_CLINICAL_ROW_REQUIRED:
       name: "Clinical row required"
       description: (source) ->
         """
-        Clinical row is required for PanCancer
+        Clinical row is required for PanCancer in file
+        <code>#{source.parameters?.VALUE.toLowerCase()}</code>,
+        see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+        submission documentation</a> for details.
         """
     LINE_TERMINATOR_MISSING_ERROR:
       name: "Missing line terminators"
@@ -101,7 +109,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
         Data row failed script-based validation check, see
         <a href="http://docs.icgc.org/" target="_blank">
-        submission documentation</a> for more details.
+        submission documentation</a> for details.
         <br><br><pre><code>#{errorPretty}</code></pre>
         """
 
