@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.pcawg.core;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
@@ -82,6 +83,7 @@ public class ClinicalRuleEngine {
    */
   @NonNull
   private final ReportContext context;
+  private final List<FileType> numbers = newArrayList();
 
   public void execute() {
     val watch = createStarted();
@@ -181,11 +183,13 @@ public class ClinicalRuleEngine {
       val invalid = !recordMap.containsKey(donorId);
       if (invalid) {
         val donor = index.getDonor(donorId);
+        val number = getNumber(fileType);
 
         reportError(error(donor)
             .fieldNames(SUBMISSION_DONOR_ID)
             .type(ErrorType.PCAWG_CLINICAL_ROW_REQUIRED)
             .value(donorId)
+            .number(number)
             .params(fileType));
       }
     }
@@ -222,6 +226,17 @@ public class ClinicalRuleEngine {
 
   private void reportError(Error.Builder builder) {
     context.reportError(builder.build());
+  }
+
+  private int getNumber(FileType fileType) {
+    int number = numbers.indexOf(fileType);
+    if (number == -1) {
+      numbers.add(fileType);
+
+      number = numbers.size() - 1;
+    }
+
+    return number;
   }
 
 }
