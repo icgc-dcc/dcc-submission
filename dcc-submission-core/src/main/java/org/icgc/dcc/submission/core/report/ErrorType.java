@@ -410,8 +410,7 @@ public enum ErrorType {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params, String.class, String.class);
-      return ImmutableMap.of(VALUE, params[0]);
+      return ImmutableMap.of();
     }
 
   },
