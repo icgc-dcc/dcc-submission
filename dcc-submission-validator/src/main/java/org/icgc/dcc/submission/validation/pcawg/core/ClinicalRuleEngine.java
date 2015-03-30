@@ -143,8 +143,7 @@ public class ClinicalRuleEngine {
       reportError(error(sample)
           .type(ErrorType.PCAWG_SAMPLE_STUDY_MISMATCH)
           .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
-          .value(sampleId)
-          .params(resolvedSampleId));
+          .value(sampleId + (tcga ? " (" + resolvedSampleId + ")" : "")));
     }
   }
 
