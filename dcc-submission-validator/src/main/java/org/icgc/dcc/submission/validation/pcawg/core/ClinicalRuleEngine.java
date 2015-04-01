@@ -91,15 +91,16 @@ public class ClinicalRuleEngine {
         formatCount(referenceSampleIds));
 
     log.info("Calculating PCAWG clinical...");
-    val pawgClinical = calculatePCAWGClinical();
+    val pcawgClinical = calculatePCAWGClinical();
+    val pcawgIndex = new ClinicalIndex(pcawgClinical);
     log.info("Finished calculating PCAWG clinical");
 
     log.info("Validating core clinical...");
-    validateCore(pawgClinical.getCore());
+    validateCore(pcawgClinical.getCore());
     log.info("Finished validating core clinical");
 
     log.info("Validating optional clinical...");
-    validateOptional(pawgClinical.getOptional());
+    validateOptional(pcawgIndex.getDonorIds(), pcawgClinical.getOptional());
     log.info("Finished validating optional clinical");
 
     log.info("Finshed validating in {}", watch);
@@ -118,13 +119,11 @@ public class ClinicalRuleEngine {
     }
   }
 
-  private void validateOptional(ClinicalOptional pcawgOptional) {
-    val donorIds = index.getDonorIds();
-
+  private void validateOptional(Set<String> pcawgDonorIds, ClinicalOptional pcawgOptional) {
     for (val pcawgOptionalType : getValidatedOptionalTypes()) {
       val records = pcawgOptional.get(pcawgOptionalType).get();
 
-      validateFileTypeDonorPresence(records, pcawgOptionalType, donorIds);
+      validateFileTypeDonorPresence(records, pcawgOptionalType, pcawgDonorIds);
       validateFileTypeRules(records, pcawgOptionalType);
     }
   }
@@ -176,18 +175,18 @@ public class ClinicalRuleEngine {
     return !tcga || tcga && rule.isTcga();
   }
 
-  private void validateFileTypeDonorPresence(List<Record> records, FileType fileType, Set<String> donorIds) {
+  private void validateFileTypeDonorPresence(List<Record> records, FileType fileType, Set<String> pcawgDonorIds) {
     val recordMap = uniqueIndex(records, record -> getDonorId(record));
-    for (val donorId : donorIds) {
-      val invalid = !recordMap.containsKey(donorId);
+    for (val pcawgDonorId : pcawgDonorIds) {
+      val invalid = !recordMap.containsKey(pcawgDonorId);
       if (invalid) {
-        val donor = index.getDonor(donorId);
+        val donor = index.getDonor(pcawgDonorId);
         val number = getNumber(fileType);
 
         reportError(error(donor)
             .fieldNames(SUBMISSION_DONOR_ID)
             .type(ErrorType.PCAWG_CLINICAL_ROW_REQUIRED)
-            .value(donorId)
+            .value(pcawgDonorId)
             .number(number)
             .params(fileType));
       }
