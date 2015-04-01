@@ -44,7 +44,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "PanCancer sample study mismatch"
       description: (source) ->
         """
-        Inconsistent sample study between ICGC DCC and
+        Inconsistent sample study status between ICGC DCC and
         <a href="http://pancancer.info" target="_blank">pancancer.info</a>,
         see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
@@ -58,11 +58,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         submission documentation</a> for details.
         """
     PCAWG_CLINICAL_ROW_REQUIRED:
-      name: "Clinical row required"
+      name: "PanCancer clinical row required"
       description: (source) ->
         """
         Clinical row is required for PanCancer in file
-        <code>#{source.parameters?.VALUE.toLowerCase()}</code>,
+        <code>#{source.parameters?.VALUE.toLowerCase().replace(/_type$/, "")}</code>,
         see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
