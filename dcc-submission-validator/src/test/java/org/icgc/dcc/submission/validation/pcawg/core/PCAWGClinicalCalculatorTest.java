@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableMap;
 public class PCAWGClinicalCalculatorTest {
 
   @Test
-  public void testCalculate() {
+  public void testCalculatePresense() {
     val donor = new Record(
         ImmutableMap.of("donor_id", "d1"),
         DONOR_TYPE, new Path("donor.txt"), 1);
@@ -58,6 +58,33 @@ public class PCAWGClinicalCalculatorTest {
     assertThat(pcawg.getCore().getDonors()).contains(donor);
     assertThat(pcawg.getCore().getSpecimens()).contains(specimen);
     assertThat(pcawg.getCore().getSamples()).contains(sample);
+  }
+
+  @Test
+  public void testCalculateAbsense() {
+    val donor = new Record(
+        ImmutableMap.of("donor_id", "d1"),
+        DONOR_TYPE, new Path("donor.txt"), 1);
+
+    val specimen = new Record(
+        ImmutableMap.of(
+            "donor_id", "d1",
+            "specimen_id", "sp1"),
+        SPECIMEN_TYPE, new Path("specimen.txt"), 1);
+
+    val sample = new Record(
+        ImmutableMap.of(
+            "specimen_id", "sp1",
+            "analyzed_sample_id", "sa1",
+            "study", "-888"),
+        SAMPLE_TYPE, new Path("sample.txt"), 1);
+
+    val clinical = createClinical(donor, specimen, sample);
+    val pcawg = calculatePCAWG(clinical);
+
+    assertThat(pcawg.getCore().getDonors()).doesNotContain(donor);
+    assertThat(pcawg.getCore().getSpecimens()).doesNotContain(specimen);
+    assertThat(pcawg.getCore().getSamples()).doesNotContain(sample);
   }
 
   private static Clinical calculatePCAWG(Clinical clinical) {

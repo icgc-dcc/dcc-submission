@@ -24,7 +24,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
-import static org.icgc.dcc.common.core.model.SpecialValue.NOT_APPLICABLE_CODE;
+import static org.icgc.dcc.common.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
@@ -159,8 +159,7 @@ public class ClinicalRuleEngine {
         val fieldName = rule.getFieldName();
         val fieldValue = record.get(rule.getFieldName());
 
-        val normalized = nullToEmpty(fieldValue).trim();
-        val invalid = isNullOrEmpty(normalized) || NOT_APPLICABLE_CODE.equals(normalized);
+        val invalid = isFieldValueMissing(fieldValue);
         if (invalid) {
           reportError(error(record)
               .fieldNames(fieldName)
@@ -169,10 +168,6 @@ public class ClinicalRuleEngine {
         }
       }
     }
-  }
-
-  private boolean isRuleApplicable(ClinicalRule rule) {
-    return !tcga || tcga && rule.isTcga();
   }
 
   private void validateFileTypeDonorPresence(List<Record> records, FileType fileType, Set<String> pcawgDonorIds) {
@@ -201,6 +196,16 @@ public class ClinicalRuleEngine {
   private Iterable<FileType> getValidatedOptionalTypes() {
     // Subset!:
     return ImmutableList.of(FileType.FAMILY_TYPE, FileType.EXPOSURE_TYPE, FileType.THERAPY_TYPE);
+  }
+
+  private boolean isFieldValueMissing(String fieldValue) {
+    val normalized = nullToEmpty(fieldValue).trim();
+  
+    return isNullOrEmpty(normalized) || MISSING_CODES.contains(normalized);
+  }
+
+  private boolean isRuleApplicable(ClinicalRule rule) {
+    return !tcga || tcga && rule.isTcga();
   }
 
   private boolean isValidSampleId(String sampleId) {
