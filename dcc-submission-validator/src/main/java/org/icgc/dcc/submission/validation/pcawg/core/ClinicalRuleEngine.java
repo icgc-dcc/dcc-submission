@@ -17,20 +17,22 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.uniqueIndex;
+import static com.google.common.collect.Sets.difference;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
 import static org.icgc.dcc.common.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
+import static org.icgc.dcc.submission.validation.pcawg.util.PCAWGFields.isPCAWGSample;
 import static org.icgc.dcc.submission.validation.util.Streams.filter;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -48,6 +50,7 @@ import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 /**
  * Implementation of https://wiki.oicr.on.ca/display/DCCREVIEW/PCAWG+Clinical+Field+Requirements
@@ -76,7 +79,7 @@ public class ClinicalRuleEngine {
   @NonNull
   private final TCGAClient tcgaClient;
   @NonNull
-  private final Collection<String> referenceSampleIds;
+  private final Set<String> referenceSampleIds;
 
   /**
    * State.
@@ -95,6 +98,10 @@ public class ClinicalRuleEngine {
     val pcawgIndex = new ClinicalIndex(pcawgClinical);
     log.info("Finished calculating PCAWG clinical");
 
+    log.info("Validating sample study...");
+    validateSamples(clinical.getCore().getSamples());
+    log.info("Finished validating sample study");
+
     log.info("Validating core clinical...");
     validateCore(pcawgClinical.getCore());
     log.info("Finished validating core clinical");
@@ -110,9 +117,47 @@ public class ClinicalRuleEngine {
     return new PCAWGClinicalCalculator(clinical, index).calculate();
   }
 
-  private void validateCore(ClinicalCore pcawgCore) {
-    validateSamples(pcawgCore.getSamples());
+  private void validateSamples(List<Record> samples) {
+    val canonicalSampleIds = Sets.newHashSet();
 
+    for (val sample : samples) {
+      val sampleId = getSampleSampleId(sample);
+      val canonicalSampleId = getCanonicalSampleId(sample);
+
+      // Record for downstream difference analysis
+      canonicalSampleIds.add(canonicalSampleId);
+
+      if (isPCAWGSample(sample)) {
+        if (!isValidSampleId(canonicalSampleId)) {
+          // Only PCAWG in DCC
+          reportError(error(sample)
+              .type(ErrorType.PCAWG_SAMPLE_STUDY_MISMATCH)
+              .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
+              .value(sampleId + (tcga ? " (" + canonicalSampleId + ")" : "")));
+        }
+      } else {
+        if (isValidSampleId(canonicalSampleId)) {
+          // Only PCAWG in pancancer.info
+          reportError(error(sample)
+              .type(ErrorType.PCAWG_SAMPLE_STUDY_MISMATCH)
+              .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
+              .value(sampleId + (tcga ? " (" + canonicalSampleId + ")" : "")));
+        }
+      }
+    }
+
+    val missingSampleIds = difference(referenceSampleIds, canonicalSampleIds);
+    if (!missingSampleIds.isEmpty()) {
+      // Only exists in pancancer.info
+      reportError(error(samples.get(0)) // Use first record to get a mandatory file name
+          .lineNumber(-1)
+          .type(ErrorType.PCAWG_SAMPLE_MISSING)
+          .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
+          .value(missingSampleIds));
+    }
+  }
+
+  private void validateCore(ClinicalCore pcawgCore) {
     for (val pcawgCoreType : getValidatedCoreTypes()) {
       val records = pcawgCore.get(pcawgCoreType).get();
       validateFileTypeRules(records, pcawgCoreType);
@@ -125,24 +170,6 @@ public class ClinicalRuleEngine {
 
       validateFileTypeDonorPresence(records, pcawgOptionalType, pcawgDonorIds);
       validateFileTypeRules(records, pcawgOptionalType);
-    }
-  }
-
-  private void validateSamples(List<Record> samples) {
-    for (val sample : samples) {
-      validateSample(sample);
-    }
-  }
-
-  private void validateSample(Record sample) {
-    val sampleId = getSampleSampleId(sample);
-    val resolvedSampleId = getCanonicalSampleId(sampleId);
-
-    if (!isValidSampleId(resolvedSampleId)) {
-      reportError(error(sample)
-          .type(ErrorType.PCAWG_SAMPLE_STUDY_MISMATCH)
-          .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
-          .value(sampleId + (tcga ? " (" + resolvedSampleId + ")" : "")));
     }
   }
 
@@ -200,7 +227,7 @@ public class ClinicalRuleEngine {
 
   private boolean isFieldValueMissing(String fieldValue) {
     val normalized = nullToEmpty(fieldValue).trim();
-  
+
     return isNullOrEmpty(normalized) || MISSING_CODES.contains(normalized);
   }
 
@@ -212,9 +239,26 @@ public class ClinicalRuleEngine {
     return referenceSampleIds.contains(sampleId);
   }
 
-  private String getCanonicalSampleId(String sampleId) {
+  private String getCanonicalSampleId(Record sample) {
+    val sampleId = getSampleSampleId(sample);
+    if (!tcga) {
+      return sampleId;
+    }
+
+    // "Check" if this is already a UUID
+    val uuid = sampleId.length() == 36;
+    if (uuid) {
+      return sampleId.toLowerCase();
+    }
+
     // Special case for TCGA who submits barcodes to DCC and UUIDs to PanCancer
-    return tcga ? tcgaClient.getUUID(sampleId) : sampleId;
+    val canonicalSampleId = nullToEmpty(sample.get("analyzed_sample_notes")).trim().toLowerCase();
+    val barcode = canonicalSampleId.length() == 36;
+
+    checkState(barcode, "Invalid TCGA UUID '%s' of length %s from barcode '%s'",
+        canonicalSampleId, canonicalSampleId.length(), sampleId);
+
+    return canonicalSampleId;
   }
 
   private List<ClinicalRule> getFileTypeRules(FileType fileType) {

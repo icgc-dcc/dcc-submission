@@ -416,6 +416,18 @@ public enum ErrorType {
   },
 
   /**
+   * Missing ICGC DCC sample that exists in pancancer.info
+   */
+  PCAWG_SAMPLE_MISSING(FILE_LEVEL, "Missing ICGC DCC sample that exists in pancancer.info") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      return ImmutableMap.of();
+    }
+
+  },
+
+  /**
    * Additional clinical field constraint for PCAWG.
    */
   PCAWG_CLINICAL_FIELD_REQUIRED(CELL_LEVEL, "Clinical field is required for PanCancer") {

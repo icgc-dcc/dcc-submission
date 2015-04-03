@@ -48,22 +48,42 @@ public class TCGAClient {
 
   @NonNull
   public String getUUID(String barcode) {
-    val mappingUrl = getBarcodeMappingUrl(barcode);
-    val mapping = getBarcodeMapping(mappingUrl);
+    val mappingUrl = getBarcodeMappingURL(barcode);
+    val mapping = getMapping(mappingUrl);
 
     return getMappingUUID(mapping);
   }
 
-  private String getBarcodeMappingUrl(String barcode) {
-    return baseUrl + "/uuid/uuidws/mapping" + "/json" + "/barcode" + "/" + barcode;
+  @NonNull
+  public String getBarcode(String uuid) {
+    val mappingUrl = getUUIDMappingURL(uuid);
+    val mapping = getMapping(mappingUrl);
+
+    return getMappingBarcode(mapping);
+  }
+
+  private String getBarcodeMappingURL(String barcode) {
+    return getMappingURL("/barcode" + "/" + barcode);
+  }
+
+  private String getUUIDMappingURL(String uuid) {
+    return getMappingURL("/uuid" + "/" + uuid);
+  }
+
+  private String getMappingURL(String path) {
+    return baseUrl + "/uuid/uuidws/mapping" + "/json" + path;
   }
 
   private static String getMappingUUID(JsonNode mapping) {
     return mapping.path("uuidMapping").path("uuid").asText();
   }
 
+  private static String getMappingBarcode(JsonNode mapping) {
+    return mapping.path("barcode").asText();
+  }
+
   @SneakyThrows
-  private static JsonNode getBarcodeMapping(String url) {
+  private static JsonNode getMapping(String url) {
     return DEFAULT.readTree(new URL(url));
   }
 

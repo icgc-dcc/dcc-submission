@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.validation.pcawg;
 
 import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +39,7 @@ import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
 import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 
 /**
@@ -111,10 +112,11 @@ public class PCAWGValidator implements Validator {
     ruleEngine.execute();
   }
 
-  private Collection<String> getReferenceSampleIds(ValidationContext context) {
+  private Set<String> getReferenceSampleIds(ValidationContext context) {
     val projectSamples = pcawgClient.getProjectSamples();
+    val sampleIds = projectSamples.get(context.getProjectKey());
 
-    return projectSamples.get(context.getProjectKey());
+    return Sets.newTreeSet(sampleIds);
   }
 
   private boolean isPCAWG(String projectKey) {

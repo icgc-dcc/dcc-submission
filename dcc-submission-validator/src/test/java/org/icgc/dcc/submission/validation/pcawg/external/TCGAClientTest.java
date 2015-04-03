@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.pcawg.external;
 import static org.assertj.core.api.Assertions.assertThat;
 import lombok.val;
 
-import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.junit.Test;
 
 public class TCGAClientTest {
@@ -33,6 +32,14 @@ public class TCGAClientTest {
     val uuid = client.getUUID(barcode);
 
     assertThat(uuid).isEqualTo("9e71a150-8fd7-466c-96af-aab29520bcdc");
+  }
+
+  @Test
+  public void testGetBarcode() throws Exception {
+    val uuid = "9e71a150-8fd7-466c-96af-aab29520bcdc";
+    val barcode = client.getBarcode(uuid);
+
+    assertThat(barcode).isEqualTo("TCGA-5T-A9QA-01A-21-A43F-20");
   }
 
 }
