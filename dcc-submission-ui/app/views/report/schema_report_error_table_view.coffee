@@ -40,20 +40,20 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     @modelBind 'change', @update
 
   errors:
-	PCAWG_SAMPLE_STUDY_MISMATCH:
+    PCAWG_SAMPLE_STUDY_MISMATCH:
       name: "PanCancer sample study mismatch"
-          description: (source) ->
-            """
-            Inconsistent sample study status between ICGC DCC and
-            <a href="http://pancancer.info" target="_blank">pancancer.info</a>,
-            see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
-            submission documentation</a> for details.
-            """
+      description: (source) ->
+        """
+        Inconsistent sample study status between ICGC DCC and
+        <a href="http://pancancer.info" target="_blank">pancancer.info</a>,
+        see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+        submission documentation</a> for details.
+        """
     PCAWG_SAMPLE_MISSING:
       name: "PanCancer sample missing"
       description: (source) ->
         """
-        Missing ICGC DCC sample that exists in 
+        Missing ICGC DCC sample that exists in
         <a href="http://pancancer.info" target="_blank">pancancer.info</a>,
         see <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
