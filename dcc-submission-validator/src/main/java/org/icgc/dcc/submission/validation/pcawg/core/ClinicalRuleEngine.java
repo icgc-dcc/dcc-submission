@@ -129,17 +129,15 @@ public class ClinicalRuleEngine {
 
       if (isPCAWGSample(sample)) {
         if (!isValidSampleId(canonicalSampleId)) {
-          // Only PCAWG in DCC
           reportError(error(sample)
-              .type(ErrorType.PCAWG_SAMPLE_STUDY_MISMATCH)
+              .type(ErrorType.PCAWG_SAMPLE_STUDY_INVALID)
               .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
               .value(sampleId + (tcga ? " (" + canonicalSampleId + ")" : "")));
         }
       } else {
         if (isValidSampleId(canonicalSampleId)) {
-          // Only PCAWG in pancancer.info
           reportError(error(sample)
-              .type(ErrorType.PCAWG_SAMPLE_STUDY_MISMATCH)
+              .type(ErrorType.PCAWG_SAMPLE_STUDY_MISSING)
               .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
               .value(sampleId + (tcga ? " (" + canonicalSampleId + ")" : "")));
         }
@@ -148,7 +146,6 @@ public class ClinicalRuleEngine {
 
     val missingSampleIds = difference(referenceSampleIds, canonicalSampleIds);
     if (!missingSampleIds.isEmpty()) {
-      // Only exists in pancancer.info
       reportError(error(samples.get(0)) // Use first record to get a mandatory file name
           .lineNumber(-1)
           .type(ErrorType.PCAWG_SAMPLE_MISSING)

@@ -406,7 +406,19 @@ public enum ErrorType {
   /**
    * Sample study should be consistent between ICGC DCC and pancancer.info
    */
-  PCAWG_SAMPLE_STUDY_MISMATCH(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
+  PCAWG_SAMPLE_STUDY_INVALID(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      return ImmutableMap.of();
+    }
+
+  },
+
+  /**
+   * Sample study should be consistent between ICGC DCC and pancancer.info
+   */
+  PCAWG_SAMPLE_STUDY_MISSING(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
