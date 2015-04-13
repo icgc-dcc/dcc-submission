@@ -57,36 +57,6 @@
       "fileType": "specimen",
       "fieldName": "specimen_donor_treatment_type",
       "tcga": false
-    }, {
-      "rule": "mandatory",
-      "fileType": "specimen",
-      "fieldName": "tumour_confirmed",
-      "tcga": false
-    }, {
-      "rule": "mandatory",
-      "fileType": "specimen",
-      "fieldName": "tumour_histological_type",
-      "tcga": false
-    }, {
-      "rule": "mandatory",
-      "fileType": "specimen",
-      "fieldName": "tumour_grading_system",
-      "tcga": false
-    }, {
-      "rule": "mandatory",
-      "fileType": "specimen",
-      "fieldName": "tumour_grade",
-      "tcga": false
-    }, {
-      "rule": "mandatory",
-      "fileType": "specimen",
-      "fieldName": "tumour_stage_system",
-      "tcga": false
-    }, {
-      "rule": "mandatory",
-      "fileType": "specimen",
-      "fieldName": "tumour_stage",
-      "tcga": false
     }
   ]
 }
