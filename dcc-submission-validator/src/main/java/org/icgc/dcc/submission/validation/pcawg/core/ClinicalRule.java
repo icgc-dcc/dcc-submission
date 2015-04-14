@@ -31,8 +31,11 @@ public class ClinicalRule {
   String fileType;
   String fieldName;
 
-  // Also applies to TCGA?
+  // Applies to TCGA?
   boolean tcga;
+
+  // Only applies to specimen records of normal specimen type?
+  boolean normalOnly = true;
 
   public FileType getFileType() {
     return FileType.from(fileType);

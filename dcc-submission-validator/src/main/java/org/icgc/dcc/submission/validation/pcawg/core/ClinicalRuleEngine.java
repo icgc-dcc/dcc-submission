@@ -30,6 +30,7 @@ import static org.icgc.dcc.common.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
+import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.isNonNormal;
 import static org.icgc.dcc.submission.validation.pcawg.util.PCAWGFields.isPCAWGSample;
 import static org.icgc.dcc.submission.validation.util.Streams.filter;
 
@@ -176,7 +177,7 @@ public class ClinicalRuleEngine {
     // Execute all rules for each record
     for (val record : records) {
       for (val rule : rules) {
-        if (!isRuleApplicable(rule)) {
+        if (!isRuleApplicable(rule, record)) {
           continue;
         }
 
@@ -228,7 +229,14 @@ public class ClinicalRuleEngine {
     return isNullOrEmpty(normalized) || MISSING_CODES.contains(normalized);
   }
 
-  private boolean isRuleApplicable(ClinicalRule rule) {
+  private boolean isRuleApplicable(ClinicalRule rule, Record record) {
+    if (rule.getFileType() == FileType.SPECIMEN_TYPE) {
+      val specimen = record;
+      if (isNonNormal(specimen) && rule.isNormalOnly()) {
+        return false;
+      }
+    }
+
     return !tcga || tcga && rule.isTcga();
   }
 

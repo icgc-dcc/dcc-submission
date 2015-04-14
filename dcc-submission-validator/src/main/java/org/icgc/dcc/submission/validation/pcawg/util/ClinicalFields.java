@@ -20,10 +20,14 @@ package org.icgc.dcc.submission.validation.pcawg.util;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_SPECIMEN_ID;
+import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.SPECIMEN_TYPE_FIELD_NAME;
 
 import java.util.Map;
 
+import lombok.val;
 import lombok.experimental.UtilityClass;
+
+import org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory;
 
 @UtilityClass
 public class ClinicalFields {
@@ -42,6 +46,10 @@ public class ClinicalFields {
     return specimen.get(SUBMISSION_SPECIMEN_ID);
   }
 
+  public static String getSpecimenType(Map<String, String> specimen) {
+    return specimen.get(SPECIMEN_TYPE_FIELD_NAME);
+  }
+
   public static String getSpecimenDonorId(Map<String, String> specimen) {
     return specimen.get(SUBMISSION_DONOR_ID);
   }
@@ -56,6 +64,13 @@ public class ClinicalFields {
 
   public static String getSampleStudy(Map<String, String> sample) {
     return sample.get(STUDY_FIELD_NAME);
+  }
+
+  public static boolean isNonNormal(Map<String, String> specimen) {
+    val specimenType = getSpecimenType(specimen);
+    val category = SpecimenTypeCategory.fromSpecimenType(specimenType);
+
+    return category == SpecimenTypeCategory.NON_NORMAL;
   }
 
 }

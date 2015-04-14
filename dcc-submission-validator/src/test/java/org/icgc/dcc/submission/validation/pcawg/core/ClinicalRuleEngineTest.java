@@ -17,14 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
 import org.junit.Test;
 
+@Slf4j
 public class ClinicalRuleEngineTest {
 
   @Test
   public void testReadRules() throws Exception {
-    PCAWGValidator.readRules();
+    log.info(PCAWGValidator.readRules().toString());
   }
 
 }
