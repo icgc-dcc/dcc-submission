@@ -35,7 +35,7 @@ public class ClinicalRule {
   boolean tcga;
 
   // Only applies to specimen records of normal specimen type?
-  boolean normalOnly = true;
+  boolean applyToNormal = true;
 
   public FileType getFileType() {
     return FileType.from(fileType);

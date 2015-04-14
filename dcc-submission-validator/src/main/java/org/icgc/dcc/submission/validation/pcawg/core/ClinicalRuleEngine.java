@@ -30,8 +30,9 @@ import static org.icgc.dcc.common.core.model.SpecialValue.MISSING_CODES;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.isNonNormal;
+import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSpecimenTypeCategory;
 import static org.icgc.dcc.submission.validation.pcawg.util.PCAWGFields.isPCAWGSample;
+import static org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory.NORMAL;
 import static org.icgc.dcc.submission.validation.util.Streams.filter;
 
 import java.util.List;
@@ -232,7 +233,7 @@ public class ClinicalRuleEngine {
   private boolean isRuleApplicable(ClinicalRule rule, Record record) {
     if (rule.getFileType() == FileType.SPECIMEN_TYPE) {
       val specimen = record;
-      if (isNonNormal(specimen) && rule.isNormalOnly()) {
+      if (getSpecimenTypeCategory(specimen) == NORMAL && !rule.isApplyToNormal()) {
         return false;
       }
     }

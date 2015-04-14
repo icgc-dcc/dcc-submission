@@ -66,11 +66,9 @@ public class ClinicalFields {
     return sample.get(STUDY_FIELD_NAME);
   }
 
-  public static boolean isNonNormal(Map<String, String> specimen) {
+  public static SpecimenTypeCategory getSpecimenTypeCategory(Map<String, String> specimen) {
     val specimenType = getSpecimenType(specimen);
-    val category = SpecimenTypeCategory.fromSpecimenType(specimenType);
-
-    return category == SpecimenTypeCategory.NON_NORMAL;
+    return SpecimenTypeCategory.fromSpecimenType(specimenType);
   }
 
 }
