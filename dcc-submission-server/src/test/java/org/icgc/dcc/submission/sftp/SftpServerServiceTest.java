@@ -45,7 +45,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.RawLocalFileSystem;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.sshd.SshServer;
@@ -225,7 +225,6 @@ public class SftpServerServiceTest {
     assertThat(sftp.ls(projectDirectoryName)).isEmpty();
   }
 
-  @Ignore("Currently failing after allowing GETs. Need to revisit...")
   @Test
   public void testGetPossible() throws SftpException, IOException {
     // Create the simulated project directory
@@ -244,7 +243,6 @@ public class SftpServerServiceTest {
     sftp.put(filePath, fileContent);
     assertThat(file).exists().hasContent(fileContent);
 
-    // This should throw
     val getContent = sftp.get(filePath);
     assertThat(getContent).isEqualTo(fileContent);
   }
@@ -471,11 +469,9 @@ public class SftpServerServiceTest {
     }
   }
 
-  private static RawLocalFileSystem fileSystem() {
-    RawLocalFileSystem localFileSystem = new RawLocalFileSystem();
-    localFileSystem.setConf(new Configuration());
-
-    return localFileSystem;
+  @SneakyThrows
+  private static FileSystem fileSystem() {
+    return FileSystem.get(new Configuration());
   }
 
   @SneakyThrows

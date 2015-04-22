@@ -90,13 +90,12 @@ public class ValidatingState extends AbstractCancellableState {
   }
 
   private void updateContext(StateContext context, Iterable<DataType> dataTypes, Report newReport) {
-    // Transition
-    val nextState = getReportedNextState(newReport);
-    context.setState(nextState);
-
     // Commit the report that was collected during validation
     newReport.mergeReport(context.getReport(), dataTypes);
 
+    // Transition
+    val nextState = getReportedNextState(newReport);
+    context.setState(nextState);
     context.setReport(newReport);
   }
 
