@@ -21,6 +21,7 @@ import static com.google.common.base.Throwables.propagateIfInstanceOf;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -61,9 +62,8 @@ public final class HdfsFileUtils {
    */
   @SneakyThrows
   public static <T> T handleException(Class<T> type, Exception e) {
-    log.error("SFTP user triggered exception:", e);
-    propagateIfInstanceOf(e, IOException.class);
-    throw new IOException(e);
+    handle(e);
+    return null;
   }
 
   /**
@@ -76,9 +76,8 @@ public final class HdfsFileUtils {
    */
   @SneakyThrows
   public static <T> T handleException(TypeLiteral<T> type, Exception e) {
-    log.error("SFTP user triggered exception:", e);
-    propagateIfInstanceOf(e, IOException.class);
-    throw new IOException(e);
+    handle(e);
+    return null;
   }
 
   /**
@@ -90,7 +89,17 @@ public final class HdfsFileUtils {
    */
   @SneakyThrows
   public static void handleException(Exception e) {
-    handleException(Void.class, e);
+    handle(e);
+  }
+
+  private static void handle(Exception e) throws FileNotFoundException, IOException {
+    // See MINA's SftpSubsystem
+    propagateIfInstanceOf(e, FileNotFoundException.class);
+
+    log.error("SFTP user triggered exception:", e);
+    propagateIfInstanceOf(e, IOException.class);
+
+    throw new IOException(e);
   }
 
 }
