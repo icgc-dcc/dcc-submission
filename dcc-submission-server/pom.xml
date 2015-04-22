@@ -136,8 +136,13 @@
     <!-- Cryptography -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk16</artifactId>
-      <version>1.45</version>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.52</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+      <version>1.52</version>
     </dependency>
 
     <!-- Mail -->
@@ -199,7 +204,7 @@
     <dependency>
       <groupId>com.jcraft</groupId>
       <artifactId>jsch</artifactId>
-      <version>0.1.51</version>
+      <version>0.1.52</version>
       <scope>test</scope>
     </dependency>
 
@@ -208,6 +213,12 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>mina-core</artifactId>
+          <groupId>org.apache.mina</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -346,7 +357,7 @@
     <!-- Versions -->
     <jersey.version>2.0-m10</jersey.version>
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
-    <mina.version>0.9.0</mina.version>
+    <mina.version>0.14.0</mina.version>
     <shiro.version>1.2.0</shiro.version>
   </properties>
 </project>

@@ -278,7 +278,13 @@ public abstract class HdfsSshFile implements SshFile {
   }
 
   @Override
+  public void createSymbolicLink(SshFile destination) throws IOException {
+    // No-op
+  }
+
+  @Override
   public void handleClose() throws IOException {
+    // No-op
   }
 
   public abstract HdfsSshFile getChild(Path filePath);

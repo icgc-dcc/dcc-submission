@@ -225,7 +225,7 @@ public class SftpServerServiceTest {
     assertThat(sftp.ls(projectDirectoryName)).isEmpty();
   }
 
-  @Test(expected = IOException.class)
+  @Test(expected = SftpException.class)
   public void testGetNotPossible() throws SftpException, IOException {
     // Create the simulated project directory
     String projectDirectoryName = createProjectDirectory();

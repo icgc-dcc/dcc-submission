@@ -95,7 +95,7 @@ class SftpBanner {
 
   private void write(ServerSession session, String message) throws IOException {
     // Create message buffer
-    Buffer buffer = session.createBuffer(SshConstants.Message.SSH_MSG_USERAUTH_BANNER, 0);
+    Buffer buffer = session.createBuffer(SshConstants.SSH_MSG_USERAUTH_BANNER, 0);
     buffer.putString(message);
     buffer.putString(BANNER_EOF);
 

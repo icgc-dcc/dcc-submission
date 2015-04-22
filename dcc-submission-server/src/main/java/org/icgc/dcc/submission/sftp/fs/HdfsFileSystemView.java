@@ -135,4 +135,9 @@ public class HdfsFileSystemView implements FileSystemView {
     return result;
   }
 
+  @Override
+  public FileSystemView getNormalizedView() {
+    return this;
+  }
+
 }

@@ -31,7 +31,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.mina.util.Base64;
+import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.Session;
@@ -120,7 +120,7 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
    * Decodes the known key.
    */
   private static byte[] decode(String knownKey) {
-    return Base64.decodeBase64(knownKey.getBytes());
+    return Base64.decode(knownKey.getBytes());
   }
 
   private static void write(byte[] text, OutputStream outputStream) throws IOException {
