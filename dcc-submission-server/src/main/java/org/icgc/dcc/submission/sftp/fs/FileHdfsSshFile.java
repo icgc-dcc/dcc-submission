@@ -66,8 +66,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean isReadable() {
-    // Submission files are write-only
-    return false;
+    return true;
   }
 
   @Override
