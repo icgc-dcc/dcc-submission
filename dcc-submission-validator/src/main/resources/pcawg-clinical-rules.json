@@ -9,7 +9,7 @@
       "rule": "mandatory",
       "fileType": "donor",
       "fieldName": "donor_region_of_residence",
-      "tcga": true
+      "tcga": false
     }, {
       "rule": "mandatory",
       "fileType": "donor",
