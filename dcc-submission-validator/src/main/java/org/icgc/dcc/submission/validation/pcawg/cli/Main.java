@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.cli;
 
+import static org.icgc.dcc.submission.validation.pcawg.PCAWGValidator.DEFAULT_RULES_FILE_URL;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,7 +75,7 @@ public class Main {
   }
 
   private static PCAWGValidator getValidator() {
-    return new PCAWGValidator(getPanCancerClient(), getTCGAClient());
+    return new PCAWGValidator(getPanCancerClient(), getTCGAClient(), DEFAULT_RULES_FILE_URL);
   }
 
   private static PanCancerClient getPanCancerClient() {

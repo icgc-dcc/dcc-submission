@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
@@ -27,7 +28,10 @@ public class ClinicalRuleEngineTest {
 
   @Test
   public void testReadRules() throws Exception {
-    log.info(PCAWGValidator.readRules().toString());
+    val rulesFileUrl = PCAWGValidator.DEFAULT_RULES_FILE_URL;
+    val rules = PCAWGValidator.readRules(rulesFileUrl);
+
+    log.info("{}", rules);
   }
 
 }

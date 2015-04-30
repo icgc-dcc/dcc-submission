@@ -20,7 +20,9 @@ package org.icgc.dcc.submission.config;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static org.icgc.dcc.common.core.Component.NORMALIZER;
+import static org.icgc.dcc.common.core.util.URLs.getUrl;
 
+import java.net.URL;
 import java.util.Set;
 
 import lombok.val;
@@ -81,6 +83,8 @@ public class ValidationModule extends AbstractDccModule {
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
   private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
   private static final String NORMALIZER_CONFIG_PARAM = NORMALIZER.getId();
+  private static final String PCAWG_CONFIG_PARAM = "pcawg";
+  private static final String PCAWG_RULES_FILE_URL_CONFIG_PARAM = "rules_file_url";
 
   /**
    * Default value for maximum number of concurrent validations.
@@ -160,7 +164,7 @@ public class ValidationModule extends AbstractDccModule {
         } else if (value.equals(KEY_VALIDATOR_CONFIG_VALUE)) {
           validators.add(keyValidator());
         } else if (value.equals(PCAWG_VALIDATOR_CONFIG_VALUE)) {
-          validators.add(pcawgValidator());
+          validators.add(pcawgValidator(config));
         } else if (value.equals(REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE)) {
           validators.add(referenceGenomeValidator(config));
         } else if (value.equals(SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE)) {
@@ -176,7 +180,7 @@ public class ValidationModule extends AbstractDccModule {
       validators.add(firstPassValidator());
       validators.add(primaryValidator(planner));
       validators.add(keyValidator());
-      validators.add(pcawgValidator());
+      validators.add(pcawgValidator(config));
       validators.add(referenceGenomeValidator(config));
       validators.add(sampleTypeValidator());
       validators.add(normalizationValidator(config, dccFileSystem2));
@@ -197,8 +201,22 @@ public class ValidationModule extends AbstractDccModule {
     return new PrimaryValidator(planner);
   }
 
-  private static Validator pcawgValidator() {
-    return new PCAWGValidator(new PanCancerClient(), new TCGAClient());
+  private static Validator pcawgValidator(Config config) {
+    val path = PCAWG_CONFIG_PARAM;
+    val defaultValue = PCAWGValidator.DEFAULT_RULES_FILE_URL;
+
+    URL rulesFileUrl = config.hasPath(path) ?
+        getRulesFileURL(config.getConfig(path), defaultValue) :
+        defaultValue;
+
+    log.info("Using rules url: {}", rulesFileUrl);
+    return new PCAWGValidator(new PanCancerClient(), new TCGAClient(), rulesFileUrl);
+  }
+
+  private static URL getRulesFileURL(Config pcawgConfig, URL defaultValue) {
+    val path = PCAWG_RULES_FILE_URL_CONFIG_PARAM;
+
+    return pcawgConfig.hasPath(path) ? getUrl(pcawgConfig.getString(path)) : defaultValue;
   }
 
   private static Validator referenceGenomeValidator(Config config) {

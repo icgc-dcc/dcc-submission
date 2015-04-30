@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.pcawg;
 
 import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -62,12 +63,21 @@ public class PCAWGValidator implements Validator {
   /**
    * Constants.
    */
-  private static final String RULES_FILE = "pcawg-clinical-rules.json";
+  public static final URL DEFAULT_RULES_FILE_URL = Resources.getResource("pcawg-clinical-rules.json");
 
+  /**
+   * Dependencies.
+   */
   @NonNull
   private final PanCancerClient pcawgClient;
   @NonNull
   private final TCGAClient tcgaClient;
+
+  /**
+   * Configuration.
+   */
+  @NonNull
+  private final URL rulesFileUrl;
 
   @Override
   public String getName() {
@@ -94,7 +104,7 @@ public class PCAWGValidator implements Validator {
     val tcga = isTCGA(context.getProjectKey());
 
     val ruleEngine = new ClinicalRuleEngine(
-        readRules(),
+        readRules(rulesFileUrl),
 
         // Data
         clinical, new ClinicalIndex(clinical), tcga,
@@ -137,8 +147,8 @@ public class PCAWGValidator implements Validator {
   }
 
   @SneakyThrows
-  public static List<ClinicalRule> readRules() {
-    val node = DEFAULT.readTree(Resources.getResource(RULES_FILE));
+  public static List<ClinicalRule> readRules(URL rulesFileUrl) {
+    val node = DEFAULT.readTree(rulesFileUrl);
     val values = node.get("rules");
 
     return DEFAULT.convertValue(values, new TypeReference<List<ClinicalRule>>() {});
