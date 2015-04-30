@@ -97,7 +97,6 @@
   <properties>
     <!-- Entry point -->
     <main.class>org.icgc.dcc.submission.generator.Main</main.class>
-    <resource.version>0.6d.130606</resource.version>
     <commons.lang.version>2.3</commons.lang.version>
   </properties>
 </project>

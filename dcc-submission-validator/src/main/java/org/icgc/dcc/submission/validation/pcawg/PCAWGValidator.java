@@ -88,14 +88,10 @@ public class PCAWGValidator implements Validator {
     validateClinical(context);
   }
 
-  private boolean isValidatable(ValidationContext context) {
-    return isPCAWG(context.getProjectKey());
-  }
-
   private void validateClinical(ValidationContext context) {
     val clinical = ClinicalParser.parse(context);
     val referenceSampleIds = getReferenceSampleIds(context);
-    val tcga = Programs.isTCGA(context.getProjectKey());
+    val tcga = isTCGA(context.getProjectKey());
 
     val ruleEngine = new ClinicalRuleEngine(
         readRules(),
@@ -119,10 +115,25 @@ public class PCAWGValidator implements Validator {
     return Sets.newTreeSet(sampleIds);
   }
 
+  private boolean isValidatable(ValidationContext context) {
+    // For DCC testing of PCAWG projects
+    val projectKey = context.getProjectKey();
+    val testPCAWG = projectKey.startsWith("TESTP-");
+
+    return testPCAWG || isPCAWG(projectKey);
+  }
+
   private boolean isPCAWG(String projectKey) {
     val projectNames = pcawgClient.getProjects();
 
     return projectNames.contains(projectKey);
+  }
+
+  private static boolean isTCGA(String projectKey) {
+    // For DCC testing of PCAWG TCAGA projects
+    val testTCGA = projectKey.startsWith("TEST") && projectKey.contains("TCGA");
+
+    return testTCGA || Programs.isTCGA(projectKey);
   }
 
   @SneakyThrows
