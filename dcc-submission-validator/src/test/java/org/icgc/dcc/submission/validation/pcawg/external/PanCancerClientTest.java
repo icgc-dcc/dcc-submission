@@ -21,12 +21,12 @@ public class PanCancerClientTest {
   }
 
   @Test
-  public void testGetProjectSamples() {
-    val projectSamples = client.getProjectSamples();
-
-    for (val entry : projectSamples.entries()) {
-      log.info("Project sample: {}", entry);
+    public void testGetProjectSampleIds() {
+      val projectSamples = client.getProjectSampleIds();
+  
+      for (val entry : projectSamples.entries()) {
+        log.info("Project sample: {}", entry);
+      }
     }
-  }
 
 }

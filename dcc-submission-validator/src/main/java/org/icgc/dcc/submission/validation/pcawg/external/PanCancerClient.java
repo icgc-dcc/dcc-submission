@@ -71,7 +71,7 @@ public class PanCancerClient {
     return ImmutableSet.copyOf(projects);
   }
 
-  public Multimap<String, String> getProjectSamples() {
+  public Multimap<String, String> getProjectSampleIds() {
     log.info("Searching donors samples...");
     val result = searchDonors(
         "normal_alignment_status.dcc_specimen_type",

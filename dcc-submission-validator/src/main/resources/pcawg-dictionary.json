@@ -94,5 +94,8 @@
       "tcga": false,
       "applyToNormal": false      
     }
-  ]
+  ],
+  "samples": {
+    "TEST1-DCC": ["sample1", "sample1"]
+  }
 }

@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.cli;
 
-import static org.icgc.dcc.submission.validation.pcawg.PCAWGValidator.DEFAULT_RULES_FILE_URL;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
 import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
 import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 
@@ -75,7 +74,7 @@ public class Main {
   }
 
   private static PCAWGValidator getValidator() {
-    return new PCAWGValidator(getPanCancerClient(), getTCGAClient(), DEFAULT_RULES_FILE_URL);
+    return new PCAWGValidator(getPanCancerClient(), getTCGAClient(), new PCAWGDictionary());
   }
 
   private static PanCancerClient getPanCancerClient() {
@@ -90,8 +89,8 @@ public class Main {
       }
 
       @Override
-      public Multimap<String, String> getProjectSamples() {
-        return this.projectSamples = projectSamples != null ? projectSamples : super.getProjectSamples();
+      public Multimap<String, String> getProjectSampleIds() {
+        return this.projectSamples = projectSamples != null ? projectSamples : super.getProjectSampleIds();
       }
 
     };

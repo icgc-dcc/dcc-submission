@@ -19,12 +19,14 @@ package org.icgc.dcc.submission.config;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.icgc.dcc.common.core.Component.NORMALIZER;
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
 
 import java.net.URL;
 import java.util.Set;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +41,7 @@ import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
 import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
 import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
@@ -54,6 +57,7 @@ import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
+import com.google.common.io.Resources;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
@@ -84,7 +88,7 @@ public class ValidationModule extends AbstractDccModule {
   private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
   private static final String NORMALIZER_CONFIG_PARAM = NORMALIZER.getId();
   private static final String PCAWG_CONFIG_PARAM = "pcawg";
-  private static final String PCAWG_RULES_FILE_URL_CONFIG_PARAM = "rules_file_url";
+  private static final String PCAWG_DICTIONARY_URL_CONFIG_PARAM = "dictionary_url";
 
   /**
    * Default value for maximum number of concurrent validations.
@@ -201,20 +205,23 @@ public class ValidationModule extends AbstractDccModule {
     return new PrimaryValidator(planner);
   }
 
+  @SneakyThrows
   private static Validator pcawgValidator(Config config) {
     val path = PCAWG_CONFIG_PARAM;
-    val defaultValue = PCAWGValidator.DEFAULT_RULES_FILE_URL;
+    val defaultValue = PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL;
 
-    URL rulesFileUrl = config.hasPath(path) ?
-        getRulesFileURL(config.getConfig(path), defaultValue) :
+    URL dictionaryUrl = config.hasPath(path) ?
+        getPCAWGDictionaryURL(config.getConfig(path), defaultValue) :
         defaultValue;
 
-    log.info("Using rules url: {}", rulesFileUrl);
-    return new PCAWGValidator(new PanCancerClient(), new TCGAClient(), rulesFileUrl);
+    log.info("Using PCAWG dictionary url: {}", dictionaryUrl);
+    log.info("PCAWG dictionary contents: {}", Resources.toString(dictionaryUrl, UTF_8));
+
+    return new PCAWGValidator(new PanCancerClient(), new TCGAClient(), new PCAWGDictionary(dictionaryUrl));
   }
 
-  private static URL getRulesFileURL(Config pcawgConfig, URL defaultValue) {
-    val path = PCAWG_RULES_FILE_URL_CONFIG_PARAM;
+  private static URL getPCAWGDictionaryURL(Config pcawgConfig, URL defaultValue) {
+    val path = PCAWG_DICTIONARY_URL_CONFIG_PARAM;
 
     return pcawgConfig.hasPath(path) ? getUrl(pcawgConfig.getString(path)) : defaultValue;
   }
