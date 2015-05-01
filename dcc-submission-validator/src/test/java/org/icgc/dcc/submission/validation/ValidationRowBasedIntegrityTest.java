@@ -71,6 +71,7 @@ public class ValidationRowBasedIntegrityTest extends BaseValidationIntegrityTest
     val termList2 = terms(term("1"), term("2"));
     val termList3 = terms(term("1"), term("2"), term("3"), term("4"), term("5"));
     val termList4 = terms(term("1"), term("2"), term("3"));
+    val termList5 = terms(term("1"), term("2"), term("3"));
 
     when(context.getCodeList(anyString())).thenReturn(Optional.<CodeList> absent());
 
@@ -78,11 +79,14 @@ public class ValidationRowBasedIntegrityTest extends BaseValidationIntegrityTest
     when(context.getCodeList("donor.0.donor_vital_status.v1")).thenReturn(Optional.of(codeList2));
     when(context.getCodeList("donor.0.disease_status_last_followup.v1")).thenReturn(Optional.of(codeList3));
     when(context.getCodeList("donor.0.donor_relapse_type.v1")).thenReturn(Optional.of(codeList4));
+    when(context.getCodeList("donor.0.prior_malignancy.v1")).thenReturn(Optional.of(codeList5));
+    when(context.getCodeList("family.0.cancer_history_first_degree_relative.v1")).thenReturn(Optional.of(codeList5));
 
     when(codeList1.getTerms()).thenReturn(termList1);
     when(codeList2.getTerms()).thenReturn(termList2);
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
+    when(codeList5.getTerms()).thenReturn(termList5);
   }
 
   @Test
