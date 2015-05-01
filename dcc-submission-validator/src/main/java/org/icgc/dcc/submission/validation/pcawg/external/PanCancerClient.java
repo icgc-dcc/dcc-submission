@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.external;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.util.Joiners.COMMA;
@@ -31,8 +32,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
@@ -73,32 +74,49 @@ public class PanCancerClient {
 
   public Multimap<String, String> getProjectSampleIds() {
     log.info("Searching donors samples...");
-    val result = searchDonors(
-        "normal_alignment_status.dcc_specimen_type",
-        "normal_alignment_status.submitter_sample_id",
-        "tumor_alignment_status.dcc_specimen_type",
-        "tumor_alignment_status.submitter_sample_id");
-    log.info("Found donor samples");
 
+    String[] fieldNames = {
+        "normal_alignment_status.submitter_sample_id",
+        "tumor_alignment_status.submitter_sample_id",
+
+        "rna_seq.alignment.tumor.star.submitter_specimen_id",
+        "rna_seq.alignment.tumor.tophat.submitter_specimen_id",
+
+        "rna_seq.alignment.normal.star.submitter_specimen_id",
+        "rna_seq.alignment.normal.tophat.submitter_specimen_id",
+
+        "rna_seq.alignment.tumor.star.submitter_sample_id",
+        "rna_seq.alignment.tumor.tophat.submitter_sample_id",
+
+        "rna_seq.alignment.normal.star.submitter_sample_id",
+        "rna_seq.alignment.normal.tophat.submitter_sample_id"
+    };
+
+    val result = searchDonors(fieldNames);
     val hits = result.get("hits").get("hits");
 
-    val builder = ImmutableMultimap.<String, String> builder();
+    // Keep unique values only
+    val builder = ImmutableSetMultimap.<String, String> builder();
     for (val hit : hits) {
       val projectKey = hit.get("_id").textValue().split("::")[0];
 
       val fields = hit.path("fields");
-      for (val tumorSample : fields.path("tumor_alignment_status.submitter_sample_id")) {
-        val sampleId = tumorSample.textValue();
-        builder.put(projectKey, sampleId);
-      }
-      for (val normalSample : fields.path("normal_alignment_status.submitter_sample_id")) {
-        val sampleId = normalSample.textValue();
-        builder.put(projectKey, sampleId);
+
+      for (val fieldName : fieldNames) {
+        for (val sampleId : fields.path(fieldName)) {
+          val value = sampleId.textValue();
+          if (isBlank(value)) {
+            continue;
+          }
+
+          builder.put(projectKey, value.trim());
+        }
       }
     }
 
     val projectSamples = builder.build();
-    log.info("Resolved {} samples in {} projects", formatCount(projectSamples.size()),
+    log.info("Resolved {} samples in {} projects",
+        formatCount(projectSamples.size()),
         formatCount(projectSamples.keySet()));
 
     return projectSamples;
