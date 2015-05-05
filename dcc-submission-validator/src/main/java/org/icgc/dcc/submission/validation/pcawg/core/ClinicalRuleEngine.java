@@ -44,11 +44,11 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.core.tcga.TCGAClient;
 import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.core.ReportContext;
-import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
 import com.google.common.collect.ImmutableList;

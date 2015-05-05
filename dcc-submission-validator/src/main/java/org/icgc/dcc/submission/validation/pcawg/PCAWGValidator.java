@@ -25,12 +25,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.Programs;
+import org.icgc.dcc.common.core.tcga.TCGAClient;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalRuleEngine;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
 import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
-import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
 import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 

@@ -31,6 +31,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.common.core.tcga.TCGAClient;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.service.AbstractDccModule;
@@ -43,7 +44,6 @@ import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
 import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
-import org.icgc.dcc.submission.validation.pcawg.external.TCGAClient;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
