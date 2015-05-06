@@ -22,6 +22,7 @@ import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import lombok.val;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 
 @RequiredArgsConstructor
@@ -48,16 +50,32 @@ public class PCAWGDictionary {
     this(DEFAULT_PCAWG_DICTIONARY_URL);
   }
 
-  public List<String> getWhitelistSampleIds(@NonNull String projectKey) {
-    val samples = readField("samples");
-    if (samples.isMissingNode()) {
-      return ImmutableList.of();
+  public Set<String> getExcludedDonorIds(@NonNull String projectKey) {
+    val excludedDonorIds = readField("excludedDonorIds");
+    if (excludedDonorIds.isMissingNode()) {
+      return ImmutableSet.of();
     }
 
-    Map<String, List<String>> map = DEFAULT.convertValue(samples, new TypeReference<Map<String, List<String>>>() {});
+    Map<String, Set<String>> map =
+        DEFAULT.convertValue(excludedDonorIds, new TypeReference<Map<String, Set<String>>>() {});
+    val donorIds = map.get(projectKey);
+    if (donorIds == null) {
+      return ImmutableSet.of();
+    }
+
+    return donorIds;
+  }
+
+  public Set<String> getWhitelistSampleIds(@NonNull String projectKey) {
+    val samples = readField("samples");
+    if (samples.isMissingNode()) {
+      return ImmutableSet.of();
+    }
+
+    Map<String, Set<String>> map = DEFAULT.convertValue(samples, new TypeReference<Map<String, Set<String>>>() {});
     val sampleIds = map.get(projectKey);
     if (sampleIds == null) {
-      return ImmutableList.of();
+      return ImmutableSet.of();
     }
 
     return sampleIds;

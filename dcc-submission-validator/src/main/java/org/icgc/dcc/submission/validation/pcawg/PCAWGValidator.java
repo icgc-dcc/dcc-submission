@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.pcawg;
 
+import static com.google.common.collect.Sets.difference;
+import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
+import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
+
 import java.util.Set;
 
 import lombok.NonNull;
@@ -25,7 +29,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.Programs;
-import org.icgc.dcc.common.core.tcga.TCGAClient;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalRuleEngine;
@@ -35,6 +38,7 @@ import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
 import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * Validator responsible for ensuring PCAWGFields validation rules are enforced.
@@ -59,8 +63,6 @@ public class PCAWGValidator implements Validator {
   @NonNull
   private final PanCancerClient pcawgClient;
   @NonNull
-  private final TCGAClient tcgaClient;
-  @NonNull
   private final PCAWGDictionary pcawgDictionary;
 
   @Override
@@ -83,21 +85,46 @@ public class PCAWGValidator implements Validator {
   }
 
   private void validateClinical(ValidationContext context) {
+    // Parse and index raw data
     val clinical = ClinicalParser.parse(context);
+    val index = new ClinicalIndex(clinical);
+
+    // Filter excluded donors
+    val excludedDonorIds = pcawgDictionary.getExcludedDonorIds(context.getProjectKey());
+    val excludedSampleIds = Sets.<String> newHashSet();
+
+    for (val excludedDonorId : excludedDonorIds) {
+      log.info("Excluding donor '{}'...", excludedDonorId);
+
+      // Identify donor records
+      val donor = index.getDonor(excludedDonorId);
+      val donorSpecimens = index.getDonorSpecimen(excludedDonorId);
+      val donorSamples = index.getDonorSamples(excludedDonorId);
+
+      for (val donorSample : donorSamples) {
+        excludedSampleIds.add(getSampleSampleId(donorSample));
+      }
+
+      // Remove core records
+      clinical.getCore().getDonors().remove(donor);
+      clinical.getCore().getSpecimens().removeAll(donorSpecimens);
+      clinical.getCore().getSamples().removeAll(donorSamples);
+
+      // Remove optional records
+      for (val records : clinical.getOptional()) {
+        records.removeIf(record -> excludedDonorId.equals(getDonorId(record)));
+      }
+    }
+
+    // Re-index to remove excluded donor information
+    val filteredIndex = new ClinicalIndex(clinical);
+
+    // Filter to remove excluded donor sample ids
     val referenceSampleIds = getReferenceSampleIds(context);
-    val tcga = isTCGA(context.getProjectKey());
+    val filteredReferenceSampleIds = difference(referenceSampleIds, excludedSampleIds);
 
-    val ruleEngine = new ClinicalRuleEngine(
-        pcawgDictionary.getClinicalRules(),
-
-        // Data
-        clinical, new ClinicalIndex(clinical), tcga,
-
-        // Reference
-        tcgaClient, referenceSampleIds,
-
-        // Reporting
-        context);
+    val rules = pcawgDictionary.getClinicalRules();
+    val ruleEngine = new ClinicalRuleEngine(rules, clinical, filteredIndex, filteredReferenceSampleIds, context);
 
     ruleEngine.execute();
   }
@@ -115,11 +142,15 @@ public class PCAWGValidator implements Validator {
   }
 
   private boolean isValidatable(ValidationContext context) {
-    // For DCC testing of PCAWG projects
     val projectKey = context.getProjectKey();
+
+    // For DCC testing of PCAWG projects
     val testPCAWG = projectKey.startsWith("TESTP-");
 
-    return testPCAWG || isPCAWG(projectKey);
+    val pcawg = testPCAWG || isPCAWG(projectKey);
+    val tcga = isTCGA(projectKey);
+
+    return pcawg && !tcga;
   }
 
   private boolean isPCAWG(String projectKey) {

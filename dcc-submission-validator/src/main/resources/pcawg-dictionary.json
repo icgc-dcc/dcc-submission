@@ -97,5 +97,9 @@
   ],
   "samples": {
     "TEST1-DCC": ["sample1", "sample1"]
+  },
+  "excludedDonorIds": {
+  	"TEST1-DCC": ["donor1", "donor1"],
+  	"CLLE-ES": ["10", "785", "749"]
   }
 }

@@ -31,7 +31,7 @@ import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalCore;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalOptional;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Parser implementation that creates an in-memory model of clinical data.
@@ -57,7 +57,7 @@ public class ClinicalParser {
   private static List<Record> parseFileType(FileType fileType, ValidationContext context) {
     val fileParser = newMapFileParser(context, fileType);
 
-    val records = ImmutableList.<Record> builder();
+    val records = Lists.<Record> newArrayList();
     for (val file : context.getFiles(fileType)) {
       fileParser.parse(file, (lineNumber, fields) -> {
         Record record = new Record(fields, fileType, file, lineNumber);
@@ -66,7 +66,7 @@ public class ClinicalParser {
       });
     }
 
-    return records.build();
+    return records;
   }
 
 }

@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
@@ -44,7 +43,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.core.tcga.TCGAClient;
 import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.ErrorType;
@@ -73,13 +71,10 @@ public class ClinicalRuleEngine {
   private final Clinical clinical;
   @NonNull
   private final ClinicalIndex index;
-  private final boolean tcga;
 
   /**
    * Reference.
    */
-  @NonNull
-  private final TCGAClient tcgaClient;
   @NonNull
   private final Set<String> referenceSampleIds;
 
@@ -92,8 +87,7 @@ public class ClinicalRuleEngine {
 
   public void execute() {
     val watch = createStarted();
-    log.info("Starting {} clinical validation with {} reference sample ids...", tcga ? "TCGA" : "non-TCGA",
-        formatCount(referenceSampleIds));
+    log.info("Starting clinical validation with {} reference sample ids...", formatCount(referenceSampleIds));
 
     log.info("Calculating PCAWG clinical...");
     val pcawgClinical = calculatePCAWGClinical();
@@ -120,33 +114,32 @@ public class ClinicalRuleEngine {
   }
 
   private void validateSamples(List<Record> samples) {
-    val canonicalSampleIds = Sets.newHashSet();
+    val sampleIds = Sets.newHashSet();
 
     for (val sample : samples) {
       val sampleId = getSampleSampleId(sample);
-      val canonicalSampleId = getCanonicalSampleId(sample);
 
       // Record for downstream difference analysis
-      canonicalSampleIds.add(canonicalSampleId);
+      sampleIds.add(sampleId);
 
       if (isPCAWGSample(sample)) {
-        if (!isValidSampleId(canonicalSampleId)) {
+        if (!isValidSampleId(sampleId)) {
           reportError(error(sample)
               .type(ErrorType.PCAWG_SAMPLE_STUDY_INVALID)
               .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
-              .value(sampleId + (tcga ? " (" + canonicalSampleId + ")" : "")));
+              .value(sampleId));
         }
       } else {
-        if (isValidSampleId(canonicalSampleId)) {
+        if (isValidSampleId(sampleId)) {
           reportError(error(sample)
               .type(ErrorType.PCAWG_SAMPLE_STUDY_MISSING)
               .fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID)
-              .value(sampleId + (tcga ? " (" + canonicalSampleId + ")" : "")));
+              .value(sampleId));
         }
       }
     }
 
-    val missingSampleIds = difference(referenceSampleIds, canonicalSampleIds);
+    val missingSampleIds = difference(referenceSampleIds, sampleIds);
     if (!missingSampleIds.isEmpty()) {
       reportError(error(samples.get(0)) // Use first record to get a mandatory file name
           .lineNumber(-1)
@@ -238,33 +231,11 @@ public class ClinicalRuleEngine {
       }
     }
 
-    return !tcga || tcga && rule.isTcga();
+    return true;
   }
 
   private boolean isValidSampleId(String sampleId) {
     return referenceSampleIds.contains(sampleId);
-  }
-
-  private String getCanonicalSampleId(Record sample) {
-    val sampleId = getSampleSampleId(sample);
-    if (!tcga) {
-      return sampleId;
-    }
-
-    // "Check" if this is already a UUID
-    val uuid = sampleId.length() == 36;
-    if (uuid) {
-      return sampleId.toLowerCase();
-    }
-
-    // Special case for TCGA who submits barcodes to DCC and UUIDs to PanCancer
-    val canonicalSampleId = nullToEmpty(sample.get("analyzed_sample_notes")).trim().toLowerCase();
-    val barcode = canonicalSampleId.length() == 36;
-
-    checkState(barcode, "Invalid TCGA UUID '%s' of length %s from barcode '%s'",
-        canonicalSampleId, canonicalSampleId.length(), sampleId);
-
-    return canonicalSampleId;
   }
 
   private List<ClinicalRule> getFileTypeRules(FileType fileType) {

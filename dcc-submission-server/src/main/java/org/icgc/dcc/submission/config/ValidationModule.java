@@ -31,7 +31,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.common.core.tcga.TCGAClient;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.service.AbstractDccModule;
@@ -217,7 +216,7 @@ public class ValidationModule extends AbstractDccModule {
     log.info("Using PCAWG dictionary url: {}", dictionaryUrl);
     log.info("PCAWG dictionary contents: {}", Resources.toString(dictionaryUrl, UTF_8));
 
-    return new PCAWGValidator(new PanCancerClient(), new TCGAClient(), new PCAWGDictionary(dictionaryUrl));
+    return new PCAWGValidator(new PanCancerClient(), new PCAWGDictionary(dictionaryUrl));
   }
 
   private static URL getPCAWGDictionaryURL(Config pcawgConfig, URL defaultValue) {

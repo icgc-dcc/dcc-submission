@@ -62,7 +62,7 @@ public class PCAWGClinicalCalculator {
     val specimens = getSpecimens();
     val donors = getDonors();
     log.info("Finished resolving PCAWG clinical core data...");
-  
+
     return new ClinicalCore(donors, specimens, samples);
   }
 
