@@ -135,6 +135,8 @@ public class PanCancerClient {
   }
 
   private JsonNode searchDonors(String... fields) {
+    val excludeBlacklisted =
+        "{\"query\":{\"bool\":{\"must_not\":[{\"term\":{\"flags.is_manual_qc_failed\":\"T\"}},{\"term\":{\"flags.is_donor_blacklisted\":\"T\"}}]}}}";
     return search("donor/_search"
         + "?"
         + "size"
@@ -143,7 +145,11 @@ public class PanCancerClient {
         + "&"
         + "fields"
         + "="
-        + COMMA.join(fields));
+        + COMMA.join(fields)
+        + "&"
+        + "source"
+        + "="
+        + excludeBlacklisted);
   }
 
   @SneakyThrows
