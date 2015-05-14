@@ -37,7 +37,7 @@ public class PCAWGFields {
    * </pre>
    */
   private static final String PCAWG_STUDY_CODE = "1";
-  private static final String PCAWG_STUDY_VALUE = "PanCancer Study";
+  private static final String PCAWG_STUDY_VALUE = "PCAWG";
 
   public static boolean isPCAWGSample(@NonNull Map<String, String> sample) {
     val study = getSampleStudy(sample);
