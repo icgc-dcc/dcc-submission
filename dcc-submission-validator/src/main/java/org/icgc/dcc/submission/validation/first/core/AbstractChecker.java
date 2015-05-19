@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.first.core;
 import lombok.Getter;
 import lombok.NonNull;
 
+import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -59,7 +60,7 @@ public class AbstractChecker implements Checker {
     this.dictionary = validationContext.getDictionary();
     this.reportContext = validationContext;
     this.fileSystem = fileSystem;
-    this.failFast = false;
+    this.failFast = failFast;
   }
 
   @Override
@@ -72,7 +73,7 @@ public class AbstractChecker implements Checker {
     return true;
   }
 
-  protected void reportError(org.icgc.dcc.submission.core.report.Error error) {
+  protected void reportError(Error error) {
     checkErrorCount++;
     getReportContext().reportError(error);
   }
