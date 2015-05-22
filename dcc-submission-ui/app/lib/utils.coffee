@@ -218,7 +218,7 @@ found on host #{host}"
     switch dataType
       when "CLINICAL_CORE_TYPE"
         "Clinical"
-      when "CLINICAL_OPTIONAL_TYPE"
+      when "CLINICAL_SUPPLEMENTAL_TYPE"
         "Clinical - supplemental"
       when "SSM_TYPE"
         "SSM"
