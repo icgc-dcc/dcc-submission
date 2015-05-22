@@ -21,7 +21,6 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Sets.difference;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
@@ -50,6 +49,7 @@ import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 /**
@@ -190,7 +190,7 @@ public class ClinicalRuleEngine {
   }
 
   private void validateFileTypeDonorPresence(List<Record> records, FileType fileType, Set<String> pcawgDonorIds) {
-    val recordMap = uniqueIndex(records, record -> getDonorId(record));
+    val recordMap = Multimaps.index(records, record -> getDonorId(record));
     for (val pcawgDonorId : pcawgDonorIds) {
       val invalid = !recordMap.containsKey(pcawgDonorId);
       if (invalid) {
