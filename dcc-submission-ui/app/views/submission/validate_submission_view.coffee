@@ -95,7 +95,7 @@ module.exports = class ValidateSubmissionView extends View
       switch dataType.dataType
         when "CLINICAL_CORE_TYPE"
           return 0
-        when "CLINICAL_OPTIONAL_TYPE"
+        when "CLINICAL_SUPPLEMENTAL_TYPE"
           return 1
         else
           return 10
