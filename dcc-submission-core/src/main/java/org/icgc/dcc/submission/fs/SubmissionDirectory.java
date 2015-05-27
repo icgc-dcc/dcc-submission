@@ -220,6 +220,7 @@ public class SubmissionDirectory {
     val sampleSampleIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_ANALYZED_SAMPLE_ID).get();
     val sampleSpecimenIdOrdinal = sampleFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
     val sampleFileNames = listFile(compile(sampleFileSchema.getPattern()));
+
     for (val sampleFileName : sampleFileNames) {
       boolean first = true;
       for (String row : readClinicalFile(sampleFileName)) { // Clinical files are small
@@ -240,8 +241,9 @@ public class SubmissionDirectory {
     val specimenSpecimenIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_SPECIMEN_ID).get();
     val specimenDonorIdOrdinal = specimenFileSchema.getFieldOrdinal(SUBMISSION_DONOR_ID).get();
     val specimenFileNames = listFile(compile(specimenFileSchema.getPattern()));
-    boolean first = true;
+
     for (val specimenFileName : specimenFileNames) {
+      boolean first = true;
       for (String row : readClinicalFile(specimenFileName)) { // Clinical files are small
         if (!first) {
           val fields = Lists.<String> newArrayList(TAB.split(row));
