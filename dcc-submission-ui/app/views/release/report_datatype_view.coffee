@@ -75,7 +75,7 @@ module.exports = class ReportDatatypeView extends View
       switch datatype
         when "CLINICAL_CORE_TYPE"
           return 0
-        when "CLINICAL_OPTIONAL_TYPE"
+        when "CLINICAL_SUPPLEMENTAL_TYPE"
           return 1
         else
           return 10
@@ -85,7 +85,7 @@ module.exports = class ReportDatatypeView extends View
     # Dynamically manage tables
     datatypes.forEach (datatype)=>
       container = null
-      if datatype in ["CLINICAL_OPTIONAL_TYPE", "CLINICAL_CORE_TYPE"]
+      if datatype in ["CLINICAL_SUPPLEMENTAL_TYPE", "CLINICAL_CORE_TYPE"]
         container = @$el.find("#clinical-report-container")
       else
         container = @$el.find("#experimental-report-container")
