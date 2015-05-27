@@ -50,6 +50,15 @@ public class PCAWGDictionary {
     this(DEFAULT_PCAWG_DICTIONARY_URL);
   }
 
+  public Set<String> getExcludedProjectKeys() {
+    val excludedProjectKeys = readField("excludedProjectKeys");
+    if (excludedProjectKeys.isMissingNode()) {
+      return ImmutableSet.of();
+    }
+
+    return DEFAULT.convertValue(excludedProjectKeys, new TypeReference<Set<String>>() {});
+  }
+
   public Set<String> getExcludedDonorIds(@NonNull String projectKey) {
     val excludedDonorIds = readField("excludedDonorIds");
     if (excludedDonorIds.isMissingNode()) {
@@ -58,6 +67,22 @@ public class PCAWGDictionary {
 
     Map<String, Set<String>> map =
         DEFAULT.convertValue(excludedDonorIds, new TypeReference<Map<String, Set<String>>>() {});
+    val donorIds = map.get(projectKey);
+    if (donorIds == null) {
+      return ImmutableSet.of();
+    }
+
+    return donorIds;
+  }
+
+  public Set<String> getExcludedSampleIds(@NonNull String projectKey) {
+    val excludedSampleIds = readField("excludedSampleIds");
+    if (excludedSampleIds.isMissingNode()) {
+      return ImmutableSet.of();
+    }
+
+    Map<String, Set<String>> map =
+        DEFAULT.convertValue(excludedSampleIds, new TypeReference<Map<String, Set<String>>>() {});
     val donorIds = map.get(projectKey);
     if (donorIds == null) {
       return ImmutableSet.of();

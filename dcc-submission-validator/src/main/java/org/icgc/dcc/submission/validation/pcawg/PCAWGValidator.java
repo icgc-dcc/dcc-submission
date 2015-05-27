@@ -91,7 +91,7 @@ public class PCAWGValidator implements Validator {
 
     // Filter excluded donors
     val excludedDonorIds = pcawgDictionary.getExcludedDonorIds(context.getProjectKey());
-    val excludedSampleIds = Sets.<String> newHashSet();
+    val excludedSampleIds = Sets.<String> newHashSet(pcawgDictionary.getExcludedSampleIds(context.getProjectKey()));
 
     for (val excludedDonorId : excludedDonorIds) {
       log.info("Excluding donor '{}'...", excludedDonorId);
@@ -144,6 +144,10 @@ public class PCAWGValidator implements Validator {
   private boolean isValidatable(ValidationContext context) {
     val projectKey = context.getProjectKey();
 
+    if (isProjectExcluded(projectKey)) {
+      return false;
+    }
+
     // For DCC testing of PCAWG projects
     val testPCAWG = projectKey.startsWith("TESTP-");
 
@@ -151,6 +155,10 @@ public class PCAWGValidator implements Validator {
     val tcga = isTCGA(projectKey);
 
     return pcawg && !tcga;
+  }
+
+  private boolean isProjectExcluded(String projectKey) {
+    return pcawgDictionary.getExcludedProjectKeys().contains(projectKey);
   }
 
   private boolean isPCAWG(String projectKey) {

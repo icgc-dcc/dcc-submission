@@ -16,4 +16,16 @@ public class PCAWGDictionaryTest {
     log.info("whitelistSamples: {}", whitelistSamples);
   }
 
+  @Test
+  public void testGetExcludedProjectKeys() {
+    val excludedProjectKeys = dictionary.getExcludedProjectKeys();
+    log.info("excludedProjectKeys: {}", excludedProjectKeys);
+  }
+
+  @Test
+  public void testGetExcludedSampleIds() {
+    val excludedSampleIds = dictionary.getExcludedSampleIds("PACA-CA");
+    log.info("excludedProjectKeys: {}", excludedSampleIds);
+  }
+
 }
