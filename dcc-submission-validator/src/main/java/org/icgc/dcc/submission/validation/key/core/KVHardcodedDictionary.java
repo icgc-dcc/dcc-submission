@@ -102,7 +102,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<Integer> EXPOSURE_FKS = of(0);
 
   private static final List<Integer> SURGERY_FKS1 = of(0);
-  private static final List<Integer> SURGERY_FKS2 = of(0, 1);
+  private static final List<Integer> SURGERY_FKS2 = of(5);
 
   private static final List<Integer> THERAPY_FKS = of(0);
 
@@ -194,7 +194,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> EXPOSURE_FK_NAMES = of("donor_id");
 
   private static final List<String> SURGERY_FK1_NAMES = of("donor_id");
-  private static final List<String> SURGERY_FK2_NAMES = of("donor_id", "specimen_id");
+  private static final List<String> SURGERY_FK2_NAMES = of("specimen_id");
 
   private static final List<String> THERAPY_FK_NAMES = of("donor_id");
 
