@@ -24,13 +24,6 @@ import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STAT
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import lombok.Cleanup;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ReportContext;
@@ -40,17 +33,24 @@ import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
 
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Retain;
-
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Retain;
+import lombok.Cleanup;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+
 public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 
-  public ErrorReportingPlanningVisitor(@NonNull SubmissionPlatformStrategy platform, @NonNull FlowType type) {
-    super(platform, type);
+  public ErrorReportingPlanningVisitor(@NonNull String projectKey, SubmissionPlatformStrategy platform,
+      @NonNull FlowType type) {
+    super(projectKey, platform, type);
   }
 
   @Override

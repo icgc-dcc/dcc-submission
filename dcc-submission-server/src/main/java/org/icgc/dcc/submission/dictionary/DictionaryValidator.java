@@ -40,10 +40,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.BusinessKeys;
 import org.icgc.dcc.common.core.model.ValueType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -70,6 +66,10 @@ import com.google.common.collect.Sets.SetView;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DictionaryValidator {
@@ -99,7 +99,8 @@ public class DictionaryValidator {
     return new DictionaryConstraintViolations(warnings, errors);
   }
 
-  private void validateSchemata(Set<DictionaryConstraintViolation> errors, Set<DictionaryConstraintViolation> warnings) {
+  private void validateSchemata(Set<DictionaryConstraintViolation> errors,
+      Set<DictionaryConstraintViolation> warnings) {
     for (val schema : dictionary.getFiles()) {
       try {
         if (isBlank(schema.getPattern())) {
@@ -218,7 +219,7 @@ public class DictionaryValidator {
         }
 
         try {
-          val scriptContext = new ScriptRestriction.ScriptContext(script);
+          val scriptContext = new ScriptRestriction.ScriptContext(null, script);
 
           val inputs = scriptContext.getInputs();
           for (val inputName : inputs.keySet()) {
@@ -334,7 +335,8 @@ public class DictionaryValidator {
     // TODO: Add validations for remaining business keys
   }
 
-  private void validateCodeLists(Set<DictionaryConstraintViolation> errors, Set<DictionaryConstraintViolation> warnings) {
+  private void validateCodeLists(Set<DictionaryConstraintViolation> errors,
+      Set<DictionaryConstraintViolation> warnings) {
     for (val codeListName : dictionary.getCodeListNames()) {
       val collection = codeListIndex.get(codeListName);
       int count = collection.size();

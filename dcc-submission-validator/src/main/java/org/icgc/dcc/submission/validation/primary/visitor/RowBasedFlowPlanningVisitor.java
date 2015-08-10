@@ -18,15 +18,17 @@
 package org.icgc.dcc.submission.validation.primary.visitor;
 
 import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED;
-import lombok.val;
 
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 
+import lombok.NonNull;
+import lombok.val;
+
 public class RowBasedFlowPlanningVisitor extends PlanningVisitor<RowBasedPlanElement> {
 
-  public RowBasedFlowPlanningVisitor() {
-    super(ROW_BASED);
+  public RowBasedFlowPlanningVisitor(@NonNull String projectKey) {
+    super(projectKey, ROW_BASED);
   }
 
   @Override

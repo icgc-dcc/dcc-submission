@@ -36,6 +36,11 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.Par
 import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.planner.PlanningException;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -44,11 +49,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 
 public class CodeListRestriction implements RowBasedPlanElement {
 
@@ -134,7 +134,7 @@ public class CodeListRestriction implements RowBasedPlanElement {
     }
 
     @Override
-    public PlanElement build(Field field, Restriction restriction) {
+    public PlanElement build(String projectKey, Field field, Restriction restriction) {
       String codeListName = restriction.getConfig().getString(FIELD);
       Optional<CodeList> codeList = context.getCodeList(codeListName);
       if (codeList.isPresent() == false) {

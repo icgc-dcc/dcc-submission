@@ -24,9 +24,6 @@ import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
@@ -38,10 +35,13 @@ import org.icgc.dcc.submission.validation.primary.report.UniqueCountPlanElement;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
+import lombok.NonNull;
+import lombok.val;
+
 public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
 
-  public SummaryReportingPlanningVisitor(@NonNull SubmissionPlatformStrategy platform) {
-    super(platform, ROW_BASED);
+  public SummaryReportingPlanningVisitor(@NonNull String projectKey, @NonNull SubmissionPlatformStrategy platform) {
+    super(projectKey, platform, ROW_BASED);
   }
 
   @Override
@@ -59,8 +59,8 @@ public class SummaryReportingPlanningVisitor extends ReportingPlanningVisitor {
   public ImmutableMap<Optional<SummaryType>, Map<String, FieldStatDigest>> getFieldStatsData(FileSchema fileSchema) {
     val fieldStatsData = new LinkedHashMap<Optional<SummaryType>, Map<String, FieldStatDigest>>();
     for (val field : fileSchema.getFields()) {
-      val optionalSummaryType = field.getSummaryType() == null ?
-          Optional.<SummaryType> absent() : Optional.of(field.getSummaryType());
+      val optionalSummaryType =
+          field.getSummaryType() == null ? Optional.<SummaryType> absent() : Optional.of(field.getSummaryType());
       Map<String, FieldStatDigest> fieldStatsDigests = fieldStatsData.get(optionalSummaryType);
       if (fieldStatsDigests == null) {
         fieldStatsDigests = newLinkedHashMap();

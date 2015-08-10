@@ -43,6 +43,10 @@ public class ValueTypePlanningVisitor extends RowBasedFlowPlanningVisitor {
 
   public static final String DISPLAY_NAME = "value type";
 
+  public ValueTypePlanningVisitor(String projectKey) {
+    super(projectKey);
+  }
+
   @Override
   public void visit(Field field) {
     // No need to verify ValueType.TEXT since everything can be a String...

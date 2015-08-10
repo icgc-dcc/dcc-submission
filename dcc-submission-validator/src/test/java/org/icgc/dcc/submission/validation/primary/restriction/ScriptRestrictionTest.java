@@ -24,8 +24,6 @@ import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STAT
 
 import java.util.List;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.InvalidScriptException;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.ScriptFunction;
@@ -34,6 +32,7 @@ import org.junit.Test;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import lombok.val;
 
 public class ScriptRestrictionTest extends BaseRestrictionTest {
 
@@ -41,7 +40,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
 
   @Test
   public void test_ScriptRestriction_describe() {
-    ScriptRestriction restriction = new ScriptRestriction("x", NUMBER, "x > 0");
+    ScriptRestriction restriction = new ScriptRestriction("project1", "x", NUMBER, "x > 0");
 
     assertThat(restriction.describe()).isEqualTo("script[x:x > 0]");
   }
@@ -49,7 +48,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
   @Test
   public void test_ScriptFunction_pass() {
     val results = invokeFunction(
-        script("x > 0 && x < y && y <= z"),
+        script("x > 0 && x < y && y <= z;"),
         description("x, y, z are increasing"),
         row(
             "x", 1,
@@ -147,7 +146,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     // Simulate a singleton tuple stream
     val tupleEntry = new TupleEntry(fields, tuple);
     val tuples = new TupleEntry[] { tupleEntry };
-    val function = new ScriptFunction("fieldName", NUMBER, script);
+    val function = new ScriptFunction("project1", "fieldName", NUMBER, script);
     val results = invokeFunction(function, tuples, fields);
 
     return newArrayList(results.iterator());
