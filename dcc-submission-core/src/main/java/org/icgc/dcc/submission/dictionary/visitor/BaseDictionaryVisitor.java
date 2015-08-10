@@ -23,11 +23,18 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Base implementation for {@code BaseDictionaryVisitor} that intentionally does not do anything (subclasses are to
  * extend this base class as opposed to implement the interface directly)
  */
+@RequiredArgsConstructor
 public abstract class BaseDictionaryVisitor implements DictionaryVisitor {
+
+  @Getter
+  private final String projectKey;
 
   @Override
   public void visit(Dictionary dictionary) {

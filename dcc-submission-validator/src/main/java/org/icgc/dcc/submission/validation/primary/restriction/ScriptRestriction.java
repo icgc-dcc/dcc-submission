@@ -30,12 +30,6 @@ import static org.icgc.dcc.submission.validation.cascading.ValidationFields.stat
 
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
@@ -53,6 +47,8 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 
+import com.google.common.base.Joiner;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -63,8 +59,11 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.base.Joiner;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Restriction implementation that supports predicate expressions using the MVEL language.
@@ -87,6 +86,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
   /**
    * Configuration.
    */
+  private final String projectKey;
   private final String reportedField;
   private final int number;
   private final String script;
@@ -99,7 +99,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
   @Override
   public Pipe extend(Pipe pipe) {
     val fields = ALL;
-    val function = new ScriptFunction(reportedField, number, script);
+    val function = new ScriptFunction(projectKey, reportedField, number, script);
 
     return new Each(pipe, fields, function, REPLACE);
   }
@@ -130,11 +130,11 @@ public class ScriptRestriction implements RowBasedPlanElement {
     }
 
     @Override
-    public PlanElement build(Field field, Restriction restriction) {
+    public PlanElement build(String projectKey, Field field, Restriction restriction) {
       val number = getNumber(field, restriction);
       val script = restriction.getConfig().getString(PARAM);
 
-      return new ScriptRestriction(field.getName(), number, script);
+      return new ScriptRestriction(projectKey, field.getName(), number, script);
     }
 
     private static int getNumber(Field field, Restriction restriction) {
@@ -173,17 +173,19 @@ public class ScriptRestriction implements RowBasedPlanElement {
 
   @SuppressWarnings("rawtypes")
   @Slf4j
-  public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
+  public static class ScriptFunction extends BaseOperation<ScriptContext>implements Function<ScriptContext> {
 
     private static final Joiner.MapJoiner VARIABLE_JOINER = Joiner.on(", ").withKeyValueSeparator(" = ")
         .useForNull("null");
 
+    private final String projectKey;
     private final String reportedField;
     private final int number;
     private final String script;
 
-    protected ScriptFunction(String reportedField, int number, String script) {
+    protected ScriptFunction(String projectKey, String reportedField, int number, String script) {
       super(2, Fields.ARGS);
+      this.projectKey = projectKey;
       this.reportedField = reportedField;
       this.number = number;
       this.script = script;
@@ -191,7 +193,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
 
     @Override
     public void prepare(FlowProcess flowProcess, OperationCall<ScriptContext> operationCall) {
-      val context = new ScriptContext(script);
+      val context = new ScriptContext(projectKey, script);
 
       operationCall.setContext(context);
     }
@@ -234,6 +236,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
 
   public static class ScriptContext {
 
+    private final String projectKey;
     private final String script;
 
     @Getter
@@ -241,7 +244,8 @@ public class ScriptRestriction implements RowBasedPlanElement {
     private final ParserContext parserContext;
     private final ExecutableStatement compiledScript;
 
-    public ScriptContext(String script) {
+    public ScriptContext(String projectKey, String script) {
+      this.projectKey = projectKey;
       this.script = script;
       this.parserContext = new ParserContext(configuration());
       this.compiledScript = (ExecutableStatement) MVEL.compileExpression(script, parserContext);
@@ -351,8 +355,11 @@ public class ScriptRestriction implements RowBasedPlanElement {
       return newLinkedHashMap();
     }
 
-    private static VariableResolverFactory variableResolverFactory(TupleEntry tupleEntry) {
-      return new MapVariableResolverFactory(variables(tupleEntry));
+    private VariableResolverFactory variableResolverFactory(TupleEntry tupleEntry) {
+      val factory = new MapVariableResolverFactory(variables(tupleEntry));
+      factory.createVariable("project", projectKey);
+
+      return factory;
     }
 
   }

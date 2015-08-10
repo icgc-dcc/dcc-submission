@@ -91,7 +91,7 @@ public class RequiredRestriction implements RowBasedPlanElement {
     }
 
     @Override
-    public PlanElement build(Field field, Restriction restriction) {
+    public PlanElement build(String projectKey, Field field, Restriction restriction) {
       if (restriction.getConfig() == null || restriction.getConfig().get(ACCEPT_MISSING_CODE) == null) {
         return new RequiredRestriction(field.getName(), true);
       }

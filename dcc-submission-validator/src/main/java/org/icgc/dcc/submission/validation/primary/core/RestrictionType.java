@@ -32,8 +32,8 @@ import com.google.common.collect.ImmutableList;
 
 public interface RestrictionType {
 
-  public static final List<Class<? extends RestrictionType>> TYPES = ImmutableList.<Class<? extends RestrictionType>>
-      of(
+  public static final List<Class<? extends RestrictionType>> TYPES =
+      ImmutableList.<Class<? extends RestrictionType>> of(
           DiscreteValuesRestriction.Type.class,
           RangeFieldRestriction.Type.class,
           RequiredRestriction.Type.class,
@@ -49,6 +49,6 @@ public interface RestrictionType {
 
   public RestrictionTypeSchema getSchema();
 
-  public PlanElement build(Field field, Restriction restriction);
+  public PlanElement build(String projectKey, Field field, Restriction restriction);
 
 }

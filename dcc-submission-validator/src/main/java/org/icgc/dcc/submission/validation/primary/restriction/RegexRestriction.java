@@ -33,6 +33,8 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 
+import com.mongodb.BasicDBObject;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -41,8 +43,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-
-import com.mongodb.BasicDBObject;
 
 public class RegexRestriction implements RowBasedPlanElement {
 
@@ -99,7 +99,7 @@ public class RegexRestriction implements RowBasedPlanElement {
     }
 
     @Override
-    public PlanElement build(Field field, Restriction restriction) {
+    public PlanElement build(String projectKey, Field field, Restriction restriction) {
       BasicDBObject restrictionConfig = checkNotNull(restriction.getConfig());
       String patternString = (String) restrictionConfig.get(PARAM);
       return new RegexRestriction(field.getName(), patternString);

@@ -26,10 +26,6 @@ import static org.icgc.dcc.common.core.util.URLs.getUrl;
 import java.net.URL;
 import java.util.Set;
 
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -60,6 +56,10 @@ import com.google.common.io.Resources;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Module that wires together components of the validation subsystem.
@@ -183,7 +183,8 @@ public class ValidationModule extends AbstractDccModule {
       validators.add(firstPassValidator());
       validators.add(primaryValidator(planner));
       validators.add(keyValidator());
-      validators.add(pcawgValidator(config));
+      // Disabled because too strict for submitters
+      // validators.add(pcawgValidator(config));
       validators.add(referenceGenomeValidator(config));
       validators.add(sampleTypeValidator());
       validators.add(normalizationValidator(config, dccFileSystem2));
@@ -209,9 +210,8 @@ public class ValidationModule extends AbstractDccModule {
     val path = PCAWG_CONFIG_PARAM;
     val defaultValue = PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL;
 
-    URL dictionaryUrl = config.hasPath(path) ?
-        getPCAWGDictionaryURL(config.getConfig(path), defaultValue) :
-        defaultValue;
+    URL dictionaryUrl =
+        config.hasPath(path) ? getPCAWGDictionaryURL(config.getConfig(path), defaultValue) : defaultValue;
 
     log.info("Using PCAWG dictionary url: {}", dictionaryUrl);
     log.info("PCAWG dictionary contents: {}", Resources.toString(dictionaryUrl, UTF_8));

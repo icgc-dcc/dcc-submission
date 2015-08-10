@@ -23,10 +23,6 @@ import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
@@ -34,6 +30,9 @@ import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.PlanElement;
 import org.icgc.dcc.submission.validation.primary.planner.BaseFileFlowPlanner;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * A {@code DictionaryVisitor} that collects {@code PlanElement} during its visit. Elements are cleared upon each visit
@@ -44,7 +43,6 @@ import org.icgc.dcc.submission.validation.primary.planner.BaseFileFlowPlanner;
  * 
  * @param <T> the type of {@code PlanElement} collected by this visitor
  */
-@RequiredArgsConstructor
 @NotThreadSafe
 public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
@@ -71,6 +69,11 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
    * Holds the collected elements and *cleared* for each {@link FileSchema} visit (hence transcience).
    */
   private final List<T> collectedPlanElements = newArrayList();
+
+  public PlanningVisitor(String projectKey, FlowType flowType) {
+    super(projectKey);
+    this.flowType = flowType;
+  }
 
   /**
    * Applies the collected {@code PlanElement} to the specified {@code Plan}

@@ -22,10 +22,6 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
@@ -35,6 +31,9 @@ import org.icgc.dcc.submission.validation.primary.planner.RowBasedFlowPlanner;
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @RequiredArgsConstructor
 public class Plan {
