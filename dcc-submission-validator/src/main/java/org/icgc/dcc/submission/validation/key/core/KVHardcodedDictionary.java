@@ -31,14 +31,17 @@ import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.SGV;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.SSM;
 import static org.icgc.dcc.submission.validation.key.core.KVExperimentalDataType.STSM;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_S;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXPOSURE;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_ARRAY_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXP_SEQ_P;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.FAMILY;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.JCN_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_M;
@@ -59,12 +62,12 @@ import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.STSM_S;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SURGERY;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.THERAPY;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import lombok.val;
 
 import org.icgc.dcc.submission.validation.key.data.KVFileTypeErrorFields;
 
@@ -72,11 +75,38 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 
+import lombok.val;
+
 public final class KVHardcodedDictionary implements KVDictionary {
 
+  /**
+   * Field ordinals
+   */
+
+  // CORE
   private static final List<Integer> DONOR_PKS = of(0);
 
-  // TODO: translate to Strings rather? + make map per file type/submission type?
+  private static final List<Integer> SAMPLE_FKS = of(1);
+  private static final List<Integer> SAMPLE_PKS = of(0);
+
+  private static final List<Integer> SPECIMEN_FKS = of(0);
+  private static final List<Integer> SPECIMEN_PKS = of(1);
+
+  // SUPPLEMENTAL
+  private static final List<Integer> BIOMARKER_FKS1 = of(0);
+  private static final List<Integer> BIOMARKER_FKS2 = of(0, 1);
+
+  private static final List<Integer> FAMILY_FKS = of(0);
+  private static final List<Integer> FAMILY_PKS = of(0, 1, 2, 3, 4, 5, 6, 7);
+
+  private static final List<Integer> EXPOSURE_FKS = of(0);
+
+  private static final List<Integer> SURGERY_FKS1 = of(0);
+  private static final List<Integer> SURGERY_FKS2 = of(0, 1);
+
+  private static final List<Integer> THERAPY_FKS = of(0);
+
+  // EXPERIMENTAL
   private static final List<Integer> CNSM_M_FKS1 = of(1);
   private static final List<Integer> CNSM_M_OPTIONAL_FKS = of(2);
   private static final List<Integer> CNSM_M_PKS = of(0, 1);
@@ -92,15 +122,9 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<Integer> PEXP_M_PKS = of(0, 1);
   private static final List<Integer> PEXP_P_FKS = of(0, 1);
 
-  private static final List<Integer> SAMPLE_FKS = of(1);
-  private static final List<Integer> SAMPLE_PKS = of(0);
-
   private static final List<Integer> SGV_M_FKS = of(1);
   private static final List<Integer> SGV_M_PKS = of(0, 1);
   private static final List<Integer> SGV_P_FKS = of(0, 1);
-
-  private static final List<Integer> SPECIMEN_FKS = of(0);
-  private static final List<Integer> SPECIMEN_PKS = of(1);
 
   private static final List<Integer> SSM_M_FKS1 = of(1);
   private static final List<Integer> SSM_M_OPTIONAL_FKS = of(2);
@@ -143,13 +167,43 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<Integer> MIRNA_SEQ_M_FKS = of(1);
   private static final List<Integer> MIRNA_SEQ_P_FKS = of(0, 1);
 
+  /**
+   * Field names.
+   */
+
+  private static final List<String> DONOR_PK_NAMES = of("donor_id");
+  private static final List<String> SPECIMEN_FK_NAMES = of("donor_id");
+  private static final List<String> SPECIMEN_PK_NAMES = of("specimen_id");
+  private static final List<String> SAMPLE_FK_NAMES = of("specimen_id");
+  private static final List<String> SAMPLE_PK_NAMES = of("analyzed_sample_id");
+
+  private static final List<String> BIOMARKER_FK1_NAMES = of("donor_id");
+  private static final List<String> BIOMARKER_FK2_NAMES = of("donor_id", "specimen_id");
+
+  private static final List<String> FAMILY_FK_NAMES = of("donor_id");
+  private static final List<String> FAMILY_PK_NAMES = of(
+      "donor_id",
+      "donor_has_relative_with_cancer_history",
+      "relationship_type",
+      "relationship_type_other",
+      "relationship_sex",
+      "relationship_age",
+      "relationship_disease_icd10",
+      "relationship_disease");
+
+  private static final List<String> EXPOSURE_FK_NAMES = of("donor_id");
+
+  private static final List<String> SURGERY_FK1_NAMES = of("donor_id");
+  private static final List<String> SURGERY_FK2_NAMES = of("donor_id", "specimen_id");
+
+  private static final List<String> THERAPY_FK_NAMES = of("donor_id");
+
   private static final List<String> CNSM_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> CNSM_M_OPTIONAL_FK_NAMES = of("matched_sample_id");
   private static final List<String> CNSM_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
   private static final List<String> CNSM_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
   private static final List<String> CNSM_P_PK_NAMES = of("analysis_id", "analyzed_sample_id", "mutation_id");
   private static final List<String> CNSM_S_FK_NAMES = of("analysis_id", "analyzed_sample_id", "mutation_id");
-  private static final List<String> DONOR_PK_NAMES = of("donor_id");
 
   private static final List<String> EXP_ARRAY_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> EXP_ARRAY_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
@@ -174,13 +228,9 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> PEXP_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> PEXP_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
   private static final List<String> PEXP_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
-  private static final List<String> SAMPLE_FK_NAMES = of("specimen_id");
-  private static final List<String> SAMPLE_PK_NAMES = of("analyzed_sample_id");
   private static final List<String> SGV_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> SGV_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
   private static final List<String> SGV_P_FK_NAMES = of("analysis_id", "analyzed_sample_id");
-  private static final List<String> SPECIMEN_FK_NAMES = of("donor_id");
-  private static final List<String> SPECIMEN_PK_NAMES = of("specimen_id");
   private static final List<String> SSM_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> SSM_M_OPTIONAL_FK_NAMES = of("matched_sample_id");
   private static final List<String> SSM_M_PK_NAMES = of("analysis_id", "analyzed_sample_id");
@@ -209,49 +259,42 @@ public final class KVHardcodedDictionary implements KVDictionary {
       new ImmutableMap.Builder<KVFileType, KVFileType>()
           .put(SPECIMEN, DONOR)
           .put(SAMPLE, SPECIMEN)
-
+          .put(THERAPY, DONOR)
+          .put(SURGERY, DONOR)
+          .put(FAMILY, DONOR)
+          .put(EXPOSURE, DONOR)
+          .put(BIOMARKER, DONOR)
           .put(SSM_M, SAMPLE)
           .put(SSM_P, SSM_M)
-
           .put(CNSM_M, SAMPLE)
           .put(CNSM_P, CNSM_M)
           .put(CNSM_S, CNSM_P)
-
           .put(STSM_M, SAMPLE)
           .put(STSM_P, STSM_M)
           .put(STSM_S, STSM_P)
-
           .put(METH_ARRAY_M, SAMPLE)
           .put(METH_ARRAY_P, METH_ARRAY_M)
-
           .put(METH_SEQ_M, SAMPLE)
           .put(METH_SEQ_P, METH_SEQ_M)
-
           .put(EXP_ARRAY_M, SAMPLE)
           .put(EXP_ARRAY_P, EXP_ARRAY_M)
-
           .put(EXP_SEQ_M, SAMPLE)
           .put(EXP_SEQ_P, EXP_SEQ_M)
-
           .put(MIRNA_SEQ_M, SAMPLE)
           .put(MIRNA_SEQ_P, MIRNA_SEQ_M)
-
           .put(PEXP_M, SAMPLE)
           .put(PEXP_P, PEXP_M)
-
           .put(JCN_M, SAMPLE)
           .put(JCN_P, JCN_M)
-
           .put(SGV_M, SAMPLE)
           .put(SGV_P, SGV_M)
-
           .build();
 
   private static final Map<KVFileType, KVFileType> RELATIONS2 =
       new ImmutableMap.Builder<KVFileType, KVFileType>()
-
           .put(METH_ARRAY_P, METH_ARRAY_PROBES)
-
+          .put(SURGERY, SPECIMEN)
+          .put(BIOMARKER, SPECIMEN)
           .build();
 
   /**
@@ -262,7 +305,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(DONOR, DONOR_PK_NAMES)
           .put(SPECIMEN, SPECIMEN_PK_NAMES)
           .put(SAMPLE, SAMPLE_PK_NAMES)
-
+          .put(FAMILY, FAMILY_PK_NAMES)
           .put(SSM_M, SSM_M_PK_NAMES)
           .put(CNSM_M, CNSM_M_PK_NAMES)
           .put(STSM_M, STSM_M_PK_NAMES)
@@ -274,15 +317,14 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(EXP_ARRAY_M, EXP_ARRAY_M_PK_NAMES)
           .put(EXP_SEQ_M, EXP_SEQ_M_PK_NAMES)
           .put(MIRNA_SEQ_M, MIRNA_SEQ_M_PK_NAMES)
-
           .put(CNSM_P, CNSM_P_PK_NAMES)
           .put(STSM_P, STSM_P_PK_NAMES)
           .put(EXP_ARRAY_P, EXP_ARRAY_P_PK_NAMES)
           .put(EXP_SEQ_P, EXP_SEQ_P_PK_NAMES)
 
-          .put(METH_ARRAY_PROBES, METH_ARRAY_SYSTEM_PK_NAMES)
+  .put(METH_ARRAY_PROBES, METH_ARRAY_SYSTEM_PK_NAMES)
 
-          .build();
+  .build();
 
   /**
    * Redundant with {@link #ERROR_TYPE_DESCRIPTIONS}?
@@ -291,7 +333,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
       new ImmutableMap.Builder<KVFileType, List<String>>()
           .put(SPECIMEN, SPECIMEN_FK_NAMES)
           .put(SAMPLE, SAMPLE_FK_NAMES)
-
           .put(SSM_P, SSM_P_FK_NAMES)
           .put(CNSM_P, CNSM_P_FK_NAMES)
           .put(STSM_P, STSM_P_FK_NAMES)
@@ -303,11 +344,10 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(EXP_ARRAY_P, EXP_ARRAY_P_FK_NAMES)
           .put(EXP_SEQ_P, EXP_SEQ_P_FK_NAMES)
           .put(MIRNA_SEQ_P, MIRNA_SEQ_P_FK_NAMES)
-
           .put(CNSM_S, CNSM_S_FK_NAMES)
           .put(STSM_S, STSM_S_FK_NAMES)
 
-          .build();
+  .build();
 
   private static final Predicate<KVFileType> SURJECTION_RELATION = new Predicate<KVFileType>() {
 
@@ -315,7 +355,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
     public boolean apply(KVFileType fileType) {
       return fileType == SPECIMEN
           || fileType == SAMPLE
-
           || fileType == SSM_P
           || fileType == CNSM_P
           || fileType == STSM_P
@@ -326,15 +365,14 @@ public final class KVHardcodedDictionary implements KVDictionary {
           || fileType == EXP_SEQ_P
           || fileType == MIRNA_SEQ_P
           || fileType == PEXP_P
-          || fileType == SGV_P
-      ;
+          || fileType == SGV_P;
     }
   };
 
   private static final Map<KVFileType, KVFileTypeErrorFields> ERROR_TYPE_DESCRIPTIONS =
       new ImmutableMap.Builder<KVFileType, KVFileTypeErrorFields>()
 
-          // CLINICAL
+  // CLINICAL
           .put(
               DONOR,
               new KVFileTypeErrorFields.Builder(DONOR)
@@ -353,7 +391,37 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(SAMPLE_FK_NAMES)
                   .build())
 
-          // SSM
+  // SUPPLEMENTAL
+          .put(
+              BIOMARKER,
+              new KVFileTypeErrorFields.Builder(BIOMARKER)
+                  .fk1FieldNames(BIOMARKER_FK1_NAMES)
+                  .fk2FieldNames(BIOMARKER_FK2_NAMES)
+                  .build())
+          .put(
+              FAMILY,
+              new KVFileTypeErrorFields.Builder(FAMILY)
+                  .pkFieldNames(FAMILY_PK_NAMES)
+                  .fk1FieldNames(FAMILY_FK_NAMES)
+                  .build())
+          .put(
+              EXPOSURE,
+              new KVFileTypeErrorFields.Builder(EXPOSURE)
+                  .fk1FieldNames(EXPOSURE_FK_NAMES)
+                  .build())
+          .put(
+              SURGERY,
+              new KVFileTypeErrorFields.Builder(SURGERY)
+                  .fk1FieldNames(SURGERY_FK1_NAMES)
+                  .fk2FieldNames(SURGERY_FK2_NAMES)
+                  .build())
+          .put(
+              THERAPY,
+              new KVFileTypeErrorFields.Builder(THERAPY)
+                  .fk1FieldNames(THERAPY_FK_NAMES)
+                  .build())
+
+  // SSM
           .put(
               SSM_M,
               new KVFileTypeErrorFields.Builder(SSM_M)
@@ -367,7 +435,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(SSM_P_FK_NAMES)
                   .build())
 
-          // CNSM
+  // CNSM
           .put(
               CNSM_M,
               new KVFileTypeErrorFields.Builder(CNSM_M)
@@ -387,7 +455,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(CNSM_S_FK_NAMES)
                   .build())
 
-          // STSM
+  // STSM
           .put(
               STSM_M,
               new KVFileTypeErrorFields.Builder(STSM_M)
@@ -407,7 +475,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(STSM_S_FK_NAMES)
                   .build())
 
-          // MIRNA SEQ
+  // MIRNA SEQ
           .put(
               MIRNA_SEQ_M,
               new KVFileTypeErrorFields.Builder(MIRNA_SEQ_M)
@@ -420,7 +488,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(MIRNA_SEQ_P_FK_NAMES)
                   .build())
 
-          // METH ARRAY
+  // METH ARRAY
           .put(
               METH_ARRAY_M,
               new KVFileTypeErrorFields.Builder(METH_ARRAY_M)
@@ -434,7 +502,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk2FieldNames(METH_ARRAY_P_FK2_NAMES)
                   .build())
 
-          // METH SEQ
+  // METH SEQ
           .put(
               METH_SEQ_M,
               new KVFileTypeErrorFields.Builder(METH_SEQ_M)
@@ -447,7 +515,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(METH_SEQ_P_FK_NAMES)
                   .build())
 
-          // EXP ARRAY
+  // EXP ARRAY
           .put(
               EXP_ARRAY_M,
               new KVFileTypeErrorFields.Builder(EXP_ARRAY_M)
@@ -461,7 +529,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(EXP_ARRAY_P_FK_NAMES)
                   .build())
 
-          // EXP SEQ
+  // EXP SEQ
           .put(
               EXP_SEQ_M,
               new KVFileTypeErrorFields.Builder(EXP_SEQ_M)
@@ -475,7 +543,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(EXP_SEQ_P_FK_NAMES)
                   .build())
 
-          // PEXP
+  // PEXP
           .put(
               PEXP_M,
               new KVFileTypeErrorFields.Builder(PEXP_M)
@@ -488,7 +556,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(PEXP_P_FK_NAMES)
                   .build())
 
-          // JCN
+  // JCN
           .put(
               JCN_M,
               new KVFileTypeErrorFields.Builder(JCN_M)
@@ -501,7 +569,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(JCN_P_FK_NAMES)
                   .build())
 
-          // SGV
+  // SGV
           .put(
               SGV_M,
               new KVFileTypeErrorFields.Builder(SGV_M)
@@ -514,7 +582,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
                   .fk1FieldNames(SGV_P_FK_NAMES)
                   .build())
 
-          .build();
+  .build();
 
   /**
    * Order matters (referenced files first). TODO: get this from relations instead.
@@ -570,6 +638,32 @@ public final class KVHardcodedDictionary implements KVDictionary {
       keysIndices = KVFileTypeKeysIndices.builder()
           .pk(SAMPLE_PKS)
           .fk1(SAMPLE_FKS)
+          .build();
+    }
+
+    // SUPPLEMENTAL
+    else if (fileType == BIOMARKER) {
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(BIOMARKER_FKS1)
+          .fk2(BIOMARKER_FKS2)
+          .build();
+    } else if (fileType == FAMILY) {
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(FAMILY_PKS)
+          .fk1(FAMILY_FKS)
+          .build();
+    } else if (fileType == EXPOSURE) {
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(EXPOSURE_FKS)
+          .build();
+    } else if (fileType == SURGERY) {
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(SURGERY_FKS1)
+          .fk2(SURGERY_FKS2)
+          .build();
+    } else if (fileType == THERAPY) {
+      keysIndices = KVFileTypeKeysIndices.builder()
+          .fk1(THERAPY_FKS)
           .build();
     }
 

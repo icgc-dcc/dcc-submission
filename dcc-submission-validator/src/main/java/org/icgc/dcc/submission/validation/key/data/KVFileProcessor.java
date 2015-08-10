@@ -28,11 +28,6 @@ import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.
 
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVDictionary;
@@ -42,6 +37,11 @@ import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import com.google.common.base.Optional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * TODO: MUST split class on a per type basis
@@ -127,8 +127,13 @@ public final class KVFileProcessor {
     case DONOR:             processDonor(context); break;
     case SPECIMEN:          processGenericClinical(context); break;
     case SAMPLE:            processGenericClinical(context); break;
-    
-    // TODO: OPTIONAL?
+                            
+    // SUPPLEMENTAL:        
+    case BIOMARKER:         processBiomarker(context); break;    
+    case FAMILY:            processFamily(context); break;    
+    case EXPOSURE:          processExposure(context); break;    
+    case SURGERY:           processSurgery(context); break;    
+    case THERAPY:           processTherapy(context); break;    
     
     //
     // Feature Types
@@ -196,6 +201,30 @@ public final class KVFileProcessor {
 
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
     ; // No surjection check for DONOR
+  }
+
+  private void processBiomarker(KVRowContext context) {
+    valid.validateForeignKey1(context);
+    valid.validateForeignKey2(context);
+  }
+
+  private void processFamily(KVRowContext context) {
+    valid.validateUniqueness(context);
+    valid.validateForeignKey1(context);
+    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
+  }
+
+  private void processExposure(KVRowContext context) {
+    valid.validateForeignKey1(context);
+  }
+
+  private void processSurgery(KVRowContext context) {
+    valid.validateForeignKey1(context);
+    valid.validateForeignKey2(context);
+  }
+
+  private void processTherapy(KVRowContext context) {
+    valid.validateForeignKey1(context);
   }
 
   private void processGenericMetaWithOptionalFK(KVRowContext context) {
@@ -335,7 +364,7 @@ public final class KVFileProcessor {
     private void validateForeignKey1(KVRowContext context) {
       validateForeignKey(context,
 
-          context.getOptionallyReferencedPrimaryKeys1(),
+      context.getOptionallyReferencedPrimaryKeys1(),
           context.getRow().getFk1(),
           RELATION1);
     }
@@ -343,7 +372,7 @@ public final class KVFileProcessor {
     private void validateForeignKey2(KVRowContext context) {
       validateForeignKey(context,
 
-          context.getOptionallyReferencedPrimaryKeys2(),
+      context.getOptionallyReferencedPrimaryKeys2(),
           context.getRow().getFk2(),
           RELATION2);
     }
@@ -351,7 +380,7 @@ public final class KVFileProcessor {
     private void validateOptionalForeignKey(KVRowContext context) {
       validateForeignKey(context,
 
-          context.getOptionallyReferencedPrimaryKeys1(),
+      context.getOptionallyReferencedPrimaryKeys1(),
           context.getRow().getOptionalFk(),
           OPTIONAL_RELATION);
     }

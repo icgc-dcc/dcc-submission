@@ -22,16 +22,16 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatBytes;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXPOSURE;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.FAMILY;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SURGERY;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.THERAPY;
 
 import java.util.Map;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
@@ -42,6 +42,11 @@ import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator
 
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Main processor for the key validation.
@@ -76,6 +81,13 @@ public class KVSubmissionProcessor {
     processFileType(SPECIMEN);
     processFileType(SAMPLE);
 
+    log.info("Processing clinicla supplemental data");
+    processFileType(BIOMARKER);
+    processFileType(FAMILY);
+    processFileType(EXPOSURE);
+    processFileType(SURGERY);
+    processFileType(THERAPY);
+
     // Process experimental data
     for (val dataType : dictionary.getExperimentalDataTypes()) {
       if (kvFileSystem.hasDataType(dataType)) {
@@ -106,15 +118,14 @@ public class KVSubmissionProcessor {
     val optionallyReferencedPrimaryKeys2 = getOptionallyReferencedPrimaryKeys2(fileType);
 
     // Encountered foreign keys in the case where we need to check for surjection
-    val optionalEncounteredForeignKeys = dictionary.hasOutgoingSurjectiveRelation(fileType) ?
-        of(new KVEncounteredForeignKeys()) :
-        Optional.<KVEncounteredForeignKeys> absent();
+    val optionalEncounteredForeignKeys =
+        dictionary.hasOutgoingSurjectiveRelation(fileType) ? of(new KVEncounteredForeignKeys()) : Optional
+            .<KVEncounteredForeignKeys> absent();
 
     log.info(
         "Processing file type: '{}'; has referencing is '{} and {}' (FK1 and FK2); will be collecting FKs: '{}'",
-        new Object[] { fileType,
-            optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2.isPresent(),
-            optionalEncounteredForeignKeys.isPresent() });
+        new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
+            .isPresent(), optionalEncounteredForeignKeys.isPresent() });
 
     // Process files matching the current file type
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
@@ -136,8 +147,7 @@ public class KVSubmissionProcessor {
             primaryKeys,
             optionallyReferencedPrimaryKeys1,
             optionallyReferencedPrimaryKeys2,
-            optionalEncounteredForeignKeys
-            );
+            optionalEncounteredForeignKeys);
 
         log.info("Finished processing file '{}' in {} with {} of JVM free memory remaining",
             new Object[] { dataFilePath, watch, formatFreeMemory() });
@@ -189,9 +199,8 @@ public class KVSubmissionProcessor {
 
   private Optional<KVReferencedPrimaryKeys> getOptionallyReferencedPrimaryKeys(KVFileType fileType, boolean secondary) {
     // Obtain referenced file type (if applicable, for instance DONOR has none)
-    val optionalReferencedFileType = secondary ?
-        dictionary.getOptionalReferencedFileType2(fileType) :
-        dictionary.getOptionalReferencedFileType1(fileType);
+    val optionalReferencedFileType = secondary ? dictionary.getOptionalReferencedFileType2(fileType) : dictionary
+        .getOptionalReferencedFileType1(fileType);
     log.info("'{}' references '{}'", fileType, optionalReferencedFileType);
 
     if (optionalReferencedFileType.isPresent()) {

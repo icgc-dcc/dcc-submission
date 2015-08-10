@@ -18,13 +18,14 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static java.util.Arrays.asList;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum KVFileType {
@@ -32,6 +33,12 @@ public enum KVFileType {
   DONOR(FileType.DONOR_TYPE),
   SPECIMEN(FileType.SPECIMEN_TYPE),
   SAMPLE(FileType.SAMPLE_TYPE),
+  
+  BIOMARKER(FileType.BIOMARKER_TYPE),
+  FAMILY(FileType.FAMILY_TYPE),
+  EXPOSURE(FileType.EXPOSURE_TYPE),
+  SURGERY(FileType.SURGERY_TYPE),
+  THERAPY(FileType.THERAPY_TYPE),
 
   SSM_M(FileType.SSM_M_TYPE),
   SSM_P(FileType.SSM_P_TYPE),
