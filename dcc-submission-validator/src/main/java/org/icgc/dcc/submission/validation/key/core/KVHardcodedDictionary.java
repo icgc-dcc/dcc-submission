@@ -94,7 +94,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
 
   // SUPPLEMENTAL
   private static final List<Integer> BIOMARKER_FKS1 = of(0);
-  private static final List<Integer> BIOMARKER_FKS2 = of(0, 1);
+  private static final List<Integer> BIOMARKER_FKS2 = of(1);
 
   private static final List<Integer> FAMILY_FKS = of(0);
   private static final List<Integer> FAMILY_PKS = of(0, 1, 2, 3, 4, 5, 6, 7);
@@ -178,7 +178,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> SAMPLE_PK_NAMES = of("analyzed_sample_id");
 
   private static final List<String> BIOMARKER_FK1_NAMES = of("donor_id");
-  private static final List<String> BIOMARKER_FK2_NAMES = of("donor_id", "specimen_id");
+  private static final List<String> BIOMARKER_FK2_NAMES = of("specimen_id");
 
   private static final List<String> FAMILY_FK_NAMES = of("donor_id");
   private static final List<String> FAMILY_PK_NAMES = of(
