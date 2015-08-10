@@ -23,11 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
@@ -40,13 +35,17 @@ import org.icgc.dcc.submission.validation.primary.visitor.RowBasedRestrictionPla
 import org.icgc.dcc.submission.validation.primary.visitor.SummaryReportingPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 
-import cascading.pipe.Pipe;
-
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
+import cascading.pipe.Pipe;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @___(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject) )
 public class Planner {
 
   @NonNull
@@ -97,7 +96,7 @@ public class Planner {
    * {@link FileFlowPlanner}s (which means extending the flow planner's {@link Pipe} based on the element).
    */
   private void applyVisitors(Plan plan, SubmissionPlatformStrategy platform, String projectKey) {
-    val visitors = createVisitors(platform, restrictionTypes);
+    val visitors = createVisitors(projectKey, platform, restrictionTypes);
 
     for (val visitor : visitors) {
       log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), projectKey);
@@ -106,11 +105,11 @@ public class Planner {
   }
 
   private static List<PlanningVisitor<? extends PlanElement>> createVisitors(
-      SubmissionPlatformStrategy platform, Set<RestrictionType> restrictionTypes) {
+      String projectKey, SubmissionPlatformStrategy platform, Set<RestrictionType> restrictionTypes) {
     return ImmutableList.of(
-        new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
-        new RowBasedRestrictionPlanningVisitor(restrictionTypes),
-        new SummaryReportingPlanningVisitor(platform),
-        new ErrorReportingPlanningVisitor(platform, ROW_BASED));
+        new ValueTypePlanningVisitor(projectKey), // Must happen before RangeRestriction
+        new RowBasedRestrictionPlanningVisitor(projectKey, restrictionTypes),
+        new SummaryReportingPlanningVisitor(projectKey, platform),
+        new ErrorReportingPlanningVisitor(projectKey, platform, ROW_BASED));
   }
 }

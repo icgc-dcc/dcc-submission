@@ -28,6 +28,8 @@ import org.icgc.dcc.submission.dictionary.model.Restriction;
  */
 public interface DictionaryVisitor {
 
+  public String getProjectKey();
+
   public void visit(Dictionary dictionary);
 
   public void visit(FileSchema fileSchema);

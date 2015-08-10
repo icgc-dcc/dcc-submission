@@ -32,6 +32,10 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.Fie
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -40,10 +44,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 public class DiscreteValuesRestriction implements RowBasedPlanElement {
 
@@ -98,7 +98,7 @@ public class DiscreteValuesRestriction implements RowBasedPlanElement {
     }
 
     @Override
-    public PlanElement build(Field field, Restriction restriction) {
+    public PlanElement build(String projectKey, Field field, Restriction restriction) {
       String valuesString = (String) restriction.getConfig().get(PARAM);// expects comma-separated like: "male,female"
       Iterable<String> split = Splitter.on(Restriction.CONFIG_VALUE_SEPARATOR).split(valuesString);
       String[] values = Iterables.toArray(split, String.class);

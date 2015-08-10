@@ -28,11 +28,14 @@ import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 
+import lombok.NonNull;
+
 public class RowBasedRestrictionPlanningVisitor extends RowBasedFlowPlanningVisitor {
 
   private final Set<RestrictionType> restrictionTypes;
 
-  public RowBasedRestrictionPlanningVisitor(Set<RestrictionType> restrictionTypes) {
+  public RowBasedRestrictionPlanningVisitor(@NonNull String projectKey, Set<RestrictionType> restrictionTypes) {
+    super(projectKey);
     this.restrictionTypes = Sets.filter(restrictionTypes, new Predicate<RestrictionType>() {
 
       @Override
@@ -47,7 +50,7 @@ public class RowBasedRestrictionPlanningVisitor extends RowBasedFlowPlanningVisi
   public void visit(Restriction restriction) {
     for (RestrictionType type : restrictionTypes) {
       if (type.builds(restriction.getType().getId())) {
-        PlanElement element = type.build(getCurrentField(), restriction);
+        PlanElement element = type.build(getProjectKey(), getCurrentField(), restriction);
         collectPlanElement((RowBasedPlanElement) element);
       }
     }

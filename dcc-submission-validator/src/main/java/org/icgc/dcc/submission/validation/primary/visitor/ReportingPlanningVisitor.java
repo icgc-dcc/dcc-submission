@@ -19,20 +19,21 @@ package org.icgc.dcc.submission.validation.primary.visitor;
 
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 
+import lombok.NonNull;
+import lombok.val;
+
 public abstract class ReportingPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
 
   protected final SubmissionPlatformStrategy platform;
 
-  public ReportingPlanningVisitor(@NonNull SubmissionPlatformStrategy platform, @NonNull FlowType type) {
-    super(type);
+  public ReportingPlanningVisitor(@NonNull String projectKey, @NonNull SubmissionPlatformStrategy platform,
+      @NonNull FlowType type) {
+    super(projectKey, type);
     this.platform = platform;
   }
 

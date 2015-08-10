@@ -32,6 +32,8 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.Par
 import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
 
+import com.mongodb.DBObject;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -40,8 +42,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-
-import com.mongodb.DBObject;
 
 /**
  * Must happen after {@link ValueTypePlanningVisitor} to ensure data types are correct to begin with.
@@ -103,7 +103,7 @@ public class RangeFieldRestriction implements RowBasedPlanElement {
     }
 
     @Override
-    public PlanElement build(Field field, Restriction restriction) {
+    public PlanElement build(String projectKey, Field field, Restriction restriction) {
       DBObject configuration = restriction.getConfig();
       Number min = (Number) configuration.get(MIN);
       Number max = (Number) configuration.get(MAX);

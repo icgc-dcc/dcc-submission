@@ -43,6 +43,10 @@ public class DictionaryCloneVisitor extends BaseDictionaryVisitor {
 
   private Field currentField;
 
+  public DictionaryCloneVisitor() {
+    super(null);
+  }
+
   public Dictionary getDictionaryClone() {
     return dictionaryClone;
   }

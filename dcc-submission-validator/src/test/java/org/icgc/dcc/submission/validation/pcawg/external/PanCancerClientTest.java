@@ -1,12 +1,13 @@
 package org.icgc.dcc.submission.validation.pcawg.external;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
-import org.junit.Test;
-
 @Slf4j
+@Ignore("Site is down")
 public class PanCancerClientTest {
 
   PanCancerClient client = new PanCancerClient();
@@ -21,12 +22,12 @@ public class PanCancerClientTest {
   }
 
   @Test
-    public void testGetProjectSampleIds() {
-      val projectSamples = client.getProjectSampleIds();
-  
-      for (val entry : projectSamples.entries()) {
-        log.info("Project sample: {}", entry);
-      }
+  public void testGetProjectSampleIds() {
+    val projectSamples = client.getProjectSampleIds();
+
+    for (val entry : projectSamples.entries()) {
+      log.info("Project sample: {}", entry);
     }
+  }
 
 }
