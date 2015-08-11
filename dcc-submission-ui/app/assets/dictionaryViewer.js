@@ -170,7 +170,7 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
           .style("font-size", "1em")
           .each(function(row, idx) {
              var rrr = _self.dictUtil.getField(versionFrom, table.name, row.name);
-             _self.buildRow(d3.select(this), row, rrr, idx);
+             _self.buildRow(d3.select(this), row, rrr, idx, table.uniqueFields);
           });
      });
 
@@ -185,7 +185,7 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
 ////////////////////////////////////////////////////////////////////////////////
 // Build a data type table row
 ////////////////////////////////////////////////////////////////////////////////
-TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
+TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields ) {
    var _self = this;
    var restrictionList = row.restrictions;
    var codelist = _.find(restrictionList, function(obj) { return obj.type == 'codelist'; });
@@ -227,6 +227,9 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx ) {
       if (required.config.acceptMissingCode == true) {
          attrBox.append("div").text("NA-Code");
       }
+   }
+   if (uniqueFields && uniqueFields.indexOf(row.name) >= 0) {
+     attrBox.append("div").text("Unique");
    }
 
    elem.append("td").text(row.valueType);
