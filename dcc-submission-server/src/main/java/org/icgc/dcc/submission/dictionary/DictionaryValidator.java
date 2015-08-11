@@ -223,6 +223,11 @@ public class DictionaryValidator {
 
           val inputs = scriptContext.getInputs();
           for (val inputName : inputs.keySet()) {
+            if (ScriptRestriction.PROJECT_VARIABLE_NAME.equals(inputName)) {
+              // Skip implicit variables
+              continue;
+            }
+
             Field inputField = dictionaryIndex.getField(schema.getName(), inputName);
             if (inputField == null) {
               errors.add(new DictionaryConstraintViolation("File schema is missing referenced script field",

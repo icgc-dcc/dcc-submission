@@ -82,6 +82,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
   public static final String DESCRIPTION = "MVEL script based restriction used to express procedural constraints";
   public static final String PARAM = "script";
   public static final String PARAM_DESCRIPTION = "description";
+  public static final String PROJECT_VARIABLE_NAME = "project";
 
   /**
    * Configuration.
@@ -357,7 +358,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
 
     private VariableResolverFactory variableResolverFactory(TupleEntry tupleEntry) {
       val factory = new MapVariableResolverFactory(variables(tupleEntry));
-      factory.createVariable("project", projectKey);
+      factory.createVariable(PROJECT_VARIABLE_NAME, projectKey);
 
       return factory;
     }
