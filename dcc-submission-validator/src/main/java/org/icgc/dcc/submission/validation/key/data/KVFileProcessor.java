@@ -203,9 +203,15 @@ public final class KVFileProcessor {
     ; // No surjection check for DONOR
   }
 
+  /*
+   * Supplemental
+   */
+
   private void processBiomarker(KVRowContext context) {
+    valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
     valid.validateForeignKey2(context);
+    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
   }
 
   private void processFamily(KVRowContext context) {
@@ -215,17 +221,27 @@ public final class KVFileProcessor {
   }
 
   private void processExposure(KVRowContext context) {
+    valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
+    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
   }
 
   private void processSurgery(KVRowContext context) {
+    valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
     valid.validateForeignKey2(context);
+    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
   }
 
   private void processTherapy(KVRowContext context) {
+    valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
+    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
   }
+
+  /*
+   * Generic
+   */
 
   private void processGenericMetaWithOptionalFK(KVRowContext context) {
     valid.validateUniqueness(context);

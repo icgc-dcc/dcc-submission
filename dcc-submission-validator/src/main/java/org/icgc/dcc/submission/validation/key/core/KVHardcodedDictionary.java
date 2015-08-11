@@ -95,16 +95,20 @@ public final class KVHardcodedDictionary implements KVDictionary {
   // SUPPLEMENTAL
   private static final List<Integer> BIOMARKER_FKS1 = of(0);
   private static final List<Integer> BIOMARKER_FKS2 = of(1);
+  private static final List<Integer> BIOMARKER_PKS = of(0, 1, 2);
 
   private static final List<Integer> FAMILY_FKS = of(0);
   private static final List<Integer> FAMILY_PKS = of(0, 1, 2, 3, 4, 5, 6, 7);
 
   private static final List<Integer> EXPOSURE_FKS = of(0);
+  private static final List<Integer> EXPOSURE_PKS = of(0);
 
   private static final List<Integer> SURGERY_FKS1 = of(0);
   private static final List<Integer> SURGERY_FKS2 = of(5);
+  private static final List<Integer> SURGERY_PKS = of(0, 5);
 
   private static final List<Integer> THERAPY_FKS = of(0);
+  private static final List<Integer> THERAPY_PKS = of(0);
 
   // EXPERIMENTAL
   private static final List<Integer> CNSM_M_FKS1 = of(1);
@@ -179,6 +183,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
 
   private static final List<String> BIOMARKER_FK1_NAMES = of("donor_id");
   private static final List<String> BIOMARKER_FK2_NAMES = of("specimen_id");
+  private static final List<String> BIOMARKER_PK_NAMES = of("donor_id", "specimen_id", "biomarker_name");
 
   private static final List<String> FAMILY_FK_NAMES = of("donor_id");
   private static final List<String> FAMILY_PK_NAMES = of(
@@ -192,11 +197,14 @@ public final class KVHardcodedDictionary implements KVDictionary {
       "relationship_disease");
 
   private static final List<String> EXPOSURE_FK_NAMES = of("donor_id");
+  private static final List<String> EXPOSURE_PK_NAMES = of("donor_id");
 
   private static final List<String> SURGERY_FK1_NAMES = of("donor_id");
   private static final List<String> SURGERY_FK2_NAMES = of("specimen_id");
+  private static final List<String> SURGERY_PK_NAMES = of("donor_id", "specimen_id");
 
   private static final List<String> THERAPY_FK_NAMES = of("donor_id");
+  private static final List<String> THERAPY_PK_NAMES = of("donor_id");
 
   private static final List<String> CNSM_M_FK_NAMES = of("analyzed_sample_id");
   private static final List<String> CNSM_M_OPTIONAL_FK_NAMES = of("matched_sample_id");
@@ -395,6 +403,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(
               BIOMARKER,
               new KVFileTypeErrorFields.Builder(BIOMARKER)
+                  .pkFieldNames(BIOMARKER_PK_NAMES)
                   .fk1FieldNames(BIOMARKER_FK1_NAMES)
                   .fk2FieldNames(BIOMARKER_FK2_NAMES)
                   .build())
@@ -407,17 +416,20 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .put(
               EXPOSURE,
               new KVFileTypeErrorFields.Builder(EXPOSURE)
+                  .pkFieldNames(EXPOSURE_PK_NAMES)
                   .fk1FieldNames(EXPOSURE_FK_NAMES)
                   .build())
           .put(
               SURGERY,
               new KVFileTypeErrorFields.Builder(SURGERY)
+                  .pkFieldNames(SURGERY_PK_NAMES)
                   .fk1FieldNames(SURGERY_FK1_NAMES)
                   .fk2FieldNames(SURGERY_FK2_NAMES)
                   .build())
           .put(
               THERAPY,
               new KVFileTypeErrorFields.Builder(THERAPY)
+                  .pkFieldNames(THERAPY_PK_NAMES)
                   .fk1FieldNames(THERAPY_FK_NAMES)
                   .build())
 
@@ -644,6 +656,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
     // SUPPLEMENTAL
     else if (fileType == BIOMARKER) {
       keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(BIOMARKER_PKS)
           .fk1(BIOMARKER_FKS1)
           .fk2(BIOMARKER_FKS2)
           .build();
@@ -654,15 +667,18 @@ public final class KVHardcodedDictionary implements KVDictionary {
           .build();
     } else if (fileType == EXPOSURE) {
       keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(EXPOSURE_PKS)
           .fk1(EXPOSURE_FKS)
           .build();
     } else if (fileType == SURGERY) {
       keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(SURGERY_PKS)
           .fk1(SURGERY_FKS1)
           .fk2(SURGERY_FKS2)
           .build();
     } else if (fileType == THERAPY) {
       keysIndices = KVFileTypeKeysIndices.builder()
+          .pk(THERAPY_PKS)
           .fk1(THERAPY_FKS)
           .build();
     }
