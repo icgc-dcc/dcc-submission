@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.service;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.core.report.ErrorParameterKey.DESCRIPTION;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.EXPECTED;
 import static org.icgc.dcc.submission.core.report.ErrorType.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.dictionary.model.RestrictionType.SCRIPT;
@@ -35,6 +36,7 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.mongodb.BasicDBObject;
 
 /**
  * Temporary: see DCC-2085.
@@ -57,9 +59,10 @@ public class MongoMaxSizeHack {
       for (val errorReport : errorReports) {
         if (errorReport.getErrorType() == SCRIPT_ERROR) {
           for (val fieldReport : errorReport.getFieldErrorReports()) {
-            fieldReport.addParameter(
-                EXPECTED,
-                getScript(fileSchema, getScriptRestrictionFieldName(fieldReport)));
+            val scriptConfig = getScript(fileSchema, getScriptRestrictionFieldName(fieldReport));
+
+            fieldReport.addParameter(EXPECTED, scriptConfig.get(ScriptRestriction.PARAM).toString());
+            fieldReport.addParameter(DESCRIPTION, scriptConfig.get(ScriptRestriction.PARAM_DESCRIPTION));
           }
         }
       }
@@ -67,7 +70,7 @@ public class MongoMaxSizeHack {
     return optional;
   }
 
-  private static String getScript(FileSchema fileSchema, String fieldName) {
+  private static BasicDBObject getScript(FileSchema fileSchema, String fieldName) {
     val field = fileSchema.getField(fieldName);
     val scriptRestrictionOrdinal = 0; // FIXME: https://jira.oicr.on.ca/browse/DCC-2087
     val scriptRestrictions = newArrayList(filter(
@@ -83,7 +86,7 @@ public class MongoMaxSizeHack {
     checkState(scriptRestrictions.size() > scriptRestrictionOrdinal);
     val scriptRestriction = scriptRestrictions.get(scriptRestrictionOrdinal);
     val restrictionConfig = scriptRestriction.getConfig();
-    return restrictionConfig.get(ScriptRestriction.PARAM).toString();
+    return restrictionConfig;
   }
 
   private static String getScriptRestrictionFieldName(FieldErrorReport fieldReport) {
