@@ -21,6 +21,7 @@ function TableViewer(dictionary, codelist) {
 
    this.colourMinimapDefault = d3.rgb(230,230,230);
    this.colourMinimapSelect  = d3.rgb(166, 206, 227);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +34,8 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
 
    var _self = this;
    var data = _self.dictUtil.getDictionary(versionTo);
+
+
 
    // Reset
    d3.select("#datatypeGraph").transition().duration(300).style("opacity", 0.1).each("end", function() {
@@ -220,16 +223,27 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields 
    elem.append("td").text(row.name);
    var attrBox = elem.append("td");
    if (row.controlled === true) {
-      attrBox.append("div").text("Controlled");
+      attrBox.append("div").classed('badge', true).style('background-color', '#b94a48').text("Controlled");
+      attrBox.append('br');
+   } else {
+      attrBox.append("div").classed('badge', true).style('background-color', '#468847').text("Open Access");
+      attrBox.append('br');
    }
+
    if (required) {
-      attrBox.append("div").text("Required");
-      if (required.config.acceptMissingCode == true) {
-         attrBox.append("div").text("NA-Code");
-      }
+     attrBox.append("div").classed('badge', true).style('background-color', '#468847').text("Required");
+     attrBox.append('br');
+     if (required.config.acceptMissingCode == true) {
+       attrBox.append("div").classed('badge', true).style('background-color' ,'#468847').text("N/A Valid");
+       attrBox.append('br');
+     } else {
+       attrBox.append("div").classed('badge', true).style('background-color', '#b94a48').text("N/A Invalid");
+       attrBox.append('br');
+     }
    }
    if (uniqueFields && uniqueFields.indexOf(row.name) >= 0) {
-     attrBox.append("div").text("Unique");
+     attrBox.append("div").classed('badge', true).text("Unique");
+     attrBox.append('br');
    }
 
    elem.append("td").text(row.valueType);
@@ -459,6 +473,15 @@ TableViewer.prototype.filter = function(txt) {
 TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    var _self = this;
    var dict = _self.dictUtil.getDictionary(versionTo);
+
+   var tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
+     return d;
+   });
+
+
+
+
+
    // console.log(_self, versionFrom, versionTo);
    window.scrollTo(0, 0);
 
@@ -478,13 +501,12 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
 
    var svg = d3.select("#graph")
       .append("svg")
-      .attr("viewBox", "0 0 1400 700")
-      //.attr("viewBox", "0 0 " + window.screen.width + " " + window.screen.height)
+      .attr("viewBox", "0 0 1400 800")
       .attr("preserveAspectRatio", "xMinYMin")
-      //.attr("width", 1500)
-      //.attr("height", 700)
       .append("g")
-      .attr("transform", "translate(40, 0)");
+      .attr("transform", "translate(40, 20)");
+
+   svg.call(tip);
 
 
    var i = 0, duration = 750, root;
@@ -672,19 +694,76 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
         if (rel.parentNode === null) return;
         var a = svg.select("#"+rel.node).datum();
         var b = svg.select("#"+rel.parentNode).datum();
+
+
+        var reln = [];
+        reln = reln.concat( _.filter(a.data.relations, function(r) {
+          return r.other !== a.name;
+        }));
+        if (reln.length === 0) {
+          reln = reln.concat( _.filter(b.data.relations, function(r) {
+            return r.other !== a.name;
+          }));
+        }
+
+
+        var reln = [], reversed = false;
+        reln = _.filter(a.data.relations, function(r) {
+          return r.other === b.name;
+        });
+
+        if (reln.length === 0) {
+          reln = _.filter(b.data.relations, function(r) {
+            return r.other === a.name;
+          });
+          reversed = true;
+        }
+
+        // Extract edge relations from the two sources
         links.push({
            source: { x: a.x, y: a.y },
            target: { x: b.x, y: b.y },
+           sourceName: a.name,
+           targetName: b.name,
+           reln: reln,
+           reversed: reversed
         });
      });
 
+
+     function formatReln(name, fields) {
+       return name + '( ' + fields.join(', ') + ' )';
+     }
 
      svg.insert("g", ":first-child").selectAll("path.link")
         .data(links)
         .enter()
         .append("path")
         .attr("class", "link")
-        .attr("d", diagonal);
+        .attr("d", diagonal)
+        .on('mouseover', function(d) {
+          d3.select(this).classed('link-hover', true);
+
+          var bb = d3.select(this).node().getBBox();
+          var arrow = d.reversed? ' --> ' : ' <-- ';
+          var buffer = '';
+
+          d.reln.forEach(function(r) {
+            buffer += formatReln(d.targetName, r.otherFields) +
+              arrow +
+              formatReln(d.sourceName, r.fields) +
+              '<br>';
+          });
+
+          tip.offset([(bb.height/2.0)-10, 0]);
+          tip.show(buffer);
+
+
+        })
+        .on('mouseout', function(d) {
+          d3.select(this).classed('link-hover', false);
+          tip.hide();
+        });
 
 
      // Stash the old positions for transition.
