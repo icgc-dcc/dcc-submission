@@ -116,6 +116,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     SCRIPT_ERROR:
       name: "Failed script-based validation"
       description: (source) ->
+
         # Note we don't have an mvel formatter/highlighter, this is
         # currently simulated with javascript formatter and java highlighter
         errorRaw = source.parameters?.EXPECTED
@@ -125,7 +126,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         Data row failed script-based validation check, see
         <a href="http://docs.icgc.org/" target="_blank">
         submission documentation</a> for details.
-        <br><br><pre><code>#{errorPretty}</code></pre>
+        <br><br><p>#{source.parameters?.DESCRIPTION}</p><pre><code>#{errorPretty}</code></pre>
         """
 
     DUPLICATE_HEADER_ERROR:
