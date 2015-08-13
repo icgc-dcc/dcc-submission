@@ -9,12 +9,6 @@ var DictionaryUtil = function(list) {
    });
 
    this.dictList = list;
-   /*
-   this.sortedDictionaryList = _.sortBy(this.dictList, function(obj) {
-      var ver = obj.version.replace(/[^\d.-]/g, '');
-      return ver;
-   }).reverse();
-   */
 
    this.sortedDictionaryList = _.sortBy(this.dictList, function(obj) {
      var suffix = obj.version.replace(/\d+.\d+/, '');
@@ -267,8 +261,6 @@ DictionaryUtil.prototype.buildTree2 = function(node, relations, visited, dict) {
 
    children.forEach(function(child) {
       if (visited[child.node]) return;
-      //if (visited[child.node]) {
-      //}
 
       var c = {name:child.node, ancestor:node.name};
       node.children.push(c);
