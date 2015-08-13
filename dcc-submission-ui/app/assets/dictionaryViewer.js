@@ -12,8 +12,6 @@ function TableViewer(dictionary, codelist) {
    this.barHeight = 25;
    this.colourDefault   = d3.rgb(240, 240, 240);
 
-   //this.colourNew       = d3.rgb(0,188,58);
-   //this.colourChanged   = d3.rgb(177,12,12);
    this.colourHighlight = d3.rgb(242, 155, 4);
 
    this.colourNew = d3.rgb(77,175,74);
@@ -79,27 +77,6 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
    currentY += _self.barHeight;
 
 
-   // Calculate data type removals
-   /*
-   var vTo = getSelect("#version_a");
-   var dTo = dictUtil.dictionaryMap[vTo];
-   var vFrom = getSelect("#version_b");
-   var dFrom = dictUtil.dictionaryMap[vFrom];
-   var deleteTableList = [];
-   dFrom.files.forEach(function(f) {
-      if (!_.find(dTo.files, function(obj) { return obj.name === f.name; })) {
-         deleteTableList.push(f.name);
-      }
-   });
-
-   if (deleteTableList.length > 0) {
-      d3.select("#datatypeRemoved").text("Data types removed in " + vTo + ": " + deleteTableList.join(", "));
-      changeSummary["datatype_removed"] = deleteTableList;
-   } else {
-      d3.select("#datatypeRemoved").text("");
-   }
-   */
-
    // Main building block
    d3.select("#datatypeTable")
      .selectAll("div")
@@ -115,26 +92,6 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
         d3.select(this).append("br");
         d3.select(this).append("strong").text(table.label);
         d3.select(this).append("br");
-
-        // Generate a deleted columns list, or show table wiped
-        /*
-        var tableName = table.name;
-        var comparedVer  = getSelect("#version_b");
-        var compareDict  = dictUtil.dictionaryMap[comparedVer];
-        var compareTable = _.find(compareDict.files, function(obj) { return obj.name === tableName; });
-        var deleteFieldList = [];
-        if (compareTable) {
-           compareTable.fields.forEach(function(f) {
-              if ( ! _.find(table.fields, function(o) { return o.name == f.name; }) ) {
-                 deleteFieldList.push(f.name);
-              }
-           });
-        }
-        if (deleteFieldList.length > 0) {
-           var ver = getSelect("#version_a");
-           d3.select(this).append("small").classed("removed", true).text("Fields removed in " + ver + ": " + deleteFieldList.join(", "));
-        }
-        */
 
 
         // Create the minimap things
@@ -172,8 +129,8 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
           .append("tr")
           .style("font-size", "1em")
           .each(function(row, idx) {
-             var rrr = _self.dictUtil.getField(versionFrom, table.name, row.name);
-             _self.buildRow(d3.select(this), row, rrr, idx, table.uniqueFields);
+             var oldRow = _self.dictUtil.getField(versionFrom, table.name, row.name);
+             _self.buildRow(d3.select(this), row, oldRow, idx, table.uniqueFields);
           });
      });
 
@@ -185,8 +142,14 @@ TableViewer.prototype.showDictionaryTable = function(versionFrom, versionTo) {
 };
 
 
+
 ////////////////////////////////////////////////////////////////////////////////
-// Build a data type table row
+// Build a data type table row, cell by cell. The 5 parameters are:
+//  elem  - D3 reference to a TR element
+//  row   - The field from current dictionary version
+//  rowFrom - The field from previous dictionary version (may be the same as row)
+//  idx - row index, used for ordering
+//  uniqueFields - The unique fields for the table
 ////////////////////////////////////////////////////////////////////////////////
 TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields ) {
    var _self = this;
@@ -201,11 +164,6 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields 
 
    var differenceList = compareRow? _self.dictUtil.isDifferent2(row, compareRow) : [];
 
-   elem.append("td").style("background-color", function() {
-      if (!compareRow) return _self.colourNew;
-      if (differenceList.length > 0) return _self.colourChanged;
-      return null;
-   });
 
 
    // Updates the datatype minimap
@@ -220,35 +178,50 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields 
    }
 
 
+   // New/Changed Flag
+   elem.append("td").style("background-color", function() {
+      if (!compareRow) return _self.colourNew;
+      if (differenceList.length > 0) return _self.colourChanged;
+      return null;
+   });
+
+
+   // Field
    elem.append("td").text(row.name);
+
+   // Attribute
    var attrBox = elem.append("td");
+   function addBadge(txt, colour) {
+     attrBox.append('div').classed('badge', true).style('background-color', colour).text(txt);
+     attrBox.append('br');
+   }
+
    if (row.controlled === true) {
-      attrBox.append("div").classed('badge', true).style('background-color', '#b94a48').text("Controlled");
-      attrBox.append('br');
+     addBadge('Controlled', '#b94a48');
    } else {
-      attrBox.append("div").classed('badge', true).style('background-color', '#468847').text("Open Access");
-      attrBox.append('br');
+     addBadge('Open Access', '#468847');
    }
 
    if (required) {
-     attrBox.append("div").classed('badge', true).style('background-color', '#468847').text("Required");
-     attrBox.append('br');
+     addBadge('Required', '#468847');
+
      if (required.config.acceptMissingCode == true) {
-       attrBox.append("div").classed('badge', true).style('background-color' ,'#468847').text("N/A Valid");
-       attrBox.append('br');
+       addBadge('N/A Valid', '#468847');
      } else {
-       attrBox.append("div").classed('badge', true).style('background-color', '#b94a48').text("N/A Invalid");
-       attrBox.append('br');
+       addBadge('N/A Invalid', '#b94a48');
      }
    }
    if (uniqueFields && uniqueFields.indexOf(row.name) >= 0) {
-     attrBox.append("div").classed('badge', true).text("Unique");
-     attrBox.append('br');
+     addBadge('Unique', '#bbb');
    }
 
+   // Type
    elem.append("td").text(row.valueType);
+
+   // Description
    elem.append("td").style("max-width", "260px").text(row.label);
 
+   // Code Lists
    elem.append("td").each(function(d) {
       d.expanded = false;
       var cell = d3.select(this);
@@ -280,6 +253,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields 
       }
    });
 
+   // Regexp
    elem.append("td").style("max-width", "250px").each(function() {
       if (regex) {
          d3.select(this).append("p").classed("regex", true).text(regex.config.pattern);
@@ -316,6 +290,7 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields 
       }
    });
 
+   // Script
    elem.append("td").style("max-width",  "250px").each(function() {
       if (script) {
          var beautifiedScript = hljs.highlight("java", js_beautify( script.config.script )).value;
@@ -324,16 +299,6 @@ TableViewer.prototype.buildRow = function(elem, row, rowFrom, idx, uniqueFields 
       }
    });
 
-   /*
-   .style("box-shadow", function() {
-      if (differenceList.indexOf("script") >= 0) {
-         //return _self.colourChanged;
-         return "inset 0 0 10px 0 " + _self.colourChanged;
-      } else {
-         return null;
-      }
-   });
-   */
 };
 
 
@@ -478,11 +443,6 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
      return d;
    });
 
-
-
-
-
-   // console.log(_self, versionFrom, versionTo);
    window.scrollTo(0, 0);
 
    // Reset
@@ -524,6 +484,8 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    var queue = [];
    var level = 0;
 
+
+   // It is easier to understand if we have donor file type as the root
    var root = {name:"donor"};
    var visited = {};
    visited["donor"] = 1;
@@ -536,14 +498,14 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
    // Toggle children on click.
    function click(d) {
      d3.event.stopPropagation();
-     // order matters
 
+     // order matters
      _self.selectedDataType = d.name;
      _self.toggleNodeFunc();
-     // _self.selectDataType(d.name);
    }
 
 
+   // In a nutshell, we are trying to render a graph as if it is a tree ...
    function update(source) {
      // Compute the new tree layout.
      var nodes = tree.nodes(root).reverse();
@@ -580,7 +542,6 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
               break;
            }
         }
-
      });
 
      // Update the nodes…
@@ -593,16 +554,6 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
          .attr("id", function(d) { return d.name; })
          .attr("class", "node")
          .attr("transform", function(d) {
-            //var depth = d.depth;
-            /*
-            if (d.name === 'specimen') {
-               console.log(d);
-               console.log(_.filter(list, function(l) { return l.parentNode==='specimen'}));
-            }
-            if (d.children) {
-               d.y += 60;
-            }
-            */
             return "translate(" + d.y + "," + d.x + ")";
          })
          .on("click", click)
@@ -684,8 +635,6 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
            .style("fill", function() {
               return _self.colourHighlight;
            });
-
-        //ref.append("rect").attr("x", 10).attr("y", 18).attr("height", 1).attr("width", n.data.fields.length*3).style("fill", "#888888");
      });
 
 
@@ -731,7 +680,7 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
      });
 
 
-     function formatReln(name, fields) {
+     function relationText(name, fields) {
        return name + '( ' + fields.join(', ') + ' )';
      }
 
@@ -744,21 +693,20 @@ TableViewer.prototype.showDictionaryGraph = function(versionFrom, versionTo) {
         .on('mouseover', function(d) {
           d3.select(this).classed('link-hover', true);
 
+          // Build tooltip
           var bb = d3.select(this).node().getBBox();
           var arrow = d.reversed? ' --> ' : ' <-- ';
           var buffer = '';
-
           d.reln.forEach(function(r) {
-            buffer += formatReln(d.targetName, r.otherFields) +
+            buffer += relationText(d.targetName, r.otherFields) +
               arrow +
-              formatReln(d.sourceName, r.fields) +
+              relationText(d.sourceName, r.fields) +
               '<br>';
           });
 
+          // Set it to approximate center so it doesn't look weird for path-diagnols
           tip.offset([(bb.height/2.0)-10, 0]);
           tip.show(buffer);
-
-
         })
         .on('mouseout', function(d) {
           d3.select(this).classed('link-hover', false);
