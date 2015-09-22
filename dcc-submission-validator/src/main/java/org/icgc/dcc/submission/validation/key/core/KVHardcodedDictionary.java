@@ -200,7 +200,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> EXPOSURE_PK_NAMES = of("donor_id");
 
   private static final List<String> SURGERY_FK1_NAMES = of("donor_id");
-  private static final List<String> SURGERY_FK2_NAMES = of("specimen_id");
+  private static final List<String> SURGERY_OPTIONAL_FK2_NAMES = of("specimen_id");
   private static final List<String> SURGERY_PK_NAMES = of("donor_id", "specimen_id");
 
   private static final List<String> THERAPY_FK_NAMES = of("donor_id");
@@ -424,7 +424,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
               new KVFileTypeErrorFields.Builder(SURGERY)
                   .pkFieldNames(SURGERY_PK_NAMES)
                   .fk1FieldNames(SURGERY_FK1_NAMES)
-                  .fk2FieldNames(SURGERY_FK2_NAMES)
+                  .optionalFkFieldNames(SURGERY_OPTIONAL_FK2_NAMES)
                   .build())
           .put(
               THERAPY,

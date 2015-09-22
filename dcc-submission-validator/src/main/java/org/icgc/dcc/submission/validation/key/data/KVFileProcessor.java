@@ -229,7 +229,7 @@ public final class KVFileProcessor {
   private void processSurgery(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
-    valid.validateForeignKey2(context);
+    valid.validateOptionalForeignKey(context);
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
   }
 
