@@ -104,7 +104,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<Integer> EXPOSURE_PKS = of(0);
 
   private static final List<Integer> SURGERY_FKS1 = of(0);
-  private static final List<Integer> SURGERY_FKS2 = of(5);
+  private static final List<Integer> SURGERY_OPTIONAL_FKS2 = of(5);
   private static final List<Integer> SURGERY_PKS = of(0, 5);
 
   private static final List<Integer> THERAPY_FKS = of(0);
@@ -200,7 +200,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
   private static final List<String> EXPOSURE_PK_NAMES = of("donor_id");
 
   private static final List<String> SURGERY_FK1_NAMES = of("donor_id");
-  private static final List<String> SURGERY_FK2_NAMES = of("specimen_id");
+  private static final List<String> SURGERY_OPTIONAL_FK2_NAMES = of("specimen_id");
   private static final List<String> SURGERY_PK_NAMES = of("donor_id", "specimen_id");
 
   private static final List<String> THERAPY_FK_NAMES = of("donor_id");
@@ -424,7 +424,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
               new KVFileTypeErrorFields.Builder(SURGERY)
                   .pkFieldNames(SURGERY_PK_NAMES)
                   .fk1FieldNames(SURGERY_FK1_NAMES)
-                  .fk2FieldNames(SURGERY_FK2_NAMES)
+                  .optionalFkFieldNames(SURGERY_OPTIONAL_FK2_NAMES)
                   .build())
           .put(
               THERAPY,
@@ -674,7 +674,7 @@ public final class KVHardcodedDictionary implements KVDictionary {
       keysIndices = KVFileTypeKeysIndices.builder()
           .pk(SURGERY_PKS)
           .fk1(SURGERY_FKS1)
-          .fk2(SURGERY_FKS2)
+          .optionalFk(SURGERY_OPTIONAL_FKS2)
           .build();
     } else if (fileType == THERAPY) {
       keysIndices = KVFileTypeKeysIndices.builder()
