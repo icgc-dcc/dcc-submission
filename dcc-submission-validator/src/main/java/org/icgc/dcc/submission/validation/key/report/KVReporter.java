@@ -31,11 +31,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.report.Error;
@@ -47,6 +42,11 @@ import org.icgc.dcc.submission.validation.key.data.KVKey;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Reports key validation errors in the context of the submission system.
@@ -128,9 +128,16 @@ public class KVReporter implements Closeable {
 
     // RELATIONS:
     if (errorType == RELATION1 || errorType == RELATION2 || errorType == OPTIONAL_RELATION) {
-      val referencedFileType = errorType != RELATION2 ?
-          dictionary.getOptionalReferencedFileType1(fileType).get() : // Optional relation also uses it
-          dictionary.getOptionalReferencedFileType2(fileType).get();
+      KVFileType referencedFileType;
+      // DCC-3926
+      if (fileType == KVFileType.SURGERY) {
+        referencedFileType = dictionary.getOptionalReferencedFileType2(fileType).get();
+      } else if (errorType != RELATION2) {
+        referencedFileType = dictionary.getOptionalReferencedFileType1(fileType).get();
+      } else {
+        referencedFileType = dictionary.getOptionalReferencedFileType2(fileType).get();
+      }
+
       val referencedFields = dictionary.getPrimaryKeyNames(referencedFileType);
       errorParams = new Object[] { referencedFileType, referencedFields };
     }

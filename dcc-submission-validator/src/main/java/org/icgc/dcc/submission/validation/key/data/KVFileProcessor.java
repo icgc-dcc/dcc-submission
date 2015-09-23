@@ -29,6 +29,7 @@ import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.model.SpecialValue;
 import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVDictionary;
 import org.icgc.dcc.submission.validation.key.core.KVErrorType;
@@ -229,7 +230,7 @@ public final class KVFileProcessor {
   private void processSurgery(KVRowContext context) {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
-    valid.validateOptionalForeignKey(context);
+    valid.validateOptionalForeignKey(context, context.getOptionallyReferencedPrimaryKeys2());
     addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
   }
 
@@ -247,7 +248,7 @@ public final class KVFileProcessor {
     valid.validateUniqueness(context);
     valid.validateForeignKey1(context);
     if (context.getRow().hasCheckeableOptionalFk()) {
-      valid.validateOptionalForeignKey(context);
+      valid.validateOptionalForeignKey(context, context.getOptionallyReferencedPrimaryKeys1());
     }
 
     sanity.ensureNoFK2(context.getRow());
@@ -379,25 +380,32 @@ public final class KVFileProcessor {
 
     private void validateForeignKey1(KVRowContext context) {
       validateForeignKey(context,
-
-      context.getOptionallyReferencedPrimaryKeys1(),
+          context.getOptionallyReferencedPrimaryKeys1(),
           context.getRow().getFk1(),
           RELATION1);
     }
 
     private void validateForeignKey2(KVRowContext context) {
       validateForeignKey(context,
-
-      context.getOptionallyReferencedPrimaryKeys2(),
+          context.getOptionallyReferencedPrimaryKeys2(),
           context.getRow().getFk2(),
           RELATION2);
     }
 
-    private void validateOptionalForeignKey(KVRowContext context) {
-      validateForeignKey(context,
+    private void validateOptionalForeignKey(KVRowContext context,
+        Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys) {
+      val optionalFk = context.getRow().getOptionalFk();
 
-      context.getOptionallyReferencedPrimaryKeys1(),
-          context.getRow().getOptionalFk(),
+      // DCC-3926: If any of the foreign key values are -888 then skip validation. This is because
+      // optionallyReferencedPrimaryKeys.get().hasMatchingReference(fk) would not match anything because -888 is not
+      // allowed for a primary key
+      if (hasNotApplicableCode(optionalFk)) {
+        return;
+      }
+
+      validateForeignKey(context,
+          optionallyReferencedPrimaryKeys,
+          optionalFk,
           OPTIONAL_RELATION);
     }
 
@@ -433,6 +441,17 @@ public final class KVFileProcessor {
           throw new IllegalStateException(format("Invalid error type provided: '%s'", errorType));
         }
       }
+    }
+
+    private boolean hasNotApplicableCode(KVKey optionalFk) {
+      for (val value : optionalFk.getValues()) {
+        val present = SpecialValue.NOT_APPLICABLE_CODE.equals(value);
+        if (present) {
+          return true;
+        }
+      }
+
+      return false;
     }
   }
 

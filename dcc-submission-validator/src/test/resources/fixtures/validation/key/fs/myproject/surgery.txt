@@ -1,0 +1,2 @@
+donor_id	procedure_interval	procedure_type	procedure_site	resection_status	specimen_id
+dr-ssm-01	113	1	Oesophagus	1	-888
