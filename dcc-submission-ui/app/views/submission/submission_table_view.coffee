@@ -224,7 +224,7 @@ module.exports = class SubmissionTableView extends DataTableView
                 else
                   "<em>Upload Submission Files</em><br>"
               when "ERROR"
-                  "<em>Contact dcc@lists.oicr.on.ca</em>"
+                  "<em>Contact dcc-support@icgc.org</em>"
               else ""
         }
       ]

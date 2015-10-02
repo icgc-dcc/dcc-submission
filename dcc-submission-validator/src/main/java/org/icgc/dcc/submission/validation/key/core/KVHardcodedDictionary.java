@@ -871,11 +871,6 @@ public final class KVHardcodedDictionary implements KVDictionary {
    */
   @Override
   public KVFileType getReferencingFileType(KVFileType fileType) {
-    if (fileType == DONOR) {
-      // DCC-3926: Hack - need to do this because there is a many-to-one relationship with donors.
-      return SPECIMEN;
-    }
-
     checkState(fileType != SAMPLE, "Not applicable for sample since it has multiple referencing types");
     KVFileType referencingFileType = null;
     for (val entry : RELATIONS1.entrySet()) {

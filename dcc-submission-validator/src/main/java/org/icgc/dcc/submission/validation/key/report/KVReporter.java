@@ -25,6 +25,8 @@ import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION2;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.SURJECTION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.UNIQUENESS;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
 
 import java.io.Closeable;
@@ -144,7 +146,9 @@ public class KVReporter implements Closeable {
 
     // SURJECTION
     else if (errorType == SURJECTION) {
-      val referencingFileType = dictionary.getReferencingFileType(fileType);
+      // DCC-3926: Hack - need to do this because there is a many-to-one relationship with donors due to the addition of
+      // supplemental files.
+      val referencingFileType = fileType == DONOR ? SPECIMEN : dictionary.getReferencingFileType(fileType);
       val referencingFields = dictionary.getSurjectionForeignKeyNames(referencingFileType);
       errorParams = new Object[] { referencingFileType, referencingFields };
     }
