@@ -33,13 +33,13 @@ import static org.icgc.dcc.common.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
-import static org.icgc.dcc.common.core.util.Jackson.formatPrettyJson;
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
 import static org.icgc.dcc.common.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.core.util.Separators.HASHTAG;
 import static org.icgc.dcc.common.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
+import static org.icgc.dcc.common.json.Jackson.formatPrettyJson;
 import static org.icgc.dcc.common.test.Tests.CONF_DIR_NAME;
 import static org.icgc.dcc.common.test.Tests.DATA_DIR_NAME;
 import static org.icgc.dcc.common.test.Tests.MAVEN_TEST_RESOURCES_DIR;
@@ -57,11 +57,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.Component;
 import org.icgc.dcc.common.core.collect.Collections3;
@@ -77,6 +72,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * TODO: add checks
