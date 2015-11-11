@@ -7,36 +7,35 @@ import static org.icgc.dcc.common.core.model.Dictionaries.getMapping;
 import static org.icgc.dcc.common.core.model.Dictionaries.getPatterns;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_M_TYPE;
 import static org.icgc.dcc.common.core.util.Extensions.TSV;
-import static org.icgc.dcc.common.core.util.Jackson.getRootObject;
 import static org.icgc.dcc.common.core.util.Joiners.EXTENSION;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.hadoop.fs.FileSystems.getFileSystem;
+import static org.icgc.dcc.common.json.Jackson.getRootObject;
 import static org.icgc.dcc.submission.reporter.ReporterFields.SEQUENCING_STRATEGY_FIELD;
 
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.cascading.Pipes;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.core.model.Identifiable;
 import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
-import org.icgc.dcc.common.core.util.Jackson;
 import org.icgc.dcc.common.hadoop.dcc.SubmissionInputData;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
+import org.icgc.dcc.common.json.Jackson;
 import org.icgc.dcc.submission.reporter.cascading.ReporterConnector;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.PreComputation;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectDataTypeEntity;
 import org.icgc.dcc.submission.reporter.cascading.subassembly.ProjectSequencingStrategy;
 
-import cascading.pipe.Pipe;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
+
+import cascading.pipe.Pipe;
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Reporter {
@@ -64,9 +63,7 @@ public class Reporter {
 
     return process(
         releaseName,
-        projectKeys.isPresent() ?
-            projectKeys.get() :
-            reporterInput.getProjectKeys(),
+        projectKeys.isPresent() ? projectKeys.get() : reporterInput.getProjectKeys(),
         reporterInput,
         getSequencingStrategyMapping(
             dictionaryRoot,

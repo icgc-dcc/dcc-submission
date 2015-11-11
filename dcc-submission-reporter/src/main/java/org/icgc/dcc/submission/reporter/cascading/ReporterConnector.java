@@ -5,15 +5,11 @@ import static cascading.flow.FlowDef.flowDef;
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.transformValues;
-import static org.icgc.dcc.common.core.util.Jackson.formatPrettyJson;
+import static org.icgc.dcc.common.json.Jackson.formatPrettyJson;
 import static org.icgc.dcc.submission.reporter.Reporter.getFilePath;
 
 import java.util.Map;
 import java.util.Set;
-
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.cascading.Cascades;
 import org.icgc.dcc.common.cascading.CascadingContext;
@@ -26,13 +22,16 @@ import org.icgc.dcc.submission.reporter.OutputType;
 import org.icgc.dcc.submission.reporter.Reporter;
 import org.icgc.dcc.submission.reporter.ReporterInput;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+
 import cascading.cascade.Cascade;
 import cascading.flow.FlowConnector;
 import cascading.pipe.Pipe;
 import cascading.tap.Tap;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReporterConnector {
@@ -49,9 +48,7 @@ public class ReporterConnector {
       final boolean local,
       @NonNull final String outputDirPath) {
     this.outputDirPath = outputDirPath;
-    this.cascadingContext = local ?
-        CascadingContext.getLocal() :
-        CascadingContext.getDistributed();
+    this.cascadingContext = local ? CascadingContext.getLocal() : CascadingContext.getDistributed();
     log.info(cascadingContext.getConnectors().describe());
   }
 
@@ -169,8 +166,8 @@ public class ReporterConnector {
         // Convert to pipe to tap map
         getInputTaps(
 
-        // get pipe to path map for the project/file type combination
-        reporterInput.getPipeNameToFilePath(projectKey)),
+            // get pipe to path map for the project/file type combination
+            reporterInput.getPipeNameToFilePath(projectKey)),
 
         GenericTaps.RAW_CASTER);
   }

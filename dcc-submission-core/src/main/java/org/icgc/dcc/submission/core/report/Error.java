@@ -18,21 +18,21 @@
 package org.icgc.dcc.submission.core.report;
 
 import static java.util.Collections.emptyList;
-import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
+import static org.icgc.dcc.common.json.Jackson.DEFAULT;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.experimental.Accessors;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Represents a validation error.
@@ -68,8 +68,7 @@ public class Error {
       @JsonProperty("lineNumber") long lineNumber,
       @JsonProperty("value") Object value,
       @JsonProperty("type") ErrorType type,
-      @JsonProperty("params") Object[] params)
-  {
+      @JsonProperty("params") Object[] params) {
     this.fileName = fileName;
     this.fieldNames = fieldNames;
     this.number = number;

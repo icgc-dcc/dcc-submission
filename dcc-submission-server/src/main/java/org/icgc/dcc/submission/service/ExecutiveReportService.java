@@ -30,15 +30,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.common.core.model.FieldNames;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.core.util.Jackson;
 import org.icgc.dcc.common.hadoop.dcc.SubmissionInputData;
+import org.icgc.dcc.common.json.Jackson;
 import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
 import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.core.util.InjectionNames;
@@ -61,6 +57,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ExecutiveReportService extends AbstractIdleService {
