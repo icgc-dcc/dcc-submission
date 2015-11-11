@@ -19,12 +19,10 @@ package org.icgc.dcc.submission.core.state;
 
 import static com.google.common.collect.Iterables.find;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.common.core.util.Jackson.formatPrettyJson;
+import static org.icgc.dcc.common.json.Jackson.formatPrettyJson;
 import static org.icgc.dcc.submission.core.report.DataTypeState.INVALID;
 import static org.icgc.dcc.submission.core.report.DataTypeState.VALID;
 import static org.mockito.Mockito.when;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.ClinicalType;
 import org.icgc.dcc.common.core.model.DataType;
@@ -48,6 +46,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(MockitoJUnitRunner.class)
 @Slf4j

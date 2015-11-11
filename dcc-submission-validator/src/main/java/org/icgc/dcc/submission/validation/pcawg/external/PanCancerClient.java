@@ -19,23 +19,23 @@ package org.icgc.dcc.submission.validation.pcawg.external;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
-import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.util.Joiners.COMMA;
+import static org.icgc.dcc.common.json.Jackson.DEFAULT;
 
 import java.net.URL;
 import java.util.Set;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -75,21 +75,15 @@ public class PanCancerClient {
   public Multimap<String, String> getProjectSampleIds() {
     log.info("Searching donors samples...");
 
-    String[] fieldNames = {
-        "normal_alignment_status.submitter_sample_id",
-        "tumor_alignment_status.submitter_sample_id",
+    String[] fieldNames = { "normal_alignment_status.submitter_sample_id", "tumor_alignment_status.submitter_sample_id",
 
-        "rna_seq.alignment.tumor.star.submitter_specimen_id",
-        "rna_seq.alignment.tumor.tophat.submitter_specimen_id",
+        "rna_seq.alignment.tumor.star.submitter_specimen_id", "rna_seq.alignment.tumor.tophat.submitter_specimen_id",
 
-        "rna_seq.alignment.normal.star.submitter_specimen_id",
-        "rna_seq.alignment.normal.tophat.submitter_specimen_id",
+        "rna_seq.alignment.normal.star.submitter_specimen_id", "rna_seq.alignment.normal.tophat.submitter_specimen_id",
 
-        "rna_seq.alignment.tumor.star.submitter_sample_id",
-        "rna_seq.alignment.tumor.tophat.submitter_sample_id",
+        "rna_seq.alignment.tumor.star.submitter_sample_id", "rna_seq.alignment.tumor.tophat.submitter_sample_id",
 
-        "rna_seq.alignment.normal.star.submitter_sample_id",
-        "rna_seq.alignment.normal.tophat.submitter_sample_id"
+        "rna_seq.alignment.normal.star.submitter_sample_id", "rna_seq.alignment.normal.tophat.submitter_sample_id"
     };
 
     val result = searchDonors(fieldNames);
