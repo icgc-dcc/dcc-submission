@@ -30,6 +30,7 @@ import static org.icgc.dcc.submission.core.report.ErrorType.SAMPLE_TYPE_MISMATCH
 import static org.icgc.dcc.submission.validation.sample.core.ReferenceSampleTypeCategory.MATCHED;
 import static org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory.NON_NORMAL;
 import static org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory.NORMAL;
+import static org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory.isBothCategories;
 import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.ANALYZED_SAMPLE_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.MATCHED_SAMPLE_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.REFERENCE_SAMPLE_TYPE_FIELD_NAME;
@@ -37,15 +38,15 @@ import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.RE
 import java.io.IOException;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.core.model.SpecialValue;
 import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.core.ReportContext;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * {@link FileRecordProcessor} implementation that performs the actual row-level validation logic when parsing feature
@@ -108,7 +109,7 @@ public class MetaFileSampleTypeProcessor implements FileRecordProcessor<Map<Stri
        * Mutation sample type validation (analyzed)
        */
 
-      if (analyzedSpecimenTypeCategory != NON_NORMAL) {
+      if (analyzedSpecimenTypeCategory != NON_NORMAL && !isBothCategories(analyzedSpecimenType) /* DCC-3629 */ ) {
         context.reportError(
             error()
                 .fileName(metaFile.getName())

@@ -21,11 +21,11 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Classification of specimen type code list terms.
@@ -79,6 +79,14 @@ public enum SpecimenTypeCategory {
     val normal = NORMAL_TERM_CODES.contains(term) || NORMAL_TERM_VALUES.contains(term);
 
     return normal ? NORMAL : NON_NORMAL;
+  }
+
+  /**
+   * @see https://jira.oicr.on.ca/browse/DCC-3629
+   */
+  public static boolean isBothCategories(String specimenType) {
+    // Code or value
+    return "Normal - tissue adjacent to primary".equals(specimenType) || "104".equals(specimenType);
   }
 
 }
