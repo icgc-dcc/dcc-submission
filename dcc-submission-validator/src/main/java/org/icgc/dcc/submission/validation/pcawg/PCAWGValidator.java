@@ -23,22 +23,22 @@ import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSa
 
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.Programs;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalRuleEngine;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
-import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleSheet;
 import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
 import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Validator responsible for ensuring PCAWGFields validation rules are enforced.
@@ -61,9 +61,9 @@ public class PCAWGValidator implements Validator {
    * Dependencies.
    */
   @NonNull
-  private final PanCancerClient pcawgClient;
-  @NonNull
   private final PCAWGDictionary pcawgDictionary;
+  @NonNull
+  private final PCAWGSampleSheet pcawgSampleSheet;
 
   @Override
   public String getName() {
@@ -131,7 +131,7 @@ public class PCAWGValidator implements Validator {
 
   private Set<String> getReferenceSampleIds(ValidationContext context) {
     val projectKey = context.getProjectKey();
-    val projectSamples = pcawgClient.getProjectSampleIds();
+    val projectSamples = pcawgSampleSheet.getProjectSampleIds();
 
     // Get 2 sources of samples
     val externalSampleIds = projectSamples.get(projectKey);
@@ -162,7 +162,7 @@ public class PCAWGValidator implements Validator {
   }
 
   private boolean isPCAWG(String projectKey) {
-    val projectNames = pcawgClient.getProjects();
+    val projectNames = pcawgSampleSheet.getProjects();
 
     return projectNames.contains(projectKey);
   }

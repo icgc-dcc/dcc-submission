@@ -17,18 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.cli;
 
-import java.util.Set;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleSheet;
 
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
-import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
-import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
-
-import com.google.common.collect.Multimap;
 
 /**
  * Entry point for testing {@link PCAWGValidator} from the command line in isolation of the other validators and
@@ -71,26 +67,7 @@ public class Main {
   }
 
   private static PCAWGValidator getValidator() {
-    return new PCAWGValidator(getPanCancerClient(), new PCAWGDictionary());
-  }
-
-  private static PanCancerClient getPanCancerClient() {
-    return new PanCancerClient() {
-
-      Set<String> projects;
-      Multimap<String, String> projectSamples;
-
-      @Override
-      public Set<String> getProjects() {
-        return this.projects = projects != null ? projects : super.getProjects();
-      }
-
-      @Override
-      public Multimap<String, String> getProjectSampleIds() {
-        return this.projectSamples = projectSamples != null ? projectSamples : super.getProjectSampleIds();
-      }
-
-    };
+    return new PCAWGValidator(new PCAWGDictionary(), new PCAWGSampleSheet());
   }
 
 }

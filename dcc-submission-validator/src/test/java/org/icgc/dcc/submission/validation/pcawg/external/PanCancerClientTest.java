@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Ignore("Site is down")
+@SuppressWarnings("deprecation")
 public class PanCancerClientTest {
 
   PanCancerClient client = new PanCancerClient();

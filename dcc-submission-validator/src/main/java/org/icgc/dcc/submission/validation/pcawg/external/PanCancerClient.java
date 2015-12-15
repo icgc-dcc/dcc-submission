@@ -38,6 +38,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Deprecated // Use {@code PCAWGSampleSheet} instead
 @RequiredArgsConstructor
 public class PanCancerClient {
 

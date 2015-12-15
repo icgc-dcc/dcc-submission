@@ -38,7 +38,7 @@ import org.icgc.dcc.submission.validation.key.KeyValidator;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
-import org.icgc.dcc.submission.validation.pcawg.external.PanCancerClient;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleSheet;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
@@ -88,6 +88,7 @@ public class ValidationModule extends AbstractDccModule {
   private static final String NORMALIZER_CONFIG_PARAM = NORMALIZER.getId();
   private static final String PCAWG_CONFIG_PARAM = "pcawg";
   private static final String PCAWG_DICTIONARY_URL_CONFIG_PARAM = "dictionary_url";
+  private static final String PCAWG_SAMPLE_SHEET_URL_CONFIG_PARAM = "sample_sheet_url";
 
   /**
    * Default value for maximum number of concurrent validations.
@@ -208,19 +209,29 @@ public class ValidationModule extends AbstractDccModule {
   @SneakyThrows
   private static Validator pcawgValidator(Config config) {
     val path = PCAWG_CONFIG_PARAM;
-    val defaultValue = PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL;
 
     URL dictionaryUrl =
-        config.hasPath(path) ? getPCAWGDictionaryURL(config.getConfig(path), defaultValue) : defaultValue;
+        config.hasPath(path) ? getPCAWGDictionaryURL(config.getConfig(path),
+            PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL) : PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL;
+    URL sampleSheetUrl =
+        config.hasPath(path) ? getPCAWGSampleSheetURL(config.getConfig(path),
+            PCAWGSampleSheet.DEFAULT_PCAWG_SAMPLE_SHEET_URL) : PCAWGSampleSheet.DEFAULT_PCAWG_SAMPLE_SHEET_URL;
 
     log.info("Using PCAWG dictionary url: {}", dictionaryUrl);
-    log.info("PCAWG dictionary contents: {}", Resources.toString(dictionaryUrl, UTF_8));
+    log.info("Using PCAWG sample sheet url: {}", dictionaryUrl);
+    log.info("PCAWG dictionary contents: {}", Resources.toString(sampleSheetUrl, UTF_8));
 
-    return new PCAWGValidator(new PanCancerClient(), new PCAWGDictionary(dictionaryUrl));
+    return new PCAWGValidator(new PCAWGDictionary(dictionaryUrl), new PCAWGSampleSheet(sampleSheetUrl));
   }
 
   private static URL getPCAWGDictionaryURL(Config pcawgConfig, URL defaultValue) {
     val path = PCAWG_DICTIONARY_URL_CONFIG_PARAM;
+
+    return pcawgConfig.hasPath(path) ? getUrl(pcawgConfig.getString(path)) : defaultValue;
+  }
+
+  private static URL getPCAWGSampleSheetURL(Config pcawgConfig, URL defaultValue) {
+    val path = PCAWG_SAMPLE_SHEET_URL_CONFIG_PARAM;
 
     return pcawgConfig.hasPath(path) ? getUrl(pcawgConfig.getString(path)) : defaultValue;
   }
