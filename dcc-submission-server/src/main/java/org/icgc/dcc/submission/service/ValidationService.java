@@ -34,11 +34,6 @@ import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.report.Report;
@@ -61,6 +56,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.inject.Inject;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Coordinator task that runs periodically to dispatch validations for execution.
  * <p>
@@ -68,7 +68,7 @@ import com.google.inject.Inject;
  * responsible for mediating validation cancellation requests coming from the web layer.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject) )
 public class ValidationService extends AbstractScheduledService {
 
   /**
@@ -93,7 +93,7 @@ public class ValidationService extends AbstractScheduledService {
   private final Set<Validator> validators;
 
   /**
-   * SubmissionMain {@code Validation} dispatch processing.
+   * Main {@code Validation} dispatch processing.
    * 
    * @throws Exception
    */

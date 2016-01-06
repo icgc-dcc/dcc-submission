@@ -22,19 +22,24 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.SubmissionFile;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 // TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
 @NoArgsConstructor
 @Getter
 public class DetailedSubmission extends Submission {
 
+  @Setter
+  private boolean locked;
   private String projectName;
   private String projectAlias;
+
+  @Setter
   private List<SubmissionFile> submissionFiles;
 
   public DetailedSubmission(Submission submission, Project project) {
@@ -54,10 +59,6 @@ public class DetailedSubmission extends Submission {
   @Override
   public void setState(SubmissionState nextState) {
     this.state = nextState;
-  }
-
-  public void setSubmissionFiles(List<SubmissionFile> submissionFiles) {
-    this.submissionFiles = submissionFiles;
   }
 
 }

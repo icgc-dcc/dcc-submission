@@ -49,10 +49,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
@@ -60,6 +56,7 @@ import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.service.ValidationService;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
@@ -73,6 +70,10 @@ import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Path("nextRelease")
 public class NextReleaseResource {
@@ -85,6 +86,8 @@ public class NextReleaseResource {
   private ReleaseService releaseService;
   @Inject
   private ValidationService validationScheduler;
+  @Inject
+  private SystemService systemService;
 
   @GET
   public Response getNextRelease(@Context SecurityContext securityContext) {
@@ -166,6 +169,12 @@ public class NextReleaseResource {
   public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request request,
       @Context SecurityContext securityContext) {
     log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
+
+    if (!isAccessible(securityContext)) {
+      log.warn("Not accessible to '{}'", securityContext.getUserPrincipal());
+      return unauthorizedResponse();
+    }
+
     List<String> projectKeys = newArrayList();
     for (val queuedProject : queuedProjects) {
       val projectKey = queuedProject.getKey();
@@ -228,7 +237,8 @@ public class NextReleaseResource {
   @DELETE
   @Path("validation/{projectKey}")
   @SneakyThrows
-  public Response cancelValidation(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+  public Response cancelValidation(@PathParam("projectKey") String projectKey,
+      @Context SecurityContext securityContext) {
     log.info("Cancelling validation for {}", projectKey);
     if (!hasSpecificProjectPrivilege(securityContext, projectKey)) {
       return unauthorizedResponse();
@@ -279,8 +289,15 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(List<String> projectKeys, @Context Request request, @Context SecurityContext securityContext) {
+  public Response signOff(List<String> projectKeys, @Context Request request,
+      @Context SecurityContext securityContext) {
     log.info("Signing off projects {}", projectKeys);
+
+    if (!isAccessible(securityContext)) {
+      log.warn("Not accessible to '{}'", securityContext.getUserPrincipal());
+      return unauthorizedResponse();
+    }
+
     if (hasSubmissionSignoffPrivilege(securityContext) == false) {
       return unauthorizedResponse();
     }
@@ -338,6 +355,10 @@ public class NextReleaseResource {
     } else {
       return Response.status(BAD_REQUEST).build();
     }
+  }
+
+  private boolean isAccessible(SecurityContext securityContext) {
+    return systemService.isEnabled() || isSuperUser(securityContext);
   }
 
 }

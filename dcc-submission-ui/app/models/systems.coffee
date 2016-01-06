@@ -21,24 +21,11 @@
 """
 
 
-Chaplin = require 'chaplin'
-Controller = require 'controllers/base/controller'
-User = require 'models/user'
-LoginView = require 'views/login_view'
+Model = require 'models/base/model'
 
-module.exports = class SessionController extends Controller
-  historyURL: 'login'
+module.exports = class Systems extends Model
+  urlPath: ->
+    "systems"
 
-  # Was the login status already determined?
-  loggedIn: no
-
-  initialize: ->
-    #console.debug 'SessionController#initialize'
-    @subscribeEvent 'loginSuccessful', ->
-      setTimeout( ->
-        window.location.reload()
-      , 3600*1000)
-
-  login: ->
-    #console.debug 'SessionController#show'
-    @view = new LoginView()
+  parse: (response)->
+    response

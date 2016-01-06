@@ -43,9 +43,9 @@ module.exports = class ReleaseView extends PageView
     #console.debug 'ReleaseView#initialize', @model
     super
 
-    @subscribeEvent "completeRelease", ->@model.fetch()
-    @subscribeEvent "validateSubmission", -> @model.fetch()
-    @subscribeEvent "signOffSubmission", -> @model.fetch()
+    @subscribeEvent "completeRelease", -> @refresh
+    @subscribeEvent "validateSubmission", -> @refresh
+    @subscribeEvent "signOffSubmission", -> @refresh
 
     @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
@@ -57,10 +57,17 @@ module.exports = class ReleaseView extends PageView
           ?.subviewsByName
           ?.validateSubmissionView?.$el.hasClass('in')
         if not popup
-          @model.fetch()
+          @refresh()
       else
         clearInterval i
     , 10000)
+
+  refresh: ->
+    @model.fetch
+      success: =>
+        # Update lock status
+        mediator.locked = @model.get("locked")
+        mediator.publish 'lock', {locked: mediator.locked}
 
   completeReleasePopup: (e) ->
     #console.debug "ReleaseView#completeRelease", e
@@ -75,13 +82,7 @@ module.exports = class ReleaseView extends PageView
     #console.debug "ReleaseView#render", @model
     super
 
-    @subview('WarningView'
-      new WarningView {
-        model: new Model
-          msg: utils.getOrphanWarning()
-        el: @.$("#warning-container")
-      }
-    )
+    @refresh()
 
     @subview('ReleaseHeader'
       new ReleaseHeaderView {

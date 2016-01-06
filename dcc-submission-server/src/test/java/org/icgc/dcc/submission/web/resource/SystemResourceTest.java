@@ -28,7 +28,7 @@ public class SystemResourceTest extends ResourceTest {
 
   @Test
   public void testGetStatus() {
-    Status status = target().path("systems").path("sftp").request(MIME_TYPE).get(Status.class);
+    Status status = target().path("systems").request(MIME_TYPE).get(Status.class);
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
     assertThat(status.getSftpState()).isEqualTo(RUNNING);
     assertThat(status.isSftpEnabled()).isTrue();
@@ -37,7 +37,7 @@ public class SystemResourceTest extends ResourceTest {
   @Test
   public void testDisableSftp() {
     Status status =
-        target().path("systems").path("sftp").request(MIME_TYPE)
+        target().path("systems").request(MIME_TYPE)
             .method(PATCH, json("{\"active\":false}"), Status.class);
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
     assertThat(status.getSftpState()).isEqualTo(RUNNING);
@@ -47,7 +47,7 @@ public class SystemResourceTest extends ResourceTest {
   @Test
   public void testEnableSftp() {
     Status status =
-        target().path("systems").path("sftp").request(MIME_TYPE)
+        target().path("systems").request(MIME_TYPE)
             .method(PATCH, json("{\"active\":true}"), Status.class);
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
     assertThat(status.getSftpState()).isEqualTo(RUNNING);
@@ -57,7 +57,7 @@ public class SystemResourceTest extends ResourceTest {
   @Test
   public void testInvalidSftpPatch() {
     Response response =
-        target().path("systems").path("sftp").request(MIME_TYPE).method(PATCH, json("{}"), Response.class);
+        target().path("systems").request(MIME_TYPE).method(PATCH, json("{}"), Response.class);
     assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
   }
 

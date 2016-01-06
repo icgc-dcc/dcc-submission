@@ -240,6 +240,14 @@
     get: function(attr) {
       return this.attributes[attr];
     },
+    
+    // http://stackoverflow.com/questions/10637113/patch-request-method-in-backbone-js
+    patch: function(options) {
+    	options = options || {};
+        // some code here that checks what attributes have changed since last save
+        var xhr = (this.sync || Backbone.sync).call(this, 'patch', this, options);
+        return xhr;  
+    },
 
     // Get the HTML-escaped value of an attribute.
     escape: function(attr) {
@@ -1294,7 +1302,8 @@
     'create': 'POST',
     'update': 'PUT',
     'delete': 'DELETE',
-    'read':   'GET'
+    'read':   'GET',
+    'patch':  'PATCH'
   };
 
   // Override this function to change the manner in which Backbone persists
@@ -1327,7 +1336,7 @@
     }
 
     // Ensure that we have the appropriate request data.
-    if (!options.data && model && (method == 'create' || method == 'update')) {
+    if (!options.data && model && (method == 'create' || method == 'update' || method == 'patch')) {
       params.contentType = 'application/json';
       params.data = JSON.stringify(model.toJSON());
     }

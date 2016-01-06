@@ -104,7 +104,7 @@ module.exports = class ReportDatatypeView extends View
         @$el.find("[id^="+datatype+"]").remove()
         #container.find("[id^="+datatype+"]").remove()
     @currentDatatypes = datatypes
-        
+
     @updateDataTable()
 
 
@@ -196,8 +196,8 @@ module.exports = class ReportDatatypeView extends View
         dt.fnClearTable()
         dt.fnAddData files
       @datatypeCache[dataType.dataType] = _.clone(filesCache)
-      
-      
+
+
       # Update the table header and actions
       target = "." + dataType.dataType + "_title"
       $(target).children().remove()
@@ -231,7 +231,7 @@ module.exports = class ReportDatatypeView extends View
         {
           sTitle: "Status"
           bVisible: true
-          mData: (source, type) =>
+          mData: (source, type) ->
             #state = @dataStateMap[source.dataType]
             return utils.getStateDisplay source.fileState
         }

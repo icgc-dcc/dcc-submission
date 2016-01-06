@@ -31,6 +31,7 @@ WarningView = require 'views/warning_view'
 Model = require 'models/base/model'
 
 utils = require 'lib/utils'
+mediator = require 'mediator'
 template = require 'views/templates/submission/submission'
 
 module.exports = class SubmissionView extends View
@@ -47,9 +48,9 @@ module.exports = class SubmissionView extends View
     #console.debug 'SubmissionView#initialize', @model
     super
 
-    @subscribeEvent "signOffSubmission", -> @model.fetch()
+    @subscribeEvent "signOffSubmission", -> @refresh()
 
-    @subscribeEvent "validateSubmission", -> @model.fetch()
+    @subscribeEvent "validateSubmission", -> @refresh()
 
     @subscribeEvent "cancelSubmission", ->
       @model.fetch()
@@ -70,10 +71,17 @@ module.exports = class SubmissionView extends View
       if @model
         popup = @subviewsByName.validateSubmissionView?.$el.hasClass('in')
         if not popup
-          @model.fetch()
+          @refresh()
       else
         clearInterval i
     , 10000)
+
+  refresh: ->
+    @model.fetch
+      success: =>
+        # Update lock status
+        mediator.locked = @model.get("locked")
+        mediator.publish 'lock', {locked: mediator.locked}
 
   signOffSubmissionPopup: (e) ->
     #console.debug "SubmissionView#signOffSubmissionPopup", e
@@ -100,14 +108,6 @@ module.exports = class SubmissionView extends View
   render: ->
     #console.debug "SubmissionView#render", @model
     super
-
-    @subview('WarningView'
-      new WarningView {
-        model: new Model
-          msg: utils.getOrphanWarning()
-        el: @.$("#warning-container")
-      }
-    )
 
     @subview('SubmissionHeadeView'
       new SubmissionHeaderView {

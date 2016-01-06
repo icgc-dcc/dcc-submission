@@ -25,20 +25,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import lombok.val;
-
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.ReleaseException;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.val;
 
 @NoArgsConstructor
 @Getter
 @ToString
 public class ReleaseView {
 
+  @Setter
+  protected boolean locked;
   protected String name;
   protected ReleaseState state;
   protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();

@@ -30,8 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.http.jersey.PATCH;
 import org.icgc.dcc.submission.service.SystemService;
@@ -40,6 +38,8 @@ import org.icgc.dcc.submission.web.util.Responses;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Endpoint for systemService related operations.
@@ -60,13 +60,12 @@ public class SystemResource {
   private SystemService systemService;
 
   @GET
-  @Path("/systems/sftp")
+  @Path("/systems")
   public Response getStatus(
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     log.info("Getting status...");
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
@@ -78,15 +77,14 @@ public class SystemResource {
   }
 
   @PATCH
-  @Path("/systems/sftp")
+  @Path("/systems")
   public Response patch(
 
       @Context SecurityContext securityContext,
 
       JsonNode state
 
-      )
-  {
+  ) {
     log.info("Setting SFTP state to {}...", state);
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
@@ -100,9 +98,9 @@ public class SystemResource {
     }
 
     if (active.asBoolean()) {
-      systemService.enableSftp();
+      systemService.enable();
     } else {
-      systemService.disableSftp();
+      systemService.disable();
     }
 
     Status status = systemService.getStatus();

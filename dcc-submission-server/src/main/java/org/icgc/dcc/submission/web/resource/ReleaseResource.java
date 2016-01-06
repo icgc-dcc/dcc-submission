@@ -37,13 +37,11 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.service.ReleaseService;
+import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
@@ -52,12 +50,17 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Path("releases")
 public class ReleaseResource {
 
   @Inject
   private ReleaseService releaseService;
+  @Inject
+  private SystemService systemService;
 
   // TODO: This method seems like it should be removed since it is being exposed just for testing
   @VisibleForTesting
@@ -122,7 +125,10 @@ public class ReleaseResource {
       return noSuchEntityResponse(name);
     }
 
-    return Response.ok(releaseView.get()).build();
+    val result = releaseView.get();
+    result.setLocked(!systemService.isEnabled());
+
+    return Response.ok(result).build();
   }
 
   @GET
@@ -142,6 +148,8 @@ public class ReleaseResource {
       return noSuchEntityResponse(releaseName, projectKey);
     }
 
+    detailedSubmission.setLocked(!systemService.isEnabled());
+
     return Response.ok(detailedSubmission).build();
   }
 
@@ -150,8 +158,7 @@ public class ReleaseResource {
   public Response getReport(
       @PathParam("name") String releaseName,
       @PathParam("projectKey") String projectKey,
-      @Context SecurityContext securityContext)
-  {
+      @Context SecurityContext securityContext) {
     log.debug("Getting submission report for: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return Responses.unauthorizedResponse();

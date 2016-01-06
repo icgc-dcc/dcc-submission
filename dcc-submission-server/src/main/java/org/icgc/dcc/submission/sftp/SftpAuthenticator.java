@@ -21,17 +21,18 @@ import static org.icgc.dcc.submission.sftp.SftpSessions.setSessionSubject;
 
 import java.io.IOException;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * MINA abstraction for implementing SFTP authentication.
@@ -64,18 +65,19 @@ class SftpAuthenticator implements PasswordAuthenticator {
 
   @Override
   public boolean authenticate(String username, String password, ServerSession session) {
-    if (isDisabled()) {
-      // Only allow new connection when enabled
-      log.info("Blocked connection for user '{}' because SFTP is disabled", username);
-      disconnect(session);
-
-      return false;
-    }
-
     boolean authenticated = authenticate(username, password);
     if (authenticated) {
       // Add principal to MINA SFTP session
       val subject = authenticator.getSubject();
+
+      if (!isAccessible(subject)) {
+        // Only allow new connection when enabled
+        log.info("Blocked connection for user '{}' because SFTP is disabled", username);
+        disconnect(session);
+
+        return false;
+      }
+
       setSessionSubject(session, subject);
 
       // Send an informative message
@@ -120,6 +122,10 @@ class SftpAuthenticator implements PasswordAuthenticator {
     // Send a custom welcome message
     val banner = new SftpBanner(context, subject);
     banner.send(username, session);
+  }
+
+  private boolean isAccessible(Subject subject) {
+    return !isDisabled() || subject.isPermitted(AuthorizationPrivileges.ALL.getPrefix());
   }
 
 }

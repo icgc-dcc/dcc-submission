@@ -176,12 +176,12 @@ found on host #{host}"
 
     Number(bytes).toFixed(precision) + " " + sizes[posttxt]
 
-  sendAuthorization: (xhr) =>
+  sendAuthorization: (xhr) ->
     #console.debug 'utils#sendAuthorization', Chaplin.mediator.user
     accessToken = Chaplin.mediator.user?.get "accessToken"
     if accessToken
       # refresh expire time
-      #$.cookie 'accessToken', accessToken
+      # $.cookie 'accessToken', accessToken
       xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
     else
       Chaplin.mediator.publish '!startupController', 'session', 'login'

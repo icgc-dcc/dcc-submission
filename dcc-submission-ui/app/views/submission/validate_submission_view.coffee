@@ -48,7 +48,7 @@ module.exports = class ValidateSubmissionView extends View
       f.selected = false unless f.dataType == "CLINICAL_CORE_TYPE"
       @dataTypeTable.fnAddData @dataTypes[idx]
 
-  
+
   selectAll: ->
     @dataTypeTable.fnClearTable()
     for f, idx in @dataTypes
@@ -163,7 +163,7 @@ module.exports = class ValidateSubmissionView extends View
       }
       {
         sTitle: "State"
-        mData: (source) =>
+        mData: (source) ->
           return utils.getStateDisplay source.dataTypeState
       }
     ]
@@ -191,7 +191,7 @@ module.exports = class ValidateSubmissionView extends View
     else
       @.$("#validate-submission-button").prop('disabled', true)
 
-     
+
   validateSubmission: (e) ->
     #console.debug "ValidateSubmissionView#completeRelease", @model, e
 

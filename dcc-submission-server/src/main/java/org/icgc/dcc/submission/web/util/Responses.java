@@ -27,11 +27,11 @@ import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
 
 import javax.ws.rs.core.Response;
 
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)

@@ -21,24 +21,34 @@
 """
 
 
-Chaplin = require 'chaplin'
-Controller = require 'controllers/base/controller'
-User = require 'models/user'
-LoginView = require 'views/login_view'
+View = require 'views/base/view'
+template = require 'views/templates/admin'
 
-module.exports = class SessionController extends Controller
-  historyURL: 'login'
+module.exports = class AdminView extends View
+  template: template
+  template = null
 
-  # Was the login status already determined?
-  loggedIn: no
+  autoRender: true
+  container: 'body'
+  containerMethod: 'append'
+  tagName: 'div'
+  className: "modal hide fade"
+  id: 'admin-popup'
 
   initialize: ->
-    #console.debug 'SessionController#initialize'
-    @subscribeEvent 'loginSuccessful', ->
-      setTimeout( ->
-        window.location.reload()
-      , 3600*1000)
+    super
 
-  login: ->
-    #console.debug 'SessionController#show'
-    @view = new LoginView()
+    @model.fetch
+      success: =>
+        @render()
+        @$el.modal 'show'
+
+    @delegate 'click', '#admin-submit-button', @toggleState
+
+  toggleState: (e) ->
+    active = !@model.get 'sftpEnabled'
+    @model.set 'active', active
+    @model.patch()
+    @model.fetch
+      success: =>
+        @$el.modal 'hide'

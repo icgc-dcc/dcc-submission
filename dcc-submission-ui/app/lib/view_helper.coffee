@@ -29,6 +29,7 @@ utils = require 'lib/utils'
 # Add application-specific Handlebars helpers
 # -------------------------------------------
 
+
 # Choose block by user login status
 Handlebars.registerHelper 'if_logged_in', (options) ->
   if mediator.user
@@ -38,6 +39,13 @@ Handlebars.registerHelper 'if_logged_in', (options) ->
 
 Handlebars.registerHelper 'is_admin', (options) ->
   "admin" in mediator.user.get "roles"
+
+Handlebars.registerHelper 'is_locked', (options) ->
+  console.log mediator.locked
+  mediator.locked
+
+Handlebars.registerHelper 'is_accessible', (options) ->
+  "admin" in mediator.user.get "roles" or !mediator.locked
 
 Handlebars.registerHelper 'if_has_role', (role, options) ->
   if role in mediator.user.get "roles"
@@ -133,6 +141,9 @@ Handlebars.registerHelper 'underscore2space', (string) ->
 Handlebars.registerHelper 'lowercase', (string) ->
   return false unless string
   new Handlebars.SafeString string.toLowerCase()
+
+Handlebars.registerHelper 'log', (obj) ->
+  console.log obj
 
 Handlebars.registerHelper 'fileSize', (fs) ->
   total = 0

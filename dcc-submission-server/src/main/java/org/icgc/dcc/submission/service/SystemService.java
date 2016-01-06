@@ -35,15 +35,15 @@ public class SystemService {
     return sftpService.getActiveSessions();
   }
 
-  public boolean isSftpEnabled() {
+  public boolean isEnabled() {
     return sftpService.isEnabled();
   }
 
-  public void disableSftp() {
+  public void disable() {
     sftpService.disable();
   }
 
-  public void enableSftp() {
+  public void enable() {
     sftpService.enable();
   }
 

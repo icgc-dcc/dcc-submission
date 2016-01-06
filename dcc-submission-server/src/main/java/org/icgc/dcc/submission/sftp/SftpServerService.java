@@ -24,27 +24,28 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.io.IoSession;
 import org.apache.sshd.common.session.AbstractSession;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
+import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service abstraction to the SFTP sub-system.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject) )
 public class SftpServerService extends AbstractService {
 
   /**
@@ -135,9 +136,14 @@ public class SftpServerService extends AbstractService {
   }
 
   private void disconnectActiveSessions() {
-    List<AbstractSession> activeSessions = sshd.getActiveSessions();
+    val activeSessions = sshd.getActiveSessions();
 
-    for (AbstractSession activeSession : activeSessions) {
+    for (val activeSession : activeSessions) {
+      if (isSuperUser(activeSession)) {
+        // Don't disconnect super users
+        continue;
+      }
+
       disconnectSession(activeSession, DISABLE_MESSAGE);
     }
   }
@@ -152,9 +158,8 @@ public class SftpServerService extends AbstractService {
   }
 
   private String getLogMessage(String username) {
-    String intro = username == null ?
-        "Authentication pending ('{}' username) " :
-        "User with username '{}' has an active ";
+    String intro =
+        username == null ? "Authentication pending ('{}' username) " : "User with username '{}' has an active ";
 
     return intro + "SFTP session created on '{}', last written to '{}'; full ioSession is: {}";
   }
@@ -169,6 +174,11 @@ public class SftpServerService extends AbstractService {
     map.put("remoteAddress", ioSession.getRemoteAddress().toString());
 
     return map;
+  }
+
+  private static boolean isSuperUser(AbstractSession activeSession) {
+    val subject = SftpSessions.getSessionSubject(activeSession);
+    return subject.isPermitted(AuthorizationPrivileges.ALL.getPrefix());
   }
 
 }

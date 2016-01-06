@@ -3,6 +3,13 @@ ICGC DCC - Submisison - Change Log
 
 Change log for the DCC 2.0 Submission system
 
+3.9.0
+---
+
+- Added "Submission locking" feature
+- Added "Normal as tumor" validation exception
+- Added "PCAWG Sample Sheet" for PCAWG validation source
+
 3.8.2.2
 ---
 

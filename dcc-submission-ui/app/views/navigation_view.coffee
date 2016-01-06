@@ -26,7 +26,12 @@ View = require 'views/base/view'
 template = require 'views/templates/navigation'
 
 FeedbackFormView = require 'modules/feedback/views/feedback_form_view'
+AdminView = require 'views/admin_view'
 UserView = require 'views/navigation/user_view'
+
+Systems = require 'models/systems'
+mediator = require 'mediator'
+utils = require 'lib/utils'
 
 module.exports = class NavigationView extends View
   template: template
@@ -40,25 +45,36 @@ module.exports = class NavigationView extends View
     #console.debug 'NavigationView#initialize', @model
     super
 
+    @refreshLock(mediator.locked)
 
     @subscribeEvent 'loginSuccessful', ->
       @render()
+      $("html").toggleClass("admin", utils.is_admin())
       @subview('UserAreaView'
       new UserView
         model: Chaplin.mediator.user
       )
-
-
 
     @subscribeEvent 'navigation:change', (attributes) =>
       #console.debug 'NavigationView#initialize#change', attributes
       @model.clear(silent: yes)
       @model.set attributes
 
+    @subscribeEvent 'lock', (e) ->
+      # console.log "Lock changed to #{e.locked}"
+      @refreshLock(e.locked)
+
+    @delegate "click", "#admin-tab", @adminPopup
     @delegate "click", "#feedback-tab", @feedbackPopup
 
+  refreshLock: (locked) ->
+    $("html").toggleClass("locked", locked || false)
+
+  adminPopup: (e) ->
+    e.preventDefault()
+    new AdminView({model: new Systems()})
+
   feedbackPopup: (e) ->
-    #console.debug "FeedbackTabView#feedbackPopup", e
     e.preventDefault()
     new FeedbackFormView()
 

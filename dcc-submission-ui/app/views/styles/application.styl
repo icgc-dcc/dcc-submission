@@ -103,7 +103,7 @@ h2
   text-decoration underline
 
 /* Status Text Colours */
-.not_validated 
+.not_validated
   color #333333
 
 .signed, .signed_off, .valid, .opened
@@ -189,5 +189,12 @@ div.dataTables_info {
 
 .modal.fade.in {
    top: 2%;
+}
+
+.locked #submission-view .m-btn, .locked #release-view .m-btn {
+   display: none
+}
+.admin.locked #submission-view .m-btn, .admin.locked #release-view .m-btn {
+   display: inline-block
 }
 

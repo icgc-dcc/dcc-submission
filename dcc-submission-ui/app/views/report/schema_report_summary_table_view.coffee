@@ -90,7 +90,7 @@ module.exports = class SchemaReportSummaryTableView extends DataTableView
         }
         {
           sTitle: "Value"
-          mData: (source) =>
+          mData: (source) ->
             if source.name in ["RATIO"]
               parseFloat(100 * source.value).toFixed(2) + "%"
             else

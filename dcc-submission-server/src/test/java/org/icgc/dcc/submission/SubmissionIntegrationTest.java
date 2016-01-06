@@ -83,11 +83,6 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -117,6 +112,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.jcraft.jsch.SftpException;
 
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, PersistenceModule.class })
@@ -142,11 +142,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    */
   private static final String PROJECT1_KEY = "project.1";
   private static final String PROJECT1 = String.format(
-      "{name:'Project One',key:'%s',users:['admin'],groups:['admin']}",
+      "{name:'Project One',key:'%s',users:['admin','ricardo'],groups:['admin']}",
       PROJECT1_KEY);
   private static final String PROJECT2_KEY = "project.2";
   private static final String PROJECT2 = String.format(
-      "{name:'Project Two',key:'%s',users:['admin','brett'],groups:['admin']}",
+      "{name:'Project Two',key:'%s',users:['admin','ricardo'],groups:['admin']}",
       PROJECT2_KEY);
   private static final String PROJECT3_KEY = "project.3";
   private static final String PROJECT3 = String.format(
@@ -786,7 +786,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEmptyFile(fileSystem,
         submission, PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
     assertEmptyFile(fileSystem,
-        submission, PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
+        submission,
+        PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
   }
 
   @SneakyThrows

@@ -1,4 +1,4 @@
-"""
+###
 * Copyright 2012(c) The Ontario Institute for Cancer Research.
 * All rights reserved.
 *
@@ -18,7 +18,7 @@
 * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
-"""
+###
 
 
 Chaplin = require 'chaplin'
@@ -82,6 +82,10 @@ module.exports = class Application extends Chaplin.Application
   initMediator: ->
     # Create a user property
     mediator.user = null
+
+    # Create a locked property
+    mediator.locked = null
+
     # Add additional application-specific properties and methods
     # Seal the mediator
     mediator.seal()
