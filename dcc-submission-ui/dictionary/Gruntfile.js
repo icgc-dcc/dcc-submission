@@ -22,7 +22,7 @@ module.exports = function (grunt) {
   // configurable paths
   var yeomanConfig = {
     app: 'app',
-    dist: 'build'
+    dist: '../public/dictionary'
   };
 
 
