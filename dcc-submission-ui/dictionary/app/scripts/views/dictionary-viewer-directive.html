@@ -1,5 +1,5 @@
 <div id="dictionary-view-container">
-    <div class="navbar navbar-default navbar-fixed-top" role="navigation" data-ng-if="shouldShowHeaderNav === true">
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation" data-ng-if="dictionaryViewerCtrl.shouldShowHeaderNav === true">
         <div class="container-fluid">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
@@ -17,8 +17,8 @@
                 <div class="navbar-form navbar-left" role="search">
                     <div class="form-group">
                         <input
-                                data-ng-model="q"
-                                data-ng-keyup="doFilter()"
+                                data-ng-model="dictionaryViewerCtrl.q"
+                                data-ng-keyup="dictionaryViewerCtrl.doFilter()"
                                 data-ng-click="$event.stopPropagation()" class="form-control" id="filter" type="text" size="25" placeholder="Search:">
                         </input>
                     </div>
@@ -27,17 +27,17 @@
                 <div class="navbar-form navbar-left" role="search">
                     <div class="form-group">
                         <select class="form-control"
-                                data-ng-model="vFrom"
-                                data-ng-options="item for item in dictUtil.versionList"
-                                data-ng-change="switchDictionary()" style="width:6em">
+                                data-ng-model="dictionaryViewerCtrl.vFrom"
+                                data-ng-options="item for item in dictionaryViewerCtrl.dictUtil.versionList"
+                                data-ng-change="dictionaryViewerCtrl.switchDictionary()" style="width:6em">
                         </select>
                     </div>
                     TO
                     <div class="form-group">
                         <select class="form-control"
-                                data-ng-model="vTo"
-                                data-ng-options="item for item in dictUtil.versionList"
-                                data-ng-change="switchDictionary()" style="width:6em">
+                                data-ng-model="dictionaryViewerCtrl.vTo"
+                                data-ng-options="item for item in dictionaryViewerCtrl.dictUtil.versionList"
+                                data-ng-change="dictionaryViewerCtrl.switchDictionary()" style="width:6em">
                         </select>
                     </div>
 
@@ -46,17 +46,17 @@
                         <select
                                 class="form-control"
                                 data-ng-options="item for item in ['graph', 'table', 'codelist', 'report','json']"
-                                data-ng-model="viewMode"
-                                data-ng-change="changeView()">
+                                data-ng-model="dictionaryViewerCtrl.viewMode"
+                                data-ng-change="dictionaryViewerCtrl.changeView()">
                         </select>
                     </div>
                 </div>
 
                 <div class="navbar-form navbar-right">
                     <div>
-                        <span data-ng-style="{color: tableViewer.colourNew}">{{changeReport.fieldsAdded.length}} new</span>
+                        <span data-ng-style="{color: dictionaryViewerCtrl.tableViewer.colourNew}">{{dictionaryViewerCtrl.changeReport.fieldsAdded.length}} new</span>
                         &nbsp;&nbsp;
-                        <span data-ng-style="{color: tableViewer.colourChanged}">{{changeReport.fieldsChanged.length}} changed</span>
+                        <span data-ng-style="{color: dictionaryViewerCtrl.tableViewer.colourChanged}">{{dictionaryViewerCtrl.changeReport.fieldsChanged.length}} changed</span>
                     </div>
                 </div>
 
@@ -67,7 +67,7 @@
 
 
     <!--<div class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">-->
-    <div class="vis-wrapper" data-ng-style="{'display': ['table', 'graph'].indexOf(viewMode) === -1 ? 'none': 'block'}">
+    <div class="vis-wrapper" data-ng-style="{'display': ['table', 'graph'].indexOf(dictionaryViewerCtrl.viewMode) === -1 ? 'none': 'block'}">
         <!-- template for table viewer-->
            <span id="datatypeSelector" style="display:inline-block; margin-right:10em; float:right">
                <button id="minimapLabel" class="btn btn-default"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
@@ -86,28 +86,28 @@
 
 
     <!-- template for report -->
-    <div class="report-wrapper" data-ng-style="{'display': viewMode==='report'? 'block':'none'}">
+    <div class="report-wrapper" data-ng-style="{'display': dictionaryViewerCtrl.viewMode==='report'? 'block':'none'}">
         <div>
               <pre>
-        Added:
-        {{changeReport.added}}
+Added:
+{{dictionaryViewerCtrl.changeReport.added}}
 
-        Changed:
-        {{changeReport.changed}}
+Changed:
+{{dictionaryViewerCtrl.changeReport.changed}}
 
-        Removed:
-        {{changeReport.removed}}
+Removed:
+{{dictionaryViewerCtrl.changeReport.removed}}
               </pre>
         </div>
     </div>
 
     <!-- template for json viewer -->
-    <div id="jsonviewer" data-ng-style="{'display': viewMode==='json'? 'block':'none'}"></div>
+    <div id="jsonviewer" data-ng-style="{'display': dictionaryViewerCtrl.viewMode==='json'? 'block':'none'}"></div>
 
     <!-- template for codelists -->
-    <div class="codelist-wrapper" data-ng-style="{'display': viewMode==='codelist'? 'block':'none'}">
+    <div class="codelist-wrapper" data-ng-style="{'display': dictionaryViewerCtrl.viewMode==='codelist'? 'block':'none'}">
         <div>
-            <span> Hide unused CodeLists: <input type="checkbox" data-ng-model="hideUnusedCodeLists" data-ng-change="render()"></span>
+            <span> Hide unused CodeLists: <input type="checkbox" data-ng-model="dictionaryViewerCtrl.hideUnusedCodeLists" data-ng-change="dictionaryViewerCtrl.render()"></span>
         </div>
         <br>
         <table class="table table-condensed table-bordered table-hover">
@@ -118,7 +118,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr data-ng-repeat="codeList in codeListsFiltered | filter:{'name':q} | orderBy:'name'"
+            <tr data-ng-repeat="codeList in dictionaryViewerCtrl.codeListsFiltered | filter:{'name':q} | orderBy:'name'"
                 data-ng-init="expanded=false">
                 <td>
                             <span data-ng-click="expanded=!expanded">
@@ -135,7 +135,7 @@
                 </td>
                 <td style="max-width:60rem">
                             <span data-ng-repeat="datatype in codeList.coverage">
-                                <a href="" data-ng-click="goto('table', datatype)">{{datatype}}</a>&nbsp;&nbsp;
+                                <a href="" data-ng-click="dictionaryViewerCtrl.goto('table', datatype)">{{datatype}}</a>&nbsp;&nbsp;
                             </span>
                 </td>
             </tr>

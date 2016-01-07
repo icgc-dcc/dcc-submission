@@ -13,21 +13,23 @@ angular.module('DictionaryViewerApp')
         hideGraphLegend: '@'
       },
       controller: function($scope, $location, $http, $timeout) {
-        // Renderer and dictionary logic
-        $scope.tableViewer = null;
-        $scope.dictUtil = null;
+        var _controller = this;
 
-        $scope.shouldShowHeaderNav = $scope.showHeaderNav === 'false' ? false : true;
-        $scope.shouldHideGraphLegend = $scope.hideGraphLegend === 'true' ? true : false;
+        // Renderer and dictionary logic
+        _controller.tableViewer = null;
+        _controller.dictUtil = null;
+
+        _controller.shouldShowHeaderNav = $scope.showHeaderNav === 'false' ? false : true;
+        _controller.shouldHideGraphLegend = $scope.hideGraphLegend === 'true' ? true : false;
 
         // params
-        $scope.vFrom = '';
-        $scope.vTo = '';
-        $scope.viewMode = 'graph';
-        $scope.q = '';
-        $scope.dataType = 'all';
+        _controller.vFrom = '';
+        _controller.vTo = '';
+        _controller.viewMode = 'graph';
+        _controller.q = '';
+        _controller.dataType = 'all';
 
-        $scope.hideUnusedCodeLists = true;
+        _controller.hideUnusedCodeLists = true;
 
         // Query timer
         var qPromise = null;
@@ -35,24 +37,24 @@ angular.module('DictionaryViewerApp')
         var webserviceURL = $scope.baseDictionaryUrl || '/ws';
 
         // Master sync
-        $scope.update = function () {
+        _controller.update = function () {
           var search = $location.search();
           console.log('update', search);
 
           if (search.vFrom && search.vFrom !== '') {
-            $scope.vFrom = search.vFrom;
+            _controller.vFrom = search.vFrom;
           }
 
           if (search.vTo && search.vTo !== '') {
-            $scope.vTo = search.vTo;
+            _controller.vTo = search.vTo;
           }
-          //if (search.viewMode) $scope.viewMode = search.viewMode;
-          $scope.viewMode = search.viewMode || 'graph';
-          $scope.dataType = search.dataType || 'all';
-          $scope.q = search.q || '';
-          $scope.isReportOpen = search.isReportOpen === 'true' ? true : false;
+          //if (search.viewMode) _controller.viewMode = search.viewMode;
+          _controller.viewMode = search.viewMode || 'graph';
+          _controller.dataType = search.dataType || 'all';
+          _controller.q = search.q || '';
+          _controller.isReportOpen = search.isReportOpen === 'true' ? true : false;
 
-          $scope.render();
+          _controller.render();
         };
 
         // Init
@@ -66,31 +68,31 @@ angular.module('DictionaryViewerApp')
               codelistMap[c.name] = c;
             });
 
-            $scope.codeLists = codeLists;
-            $scope.dictUtil = new dictionaryApp.DictionaryUtil(dictionaryList);
-            $scope.tableViewer = new dictionaryApp.TableViewer($scope.dictUtil, codelistMap,
-                                                                ! $scope.shouldHideGraphLegend);
-            $scope.isReportOpen = false;
+            _controller.codeLists = codeLists;
+            _controller.dictUtil = new dictionaryApp.DictionaryUtil(dictionaryList);
+            _controller.tableViewer = new dictionaryApp.TableViewer(_controller.dictUtil, codelistMap,
+                                                                ! _controller.shouldHideGraphLegend);
+            _controller.isReportOpen = false;
 
             // FIXME: need better 'sorting'
-            $scope.vFrom = $scope.dictUtil.versionList[1];
-            $scope.vTo = $scope.dictUtil.versionList[0];
+            _controller.vFrom = _controller.dictUtil.versionList[1];
+            _controller.vTo = _controller.dictUtil.versionList[0];
 
             // Externalized function
-            $scope.tableViewer.toggleNodeFunc = function () {
+            _controller.tableViewer.toggleNodeFunc = function () {
               $scope.$apply(function () {
                 var search = $location.search();
-                search.viewMode = $scope.viewMode === 'table' ? 'graph' : 'table';
-                search.dataType = $scope.tableViewer.selectedDataType;
+                search.viewMode = _controller.viewMode === 'table' ? 'graph' : 'table';
+                search.dataType = _controller.tableViewer.selectedDataType;
                 $location.search(search);
               });
             };
 
-            $scope.tableViewer.toggleDataTypeFunc = function () {
+            _controller.tableViewer.toggleDataTypeFunc = function () {
               $scope.$apply(function () {
                 console.log('asdf'); //very nice
                 var search = $location.search();
-                search.dataType = $scope.tableViewer.selectedDataType;
+                search.dataType = _controller.tableViewer.selectedDataType;
                 $location.search(search);
               });
             };
@@ -101,7 +103,7 @@ angular.module('DictionaryViewerApp')
               mode: 'view'
             };
             var editor = new JSONEditor(container, options);
-            $scope.jsonEditor = editor;
+            _controller.jsonEditor = editor;
 
             startWatcher();
           });
@@ -112,15 +114,15 @@ angular.module('DictionaryViewerApp')
           $scope.$watch(function () {
             return $location.search();
           }, function () {
-            $scope.update();
+            _controller.update();
           }, true);
         }
 
-        $scope.changeView = function () {
+        _controller.changeView = function () {
           console.log('change view');
           var search = $location.search();
-          // search.viewMode = $scope.viewMode === 'table'? 'graph':'table';
-          search.viewMode = $scope.viewMode;
+          // search.viewMode = _controller.viewMode === 'table'? 'graph':'table';
+          search.viewMode = _controller.viewMode;
 
           if (search.viewMode === 'graph') {
             delete search.dataType;
@@ -128,7 +130,7 @@ angular.module('DictionaryViewerApp')
           $location.search(search);
         };
 
-        $scope.goto = function (view, type) {
+        _controller.goto = function (view, type) {
           var search = $location.search();
           search.viewMode = view;
           search.dataType = type;
@@ -137,84 +139,82 @@ angular.module('DictionaryViewerApp')
         };
 
 
-        $scope.switchDictionary = function () {
+        _controller.switchDictionary = function () {
           var search = $location.search();
-          search.vFrom = encodeURIComponent($scope.vFrom);
-          search.vTo = encodeURIComponent($scope.vTo);
+          search.vFrom = encodeURIComponent(_controller.vFrom);
+          search.vTo = encodeURIComponent(_controller.vTo);
           $location.search(search);
         };
 
-        $scope.doFilter = function () {
+        _controller.doFilter = function () {
           $timeout.cancel(qPromise);
-          $scope.tableViewer.filter($scope.q);
+          _controller.tableViewer.filter(_controller.q);
 
           qPromise = $timeout(function () {
             var search = $location.search();
-            var txt = $scope.q;
+            var txt = _controller.q;
             search.q = txt;
 
-            $scope.tableViewer.filter($scope.q);
+            _controller.tableViewer.filter(_controller.q);
             $location.search(search);
           }, 300);
         };
 
 
-        $scope.render = function () {
-          var versionFrom = $scope.vFrom;
-          var versionTo = $scope.vTo;
-          var viewMode = $scope.viewMode;
-          var query = $scope.q;
-          var dataType = $scope.dataType;
+        _controller.render = function () {
+          var versionFrom = _controller.vFrom;
+          var versionTo = _controller.vTo;
+          var viewMode = _controller.viewMode;
+          var query = _controller.q;
+          var dataType = _controller.dataType;
 
           console.log('Render', versionFrom, versionTo, viewMode, query, dataType);
           if (viewMode === 'table') {
-            $scope.tableViewer.showDictionaryTable(versionFrom, versionTo);
-            $scope.tableViewer.selectDataType(dataType);
+            _controller.tableViewer.showDictionaryTable(versionFrom, versionTo);
+            _controller.tableViewer.selectDataType(dataType);
           } else {
-            $scope.tableViewer.showDictionaryGraph(versionFrom, versionTo);
+            _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo);
           }
-          $scope.tableViewer.filter(query);
-          $scope.generateChangeList();
+          _controller.tableViewer.filter(query);
+          _controller.generateChangeList();
 
-          $scope.codeLists.forEach(function (codeList) {
-            codeList.coverage = $scope.dictUtil.getCodeListCoverage(codeList.name, versionTo).sort();
+          _controller.codeLists.forEach(function (codeList) {
+            codeList.coverage = _controller.dictUtil.getCodeListCoverage(codeList.name, versionTo).sort();
           });
 
-          $scope.codeListsFiltered = $scope.codeLists;
+          _controller.codeListsFiltered = _controller.codeLists;
 
-          if ($scope.hideUnusedCodeLists === true) {
-            $scope.codeListsFiltered = _.filter($scope.codeLists, function (codeList) {
+          if (_controller.hideUnusedCodeLists === true) {
+            _controller.codeListsFiltered = _.filter(_controller.codeLists, function (codeList) {
               return codeList.coverage.length > 0;
             });
           }
 
-          $scope.jsonEditor.set($scope.dictUtil.getDictionary(versionTo));
+          _controller.jsonEditor.set(_controller.dictUtil.getDictionary(versionTo));
         };
 
 
-        $scope.generateChangeList = function () {
-          var versionFrom = $scope.vFrom;
-          var versionTo = $scope.vTo;
+        _controller.generateChangeList = function () {
+          var versionFrom = _controller.vFrom;
+          var versionTo = _controller.vTo;
 
-          $scope.changeReport = $scope.dictUtil.createDiffListing(versionFrom, versionTo);
+          _controller.changeReport = _controller.dictUtil.createDiffListing(versionFrom, versionTo);
 
-          $scope.changeReport.changed = $scope.changeReport.fieldsChanged.map(function (field) {
+          _controller.changeReport.changed = _controller.changeReport.fieldsChanged.map(function (field) {
             return field.fileType + '|' + field.fieldName;
           }).join('\n');
 
-          $scope.changeReport.added = $scope.changeReport.fieldsAdded.map(function (field) {
+          _controller.changeReport.added = _controller.changeReport.fieldsAdded.map(function (field) {
             return field.fileType + '|' + field.fieldName;
           }).join('\n');
 
-          $scope.changeReport.removed = $scope.changeReport.fieldsRemoved.map(function (field) {
+          _controller.changeReport.removed = _controller.changeReport.fieldsRemoved.map(function (field) {
             return field.fileType + '|' + field.fieldName;
           }).join('\n');
 
         };
       },
-      link: function () {
-
-      }
+      controllerAs: 'dictionaryViewerCtrl'
     };
 
   });
