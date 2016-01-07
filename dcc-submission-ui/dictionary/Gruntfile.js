@@ -368,7 +368,7 @@ module.exports = function (grunt) {
     'ICGC-setBuildEnv:production',
     'clean:dist',
     'bower-install',
-    //'jshint',
+    'jshint',
     //'karma',
     'useminPrepare',
     'concurrent:dist',
