@@ -1,5 +1,5 @@
 {
-  "name": "dcc-submission-dictionary",
+  "name": "dcc-submission-dictionary-viewer",
   "description": "ICGC Submission Dictionary Viewer",
   "version": "1.0.0",
   "homepage": "https://github.com/icgc-dcc/dcc-submission",
@@ -30,13 +30,14 @@
     "highlightjs": "9.0.*",
     "underscore": "1.8.*",
     "regex-colorizer": "0.3.*",
-    "jsoneditor": "4.1.*"
+    "jsoneditor": "4.1.*",
+    "bootstrap-css-only": "3.3.*"
   },
   "devDependencies": {
     "angular-scenario": "~1.4.*"
   },
   "resolutions": {
-    "angular": "~1.4.*",
+    "angular": "1.4.*",
     "d3": "~3.5.*"
   }
 }
