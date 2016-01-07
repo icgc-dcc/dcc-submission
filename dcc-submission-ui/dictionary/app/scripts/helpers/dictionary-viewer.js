@@ -6,12 +6,13 @@ var dictionaryApp = dictionaryApp || {};
 
 (function() {
 
-  function TableViewer(dictionary, codelist) {
+  function TableViewer(dictionary, codelist, shouldRenderLegend) {
     this.dictUtil = dictionary;
     this.codelistMap = codelist;
     this.isTable = true;
     this.toggleNodeFunc = null;
     this.toggleDataTypeFunc = null;
+    this.shouldRenderLegend = shouldRenderLegend === false ? false : true;
 
     this.selectedDataType = 'all';
 
@@ -481,6 +482,9 @@ var dictionaryApp = dictionaryApp || {};
   TableViewer.prototype.showDictionaryGraph = function (versionFrom, versionTo) {
     var _self = this;
     var dict = _self.dictUtil.getDictionary(versionTo);
+    // This is pivoted
+    var graphHeight = 700;
+    var graphWidth = 1400;
 
     var tip = d3.tip().attr('class', 'd3-tip').html(function (d) {
       return d;
@@ -503,7 +507,7 @@ var dictionaryApp = dictionaryApp || {};
 
     var svg = d3.select('#graph')
       .append('svg')
-      .attr('viewBox', '0 0 1400 800')
+      .attr('viewBox', '0 0 ' + graphWidth + ' ' + (graphHeight + 100))
       .attr('preserveAspectRatio', 'xMinYMin')
       .append('g')
       .attr('transform', 'translate(40, 20)');
@@ -513,9 +517,7 @@ var dictionaryApp = dictionaryApp || {};
 
     var i = 0;
 
-    // This is pivoted
-    var graphHeight = 700;
-    var graphWidth = 1400;
+
 
     var tree = d3.layout.tree().size([graphHeight, graphWidth]);
     var diagonal = d3.svg.diagonal().projection(function (d) {
@@ -786,7 +788,9 @@ var dictionaryApp = dictionaryApp || {};
 
     update(root);
 
-    this.renderLegend(svg, 20, 30);
+    if (this.shouldRenderLegend) {
+      this.renderLegend(svg, 20, 30);
+    }
   };
 
 
