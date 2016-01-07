@@ -81,7 +81,7 @@ module.exports = function (grunt) {
             return [
               modRewrite([
                 '!\\.html|\\images|\\.js|\\.css|\\.png|\\.jpg|\\.woff|\\.ttf|\\.svg ' +
-                '/' + yeomanConfig.developIndexFile + ' [L]'
+                '/index.html [L]'
               ]),
               lrSnippet,
               mountFolder(connect, '.tmp'),
@@ -287,6 +287,11 @@ module.exports = function (grunt) {
       }
     },
     concurrent: {
+      server: {
+        options: {
+          //debugInfo: true
+        }
+      },
       dist: [
         //'compass:dist',
         'imagemin',

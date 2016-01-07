@@ -1,3 +1,9 @@
+/*** header ***/
+.navbar-brand > img {
+  display: inline-block;
+}
+
+
 .data-type-list {
   padding-left:1em;
   padding-right:1em;
@@ -86,7 +92,7 @@ a {
   border:none;
 }
 .jsoneditor .menu button{
-  background: url(bower_components/dist/img/jsoneditor-icons.png)white;
+  background: url(../bower_components/jsoneditor/dist/img/jsoneditor-icons.png) white;
   border-color: dimgray;
 }
 
