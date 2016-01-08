@@ -1,0 +1,42 @@
+{
+  "name": "dcc-submission-dictionary-viewer",
+  "description": "ICGC Submission Dictionary Viewer",
+  "version": "1.0.0",
+  "homepage": "https://github.com/icgc-dcc/dcc-submission",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:icgc-dcc/dcc-submission.git"
+  },
+  "authors": [
+    {
+      "name": "Michael Moncada"
+    }
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angularjs": "~1.4.*",
+    "angular-sanitize": "~1.4.*",
+    "angular-animate": "~1.4.*",
+    "angular-mocks": "~1.4.*",
+    "d3": "3.5.6",
+    "d3-tip": "0.6.*",
+    "highlightjs": "9.0.*",
+    "underscore": "1.8.*",
+    "regex-colorizer": "0.3.*",
+    "jsoneditor": "4.1.*",
+    "bootstrap-css-only": "3.3.*"
+  },
+  "devDependencies": {
+    "angular-scenario": "~1.4.*"
+  },
+  "resolutions": {
+    "d3": "~3.5.*"
+  }
+}

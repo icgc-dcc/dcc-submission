@@ -1,0 +1,145 @@
+<div id="dictionary-view-container">
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation" data-ng-if="dictionaryViewerCtrl.shouldShowHeaderNav === true">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+              <span class="navbar-brand">
+                  <img src="https://dcc.icgc.org/styles/images/icgc-logo.png" width="20px">
+                  <span style="font-size:1.7rem; vertical-align:middle">
+                      <span style="color:#777777">ICGC</span>
+                      <span> Dictionary Viewer</span>
+                  </span>
+              </span>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse">
+                <div class="navbar-form navbar-left" role="search">
+                    <div class="form-group">
+                        <input
+                                data-ng-model="dictionaryViewerCtrl.q"
+                                data-ng-keyup="dictionaryViewerCtrl.doFilter()"
+                                data-ng-click="$event.stopPropagation()" class="form-control" id="filter" type="text" size="25" placeholder="Search:">
+                        </input>
+                    </div>
+                </div>
+
+                <div class="navbar-form navbar-left" role="search">
+                    <div class="form-group">
+                        <select class="form-control"
+                                data-ng-model="dictionaryViewerCtrl.vFrom"
+                                data-ng-options="item for item in dictionaryViewerCtrl.dictionaryVersionList"
+                                data-ng-change="dictionaryViewerCtrl.switchDictionary(dictionaryViewerCtrl.vFrom, dictionaryViewerCtrl.vTo)" style="width:6em">
+                        </select>
+                    </div>
+                    TO
+                    <div class="form-group">
+                        <select class="form-control"
+                                data-ng-model="dictionaryViewerCtrl.vTo"
+                                data-ng-options="item for item in dictionaryViewerCtrl.dictionaryVersionList"
+                                data-ng-change="dictionaryViewerCtrl.switchDictionary(dictionaryViewerCtrl.vFrom, dictionaryViewerCtrl.vTo)" style="width:6em">
+                        </select>
+                    </div>
+
+                    <span>&nbsp;&nbsp;&nbsp;&nbsp;View</span>
+                    <div class="form-group">
+                        <select
+                                class="form-control"
+                                data-ng-options="viewType for viewType in dictionaryViewerCtrl.viewTypes"
+                                data-ng-model="dictionaryViewerCtrl.viewMode"
+                                data-ng-change="dictionaryViewerCtrl.setView(dictionaryViewerCtrl.viewMode)">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="navbar-form navbar-right">
+                    <div>
+                        <span data-ng-style="{color: dictionaryViewerCtrl.tableViewer.colourNew}">{{dictionaryViewerCtrl.changeReport.fieldsAdded.length}} new</span>
+                        &nbsp;&nbsp;
+                        <span data-ng-style="{color: dictionaryViewerCtrl.tableViewer.colourChanged}">{{dictionaryViewerCtrl.changeReport.fieldsChanged.length}} changed</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!--<div class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">-->
+    <div class="vis-wrapper" data-ng-style="{'display': ['table', 'graph'].indexOf(dictionaryViewerCtrl.viewMode) === -1 ? 'none': 'block'}">
+        <!-- template for table viewer-->
+           <span id="datatypeSelector" style="display:inline-block; margin-right:10em; float:right">
+               <button id="minimapLabel" class="btn btn-default"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+               <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
+                   <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+               </div>
+           </span>
+        <div id="datatypeTable"></div>
+
+        <!-- template for graph viewer -->
+        <div id="datatypeGraph">
+            <div id="graph" class="graph"></div>
+        </div>
+    </div>
+
+
+
+    <!-- template for report -->
+    <div class="report-wrapper" data-ng-style="{'display': dictionaryViewerCtrl.viewMode==='report'? 'block':'none'}">
+        <div>
+              <pre>
+Added:
+{{dictionaryViewerCtrl.changeReport.added}}
+
+Changed:
+{{dictionaryViewerCtrl.changeReport.changed}}
+
+Removed:
+{{dictionaryViewerCtrl.changeReport.removed}}
+              </pre>
+        </div>
+    </div>
+
+    <!-- template for json viewer -->
+    <div id="jsonviewer" data-ng-style="{'display': dictionaryViewerCtrl.viewMode==='json'? 'block':'none'}"></div>
+
+    <!-- template for codelists -->
+    <div class="codelist-wrapper" data-ng-style="{'display': dictionaryViewerCtrl.viewMode==='codelist'? 'block':'none'}">
+        <div>
+            <span> Hide unused CodeLists: <input type="checkbox" data-ng-model="dictionaryViewerCtrl.hideUnusedCodeLists" data-ng-change="dictionaryViewerCtrl.render()"></span>
+        </div>
+        <br>
+        <table class="table table-condensed table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Used in ...</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-ng-repeat="codeList in dictionaryViewerCtrl.codeListsFiltered | filter:{'name':dictionaryViewerCtrl.q} | orderBy:'name'"
+                data-ng-init="expanded=false">
+                <td>
+                            <span data-ng-click="expanded=!expanded">
+                                <a href="">
+                                    {{codeList.name}}
+                                    <i class="{{expanded? 'glyphicon glyphicon-chevron-up': 'glyphicon glyphicon-chevron-down'}}"></i>
+                                </a>
+                            </span>
+                    <ul data-ng-show="expanded" class="list-unstyled">
+                        <li data-ng-repeat="term in codeList.terms">
+                            {{term.code}} &nbsp;&nbsp;&nbsp; {{term.value}}
+                        </li>
+                    </ul>
+                </td>
+                <td style="max-width:60rem">
+                            <span data-ng-repeat="datatype in codeList.coverage">
+                                <a href="" data-ng-click="dictionaryViewerCtrl.goto('table', datatype)">{{datatype}}</a>&nbsp;&nbsp;
+                            </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

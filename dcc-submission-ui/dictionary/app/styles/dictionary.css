@@ -1,0 +1,126 @@
+/*** header ***/
+.navbar-brand > img {
+  display: inline-block;
+}
+
+.graph {
+  float: left;
+  width: 75%;
+}
+
+.data-type-list {
+  padding-left:1em;
+  padding-right:1em;
+  color: #666666;
+  font-weight: bold;
+}
+
+.legend {
+  border-left-style: solid;
+  border-left-width: 22px;
+  padding-left:2px;
+  font-size:1.0em;
+}
+
+.tiny {
+  padding-left: 0.15em;
+  font-size: 0.75em;
+}
+
+/* From Bostock's examples */
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+  cursor: pointer;
+}
+
+.node text {
+  font: 0.75em sans-serif;
+  cursor: pointer;
+}
+
+.link {
+  fill: none;
+  stroke: #e1f1e1;
+  stroke-width: 9.0px;
+}
+
+.link-hover {
+  stroke: #88f1e1;
+}
+
+/* Override bootstrap default styles to make UI less blobby-looking */
+th {
+  font-size: 0.8em;
+}
+
+pre {
+  background-color: rgb(250, 245, 245);
+}
+
+a {
+  cursor: pointer;
+}
+
+.table-bordered>thead>tr>th,
+.table-bordered>thead>tr>td,
+.table-bordered>tbody>tr>td
+{
+  border-bottom-width: 0px;
+  border-left-width: 0px;
+  font-size: 12px;
+}
+
+.vis-wrapper {
+  margin-left:0.5em;
+  margin-right:0.5em;
+}
+
+.report-wrapper, .codelist-wrapper {
+  margin-left:1.5em;
+  margin-right:1.5em;
+  display:none;
+}
+
+/** for bob to have non blue headers */
+.jsoneditor .menu {
+  background: whitesmoke;
+  border-bottom: none;
+}
+.jsoneditor {
+  border:none;
+}
+.jsoneditor .menu button{
+  background: url(../bower_components/jsoneditor/dist/img/jsoneditor-icons.png) white;
+  border-color: dimgray;
+}
+
+.jsoneditor div.tree button {
+  background: url(../bower_components/jsoneditor/dist/img/jsoneditor-icons.png) white;
+}
+
+#jsonview{
+  margin-top: -20px; /** undoes margin of header */
+}
+
+/* D3 Tip style */
+.d3-tip {
+  line-height: 1;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 5px;
+  pointer-events: none;
+  font-size: 1.3rem;
+}
+
+/* override bootstrap */
+.badge {
+  margin-bottom: 0.25rem;
+  border-radius: 4px;
+}

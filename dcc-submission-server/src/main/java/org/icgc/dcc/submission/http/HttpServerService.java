@@ -19,6 +19,10 @@ package org.icgc.dcc.submission.http;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.ImmutableSet.copyOf;
+import static com.google.common.net.HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS;
+import static com.google.common.net.HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS;
+import static com.google.common.net.HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS;
+import static com.google.common.net.HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,12 +39,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -52,11 +50,17 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import com.google.common.util.concurrent.AbstractService;
 import com.typesafe.config.Config;
 
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * A {@code Service} for managing the {@code HttpServer} life cycle.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject) )
 public class HttpServerService extends AbstractService {
 
   /**
@@ -110,23 +114,13 @@ public class HttpServerService extends AbstractService {
 
   private void addHandlers(Set<String> resources) {
     val serverConfig = server.getServerConfiguration();
+
     for (val provider : handlerProviders) {
       serverConfig.addHttpHandler(provider.get(), provider.path());
     }
 
-    val httpHandler = new StaticHttpHandler(resources);
-    httpHandler.setFileCacheEnabled(false);
-    serverConfig.addHttpHandler(httpHandler, "/");
-
-    // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
-    serverConfig.addHttpHandler(new HttpHandler() {
-
-      @Override
-      public void service(Request request, Response response) throws Exception {
-        response.sendRedirect("/#" + request.getDecodedRequestURI());
-      }
-
-    }, "/releases", "/login");
+    serverConfig.addHttpHandler(new StaticCorsHttpHandler(resources), "/");
+    serverConfig.addHttpHandler(new RedirectHttpHandler(), "/releases", "/login");
   }
 
   private void addListeners(final java.lang.String host, final int port, final boolean useSsl) {
@@ -239,6 +233,34 @@ public class HttpServerService extends AbstractService {
     }
 
     return keyManagerFactory;
+  }
+
+  private static class RedirectHttpHandler extends HttpHandler {
+
+    @Override
+    public void service(Request request, Response response) throws Exception {
+      // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
+      response.sendRedirect("/#" + request.getDecodedRequestURI());
+    }
+  }
+
+  private static class StaticCorsHttpHandler extends StaticHttpHandler {
+
+    private StaticCorsHttpHandler(Set<String> docRoots) {
+      super(docRoots);
+      setFileCacheEnabled(false);
+    }
+
+    @Override
+    protected boolean handle(String uri, Request request, Response response) throws Exception {
+      // Add CORS headers for cross domain access to static resources
+      response.addHeader(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+      response.addHeader(ACCESS_CONTROL_ALLOW_HEADERS, "origin, content-type, accept, authorization");
+      response.addHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+      response.addHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS, HEAD");
+
+      return super.handle(uri, request, response);
+    }
   }
 
 }
