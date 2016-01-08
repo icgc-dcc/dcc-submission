@@ -8,6 +8,12 @@
   width: 75%;
 }
 
+.minimap-container {
+  display:inline-block;
+  margin-right:10em;
+  float:right;
+}
+
 .data-type-list {
   padding-left:1em;
   padding-right:1em;
