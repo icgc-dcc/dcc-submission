@@ -3,6 +3,10 @@
   display: inline-block;
 }
 
+.graph {
+  float: left;
+  width: 75%;
+}
 
 .data-type-list {
   padding-left:1em;
@@ -94,6 +98,10 @@ a {
 .jsoneditor .menu button{
   background: url(../bower_components/jsoneditor/dist/img/jsoneditor-icons.png) white;
   border-color: dimgray;
+}
+
+.jsoneditor div.tree button {
+  background: url(../bower_components/jsoneditor/dist/img/jsoneditor-icons.png) white;
 }
 
 #jsonview{

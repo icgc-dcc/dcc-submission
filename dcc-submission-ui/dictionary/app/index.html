@@ -12,10 +12,11 @@
         <!-- endbuild -->
     </head>
     <body style="padding-top:70px" data-ng-controller="DictionaryViewerController" data-ng-app="DictionaryViewerApp">
-        <dictionary-viewer
-                data-base-dictionary-url="http://***REMOVED***/ws"
-                data-show-header-nav="true"
-                data-hide-graph-legend="false"></dictionary-viewer>
+
+        <dictionary-viewer  data-show-header-nav="true"
+                            data-hide-graph-legend="false">
+        </dictionary-viewer>
+
         <!-- build:js scripts/dictionary.js -->
         <script src="bower_components/angular/angular.js"></script>
         <script src="bower_components/underscore/underscore.js"></script>
@@ -31,6 +32,7 @@
         <script src="scripts/helpers/dictionary-viewer.js"></script>
         <script src="scripts/controllers/dictionary.js"></script>
         <script src="scripts/directives/dictionary-viewer-directive.js"></script>
+        <script src="scripts/services/dictionary-viewer-service.js"></script>
         <!-- endbuild -->
     </body>
 </html>

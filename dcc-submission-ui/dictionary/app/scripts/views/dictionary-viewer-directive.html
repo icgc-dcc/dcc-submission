@@ -28,16 +28,16 @@
                     <div class="form-group">
                         <select class="form-control"
                                 data-ng-model="dictionaryViewerCtrl.vFrom"
-                                data-ng-options="item for item in dictionaryViewerCtrl.dictUtil.versionList"
-                                data-ng-change="dictionaryViewerCtrl.switchDictionary()" style="width:6em">
+                                data-ng-options="item for item in dictionaryViewerCtrl.dictionaryVersionList"
+                                data-ng-change="dictionaryViewerCtrl.switchDictionary(dictionaryViewerCtrl.vFrom, dictionaryViewerCtrl.vTo)" style="width:6em">
                         </select>
                     </div>
                     TO
                     <div class="form-group">
                         <select class="form-control"
                                 data-ng-model="dictionaryViewerCtrl.vTo"
-                                data-ng-options="item for item in dictionaryViewerCtrl.dictUtil.versionList"
-                                data-ng-change="dictionaryViewerCtrl.switchDictionary()" style="width:6em">
+                                data-ng-options="item for item in dictionaryViewerCtrl.dictionaryVersionList"
+                                data-ng-change="dictionaryViewerCtrl.switchDictionary(dictionaryViewerCtrl.vFrom, dictionaryViewerCtrl.vTo)" style="width:6em">
                         </select>
                     </div>
 
@@ -45,9 +45,9 @@
                     <div class="form-group">
                         <select
                                 class="form-control"
-                                data-ng-options="item for item in ['graph', 'table', 'codelist', 'report','json']"
+                                data-ng-options="viewType for viewType in dictionaryViewerCtrl.viewTypes"
                                 data-ng-model="dictionaryViewerCtrl.viewMode"
-                                data-ng-change="dictionaryViewerCtrl.changeView()">
+                                data-ng-change="dictionaryViewerCtrl.setView(dictionaryViewerCtrl.viewMode)">
                         </select>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
 
         <!-- template for graph viewer -->
         <div id="datatypeGraph">
-            <div id="graph" style="float:left; width:75%"></div>
+            <div id="graph" class="graph"></div>
         </div>
     </div>
 
@@ -118,7 +118,7 @@ Removed:
             </tr>
             </thead>
             <tbody>
-            <tr data-ng-repeat="codeList in dictionaryViewerCtrl.codeListsFiltered | filter:{'name':q} | orderBy:'name'"
+            <tr data-ng-repeat="codeList in dictionaryViewerCtrl.codeListsFiltered | filter:{'name':dictionaryViewerCtrl.q} | orderBy:'name'"
                 data-ng-init="expanded=false">
                 <td>
                             <span data-ng-click="expanded=!expanded">
