@@ -97,10 +97,26 @@ var dictionaryApp = dictionaryApp || {};
       .classed('filter_wrapper', true)
       .each(function (table) {
 
+        d3.select(this).append('h3').text('File Metadata');
+
+        var metadataTable = d3.select(this)
+          .append('table')
+          .classed('table', true)
+          .classed('table-bordered', true)
+          .classed('table-striped', true)
+          .classed('table-condensed', true)
+          .classed('table-file-metadata', true);
+
+        var metadataTableBody =  metadataTable.append('tbody');
+
+        metadataTableBody.append('tr').html('<th>File Type:</th><td>' + table.label + '</td>');
+        metadataTableBody.append('tr').html('<th>File Key:</th><td>' + table.name + '</td>');
+        metadataTableBody.append('tr').html('<th>File Name Pattern:</th><td>' + table.pattern + '</td>');
+
         // Section title
-        d3.select(this).append('br');
-        d3.select(this).append('strong').text(table.label);
-        d3.select(this).append('br');
+        //d3.select(this).append('br');
+        d3.select(this).append('h3').text(table.label);
+        //d3.select(this).append('br');
 
 
         // Create the minimap things
@@ -138,6 +154,9 @@ var dictionaryApp = dictionaryApp || {};
           .enter()
           .append('tr')
           .style('font-size', '1em')
+          .style('background-color', function(d) {
+            return table.uniqueFields && table.uniqueFields.indexOf(d.name) >= 0 ? '#DFF0D8' : 'transparent';
+          })
           .each(function (row, idx) {
             var oldRow = _self.dictUtil.getField(versionFrom, table.name, row.name);
             _self.buildRow(d3.select(this), row, oldRow, idx, table.uniqueFields);
