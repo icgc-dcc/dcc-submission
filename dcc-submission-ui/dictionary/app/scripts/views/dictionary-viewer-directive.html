@@ -69,12 +69,15 @@
     <!--<div class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">-->
     <div class="vis-wrapper" data-ng-style="{'display': ['table', 'graph'].indexOf(dictionaryViewerCtrl.viewMode) === -1 ? 'none': 'block'}">
         <!-- template for table viewer-->
-           <span id="datatypeSelector" class="minimap-container">
-               <button id="minimapLabel" class="btn btn-default"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-               <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
+        <div class="clearfix">
+            <div id="datatypeSelector" class="minimap-container">
+                <button id="minimapLabel" class="btn btn-default"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+                <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
                    <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
-               </div>
-           </span>
+                </div>
+            </div>
+        </div>
+
         <div id="datatypeTable"></div>
 
         <!-- template for graph viewer -->

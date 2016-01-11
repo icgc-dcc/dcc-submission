@@ -10,7 +10,6 @@
 
 .minimap-container {
   display:inline-block;
-  margin-right:10em;
   float:right;
 }
 
@@ -19,6 +18,12 @@
   padding-right:1em;
   color: #666666;
   font-weight: bold;
+}
+
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 .legend {
@@ -129,4 +134,21 @@ a {
 .badge {
   margin-bottom: 0.25rem;
   border-radius: 4px;
+}
+
+.table.table-file-metadata {
+  margin: 1.5rem 0rem 3rem 0rem;
+  border: solid 1px #e7e7e7;
+  width: 80%;
+}
+
+.table.table-file-metadata th {
+ font-size: 1.5rem;
+  width: 200px;
+  white-space: nowrap;
+}
+
+.table.table-file-metadata th,
+.table.table-file-metadata td {
+  border: solid 1px #e7e7e7;
 }
