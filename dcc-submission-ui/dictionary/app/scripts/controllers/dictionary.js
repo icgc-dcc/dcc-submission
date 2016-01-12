@@ -22,8 +22,12 @@ var dictionaryApp = dictionaryApp || {};
 (function() {
 
   angular.module('DictionaryViewerApp', [])
-    .controller('DictionaryViewerController', function () {
-
-
+    .constant('DictionaryBaseURLConstants' , {
+      DEV: '',
+      BETA: 'http://***REMOVED***',
+      PROD: 'https://submissions.dcc.icgc.org'
+    })
+    .controller('DictionaryViewerController', function (DictionaryBaseURLConstants) {
+      this.DictionaryBaseURLConstants = DictionaryBaseURLConstants;
   });
 })();
