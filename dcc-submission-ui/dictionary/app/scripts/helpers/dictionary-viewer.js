@@ -390,14 +390,14 @@ var dictionaryApp = dictionaryApp || {};
     });
 
     // Script
-    elem.append('td').style('max-width', '250px').each(function () {
+    elem.append('td').style('max-width', '250px').style('overflow', 'auto').each(function () {
       if (script) {
         var beautifiedScript = hljs.highlight('java', js_beautify(script.config.script)).value;
-        d3.select(this).append('p').text(script.config.description);
+        d3.select(this).append('p').classed('code-constrained-width', true).html(script.config.description);
 
         d3.select(this)
           .append('pre')
-          .classed('code-shard', true)
+          .classed('code-shard code-constrained-width', true)
           .on('click', function () {
             _self.modalManager.title('<i>' + row.name + '</i> Field Script Restriction');
             _self.modalManager.bodyText('<pre class="code-shard"><code>' + beautifiedScript + '</code></pre>');
