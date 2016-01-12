@@ -400,7 +400,7 @@ var dictionaryApp = dictionaryApp || {};
           .classed('code-shard', true)
           .on('click', function () {
             _self.modalManager.title('<i>' + row.name + '</i> Field Script Restriction');
-            _self.modalManager.bodyText('<pre><code>' + beautifiedScript + '</code></pre>');
+            _self.modalManager.bodyText('<pre class="code-shard"><code>' + beautifiedScript + '</code></pre>');
             _self.modalManager.show();
           })
           .append('code')
