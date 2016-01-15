@@ -156,7 +156,17 @@ var dictionaryApp = dictionaryApp || {};
 
         // Section title
         //d3.select(this).append('br');
-        d3.select(this).append('h3').text(table.label);
+
+        d3.select(this)
+          .append('h3')
+          .append('a')
+          .attr('id', table.name)
+          .attr('href', '')
+          .classed('header-text-link', true)
+          .text(table.label)
+          .append('i')
+          .classed('icon-share-1 header-hover-aid', true);
+
         //d3.select(this).append('br');
 
         var metadataTable = d3.select(this)
