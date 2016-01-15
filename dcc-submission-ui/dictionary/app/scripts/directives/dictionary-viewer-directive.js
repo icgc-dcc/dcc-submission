@@ -6,9 +6,10 @@ angular.module('DictionaryViewerApp')
   .constant('DictionaryViewerConstants', {
     EVENTS: {
       RENDER_COMPLETE: 'event.dictionary-viewer.rendered'
-    }
+    },
+    SCROLL_OFFSET: 60
   })
-  .directive('dictionaryViewer', function($http, $templateCache, $compile){
+  .directive('dictionaryViewer', function($http, $location, $anchorScroll, $templateCache, $compile){
     return {
       restrict: 'EA',
       //templateUrl: 'scripts/views/dictionary-viewer-directive.html',
@@ -21,8 +22,9 @@ angular.module('DictionaryViewerApp')
         filterDataType: '='
         //
       },
-      controller: function($rootScope, $scope, $location, DictionaryService, $timeout, DictionaryViewerConstants) {
-        var _controller = this;
+      controller: function($rootScope, $scope, DictionaryService, $timeout, DictionaryViewerConstants) {
+        var _controller = this,
+            _firstRun = true;
 
         // Renderer and dictionary logic
         _controller.tableViewer = null;
@@ -202,12 +204,83 @@ angular.module('DictionaryViewerApp')
           _controller.jsonEditor.set(_controller.dictUtil.getDictionary(versionTo));
 
           $rootScope.$broadcast(DictionaryViewerConstants.EVENTS.RENDER_COMPLETE, null);
-        };
 
+          // Skip the rest if our view mode isn't table
+
+          if (viewMode !== 'table') {
+            return;
+          }
+
+
+          if (_firstRun) {
+            _initListeners(versionFrom, versionTo, viewMode, query, dataType);
+
+            _firstRun = false;
+
+            if ($location.hash()) {
+              $anchorScroll.yOffset = DictionaryViewerConstants.SCROLL_OFFSET;
+              $anchorScroll();
+            }
+          }
+
+
+          // Grab the links (for the table views) and initialize the appropriate hover/focus listeners
+          var anchors = jQuery('.header-text-link');
+
+          if (anchors.length) {
+            anchors.off('hover.dictionary').hover(function () {
+              _bindAnchors.call(this, versionFrom, versionTo, viewMode, query, dataType);
+            },
+              function () {
+            });
+            anchors.off('focus.dictionary').focus(function () {
+              _bindAnchors.call(this, versionFrom, versionTo, viewMode, query, dataType);
+            });
+          }
+        };
 
         _controller.generateChangeList = function() {
           _controller.changeReport = DictionaryService.generateChangeList();
         };
+
+        function _bindAnchors(versionFrom, versionTo, viewMode, query, dataType) {
+          var hoveredEl = jQuery(this); // jshint ignore:line
+
+
+
+          var href = '#?viewMode=' + viewMode + '&q=' + query +
+                     '&dataType=' + (dataType || 'all') + '&vFrom=' + versionFrom +
+                     '&vTo=' + versionTo + '#' + hoveredEl.attr('id');
+
+
+          hoveredEl.attr('href', href);
+
+        }
+
+        function _initListeners() {
+          var wrapperEl = jQuery('.vis-wrapper');
+
+          wrapperEl.click(function(e) {
+            var clickedEl = jQuery(e.target);
+
+            if (! clickedEl.hasClass('header-text-link')) {
+              return;
+            }
+
+            var id = clickedEl.attr('id');
+
+            if ( ! id) {
+              return;
+            }
+
+            $location.hash(id);
+            $anchorScroll.yOffset = DictionaryViewerConstants.SCROLL_OFFSET;
+            $anchorScroll();
+
+          });
+
+
+        }
       },
       controllerAs: 'dictionaryViewerCtrl',
       link: function(scope, element, attrs) {
