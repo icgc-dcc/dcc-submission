@@ -1,7 +1,7 @@
 ICGC DCC - Submission - Vagrant VirtualBox VM
 ===
 
-Follow the directions outlined in this document to create, start, provision and export the [`dcc-submission`](../../../) virtual machine (VM). Please see http://docs.icgc.org for operational instructions once the VM is up and running.
+Follow the directions outlined in this document to create, start, provision and export the [`dcc-submission`](../../../) virtual machine (VM). Please see http://docs.dcc.icgc.org for operational instructions once the VM is up and running.
 
 You may notice that the layout of the [`provisioning/`](provisioning) directory is highly structured and factored into many files. Although excessive for a single instance node such as the VM, the rationale for this decomposition is to promote reuse across projects and environments. This is mainly achieved using Ansible [roles](http://www.ansibleworks.com/docs/playbooks_roles.html) and [variables](http://www.ansibleworks.com/docs/playbooks_variables.html).
 

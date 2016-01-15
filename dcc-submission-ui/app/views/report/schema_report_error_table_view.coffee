@@ -45,7 +45,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Sample data submitted to PCAWG, however it is not marked as in PCAWG study in this DCC submission.
-         See <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+         See <a href="http://docs.dcc.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
     PCAWG_SAMPLE_STUDY_INVALID:
@@ -53,7 +53,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Sample is marked as in PCAWG study in this submission, however it does not actually exist in PCAWG.
-         See <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+         See <a href="http://docs.dcc.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
     PCAWG_SAMPLE_MISSING:
@@ -61,7 +61,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         The following samples have data submitted to PCAWG, but have not been included in this DCC submission.
-         See <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+         See <a href="http://docs.dcc.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
     PCAWG_CLINICAL_FIELD_REQUIRED:
@@ -69,7 +69,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Clinical field is required for PanCancer.
-         See <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+         See <a href="http://docs.dcc.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
     PCAWG_CLINICAL_ROW_REQUIRED:
@@ -78,7 +78,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
         Clinical row is required for PanCancer in file
         <code>#{source.parameters?.VALUE.toLowerCase().replace(/_type$/, "")}</code>.
-         See <a href="https://docs.icgc.org/pancancer-clinical-data-requirements" target="_blank">
+         See <a href="http://docs.dcc.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
     LINE_TERMINATOR_MISSING_ERROR:
@@ -124,7 +124,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
 
         """
         Data row failed script-based validation check, see
-        <a href="http://docs.icgc.org/" target="_blank">
+        <a href="http://docs.dcc.icgc.org/" target="_blank">
         submission documentation</a> for details.
         <br><br><p>#{source.parameters?.DESCRIPTION}</p><pre><code>#{errorPretty}</code></pre>
         """
@@ -277,7 +277,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         needs to be masked exceeded the reasonable level (currently the
         threshold is set as #{parseFloat(100*expected).toFixed(2)}% ).
         More details about SSM masking can be found
-        <a href="http://docs.icgc.org/" target="_blank">here</a>.
+        <a href="http://docs.dcc.icgc.org/" target="_blank">here</a>.
         """
     SAMPLE_TYPE_MISMATCH:
       name: "Sample type mismatch error"

@@ -24,18 +24,18 @@ import static lombok.AccessLevel.PACKAGE;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.SshConstants;
 import org.apache.sshd.common.util.Buffer;
 import org.apache.sshd.server.session.ServerSession;
 
 import com.google.common.io.Resources;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Helper class for generating SFTP user customized authentication banner message.
@@ -64,7 +64,7 @@ class SftpBanner {
   /**
    * Standard operating procedure for DCC submissions.
    */
-  private static final String DOCS_URL = "http://docs.icgc.org";
+  private static final String DOCS_URL = "http://docs.dcc.icgc.org";
 
   /**
    * External banner text.

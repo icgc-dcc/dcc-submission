@@ -21,16 +21,16 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import com.google.common.collect.ImmutableSet;
-
 /**
  * Classification of reference sample type code list terms.
  * 
- * @see http://docs.icgc.org/controlled-vocabulary#GLOBAL.0.reference_sample_type.v1
+ * @see http://docs.dcc.icgc.org/dictionary/viewer/
  */
 @RequiredArgsConstructor(access = PRIVATE)
 public enum ReferenceSampleTypeCategory {

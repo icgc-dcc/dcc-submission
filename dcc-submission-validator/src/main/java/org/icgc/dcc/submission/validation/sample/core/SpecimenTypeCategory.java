@@ -30,7 +30,7 @@ import lombok.val;
 /**
  * Classification of specimen type code list terms.
  * 
- * @see http://docs.icgc.org/controlled-vocabulary#specimen.0.specimen_type.v3
+ * @see http://docs.dcc.icgc.org/dictionary/viewer/
  */
 @RequiredArgsConstructor(access = PRIVATE)
 public enum SpecimenTypeCategory {
