@@ -6,6 +6,61 @@ var dictionaryApp = dictionaryApp || {};
 
 (function() {
 
+  function ModalManager(id) {
+    var _self = this,
+        _modalID = id,
+        _modalEl,
+        _modelTitleEl,
+        _modelBodyTextEl;
+
+
+    function _init() {
+      if (! _modalID) {
+        console.error('Could not instantiate modal with and ID!');
+        return;
+      }
+
+      _modalEl = jQuery('#' + _modalID);
+
+      if ( _modalEl.length === 0 ) {
+        console.error('Could not find modal with ID ' + _modalID +  ' !');
+        return;
+      }
+
+      _modelTitleEl = _modalEl.find('.modal-title');
+      _modelBodyTextEl = _modalEl.find('.modal-body');
+
+    }
+
+    _self.title = function(title) {
+
+      if (arguments.length === 1) {
+        _modelTitleEl.html(title);
+      }
+
+      return _modelTitleEl.text();
+    };
+
+    _self.bodyText = function(title) {
+
+      if (arguments.length === 1) {
+        _modelBodyTextEl.html(title);
+      }
+
+      return _modelBodyTextEl.text();
+    };
+
+    _self.show = function(shouldShow) {
+      var toggleArg = shouldShow === false ? 'hide' : 'show';
+
+      _modalEl.modal(toggleArg);
+    };
+
+
+    _init();
+
+  }
+
   function TableViewer(dictionary, codelist, shouldRenderLegend) {
     this.dictUtil = dictionary;
     this.codelistMap = codelist;
@@ -13,6 +68,7 @@ var dictionaryApp = dictionaryApp || {};
     this.toggleNodeFunc = null;
     this.toggleDataTypeFunc = null;
     this.shouldRenderLegend = shouldRenderLegend === false ? false : true;
+    this.modalManager = new ModalManager('dictionaryModal');
 
     this.selectedDataType = 'all';
 
@@ -97,10 +153,25 @@ var dictionaryApp = dictionaryApp || {};
       .classed('filter_wrapper', true)
       .each(function (table) {
 
+
         // Section title
-        d3.select(this).append('br');
-        d3.select(this).append('strong').text(table.label);
-        d3.select(this).append('br');
+        //d3.select(this).append('br');
+        d3.select(this).append('h3').text(table.label);
+        //d3.select(this).append('br');
+
+        var metadataTable = d3.select(this)
+          .append('table')
+          .classed('table', true)
+          .classed('table-bordered', true)
+          .classed('table-striped', true)
+          .classed('table-condensed', true)
+          .classed('table-file-metadata', true);
+
+        var metadataTableBody =  metadataTable.append('tbody');
+
+        metadataTableBody.append('tr').html('<th>File Type:</th><td>' + table.label + '</td>');
+        metadataTableBody.append('tr').html('<th>File Key:</th><td>' + table.name + '</td>');
+        metadataTableBody.append('tr').html('<th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
 
 
         // Create the minimap things
@@ -124,7 +195,7 @@ var dictionaryApp = dictionaryApp || {};
         var thead = dtable.append('thead').append('tr');
         thead.append('th').style('width', '5px').text('');
         thead.append('th').text('Field');
-        thead.append('th').text('Attribute');
+        thead.append('th').text('Attributes');
         thead.append('th').text('Type');
         thead.append('th').text('Description');
         thead.append('th').text('CodeList');
@@ -138,6 +209,9 @@ var dictionaryApp = dictionaryApp || {};
           .enter()
           .append('tr')
           .style('font-size', '1em')
+          .style('background-color', function(d) {
+            return table.uniqueFields && table.uniqueFields.indexOf(d.name) >= 0 ? '#DFF0D8' : 'transparent';
+          })
           .each(function (row, idx) {
             var oldRow = _self.dictUtil.getField(versionFrom, table.name, row.name);
             _self.buildRow(d3.select(this), row, oldRow, idx, table.uniqueFields);
@@ -210,7 +284,7 @@ var dictionaryApp = dictionaryApp || {};
 
 
     // Field
-    elem.append('td').text(row.name);
+    elem.append('td').classed('monospaced', true).text(row.name);
 
     // Attribute
     var attrBox = elem.append('td');
@@ -280,13 +354,14 @@ var dictionaryApp = dictionaryApp || {};
     // Regexp
     elem.append('td').style('max-width', '250px').each(function () {
       if (regex) {
-        d3.select(this).append('p').classed('regex', true).text(regex.config.pattern);
+        d3.select(this)
+          .append('p')
+          .classed('regex', true)
+          .text(regex.config.pattern);
 
         if (regex.config.examples) {
           var example = d3.select(this).append('pre')
-            .style('width', '100%')
-            .style('font-size', '0.8em')
-            .style('cursor', 'pointer')
+            .classed('code-shard', true)
             .on('click', function () {
               var examples = [];
               var baseURL = 'http://www.regexplanet.com/advanced/java/index.html?';
@@ -315,11 +390,20 @@ var dictionaryApp = dictionaryApp || {};
     });
 
     // Script
-    elem.append('td').style('max-width', '250px').each(function () {
+    elem.append('td').style('max-width', '250px').style('overflow', 'auto').each(function () {
       if (script) {
         var beautifiedScript = hljs.highlight('java', js_beautify(script.config.script)).value;
-        d3.select(this).append('p').text(script.config.description);
-        d3.select(this).append('pre').style('width', '100%').style('font-size', '0.8em').append('code')
+        d3.select(this).append('p').classed('code-constrained-width', true).html(script.config.description);
+
+        d3.select(this)
+          .append('pre')
+          .classed('code-shard code-constrained-width', true)
+          .on('click', function () {
+            _self.modalManager.title('<i>' + row.name + '</i> Field Script Restriction');
+            _self.modalManager.bodyText('<pre class="code-shard"><code>' + beautifiedScript + '</code></pre>');
+            _self.modalManager.show();
+          })
+          .append('code')
           .html(beautifiedScript);
       }
     });

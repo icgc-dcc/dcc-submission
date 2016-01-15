@@ -1,3 +1,18 @@
+<div id="dictionaryModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="t_button pull-right" data-dismiss="modal" aria-label="Close"><i aria-hidden="true" class="icon-cancel"></i></button>
+                <h3 class="modal-title"></h3>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="t_button" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 <div id="dictionary-view-container">
     <div class="navbar navbar-default navbar-fixed-top" role="navigation" data-ng-if="dictionaryViewerCtrl.shouldShowHeaderNav === true">
         <div class="container-fluid">
@@ -69,12 +84,15 @@
     <!--<div class="vis-wrapper" data-ng-style="{'display': viewMode === 'report'? 'none': 'block'}">-->
     <div class="vis-wrapper" data-ng-style="{'display': ['table', 'graph'].indexOf(dictionaryViewerCtrl.viewMode) === -1 ? 'none': 'block'}">
         <!-- template for table viewer-->
-           <span id="datatypeSelector" class="minimap-container">
-               <button id="minimapLabel" class="btn btn-default"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-               <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
+        <div class="clearfix">
+            <div id="datatypeSelector" class="minimap-container">
+                <button id="minimapLabel" class="btn btn-primary"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+                <div  id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; display:none; position:absolute; background-color:#F5F5F5">
                    <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
-               </div>
-           </span>
+                </div>
+            </div>
+        </div>
+
         <div id="datatypeTable"></div>
 
         <!-- template for graph viewer -->

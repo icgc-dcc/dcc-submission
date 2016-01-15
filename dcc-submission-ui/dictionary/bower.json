@@ -21,6 +21,7 @@
     "tests"
   ],
   "dependencies": {
+    "jquery": "1.9.*",
     "angularjs": "~1.4.*",
     "angular-sanitize": "~1.4.*",
     "angular-animate": "~1.4.*",
@@ -31,7 +32,7 @@
     "underscore": "1.8.*",
     "regex-colorizer": "0.3.*",
     "jsoneditor": "4.1.*",
-    "bootstrap-css-only": "3.3.*"
+    "bootstrap": "3.3.*"
   },
   "devDependencies": {
     "angular-scenario": "~1.4.*"

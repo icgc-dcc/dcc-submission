@@ -8,9 +8,15 @@
   width: 75%;
 }
 
+.modal-body {
+  position: relative;
+  padding: 20px;
+  max-height: 500px;
+  overflow: auto;
+}
+
 .minimap-container {
   display:inline-block;
-  margin-right:10em;
   float:right;
 }
 
@@ -20,6 +26,36 @@
   color: #666666;
   font-weight: bold;
 }
+
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.pull-right {
+  float: right !important;
+}
+
+.t_button, a.t_button {
+  color: #fafafa;
+  background: #e9931c;
+  padding: 0rem 0.75rem;
+  outline: 0;
+  outline: dotted thin;
+  border-radius: .25rem;
+  border: 1px solid #ce6503;
+  transition: color .5s, background .5s;
+}
+
+
+.t_button:hover {
+  cursor: pointer;
+  color: white;
+  background: #ce6503;
+  text-decoration: none;
+}
+
 
 .legend {
   border-left-style: solid;
@@ -114,6 +150,19 @@ a {
   margin-top: -20px; /** undoes margin of header */
 }
 
+.code-shard {
+  font-size: 0.8rem;
+  width: 100%;
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.code-shard:hover {
+  border-color: #e9931c;
+  cursor: pointer;
+}
+
 /* D3 Tip style */
 .d3-tip {
   line-height: 1;
@@ -129,4 +178,25 @@ a {
 .badge {
   margin-bottom: 0.25rem;
   border-radius: 4px;
+}
+
+.table.table-file-metadata {
+  margin: 1.5rem 0rem 3rem 0rem;
+  border: solid 1px #e7e7e7;
+  width: 80%;
+}
+
+.table.table-file-metadata th {
+ font-size: 1.5rem;
+  width: 200px;
+  white-space: nowrap;
+}
+
+.table.table-file-metadata th,
+.table.table-file-metadata td {
+  border: solid 1px #e7e7e7;
+}
+
+.monospaced {
+  font-family: 'monospace';
 }
