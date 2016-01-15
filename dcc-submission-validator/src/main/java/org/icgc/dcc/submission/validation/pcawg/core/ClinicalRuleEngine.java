@@ -36,11 +36,6 @@ import static org.icgc.dcc.submission.validation.util.Streams.filter;
 import java.util.List;
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.core.report.Error;
@@ -51,6 +46,11 @@ import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of https://wiki.oicr.on.ca/display/DCCREVIEW/PCAWG+Clinical+Field+Requirements
@@ -85,6 +85,8 @@ public class ClinicalRuleEngine {
   private final ReportContext context;
   private final List<FileType> numbers = newArrayList();
 
+  private final boolean enabled = false; // Temporarily disable field validation
+
   public void execute() {
     val watch = createStarted();
     log.info("Starting clinical validation with {} reference sample ids...", formatCount(referenceSampleIds));
@@ -98,13 +100,15 @@ public class ClinicalRuleEngine {
     validateSamples(clinical.getCore().getSamples());
     log.info("Finished validating sample study");
 
-    log.info("Validating core clinical...");
-    validateCore(pcawgClinical.getCore());
-    log.info("Finished validating core clinical");
+    if (enabled) {
+      log.info("Validating core clinical...");
+      validateCore(pcawgClinical.getCore());
+      log.info("Finished validating core clinical");
 
-    log.info("Validating optional clinical...");
-    validateOptional(pcawgIndex.getDonorIds(), pcawgClinical.getOptional());
-    log.info("Finished validating optional clinical");
+      log.info("Validating optional clinical...");
+      validateOptional(pcawgIndex.getDonorIds(), pcawgClinical.getOptional());
+      log.info("Finished validating optional clinical");
+    }
 
     log.info("Finshed validating in {}", watch);
   }
