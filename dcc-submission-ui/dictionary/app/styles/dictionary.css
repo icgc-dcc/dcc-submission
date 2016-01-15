@@ -8,6 +8,19 @@
   width: 75%;
 }
 
+.show-anchor,
+.show-anchor:hover {
+  display: none;
+}
+
+.filter_wrapper a:hover {
+  text-decoration: none;
+}
+
+.header-hover-aid {
+  display: none;
+}
+
 .modal-body {
   position: relative;
   padding: 20px;
