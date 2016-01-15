@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PCAWGSampleSheets {
 
   private static final URL SAMPLE_SHEEL_URL =
-      getUrl("http://pancancer.info/gnos_metadata/latest/reports/pcawg_sample_sheet.tsv");
+      getUrl("http://pancancer.info/data_releases/sample_sheet/pcawg_sample_sheet.2016-01-13.tsv");
   private static final File SAMPLE_SHEET_FILE = new File("src/main/resources/pcawg-sample-sheet.json");
 
   /**
