@@ -25,15 +25,16 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.Callable;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.core.model.DccConcurrencyException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 
 import com.google.common.base.Optional;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -74,10 +75,13 @@ public class AbstractService {
 
         log.warn("There was a concurrency issue while attempting to {}, number of attempts: {}", description, attempts);
         sleepUninterruptibly(1, SECONDS);
+      } catch (Throwable t) {
+        log.error("Error attempting {}: {}", description, t.getMessage());
+        throw t;
       }
     }
     if (attempts >= MAX_ATTEMPTS) {
-      String message = format("Failed to %s, could not acquire lock", description);
+      val message = format("Failed to %s, could not acquire lock", description);
       mailService.sendSupportProblem(message, message);
 
       throw new DccConcurrencyException(message);

@@ -6,7 +6,7 @@
 
 # External URLs 
 external_submission_url: https://submissions.dcc.icgc.org
-external_docs_url: http://docs.dcc.icgc.org
+external_docs_url: http://docs.icgc.org
 
 # Artifactory URLS
 artifactory_url: http://seqwaremaven.oicr.on.ca/artifactory

@@ -20,14 +20,15 @@ package org.icgc.dcc.submission.validation;
 import static com.google.common.base.Throwables.getRootCause;
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
+
+import org.icgc.dcc.common.core.util.concurrent.ThreadNamingRunnable;
+import org.icgc.dcc.submission.validation.core.Validation;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.common.core.util.concurrent.ThreadNamingRunnable;
-import org.icgc.dcc.submission.validation.core.Validation;
 
 /**
  * An executing validation job.
@@ -95,6 +96,7 @@ public class ValidationJob implements Runnable {
 
         @Override
         public void run() {
+          log.error("Finalizing validation job's exception: {}", t.getMessage());
           // Extract the root cause since Cascading can wrap it in a FlowException.
           val rootCause = getRootCause(t);
 

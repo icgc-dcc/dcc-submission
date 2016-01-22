@@ -64,7 +64,7 @@ class SftpBanner {
   /**
    * Standard operating procedure for DCC submissions.
    */
-  private static final String DOCS_URL = "http://docs.dcc.icgc.org";
+  private static final String DOCS_URL = "http://docs.icgc.org";
 
   /**
    * External banner text.

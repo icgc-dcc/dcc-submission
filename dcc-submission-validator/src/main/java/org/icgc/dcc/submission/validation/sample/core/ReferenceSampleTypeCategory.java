@@ -30,7 +30,7 @@ import lombok.val;
 /**
  * Classification of reference sample type code list terms.
  * 
- * @see http://docs.dcc.icgc.org/dictionary/viewer/
+ * @see http://docs.icgc.org/dictionary/viewer/
  */
 @RequiredArgsConstructor(access = PRIVATE)
 public enum ReferenceSampleTypeCategory {

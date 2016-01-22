@@ -32,14 +32,6 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
@@ -55,6 +47,14 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Not meant to be used in a hash for now (override hashCode if so)
@@ -263,12 +263,13 @@ public class Release extends BaseEntity implements HasName {
   /**
    * Dequeues the first element of the queue, expecting the queue to contain at least one element.<br>
    * 
-   * Use in combination with <code>{@link Release#nextInQueue()}</code> and guava's <code>Optional.isPresent()</code><br>
+   * Use in combination with <code>{@link Release#nextInQueue()}</code> and guava's <code>Optional.isPresent()</code>
+   * <br>
    * This method is <b>not</b> thread-safe.
    */
   public QueuedProject dequeueProject() {
-    log.info("Dequeing from current queue state {}...", queue);
-    checkState(isQueued());
+    log.info("Dequeuing from current queue state {}...", queue);
+    checkState(isQueued(), "Cannot dequeue from empty queue!");
     return queue.remove(0);
   }
 

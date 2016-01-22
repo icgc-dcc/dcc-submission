@@ -565,7 +565,8 @@ public class ReleaseService extends AbstractService {
 
         val dequeuedProject = release.dequeueProject();
         val dequeuedProjectKey = dequeuedProject.getKey();
-        if (dequeuedProjectKey.equals(projectKey) == false) { // not recoverable: TODO: create dedicated exception?
+        if (dequeuedProjectKey.equals(projectKey) == false) {
+          log.error("Mismatch: '{}' != '{}'", dequeuedProjectKey, projectKey);
           throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, projectKey);
         }
 
