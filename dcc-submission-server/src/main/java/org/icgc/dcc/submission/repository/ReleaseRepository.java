@@ -29,9 +29,6 @@ import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import java.util.List;
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.Identifiable;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -42,6 +39,9 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 

@@ -560,9 +560,9 @@ public class ReleaseService extends AbstractService {
       public Optional<?> call() throws DccModelOptimisticLockException {
         val release = getNextRelease();
         val releaseName = release.getName();
-
         log.info("Dequeuing {} to validating for {}", projectKey, releaseName);
 
+        // In-memory - queue transistion
         val dequeuedProject = release.dequeueProject();
         val dequeuedProjectKey = dequeuedProject.getKey();
         if (dequeuedProjectKey.equals(projectKey) == false) {
@@ -570,18 +570,23 @@ public class ReleaseService extends AbstractService {
           throw new ReleaseException("Mismatch: '%s' != '%s'", dequeuedProjectKey, projectKey);
         }
 
+        // In-memory - submission resolve
         val submissionFiles =
             getSubmissionFiles(release.getName(), release.getDictionaryVersion(), queuedProject.getKey());
         val submission = release.getSubmission(projectKey).get();
 
-        //
-        // Transition
-        //
-
+        // In-memory - submission transition
         submission.startValidation(submissionFiles, queuedProject.getDataTypes(), nextReport);
+
+        // Mongo - queue / submission persist
+        log.info("--> Updating db release / submission state for '{}'...", projectKey);
         releaseRepository.updateRelease(releaseName, release);
+        log.info("<-- Finished updating db release / submission state for '{}'", projectKey);
+
+        // HDFS - validation files removal
         resetValidationFolder(queuedProject.getKey(), release);
 
+        // Mail - send
         mailService.sendValidationStarted(releaseName, queuedProject.getKey(), queuedProject.getEmails());
 
         log.info("Dequeued {} to validating state for {}", projectKey, releaseName);
