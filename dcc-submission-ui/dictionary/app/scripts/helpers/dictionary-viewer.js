@@ -893,6 +893,7 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
   TableViewer.prototype.renderLegend = function (svg, x, y) {
     var legend = svg.insert('g', ':first-child')
+      .attr('id', 'graph-legend')
       .attr('font-size', '0.8em')
       .attr('transform', 'translate(' + x + ',' + y + ')');
 
