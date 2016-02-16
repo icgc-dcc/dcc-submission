@@ -28,6 +28,16 @@
   overflow: auto;
 }
 
+.tab-container {
+  margin: 1rem 2rem;
+}
+
+.tab-content {
+  padding: 2rem 0rem;
+  border: solid 1px #ccc;
+  border-top: none;
+}
+
 .minimap-container {
   display:inline-block;
   float:right;
@@ -139,7 +149,6 @@ a {
 .report-wrapper, .codelist-wrapper {
   margin-left:1.5em;
   margin-right:1.5em;
-  display:none;
 }
 
 /** for bob to have non blue headers */

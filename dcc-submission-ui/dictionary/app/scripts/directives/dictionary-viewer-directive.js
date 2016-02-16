@@ -24,7 +24,8 @@ angular.module('DictionaryViewerApp')
       },
       controller: function($rootScope, $scope, DictionaryService, $timeout, DictionaryViewerConstants) {
         var _controller = this,
-            _firstRun = true;
+            _firstRun = true,
+            _previousVersion = {from: null, to: null};
 
         // Renderer and dictionary logic
         _controller.tableViewer = null;
@@ -34,8 +35,8 @@ angular.module('DictionaryViewerApp')
         _controller.shouldHideGraphLegend = $scope.hideGraphLegend === 'true' ? true : false;
 
         // params
-        _controller.vFrom =  $scope.fromDictVersion || '';
-        _controller.vTo = $scope.toDictVersion ||'';
+        _controller.vFrom = '';
+        _controller.vTo = '';
         _controller.viewMode = $scope.viewMode || 'graph';
         _controller.q = $scope.searchQuery || '';
         _controller.dataType = $scope.filterDataType || 'all';
@@ -48,7 +49,7 @@ angular.module('DictionaryViewerApp')
         _controller.viewTypes = DictionaryService.getViewTypes();
 
         // Master sync
-        _controller.update = function () {
+        _controller.update = function (shouldForceUpdate) {
           var search = $location.search();
           console.log('update', search);
 
@@ -65,7 +66,7 @@ angular.module('DictionaryViewerApp')
           _controller.q = search.q || '';
           _controller.isReportOpen = search.isReportOpen === 'true' ? true : false;
 
-          _controller.render();
+          _controller.render(shouldForceUpdate || false);
         };
 
         // Init
@@ -103,7 +104,6 @@ angular.module('DictionaryViewerApp')
 
           _controller.tableViewer.toggleDataTypeFunc = function () {
             $scope.$apply(function () {
-              console.log('asdf'); //very nice
               var search = $location.search();
               search.dataType = _controller.tableViewer.selectedDataType;
               $location.search(search);
@@ -126,9 +126,16 @@ angular.module('DictionaryViewerApp')
 
         function startWatcher() {
           $scope.$watch(function () {
-            return $location.search();
+            var searchTriggers = {};
+
+            angular.copy($location.search(), searchTriggers);
+
+            // A view change should never re-trigger a render event
+            delete searchTriggers.viewMode;
+
+            return searchTriggers;
           }, function () {
-            _controller.update();
+            _controller.update(true);
           }, true);
 
           if (angular.isDefined($scope.searchQuery)) {
@@ -172,20 +179,34 @@ angular.module('DictionaryViewerApp')
         };
 
 
-        _controller.render = function () {
+        _controller.render = function (shouldForceRender) {
           var versionFrom = _controller.vFrom;
           var versionTo = _controller.vTo;
           var viewMode = _controller.viewMode;
           var query = _controller.q;
           var dataType = _controller.dataType;
 
-          console.log('Render', versionFrom, versionTo, viewMode, query, dataType);
-          if (viewMode === 'table') {
-            _controller.tableViewer.showDictionaryTable(versionFrom, versionTo);
-            _controller.tableViewer.selectDataType(dataType);
-          } else {
-            _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo);
+          if (shouldForceRender !== true &&
+              _previousVersion.from === versionFrom &&
+              _previousVersion.to === versionTo) {
+            console.log('No Version Change Render Aborting...')
+            return;
           }
+
+          _previousVersion.from = versionFrom;
+          _previousVersion.to = versionTo;
+
+
+          // Ensure the Dictionary Service has the correct version ranges before rendering
+          DictionaryService.dictionaryVersionRange(versionFrom, versionTo);
+
+          console.log('Render', versionFrom, versionTo, viewMode, query, dataType);
+
+          _controller.tableViewer.showDictionaryTable(versionFrom, versionTo);
+          _controller.tableViewer.selectDataType(dataType);
+          _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo);
+
+
           _controller.tableViewer.filter(query);
           _controller.generateChangeList();
 

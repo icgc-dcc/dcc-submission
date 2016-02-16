@@ -27,6 +27,12 @@ var dictionaryApp = dictionaryApp || {};
       BETA: 'http://***REMOVED***',
       PROD: 'https://submissions.dcc.icgc.org'
     })
+    .constant('DictionaryAppConstants', {
+      VIEWS: ['graph', 'table', 'codelist', 'report'],
+      PRETTY_VIEW_MAP: {
+        graph: 'Overview', table: 'Details', codelist: 'Codelist', report: 'Changes Report'
+      }
+    })
     .controller('DictionaryViewerController', function (DictionaryBaseURLConstants) {
       this.DictionaryBaseURLConstants = DictionaryBaseURLConstants;
   });

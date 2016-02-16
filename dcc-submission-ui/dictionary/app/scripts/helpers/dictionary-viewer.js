@@ -73,7 +73,7 @@ var dictionaryApp = dictionaryApp || {};
     this.selectedDataType = 'all';
 
 
-    // Configuraitons
+    // Configurations
     this.barHeight = 25;
     this.colourDefault = d3.rgb(240, 240, 240);
 
@@ -539,9 +539,9 @@ var dictionaryApp = dictionaryApp || {};
       });
 
     // Highlight the graph viewer
-    d3.select('#graph').selectAll('circle').style('fill', null);
-    d3.select('#graph').selectAll('.filter-indicator').style('opacity', 0);
-    d3.select('#graph').selectAll('circle').filter(function (node) {
+    d3.select('#graph-diagram').selectAll('circle').style('fill', null);
+    d3.select('#graph-diagram').selectAll('.filter-indicator').style('opacity', 0);
+    d3.select('#graph-diagram').selectAll('circle').filter(function (node) {
       if (!txt || txt === '') {
         return false;
       }
@@ -556,7 +556,7 @@ var dictionaryApp = dictionaryApp || {};
       return matches.length > 0;
     }).style('fill', _self.colourHighlight);
 
-    d3.select('#graph').selectAll('.filter-indicator').filter(function (field) {
+    d3.select('#graph-diagram').selectAll('.filter-indicator').filter(function (field) {
       if (!txt || txt === '') {
         return false;
       }
@@ -585,15 +585,6 @@ var dictionaryApp = dictionaryApp || {};
     });
 
     window.scrollTo(0, 0);
-
-    // Reset
-    d3.select('#datatypeTable').transition().duration(300).style('opacity', 0.1).each('end', function () {
-      d3.select('#datatypeTable').style('display', 'none');
-      d3.select('#datatypeSelector').style('visibility', 'hidden');
-      d3.select('#datatypeGraph').style('display', 'block');
-      d3.select('#datatypeGraph').transition().duration(400).style('opacity', 1.0);
-    });
-
 
     // Clear
     d3.select('#graph').selectAll('*').remove();
