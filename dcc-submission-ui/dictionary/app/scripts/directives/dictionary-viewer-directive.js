@@ -9,7 +9,8 @@ angular.module('DictionaryViewerApp')
     },
     SCROLL_OFFSET: 60
   })
-  .directive('dictionaryViewer', function($http, $location, $anchorScroll, $templateCache, $compile){
+  .directive('dictionaryViewer', function($http, $location, $anchorScroll,
+                                          $templateCache, $compile, DictionaryAppConstants) {
     return {
       restrict: 'EA',
       //templateUrl: 'scripts/views/dictionary-viewer-directive.html',
@@ -40,6 +41,9 @@ angular.module('DictionaryViewerApp')
         _controller.viewMode = $scope.viewMode || 'graph';
         _controller.q = $scope.searchQuery || '';
         _controller.dataType = $scope.filterDataType || 'all';
+        _controller.selectedDetailFormatType = DictionaryAppConstants.DETAIL_FORMAT_TYPES.table;
+
+        _controller.detailFormatTypes = DictionaryAppConstants.DETAIL_FORMAT_TYPES;
 
         _controller.hideUnusedCodeLists = true;
 

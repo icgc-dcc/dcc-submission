@@ -426,7 +426,7 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
   TableViewer.prototype.selectDataType = function (label) {
 
-    d3.select('#minimapLabel').select('span').text('File Type: ' + label + ' ');
+    d3.select('#minimapLabel').select('span').html(label + '&nbsp;&nbsp;');
     d3.select('#minimapWrapper').style('display', 'none');
 
     window.scrollTo(0, 0);

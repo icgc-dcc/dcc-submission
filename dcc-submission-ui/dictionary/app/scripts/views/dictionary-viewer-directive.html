@@ -73,9 +73,10 @@
     <div class="tab-container">
         <ul class="nav nav-tabs" role="tablist">
             <li data-ng-repeat="viewType in dictionaryViewerCtrl.viewTypes" role="presentation" data-ng-class="{'active': viewType == dictionaryViewerCtrl.viewMode}">
-                <a  href="?viewMode={{viewType}}" aria-controls="{{viewType}}"
+                <a  href="#?viewMode={{viewType}}" aria-controls="{{viewType}}"
                     role="tab" data-toggle="tab"
                     data-ng-bind="viewType | prettyPrintView"
+                    data-target="{{viewType}}"
                     data-ng-click="dictionaryViewerCtrl.viewMode = viewType; dictionaryViewerCtrl.setView(viewType)">
                 </a>
             </li>
@@ -89,17 +90,27 @@
                     <div class="vis-wrapper">
                         <!-- template for table viewer-->
                         <div class="clearfix">
-                            <div id="datatypeSelector" class="minimap-container">
-                                <button id="minimapLabel" class="btn btn-primary"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-                                <div id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; position:absolute; background-color:#F5F5F5">
-                                    <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+                            <div id="datatypeSelector" class="minimap-container col-md-12">
+                                <div class="pull-left col-md-3 file-container">
+                                    <label for="detail-format-type">Files: </label>
+                                    <button id="minimapLabel" class="btn btn-primary"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+                                    <div id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; position:absolute; background-color:#F5F5F5">
+                                        <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+                                    </div>
+                                </div>
+                                <div class="pull-right col-md-3 detail-format-container" style="text-align: right">
+                                    <label for="detail-format-type">Format: </label>
+                                    <select class="form-control" id="detail-format-type" style="display: inline-block; width: 60%;  margin-left: 1rem;"
+                                            data-ng-options="formatTypeName for (formatTypeKey, formatTypeName) in dictionaryViewerCtrl.detailFormatTypes"
+                                            data-ng-model="dictionaryViewerCtrl.selectedDetailFormatType">
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <!-- template for json viewer -->
-                        <div id="jsonviewer" data-ng-style="{'display': dictionaryViewerCtrl.viewMode==='json'? 'block':'none'}"></div>
+                        <div id="jsonviewer" data-ng-show="dictionaryViewerCtrl.selectedDetailFormatType === dictionaryViewerCtrl.detailFormatTypes.json" ng-cloak></div>
 
-                        <div id="datatypeTable"></div>
+                        <div id="datatypeTable" data-ng-show="dictionaryViewerCtrl.selectedDetailFormatType === dictionaryViewerCtrl.detailFormatTypes.table" ng-cloak></div>
                     </div>
             </div>
             <div data-ng-class="{'active': dictionaryViewerCtrl.viewMode === 'graph'}"

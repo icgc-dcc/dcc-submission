@@ -33,14 +33,25 @@
 }
 
 .tab-content {
-  padding: 2rem 0rem;
+  padding: 2rem 1rem;
   border: solid 1px #ccc;
   border-top: none;
 }
 
 .minimap-container {
   display:inline-block;
-  float:right;
+  width: 100%;
+  padding: 1rem 0rem 3rem 0rem;
+  z-index: 10000;
+}
+
+.detail-format-container {
+  text-align: right;
+}
+
+.file-container {
+  text-align: left;
+  padding-left: 0rem;
 }
 
 .data-type-list {

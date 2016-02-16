@@ -31,6 +31,10 @@ var dictionaryApp = dictionaryApp || {};
       VIEWS: ['graph', 'table', 'codelist', 'report'],
       PRETTY_VIEW_MAP: {
         graph: 'Overview', table: 'Details', codelist: 'Codelist', report: 'Changes Report'
+      },
+      DETAIL_FORMAT_TYPES: {
+        table: 'Table',
+        json: 'JSON'
       }
     })
     .controller('DictionaryViewerController', function (DictionaryBaseURLConstants) {
