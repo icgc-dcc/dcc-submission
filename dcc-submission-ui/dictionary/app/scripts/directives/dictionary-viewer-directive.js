@@ -189,7 +189,7 @@ angular.module('DictionaryViewerApp')
           if (shouldForceRender !== true &&
               _previousVersion.from === versionFrom &&
               _previousVersion.to === versionTo) {
-            console.log('No Version Change Render Aborting...')
+            console.log('No Version Change Render Aborting...');
             return;
           }
 

@@ -6,5 +6,5 @@ angular.module('DictionaryViewerApp')
 
     return function(input) {
       return angular.isDefined(prettyPrintViewMap[input]) ? prettyPrintViewMap[input] : input;
-    }
+    };
   });
