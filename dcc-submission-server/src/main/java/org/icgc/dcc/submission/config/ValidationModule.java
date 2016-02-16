@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.config;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.icgc.dcc.common.core.Component.NORMALIZER;
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
 
@@ -52,7 +51,6 @@ import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
-import com.google.common.io.Resources;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
@@ -218,7 +216,6 @@ public class ValidationModule extends AbstractDccModule {
 
     log.info("Using PCAWG dictionary url: {}", dictionaryUrl);
     log.info("Using PCAWG sample sheet url: {}", dictionaryUrl);
-    log.info("PCAWG dictionary contents: {}", Resources.toString(sampleSheetUrl, UTF_8));
 
     return new PCAWGValidator(new PCAWGDictionary(dictionaryUrl), new PCAWGSampleSheet(sampleSheetUrl));
   }
