@@ -94,13 +94,13 @@
                                 <div class="pull-left col-md-3 file-container">
                                     <label for="detail-format-type">Files: </label>
                                     <button id="minimapLabel" class="btn btn-primary"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-                                    <div id="minimapWrapper" style="height:400px; width:285px; overflow:scroll; position:absolute; background-color:#F5F5F5">
+                                    <div id="minimapWrapper">
                                         <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
                                     </div>
                                 </div>
                                 <div class="pull-right col-md-3 detail-format-container" style="text-align: right">
                                     <label for="detail-format-type">Format: </label>
-                                    <select class="form-control" id="detail-format-type" style="display: inline-block; width: 60%;  margin-left: 1rem;"
+                                    <select class="form-control" id="detail-format-type"
                                             data-ng-options="formatTypeName for (formatTypeKey, formatTypeName) in dictionaryViewerCtrl.detailFormatTypes"
                                             data-ng-model="dictionaryViewerCtrl.selectedDetailFormatType">
                                     </select>

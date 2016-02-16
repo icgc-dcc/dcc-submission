@@ -45,6 +45,20 @@
   z-index: 10000;
 }
 
+#minimapWrapper {
+  height:400px;
+  width:285px;
+  overflow:scroll;
+  position:absolute;
+  background-color:#F5F5F5;
+}
+
+#detail-format-type {
+  display: inline-block;
+  width: 60%;
+  margin-left: 1rem;
+}
+
 .detail-format-container {
   text-align: right;
 }
