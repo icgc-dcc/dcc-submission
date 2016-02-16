@@ -186,6 +186,8 @@ module.exports = class ReportDatatypeView extends View
         fileReports = fileType.fileReports
         fileReports.forEach (file) =>
           # Datatable
+          # DCCHELPDESK-1019: This seemed like the only place I could figure out how to stitch it in...
+          file.lastUpdate = @fileMap[file.fileName].lastUpdate
           files.push file
 
           # To tell if files changed
