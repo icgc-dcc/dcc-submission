@@ -270,7 +270,7 @@ angular.module('DictionaryViewerApp')
 
           // Skip the rest if our view mode isn't table
 
-          if (viewMode !== 'table') {
+          if (_controller.viewMode !== 'table') {
             return;
           }
 

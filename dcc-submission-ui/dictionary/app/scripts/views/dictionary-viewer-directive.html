@@ -73,7 +73,7 @@
     <div class="tab-container">
         <ul class="nav nav-tabs" role="tablist">
             <li data-ng-repeat="viewType in dictionaryViewerCtrl.viewTypes" role="presentation" data-ng-class="{'active': viewType == dictionaryViewerCtrl.viewMode}">
-                <a  href="#?viewMode={{viewType}}" aria-controls="{{viewType}}"
+                <a href="javascript:void(0)" aria-controls="{{viewType}}"
                     role="tab" data-toggle="tab"
                     data-ng-bind="viewType | prettyPrintView"
                     data-target="{{viewType}}"

@@ -99,12 +99,8 @@ angular.module('DictionaryViewerApp')
     function _setView(view) {
         console.log('change view');
         var search = $location.search();
-        // search.viewMode = _controller.viewMode === 'table'? 'graph':'table';
-        search.viewMode = view;
 
-        if (search.viewMode === 'graph') {
-          delete search.dataType;
-        }
+        search.viewMode = view;
 
         $location.search(search);
     }
