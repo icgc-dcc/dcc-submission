@@ -1,5 +1,5 @@
 """
-* Copyright 2013(c) The Ontario Institute for Cancer Research.
+* Copyright 2016(c) The Ontario Institute for Cancer Research.
 * All rights reserved.
 *
 * This program and the accompanying materials are made available under the

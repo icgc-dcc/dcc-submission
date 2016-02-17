@@ -1,5 +1,5 @@
 ---
-# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+# Copyright 2016(c) The Ontario Institute for Cancer Research.
 
 - name: Install python software properties (apt-add-repository)
   apt: pkg=python-software-properties update_cache=yes

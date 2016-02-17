@@ -1,5 +1,5 @@
 ---
-# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+# Copyright 2016(c) The Ontario Institute for Cancer Research.
 
 # The version of MongoDB to install (currently what is used in dev and prod)
 mongodb_version: 2.4.1

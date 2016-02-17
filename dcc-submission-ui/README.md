@@ -1,29 +1,45 @@
-ICGC DCC - Submission UI
-===
+# ICGC DCC - Submission UI
 
-Setup
----
+This is the UI module which powers the front-end of the submission system.
+
+## Libraries
+
+The UI module is written using the following technology stack:
+
+- [CoffeeScript](http://coffeescript.org/)
+- [Chaplin](http://chaplinjs.org/)
+- [BackboneJS](http://backbonejs.org/)
+- [Stylus](http://stylus-lang.com/)
+- [Cake](http://coffeescript.org/documentation/docs/cake.html)
+- [Brunch](http://brunch.io/)
+
+## Setup
 
 Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are using a package manager such as `apt`, `brew` or `macports` please ensure the correct version has been installed.
 
 Install [brunch](http://brunch.io/), [cake](http://coffeescript.org/documentation/docs/cake.html) and required modules:
 
-	sudo npm install -g brunch@1.7.14 
-   	sudo npm install -g coffee-script@1.6.3 
-	cd dcc/dcc-submission/dcc-submission-ui
-	npm install
+```shell
+sudo npm install -g brunch@1.7.14 
+sudo npm install -g coffee-script@1.6.3 
+cd dcc/dcc-submission/dcc-submission-ui
+npm install
+```
 	
 
 Ensure that `brunch` has been added to your `PATH` by typing:
 
-	brunch
+```shell
+brunch
+```
 	
 Ensure that `cack` has been added to your `PATH` by typing:
 
-	cake
+```shell
+cake
+```
 	
-Development
----
+## Development
 
 Start brunch (in another console):
 
@@ -42,8 +58,7 @@ Point your browser to:
 [http://localhost:3334/](http://localhost:3334/)
 
 	
-Build
----
+## Build
 
 For CI builds. Required to translate coffee script and minify. This is also required if you intend to run the `dcc-submission-server` without `cake` in development (for non-UI developers). Results are put in `./public`:
 
