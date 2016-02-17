@@ -226,7 +226,45 @@ angular.module('DictionaryViewerApp')
             });
           }
 
-          _controller.jsonEditor.set(_controller.dictUtil.getDictionary(versionTo));
+
+
+          if (_controller.jsonEditor) {
+
+            var dictionaryJSON = {},
+                dictionariesJSON = _controller.dictUtil.getDictionary(versionTo);
+
+            if (_controller.dataType !== 'all' &&
+                dictionariesJSON && angular.isDefined(dictionariesJSON.files)) {
+
+              angular.copy(dictionariesJSON, dictionaryJSON);
+
+              // Filter the JSON based on the data type
+              var dictionaryFiles = [];
+
+              for (var i = 0; i < dictionaryJSON.files.length; i++) {
+                var file = dictionaryJSON.files[i];
+
+                if (file.name === dataType) {
+                  dictionaryFiles = dictionaryFiles.concat(dictionaryFiles, file);
+                }
+
+              }
+
+              dictionaryJSON.files = dictionaryFiles;
+            }
+            else {
+              dictionaryJSON = dictionariesJSON;
+            }
+
+            _controller.jsonEditor.set(dictionaryJSON);
+
+            if (dictionaryJSON.files.length === 1) {
+              _controller.jsonEditor.expandAll();
+            }
+
+          }
+
+
 
           $rootScope.$broadcast(DictionaryViewerConstants.EVENTS.RENDER_COMPLETE, null);
 

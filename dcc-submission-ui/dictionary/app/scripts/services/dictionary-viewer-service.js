@@ -149,18 +149,12 @@ angular.module('DictionaryViewerApp')
 
       changeReport = _dictionaryUtils.createDiffListing(_versionRange.from, _versionRange.to);
 
-      changeReport.changed = changeReport.fieldsChanged.map(function (field) {
-        return '   ' + field.fileType + '|' + field.fieldName;
-      }).join('\n');
+      changeReport.changed = changeReport.fieldsChanged;
 
-      changeReport.added = changeReport.fieldsAdded.map(function (field) {
-        return '   ' + field.fileType + '|' + field.fieldName;
-      }).join('\n');
+      changeReport.added = changeReport.fieldsAdded;
 
-      changeReport.removed = changeReport.fieldsRemoved.map(function (field) {
-        return '   ' + field.fileType + '|' + field.fieldName;
-      }).join('\n');
-console.log(_versionRange);
+      changeReport.removed = changeReport.fieldsRemoved;
+
       return changeReport;
     }
 

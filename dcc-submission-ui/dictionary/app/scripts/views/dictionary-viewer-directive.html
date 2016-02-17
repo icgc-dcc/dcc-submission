@@ -134,16 +134,40 @@
                  id="report">
                 <div class="report-wrapper">
                     <div>
-                          <pre>
-Added:
-{{dictionaryViewerCtrl.changeReport.added}}
+                        <div data-ng-if="dictionaryViewerCtrl.changeReport.added.length">
+                            <h3 class="change-addition-header"><i class="fa fa-plus"></i> Field Name Additions</h3>
+                            <div class="change-report-container change-additions">
+                                <ul>
+                                    <li data-ng-repeat="addition in dictionaryViewerCtrl.changeReport.added">
+                                        <i class="fa fa-plus"></i> <span data-ng-bind-template="{{addition.fileType}} - {{addition.fieldName}}"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div data-ng-if="dictionaryViewerCtrl.changeReport.changed.length">
+                            <h3 class="change-modification-header"><i class="fa fa-exchange"></i> Field Name Modifications</h3>
+                            <div class="change-report-container change-modifications">
+                                <ul>
+                                    <li data-ng-repeat="change in dictionaryViewerCtrl.changeReport.changed">
+                                        <i class="fa fa-exchange"></i> <span data-ng-bind-template="{{change.fileType}} - {{change.fieldName}}"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div data-ng-if="dictionaryViewerCtrl.changeReport.removed.length">
+                            <h3 class="change-removal-header"><i class="fa fa-minus"></i> Field Name Deletions</h3>
+                            <div class="change-report-container change-removals">
 
-Changed:
-{{dictionaryViewerCtrl.changeReport.changed}}
-
-Removed:
-{{dictionaryViewerCtrl.changeReport.removed}}
-                          </pre>
+                                <ul>
+                                    <li data-ng-repeat="removal in dictionaryViewerCtrl.changeReport.removed">
+                                        <i class="fa fa-minus"></i> <span data-ng-bind-template="{{removal.fileType}} - {{removal.fieldName}}"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-ng-if="! dictionaryViewerCtrl.changeReport.added.length && ! dictionaryViewerCtrl.changeReport.changed.length && ! dictionaryViewerCtrl.changeReport.removed.length">
+                       No Changes to Report Between {{dictionaryViewerCtrl.vFrom}} and {{dictionaryViewerCtrl.vTo}} Dictionary Versions.
                     </div>
                 </div>
             </div>
