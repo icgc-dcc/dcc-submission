@@ -80,7 +80,7 @@ var dictionaryApp = dictionaryApp || {};
     this.colourHighlight = d3.rgb(242, 155, 4);
 
     this.colourNew = d3.rgb(77, 175, 74);
-    this.colourChanged = d3.rgb(228, 26, 28);
+    this.colourChanged = d3.rgb(158, 123, 5);
 
     this.colourMinimapDefault = d3.rgb(230, 230, 230);
     this.colourMinimapSelect = d3.rgb(166, 206, 227);
@@ -900,11 +900,12 @@ var dictionaryApp = dictionaryApp || {};
       .attr('x', 0)
       .attr('fill', '#000000')
       .attr('font-size', '12px')
-      .text('File Field Changes');
+      .attr('font-weight', 'bold')
+      .text('Legend');
 
     legend.append('circle')
       .attr('cx', 10)
-      .attr('cy', 20)
+      .attr('cy', 17)
       .attr('r', 6.5)
       .attr('fill', '#FFFFFF')
       .attr('stroke-width', '1.5px')
@@ -926,7 +927,7 @@ var dictionaryApp = dictionaryApp || {};
 
     legend.append('text')
       .attr('x', 23)
-      .attr('y', 24)
+      .attr('y', 21)
       .attr('fill', '#666666')
       .text('FileType Name');
 
