@@ -21,8 +21,6 @@ import static com.google.inject.matcher.Matchers.inSubpackage;
 
 import java.io.Serializable;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.sshd.SshServer;
 import org.icgc.dcc.submission.service.AbstractDccModule;
 
@@ -34,6 +32,8 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Dependency injection module for the SFTP subsystem.

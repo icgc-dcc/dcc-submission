@@ -33,7 +33,7 @@ public class PCAWGFields {
    * Constants. See {@code sample.0.study.v1}
    * 
    * <pre>
-   * http://***REMOVED***/dictionary.html#?vFrom=0.11c&vTo=0.11c&viewMode=codelist&dataType=sample&q=sample.0.study.v1
+   * https://submissions.dcc.icgc.org/dictionary.html#?vFrom=0.11c&vTo=0.11c&viewMode=codelist&dataType=sample&q=sample.0.study.v1
    * </pre>
    */
   private static final String PCAWG_STUDY_CODE = "1";

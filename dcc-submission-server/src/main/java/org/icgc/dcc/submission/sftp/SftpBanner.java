@@ -56,12 +56,6 @@ class SftpBanner {
   private static final String BANNER_FILE = "banner.txt";
 
   /**
-   * Support email address.
-   */
-  // TODO: Externalize
-  private static final String SUPPORT_EMAIL = "***REMOVED***";
-
-  /**
    * Standard operating procedure for DCC submissions.
    */
   private static final String DOCS_URL = "http://docs.icgc.org";
@@ -112,7 +106,6 @@ class SftpBanner {
         "  - You may 'cd', 'put', 'mput', 'get', mget', 'rm' 'ls' in the following project directories:\n" +
         formatDirectories(projectKeys) +
         "  - Submission instructions may be found at: '" + DOCS_URL + "'\n" +
-        "  - For support contact: '" + SUPPORT_EMAIL + "'\n" +
         "\n";
 
     return message;
