@@ -2,13 +2,16 @@
 'use strict';
 
 angular.module('DictionaryViewerApp')
-  .service('DictionaryService', function($location, $http, $q) {
+  .service('DictionaryService', function($location, $http, $q, DictionaryAppConstants) {
 
     var _service = this,
         _dictionaryList = null,
         _codeList = null,
         _dictionaryUtils = null,
-        _versionRange = {from: null, to: null};
+        _versionRange = {from: null, to: null},
+        _latestDictionaryVersion = '',
+        _DEFAULT_FROM_VERSION_INDEX = 0,
+        _DEFAULT_TO_VERSION_INDEX = 0;
 
     _service.init = _init;
     _service.getCachedDictionaryList = _getCachedDictionaryList;
@@ -21,6 +24,7 @@ angular.module('DictionaryViewerApp')
     _service.getCurrentViewType = _getCurrentViewType;
     _service.dictionaryVersionRange = _dictionaryVersionRange;
     _service.generateChangeList = _generateChangeList;
+    _service.getLatestDictionaryVersion = _getLatestDictionaryVersion;
 
     function _init(baseURL) {
       return _getDictionaries(baseURL);
@@ -31,10 +35,11 @@ angular.module('DictionaryViewerApp')
       var deferred = $q.defer(),
           webserviceURL = (baseURL || '') + '/ws';
 
+
       $http.get(webserviceURL + '/dictionaries')
         .then(function (dictionaryList) {
 
-          // Grab the codelist
+          // Grab the code list
           $http.get(webserviceURL + '/codeLists')
             .then(function (codeList) {
                 _dictionaryList = dictionaryList.data;
@@ -42,7 +47,14 @@ angular.module('DictionaryViewerApp')
 
                 _dictionaryUtils = new dictionaryApp.DictionaryUtil(_dictionaryList);
 
-                _dictionaryVersionRange(_dictionaryUtils.versionList[1], _dictionaryUtils.versionList[0]);
+                // The version list is sorted in descending order (latest version first)
+                // use the latest current version as the default.
+                _dictionaryVersionRange(
+                  _dictionaryUtils.versionList[_DEFAULT_FROM_VERSION_INDEX],
+                  _dictionaryUtils.versionList[_DEFAULT_TO_VERSION_INDEX]
+                );
+
+                _latestDictionaryVersion = _dictionaryUtils.versionList[0];
 
                 deferred.resolve({dictionaryList: _dictionaryList, codeList: _codeList});
               },
@@ -59,6 +71,10 @@ angular.module('DictionaryViewerApp')
       return deferred.promise;
     }
 
+    function _getLatestDictionaryVersion() {
+      return _latestDictionaryVersion;
+    }
+
     function _getCachedDictionaryList() {
       return _dictionaryList;
     }
@@ -68,7 +84,7 @@ angular.module('DictionaryViewerApp')
     }
 
     function _getViewTypes() {
-      return ['graph', 'table', 'codelist', 'report','json'];
+      return DictionaryAppConstants.VIEWS;
     }
 
     function _setDictionaryFilterRange(fromVersion, toVersion) {
@@ -83,13 +99,11 @@ angular.module('DictionaryViewerApp')
     function _setView(view) {
         console.log('change view');
         var search = $location.search();
-        // search.viewMode = _controller.viewMode === 'table'? 'graph':'table';
+
         search.viewMode = view;
 
-        if (search.viewMode === 'graph') {
-          delete search.dataType;
-        }
-        $location.search(search);
+        // Nullify any hash that may interfere from a pure view change
+        $location.search(search).hash(null);
     }
 
     function _getDictionaryUtils() {
@@ -132,17 +146,11 @@ angular.module('DictionaryViewerApp')
 
       changeReport = _dictionaryUtils.createDiffListing(_versionRange.from, _versionRange.to);
 
-      changeReport.changed = changeReport.fieldsChanged.map(function (field) {
-        return field.fileType + '|' + field.fieldName;
-      }).join('\n');
+      changeReport.changed = changeReport.fieldsChanged;
 
-      changeReport.added = changeReport.fieldsAdded.map(function (field) {
-        return field.fileType + '|' + field.fieldName;
-      }).join('\n');
+      changeReport.added = changeReport.fieldsAdded;
 
-      changeReport.removed = changeReport.fieldsRemoved.map(function (field) {
-        return field.fileType + '|' + field.fieldName;
-      }).join('\n');
+      changeReport.removed = changeReport.fieldsRemoved;
 
       return changeReport;
     }

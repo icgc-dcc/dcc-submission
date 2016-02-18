@@ -31,7 +31,7 @@
     "highlightjs": "9.0.*",
     "underscore": "1.8.*",
     "regex-colorizer": "0.3.*",
-    "jsoneditor": "4.1.*",
+    "jsoneditor": "5.1.*",
     "bootstrap": "3.3.*"
   },
   "devDependencies": {

@@ -41,7 +41,7 @@ var dictionaryApp = dictionaryApp || {};
       // Query timer
       var qPromise = null;
 
-      var webserviceURL = 'http://***REMOVED***/ws';
+      var webserviceURL = 'http://hsubmission-dcc.oicr.on.ca:5380/ws';
 
       // Master sync
       $scope.update = function () {

@@ -24,8 +24,18 @@ var dictionaryApp = dictionaryApp || {};
   angular.module('DictionaryViewerApp', [])
     .constant('DictionaryBaseURLConstants' , {
       DEV: '',
-      BETA: 'http://***REMOVED***',
+      BETA: 'http://hsubmission-dcc.oicr.on.ca:5380',
       PROD: 'https://submissions.dcc.icgc.org'
+    })
+    .constant('DictionaryAppConstants', {
+      VIEWS: ['graph', 'table', 'codelist', 'report'],
+      PRETTY_VIEW_MAP: {
+        graph: 'Overview', table: 'Details', codelist: 'Codelists', report: 'Changes Report'
+      },
+      DETAIL_FORMAT_TYPES: {
+        table: 'Table',
+        json: 'JSON'
+      }
     })
     .controller('DictionaryViewerController', function (DictionaryBaseURLConstants) {
       this.DictionaryBaseURLConstants = DictionaryBaseURLConstants;

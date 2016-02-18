@@ -12,7 +12,7 @@ startServer = ->
   # Setup proxy to redirect /ws/* request to the DCC REST server  
   options =
     router:
-      #"localhost/ws/": "***REMOVED***:5380/ws/"
+      #"localhost/ws/": "hwww-dev.res.oicr.on.ca:5380/ws/"
       "localhost/ws/": "localhost:5380/ws/"
       "localhost": "localhost:3333"
 
