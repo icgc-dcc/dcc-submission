@@ -216,6 +216,16 @@ a {
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
+.code-container {
+  position: relative;
+}
+
+.code-zoom-indicator {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+
 .code-shard:hover {
   border-color: #e9931c;
   cursor: pointer;

@@ -36,16 +36,18 @@ angular.module('DictionaryViewerApp')
         _controller.shouldShowHeaderNav = $scope.showHeaderNav === 'false' ? false : true;
         _controller.shouldHideGraphLegend = $scope.hideGraphLegend === 'true' ? true : false;
 
+        var searchParams = $location.search();
+
         // params
-        _controller.vFrom = '';
-        _controller.vTo = '';
+        _controller.vFrom = searchParams.vFrom || '';
+        _controller.vTo = searchParams.vTo ||'';
         _controller.q = $scope.searchQuery || '';
         _controller.dataType = $scope.filterDataType || 'all';
         _controller.selectedDetailFormatType = DictionaryAppConstants.DETAIL_FORMAT_TYPES.table;
 
         _controller.detailFormatTypes = DictionaryAppConstants.DETAIL_FORMAT_TYPES;
 
-        _controller.hideUnusedCodeLists = true;
+        _controller.hideUnusedCodeLists = searchParams.hideUnusedCodeLists === 'false' ? false : true;
 
         // Query timer
         var qPromise = null;
@@ -64,6 +66,14 @@ angular.module('DictionaryViewerApp')
           if (search.vTo && search.vTo !== '') {
             _controller.vTo = search.vTo;
           }
+
+          if (search.hideUnusedCodeLists === 'false') {
+            _controller.hideUnusedCodeLists = false;
+          }
+          else {
+            _controller.hideUnusedCodeLists = true;
+          }
+
           //if (search.viewMode) _controller.viewMode = search.viewMode;
           _controller.dataType = search.dataType || 'all';
           _controller.q = search.q || '';
@@ -149,6 +159,27 @@ angular.module('DictionaryViewerApp')
             });
           }
         }
+
+        $scope.$watch(function() {
+            return _controller.hideUnusedCodeLists;
+          },
+          function(newVal, oldVal) {
+
+            if (newVal === oldVal) {
+              return;
+            }
+
+            var search = $location.search();
+
+            if (_controller.hideUnusedCodeLists) {
+              search.hideUnusedCodeLists = 'true';
+            }
+            else {
+              search.hideUnusedCodeLists = 'false';
+            }
+
+            $location.search(search);
+        });
 
         _controller.setView = DictionaryService.setView;
 

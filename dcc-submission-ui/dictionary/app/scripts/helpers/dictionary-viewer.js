@@ -400,23 +400,35 @@ var dictionaryApp = dictionaryApp || {};
     });
 
     // Script
-    elem.append('td').style('max-width', '250px').style('overflow', 'auto').each(function () {
-      if (script) {
-        var beautifiedScript = hljs.highlight('java', js_beautify(script.config.script)).value;
-        d3.select(this).append('p').classed('code-constrained-width', true).html(script.config.description);
+    elem.append('td')
+      .style('max-width', '250px')
+      .style('overflow', 'auto')
+      .style('position', 'relative')
+      .each(function () {
+        if (script) {
+          var beautifiedScript = hljs.highlight('java', js_beautify(script.config.script)).value;
+          var codeBlock =  d3.select(this);
 
-        d3.select(this)
-          .append('pre')
-          .classed('code-shard code-constrained-width', true)
-          .on('click', function () {
-            _self.modalManager.title('<i>' + row.name + '</i> Field Script Restriction');
-            _self.modalManager.bodyText('<pre class="code-shard"><code>' + beautifiedScript + '</code></pre>');
-            _self.modalManager.show();
-          })
-          .append('code')
-          .html(beautifiedScript);
-      }
-    });
+
+          codeBlock.append('p').classed('code-constrained-width', true).html(script.config.description);
+
+          var codeContainer = codeBlock.append('div').classed('code-container', true);
+
+          codeContainer
+            .append('pre')
+            .classed('code-shard code-constrained-width', true)
+
+            .on('click', function () {
+              _self.modalManager.title('<i>' + row.name + '</i> Field Script Restriction');
+              _self.modalManager.bodyText('<pre class="code-shard"><code>' + beautifiedScript + '</code></pre>');
+              _self.modalManager.show();
+            })
+            .append('code')
+            .html(beautifiedScript);
+
+          codeContainer.append('i').classed('fa fa-search-plus code-zoom-indicator', true);
+        }
+      });
 
   };
 

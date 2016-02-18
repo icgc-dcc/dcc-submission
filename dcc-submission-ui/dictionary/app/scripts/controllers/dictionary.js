@@ -30,7 +30,7 @@ var dictionaryApp = dictionaryApp || {};
     .constant('DictionaryAppConstants', {
       VIEWS: ['graph', 'table', 'codelist', 'report'],
       PRETTY_VIEW_MAP: {
-        graph: 'Overview', table: 'Details', codelist: 'Codelist', report: 'Changes Report'
+        graph: 'Overview', table: 'Details', codelist: 'Codelists', report: 'Changes Report'
       },
       DETAIL_FORMAT_TYPES: {
         table: 'Table',
