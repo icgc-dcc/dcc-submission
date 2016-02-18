@@ -891,41 +891,50 @@ var dictionaryApp = dictionaryApp || {};
     legend.append('rect')
       .attr('x', -15)
       .attr('y', -15)
-      .attr('width', 220)
-      .attr('height', 40)
-      .attr('stroke', '#666666')
+      .attr('width', 180)
+      .attr('height', 70)
+      .attr('stroke', '#cccccc')
       .attr('fill', '#FFFFFF');
 
+    legend.append('text')
+      .attr('x', 0)
+      .attr('fill', '#000000')
+      .attr('font-size', '12px')
+      .text('File Field Changes');
+
     legend.append('circle')
+      .attr('cx', 10)
+      .attr('cy', 20)
       .attr('r', 6.5)
       .attr('fill', '#FFFFFF')
-      .attr('stroke', '#666666');
+      .attr('stroke-width', '1.5px')
+      .attr('stroke', 'steelblue');
 
-    legend.append('text')
-      .attr('x', 10)
-      .attr('dy', '.10em')
-      .text('meth_array_m');
+    /* legend.append('text')
+      .attr('x', 23)
+      .attr('y', 23)
+      .text('meth_array_m'); */
 
     for (var i = 0; i < 6; i++) {
       legend.append('rect')
-        .attr('x', 10 + 4 * i)
-        .attr('y', '6')
+        .attr('x', 4 + 4 * i)
+        .attr('y', '33')
         .attr('height', 11)
         .attr('width', 2)
-        .style('fill', '#DDDDEE');
+        .style('fill', '#cccccc');
     }
 
     legend.append('text')
-      .attr('x', 90)
-      .attr('y', 0)
+      .attr('x', 23)
+      .attr('y', 24)
       .attr('fill', '#666666')
-      .text('<--- FileType Name');
+      .text('FileType Name');
 
     legend.append('text')
-      .attr('x', 90)
-      .attr('y', 14)
+      .attr('x', 33)
+      .attr('y', 42)
       .attr('fill', '#666666')
-      .text('<--- # Fields');
+      .text('# Fields');
   };
 
   dictionaryApp.TableViewer = TableViewer;

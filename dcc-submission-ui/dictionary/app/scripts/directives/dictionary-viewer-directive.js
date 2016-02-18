@@ -95,23 +95,19 @@ angular.module('DictionaryViewerApp')
           _controller.vFrom = versionRange.from;
           _controller.vTo = versionRange.to;
 
-          // Externalized function
-          _controller.tableViewer.toggleNodeFunc = function () {
+          var handleGraphToggle = function () {
             $scope.$apply(function () {
               var search = $location.search();
-              search.viewMode = _controller.getCurrentView();
+              search.viewMode = 'table';
               search.dataType = _controller.tableViewer.selectedDataType;
               $location.search(search);
             });
           };
 
-          _controller.tableViewer.toggleDataTypeFunc = function () {
-            $scope.$apply(function () {
-              var search = $location.search();
-              search.dataType = _controller.tableViewer.selectedDataType;
-              $location.search(search);
-            });
-          };
+          // Externalized function
+          _controller.tableViewer.toggleNodeFunc = handleGraphToggle;
+
+          _controller.tableViewer.toggleDataTypeFunc = handleGraphToggle;
 
 
           var container = document.getElementById('jsonviewer');
