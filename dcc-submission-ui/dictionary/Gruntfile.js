@@ -283,6 +283,14 @@ module.exports = function (grunt) {
             src: [
               '*.*'
             ]
+          },
+          {
+            expand: true,
+            cwd: '<%= yeoman.app %>/bower_components/jsoneditor/dist/img/',
+            dest: '<%= yeoman.dist %>/styles/img',
+            src: [
+              '*.*'
+            ]
           }
         ]
       }

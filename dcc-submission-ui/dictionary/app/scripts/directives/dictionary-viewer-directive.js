@@ -31,6 +31,7 @@ angular.module('DictionaryViewerApp')
         // Renderer and dictionary logic
         _controller.tableViewer = null;
         _controller.dictUtil = null;
+        _controller.getCurrentView = DictionaryService.getCurrentViewType;
 
         _controller.shouldShowHeaderNav = $scope.showHeaderNav === 'false' ? false : true;
         _controller.shouldHideGraphLegend = $scope.hideGraphLegend === 'true' ? true : false;
@@ -38,7 +39,6 @@ angular.module('DictionaryViewerApp')
         // params
         _controller.vFrom = '';
         _controller.vTo = '';
-        _controller.viewMode = $scope.viewMode || 'graph';
         _controller.q = $scope.searchQuery || '';
         _controller.dataType = $scope.filterDataType || 'all';
         _controller.selectedDetailFormatType = DictionaryAppConstants.DETAIL_FORMAT_TYPES.table;
@@ -65,7 +65,6 @@ angular.module('DictionaryViewerApp')
             _controller.vTo = search.vTo;
           }
           //if (search.viewMode) _controller.viewMode = search.viewMode;
-          _controller.viewMode = DictionaryService.getCurrentViewType();
           _controller.dataType = search.dataType || 'all';
           _controller.q = search.q || '';
           _controller.isReportOpen = search.isReportOpen === 'true' ? true : false;
@@ -100,7 +99,7 @@ angular.module('DictionaryViewerApp')
           _controller.tableViewer.toggleNodeFunc = function () {
             $scope.$apply(function () {
               var search = $location.search();
-              search.viewMode = _controller.viewMode === 'table' ? 'graph' : 'table';
+              search.viewMode = _controller.getCurrentView();
               search.dataType = _controller.tableViewer.selectedDataType;
               $location.search(search);
             });
@@ -186,7 +185,7 @@ angular.module('DictionaryViewerApp')
         _controller.render = function (shouldForceRender) {
           var versionFrom = _controller.vFrom;
           var versionTo = _controller.vTo;
-          var viewMode = _controller.viewMode;
+          var viewMode = _controller.getCurrentView();
           var query = _controller.q;
           var dataType = _controller.dataType;
 
@@ -270,7 +269,7 @@ angular.module('DictionaryViewerApp')
 
           // Skip the rest if our view mode isn't table
 
-          if (_controller.viewMode !== 'table') {
+          if (_controller.getCurrentView() !== 'table') {
             return;
           }
 

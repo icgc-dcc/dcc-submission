@@ -72,18 +72,18 @@
 
     <div class="tab-container">
         <ul class="nav nav-tabs" role="tablist">
-            <li data-ng-repeat="viewType in dictionaryViewerCtrl.viewTypes" role="presentation" data-ng-class="{'active': viewType == dictionaryViewerCtrl.viewMode}">
+            <li data-ng-repeat="viewType in dictionaryViewerCtrl.viewTypes" role="presentation" data-ng-class="{'active': dictionaryViewerCtrl.getCurrentView() === viewType}">
                 <a href="javascript:void(0)" aria-controls="{{viewType}}"
-                    role="tab" data-toggle="tab"
+                    role="tab" data-toggle="tab" class="{{viewType}}-tab"
                     data-ng-bind="viewType | prettyPrintView"
                     data-target="{{viewType}}"
-                    data-ng-click="dictionaryViewerCtrl.viewMode = viewType; dictionaryViewerCtrl.setView(viewType)">
+                    data-ng-click="dictionaryViewerCtrl.setView(viewType)">
                 </a>
             </li>
         </ul>
         <div class="tab-content">
             <div
-                 data-ng-class="{'active': dictionaryViewerCtrl.viewMode === 'table'}"
+                 data-ng-class="{'active': dictionaryViewerCtrl.getCurrentView() === 'table'}"
                  class="tab-pane"
                  role="tabpanel"
                  id="table">
@@ -113,7 +113,7 @@
                         <div id="datatypeTable" data-ng-show="dictionaryViewerCtrl.selectedDetailFormatType === dictionaryViewerCtrl.detailFormatTypes.table" ng-cloak></div>
                     </div>
             </div>
-            <div data-ng-class="{'active': dictionaryViewerCtrl.viewMode === 'graph'}"
+            <div data-ng-class="{'active': dictionaryViewerCtrl.getCurrentView() === 'graph'}"
                  class="tab-pane"
                  role="tabpanel"
                  id="graph">
@@ -128,7 +128,7 @@
 
 
             <!-- template for report -->
-            <div data-ng-class="{'active': dictionaryViewerCtrl.viewMode === 'report'}"
+            <div data-ng-class="{'active': dictionaryViewerCtrl.getCurrentView() === 'report'}"
                  class="tab-pane"
                  role="tabpanel"
                  id="report">
@@ -171,7 +171,7 @@
                     </div>
                 </div>
             </div>
-            <div data-ng-class="{'active': dictionaryViewerCtrl.viewMode === 'codelist'}"
+            <div data-ng-class="{'active': dictionaryViewerCtrl.getCurrentView() === 'codelist'}"
                  class="tab-pane"
                  role="tabpanel"
                  id="codelist">
