@@ -102,7 +102,8 @@ angular.module('DictionaryViewerApp')
 
         search.viewMode = view;
 
-        $location.search(search);
+        // Nullify any hash that may interfere from a pure view change
+        $location.search(search).hash(null);
     }
 
     function _getDictionaryUtils() {

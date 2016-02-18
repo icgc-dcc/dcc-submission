@@ -134,7 +134,7 @@
                  id="report">
                 <div class="report-wrapper">
                     <div>
-                        <div data-ng-if="dictionaryViewerCtrl.changeReport.added.length">
+                        <div id="additions" data-ng-if="dictionaryViewerCtrl.changeReport.added.length">
                             <h3 class="change-addition-header"><i class="fa fa-plus"></i> Field Name Additions</h3>
                             <div class="change-report-container change-additions">
                                 <ul>
@@ -144,7 +144,7 @@
                                 </ul>
                             </div>
                         </div>
-                        <div data-ng-if="dictionaryViewerCtrl.changeReport.changed.length">
+                        <div id="modifications" data-ng-if="dictionaryViewerCtrl.changeReport.changed.length">
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> Field Name Modifications</h3>
                             <div class="change-report-container change-modifications">
                                 <ul>
@@ -154,7 +154,7 @@
                                 </ul>
                             </div>
                         </div>
-                        <div data-ng-if="dictionaryViewerCtrl.changeReport.removed.length">
+                        <div id="deletions" data-ng-if="dictionaryViewerCtrl.changeReport.removed.length">
                             <h3 class="change-removal-header"><i class="fa fa-minus"></i> Field Name Deletions</h3>
                             <div class="change-report-container change-removals">
 
