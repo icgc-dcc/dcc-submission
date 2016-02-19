@@ -20,36 +20,35 @@ Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are usin
 Install [brunch](http://brunch.io/), [cake](http://coffeescript.org/documentation/docs/cake.html) and required modules:
 
 ```shell
-sudo npm install -g brunch@1.7.14 
-sudo npm install -g coffee-script@1.6.3 
+sudo npm install -g brunch@1.7.14
+sudo npm install -g coffee-script@1.6.3
 cd dcc/dcc-submission/dcc-submission-ui
 npm install
 ```
-	
 
 Ensure that `brunch` has been added to your `PATH` by typing:
 
 ```shell
 brunch
 ```
-	
-Ensure that `cack` has been added to your `PATH` by typing:
+
+Ensure that `cake` has been added to your `PATH` by typing:
 
 ```shell
 cake
 ```
-	
+
 ## Development
 
 Start brunch (in another console):
 
-	cd dcc/dcc-submission/dcc-submission-ui
-	brunch w -s
+   cd dcc/dcc-submission/dcc-submission-ui
+   brunch w -s
 
 Start the proxy (in yet another console)
 
-	cd dcc/dcc-submission/dcc-submission-ui
-	cake proxy
+   cd dcc/dcc-submission/dcc-submission-ui
+   cake proxy
 
 Start the [dcc-submission-server](../dcc-submission-server/README.md)
 
@@ -57,12 +56,15 @@ Point your browser to:
 
 [http://localhost:3334/](http://localhost:3334/)
 
-	
+
 ## Build
 
-For CI builds. Required to translate coffee script and minify. This is also required if you intend to run the `dcc-submission-server` without `cake` in development (for non-UI developers). Results are put in `./public`:
+For CI builds. Required to translate coffee script and minify. This is also required if you intend to run the `dcc-submission-server` without `cake` in development (for non-UI developers). Results are put in `./public`.
 
-	cd dcc/dcc-submission/dcc-submission-ui
-	mvn	
+To build the module, execute the following from the root of the repository:
 
-*Note:* If not using the proxy above you will need to run this command and restart the `dcc-submission-server` every time a file is modified. 
+```shell
+cd dcc/dcc-submission/dcc-submission-ui
+```mvn
+
+*Note:* If not using the proxy above you will need to run this command and restart the `dcc-submission-server` every time a file is modified.

@@ -1,47 +1,46 @@
-ICGC DCC - Submission
-===
+# ICGC DCC - Submission
 
-Parent project of the submission modules.
+Parent project of the submission system which is responsible for accepting and validating ICGC clinical and experimental data files submitted to the DCC.
 
-Build
----
+## Build
 
-From the command line:
+To compile, test and package the system, execute the following from the root of the repository:
 
 ```shell
 mvn
 ```
-    
-Modules
----
 
-Core modules:
+## Modules
+
+The following modules comprise the backend of the system:
 
 - [Submission Core](dcc-submission-core/README.md)
 - [Submission Server](dcc-submission-server/README.md)
 - [Submission Validator](dcc-submission-validator/README.md)
 - [Submission Reporter](dcc-submission-reporter/README.md)
+
+The following module is the user interface to the system:
+
 - [Submission UI](dcc-submission-ui/README.md)
 
-Utility modules:
+The following are utility modules related to submissions:
 
-- [Submission Generator](dcc-submission-generator/README.md) 
+- [Submission Generator](dcc-submission-generator/README.md)
 
-Architecture
----
+For detailed information on each module, please consult the above `README.md`s.
+
+## Architecture
 
 For a high level overview of the architecture, please see [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Deployment
----
+## Installation
 
-For automated deployment of the infrastructure and software components, please consult the [dcc-cm](https://github.com/icgc-dcc/dcc-cm/blob/develop/ansible/README.md) project and execute the `submission.yml` playbook.
+For automated deployment and installation of the infrastructure and software components, please consult the [dcc-cm](https://github.com/icgc-dcc/dcc-cm/blob/develop/ansible/README.md) project and execute the `submission.yml` playbook.
 
-Changes
----
+## Changes
+
 Change log for the user-facing system modules may be found in [CHANGES.md](CHANGES.md).
 
-Copyright and License
----
+## License
 
 Copyright and license information may be found in [LICENSE.md](LICENSE.md).

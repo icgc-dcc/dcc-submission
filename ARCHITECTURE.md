@@ -1,4 +1,5 @@
 # ICGC DCC - Submission Architecture
+
 ## Overview
 
 The submission system is single-node Java based microservice with a RESTful API that powers a SPA (Single Page Application) front-end. Users interact with the system by way of the UI, API as well as an SFTP interface for uploading files.
@@ -9,10 +10,10 @@ Additional user guides may be found on the [ICGC DCC Docs site](http://docs.icgc
 
 The backend Java modules rely heavily on [Lombok](https://projectlombok.org/) to minimize boilerplate code and type noise that is typical of Java applications.
 
- 
+
 ## Storage
 
-System metadata and user submitted files are handled separately within the system. Metadata is stored in MongoDB while files are stored in Hadoop HDFS. 
+System metadata and user submitted files are handled separately within the system. Metadata is stored in MongoDB while files are stored in Hadoop HDFS.
 
 
 ### File
