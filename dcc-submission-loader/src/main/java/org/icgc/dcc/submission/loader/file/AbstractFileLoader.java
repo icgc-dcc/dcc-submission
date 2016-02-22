@@ -56,22 +56,25 @@ public abstract class AbstractFileLoader implements FileLoader {
 
   @Override
   public Void call() throws Exception {
-    beforeLoad();
-    log.info("Loading {} of {}", type, project);
+    try {
+      beforeLoad();
+      log.info("Loading {} of {}", type, project);
 
-    val watch = Stopwatch.createStarted();
-    while (recordReader.hasNext()) {
-      val record = recordReader.next();
-      loadRecord(record);
-      documentCount++;
-      printStats();
+      val watch = Stopwatch.createStarted();
+      while (recordReader.hasNext()) {
+        val record = recordReader.next();
+        loadRecord(record);
+        documentCount++;
+        printStats();
+      }
+
+      val elapsed = watch.elapsed(TimeUnit.SECONDS);
+      log.info("[{}/{}] Loaded {} document(s). {} docs/sec", project, type, documentCount, getThroughput(elapsed));
+
+      return null;
+    } finally {
+      close();
     }
-
-    close();
-    val elapsed = watch.elapsed(TimeUnit.SECONDS);
-    log.info("[{}/{}] Loaded {} document(s). {} docs/sec", project, type, documentCount, getThroughput(elapsed));
-
-    return null;
   }
 
   protected void beforeLoad() {

@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.loader.db.postgres;
 
 import static java.lang.String.format;
+import static org.icgc.dcc.common.core.util.Separators.DOT;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.loader.util.Fields.DONOR_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
@@ -77,8 +78,6 @@ public class PostgresDatabaseService implements DatabaseService {
 
   private Optional<String> createUpdateQuery(String release, String type) {
     log.debug("Creating update donor_id query for release {} and type {}", release, type);
-
-    val tableName = getTableName(release, type);
     val parent = submissionMetadataService.getParent(type);
 
     // Exclude meth_array_probes
@@ -86,12 +85,14 @@ public class PostgresDatabaseService implements DatabaseService {
       return Optional.empty();
     }
 
+    val sql = new StringBuilder();
+    val tableName = getTableName(release, type);
+    sql.append("UPDATE " + tableName + " child ");
+    sql.append("SET " + DONOR_ID_FIELD_NAME + " = ( ");
+
     // The parents should be updated already. The first one will be used.
     val parentType = parent.iterator().next();
     val parentTableName = getTableName(release, parentType);
-    val sql = new StringBuilder();
-    sql.append("UPDATE " + tableName + " child ");
-    sql.append("SET " + DONOR_ID_FIELD_NAME + " = ( ");
     sql.append("SELECT parent." + DONOR_ID_FIELD_NAME + " FROM " + parentTableName + " parent ");
     sql.append(" WHERE ");
 
@@ -199,9 +200,9 @@ public class PostgresDatabaseService implements DatabaseService {
       }
     }
 
-    // add project_id
+    // Add project_id
     sqlBuilder.append(", " + PROJECT_ID + " varchar(7)");
-    // add donor_id
+    // Add donor_id
     if (!hasDonorId) {
       sqlBuilder.append(", " + DONOR_ID_FIELD_NAME + " varchar(500)");
     }
@@ -225,7 +226,7 @@ public class PostgresDatabaseService implements DatabaseService {
   }
 
   private String getTableName(String release, String type) {
-    return release.toLowerCase() + "." + type;
+    return release.toLowerCase() + DOT + type;
   }
 
   private void dropTable(String release, String type) {
@@ -252,7 +253,7 @@ public class PostgresDatabaseService implements DatabaseService {
       hasPrevCondition = true;
     }
 
-    // add project_id
+    // Add project_id
     joinClause.append(format(" AND child.%s = parent.%s", PROJECT_ID, PROJECT_ID));
 
     return joinClause.toString();

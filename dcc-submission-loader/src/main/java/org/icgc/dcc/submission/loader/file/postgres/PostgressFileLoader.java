@@ -34,12 +34,12 @@ import com.google.common.collect.Lists;
 @Slf4j
 public class PostgressFileLoader extends AbstractFileLoader {
 
-  private static final int BULK_SIZE = 2000;
+  private static final int BULK_SIZE = 10_000;
 
   /**
    * Dependencies.
    */
-  private final SimpleJdbcInsert insertActor;
+  private final SimpleJdbcInsert inserter;
   private final PostgressRecordConverter recordConverter;
 
   /**
@@ -48,18 +48,21 @@ public class PostgressFileLoader extends AbstractFileLoader {
   private final List<Map<String, Object>> recordBuffer;
 
   public PostgressFileLoader(@NonNull String project, @NonNull String type, @NonNull RecordReader recordReader,
-      @NonNull SimpleJdbcInsert jdbcTemplate, @NonNull PostgressRecordConverter recordConverter) {
+      @NonNull SimpleJdbcInsert inserter, @NonNull PostgressRecordConverter recordConverter) {
     super(project, type, recordReader);
-    this.insertActor = jdbcTemplate;
+    this.inserter = inserter;
     this.recordConverter = recordConverter;
     this.recordBuffer = Lists.newArrayListWithCapacity(BULK_SIZE);
   }
 
   @Override
   public void close() throws IOException {
-    log.debug("[{}] Flushing records...", getName());
-    flushRecords();
-    super.close();
+    try {
+      log.debug("[{}] Flushing records...", getName());
+      flushRecords();
+    } finally {
+      super.close();
+    }
   }
 
   @Override
@@ -73,7 +76,7 @@ public class PostgressFileLoader extends AbstractFileLoader {
 
   @SuppressWarnings("unchecked")
   private void flushRecords() {
-    insertActor.executeBatch(recordBuffer.toArray(new Map[recordBuffer.size()]));
+    inserter.executeBatch(recordBuffer.toArray(new Map[recordBuffer.size()]));
     recordBuffer.clear();
     log.debug("[{}] Flushed records.", getName());
   }

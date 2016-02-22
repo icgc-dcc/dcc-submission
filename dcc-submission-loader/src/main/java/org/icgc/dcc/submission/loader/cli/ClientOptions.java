@@ -33,7 +33,7 @@ public class ClientOptions {
   public String submissionDirectory = "/icgc/submission";
 
   @Parameter(names = { "--hdfs-url" }, description = "HDFS URL")
-  public String fsUrl = "hdfs://hnn1-dcc.res.oicr.on.ca";
+  public String fsUrl;
 
   @Parameter(names = { "--db-host" }, required = true, description = "Database hostname")
   public String dbHost;

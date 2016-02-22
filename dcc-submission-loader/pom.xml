@@ -21,7 +21,6 @@
 
   <artifactId>dcc-submission-loader</artifactId>
 
-
   <dependencies>
     <!-- This dependency has to be defined exactly in this order. Otherwise 
     META-INF/services/org.apache.hadoop.fs.FileSystem file is incorrectly resolved. -->
@@ -55,8 +54,6 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
     </dependency>
-
-
 
     <!-- OrientDB -->
     <dependency>
@@ -115,25 +112,6 @@
   <build>
     <plugins>
       <!-- Package -->
-      <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
-        <configuration>
-          <artifactSet>
-            <excludes>
-              <exclude>${project.groupId}:dcc-submission-ui</exclude>
-              <exclude>com.sun.jersey:*</exclude>
-            </excludes>
-          </artifactSet>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
