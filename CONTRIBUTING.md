@@ -1,6 +1,6 @@
-# Contributing to DCC ICGC Portal #
+# Contributing to ICGC DCC
 
-## Getting Started ##
+## Getting Started
 
 Software is made better by people like you. If you wish to contribute code to the project we can definitely help you get started. Before continuing please read through this document to ensure that you
 understand the expectations set fourth for anyone wishing to make this project better.
@@ -10,7 +10,7 @@ understand the expectations set fourth for anyone wishing to make this project b
 contributions will be managed using [git branching](http://nvie.com/posts/a-successful-git-branching-model/) and Pull Requests.
 * Our main stable branch is ```develop``` so please clone and perform your Pull Requests (PRs) towards this branch.
 
-## Cloning the Repository and Performing Pull Requests ##
+## Cloning the Repository and Performing Pull Requests
 
 * To clone from the ```develop``` you can use the [HubFlow tool](https://datasift.github.io/gitflow/TheHubFlowTools.html) (Gitflow for Github) which will do the fancy footwork for you.
 * *Please note* that you do not have to use the HubFlow tool to manage your git workflow. You can also create the ```feature``` and ```hotfix``` branches using the tool (or command line) of your choice. Pull Requests can easily be done through the Github Portal.
@@ -34,15 +34,13 @@ Example 2: To create a bugfix branch (*Step 3*) using Hubflow:
 git hf hotfix start 3d-gene-renderer
 ```
 
-## Coding Conventions ##
+## Coding Conventions
 Normalizing your code by following established conventions can help developers understand one another by
 reducing the complexity introduced by different coding styles. We have established some code conventions
-for the [Front End (UI)](dcc-portal-ui/README.md#coding-conventions) and [Back End (Server)](dcc-portal-api/README.md). Please
-review them to ensure you are doing your part in keeping this project maintainable.
+[here](http://docs.icgc.org/software/development/). Please review them to ensure you are doing your part in keeping this project maintainable.
 
 
-
-## Before Opening a Pull Request ##
+## Before Opening a Pull Request
 
 When you contribute code, you affirm that the contribution is your original work and that you
 license the work to the project under the project's open source license. Whether or not you
@@ -50,6 +48,6 @@ state this explicitly, by submitting any copyrighted material via pull request, 
 other means you agree to license the material under the project's open source license and
 warrant that you have the legal authority to do so.
 
-## Additional Resources ##
+## Additional Resources
 * [Using GitFlow With GitHub](https://datasift.github.io/gitflow/GitFlowForGitHub.html)
 * [GitFlow Branching Model](http://nvie.com/posts/a-successful-git-branching-model/)

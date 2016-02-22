@@ -20,14 +20,15 @@ The metadata persistence layer is implemented using:
 
 ## Build
 
+To compile, test and package the module, execute the following from the root of the repository:
+
 ```shell
-cd dcc
 mvn -am -pl dcc-submission/dcc-submission-server
 ```
 
 ## Development
 
-Before starting development it is necessary to download and extract a reference genome FASTA file and index: 
+Before starting development it is necessary to download and extract a reference genome FASTA file and index:
 
 ```shell
 wget http://seqwaremaven.oicr.on.ca/artifactory/simple/dcc-dependencies/org/icgc/dcc/dcc-reference-genome/GRCh37/dcc-reference-genome-GRCh37.tar.gz
@@ -71,5 +72,5 @@ Use the username `admin` and password `adminspasswd` to login to both HTTP and S
 
 Sometimes it is needed to debug a running instance that has been packaged into a jar to investigate packaging issues. You can attach a debugger [in your IDE](http://www.eclipsezone.com/eclipse/forums/t53459.html) by running the `jar`ed application with:
 
-	java -Dlogback.configurationFile=../conf/logback.xml -Dlog.dir=../logs -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044 -Xmx4092m -jar ../lib/dcc-submission-server.jar external ../conf/application.conf
+   java -Dlogback.configurationFile=../conf/logback.xml -Dlog.dir=../logs -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044 -Xmx4092m -jar ../lib/dcc-submission-server.jar external ../conf/application.conf
 

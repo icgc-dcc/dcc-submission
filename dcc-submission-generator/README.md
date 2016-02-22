@@ -1,45 +1,45 @@
-ICGC DCC - Submission Generator
-===
+# ICGC DCC - Submission Generator
 
-Description
----
+A test data generator utility that generates synthetic submissions for testing purposes. The data is valid when passed through the validator (excluding script restrictions).
 
-A test data generator that generates synthetic submissions for testing purposes. The data is valid when passed through the validator (excluding script restrictions).
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-From the command line:
+```shell
+mvn -am -pl dcc-submission/dcc-submission-generator
+```
 
-	mvn package
+## Usage
 
-Example
----
-The config.yaml file is currently in src/main/conf folder
+The `config.yaml` file is currently in `src/main/conf` folder
 
 From the command line:
 
-	java -jar target/dcc-generator-<version>.jar -c ~/path/to/config/file
+```shell
+java -jar target/dcc-generator-<version>.jar -c ~/path/to/config/file
+```
 
-Help
----
+# Help
 
 From the command line, type `java -jar target/dcc-generator-<version>.jar --help`:
 
-	Usage: java -jar dcc-generator-<version>.jar [options]
-	  Options:
-	  * -c, --config
-	   	   Path to config.yaml file
-		   Default: false
-		-d, --dictionary
-		   Path to dictionary.json file
-		   Default: false
-		-k, --codelist
-		   Path to codelist.json file
-		   Default:false		
-	    -h, --help
-	       Show help
-	       Default: false
-	    -v, --version
-	       Show version information
-	       Default: false
+```shell
+Usage: java -jar dcc-generator-<version>.jar [options]
+  Options:
+  * -c, --config
+         Path to config.yaml file
+      Default: false
+   -d, --dictionary
+      Path to dictionary.json file
+      Default: false
+   -k, --codelist
+      Path to codelist.json file
+      Default:false
+    -h, --help
+       Show help
+       Default: false
+    -v, --version
+       Show version information
+       Default: false
+```

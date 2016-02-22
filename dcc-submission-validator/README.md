@@ -1,8 +1,8 @@
 # ICGC DCC - Submission Validator
 
-Validator library module for the data submission sub-system. 
+Validator library module for the data submission sub-system.
 
-Validation is mostly driven by the metadata defined in the Dictionary. 
+Validation is largely driven by the metadata defined in the Dictionary.
 
 ## Libraries
 
@@ -15,9 +15,12 @@ The implementation uses the the following frameworks and libraries:
 
 ## Build
 
-	cd dcc
-	mvn -am -pl dcc-submission/dcc-submission-validator
+To compile, test and package the module, execute the following from the root of the repository:
 
-	
+```shell
+mvn -am -pl dcc-submission/dcc-submission-validator
+```
+
+
 
 
