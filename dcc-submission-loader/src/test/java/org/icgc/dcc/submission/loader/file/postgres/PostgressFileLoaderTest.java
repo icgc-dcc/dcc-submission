@@ -18,22 +18,30 @@
 package org.icgc.dcc.submission.loader.file.postgres;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
 import lombok.Cleanup;
 import lombok.val;
 
+import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
 import org.icgc.dcc.submission.loader.record.PostgressRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 import org.icgc.dcc.submission.loader.util.AbstractPostgressTest;
 import org.icgc.dcc.submission.loader.util.Fields;
 import org.icgc.dcc.submission.loader.util.Readers;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import com.google.common.collect.ImmutableList;
 
+@RunWith(MockitoJUnitRunner.class)
 public class PostgressFileLoaderTest extends AbstractPostgressTest {
 
   private static final String PROJECT = "ALL-US";
@@ -46,7 +54,16 @@ public class PostgressFileLoaderTest extends AbstractPostgressTest {
       .add("age")
       .build();
 
+  @Mock
+  CodeListValuesDecoder codeListDecoder;
   PostgressFileLoader fileLoader;
+
+  @Before
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+    when(codeListDecoder.decode(anyString(), anyString())).then(invocation -> invocation.getArguments()[1]);
+  }
 
   @Test
   public void testLoadFile() throws Exception {
@@ -63,7 +80,8 @@ public class PostgressFileLoaderTest extends AbstractPostgressTest {
 
     @Cleanup
     val fileLoader =
-        new PostgressFileLoader(PROJECT, TYPE, recordReader, jdbcTemplate, new PostgressRecordConverter(PROJECT));
+        new PostgressFileLoader(PROJECT, TYPE, recordReader, jdbcTemplate, new PostgressRecordConverter(PROJECT,
+            codeListDecoder));
     fileLoader.call();
 
     verifyDb();

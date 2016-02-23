@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.loader;
 import static org.assertj.core.api.Assertions.assertThat;
 import lombok.Cleanup;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.loader.util.AbstractPostgressTest;
 import org.junit.Test;
@@ -28,8 +29,11 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 
+@Slf4j
 public class ClientMainIntegrationTest extends AbstractPostgressTest {
 
+  private static final String SUBMISSION_URL = "";
+  private static final String SUBMISSION_USER = "";
   private static final String SUBMISSION_PASSWORD = "";
   private static final String FIXTURES = "src/test/resources/fixtures/input";
 
@@ -46,6 +50,8 @@ public class ClientMainIntegrationTest extends AbstractPostgressTest {
         "--db-name", "",
         "--db-user", "admin",
         "--db-password", "admin",
+        "--submission-url", SUBMISSION_URL,
+        "--submission-user", SUBMISSION_USER,
         "--submission-password", SUBMISSION_PASSWORD,
         "--db-type", "ORIENTDB",
         "--input-dir", FIXTURES);
@@ -63,8 +69,9 @@ public class ClientMainIntegrationTest extends AbstractPostgressTest {
         "--db-name", config.storage().dbName(),
         "--db-user", config.credentials().username(),
         "--db-password", config.credentials().password(),
+        "--submission-url", SUBMISSION_URL,
+        "--submission-user", SUBMISSION_USER,
         "--submission-password", SUBMISSION_PASSWORD,
-        "--db-type", "postgres",
         "--threads", "1",
         "--input-dir", FIXTURES);
 
@@ -77,8 +84,10 @@ public class ClientMainIntegrationTest extends AbstractPostgressTest {
     assertThat(jdbcTemplate.queryForObject("select count(*) from icgc20.sample", Integer.class)).isEqualTo(1);
     assertThat(jdbcTemplate.queryForObject("select count(*) from icgc20.ssm_m", Integer.class)).isEqualTo(1);
     val ssm_ps = jdbcTemplate.queryForList("select * from icgc20.ssm_p");
+    log.debug("SSM_P: {}", ssm_ps);
     assertThat(ssm_ps).hasSize(2);
     assertThat(ssm_ps.get(0).get("chromosome_start")).isEqualTo("5068360");
+    assertThat(ssm_ps.get(0).get("biological_validation_status")).isEqualTo("not tested");
     assertThat(ssm_ps.get(1).get("chromosome_start")).isEqualTo("36872057");
 
   }

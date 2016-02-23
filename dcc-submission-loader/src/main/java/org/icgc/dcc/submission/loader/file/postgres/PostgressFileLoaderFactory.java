@@ -25,15 +25,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+import org.icgc.dcc.submission.loader.file.AbstractFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.FileLoader;
-import org.icgc.dcc.submission.loader.file.FileLoaderFactory;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 import org.icgc.dcc.submission.loader.record.PostgressRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 @RequiredArgsConstructor
-public class PostgressFileLoaderFactory implements FileLoaderFactory {
+public class PostgressFileLoaderFactory extends AbstractFileLoaderFactory {
 
   @NonNull
   private final String release;
@@ -45,13 +45,14 @@ public class PostgressFileLoaderFactory implements FileLoaderFactory {
     val file = fileType.getPath();
     val recordReader = new RecordReader(getCompressionAgnosticBufferedReader(file));
     val type = fileType.getType();
-    val insertActor = createInsertActor(type, release);
-    val converter = new PostgressRecordConverter(project);
+    val jdbcInserter = createJdbcInserter(type, release);
+    val codeListDecoder = createCodeListValuesDecoder(release, type);
+    val converter = new PostgressRecordConverter(project, codeListDecoder);
 
-    return new PostgressFileLoader(project, type, recordReader, insertActor, converter);
+    return new PostgressFileLoader(project, type, recordReader, jdbcInserter, converter);
   }
 
-  private SimpleJdbcInsert createInsertActor(String type, String schema) {
+  private SimpleJdbcInsert createJdbcInserter(String type, String schema) {
     return new SimpleJdbcInsert(dataSource)
         .withSchemaName(schema.toLowerCase())
         .withTableName(type);

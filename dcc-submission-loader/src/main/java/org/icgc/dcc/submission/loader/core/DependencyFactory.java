@@ -20,9 +20,11 @@ package org.icgc.dcc.submission.loader.core;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -39,12 +41,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.common.core.meta.Resolver.DictionaryResolver;
+import org.icgc.dcc.common.core.meta.RestfulCodeListsResolver;
 import org.icgc.dcc.common.core.meta.RestfulDictionaryResolver;
 import org.icgc.dcc.submission.loader.cli.ClientOptions;
 import org.icgc.dcc.submission.loader.db.orientdb.OrientdbDatabseService;
 import org.icgc.dcc.submission.loader.db.orientdb.OrientdbDocumentLinker;
 import org.icgc.dcc.submission.loader.db.postgres.PostgresDatabaseService;
 import org.icgc.dcc.submission.loader.io.LoadFilesResolver;
+import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
+import org.icgc.dcc.submission.loader.meta.CodeListsService;
 import org.icgc.dcc.submission.loader.meta.ReleaseResolver;
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
 import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
@@ -65,6 +70,8 @@ public final class DependencyFactory implements Closeable {
   private final OPartitionedDatabasePool dbPool = createDbPool();
   @Getter(lazy = true)
   private final DictionaryResolver dictionaryResolver = createDictionaryResolver();
+  @Getter(lazy = true)
+  private final CodeListsService codeListsService = createCodeListsService();
   @Getter(lazy = true)
   private final Configuration hadoopConfig = createConfiguration();
   @Getter(lazy = true)
@@ -98,6 +105,21 @@ public final class DependencyFactory implements Closeable {
     return new OrientdbDatabseService(db, createSubmissionMetadataService(release));
   }
 
+  public CodeListValuesDecoder createCodeListValuesDecoder(@NonNull String release, @NonNull String fileType) {
+    val submissionSystem = createSubmissionMetadataService(release);
+    val fieldNamecodeListName = submissionSystem.getFieldNameCodeListName(fileType);
+    val fieldCodeLists = createFieldCodeLists(fieldNamecodeListName);
+
+    return new CodeListValuesDecoder(fieldCodeLists);
+  }
+
+  private Map<String, Map<String, String>> createFieldCodeLists(Map<String, String> fieldNamecodeListName) {
+    val codeListsService = getCodeListsService();
+
+    return fieldNamecodeListName.entrySet().stream()
+        .collect(toImmutableMap(e -> e.getKey(), e -> codeListsService.getCodeLists(e.getValue())));
+  }
+
   public static void initialize(ClientOptions options) {
     instance = new DependencyFactory(options);
   }
@@ -122,7 +144,7 @@ public final class DependencyFactory implements Closeable {
   }
 
   private ReleaseResolver createReleaseResolver() {
-    return new ReleaseResolver(options.submissionUrl, options.submissionPassword, options.submissionPassword);
+    return new ReleaseResolver(options.submissionUrl, options.submissionUser, options.submissionPassword);
   }
 
   private ExecutorService createExecutor() {
@@ -189,7 +211,11 @@ public final class DependencyFactory implements Closeable {
   }
 
   private DictionaryResolver createDictionaryResolver() {
-    return new RestfulDictionaryResolver(options.submissionUrl);
+    return new RestfulDictionaryResolver(options.submissionUrl + "/ws");
+  }
+
+  private CodeListsService createCodeListsService() {
+    return new CodeListsService(new RestfulCodeListsResolver(options.submissionUrl + "/ws"));
   }
 
   private Configuration createConfiguration() {

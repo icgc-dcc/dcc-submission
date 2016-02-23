@@ -15,38 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.record;
+package org.icgc.dcc.submission.loader.file;
 
-import java.util.Map;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
+import org.icgc.dcc.submission.loader.core.DependencyFactory;
 import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
-import org.icgc.dcc.submission.loader.util.Fields;
 
-import com.google.common.collect.ImmutableMap;
+public abstract class AbstractFileLoaderFactory implements FileLoaderFactory {
 
-@RequiredArgsConstructor
-public class PostgressRecordConverter {
-
-  @NonNull
-  private final String projectId;
-  @NonNull
-  private final CodeListValuesDecoder codeListDecoder;
-
-  public Map<String, Object> convert(@NonNull Map<String, String> record) {
-    val recordWithProject = ImmutableMap.<String, Object> builder();
-    for (val entry : record.entrySet()) {
-      val fieldName = entry.getKey();
-      val fieldValue = codeListDecoder.decode(fieldName, entry.getValue());
-      recordWithProject.put(fieldName, fieldValue);
-    }
-
-    recordWithProject.put(Fields.PROJECT_ID, projectId);
-
-    return recordWithProject.build();
+  protected CodeListValuesDecoder createCodeListValuesDecoder(String release, String fileType) {
+    return DependencyFactory.getInstance().createCodeListValuesDecoder(release, fileType);
   }
 
 }

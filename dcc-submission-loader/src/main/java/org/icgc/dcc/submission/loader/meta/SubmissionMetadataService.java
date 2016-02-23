@@ -151,6 +151,35 @@ public class SubmissionMetadataService {
     checkArgument(fileTypes.keySet().contains(type), "%s is not a valid file type", type);
   }
 
+  public Map<String, String> getFieldNameCodeListName(@NonNull String type) {
+    checkType(type);
+
+    val codeListNames = ImmutableMap.<String, String> builder();
+    val dictTypeDef = getDictionaryTypeDef(type);
+    for (val field : dictTypeDef.get("fields")) {
+      val restrictions = field.get("restrictions");
+      val codeLists = getRestrictionCodeLists(restrictions);
+      if (codeLists.isPresent()) {
+        val fieldName = field.get("name").textValue();
+        codeListNames.put(fieldName, codeLists.get());
+      }
+    }
+
+    return codeListNames.build();
+  }
+
+  private static Optional<String> getRestrictionCodeLists(JsonNode restrictions) {
+    for (val element : restrictions) {
+      val type = element.get("type").textValue();
+      if ("codelist".equals(type)) {
+        val codeListName = element.get("config").get("name").textValue();
+        return Optional.of(codeListName);
+      }
+    }
+
+    return Optional.absent();
+  }
+
   private Map<String, String> mapChildParentPrimaryKeys(List<String> childPks, List<String> parentPks) {
     checkArgument(childPks.size() == parentPks.size(), "Different number of child and parent primary keys");
 

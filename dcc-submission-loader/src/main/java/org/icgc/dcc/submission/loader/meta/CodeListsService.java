@@ -15,38 +15,59 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.record;
+package org.icgc.dcc.submission.loader.meta;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
-import org.icgc.dcc.submission.loader.util.Fields;
+import org.icgc.dcc.common.core.meta.Resolver.CodeListsResolver;
+import org.icgc.dcc.common.json.Jackson;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
-@RequiredArgsConstructor
-public class PostgressRecordConverter {
+public class CodeListsService {
 
-  @NonNull
-  private final String projectId;
-  @NonNull
-  private final CodeListValuesDecoder codeListDecoder;
+  private final Map<String, Map<String, String>> codeLists;
 
-  public Map<String, Object> convert(@NonNull Map<String, String> record) {
-    val recordWithProject = ImmutableMap.<String, Object> builder();
-    for (val entry : record.entrySet()) {
-      val fieldName = entry.getKey();
-      val fieldValue = codeListDecoder.decode(fieldName, entry.getValue());
-      recordWithProject.put(fieldName, fieldValue);
+  public CodeListsService(@NonNull CodeListsResolver codeListsResolver) {
+    this.codeLists = resolveCodeLists(codeListsResolver.get());
+  }
+
+  public Map<String, String> getCodeLists(@NonNull String codeListName) {
+    return codeLists.get(codeListName);
+  }
+
+  private Map<String, Map<String, String>> resolveCodeLists(ArrayNode array) {
+    val codeLists = ImmutableMap.<String, Map<String, String>> builder();
+    for (val element : array) {
+      codeLists.put(createCodeListEntry(element));
     }
 
-    recordWithProject.put(Fields.PROJECT_ID, projectId);
+    return codeLists.build();
+  }
 
-    return recordWithProject.build();
+  private static Entry<String, Map<String, String>> createCodeListEntry(JsonNode element) {
+    val codeListName = element.get("name").textValue();
+    val terms = createTerms(Jackson.asArrayNode(element.get("terms")));
+
+    return Maps.immutableEntry(codeListName, terms);
+  }
+
+  private static Map<String, String> createTerms(ArrayNode array) {
+    val terms = ImmutableMap.<String, String> builder();
+    for (val element : array) {
+      val code = element.get("code").textValue();
+      val value = element.get("value").textValue();
+      terms.put(code, value);
+    }
+
+    return terms.build();
   }
 
 }

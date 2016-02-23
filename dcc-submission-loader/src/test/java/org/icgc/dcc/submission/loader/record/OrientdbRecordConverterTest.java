@@ -19,15 +19,33 @@ package org.icgc.dcc.submission.loader.record;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 import lombok.val;
 
+import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
 
+@RunWith(MockitoJUnitRunner.class)
 public class OrientdbRecordConverterTest {
 
-  OrientdbRecordConverter converter = new OrientdbRecordConverter("Donor", "ALL-US");
+  @Mock
+  CodeListValuesDecoder codeListDecoder;
+
+  OrientdbRecordConverter converter;
+
+  @Before
+  public void setUp() {
+    when(codeListDecoder.decode(anyString(), anyString())).then(invocation -> invocation.getArguments()[1]);
+
+    converter = new OrientdbRecordConverter("Donor", "ALL-US", codeListDecoder);
+  }
 
   @Test
   public void testConvert() throws Exception {

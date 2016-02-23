@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.record;
+package org.icgc.dcc.submission.loader.meta;
 
 import java.util.Map;
 
@@ -23,30 +23,25 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
-import org.icgc.dcc.submission.loader.util.Fields;
-
-import com.google.common.collect.ImmutableMap;
-
 @RequiredArgsConstructor
-public class PostgressRecordConverter {
+public class CodeListValuesDecoder {
 
   @NonNull
-  private final String projectId;
-  @NonNull
-  private final CodeListValuesDecoder codeListDecoder;
+  private final Map<String, Map<String, String>> fieldCodeLists;
 
-  public Map<String, Object> convert(@NonNull Map<String, String> record) {
-    val recordWithProject = ImmutableMap.<String, Object> builder();
-    for (val entry : record.entrySet()) {
-      val fieldName = entry.getKey();
-      val fieldValue = codeListDecoder.decode(fieldName, entry.getValue());
-      recordWithProject.put(fieldName, fieldValue);
+  public String decode(@NonNull String fieldName, String codedValue) {
+    if (codedValue == null) {
+      return codedValue;
     }
 
-    recordWithProject.put(Fields.PROJECT_ID, projectId);
+    val codeLists = fieldCodeLists.get(fieldName);
+    if (codeLists == null) {
+      return codedValue;
+    }
 
-    return recordWithProject.build();
+    val codeListValue = codeLists.get(codedValue);
+
+    return codeListValue == null ? codedValue : codeListValue;
   }
 
 }

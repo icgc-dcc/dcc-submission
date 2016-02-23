@@ -21,19 +21,20 @@ import static org.icgc.dcc.submission.loader.util.HdfsFiles.getCompressionAgnost
 import lombok.NonNull;
 import lombok.val;
 
+import org.icgc.dcc.submission.loader.file.AbstractFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.FileLoader;
-import org.icgc.dcc.submission.loader.file.FileLoaderFactory;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 import org.icgc.dcc.submission.loader.record.OrientdbRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 
-public class OrientdbFileLoaderFactory implements FileLoaderFactory {
+public class OrientdbFileLoaderFactory extends AbstractFileLoaderFactory {
 
   @Override
   public FileLoader createFileLoader(@NonNull String project, String release, @NonNull FileTypePath fileType) {
     val type = fileType.getType();
     val reader = new RecordReader(getCompressionAgnosticBufferedReader(fileType.getPath()));
-    val converter = new OrientdbRecordConverter(type, project);
+    val codeListDecoder = createCodeListValuesDecoder(release, type);
+    val converter = new OrientdbRecordConverter(type, project, codeListDecoder);
 
     return new OrientdbFileLoader(project, type, reader, converter);
   }

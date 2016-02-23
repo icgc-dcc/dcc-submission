@@ -25,6 +25,8 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
+
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
 @Slf4j
@@ -33,11 +35,14 @@ public class OrientdbRecordConverter {
   private final String schemaName;
   private final String project;
   private final ODocument currentDoc;
+  private final CodeListValuesDecoder codeListDecoder;
 
-  public OrientdbRecordConverter(@NonNull String schemaName, @NonNull String project) {
+  public OrientdbRecordConverter(@NonNull String schemaName, @NonNull String project,
+      @NonNull CodeListValuesDecoder codeListDecoder) {
     this.schemaName = schemaName;
     this.project = project;
     this.currentDoc = new ODocument(schemaName);
+    this.codeListDecoder = codeListDecoder;
   }
 
   public ODocument convert(@NonNull Map<String, String> record) {
@@ -47,7 +52,7 @@ public class OrientdbRecordConverter {
     document.setClassName(schemaName);
     for (val entry : record.entrySet()) {
       val fieldName = entry.getKey();
-      val fieldValue = entry.getValue();
+      val fieldValue = codeListDecoder.decode(fieldName, entry.getValue());
       document.field(fieldName, fieldValue);
     }
 
