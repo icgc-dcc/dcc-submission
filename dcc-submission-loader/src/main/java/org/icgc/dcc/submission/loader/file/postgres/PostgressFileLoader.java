@@ -52,7 +52,7 @@ public class PostgressFileLoader extends AbstractFileLoader {
     super(project, type, recordReader);
     this.inserter = inserter;
     this.recordConverter = recordConverter;
-    this.recordBuffer = Lists.newArrayListWithCapacity(BULK_SIZE);
+    this.recordBuffer = Lists.newLinkedList();
   }
 
   @Override

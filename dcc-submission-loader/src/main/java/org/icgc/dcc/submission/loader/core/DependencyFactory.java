@@ -56,6 +56,7 @@ import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.google.common.collect.Maps;
 import com.orientechnologies.orient.core.db.OPartitionedDatabasePool;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 
@@ -82,6 +83,7 @@ public final class DependencyFactory implements Closeable {
   private final PGPoolingDataSource dataSource = createDataSource();
   @Getter(lazy = true)
   private final ReleaseResolver releaseResolver = createReleaseResolver();
+  private final Map<String, SubmissionMetadataService> releaseSubmissionService = Maps.newHashMap();
 
   private final ClientOptions options;
 
@@ -184,9 +186,14 @@ public final class DependencyFactory implements Closeable {
   }
 
   private SubmissionMetadataService createSubmissionMetadataService(String release) {
-    val dictVersion = getReleaseResolver().getDictionaryVersion(release);
+    SubmissionMetadataService submissionService = releaseSubmissionService.get(release);
+    if (submissionService == null) {
+      val dictVersion = getReleaseResolver().getDictionaryVersion(release);
+      submissionService = new SubmissionMetadataService(getDictionaryResolver(), dictVersion);
+      releaseSubmissionService.put(release, submissionService);
+    }
 
-    return new SubmissionMetadataService(getDictionaryResolver(), dictVersion);
+    return submissionService;
   }
 
   @SneakyThrows
