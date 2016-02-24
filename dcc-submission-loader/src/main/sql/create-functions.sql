@@ -39,6 +39,19 @@ END;
 $func$ LANGUAGE plpgsql;
 
 --
+-- Check if col_value is does not represent a missing value
+--
+CREATE OR REPLACE FUNCTION is_comply_to_rule(col_value text, rules text[]) RETURNS boolean as $func$
+BEGIN
+	IF (col_value = ANY(rules)) THEN
+		RETURN TRUE;
+	ELSE
+		RETURN FALSE;
+	END IF;
+END;
+$func$ LANGUAGE plpgsql;
+
+--
 -- Report column completeness
 --
 CREATE OR REPLACE FUNCTION col_proj_complete(_proj text, col text, _tbl regclass) RETURNS col_coverage as $$
@@ -61,6 +74,33 @@ BEGIN
         RETURN ROW(_proj, total, w_data, completeness);
 END;
 $$ LANGUAGE plpgsql;
+
+--
+-- Report column completeness
+--
+CREATE OR REPLACE FUNCTION column_completeness_with_rule(_proj text, col text, _tbl regclass, rules text[]) 
+	RETURNS col_coverage as $$
+DECLARE
+        total numeric;
+        w_data numeric;
+        completeness numeric := 0;
+BEGIN
+        EXECUTE format('SELECT count(*) FROM %s WHERE project_id = $1', _tbl)
+        INTO total
+        USING _proj;
+
+        EXECUTE format('SELECT count(%I) FROM %s WHERE project_id = $1 AND %I = ANY(%L)', col, _tbl, col, rules)
+        INTO w_data
+        USING _proj;
+
+	IF (total != 0) THEN
+        	completeness := w_data / total * 100;
+	END IF;
+        RETURN ROW(_proj, total, w_data, completeness);
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 --
 -- Report table completeness
@@ -157,6 +197,173 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION get_meta_tables(_release text) RETURNS TABLE (table_name text) as $$
 BEGIN
 	RETURN QUERY EXECUTE format('SELECT CAST(table_name as text) FROM information_schema.tables WHERE table_name like ''%%_m'' AND table_schema = %L', _release);
+END;
+$$ LANGUAGE plpgsql;
+
+--
+--
+--
+CREATE OR REPLACE FUNCTION donor_completeness(_proj text, _schema text) RETURNS TABLE (
+	column_name text,
+	completeness col_coverage
+	) as $$
+DECLARE
+	col_name text;
+	compl col_coverage;
+BEGIN
+	FOR col_name IN EXECUTE format('SELECT * FROM get_column_names(%L, %L)', _schema, 'donor') LOOP
+
+		IF (col_name = 'donor_survival_time') THEN
+			EXECUTE format('SELECT * FROM calc_dependent_completeness(%L, ''%s.donor''::regclass, %L, %L, %L)', 
+				_proj, _schema, 'donor_survival_time', 'donor_vital_status', ARRAY['deceased'])
+			INTO compl;
+
+			ELSIF (col_name = 'donor_relapse_interval') THEN
+
+						EXECUTE format('SELECT * FROM calc_dependent_completeness(%L, ''%s.donor''::regclass, %L, %L, %L)', 
+				_proj, _schema, 'donor_relapse_interval', 'disease_status_last_followup', ARRAY['progression', 'relapse'])
+			INTO compl;
+
+
+		ELSIF (col_name = 'donor_interval_of_last_followup') THEN
+
+			EXECUTE format('SELECT * FROM calc_dependent_completeness(%L, ''%s.donor''::regclass, %L, %L, %L)', 
+				_proj, _schema, 'donor_interval_of_last_followup', 'disease_status_last_followup', ARRAY['progression', 'relapse'])
+			INTO compl;
+
+		ELSIF (col_name = 'cancer_history_first_degree_relative') THEN
+
+			EXECUTE format('SELECT * FROM column_completeness_with_rule(%L, %L, ''%s.donor''::regclass, %L)', 
+				_proj, 'cancer_history_first_degree_relative', _schema, ARRAY['unknown'])
+			INTO compl;
+		
+		ELSIF (col_name = 'prior_malignancy') THEN
+
+			EXECUTE format('SELECT * FROM column_completeness_with_rule(%L, %L, ''%s.donor''::regclass, %L)', 
+				_proj, 'prior_malignancy', _schema, ARRAY['unknown'])
+			INTO compl;
+
+		ELSE
+
+				 EXECUTE format('SELECT * FROM col_proj_complete(%L, %L, ''%s.donor''::regclass)', 
+			_proj, col_name,_schema)
+		 INTO compl; 
+
+		END IF;
+
+
+
+
+		 RETURN QUERY SELECT col_name,compl; 
+
+	END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+--
+--
+CREATE OR REPLACE FUNCTION get_column_names(_schema text, _table text) RETURNS TABLE (column_name text) as $$
+BEGIN
+	RETURN QUERY EXECUTE format('SELECT CAST(column_name as text) FROM information_schema.columns WHERE table_schema = %L AND table_name = %L', _schema, _table);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION calc_dependent_completeness(_proj text, _tbl regclass, _child_col text, _parent_col text, _parent_cond text[]) RETURNS col_coverage as $$
+DECLARE
+	total numeric;
+	with_data numeric;
+	completeness numeric := 0;
+BEGIN
+	EXECUTE 
+		format('SELECT * FROM dependent_expected_count(%L, %L, %L, %L)',
+			_proj, _tbl, _parent_col, _parent_cond)
+	INTO total;
+
+	EXECUTE 
+		format('SELECT * FROM dependent_completed_count(%L, %L, %L, %L, %L)',
+			_proj, _tbl, _child_col, _parent_col, _parent_cond)
+	INTO with_data;
+
+	IF (total != 0) THEN
+		completeness := with_data / total * 100;
+	END IF;
+
+	RETURN ROW(_proj, total, with_data, completeness);
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- Calculates number of records completed as required because of parent's value
+-- _tbl - source table for completeness calculation
+-- _child_col - column name to be completed because of parent's value
+-- _parent_col - parent's column name which value defined that child column should be completed
+-- _parent_cond - on what conditions the _child_col much be filled in
+--
+-- E.g. 
+--	SELECT 
+--		count(*)
+--	FROM
+--		icgc20.donor
+--	WHERE
+--		( donor_vital_status = 'deceased' OR NOT has_value(donor_vital_status) )
+--		AND has_value(donor_survival_time)
+CREATE OR REPLACE FUNCTION dependent_completed_count(_proj text, _tbl regclass, _child_col text, _parent_col text, _parent_cond text[]) RETURNS integer as $$
+DECLARE
+	parent_where_clause text;
+	result integer;
+BEGIN
+	EXECUTE format('SELECT * FROM create_parent_where_clause(%L, %L)', _parent_col, _parent_cond)
+	INTO parent_where_clause;
+
+	EXECUTE format('SELECT count(*) FROM %s WHERE (%s OR NOT has_value(%I)) AND has_value(%I) AND project_id = %L', 
+		_tbl, parent_where_clause, _parent_col, _child_col, _proj)
+	INTO result;
+
+	RETURN result;
+
+END;
+$$ LANGUAGE plpgsql;
+
+--
+--
+--
+CREATE OR REPLACE FUNCTION dependent_expected_count(_proj text, _tbl regclass, _parent_col text, _parent_cond text[]) RETURNS integer as $$
+DECLARE
+	parent_where_clause text;
+	result integer;
+BEGIN
+	EXECUTE format('SELECT * FROM create_parent_where_clause(%L, %L)', _parent_col, _parent_cond)
+	INTO parent_where_clause;
+
+	EXECUTE format('SELECT count(*) FROM %s WHERE (%s OR NOT has_value(%I)) AND project_id = %L', 
+		_tbl, parent_where_clause, _parent_col, _proj)
+	INTO result;
+
+	RETURN result;
+
+END;
+$$ LANGUAGE plpgsql;
+
+--
+--
+--
+CREATE OR REPLACE FUNCTION create_parent_where_clause(_parent_col text, _parent_cond text[]) RETURNS text as $$
+DECLARE
+	condition text;
+	has_prev boolean := FALSE;
+	result text := '';
+BEGIN
+	FOREACH condition IN ARRAY _parent_cond LOOP
+		IF (has_prev) THEN
+			result := format('%s AND', result);
+		END IF;
+
+		has_prev := TRUE;
+		result := format('%s %I = %L', result, _parent_col, condition);
+	END LOOP;
+
+	RETURN result;
 END;
 $$ LANGUAGE plpgsql;
 
