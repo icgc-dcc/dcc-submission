@@ -605,8 +605,8 @@ $$ LANGUAGE plpgsql;
 -- +-----------------------------------+
 --
 CREATE OR REPLACE FUNCTION get_donor_file_type(_release text) RETURNS TABLE (
-	donor_id 	varchar,
-	project_id	varchar,
+	project_id 	varchar,
+	donor_id	varchar,
 	file_type	text
 	) as $$
 DECLARE
@@ -618,4 +618,50 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+----------------------------------------------------------------------------------------------------------------
+-- Reporting functions
+----------------------------------------------------------------------------------------------------------------
 
+CREATE OR REPLACE FUNCTION get_file_type_stats(_release text) RETURNS TABLE (
+	project_id 	varchar,
+	file_type	text,
+	total_clinical_donors	bigint,
+	orphan_donors	bigint,
+	donors_per_file_type	bigint
+	) as $$
+
+BEGIN
+	RETURN QUERY EXECUTE format(
+		'WITH 
+			total_donors AS (
+			SELECT 
+				project_id, count(donor_id) total 
+			FROM 
+				%I.donor 
+			GROUP BY 
+				project_id),
+			orphan_donor AS (
+			SELECT 
+				project_id, count(distinct(donor_id)) donors_with_data 
+			FROM 
+				get_donor_file_type(%L) 
+			GROUP BY 
+				project_id)
+		SELECT 
+			f.project_id, 
+			f.file_type, 
+			total_donors.total as total_clinical_donors, 
+			total_donors.total - orphan_donor.donors_with_data as orphan_donors, 
+			count(distinct(f.donor_id)) donors_per_file_type 
+		FROM 
+			get_donor_file_type(%L) f, total_donors, orphan_donor
+		WHERE 
+			f.project_id = total_donors.project_id 
+			AND f.project_id = orphan_donor.project_id
+		GROUP BY 
+			f.project_id, f.file_type, total_donors.total, orphan_donors
+		ORDER BY 
+			f.project_id, f.file_type',
+		_release, _release, _release);
+END;
+$$ LANGUAGE plpgsql;
