@@ -38,20 +38,30 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 @Slf4j
 @RequiredArgsConstructor
 public class LoadFilesResolver {
 
+  /**
+   * Constants.
+   */
   private static final String PROJECT_NAME_REGEX = "^\\w{2,4}-\\w{2}$";
   private static final Instant START_DATE = getStartDate();
 
+  /**
+   * Configuration.
+   */
   @NonNull
   private final String release;
   @NonNull
   private final Path inputDir;
+
+  /**
+   * Dependencies.
+   */
   @NonNull
   private final FileSystem fs;
   @NonNull
@@ -86,13 +96,12 @@ public class LoadFilesResolver {
   @SneakyThrows
   private List<FileTypePath> resolveFiles(boolean recentOnly, Path projectDir, List<String> includeFiles,
       List<String> excludeFiles) {
-    val filesToLoad = Lists.<FileTypePath> newArrayList();
+    val filesToLoad = ImmutableList.<FileTypePath> builder();
     val allFiles = lsFile(fs, projectDir);
     log.debug("'{}' project files: {}", projectDir.getName(), allFiles);
 
     val filePatterns = submissionMetadataService.getFilePatterns();
     for (val file : allFiles) {
-
       val fileName = file.getName();
       val fileType = resolveFileType(fileName, filePatterns);
       if (fileType.isPresent() == false) {
@@ -110,7 +119,7 @@ public class LoadFilesResolver {
       filesToLoad.add(new FileTypePath(fileType.get(), file));
     }
 
-    return filesToLoad;
+    return filesToLoad.build();
   }
 
   private static boolean isSkipEntity(String entityName, List<String> includeRegexes, List<String> excludeRegexes) {

@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.loader.db.orientdb;
 
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 
 import java.util.Collection;
 import java.util.List;
@@ -116,7 +116,7 @@ public class OrientdbDocumentLinkerTest {
     clazz.createProperty("donor_id", OType.STRING);
     clazz.createProperty("specimen_id", OType.STRING);
     clazz.createProperty("specimen_type", OType.STRING);
-    clazz.createProperty(PROJECT_ID, OType.STRING);
+    clazz.createProperty(PROJECT_ID_FIELD_NAME, OType.STRING);
   }
 
   private static ODocument createSpecimenDoc() {
@@ -124,7 +124,7 @@ public class OrientdbDocumentLinkerTest {
     specimenDoc.field("donor_id", "DO1");
     specimenDoc.field("specimen_id", "SP1");
     specimenDoc.field("specimen_type", "some_type");
-    specimenDoc.field(PROJECT_ID, PROJECT_NAME);
+    specimenDoc.field(PROJECT_ID_FIELD_NAME, PROJECT_NAME);
 
     return specimenDoc;
   }
@@ -133,7 +133,7 @@ public class OrientdbDocumentLinkerTest {
     val donorDoc = new ODocument("Donor");
     donorDoc.field("donor_id", "DO1");
     donorDoc.field("donor_sex", "male");
-    donorDoc.field(PROJECT_ID, PROJECT_NAME);
+    donorDoc.field(PROJECT_ID_FIELD_NAME, PROJECT_NAME);
 
     donorDoc.save();
   }

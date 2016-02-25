@@ -18,8 +18,9 @@
 package org.icgc.dcc.submission.loader.meta;
 
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static org.icgc.dcc.common.core.util.Separators.COLON;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -108,7 +109,7 @@ public class ReleaseResolver {
           new HttpEntity<JsonNode>(createHeaders(userName, password)),
           JsonNode.class);
     } catch (Exception e) {
-      log.warn("Failed to get resource {}. Exception: ", requestUrl, e);
+      log.warn("Failed to get resource {}. Exception: {}", requestUrl, e);
       throw e;
     }
 
@@ -127,9 +128,9 @@ public class ReleaseResolver {
     return new HttpHeaders() {
 
       {
-        String auth = username + ":" + password;
-        val encodedAuth = BaseEncoding.base64().encode(auth.getBytes(Charset.forName("US-ASCII")));
-        String authHeader = "X-DCC-Auth " + encodedAuth;
+        val auth = username + COLON + password;
+        val encodedAuth = BaseEncoding.base64().encode(auth.getBytes(US_ASCII));
+        val authHeader = "X-DCC-Auth " + encodedAuth;
         set(HttpHeaders.AUTHORIZATION, authHeader);
         set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
       }

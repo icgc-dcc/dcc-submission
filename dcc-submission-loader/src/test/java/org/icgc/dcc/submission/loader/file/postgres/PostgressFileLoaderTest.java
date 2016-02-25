@@ -30,7 +30,7 @@ import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
 import org.icgc.dcc.submission.loader.record.PostgressRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 import org.icgc.dcc.submission.loader.util.AbstractPostgressTest;
-import org.icgc.dcc.submission.loader.util.Fields;
+import org.icgc.dcc.submission.loader.util.DatabaseFields;
 import org.icgc.dcc.submission.loader.util.Readers;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,7 +93,7 @@ public class PostgressFileLoaderTest extends AbstractPostgressTest {
     sqlBuilder.append("id varchar(500),");
     sqlBuilder.append("sex varchar(500),");
     sqlBuilder.append("age varchar(500),");
-    sqlBuilder.append(Fields.PROJECT_ID + " varchar(500))");
+    sqlBuilder.append(DatabaseFields.PROJECT_ID_FIELD_NAME + " varchar(500))");
 
     jdbcTemplate.execute("CREATE SCHEMA " + SCHEMA);
     jdbcTemplate.execute(sqlBuilder.toString());

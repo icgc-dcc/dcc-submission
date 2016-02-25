@@ -21,11 +21,11 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
-public final class Fields {
+public final class DatabaseFields {
 
-  public static final String PROJECT_ID = "project_id";
-  public static final String PROJECT_NAME = "name";
-  public static final String PROJECT_STATE = "state";
+  public static final String PROJECT_ID_FIELD_NAME = "project_id";
+  public static final String PROJECT_NAME_FIELD_NAME = "name";
+  public static final String PROJECT_STATE_FIELD_NAME = "state";
   public static final String DONOR_ID_FIELD_NAME = "donor_id";
 
 }

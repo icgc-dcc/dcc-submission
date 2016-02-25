@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
-import org.icgc.dcc.submission.loader.util.Fields;
+import org.icgc.dcc.submission.loader.util.DatabaseFields;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -44,7 +44,7 @@ public class PostgressRecordConverter {
       recordWithProject.put(fieldName, fieldValue);
     }
 
-    recordWithProject.put(Fields.PROJECT_ID, projectId);
+    recordWithProject.put(DatabaseFields.PROJECT_ID_FIELD_NAME, projectId);
 
     return recordWithProject.build();
   }

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.Cleanup;
+import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +43,7 @@ import com.google.common.base.Stopwatch;
 @Slf4j
 public class SubmissionLoader {
 
-  public static void loadSubmission(ClientOptions options) throws IOException {
+  public static void loadSubmission(@NonNull ClientOptions options) throws IOException {
     val dependencyFactory = DependencyFactory.getInstance();
     val releaseResolver = dependencyFactory.getReleaseResolver();
     val releases = getReleases(dependencyFactory.getFileSystem(), options.submissionDirectory, options.release);

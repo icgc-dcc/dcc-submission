@@ -37,8 +37,15 @@ import org.icgc.dcc.submission.loader.model.Project;
 @RequiredArgsConstructor
 public class ReleaseFilesLoader implements Closeable {
 
+  /**
+   * Configuration.
+   */
   @NonNull
   protected final String release;
+
+  /**
+   * Dependencies.
+   */
   @NonNull
   protected final DatabaseService databaseService;
   @NonNull

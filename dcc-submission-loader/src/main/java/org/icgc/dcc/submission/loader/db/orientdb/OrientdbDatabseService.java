@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.loader.util.Strings.capitalize;
 
 import java.util.Collection;
@@ -154,7 +154,7 @@ public class OrientdbDatabseService implements DatabaseService {
     }
 
     // Add synthetic project ID property
-    schema.createProperty(PROJECT_ID, OType.STRING);
+    schema.createProperty(PROJECT_ID_FIELD_NAME, OType.STRING);
   }
 
   private void setChildren(OClass schema, Collection<String> children) {

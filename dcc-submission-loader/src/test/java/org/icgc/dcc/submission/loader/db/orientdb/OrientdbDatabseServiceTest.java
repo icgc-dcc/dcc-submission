@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.loader.db.orientdb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.loader.db.orientdb.OrientdbDatabseService.exists;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.loader.util.Services.createSubmissionService;
 import static org.icgc.dcc.submission.loader.util.Strings.capitalize;
 import lombok.val;
@@ -76,7 +76,7 @@ public class OrientdbDatabseServiceTest {
   public void testCreateTypeIndex() throws Exception {
     val donorSchema = db.getMetadata().getSchema().createClass("Donor");
     donorSchema.createProperty("donor_id", OType.STRING);
-    donorSchema.createProperty(PROJECT_ID, OType.STRING);
+    donorSchema.createProperty(PROJECT_ID_FIELD_NAME, OType.STRING);
 
     dbService.createTypeIndex("donor");
     val sql = "SELECT COUNT(*) FROM INDEX:donor_idx";

@@ -24,6 +24,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.common.core.util.Joiners;
@@ -31,14 +32,14 @@ import org.icgc.dcc.common.core.util.Joiners;
 @NoArgsConstructor(access = PRIVATE)
 public final class Readers {
 
-  public static StringBuilder getStringBuilder(List<String> fieldNames) {
+  public static StringBuilder getStringBuilder(@NonNull List<String> fieldNames) {
     val stringBuilder = new StringBuilder();
     stringBuilder.append(Readers.createHeader(fieldNames));
 
     return stringBuilder;
   }
 
-  public static BufferedReader getReader(String srcString) {
+  public static BufferedReader getReader(@NonNull String srcString) {
     return new BufferedReader(new StringReader(srcString));
   }
 
@@ -46,7 +47,7 @@ public final class Readers {
     return Joiners.TAB.join(fields) + System.lineSeparator();
   }
 
-  private static String createHeader(List<String> fieldNames) {
+  private static String createHeader(@NonNull List<String> fieldNames) {
     return Joiners.TAB.join(fieldNames) + System.lineSeparator();
   }
 

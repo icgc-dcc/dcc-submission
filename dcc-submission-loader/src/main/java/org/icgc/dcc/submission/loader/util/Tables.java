@@ -23,6 +23,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class Tables {
 
-  public static final String PROJECT_TABLE = "project";
+  public static final String PROJECT_TABLE_NAME = "project";
 
 }

@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.loader.record;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import lombok.val;
@@ -54,7 +54,7 @@ public class OrientdbRecordConverterTest {
     assertThat(doc.fields()).isEqualTo(3);
     assertThat(doc.field("donor_id").toString()).isEqualTo("DO1");
     assertThat(doc.field("donor_sex").toString()).isEqualTo("male");
-    assertThat(doc.field(PROJECT_ID).toString()).isEqualTo("ALL-US");
+    assertThat(doc.field(PROJECT_ID_FIELD_NAME).toString()).isEqualTo("ALL-US");
   }
 
 }

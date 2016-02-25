@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.loader.record;
 
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 
 import java.util.Map;
 
@@ -56,7 +56,7 @@ public class OrientdbRecordConverter {
       document.field(fieldName, fieldValue);
     }
 
-    document.field(PROJECT_ID, project);
+    document.field(PROJECT_ID_FIELD_NAME, project);
 
     return document;
   }

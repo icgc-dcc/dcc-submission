@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.loader.meta;
 import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -99,10 +99,10 @@ public class SubmissionMetadataServiceTest {
 
   @Test
   public void testGetPrimaryKey() throws Exception {
-    assertThat(metadataService.getPrimaryKey("sample")).containsOnly("analyzed_sample_id", PROJECT_ID);
+    assertThat(metadataService.getPrimaryKey("sample")).containsOnly("analyzed_sample_id", PROJECT_ID_FIELD_NAME);
     assertThat(metadataService.getPrimaryKey("ssm_m")).containsOnly("analysis_id", "analyzed_sample_id",
-        PROJECT_ID);
-    assertThat(metadataService.getPrimaryKey("ssm_p")).containsOnly(PROJECT_ID);
+        PROJECT_ID_FIELD_NAME);
+    assertThat(metadataService.getPrimaryKey("ssm_p")).containsOnly(PROJECT_ID_FIELD_NAME);
   }
 
 }

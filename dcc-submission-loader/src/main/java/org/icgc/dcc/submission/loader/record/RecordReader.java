@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.loader.record;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -101,7 +101,7 @@ public class RecordReader implements Closeable, Iterator<Map<String, String>> {
     log.debug("Converting line:\n{}", line);
     val values = Splitters.TAB.splitToList(line);
     checkState(values.size() == fieldsCount(), "Failed to convert line. It has different number of fields. "
-        + "Expected %s, found %s.\n%s", fieldsCount(), values.size(), line);
+        + "Expected %s, found %s. %n%s", fieldsCount(), values.size(), line);
 
     val recordBuilder = ImmutableMap.<String, String> builder();
     for (int i = 0; i < fieldsCount(); i++) {
@@ -123,7 +123,7 @@ public class RecordReader implements Closeable, Iterator<Map<String, String>> {
 
     val fieldNamesBuilder = ImmutableList.<String> builder();
     fieldNamesBuilder.addAll(Splitters.TAB.split(header));
-    fieldNamesBuilder.add(PROJECT_ID);
+    fieldNamesBuilder.add(PROJECT_ID_FIELD_NAME);
 
     val fieldNames = fieldNamesBuilder.build();
     log.debug("Field names: {}", fieldNames);

@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.loader.db.orientdb;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.loader.util.Strings.capitalize;
 
 import java.util.List;
@@ -83,7 +83,7 @@ public class OrientdbDocumentLinker {
     val parentChildJoinClause = createParentChildJoinClause(childPks, parentPks);
     updateQueryBuilder.append(parentChildJoinClause);
 
-    val projectClause = format(" AND %s = $parent.$current.%s )", PROJECT_ID, PROJECT_ID);
+    val projectClause = format(" AND %s = $parent.$current.%s )", PROJECT_ID_FIELD_NAME, PROJECT_ID_FIELD_NAME);
     updateQueryBuilder.append(projectClause);
 
     return updateQueryBuilder.toString();

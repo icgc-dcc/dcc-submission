@@ -23,7 +23,7 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 import static org.icgc.dcc.common.json.Jackson.asArrayNode;
 import static org.icgc.dcc.common.json.Jackson.asObjectNode;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -81,7 +81,7 @@ public class SubmissionMetadataService {
     for (val element : dictTypeDef.get("uniqueFields")) {
       primaryKey.add(element.textValue());
     }
-    primaryKey.add(PROJECT_ID);
+    primaryKey.add(PROJECT_ID_FIELD_NAME);
 
     return primaryKey.build();
   }

@@ -176,7 +176,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <groupId>ru.yandex.qatools.embed</groupId>
         <artifactId>postgresql-embedded</artifactId>
         <scope>test</scope>
-        <version>1.8</version>
+        <version>${embedded-postgres.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jdbi</groupId>
@@ -217,6 +217,8 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <jgrapht.version>0.9.1</jgrapht.version>
     <spring.version>4.2.4.RELEASE</spring.version>
     <jdbi.version>2.55</jdbi.version>
+    
+    <embedded-postgres.version>1.8</embedded-postgres.version>
   </properties>
 
 </project>

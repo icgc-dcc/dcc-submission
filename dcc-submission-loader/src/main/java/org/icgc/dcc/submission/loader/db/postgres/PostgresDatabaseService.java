@@ -20,11 +20,11 @@ package org.icgc.dcc.submission.loader.db.postgres;
 import static java.lang.String.format;
 import static org.icgc.dcc.common.core.util.Separators.DOT;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
-import static org.icgc.dcc.submission.loader.util.Fields.DONOR_ID_FIELD_NAME;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_ID;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_NAME;
-import static org.icgc.dcc.submission.loader.util.Fields.PROJECT_STATE;
-import static org.icgc.dcc.submission.loader.util.Tables.PROJECT_TABLE;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.DONOR_ID_FIELD_NAME;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_NAME_FIELD_NAME;
+import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_STATE_FIELD_NAME;
+import static org.icgc.dcc.submission.loader.util.Tables.PROJECT_TABLE_NAME;
 
 import java.util.List;
 import java.util.Map;
@@ -135,13 +135,13 @@ public class PostgresDatabaseService implements DatabaseService {
   }
 
   private void initializeProjectTable(String release) {
-    dropTable(release, PROJECT_TABLE);
+    dropTable(release, PROJECT_TABLE_NAME);
 
-    val tableName = getTableName(release, PROJECT_TABLE);
+    val tableName = getTableName(release, PROJECT_TABLE_NAME);
     val sql = "CREATE TABLE " + tableName + " ( "
-        + PROJECT_ID + " varchar(7) PRIMARY KEY, "
-        + PROJECT_NAME + " varchar(200), "
-        + PROJECT_STATE + " varchar(20) "
+        + PROJECT_ID_FIELD_NAME + " varchar(7) PRIMARY KEY, "
+        + PROJECT_NAME_FIELD_NAME + " varchar(200), "
+        + PROJECT_STATE_FIELD_NAME + " varchar(20) "
         + ")";
 
     log.debug("{}", sql);
@@ -201,7 +201,7 @@ public class PostgresDatabaseService implements DatabaseService {
     }
 
     // Add project_id
-    sqlBuilder.append(", " + PROJECT_ID + " varchar(7)");
+    sqlBuilder.append(", " + PROJECT_ID_FIELD_NAME + " varchar(7)");
     // Add donor_id
     if (!hasDonorId) {
       sqlBuilder.append(", " + DONOR_ID_FIELD_NAME + " varchar(500)");
@@ -217,7 +217,7 @@ public class PostgresDatabaseService implements DatabaseService {
 
   private void populateProjects(String release, Iterable<Project> projects) {
     log.debug("Populating projects table...");
-    val sql = "INSERT INTO " + getTableName(release, PROJECT_TABLE) + " VALUES (?, ?, ?)";
+    val sql = "INSERT INTO " + getTableName(release, PROJECT_TABLE_NAME) + " VALUES (?, ?, ?)";
     for (val project : projects) {
       log.debug("{}", project);
       jdbcTemplate.update(sql, new Object[] { project.getProjectId(), project.getProjectName(),
@@ -254,7 +254,7 @@ public class PostgresDatabaseService implements DatabaseService {
     }
 
     // Add project_id
-    joinClause.append(format(" AND child.%s = parent.%s", PROJECT_ID, PROJECT_ID));
+    joinClause.append(format(" AND child.%s = parent.%s", PROJECT_ID_FIELD_NAME, PROJECT_ID_FIELD_NAME));
 
     return joinClause.toString();
   }
