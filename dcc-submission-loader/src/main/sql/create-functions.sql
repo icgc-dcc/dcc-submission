@@ -47,6 +47,15 @@ END;
 $func$ LANGUAGE plpgsql;
 
 --
+--
+--
+CREATE OR REPLACE FUNCTION get_release_number(_release text) RETURNS integer as $func$
+BEGIN
+	RETURN CAST(SUBSTRING(_release, 'icgc(.*)') as integer);
+END;
+$func$ LANGUAGE plpgsql;
+
+--
 -- Get table names of all file types in the release.
 --
 CREATE OR REPLACE FUNCTION get_table_names(_release text) RETURNS TABLE (table_name text) as $$
@@ -411,9 +420,13 @@ CREATE OR REPLACE FUNCTION family_completeness(_proj text, _schema text) RETURNS
 	coverage	numeric
 	) as $$
 DECLARE
+	release_number integer := 0;
 	col_name text;
 	compl col_coverage;
 BEGIN
+	EXECUTE format('SELECT * FROM get_release_number(%L)', _schema)
+	INTO release_number;
+
 	FOR col_name IN EXECUTE format('SELECT * FROM get_column_names(%L, %L)', _schema, 'family') LOOP
 
 		IF (col_name ~ 'relationship_sex|relationship_age|relationship_disease_icd10|relationship_disease') THEN
@@ -422,7 +435,7 @@ BEGIN
 				ARRAY['sibling','parent','grandparent', 'uncle/aunt','cousin'])
 			INTO compl;
 
-		ELSIF (col_name = 'relationship_type') THEN
+		ELSIF (col_name = 'relationship_type' AND release_number > 18) THEN
 			EXECUTE format('SELECT * FROM calc_dependent_completeness(%L, ''%s.family''::regclass, %L, %L, %L)', 
 				_proj, _schema, col_name, 'donor_has_relative_with_cancer_history', ARRAY['yes'])
 			INTO compl;
