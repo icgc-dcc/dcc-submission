@@ -51,7 +51,13 @@ $func$ LANGUAGE plpgsql;
 --
 CREATE OR REPLACE FUNCTION get_table_names(_release text) RETURNS TABLE (table_name text) as $$
 BEGIN
-	RETURN QUERY EXECUTE format('SELECT CAST(table_name as text) FROM information_schema.tables WHERE table_schema = %L', _release);
+	RETURN QUERY EXECUTE format('
+		SELECT 
+			CAST(table_name as text) 
+		FROM 
+			information_schema.tables 
+		WHERE 
+			table_name != ''completeness'' AND table_schema = %L', _release);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -581,8 +587,9 @@ $$ LANGUAGE plpgsql;
 -- Get sequencing stragety
 --
 CREATE OR REPLACE FUNCTION get_seq_str(release text) RETURNS TABLE (
-	project_id 		varchar,
-	donor_id		varchar,
+	project_id varchar,
+	donor_id varchar,
+	file_type	text,
 	sequencing_strategy	varchar
 	) as $$
 DECLARE
@@ -590,7 +597,11 @@ DECLARE
 BEGIN
 	FOR tbl_name IN EXECUTE format('SELECT table_name FROM information_schema.tables WHERE table_name like ''%%_m'' AND table_schema = %L', release) LOOP
 		IF (is_seq_str_tbl(tbl_name)) THEN
-			RETURN QUERY EXECUTE format('SELECT project_id, donor_id, sequencing_strategy FROM %I.%I ', release, tbl_name);
+			RETURN QUERY EXECUTE 
+				format('
+					SELECT 
+						project_id, donor_id, SUBSTRING(CAST(%L as text), ''(.*)_m$'') AS file_type, sequencing_strategy 
+					FROM %I.%I ', tbl_name, release, tbl_name);
 		END IF;
 	END LOOP;
 END;

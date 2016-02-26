@@ -15,15 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.util;
+package org.icgc.dcc.submission.loader.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class Tables {
+@Value
+public class PostgresqlCredentials {
 
-  public static final String PROJECT_TABLE_NAME = "project";
-  public static final String COMPLETENESS_TABLE_NAME = "completeness";
+  String host;
+  String port;
+  String user;
+  String password;
+  String dbName;
 
 }

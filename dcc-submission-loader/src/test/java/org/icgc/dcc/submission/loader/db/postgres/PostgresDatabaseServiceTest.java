@@ -22,7 +22,9 @@ import static org.icgc.dcc.submission.loader.util.Services.createSubmissionServi
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.loader.db.SqlFileExecutor;
 import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
+import org.icgc.dcc.submission.loader.model.PostgresqlCredentials;
 import org.icgc.dcc.submission.loader.model.Project;
 import org.icgc.dcc.submission.loader.util.AbstractPostgressTest;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -42,7 +44,15 @@ public class PostgresDatabaseServiceTest extends AbstractPostgressTest {
     super.setUp();
     val submissionService = createSubmissionService();
     val graph = new TypeDefGraph(submissionService.getFileTypes());
-    this.service = new PostgresDatabaseService(submissionService, jdbcTemplate, graph);
+
+    val postgresCredentials = new PostgresqlCredentials(
+        config.net().host(),
+        String.valueOf(config.net().port()),
+        config.credentials().username(),
+        config.credentials().password(),
+        config.storage().dbName());
+    val sqlFileExecutor = new SqlFileExecutor(postgresCredentials);
+    this.service = new PostgresDatabaseService(submissionService, jdbcTemplate, graph, sqlFileExecutor);
   }
 
   @Test

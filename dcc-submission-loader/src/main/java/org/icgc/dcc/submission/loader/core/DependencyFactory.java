@@ -44,6 +44,7 @@ import org.icgc.dcc.common.core.meta.Resolver.DictionaryResolver;
 import org.icgc.dcc.common.core.meta.RestfulCodeListsResolver;
 import org.icgc.dcc.common.core.meta.RestfulDictionaryResolver;
 import org.icgc.dcc.submission.loader.cli.ClientOptions;
+import org.icgc.dcc.submission.loader.db.SqlFileExecutor;
 import org.icgc.dcc.submission.loader.db.orientdb.OrientdbDatabseService;
 import org.icgc.dcc.submission.loader.db.orientdb.OrientdbDocumentLinker;
 import org.icgc.dcc.submission.loader.db.postgres.PostgresDatabaseService;
@@ -53,6 +54,7 @@ import org.icgc.dcc.submission.loader.meta.CodeListsService;
 import org.icgc.dcc.submission.loader.meta.ReleaseResolver;
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
 import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
+import org.icgc.dcc.submission.loader.model.PostgresqlCredentials;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -81,6 +83,10 @@ public final class DependencyFactory implements Closeable {
   private final ExecutorService executor = createExecutor();
   @Getter(lazy = true)
   private final PGPoolingDataSource dataSource = createDataSource();
+  @Getter(lazy = true)
+  private final PostgresqlCredentials postgresqlCredentials = createPostgresqlCredentials();
+  @Getter(lazy = true)
+  private final SqlFileExecutor sqlFileExecutor = createSqlFileExecutor();
   @Getter(lazy = true)
   private final ReleaseResolver releaseResolver = createReleaseResolver();
   private final Map<String, SubmissionMetadataService> releaseSubmissionService = Maps.newHashMap();
@@ -157,7 +163,17 @@ public final class DependencyFactory implements Closeable {
     val submissionService = createSubmissionMetadataService(release);
     val graph = new TypeDefGraph(submissionService.getFileTypes());
 
-    return new PostgresDatabaseService(submissionService, new JdbcTemplate(getDataSource()), graph);
+    return new PostgresDatabaseService(submissionService, new JdbcTemplate(getDataSource()), graph,
+        getSqlFileExecutor());
+  }
+
+  private PostgresqlCredentials createPostgresqlCredentials() {
+    return new PostgresqlCredentials(
+        options.dbHost,
+        options.dbPort,
+        options.dbUser,
+        options.dbPassword,
+        options.dbName);
   }
 
   private PGPoolingDataSource createDataSource() {
@@ -179,6 +195,10 @@ public final class DependencyFactory implements Closeable {
     }
 
     return dataSource;
+  }
+
+  private SqlFileExecutor createSqlFileExecutor() {
+    return new SqlFileExecutor(getPostgresqlCredentials());
   }
 
   private CompressionCodecFactory createCompressionCodecFactory() {

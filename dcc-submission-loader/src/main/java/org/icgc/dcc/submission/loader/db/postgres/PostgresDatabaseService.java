@@ -24,6 +24,7 @@ import static org.icgc.dcc.submission.loader.util.DatabaseFields.DONOR_ID_FIELD_
 import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_NAME_FIELD_NAME;
 import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_STATE_FIELD_NAME;
+import static org.icgc.dcc.submission.loader.util.Tables.COMPLETENESS_TABLE_NAME;
 import static org.icgc.dcc.submission.loader.util.Tables.PROJECT_TABLE_NAME;
 
 import java.util.List;
@@ -37,9 +38,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.submission.loader.db.DatabaseService;
+import org.icgc.dcc.submission.loader.db.SqlFileExecutor;
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
 import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
 import org.icgc.dcc.submission.loader.model.Project;
+import org.icgc.dcc.submission.loader.util.DatabaseFields;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.google.common.collect.ImmutableList;
@@ -54,6 +57,8 @@ public class PostgresDatabaseService implements DatabaseService {
   private final JdbcTemplate jdbcTemplate;
   @NonNull
   private final TypeDefGraph typeDefGraph;
+  @NonNull
+  private final SqlFileExecutor sqlFileExecutor;
 
   @Override
   public void initializeDb(@NonNull String release, @NonNull Iterable<Project> projects) {
@@ -65,6 +70,10 @@ public class PostgresDatabaseService implements DatabaseService {
   @Override
   public void finalizeDb(@NonNull String release) {
     populateDonorId(release);
+    // Recreate stored functions
+    sqlFileExecutor.createStoredFunctions();
+    createReportsTables(release);
+    populateReportTables(release);
   }
 
   private void populateDonorId(String release) {
@@ -74,6 +83,32 @@ public class PostgresDatabaseService implements DatabaseService {
         jdbcTemplate.execute(sql.get());
       }
     }
+  }
+
+  private void createReportsTables(String release) {
+    dropTable(release, COMPLETENESS_TABLE_NAME);
+    val tableName = getTableName(release, COMPLETENESS_TABLE_NAME);
+
+    val sql = "CREATE TABLE " + tableName + " ( "
+        + DatabaseFields.TABLE_NAME_FIELD_NAME + " text, "
+        + DatabaseFields.COLUMN_NAME_FIELD_NAME + " text, "
+        + DatabaseFields.PROJECT_ID_FIELD_NAME + " text, "
+        + DatabaseFields.TOTAL_FIELD_NAME + " numeric, "
+        + DatabaseFields.WITH_DATA_FIELD_NAME + " numeric, "
+        + DatabaseFields.COVERAGE_FIELD_NAME + " numeric"
+        + ")";
+
+    log.debug("{}", sql);
+    jdbcTemplate.execute(sql);
+  }
+
+  private void populateReportTables(String release) {
+    log.debug("Populating report tables...");
+    val sql = format("INSERT INTO %s SELECT * FROM release_completeness('%s')",
+        getTableName(release, COMPLETENESS_TABLE_NAME), release);
+    log.debug("{}", sql);
+    jdbcTemplate.update(sql);
+
   }
 
   private Optional<String> createUpdateQuery(String release, String type) {

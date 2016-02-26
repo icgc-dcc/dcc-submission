@@ -28,4 +28,11 @@ public final class DatabaseFields {
   public static final String PROJECT_STATE_FIELD_NAME = "state";
   public static final String DONOR_ID_FIELD_NAME = "donor_id";
 
+  // completeness table fileds
+  public static final String TABLE_NAME_FIELD_NAME = "table_name";
+  public static final String COLUMN_NAME_FIELD_NAME = "column_name";
+  public static final String TOTAL_FIELD_NAME = "total";
+  public static final String WITH_DATA_FIELD_NAME = "with_data";
+  public static final String COVERAGE_FIELD_NAME = "coverage";
+
 }
