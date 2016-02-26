@@ -89,7 +89,7 @@ public class ClientMainIntegrationTest extends AbstractPostgressTest {
     assertThat(ssm_ps.get(0).get("chromosome_start")).isEqualTo("5068360");
     assertThat(ssm_ps.get(0).get("biological_validation_status")).isEqualTo("not tested");
     assertThat(ssm_ps.get(1).get("chromosome_start")).isEqualTo("36872057");
-
+    assertThat(jdbcTemplate.queryForObject("select count(*) from icgc20.completeness", Integer.class)).isEqualTo(479);
   }
 
   private static void verifyDB() {

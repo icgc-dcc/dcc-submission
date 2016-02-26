@@ -105,7 +105,7 @@ public class PostgresDatabaseService implements DatabaseService {
   private void populateReportTables(String release) {
     log.debug("Populating report tables...");
     val sql = format("INSERT INTO %s SELECT * FROM release_completeness('%s')",
-        getTableName(release, COMPLETENESS_TABLE_NAME), release);
+        getTableName(release, COMPLETENESS_TABLE_NAME), release.toLowerCase());
     log.debug("{}", sql);
     jdbcTemplate.update(sql);
 
