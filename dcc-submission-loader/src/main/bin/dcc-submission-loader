@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Output location
+basedir=$(dirname $(readlink -m $(dirname $0i)))
+libdir=$basedir/lib
+logdir=$basedir/logs
+confdir=$basedir/conf
+sqldir=$basedir/sql
+
+JAR=$libdir/dcc-submission-loader.jar
+
+_release=$1
+_date=$(date +%F-%H.%M.%S)
+_log=$logdir/${_date}.txt
+
+# Read configuration
+. $confdir/application.conf
+
+export PGPASSWORD=$DB_PASSWORD
+
+for sql_file in $(ls $sqldir/*.sql); do
+  echo Executing $sql_file ...
+  psql -h $DB_HOST -U $DB_USER -f $sqldir/$sql_file
+done
+
+java -Dlogback.configurationFile=$libdir/logback.xml \
+	-cp $JAR \
+	org.icgc.dcc.submission.loader.ClientMain \
+	--hdfs-url $HDFS_URL \
+	--db-host $DB_HOST \
+	--db-port 5432 \
+	--db-user $DB_USER \
+	--db-password $DB_PASSWORD \
+	--db-name $DB_NAME \
+	--threads 30 \
+	--release ${_release} \
+	--submission-url $SUBMISSION_URL \
+	--submission-user $SUBMISSION_USER \
+	--submission-password $SUBMISSION_PASSWORD \
+	--exclude-files __p__,__s__,__g__,_p.,_s.,_g. > ${_log} 2>&1
+

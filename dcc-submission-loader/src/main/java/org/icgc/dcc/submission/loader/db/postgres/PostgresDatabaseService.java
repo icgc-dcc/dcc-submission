@@ -38,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.submission.loader.db.DatabaseService;
-import org.icgc.dcc.submission.loader.db.SqlFileExecutor;
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
 import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
 import org.icgc.dcc.submission.loader.model.Project;
@@ -57,8 +56,6 @@ public class PostgresDatabaseService implements DatabaseService {
   private final JdbcTemplate jdbcTemplate;
   @NonNull
   private final TypeDefGraph typeDefGraph;
-  @NonNull
-  private final SqlFileExecutor sqlFileExecutor;
 
   @Override
   public void initializeDb(@NonNull String release, @NonNull Iterable<Project> projects) {
@@ -70,8 +67,6 @@ public class PostgresDatabaseService implements DatabaseService {
   @Override
   public void finalizeDb(@NonNull String release) {
     populateDonorId(release);
-    // Recreate stored functions
-    sqlFileExecutor.createStoredFunctions();
     createReportsTables(release);
     populateReportTables(release);
   }
