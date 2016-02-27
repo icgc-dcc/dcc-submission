@@ -19,8 +19,8 @@ _log=$logdir/${_date}.txt
 export PGPASSWORD=$DB_PASSWORD
 
 for sql_file in $(ls $sqldir/*.sql); do
-  echo Executing $sql_file ...
-  psql -h $DB_HOST -U $DB_USER -f $sql_file > ${_log} 2>&1
+  echo Executing $sql_file ... >> ${_log} 2>&1
+  psql -h $DB_HOST -U $DB_USER -f $sql_file >> ${_log} 2>&1
 done
 
 java -Dlogback.configurationFile=$confdir/logback.xml \
@@ -37,5 +37,5 @@ java -Dlogback.configurationFile=$confdir/logback.xml \
 	--submission-url $SUBMISSION_URL \
 	--submission-user $SUBMISSION_USER \
 	--submission-password $SUBMISSION_PASSWORD \
-	--exclude-files __p__,__s__,__g__,_p.,_s.,_g. > ${_log} 2>&1
+	--exclude-files __p__,__s__,__g__,_p.,_s.,_g. >> ${_log} 2>&1
 
