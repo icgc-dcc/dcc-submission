@@ -23,7 +23,7 @@ for sql_file in $(ls $sqldir/*.sql); do
   psql -h $DB_HOST -U $DB_USER -f $sql_file > ${_log} 2>&1
 done
 
-java -Dlogback.configurationFile=$libdir/logback.xml \
+java -Dlogback.configurationFile=$confdir/logback.xml \
 	-cp $JAR \
 	org.icgc.dcc.submission.loader.ClientMain \
 	--hdfs-url $HDFS_URL \
