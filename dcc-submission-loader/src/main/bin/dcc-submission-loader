@@ -20,7 +20,7 @@ export PGPASSWORD=$DB_PASSWORD
 
 for sql_file in $(ls $sqldir/*.sql); do
   echo Executing $sql_file ...
-  psql -h $DB_HOST -U $DB_USER -f $sqldir/$sql_file
+  psql -h $DB_HOST -U $DB_USER -f $sql_file > ${_log} 2>&1
 done
 
 java -Dlogback.configurationFile=$libdir/logback.xml \
