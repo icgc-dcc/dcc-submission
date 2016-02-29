@@ -1,0 +1,69 @@
+#!/bin/bash
+#
+# Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+#
+# This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+# TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+# IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Description:
+#       Loads submission data to a database for further analysis and reports generations. 
+#
+# Usage:
+#       ./dcc-submission-loader <release_name>
+#
+
+if [[ $# -ne 1 ]]; then
+        echo "Missing release name"
+        exit 1
+fi
+
+# Output location
+basedir=$(dirname $(readlink -m $(dirname $0i)))
+libdir=$basedir/lib
+logdir=$basedir/logs
+confdir=$basedir/conf
+sqldir=$basedir/sql
+
+JAR=$libdir/dcc-submission-loader.jar
+
+_release=$1
+_date=$(date +%F-%H.%M.%S)
+_log=$logdir/${_date}.txt
+
+# Read configuration
+. $confdir/application.conf
+
+export PGPASSWORD=$DB_PASSWORD
+
+for sql_file in $(ls $sqldir/*.sql); do
+  echo Executing $sql_file ... >> ${_log} 2>&1
+  psql -h $DB_HOST -U $DB_USER -f $sql_file >> ${_log} 2>&1
+done
+
+java -Dlogback.configurationFile=$confdir/logback.xml \
+	-cp $JAR \
+	org.icgc.dcc.submission.loader.ClientMain \
+	--hdfs-url $HDFS_URL \
+	--db-host $DB_HOST \
+	--db-port 5432 \
+	--db-user $DB_USER \
+	--db-password $DB_PASSWORD \
+	--db-name $DB_NAME \
+	--threads 30 \
+	--release ${_release} \
+	--submission-url $SUBMISSION_URL \
+	--submission-user $SUBMISSION_USER \
+	--submission-password $SUBMISSION_PASSWORD \
+	--exclude-files __p__,__s__,__g__,_p.,_s.,_g. >> ${_log} 2>&1
+

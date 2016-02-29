@@ -1,0 +1,2 @@
+analysis_id	analyzed_sample_id	matched_sample_id	assembly_version	platform	experimental_protocol	base_calling_algorithm	alignment_algorithm	variation_calling_algorithm	other_analysis_algorithm	sequencing_strategy	seq_coverage	raw_data_repository	raw_data_accession
+AID1	ASID1	ASID2	1	60	Paired End	CASAVA	BWA	SNVMix2	-888	3	-777	4	7d839a43-5657-4b9e-a03c-0000000
