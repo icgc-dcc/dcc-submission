@@ -17,7 +17,7 @@ The following modules comprise the backend of the system:
 - [Submission Core](dcc-submission-core/README.md)
 - [Submission Server](dcc-submission-server/README.md)
 - [Submission Validator](dcc-submission-validator/README.md)
-- [Submission Reporter](dcc-submission-reporter/README.md)
+- [Submission Loader](dcc-submission-loader/README.md)
 
 The following module is the user interface to the system:
 
