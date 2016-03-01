@@ -24,6 +24,7 @@ import static org.icgc.dcc.submission.dictionary.model.DictionaryState.OPENED;
 
 import java.util.List;
 
+import org.icgc.dcc.common.json.Jackson;
 import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -33,7 +34,9 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.inject.Inject;
 
 import lombok.NonNull;
@@ -66,8 +69,36 @@ public class DictionaryService {
     return getDictionaryByVersion(version);
   }
 
-  public List<Dictionary> getVersions() {
-    return dictionaryRepository.getVersions();
+  public ArrayNode getVersions() {
+    val mapper = Jackson.DEFAULT;
+    val dicts = dictionaryRepository.getVersions();
+    val releases = releaseService.getReleases();
+
+    val builder = ImmutableMultimap.<String, Release> builder();
+    for (val release : releases) {
+      builder.put(release.getDictionaryVersion(), release);
+    }
+    val releaseMap = builder.build();
+
+    val response = mapper.createArrayNode();
+    for (val dict : dicts) {
+      val dictJson = mapper.createObjectNode();
+      dictJson.put("created", dict.getCreated().getTime());
+      dictJson.put("lastUpdated", dict.getCreated().getTime());
+      dictJson.put("version", dict.getVersion());
+      dictJson.put("state", dict.getState().toString());
+
+      val dictReleases = releaseMap.get(dict.getVersion());
+      val releaseList = mapper.createArrayNode();
+      for (val release : dictReleases) {
+        releaseList.add(release.getName());
+      }
+      dictJson.put("releases", releaseList);
+
+      response.add(dictJson);
+    }
+
+    return response;
   }
 
   public Dictionary getDictionaryByVersion(@NonNull String version) {

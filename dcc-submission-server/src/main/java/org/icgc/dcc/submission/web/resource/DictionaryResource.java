@@ -96,6 +96,13 @@ public class DictionaryResource {
   }
 
   @GET
+  @Path("/current")
+  public Response getCurrentDictionary() {
+    val response = dictionaryService.getCurrentDictionary();
+    return Response.ok(response).build();
+  }
+
+  @GET
   @Path("{version}")
   public Response getDictionary(
 
