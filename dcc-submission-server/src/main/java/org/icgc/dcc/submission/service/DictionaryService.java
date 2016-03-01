@@ -24,11 +24,6 @@ import static org.icgc.dcc.submission.dictionary.model.DictionaryState.OPENED;
 
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -41,8 +36,13 @@ import org.icgc.dcc.submission.repository.DictionaryRepository;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Inject) )
 public class DictionaryService {
 
   @NonNull
@@ -64,6 +64,10 @@ public class DictionaryService {
   public Dictionary getCurrentDictionary(@NonNull Release openRelease) {
     val version = openRelease.getDictionaryVersion();
     return getDictionaryByVersion(version);
+  }
+
+  public List<Dictionary> getVersions() {
+    return dictionaryRepository.getVersions();
   }
 
   public Dictionary getDictionaryByVersion(@NonNull String version) {
