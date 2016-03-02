@@ -36,7 +36,7 @@ angular.module('DictionaryViewerApp')
           webserviceURL = (baseURL || '') + '/ws';
 
 
-      $http.get(webserviceURL + '/dictionaries')
+      $http.get(webserviceURL + '/dictionaries/versions')
         .then(function (dictionaryList) {
 
           // Grab the code list
@@ -137,22 +137,21 @@ angular.module('DictionaryViewerApp')
     }
 
     function _generateChangeList() {
-
       var changeReport = null;
 
       if (! _dictionaryUtils) {
         return changeReport;
       }
 
-      changeReport = _dictionaryUtils.createDiffListing(_versionRange.from, _versionRange.to);
+      return _dictionaryUtils.createDiffListing(_versionRange.from, _versionRange.to).then(function (report) {
+        changeReport = report;
+        changeReport.changed = changeReport.fieldsChanged;
+        changeReport.added = changeReport.fieldsAdded;
+        changeReport.removed = changeReport.fieldsRemoved;
 
-      changeReport.changed = changeReport.fieldsChanged;
-
-      changeReport.added = changeReport.fieldsAdded;
-
-      changeReport.removed = changeReport.fieldsRemoved;
-
-      return changeReport;
+        return changeReport;
+      });
+      
     }
 
   });

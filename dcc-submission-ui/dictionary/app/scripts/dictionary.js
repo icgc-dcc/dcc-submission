@@ -185,7 +185,9 @@ var dictionaryApp = dictionaryApp || {};
         $scope.generateChangeList();
 
         $scope.codeLists.forEach(function (codeList) {
-          codeList.coverage = $scope.dictUtil.getCodeListCoverage(codeList.name, versionTo).sort();
+          $scope.dictUtil.getCodeListCoverage(codeList.name, versionTo).then(function (result) {
+            codeList.coverage = result.sort();
+          });
         });
 
         $scope.codeListsFiltered = $scope.codeLists;
@@ -196,7 +198,9 @@ var dictionaryApp = dictionaryApp || {};
           });
         }
 
-        $scope.jsonEditor.set($scope.dictUtil.getDictionary(versionTo));
+        $scope.dictUtil.getDictionary(versionTo).then(function (dict) {
+          $scope.jsonEditor.set(dict);
+        });
       };
 
 
@@ -204,19 +208,21 @@ var dictionaryApp = dictionaryApp || {};
         var versionFrom = $scope.vFrom;
         var versionTo = $scope.vTo;
 
-        $scope.changeReport = $scope.dictUtil.createDiffListing(versionFrom, versionTo);
+        $scope.dictUtil.createDiffListing(versionFrom, versionTo).then(function (report) {
+          $scope.changeReport = report;
+          
+          $scope.changeReport.changed = $scope.changeReport.fieldsChanged.map(function (field) {
+            return field.fileType + '|' + field.fieldName;
+          }).join('\n');
 
-        $scope.changeReport.changed = $scope.changeReport.fieldsChanged.map(function (field) {
-          return field.fileType + '|' + field.fieldName;
-        }).join('\n');
+          $scope.changeReport.added = $scope.changeReport.fieldsAdded.map(function (field) {
+            return field.fileType + '|' + field.fieldName;
+          }).join('\n');
 
-        $scope.changeReport.added = $scope.changeReport.fieldsAdded.map(function (field) {
-          return field.fileType + '|' + field.fieldName;
-        }).join('\n');
-
-        $scope.changeReport.removed = $scope.changeReport.fieldsRemoved.map(function (field) {
-          return field.fileType + '|' + field.fieldName;
-        }).join('\n');
+          $scope.changeReport.removed = $scope.changeReport.fieldsRemoved.map(function (field) {
+            return field.fileType + '|' + field.fieldName;
+          }).join('\n');
+        });
 
       };
   });

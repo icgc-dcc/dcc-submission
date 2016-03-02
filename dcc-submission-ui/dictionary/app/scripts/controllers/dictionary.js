@@ -23,7 +23,7 @@ var dictionaryApp = dictionaryApp || {};
 
   angular.module('DictionaryViewerApp', [])
     .constant('DictionaryBaseURLConstants' , {
-      DEV: '',
+      DEV: 'http://localhost:5380',
       BETA: 'http://hsubmission-dcc.oicr.on.ca:5380',
       PROD: 'https://submissions.dcc.icgc.org'
     })
