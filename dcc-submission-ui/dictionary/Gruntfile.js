@@ -264,6 +264,7 @@ module.exports = function (grunt) {
               'bower_components/**',
               'images/**/*.{gif,webp,svg,png,jpg}',
               'fonts/*',
+              'styles/font-awesome.min.css',
               'scripts/views/**/*.html',
               'scripts/**/*.map'
             ]
