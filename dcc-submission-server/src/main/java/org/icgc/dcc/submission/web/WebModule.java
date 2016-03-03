@@ -34,7 +34,6 @@ import org.icgc.dcc.submission.web.mapper.UnsatisfiedPreconditionExceptionMapper
 import org.icgc.dcc.submission.web.provider.ValidatingJacksonJsonProvider;
 import org.icgc.dcc.submission.web.resource.CodeListResource;
 import org.icgc.dcc.submission.web.resource.DictionaryResource;
-import org.icgc.dcc.submission.web.resource.ExecutiveReportResource;
 import org.icgc.dcc.submission.web.resource.NextReleaseResource;
 import org.icgc.dcc.submission.web.resource.ProjectResource;
 import org.icgc.dcc.submission.web.resource.ReleaseResource;
@@ -72,7 +71,6 @@ public class WebModule extends AbstractModule {
       config.addClasses(NextReleaseResource.class);
       config.addClasses(DictionaryResource.class);
       config.addClasses(CodeListResource.class);
-      config.addClasses(ExecutiveReportResource.class);
       config.addClasses(UserResource.class);
       config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment (see DCC-819)
 

@@ -25,10 +25,6 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.loader.model.Project;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.springframework.http.HttpEntity;
@@ -40,6 +36,10 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.BaseEncoding;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReleaseResolver {

@@ -30,9 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
-import lombok.val;
-
 import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.Project;
@@ -59,6 +56,9 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
+import junit.framework.Assert;
+import lombok.val;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseServiceTest {
 
@@ -79,9 +79,6 @@ public class ReleaseServiceTest {
   private DccFileSystem dccFileSystem;
   @Mock
   private MailService mailService;
-
-  @Mock
-  private ExecutiveReportService executiveReportService;
 
   private final static String TEST_DB_NAME = "dcc-test";
 
@@ -130,7 +127,7 @@ public class ReleaseServiceTest {
       val projectRepository = spy(new ProjectRepository(morphia, datastore));
 
       releaseService = new ReleaseService(mailService, dccFileSystem,
-          releaseRepository, dictionaryRepository, projectRepository, codeListRepository, executiveReportService);
+          releaseRepository, dictionaryRepository, projectRepository);
 
       dictionaryService = new DictionaryService(releaseService, dictionaryRepository, codeListRepository);
       dictionaryService.addDictionary(dictionary);

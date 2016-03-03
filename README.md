@@ -2,6 +2,10 @@
 
 Parent project of the submission system which is responsible for accepting and validating ICGC clinical and experimental data files submitted to the DCC.
 
+## Setup
+
+Follow the setup instructions in each of the system modules before attempting to build the top level project.
+
 ## Build
 
 To compile, test and package the system, execute the following from the root of the repository:

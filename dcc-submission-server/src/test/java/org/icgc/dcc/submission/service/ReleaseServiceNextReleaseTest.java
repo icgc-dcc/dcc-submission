@@ -81,8 +81,6 @@ public class ReleaseServiceNextReleaseTest {
 
   @Mock
   DictionaryService dictionaryService;
-  @Mock
-  ExecutiveReportService executiveReportService;
 
   @Mock
   ReleaseRepository releaseRepository;
