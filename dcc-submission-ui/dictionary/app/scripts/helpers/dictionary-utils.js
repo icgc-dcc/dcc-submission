@@ -1,3 +1,4 @@
+/* globals $ */
 'use strict';
 
 var dictionaryApp = dictionaryApp || {};
@@ -7,7 +8,8 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
 (function() {
 
-   function DictionaryUtil(list) {
+   function DictionaryUtil(list, webserviceURL) {
+     this.webserviceURL = webserviceURL;
 
       list = _.filter(list, function(d) {
          var pattern = new RegExp('^draft');
@@ -41,7 +43,24 @@ var dictionaryApp = dictionaryApp || {};
    // Basic Getters
    ////////////////////////////////////////////////////////////////////////////////
    DictionaryUtil.prototype.getDictionary = function(version) {
-      return this.dictionaryMap[version];
+     var _self = this;
+     var url = _self.webserviceURL + '/dictionaries/' + version;
+     var dict = _self.dictionaryMap[version];
+     
+     if (_.has(dict, 'files')) {
+       return $.Deferred().promise(dict);
+     } else if (_.has(dict, 'then')) {
+       return dict;
+     } else {
+       _self.dictionaryMap[version] = $.ajax({
+         url: url,
+         dataType: 'json'
+       });
+       _self.dictionaryMap[version].done(function (data) {
+         return data;
+       });
+       return _self.dictionaryMap[version];
+     }
    };
 
    DictionaryUtil.prototype.getFileType = function(version, filename) {
@@ -56,6 +75,25 @@ var dictionaryApp = dictionaryApp || {};
 
    DictionaryUtil.prototype.getField = function(version, filename, fieldname) {
       var file = this.getFileType(version, filename);
+
+     if (!file) {
+        return null;
+      }
+
+     return _.find(file.fields, function(f) { return f.name === fieldname; });
+   };
+   
+   
+   DictionaryUtil.prototype.getFileTypeFromDict = function(dict, filename) {
+      if (!dict) {
+        return null;
+      }
+
+      return _.find(dict.files, function(f) { return f.name === filename; });
+   };
+
+   DictionaryUtil.prototype.getFieldFromDict = function(dict, filename, fieldname) {
+      var file = this.getFileTypeFromDict(dict, filename);
 
      if (!file) {
         return null;
@@ -167,74 +205,79 @@ var dictionaryApp = dictionaryApp || {};
       report.fieldsRemoved = [];
       report.fieldsChanged = [];
 
+      return _self.getDictionary(versionFrom).then(function (dictFrom) {
+        return _self.getDictionary(versionTo).then(function (dictTo) {
+          
+          // Scan for changed and remove file types
+          if (dictFrom) {
+            dictFrom.files.forEach(function (fileFrom) {
+              var fileTo = _self.getFileTypeFromDict(dictTo, fileFrom.name);
 
-      // Scan for changed and remove file types
-      var dictFrom = _self.getDictionary(versionFrom);
-      if (dictFrom) {
-         dictFrom.files.forEach(function(fileFrom) {
-            var fileTo = _self.getFileType(versionTo, fileFrom.name);
-
-            // If no file, then it as been removed.
-            // Otherwise we need to check each field for changes.
-            if (!fileTo) {
-               fileFrom.fields.forEach(function(fieldFrom) {
+              // If no file, then it as been removed.
+              // Otherwise we need to check each field for changes.
+              if (!fileTo) {
+                fileFrom.fields.forEach(function (fieldFrom) {
                   report.fieldsRemoved.push({
-                     fileType: fileFrom.name,
-                     fieldName: fieldFrom.name
+                    fileType: fileFrom.name,
+                    fieldName: fieldFrom.name
                   });
-               });
-            } else {
-               // Check removed and changed
-               fileFrom.fields.forEach(function(fieldFrom) {
-                  var fieldTo = _self.getField(versionTo, fileFrom.name, fieldFrom.name);
+                });
+              } else {
+                // Check removed and changed
+                fileFrom.fields.forEach(function (fieldFrom) {
+                  var fieldTo = _self.getFieldFromDict(dictTo, fileFrom.name, fieldFrom.name);
 
                   if (!fieldTo) {
-                     report.fieldsRemoved.push({
-                        fileType: fileFrom.name,
-                        fieldName: fieldFrom.name
-                     });
+                    report.fieldsRemoved.push({
+                      fileType: fileFrom.name,
+                      fieldName: fieldFrom.name
+                    });
                   } else if (_self.isDifferent2(fieldTo, fieldFrom).length > 0) {
-                     report.fieldsChanged.push({
-                        fileType: fileFrom.name,
-                        fieldName: fieldFrom.name,
-                        changes: _self.isDifferent2(fieldTo, fieldFrom)
-                     });
+                    report.fieldsChanged.push({
+                      fileType: fileFrom.name,
+                      fieldName: fieldFrom.name,
+                      changes: _self.isDifferent2(fieldTo, fieldFrom)
+                    });
                   }
-               });
+                });
 
-               // Check new
-               fileTo.fields.forEach(function(fieldTo) {
-                  var fieldFrom = _self.getField(versionFrom, fileTo.name, fieldTo.name);
+                // Check new
+                fileTo.fields.forEach(function (fieldTo) {
+                  var fieldFrom = _self.getFieldFromDict(dictFrom, fileTo.name, fieldTo.name);
 
                   if (!fieldFrom) {
-                     report.fieldsAdded.push({
-                        fileType: fileTo.name,
-                        fieldName: fieldTo.name
-                     });
+                    report.fieldsAdded.push({
+                      fileType: fileTo.name,
+                      fieldName: fieldTo.name
+                    });
                   }
-               });
-            }
-         });
-      }
-
-      // Now reverse logic to check for completely new file types
-      var dictTo = _self.getDictionary(versionTo);
-      if (dictTo) {
-         dictTo.files.forEach(function(fileTo) {
-            var fileFrom = _self.getFileType(versionFrom, fileTo.name);
-            // fileTo is new
-            if (!fileFrom) {
-               fileTo.fields.forEach(function(fieldTo) {
+                });
+              }
+            });
+          }
+          
+          // Now reverse logic to check for completely new file types
+          if (dictTo) {
+            dictTo.files.forEach(function (fileTo) {
+              var fileFrom = _self.getFileTypeFromDict(dictFrom, fileTo.name);
+              // fileTo is new
+              if (!fileFrom) {
+                fileTo.fields.forEach(function (fieldTo) {
                   report.fieldsAdded.push({
-                     fileType: fileTo.name,
-                     fieldName: fieldTo.name
+                    fileType: fileTo.name,
+                    fieldName: fieldTo.name
                   });
-               });
-            }
-         });
-      }
+                });
+              }
+            });
+          }
 
-      return report;
+          return report;
+          
+        });
+      });
+      
+      
    };
 
 
@@ -242,17 +285,15 @@ var dictionaryApp = dictionaryApp || {};
    // Splits codelists into used/non-used in a specific version
    // Note there is only ONE codelist
    ////////////////////////////////////////////////////////////////////////////////
-   DictionaryUtil.prototype.getCodeListCoverage = function(name, version) {
-     var _self = this;
+   DictionaryUtil.prototype.getCodeListCoverage = function (name, dictionary) {
      var result = [];
-     var dictionary = _self.getDictionary(version);
 
-     dictionary.files.forEach(function(file) {
-       file.fields.forEach(function(field) {
+     dictionary.files.forEach(function (file) {
+       file.fields.forEach(function (field) {
          var restrictions = field.restrictions;
-         var codelist = _.find(restrictions, function(obj) { return obj.type === 'codelist'; });
+         var codelist = _.find(restrictions, function (obj) { return obj.type === 'codelist'; });
 
-         if ( ! codelist) {
+         if (!codelist) {
            return;
          }
 

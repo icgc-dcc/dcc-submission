@@ -46,9 +46,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.dictionary.DictionaryValidator;
 import org.icgc.dcc.submission.dictionary.DictionaryValidator.DictionaryConstraintViolations;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -57,6 +54,9 @@ import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 
 import com.google.inject.Inject;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("dictionaries")
@@ -86,13 +86,29 @@ public class DictionaryResource {
   }
 
   @GET
+  @Path("/versions")
+  public Response getDictionaryVersions() {
+    val response = dictionaryService.getVersions();
+    if (response == null) {
+      return Response.ok(newArrayList()).build();
+    }
+    return Response.ok(response).build();
+  }
+
+  @GET
+  @Path("/current")
+  public Response getCurrentDictionary() {
+    val response = dictionaryService.getCurrentDictionary();
+    return Response.ok(response).build();
+  }
+
+  @GET
   @Path("{version}")
   public Response getDictionary(
 
       @PathParam("version") String version
 
-      )
-  {
+  ) {
     // No authorization check necessary
     log.debug("Getting dictionary: {}", version);
     Dictionary dict = this.dictionaryService.getDictionaryByVersion(version);
@@ -114,8 +130,7 @@ public class DictionaryResource {
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     log.info("Adding dictionary: {}", dict == null ? null : dict.getVersion());
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
@@ -165,8 +180,7 @@ public class DictionaryResource {
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     checkArgument(version != null);
     checkArgument(newDictionary != null);
     checkArgument(newDictionary.getVersion() != null);

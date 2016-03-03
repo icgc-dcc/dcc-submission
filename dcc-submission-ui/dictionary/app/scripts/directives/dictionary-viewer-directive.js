@@ -32,6 +32,7 @@ angular.module('DictionaryViewerApp')
         _controller.tableViewer = null;
         _controller.dictUtil = null;
         _controller.getCurrentView = DictionaryService.getCurrentViewType;
+        _controller.changeReport = null;
 
         _controller.shouldShowHeaderNav = $scope.showHeaderNav === 'false' ? false : true;
         _controller.shouldHideGraphLegend = $scope.hideGraphLegend === 'true' ? true : false;
@@ -239,54 +240,53 @@ angular.module('DictionaryViewerApp')
 
           _controller.tableViewer.filter(query);
           _controller.generateChangeList();
+          
+          _controller.dictUtil.getDictionary(versionTo).then(function (dictTo) {
+            _controller.codeLists.forEach(function (codeList) {
+              codeList.coverage = _controller.dictUtil.getCodeListCoverage(codeList.name, dictTo).sort();
+            });
 
-          _controller.codeLists.forEach(function (codeList) {
-            codeList.coverage = _controller.dictUtil.getCodeListCoverage(codeList.name, versionTo).sort();
+            _controller.codeListsFiltered = _controller.codeLists;
+
+            if (_controller.hideUnusedCodeLists === true) {
+              _controller.codeListsFiltered = _.filter(_controller.codeLists, function (codeList) {
+                return codeList.coverage.length > 0;
+              });
+            }
           });
 
-          _controller.codeListsFiltered = _controller.codeLists;
-
-          if (_controller.hideUnusedCodeLists === true) {
-            _controller.codeListsFiltered = _.filter(_controller.codeLists, function (codeList) {
-              return codeList.coverage.length > 0;
-            });
-          }
-
-
-
           if (_controller.jsonEditor) {
-
-            var dictionaryJSON = {},
-                dictionariesJSON = _controller.dictUtil.getDictionary(versionTo);
-
-            if (_controller.dataType !== 'all' &&
+            var dictionaryJSON = {};
+            _controller.dictUtil.getDictionary(versionTo).then(function (dictionariesJSON) {
+              if (_controller.dataType !== 'all' &&
                 dictionariesJSON && angular.isDefined(dictionariesJSON.files)) {
 
-              angular.copy(dictionariesJSON, dictionaryJSON);
+                angular.copy(dictionariesJSON, dictionaryJSON);
 
-              // Filter the JSON based on the data type
-              var dictionaryFiles = [];
+                // Filter the JSON based on the data type
+                var dictionaryFiles = [];
 
-              for (var i = 0; i < dictionaryJSON.files.length; i++) {
-                var file = dictionaryJSON.files[i];
+                for (var i = 0; i < dictionaryJSON.files.length; i++) {
+                  var file = dictionaryJSON.files[i];
 
-                if (file.name === dataType) {
-                  dictionaryFiles = dictionaryFiles.concat(dictionaryFiles, file);
+                  if (file.name === dataType) {
+                    dictionaryFiles = dictionaryFiles.concat(dictionaryFiles, file);
+                  }
+
                 }
 
+                dictionaryJSON.files = dictionaryFiles;
+              }
+              else {
+                dictionaryJSON = dictionariesJSON;
               }
 
-              dictionaryJSON.files = dictionaryFiles;
-            }
-            else {
-              dictionaryJSON = dictionariesJSON;
-            }
+              _controller.jsonEditor.set(dictionaryJSON);
 
-            _controller.jsonEditor.set(dictionaryJSON);
-
-            if (dictionaryJSON.files.length === 1) {
-              _controller.jsonEditor.expandAll();
-            }
+              if (dictionaryJSON.files.length === 1) {
+                _controller.jsonEditor.expandAll();
+              }
+            });
 
           }
 
@@ -329,7 +329,11 @@ angular.module('DictionaryViewerApp')
         };
 
         _controller.generateChangeList = function() {
-          _controller.changeReport = DictionaryService.generateChangeList();
+          DictionaryService.generateChangeList().then(function (report) {
+            $scope.$applyAsync(function () {
+              _controller.changeReport = report;
+            });
+          });
         };
 
         function _bindAnchors(versionFrom, versionTo, viewMode, query, dataType) {

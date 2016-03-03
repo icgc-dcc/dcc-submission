@@ -25,9 +25,6 @@ import static org.icgc.dcc.submission.dictionary.model.QDictionary.dictionary;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
@@ -36,6 +33,9 @@ import org.mongodb.morphia.Morphia;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class DictionaryRepository extends AbstractRepository<Dictionary, QDictionary> {
 
@@ -50,6 +50,10 @@ public class DictionaryRepository extends AbstractRepository<Dictionary, QDictio
 
   public List<Dictionary> findDictionaries() {
     return list();
+  }
+
+  public List<Dictionary> getVersions() {
+    return list(entity.version, entity.created, entity.lastUpdate, entity.state);
   }
 
   public Dictionary findDictionaryByVersion(@NonNull String version) {
