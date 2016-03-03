@@ -330,7 +330,9 @@ angular.module('DictionaryViewerApp')
 
         _controller.generateChangeList = function() {
           DictionaryService.generateChangeList().then(function (report) {
-            _controller.changeReport = report;
+            $scope.$applyAsync(function () {
+              _controller.changeReport = report;
+            });
           });
         };
 

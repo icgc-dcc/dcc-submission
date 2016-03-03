@@ -172,7 +172,8 @@ var dictionaryApp = dictionaryApp || {};
 
           metadataTableBody.append('tr').html('<th>File Type:</th><td>' + table.label + '</td>');
           metadataTableBody.append('tr').html('<th>File Key:</th><td>' + table.name + '</td>');
-          metadataTableBody.append('tr').html('<th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
+          metadataTableBody.append('tr')
+            .html('<th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
 
 
           // Create the minimap things

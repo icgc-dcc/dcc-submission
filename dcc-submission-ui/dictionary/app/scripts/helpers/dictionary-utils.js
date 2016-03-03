@@ -8,7 +8,8 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
 (function() {
 
-   function DictionaryUtil(list) {
+   function DictionaryUtil(list, webserviceURL) {
+     this.webserviceURL = webserviceURL;
 
       list = _.filter(list, function(d) {
          var pattern = new RegExp('^draft');
@@ -43,7 +44,7 @@ var dictionaryApp = dictionaryApp || {};
    ////////////////////////////////////////////////////////////////////////////////
    DictionaryUtil.prototype.getDictionary = function(version) {
      var _self = this;
-     var url = 'http://localhost:5380/ws/dictionaries/' + version;
+     var url = _self.webserviceURL + '/dictionaries/' + version;
      var dict = _self.dictionaryMap[version];
      
      if (_.has(dict, 'files')) {

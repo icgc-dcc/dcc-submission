@@ -45,7 +45,7 @@ angular.module('DictionaryViewerApp')
                 _dictionaryList = dictionaryList.data;
                 _codeList = codeList.data;
 
-                _dictionaryUtils = new dictionaryApp.DictionaryUtil(_dictionaryList);
+                _dictionaryUtils = new dictionaryApp.DictionaryUtil(_dictionaryList, webserviceURL);
 
                 // The version list is sorted in descending order (latest version first)
                 // use the latest current version as the default.
