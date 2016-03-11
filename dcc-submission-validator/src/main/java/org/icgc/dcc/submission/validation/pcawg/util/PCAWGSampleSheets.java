@@ -51,8 +51,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PCAWGSampleSheets {
 
-  private static final URL SAMPLE_SHEEL_URL =
+  /**
+   * Constants.
+   */
+  public static final URL PREVIOUS_SAMPLE_SHEEL_URL =
       getUrl("http://pancancer.info/data_releases/sample_sheet/pcawg_sample_sheet.2016-01-13.tsv");
+  public static final URL SAMPLE_SHEEL_URL =
+      getUrl("http://pancancer.info/data_releases/sample_sheet/pcawg_sample_sheet.2016-03-11.tsv");
   private static final File SAMPLE_SHEET_FILE = new File("src/main/resources/pcawg-sample-sheet.json");
 
   /**
