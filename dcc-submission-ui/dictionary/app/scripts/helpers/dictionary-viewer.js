@@ -871,8 +871,8 @@ var dictionaryApp = dictionaryApp || {};
         } // End of Update...
         update(root);
         
-        if (this.shouldRenderLegend) {
-          this.renderLegend(svg, 20, 30);
+        if (_self.shouldRenderLegend) {
+          _self.renderLegend(svg, 20, 30);
         }
 
 
