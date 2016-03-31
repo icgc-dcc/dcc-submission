@@ -33,6 +33,7 @@
                     <div class="form-group">
                         <input
                                 data-ng-model="dictionaryViewerCtrl.q"
+                                data-ng-model-options="{debounce: 350}"
                                 data-ng-keyup="dictionaryViewerCtrl.doFilter()"
                                 data-ng-click="$event.stopPropagation()" class="form-control" id="filter" type="text" size="25" placeholder="Search:">
                         </input>
@@ -138,7 +139,7 @@
                             <h3 class="change-addition-header"><i class="fa fa-plus"></i> Field Name Additions</h3>
                             <div class="change-report-container change-additions">
                                 <ul>
-                                    <li data-ng-repeat="addition in dictionaryViewerCtrl.changeReport.added">
+                                    <li data-ng-repeat="addition in dictionaryViewerCtrl.changeReport.added | filter: dictionaryViewerCtrl.filterChangesReport">
                                         <i class="fa fa-plus"></i> <span data-ng-bind-template="{{addition.fileType}} - {{addition.fieldName}}"></span>
                                     </li>
                                 </ul>
@@ -148,7 +149,7 @@
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> Field Name Modifications</h3>
                             <div class="change-report-container change-modifications">
                                 <ul>
-                                    <li data-ng-repeat="change in dictionaryViewerCtrl.changeReport.changed">
+                                    <li data-ng-repeat="change in dictionaryViewerCtrl.changeReport.changed | filter: dictionaryViewerCtrl.filterChangesReport">
                                         <i class="fa fa-exchange"></i> <span data-ng-bind-template="{{change.fileType}} - {{change.fieldName}}"></span>
                                     </li>
                                 </ul>
@@ -159,7 +160,7 @@
                             <div class="change-report-container change-removals">
 
                                 <ul>
-                                    <li data-ng-repeat="removal in dictionaryViewerCtrl.changeReport.removed">
+                                    <li data-ng-repeat="removal in dictionaryViewerCtrl.changeReport.removed | filter: dictionaryViewerCtrl.filterChangesReport">
                                         <i class="fa fa-minus"></i> <span data-ng-bind-template="{{removal.fileType}} - {{removal.fieldName}}"></span>
                                     </li>
                                 </ul>

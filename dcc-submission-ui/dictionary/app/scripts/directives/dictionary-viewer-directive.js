@@ -120,6 +120,39 @@ angular.module('DictionaryViewerApp')
 
           _controller.tableViewer.toggleDataTypeFunc = handleGraphToggle;
 
+          _controller.filterChangesReport = function(changeObj) {
+            var query = _controller.q || '',
+                shouldIncludeObj = true;
+
+            if (! query) {
+              return shouldIncludeObj;
+            }
+
+            var normalizeStr = function(s) {
+              return s.trim().toLowerCase().replace(/[\s_]+/g, '').replace(/\s{2,}/g, ' ');
+            }, 
+            normalizedQuery = normalizeStr(query);
+
+            // Ignore strings with only spaces
+            if (! normalizedQuery) {
+              return shouldIncludeObj;
+            }
+
+            // Now for the check default to not including in the filter
+            shouldIncludeObj = false;
+
+            ['fileType','fieldName'].map(function (key) {
+
+              if ( typeof changeObj[key] === 'string' &&
+                   normalizeStr(changeObj[key]).indexOf(normalizedQuery) >= 0 ) {
+                shouldIncludeObj = true;
+              }
+            });
+
+
+            return shouldIncludeObj;
+          };
+
 
           var container = document.getElementById('jsonviewer');
           var options = {
