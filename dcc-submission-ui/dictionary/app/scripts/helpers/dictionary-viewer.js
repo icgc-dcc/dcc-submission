@@ -581,7 +581,7 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
 // Render the dictioary in a tree/graph layout
 ////////////////////////////////////////////////////////////////////////////////
-  TableViewer.prototype.showDictionaryGraph = function (versionFrom, versionTo) {
+  TableViewer.prototype.showDictionaryGraph = function (versionFrom, versionTo, renderCallback) {
     var _self = this;
 
     _self.dictUtil.getDictionary(versionTo).then(function (dictTo) {
@@ -876,6 +876,9 @@ var dictionaryApp = dictionaryApp || {};
           _self.renderLegend(svg, 20, 30);
         }
 
+        if (typeof renderCallback === 'function') {
+          renderCallback.call(_self);
+        }
 
       });
     });
