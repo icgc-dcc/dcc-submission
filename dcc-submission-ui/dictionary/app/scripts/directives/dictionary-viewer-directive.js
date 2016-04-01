@@ -161,6 +161,10 @@ angular.module('DictionaryViewerApp')
           var editor = new JSONEditor(container, options);
           _controller.jsonEditor = editor;
 
+          if (_controller.q) {
+            _controller.doFilter();
+          }
+
           startWatcher();
         });
 
