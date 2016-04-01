@@ -161,10 +161,6 @@ angular.module('DictionaryViewerApp')
           var editor = new JSONEditor(container, options);
           _controller.jsonEditor = editor;
 
-          if (_controller.q) {
-            _controller.doFilter();
-          }
-
           startWatcher();
         });
 
@@ -196,7 +192,17 @@ angular.module('DictionaryViewerApp')
                 }
             });
           }
+
+          $scope.$watch(function() {
+              return _controller.q;
+            },
+            function (newQ, oldQ) {
+              if (newQ !== oldQ) {
+                _controller.doFilter();
+              }
+            });
         }
+
 
         $scope.$watch(function() {
             return _controller.hideUnusedCodeLists;
@@ -272,10 +278,12 @@ angular.module('DictionaryViewerApp')
 
           _controller.tableViewer.showDictionaryTable(versionFrom, versionTo);
           _controller.tableViewer.selectDataType(dataType);
-          _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo);
+          _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo, function() {
+            _controller.tableViewer.filter(query);
+          });
 
 
-          _controller.tableViewer.filter(query);
+
           _controller.generateChangeList();
           
           _controller.dictUtil.getDictionary(versionTo).then(function (dictTo) {
