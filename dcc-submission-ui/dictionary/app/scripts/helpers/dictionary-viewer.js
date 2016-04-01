@@ -603,6 +603,7 @@ var dictionaryApp = dictionaryApp || {};
 
         var svg = d3.select('#graph')
           .append('svg')
+          .attr('id', 'graph-diagram')
           .attr('viewBox', '0 0 ' + graphWidth + ' ' + (graphHeight + 100))
           .attr('preserveAspectRatio', 'xMinYMin')
           .append('g')
