@@ -42,7 +42,7 @@ angular.module('DictionaryViewerApp')
         // params
         _controller.vFrom = searchParams.vFrom || '';
         _controller.vTo = searchParams.vTo ||'';
-        _controller.q = $scope.searchQuery || '';
+        _controller.q = typeof $scope.searchQuery === 'string' ?  $scope.searchQuery : (searchParams.q || '');
         _controller.dataType = $scope.filterDataType || 'all';
         _controller.selectedDetailFormatType = DictionaryAppConstants.DETAIL_FORMAT_TYPES.table;
 
