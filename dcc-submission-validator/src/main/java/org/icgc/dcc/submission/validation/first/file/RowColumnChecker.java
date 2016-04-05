@@ -20,11 +20,12 @@ package org.icgc.dcc.submission.validation.first.file;
 import static org.icgc.dcc.common.core.util.Separators.TAB_CHARACTER;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RowColumnChecker extends DelegatingFileRowChecker {
@@ -42,7 +43,7 @@ public class RowColumnChecker extends DelegatingFileRowChecker {
     val expectedNumColumns = getExpectedColumnCount(fileSchema);
     val actualNumColumns = getActualColumnCount(line);
     if (isCountMismatch(expectedNumColumns, actualNumColumns)) {
-      log.info("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
+      log.debug("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
           + actualNumColumns + " at line " + lineNumber);
 
       reportError(error()
