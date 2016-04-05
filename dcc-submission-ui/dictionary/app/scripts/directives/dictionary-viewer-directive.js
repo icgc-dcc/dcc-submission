@@ -42,7 +42,7 @@ angular.module('DictionaryViewerApp')
         // params
         _controller.vFrom = searchParams.vFrom || '';
         _controller.vTo = searchParams.vTo ||'';
-        _controller.q = $scope.searchQuery || '';
+        _controller.q = typeof $scope.searchQuery === 'string' ?  $scope.searchQuery : (searchParams.q || '');
         _controller.dataType = $scope.filterDataType || 'all';
         _controller.selectedDetailFormatType = DictionaryAppConstants.DETAIL_FORMAT_TYPES.table;
 
@@ -120,6 +120,39 @@ angular.module('DictionaryViewerApp')
 
           _controller.tableViewer.toggleDataTypeFunc = handleGraphToggle;
 
+          _controller.filterChangesReport = function(changeObj) {
+            var query = _controller.q || '',
+                shouldIncludeObj = true;
+
+            if (! query) {
+              return shouldIncludeObj;
+            }
+
+            var normalizeStr = function(s) {
+              return s.trim().toLowerCase().replace(/[\s_]+/g, '').replace(/\s{2,}/g, ' ');
+            }, 
+            normalizedQuery = normalizeStr(query);
+
+            // Ignore strings with only spaces
+            if (! normalizedQuery) {
+              return shouldIncludeObj;
+            }
+
+            // Now for the check default to not including in the filter
+            shouldIncludeObj = false;
+
+            ['fileType','fieldName'].map(function (key) {
+
+              if ( typeof changeObj[key] === 'string' &&
+                   normalizeStr(changeObj[key]).indexOf(normalizedQuery) >= 0 ) {
+                shouldIncludeObj = true;
+              }
+            });
+
+
+            return shouldIncludeObj;
+          };
+
 
           var container = document.getElementById('jsonviewer');
           var options = {
@@ -159,7 +192,17 @@ angular.module('DictionaryViewerApp')
                 }
             });
           }
+
+          $scope.$watch(function() {
+              return _controller.q;
+            },
+            function (newQ, oldQ) {
+              if (newQ !== oldQ) {
+                _controller.doFilter();
+              }
+            });
         }
+
 
         $scope.$watch(function() {
             return _controller.hideUnusedCodeLists;
@@ -235,10 +278,12 @@ angular.module('DictionaryViewerApp')
 
           _controller.tableViewer.showDictionaryTable(versionFrom, versionTo);
           _controller.tableViewer.selectDataType(dataType);
-          _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo);
+          _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo, function() {
+            _controller.tableViewer.filter(query);
+          });
 
 
-          _controller.tableViewer.filter(query);
+
           _controller.generateChangeList();
           
           _controller.dictUtil.getDictionary(versionTo).then(function (dictTo) {
