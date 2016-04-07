@@ -21,9 +21,6 @@ import static org.icgc.dcc.submission.validation.util.ValidationFileParsers.newM
 
 import java.util.List;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -32,6 +29,9 @@ import org.icgc.dcc.submission.validation.pcawg.core.ClinicalCore;
 import org.icgc.dcc.submission.validation.pcawg.core.ClinicalOptional;
 
 import com.google.common.collect.Lists;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 /**
  * Parser implementation that creates an in-memory model of clinical data.
@@ -59,11 +59,15 @@ public class ClinicalParser {
 
     val records = Lists.<Record> newArrayList();
     for (val file : context.getFiles(fileType)) {
-      fileParser.parse(file, (lineNumber, fields) -> {
-        Record record = new Record(fields, fileType, file, lineNumber);
+      try {
+        fileParser.parse(file, (lineNumber, fields) -> {
+          Record record = new Record(fields, fileType, file, lineNumber);
 
-        records.add(record);
-      });
+          records.add(record);
+        });
+      } catch (Exception e) {
+        throw new IllegalStateException("Failed to parse file " + file, e);
+      }
     }
 
     return records;
